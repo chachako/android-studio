@@ -264,7 +264,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * Loads contents the repository from a cache file on disk.
    * @see ResourceSerializationUtil#createPersistentCache
    */
-  private boolean loadFromPersistentCache(@NotNull Path cacheFile, byte @NotNull [] fileHeader) {
+  private boolean loadFromPersistentCache(@NotNull Path cacheFile, byte[] fileHeader) {
     try (Base128InputStream stream = new Base128InputStream(cacheFile)) {
       if (!stream.validateContents(fileHeader)) {
         return false; // Cache file header doesn't match.
