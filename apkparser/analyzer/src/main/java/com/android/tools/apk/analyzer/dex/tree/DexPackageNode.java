@@ -70,6 +70,23 @@ public class DexPackageNode extends DexElementNode {
         }
     }
 
+    @Nullable
+    public DexClassNode getClass(
+            @NonNull String parentPackage, @NonNull String qualifiedClassName) {
+        int i = qualifiedClassName.indexOf('.');
+        if (i < 0) {
+            return getChildByType(qualifiedClassName, DexClassNode.class);
+        } else {
+            String segment = qualifiedClassName.substring(0, i);
+            String nextSegment = qualifiedClassName.substring(i + 1);
+            DexPackageNode packageNode = getChildByType(segment, DexPackageNode.class);
+            if (packageNode == null) {
+                return null;
+            }
+            return packageNode.getClass(combine(parentPackage, segment), nextSegment);
+        }
+    }
+
     @Override
     public void update() {
         super.update();

@@ -68,6 +68,16 @@ public class DexClassNode extends DexElementNode {
         return (TypeReference) super.getReference();
     }
 
+    @Nullable
+    public DexMethodNode getMethod(@NonNull String qualifiedMethodName) {
+        return getChildByType(qualifiedMethodName, DexMethodNode.class);
+    }
+
+    @Nullable
+    public DexFieldNode getField(@NonNull String qualifiedFieldName) {
+        return getChildByType(qualifiedFieldName, DexFieldNode.class);
+    }
+
     @Override
     public void update() {
         super.update();

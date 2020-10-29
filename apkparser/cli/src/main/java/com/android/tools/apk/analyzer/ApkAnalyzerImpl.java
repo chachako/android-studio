@@ -24,6 +24,7 @@ import com.android.ide.common.xml.ManifestData;
 import com.android.tools.apk.analyzer.dex.DexDisassembler;
 import com.android.tools.apk.analyzer.dex.DexFileStats;
 import com.android.tools.apk.analyzer.dex.DexFiles;
+import com.android.tools.apk.analyzer.dex.DexReferences;
 import com.android.tools.apk.analyzer.dex.DexViewFilters;
 import com.android.tools.apk.analyzer.dex.PackageTreeCreator;
 import com.android.tools.apk.analyzer.dex.ProguardMappings;
@@ -53,6 +54,7 @@ import com.google.devrel.gmscore.tools.apk.arsc.StringPoolChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.TypeChunk;
 import com.google.devrel.gmscore.tools.apk.arsc.TypeSpecChunk;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,6 +77,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.xml.parsers.ParserConfigurationException;
 import org.jf.dexlib2.dexbacked.DexBackedDexFile;
+import org.jf.dexlib2.iface.reference.FieldReference;
+import org.jf.dexlib2.iface.reference.MethodReference;
+import org.jf.dexlib2.iface.reference.Reference;
+import org.jf.dexlib2.immutable.reference.ImmutableTypeReference;
 import org.xml.sax.SAXException;
 
 /**
@@ -82,6 +88,91 @@ import org.xml.sax.SAXException;
  * and files list - dex code - resources
  */
 public class ApkAnalyzerImpl {
+
+    static class Descriptor {
+        private String[] mParts;
+        private boolean mHasBracketsInPart3;
+
+        Descriptor(String str) {
+            mParts = str.split(" ");
+            if (mParts.length > 3) throw new IllegalArgumentException("Wrong argument " + str);
+            mHasBracketsInPart3 =
+                    mParts.length == 3
+                            && mParts[2].indexOf('(') != -1
+                            && mParts[2].indexOf(')') != -1;
+        }
+
+        boolean isClass() {
+            return mParts.length == 1;
+        }
+
+        String getClassName() {
+            // No UnsupportedOperationException being thrown, it couldn't happen with current
+            // implementation.
+            return mParts[0];
+        }
+
+        String getMethodReturnType() {
+            if (!isMethod()) throw new UnsupportedOperationException("Not a valid method.");
+            return mParts[1];
+        }
+
+        String getMethod() {
+            if (!isMethod()) throw new UnsupportedOperationException("Not a valid method.");
+            return mParts[2];
+        }
+
+        String getConstructor() {
+            if (!isConstructor())
+                throw new UnsupportedOperationException("Not a valid constructor.");
+            return mParts[1];
+        }
+
+        String getFieldType() {
+            if (!isField()) throw new UnsupportedOperationException("Not a valid field.");
+            return mParts[1];
+        }
+
+        String getField() {
+            if (!isField()) throw new UnsupportedOperationException("Not a valid field.");
+            return mParts[2];
+        }
+
+        boolean isConstructor() {
+            return mParts.length == 2;
+        }
+
+        boolean isMethod() {
+            return mParts.length == 3 && mHasBracketsInPart3;
+        }
+
+        boolean isField() {
+            return mParts.length == 3 && !mHasBracketsInPart3;
+        }
+
+        private boolean isValid() {
+            return isClass() || isConstructor() || isMethod() || isField();
+        }
+
+        Reference getReference(DexPackageNode rootNode) {
+            if (!isValid()) return null;
+            DexClassNode classNode = rootNode.getClass("", getClassName());
+            if (classNode == null) return null;
+            DexElementNode node = null;
+            if (isClass()) {
+                node = classNode;
+            } else if (isMethod()) {
+                node = classNode.getMethod(getMethodReturnType() + " " + getMethod());
+            } else if (isConstructor()) {
+                node = classNode.getMethod(getConstructor());
+            } else {
+                // isField()
+                node = classNode.getField(getFieldType() + " " + getField());
+            }
+            return node != null ? node.getReference() : null;
+        }
+    }
+
     @NonNull private final PrintStream out;
     @NonNull private final AaptInvoker aaptInvoker;
     private boolean humanReadableFlag;
@@ -365,21 +456,7 @@ public class ApkAnalyzerImpl {
         boolean deobfuscateNames = proguardMappings.map != null;
 
         try (ArchiveContext archiveContext = Archives.open(apk)) {
-            Collection<Path> dexPaths;
-            if (dexFilePaths == null || dexFilePaths.isEmpty()) {
-                dexPaths = getDexFilesFrom(archiveContext.getArchive().getContentRoot());
-            } else {
-                dexPaths =
-                        dexFilePaths
-                                .stream()
-                                .map(
-                                        dexFile ->
-                                                archiveContext
-                                                        .getArchive()
-                                                        .getContentRoot()
-                                                        .resolve(dexFile))
-                                .collect(Collectors.toList());
-            }
+            Collection<Path> dexPaths = getSelectedDexFiles(dexFilePaths, archiveContext);
             Map<Path, DexBackedDexFile> dexFiles = Maps.newHashMapWithExpectedSize(dexPaths.size());
             for (Path dexPath : dexPaths) {
                 dexFiles.put(dexPath, DexFiles.getDexFile(dexPath));
@@ -548,21 +625,7 @@ public class ApkAnalyzerImpl {
 
     public void dexReferences(@NonNull Path apk, @Nullable List<String> dexFilePaths) {
         try (ArchiveContext archiveContext = Archives.open(apk)) {
-            Collection<Path> dexPaths;
-            if (dexFilePaths == null || dexFilePaths.isEmpty()) {
-                dexPaths = getDexFilesFrom(archiveContext.getArchive().getContentRoot());
-            } else {
-                dexPaths =
-                        dexFilePaths
-                                .stream()
-                                .map(
-                                        dexFile ->
-                                                archiveContext
-                                                        .getArchive()
-                                                        .getContentRoot()
-                                                        .resolve(dexFile))
-                                .collect(Collectors.toList());
-            }
+            Collection<Path> dexPaths = getSelectedDexFiles(dexFilePaths, archiveContext);
             for (Path dexPath : dexPaths) {
                 DexFileStats stats =
                         DexFileStats.create(Collections.singleton(DexFiles.getDexFile(dexPath)));
@@ -571,6 +634,114 @@ public class ApkAnalyzerImpl {
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    public void dexReferenceTree(
+            @NonNull Path apk,
+            @Nullable Path proguardFolderPath,
+            @Nullable Path proguardMapFilePath,
+            @Nullable Path proguardSeedsFilePath,
+            @Nullable Path proguardUsagesFilePath,
+            @Nullable Path descriptorFilePath,
+            @Nullable String descriptorCommandLine,
+            @Nullable List<String> dexFilePaths) {
+        assert (descriptorCommandLine != null || descriptorFilePath != null);
+        ProguardMappings proguardMappings =
+                getProguardMappings(
+                        proguardFolderPath,
+                        proguardMapFilePath,
+                        proguardSeedsFilePath,
+                        proguardUsagesFilePath);
+        boolean deobfuscateNames = proguardMappings.map != null;
+        try (ArchiveContext archiveContext = Archives.open(apk)) {
+            Collection<Path> dexPaths = getSelectedDexFiles(dexFilePaths, archiveContext);
+            Map<Path, DexBackedDexFile> dexFiles = Maps.newHashMapWithExpectedSize(dexPaths.size());
+            for (Path dexPath : dexPaths) {
+                dexFiles.put(dexPath, DexFiles.getDexFile(dexPath));
+            }
+
+            PackageTreeCreator treeCreator =
+                    new PackageTreeCreator(proguardMappings, deobfuscateNames);
+            DexPackageNode rootNode = treeCreator.constructPackageTree(dexFiles);
+            ArrayList<Descriptor> descriptors = new ArrayList<Descriptor>();
+            if (descriptorCommandLine != null) {
+                descriptors.add(new Descriptor(descriptorCommandLine));
+            }
+            if (descriptorFilePath != null) {
+                loadDescriptorsFromFile(descriptorFilePath, descriptors);
+            }
+            DexReferences dexReferences =
+                    new DexReferences(
+                            dexFiles.values().toArray(new DexBackedDexFile[dexFiles.size()]));
+            for (Descriptor descriptor : descriptors) {
+                Reference reference = descriptor.getReference(rootNode);
+                if (reference == null) continue;
+                DexElementNode node = dexReferences.getReferenceTreeFor(reference, false);
+                node.sort(DexReferences.NODE_COMPARATOR);
+                dumpReferenceTree(out, node, 0, proguardMappings.map);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static void loadDescriptorsFromFile(
+            @NonNull Path descriptorFilePath, @NonNull List<Descriptor> descriptors) {
+        try {
+            BufferedReader reader = Files.newBufferedReader(descriptorFilePath, Charsets.UTF_8);
+            String line = reader.readLine();
+            while (line != null) {
+                descriptors.add(new Descriptor(line));
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void dumpReferenceTree(
+            PrintStream out, @NonNull DexElementNode node, int depth, ProguardMap map) {
+        StringBuilder sb = new StringBuilder();
+        Reference reference = node.getReference();
+        for (int i = 0; i < depth; ++i) sb.append(' ');
+        if (reference instanceof MethodReference) {
+            MethodReference r = (MethodReference) reference;
+            sb.append(PackageTreeCreator.decodeClassName(r.getDefiningClass(), map));
+            sb.append(' ');
+            sb.append(PackageTreeCreator.decodeClassName(r.getReturnType(), map));
+            sb.append(' ');
+            sb.append(PackageTreeCreator.decodeMethodName(r, map));
+            sb.append(PackageTreeCreator.decodeMethodParams(r, map));
+        } else if (reference instanceof FieldReference) {
+            FieldReference r = (FieldReference) reference;
+            sb.append(PackageTreeCreator.decodeClassName(r.getDefiningClass(), map));
+            sb.append(' ');
+            sb.append(PackageTreeCreator.decodeClassName(r.getType(), map));
+            sb.append(' ');
+            sb.append(PackageTreeCreator.decodeFieldName(r, map));
+        } else if (reference instanceof ImmutableTypeReference) {
+            ImmutableTypeReference r = (ImmutableTypeReference) reference;
+            sb.append(PackageTreeCreator.decodeClassName(r.getType(), map));
+        } else {
+            sb.append("Unknown reference: " + reference.getClass() + " " + reference.toString());
+        }
+        out.println(sb.toString());
+        for (int i = 0; i < node.getChildCount(); ++i) {
+            dumpReferenceTree(out, node.getChildAt(i), depth + 1, map);
+        }
+    }
+
+    @NonNull
+    private static Collection<Path> getSelectedDexFiles(
+            @Nullable List<String> dexFilePaths, @NonNull ArchiveContext archiveContext) {
+        if (dexFilePaths == null || dexFilePaths.isEmpty()) {
+            return getDexFilesFrom(archiveContext.getArchive().getContentRoot());
+        } else {
+            return dexFilePaths.stream()
+                    .map(dexFile -> archiveContext.getArchive().getContentRoot().resolve(dexFile))
+                    .collect(Collectors.toList());
         }
     }
 

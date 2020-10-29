@@ -55,10 +55,12 @@ public class ApkAnalyzerCli {
     private static final String FLAG_PROGUARD_MAPPINGS = "proguard-mappings";
     private static final String FLAG_PROGUARD_SEEDS = "proguard-seeds";
     private static final String FLAG_PROGUARD_FOLDER = "proguard-folder";
+    private static final String FLAG_INPUT_FILE = "input-file";
     private static final String FLAG_SHOW_DEFINED_ONLY = "defined-only";
     private static final String FLAG_SHOW_REMOVED = "show-removed";
     private static final String FLAG_CLASS = "class";
     private static final String FLAG_METHOD = "method";
+    private static final String FLAG_REFERENCES_TO = "references-to";
     private static final String FLAG_NOT_REQUIRED = "not-required";
     private static final String FLAG_PATCH_SIZE = "patch-size";
     private static final String FLAG_FILE_PATH = "file";
@@ -86,6 +88,7 @@ public class ApkAnalyzerCli {
     private static final String ACTION_PERMISSIONS = "permissions";
     private static final String ACTION_DEBUGGABLE = "debuggable";
     private static final String ACTION_REFERENCES = "references";
+    private static final String ACTION_REFERENCE_TREE = "reference-tree";
     private static final String ACTION_PACKAGES = "packages";
     private static final String ACTION_CODE = "code";
     private static final String ACTION_XML = "xml";
@@ -752,6 +755,97 @@ public class ApkAnalyzerCli {
                         opts.valueOf(methodSpec),
                         opts.has(pgFolderSpec) ? opts.valueOf(pgFolderSpec).toPath() : null,
                         opts.has(pgMappingSpec) ? opts.valueOf(pgMappingSpec).toPath() : null);
+            }
+        },
+        DEX_REFERENCE_TREE(
+                SUBJECT_DEX,
+                ACTION_REFERENCE_TREE,
+                "Prints a reference tree to a given or a list of classes/methods/fields.") {
+
+            @Nullable private OptionParser parser;
+            @Nullable ArgumentAcceptingOptionSpec<String> filesSpec;
+            public ArgumentAcceptingOptionSpec<String> referencesOfSpec;
+            public ArgumentAcceptingOptionSpec<File> inputFileSpec;
+            public ArgumentAcceptingOptionSpec<File> pgUsagesSpec;
+            public ArgumentAcceptingOptionSpec<File> pgSeedsSpec;
+            public ArgumentAcceptingOptionSpec<File> pgMappingSpec;
+            public ArgumentAcceptingOptionSpec<File> pgFolderSpec;
+
+            @Override
+            @NonNull
+            public OptionParser getParser() {
+                if (parser == null) {
+                    parser = super.getParser();
+                    filesSpec =
+                            parser.accepts(
+                                            FLAG_FILES,
+                                            "Dex file names to include. Default: all dex files.")
+                                    .withRequiredArg()
+                                    .ofType(String.class);
+                    referencesOfSpec =
+                            parser.accepts(
+                                            FLAG_REFERENCES_TO,
+                                            "Class/constructor/method/field descriptor. Format:\n"
+                                                    + "  Class: class_name.\n"
+                                                    + "  Constructor: class_name constructor_name\n"
+                                                    + "  Method: class_name return_type method_name\n"
+                                                    + "  Field: class_name field_type filed_name\n"
+                                                    + "The descriptor can be copied from the output of\n"
+                                                    + " ./apkanalyzer dex packages\n")
+                                    .withRequiredArg()
+                                    .ofType(String.class);
+                    inputFileSpec =
+                            parser.accepts(
+                                            FLAG_INPUT_FILE,
+                                            "The file with a class, method or field to query in each line.")
+                                    .withRequiredArg()
+                                    .ofType(File.class);
+                    pgFolderSpec =
+                            parser.accepts(
+                                            FLAG_PROGUARD_FOLDER,
+                                            "The Proguard output folder to search for mappings.")
+                                    .withRequiredArg()
+                                    .ofType(File.class);
+                    pgMappingSpec =
+                            parser.accepts(FLAG_PROGUARD_MAPPINGS, "The Proguard mappings file.")
+                                    .withRequiredArg()
+                                    .ofType(File.class);
+                    pgSeedsSpec =
+                            parser.accepts(FLAG_PROGUARD_SEEDS, "The Proguard seeds file.")
+                                    .withRequiredArg()
+                                    .ofType(File.class);
+                    pgUsagesSpec =
+                            parser.accepts(FLAG_PROGUARD_USAGES, "The Proguard usages file.")
+                                    .withRequiredArg()
+                                    .ofType(File.class);
+                }
+                return parser;
+            }
+
+            @Override
+            public void execute(
+                    PrintStream out,
+                    PrintStream err,
+                    @NonNull ApkAnalyzerImpl impl,
+                    @NonNull String... args) {
+                OptionParser parser = getParser();
+                OptionSet opts = parseOrPrintHelp(parser, err, args);
+                if (!opts.has(inputFileSpec) && !opts.has(referencesOfSpec))
+                    throw new RuntimeException(
+                            "Either "
+                                    + FLAG_REFERENCES_TO
+                                    + " or "
+                                    + FLAG_INPUT_FILE
+                                    + " shall be specified.");
+                impl.dexReferenceTree(
+                        opts.valueOf(getFileSpec()).toPath(),
+                        opts.has(pgFolderSpec) ? opts.valueOf(pgFolderSpec).toPath() : null,
+                        opts.has(pgMappingSpec) ? opts.valueOf(pgMappingSpec).toPath() : null,
+                        opts.has(pgSeedsSpec) ? opts.valueOf(pgSeedsSpec).toPath() : null,
+                        opts.has(pgUsagesSpec) ? opts.valueOf(pgUsagesSpec).toPath() : null,
+                        opts.has(inputFileSpec) ? opts.valueOf(inputFileSpec).toPath() : null,
+                        opts.has(referencesOfSpec) ? opts.valueOf(referencesOfSpec) : null,
+                        opts.valuesOf(filesSpec));
             }
         },
         RESOURCES_PACKAGES(

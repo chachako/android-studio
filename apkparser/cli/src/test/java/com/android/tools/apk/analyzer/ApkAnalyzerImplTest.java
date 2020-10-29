@@ -17,6 +17,8 @@
 package com.android.tools.apk.analyzer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,13 +31,17 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.xml.sax.SAXException;
 
 /** Tests for {@link ApkAnalyzerCli} */
 public class ApkAnalyzerImplTest {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    @Rule public ExpectedException thrown = ExpectedException.none();
 
     private ApkAnalyzerImpl impl;
     private ByteArrayOutputStream baos;
@@ -371,6 +377,72 @@ public class ApkAnalyzerImplTest {
     }
 
     @Test
+    public void dexReferenceTreeMethodTest() throws IOException {
+        impl.dexReferenceTree(
+                apk,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "android.app.Activity void onCreate(android.os.Bundle)",
+                null);
+        assertEquals(
+                "android.app.Activity void onCreate(android.os.Bundle)\n"
+                        + " com.example.helloworld.HelloWorld void onCreate(android.os.Bundle)\n",
+                baos.toString());
+    }
+
+    @Test
+    public void dexReferenceTreeClassTest() throws IOException {
+        impl.dexReferenceTree(apk, null, null, null, null, null, "android.app.Activity", null);
+        assertEquals(
+                "android.app.Activity\n"
+                        + " com.example.helloworld.HelloWorld void <init>()\n"
+                        + " com.example.helloworld.HelloWorld void onCreate(android.os.Bundle)\n"
+                        + " com.example.helloworld.HelloWorld\n",
+                baos.toString());
+    }
+
+    @Test
+    public void dexReferencesTreeFieldTest() throws IOException {
+        impl.dexReferenceTree(
+                apk,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "com.example.helloworld.HelloWorld java.util.concurrent.atomic.AtomicIntegerFieldUpdater hw",
+                null);
+        assertEquals(
+                "com.example.helloworld.HelloWorld java.util.concurrent.atomic.AtomicIntegerFieldUpdater hw\n"
+                        + " com.example.helloworld.HelloWorld void <clinit>()\n",
+                baos.toString());
+    }
+
+    @Test
+    public void dexReferencesTreeInputFileTest() throws IOException {
+        impl.dexReferenceTree(
+                apk,
+                null,
+                null,
+                null,
+                null,
+                TestResources.getFile("/ref-tree-in.txt").toPath(),
+                null,
+                null);
+        assertEquals(
+                "android.app.Activity\n"
+                        + " com.example.helloworld.HelloWorld void <init>()\n"
+                        + " com.example.helloworld.HelloWorld void onCreate(android.os.Bundle)\n"
+                        + " com.example.helloworld.HelloWorld\n"
+                        + "android.app.Activity void onCreate(android.os.Bundle)\n"
+                        + " com.example.helloworld.HelloWorld void onCreate(android.os.Bundle)\n",
+                baos.toString());
+    }
+
+    @Test
     public void dexListTest() throws IOException {
         impl.dexList(apk);
         assertEquals("classes.dex\n", baos.toString());
@@ -612,5 +684,95 @@ public class ApkAnalyzerImplTest {
                         + "SHA1-Digest: bf5rvESHL/Jx8mMfL1zoEgxGcwY=\r\n"
                         + "\r\n",
                 baos.toString());
+    }
+
+    @Test
+    public void descriptorTest() {
+        ApkAnalyzerImpl.Descriptor classDescriptor =
+                new ApkAnalyzerImpl.Descriptor("java.util.concurrent.atomic.AtomicLong");
+        assertTrue(classDescriptor.isClass());
+        assertFalse(classDescriptor.isConstructor());
+        assertFalse(classDescriptor.isField());
+        assertFalse(classDescriptor.isMethod());
+        assertEquals("java.util.concurrent.atomic.AtomicLong", classDescriptor.getClassName());
+        ApkAnalyzerImpl.Descriptor constructorDescriptor =
+                new ApkAnalyzerImpl.Descriptor(
+                        "java.util.concurrent.atomic.AtomicLong <init>(long)");
+        assertFalse(constructorDescriptor.isClass());
+        assertTrue(constructorDescriptor.isConstructor());
+        assertFalse(constructorDescriptor.isField());
+        assertFalse(constructorDescriptor.isMethod());
+        assertEquals(
+                "java.util.concurrent.atomic.AtomicLong", constructorDescriptor.getClassName());
+        assertEquals("<init>(long)", constructorDescriptor.getConstructor());
+        ApkAnalyzerImpl.Descriptor methodDescriptor =
+                new ApkAnalyzerImpl.Descriptor("java.util.concurrent.atomic.AtomicLong long get()");
+        assertFalse(methodDescriptor.isClass());
+        assertFalse(methodDescriptor.isConstructor());
+        assertFalse(methodDescriptor.isField());
+        assertTrue(methodDescriptor.isMethod());
+        assertEquals("java.util.concurrent.atomic.AtomicLong", methodDescriptor.getClassName());
+        assertEquals("long", methodDescriptor.getMethodReturnType());
+        assertEquals("get()", methodDescriptor.getMethod());
+        ApkAnalyzerImpl.Descriptor fieldDescriptor =
+                new ApkAnalyzerImpl.Descriptor(
+                        "java.util.concurrent.TimeUnit java.util.concurrent.TimeUnit HOURS");
+        assertFalse(fieldDescriptor.isClass());
+        assertFalse(fieldDescriptor.isConstructor());
+        assertTrue(fieldDescriptor.isField());
+        assertFalse(fieldDescriptor.isMethod());
+        assertEquals("java.util.concurrent.TimeUnit", fieldDescriptor.getClassName());
+        assertEquals("java.util.concurrent.TimeUnit", fieldDescriptor.getFieldType());
+        assertEquals("HOURS", fieldDescriptor.getField());
+    }
+
+    @Test
+    public void descriptorExceptionTest() {
+        thrown.expect(IllegalArgumentException.class);
+        ApkAnalyzerImpl.Descriptor malformatDescriptor =
+                new ApkAnalyzerImpl.Descriptor("java util concurrent TimeUnit HOURS");
+    }
+
+    @Test
+    public void unsupportedOperationExceptionOnMethodDescriptor() {
+        thrown.expect(UnsupportedOperationException.class);
+        ApkAnalyzerImpl.Descriptor fieldDescriptor =
+                new ApkAnalyzerImpl.Descriptor(
+                        "java.util.concurrent.TimeUnit java.util.concurrent.TimeUnit HOURS");
+        fieldDescriptor.getMethod();
+    }
+
+    @Test
+    public void unsupportedOperationExceptionOnMethodReturnTypeDescriptor() {
+        thrown.expect(UnsupportedOperationException.class);
+        ApkAnalyzerImpl.Descriptor fieldDescriptor =
+                new ApkAnalyzerImpl.Descriptor(
+                        "java.util.concurrent.TimeUnit java.util.concurrent.TimeUnit HOURS");
+        fieldDescriptor.getMethodReturnType();
+    }
+
+    @Test
+    public void unsupportedOperationExceptionOnConstructorDescriptor() {
+        thrown.expect(UnsupportedOperationException.class);
+        ApkAnalyzerImpl.Descriptor fieldDescriptor =
+                new ApkAnalyzerImpl.Descriptor(
+                        "java.util.concurrent.TimeUnit java.util.concurrent.TimeUnit HOURS");
+        fieldDescriptor.getConstructor();
+    }
+
+    @Test
+    public void unsupportedOperationExceptionOnFieldDescriptor() {
+        thrown.expect(UnsupportedOperationException.class);
+        ApkAnalyzerImpl.Descriptor methodDescriptor =
+                new ApkAnalyzerImpl.Descriptor("java.util.concurrent.atomic.AtomicLong long get()");
+        methodDescriptor.getField();
+    }
+
+    @Test
+    public void unsupportedOperationExceptionOnFieldTypeDescriptor() {
+        thrown.expect(UnsupportedOperationException.class);
+        ApkAnalyzerImpl.Descriptor methodDescriptor =
+                new ApkAnalyzerImpl.Descriptor("java.util.concurrent.atomic.AtomicLong long get()");
+        methodDescriptor.getFieldType();
     }
 }
