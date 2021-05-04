@@ -191,11 +191,29 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     val evaluator = context.evaluator
     val methodName = method.name
     if (methodName == SdkConstants.FORMAT_METHOD) {
-      if (evaluator.isMemberInClass(method, TYPE_STRING)) {
+      val cls = method.containingClass?.qualifiedName
+      if (cls == TYPE_STRING) {
         // Check formatting parameters for
         //   java.lang.String#format(String format, Object... formatArgs)
         //   java.lang.String#format(Locale locale, String format, Object... formatArgs)
-        checkStringFormatCall(context, method, node, method.parameterList.parametersCount == 3)
+        checkStringFormatCall(
+          context,
+          method,
+          node,
+          if (method.parameterList.parametersCount == 3) 1 else 0
+        )
+      } else if (cls == LocaleDetector.KOTLIN_STRINGS_JVM_KT) {
+        // Kotlin stdlib extension functions from kotlin.txt
+        //   public inline fun String.Companion.format(format: String, vararg args: Any?): String =
+        // java.lang.String.format(format, *args)
+        //   public inline fun String.format(locale: Locale?, vararg args: Any?): String =
+        // java.lang.String.format(locale, this, *args)
+        checkStringFormatCall(
+          context,
+          method,
+          node,
+          if (method.parameterList.parametersCount == 4) 1 else 0
+        )
 
         // TODO: Consider also enforcing
         // java.util.Formatter#format(String string, Object... formatArgs)
@@ -231,7 +249,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
             false
           )
       ) {
-        checkStringFormatCall(context, method, node, false)
+        checkStringFormatCall(context, method, node, 0)
       }
 
       // TODO: Consider also looking up
@@ -255,15 +273,15 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
    * @param context the context to report errors to
    * @param calledMethod the method being called
    * @param call the AST node for the [String.format]
-   * @param specifiesLocale whether the first parameter is a locale string, shifting the
+   * @param argIndex the index of the string argument, normally 0 but 1 if locale is specified, or 1
+   *   or 2 in extension methods
    */
   private fun checkStringFormatCall(
     context: JavaContext,
     calledMethod: PsiMethod,
     call: UCallExpression,
-    specifiesLocale: Boolean
+    argIndex: Int
   ) {
-    val argIndex = if (specifiesLocale) 1 else 0
     val args = call.valueArguments
     if (args.size <= argIndex) {
       return
@@ -271,7 +289,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     val argument = args[argIndex]
     val resource = ResourceEvaluator.getResource(context.evaluator, argument)
     if (resource == null || resource.isFramework || resource.type != ResourceType.STRING) {
-      checkTrivialString(context, calledMethod, call, args, specifiesLocale)
+      checkTrivialString(context, calledMethod, call, args, argIndex)
       return
     }
     val name = resource.name
@@ -692,9 +710,8 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     calledMethod: PsiMethod,
     call: UCallExpression,
     args: List<UExpression>,
-    specifiesLocale: Boolean
+    stringIndex: Int
   ) {
-    val stringIndex = if (specifiesLocale) 1 else 0
     val s = ConstantEvaluator.evaluateString(context, args[stringIndex], false) ?: return
     var uppercase = false
     val count = getFormatArgumentCount(s, null)

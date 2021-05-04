@@ -55,23 +55,22 @@ class LocaleDetector : Detector(), SourceCodeScanner {
   }
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-    if (method.name == GET_DEFAULT) {
-      if (context.evaluator.isMemberInClass(method, LOCALE_CLS)) {
+    val containingClass = method.containingClass?.qualifiedName
+    val methodName = method.name
+    if (methodName == GET_DEFAULT) {
+      if (containingClass == LOCALE_CLS) {
         checkLocaleGetDefault(context, method, node)
       }
-      return
-    }
-
-    if (context.evaluator.isMemberInClass(method, TYPE_STRING)) {
-      when (method.name) {
-        FORMAT_METHOD -> checkFormat(context, method, node)
+    } else if (containingClass == TYPE_STRING) {
+      when (methodName) {
+        FORMAT_METHOD -> checkFormat(context, method, node, 0)
         TO_LOWER_CASE,
         TO_UPPER_CASE -> checkJavaToUpperLowerCase(context, method, node)
       }
-    }
-
-    if (context.evaluator.isMemberInClass(method, KOTLIN_STRINGS_JVM_KT)) {
-      when (method.name) {
+    } else if (containingClass == KOTLIN_STRINGS_JVM_KT) {
+      when (methodName) {
+        FORMAT_METHOD ->
+          checkFormat(context, method, node, 1) // 1: extension function, 0 arg is this
         CAPITALIZE,
         DECAPITALIZE -> checkStringsKt(context, method, node)
         TO_LOWER_CASE,
@@ -134,11 +133,16 @@ class LocaleDetector : Detector(), SourceCodeScanner {
     context.report(STRING_LOCALE, node, location, message, quickfixData)
   }
 
-  private fun checkFormat(context: JavaContext, method: PsiMethod, call: UCallExpression) {
+  private fun checkFormat(
+    context: JavaContext,
+    method: PsiMethod,
+    call: UCallExpression,
+    stringIndex: Int
+  ) {
     // Only check the non-locale version of String.format
     if (
-      method.parameterList.parametersCount == 0 ||
-        !context.evaluator.parameterHasType(method, 0, TYPE_STRING)
+      method.parameterList.parametersCount <= stringIndex ||
+        !context.evaluator.parameterHasType(method, stringIndex, TYPE_STRING)
     ) {
       return
     }
@@ -223,6 +227,8 @@ class LocaleDetector : Detector(), SourceCodeScanner {
     const val TO_UPPER_CASE = "toUpperCase"
     const val TO_LOWER_CASE = "toLowerCase"
     const val GET_DEFAULT = "getDefault"
+    // Declared in
+    // $KOTLIN/libraries/stdlib/jvm/build/stdlib-declarations.json
     const val KOTLIN_STRINGS_JVM_KT = "kotlin.text.StringsKt__StringsJVMKt"
     const val CAPITALIZE = "capitalize"
     const val DECAPITALIZE = "decapitalize"
@@ -243,7 +249,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
                 uppercase replacement for `i` is **not** `I`.
 
                 If you want the methods to just perform ASCII replacement, for example to \
-                convert an enum name, call `String#toUpperCase(Locale.US)` instead. If you \
+                convert an enum name, call `String#toUpperCase(Locale.ROOT)` instead. If you \
                 really want to use the current locale, call \
                 `String#toUpperCase(Locale.getDefault())` instead.
                 """,

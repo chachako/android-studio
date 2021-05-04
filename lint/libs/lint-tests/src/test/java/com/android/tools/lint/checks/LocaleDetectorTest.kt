@@ -28,79 +28,174 @@ class LocaleDetectorTest : AbstractCheckTest() {
   fun testBasic() {
     val expected =
       """
-            src/test/pkg/LocaleTest.java:11: Warning: Implicitly using the default locale is a common source of bugs: Use toUpperCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
-                    System.out.println("WRONG".toUpperCase());
-                                               ~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:16: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
-                    System.out.println("WRONG".toLowerCase());
-                                               ~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:20: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %f", 1.0f); // Implies locale
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:21: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %1＄f", 1.0f);
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:22: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %e", 1.0f);
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:23: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %d", 1.0f);
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:24: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %g", 1.0f);
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:25: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %g", 1.0f);
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            src/test/pkg/LocaleTest.java:26: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
-                    String.format("WRONG: %1＄tm %1＄te,%1＄tY",
-                    ^
-            0 errors, 9 warnings
-            """
+      src/test/pkg/LocaleTest.java:11: Warning: Implicitly using the default locale is a common source of bugs: Use toUpperCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+              System.out.println("WRONG".toUpperCase());
+                                         ~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:16: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+              System.out.println("WRONG".toLowerCase());
+                                         ~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:20: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %f", 1.0f); // Implies locale
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:21: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %1＄f", 1.0f);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:22: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %e", 1.0f);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:23: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %d", 1.0f);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:24: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %g", 1.0f);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:25: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %g", 1.0f);
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.java:26: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %1＄tm %1＄te,%1＄tY",
+              ^
+      0 errors, 9 warnings
+      """
 
     lint()
       .files(
         java(
             "src/test/pkg/LocaleTest.java",
             """
-                    package test.pkg;
+            package test.pkg;
 
-                    import java.text.*;
-                    import java.util.*;
-                    @SuppressWarnings({"ResultOfMethodCallIgnored", "MalformedFormatString", "MethodMayBeStatic", "ResultOfObjectAllocationIgnored", "SimpleDateFormatWithoutLocale", "StringToUpperCaseOrToLowerCaseWithoutLocale", "ClassNameDiffersFromFileName"})
-                    public class LocaleTest {
-                        public void testStrings() {
-                            System.out.println("OK".toUpperCase(Locale.getDefault()));
-                            System.out.println("OK".toUpperCase(Locale.US));
-                            System.out.println("OK".toUpperCase(Locale.CHINA));
-                            System.out.println("WRONG".toUpperCase());
+            import java.text.*;
+            import java.util.*;
+            @SuppressWarnings({"ResultOfMethodCallIgnored", "MalformedFormatString", "MethodMayBeStatic", "ResultOfObjectAllocationIgnored", "SimpleDateFormatWithoutLocale", "StringToUpperCaseOrToLowerCaseWithoutLocale", "ClassNameDiffersFromFileName"})
+            public class LocaleTest {
+                public void testStrings() {
+                    System.out.println("OK".toUpperCase(Locale.getDefault()));
+                    System.out.println("OK".toUpperCase(Locale.US));
+                    System.out.println("OK".toUpperCase(Locale.CHINA));
+                    System.out.println("WRONG".toUpperCase());
 
-                            System.out.println("OK".toLowerCase(Locale.getDefault()));
-                            System.out.println("OK".toLowerCase(Locale.US));
-                            System.out.println("OK".toLowerCase(Locale.CHINA));
-                            System.out.println("WRONG".toLowerCase());
+                    System.out.println("OK".toLowerCase(Locale.getDefault()));
+                    System.out.println("OK".toLowerCase(Locale.US));
+                    System.out.println("OK".toLowerCase(Locale.CHINA));
+                    System.out.println("WRONG".toLowerCase());
 
-                            String.format(Locale.getDefault(), "OK: %f", 1.0f);
-                            String.format("OK: %x %A %c %b %B %h %n %%", 1, 2, 'c', true, false, 5);
-                            String.format("WRONG: %f", 1.0f); // Implies locale
-                            String.format("WRONG: %1＄f", 1.0f);
-                            String.format("WRONG: %e", 1.0f);
-                            String.format("WRONG: %d", 1.0f);
-                            String.format("WRONG: %g", 1.0f);
-                            String.format("WRONG: %g", 1.0f);
-                            String.format("WRONG: %1＄tm %1＄te,%1＄tY",
-                                    new GregorianCalendar(2012, GregorianCalendar.AUGUST, 27));
-                        }
+                    String.format(Locale.getDefault(), "OK: %f", 1.0f);
+                    String.format("OK: %x %A %c %b %B %h %n %%", 1, 2, 'c', true, false, 5);
+                    String.format("WRONG: %f", 1.0f); // Implies locale
+                    String.format("WRONG: %1＄f", 1.0f);
+                    String.format("WRONG: %e", 1.0f);
+                    String.format("WRONG: %d", 1.0f);
+                    String.format("WRONG: %g", 1.0f);
+                    String.format("WRONG: %g", 1.0f);
+                    String.format("WRONG: %1＄tm %1＄te,%1＄tY",
+                            new GregorianCalendar(2012, GregorianCalendar.AUGUST, 27));
+                }
 
-                        @android.annotation.SuppressLint("NewApi") // DateFormatSymbols requires API 9
-                        public void testSimpleDateFormat() {
-                            new SimpleDateFormat(); // WRONG
-                            new SimpleDateFormat("yyyy-MM-dd"); // WRONG
-                            new SimpleDateFormat("yyyy-MM-dd", DateFormatSymbols.getInstance()); // WRONG
-                            new SimpleDateFormat("yyyy-MM-dd", Locale.US); // OK
-                        }
-                    }
-                    """
+                @android.annotation.SuppressLint("NewApi") // DateFormatSymbols requires API 9
+                public void testSimpleDateFormat() {
+                    new SimpleDateFormat(); // WRONG
+                    new SimpleDateFormat("yyyy-MM-dd"); // WRONG
+                    new SimpleDateFormat("yyyy-MM-dd", DateFormatSymbols.getInstance()); // WRONG
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.US); // OK
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
+
+  fun testBasicKotlin() {
+    // Like the previous test, but ported to Kotlin.
+    // Regression test for 120109333.
+    val expected =
+      """
+      src/test/pkg/LocaleTest.kt:13: Warning: Implicitly using the default locale is a common source of bugs: Use toUpperCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+              println("WRONG".toUpperCase())
+                              ~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:18: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+              println("WRONG".toLowerCase())
+                              ~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:22: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %f", 1.0f) // Implies locale
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:23: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %1\＄f", 1.0f)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:24: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %e", 1.0f)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:25: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %d", 1.0f)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:26: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %g", 1.0f)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:27: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format("WRONG: %g", 1.0f)
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      src/test/pkg/LocaleTest.kt:28: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format(
+              ^
+      src/test/pkg/LocaleTest.kt:34: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+              String.format(format = "WRONG: %d", args = *arrayOf(1.0f))
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      0 errors, 10 warnings
+      """
+
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.annotation.SuppressLint
+            import java.text.DateFormatSymbols
+            import java.text.SimpleDateFormat
+            import java.util.*
+
+            class LocaleTest {
+                fun testStrings() {
+                    println("OK".toUpperCase(Locale.getDefault()))
+                    println("OK".toUpperCase(Locale.US))
+                    println("OK".toUpperCase(Locale.CHINA))
+                    println("WRONG".toUpperCase())
+
+                    println("OK".toLowerCase(Locale.getDefault()))
+                    println("OK".toLowerCase(Locale.US))
+                    println("OK".toLowerCase(Locale.CHINA))
+                    println("WRONG".toLowerCase())
+
+                    String.format(Locale.getDefault(), "OK: %f", 1.0f)
+                    String.format("OK: %x %A %c %b %B %h %n %%", 1, 2, 'c', true, false, 5)
+                    String.format("WRONG: %f", 1.0f) // Implies locale
+                    String.format("WRONG: %1\＄f", 1.0f)
+                    String.format("WRONG: %e", 1.0f)
+                    String.format("WRONG: %d", 1.0f)
+                    String.format("WRONG: %g", 1.0f)
+                    String.format("WRONG: %g", 1.0f)
+                    String.format(
+                        "WRONG: %1\＄tm %1\＄te,%1\＄tY",
+                        GregorianCalendar(2012, GregorianCalendar.AUGUST, 27)
+                    )
+
+                    // Kotlin argument complications
+                    String.format(format = "WRONG: %d", args = *arrayOf(1.0f))
+                    String.format(args = *arrayOf(1.0f), format = "WRONG: %d")
+                }
+
+                @SuppressLint("NewApi") // DateFormatSymbols requires API 9
+                fun testSimpleDateFormat() {
+                    SimpleDateFormat() // WRONG
+                    SimpleDateFormat("yyyy-MM-dd") // WRONG
+                    SimpleDateFormat("yyyy-MM-dd", DateFormatSymbols.getInstance()) // WRONG
+                    SimpleDateFormat("yyyy-MM-dd", Locale.US) // OK
+                }
+            }
+            """
           )
           .indented()
       )
@@ -136,7 +231,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
           )
           .indented()
       )
-      .clientFactory({ TestLintClient(LintClient.CLIENT_STUDIO) })
+      .clientFactory { TestLintClient(LintClient.CLIENT_STUDIO) }
       .run()
       .expect(expected)
   }
@@ -292,6 +387,33 @@ class LocaleDetectorTest : AbstractCheckTest() {
                             Log.d(TAG, String.format("CQS:Event=%s, keeping status=%d", dataItemName,
                                     eventStatus));
                         }
+                    }
+                }
+                """
+          )
+          .indented(),
+        kotlin(
+            """
+                package test.pkg
+
+                import android.util.Log
+
+                class LogTestKotlin {
+
+                    // Don't flag String.format inside logging calls
+                    fun test(dataItemName: String, eventStatus: Int) {
+                        if (Log.isLoggable(TAG, Log.DEBUG)) {
+                            Log.d(
+                                TAG, String.format(
+                                    "CQS:Event=%s, keeping status=%d", dataItemName,
+                                    eventStatus
+                                )
+                            )
+                        }
+                    }
+
+                    companion object {
+                        private const val TAG = "mytag"
                     }
                 }
                 """

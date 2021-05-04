@@ -25,7 +25,7 @@ import com.android.tools.lint.detector.api.Detector;
 import java.util.HashSet;
 import java.util.Set;
 
-@SuppressWarnings({"ClassNameDiffersFromFileName"})
+@SuppressWarnings({"ConcatenationWithEmptyString", "TextBlockMigration"})
 public class StringFormatDetectorTest extends AbstractCheckTest {
 
     @Override
@@ -66,6 +66,43 @@ public class StringFormatDetectorTest extends AbstractCheckTest {
                                 + "src/StringFormatMatches.java:6: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
                                 + "        String output4 = String.format(score, true);  // wrong\n"
                                 + "                                              ~~~~\n"
+                                + "    res/values/formatstrings.xml:2: Conflicting argument declaration here\n"
+                                + "    <string name=\"score\">Score: %1＄d</string>\n"
+                                + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                                + "1 errors, 0 warnings");
+    }
+
+    public void testKotlinStringFormat() {
+        // Like testDocumentationExampleStringFormatMatches but ported to Kotlin
+        // (to make sure we correctly pick up String.format since in Kotlin
+        // we'll reference kotlin.String, not java.lang.String)
+        lint().files(
+                        xml(
+                                "res/values/formatstrings.xml",
+                                ""
+                                        + "<resources>\n"
+                                        + "    <string name=\"score\">Score: %1$d</string>\n"
+                                        + "</resources>\n"),
+                        kotlin(
+                                ""
+                                        + "package test.pkg\n"
+                                        + "\n"
+                                        + "import android.app.Activity\n"
+                                        + "\n"
+                                        + "class StringFormatMatches : Activity() {\n"
+                                        + "    fun test() {\n"
+                                        + "        val score = getString(R.string.score)\n"
+                                        + "        String.format(score, true) // wrong\n"
+                                        + "    }\n"
+                                        + "}\n"),
+                        rClass("test.pkg", "@string/score"))
+                .issues(StringFormatDetector.ARG_TYPES)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/StringFormatMatches.kt:8: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
+                                + "        String.format(score, true) // wrong\n"
+                                + "                             ~~~~\n"
                                 + "    res/values/formatstrings.xml:2: Conflicting argument declaration here\n"
                                 + "    <string name=\"score\">Score: %1＄d</string>\n"
                                 + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
@@ -186,79 +223,78 @@ public class StringFormatDetectorTest extends AbstractCheckTest {
                                 + "0 errors, 1 warnings");
     }
 
-  public void testAll() {
-    String expected =
-        ""
-            + "src/test/pkg/StringFormatActivity.java:14: Error: Wrong argument type for formatting argument '#1' in hello: conversion is 'd', received String (argument #2 in method call) [StringFormatMatches]\n"
-            + "        String output1 = String.format(hello, target);\n"
-            + "                                              ~~~~~~\n"
-            + "    res/values-es/formatstrings.xml:3: Conflicting argument declaration here\n"
-            + "    <string name=\"hello\">%1＄d</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:16: Error: Wrong argument count, format string hello2 requires 3 but format call supplies 2 [StringFormatMatches]\n"
-            + "        String output2 = String.format(hello2, target, \"How are you\");\n"
-            + "                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "    res/values-es/formatstrings.xml:4: This definition requires 3 arguments\n"
-            + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:22: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
-            + "        String output4 = String.format(score, true);  // wrong\n"
-            + "                                              ~~~~\n"
-            + "    res/values/formatstrings.xml:6: Conflicting argument declaration here\n"
-            + "    <string name=\"score\">Score: %1＄d</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:23: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
-            + "        String output  = String.format(score, won);   // wrong\n"
-            + "                                              ~~~\n"
-            + "    res/values/formatstrings.xml:6: Conflicting argument declaration here\n"
-            + "    <string name=\"score\">Score: %1＄d</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:25: Error: Wrong argument count, format string hello2 requires 3 but format call supplies 2 [StringFormatMatches]\n"
-            + "        String.format(getResources().getString(R.string.hello2), target, \"How are you\");\n"
-            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "    res/values-es/formatstrings.xml:4: This definition requires 3 arguments\n"
-            + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:27: Error: Wrong argument count, format string hello2 requires 3 but format call supplies 2 [StringFormatMatches]\n"
-            + "        getResources().getString(R.string.hello2, target, \"How are you\");\n"
-            + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "    res/values-es/formatstrings.xml:4: This definition requires 3 arguments\n"
-            + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:34: Error: Wrong argument type for formatting argument '#1' in hello: conversion is 'd', received String (argument #2 in method call) [StringFormatMatches]\n"
-            + "        String output1 = String.format(hello, target);\n"
-            + "                                              ~~~~~~\n"
-            + "    res/values-es/formatstrings.xml:3: Conflicting argument declaration here\n"
-            + "    <string name=\"hello\">%1＄d</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "src/test/pkg/StringFormatActivity.java:42: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received Boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
-            + "        String output1  = String.format(score, won);   // wrong\n"
-            + "                                               ~~~\n"
-            + "    res/values/formatstrings.xml:6: Conflicting argument declaration here\n"
-            + "    <string name=\"score\">Score: %1＄d</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "res/values-es/formatstrings.xml:3: Error: Inconsistent formatting types for argument #1 in format string hello ('%1＄d'): Found both 'd' here and 's' in values/formatstrings.xml [StringFormatMatches]\n"
-            + "    <string name=\"hello\">%1＄d</string>\n"
-            + "                         ~~~~\n"
-            + "    res/values/formatstrings.xml:3: Conflicting argument type (`s') here\n"
-            + "    <string name=\"hello\">Hello %1＄s</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "res/values-es/formatstrings.xml:4: Warning: Inconsistent number of arguments in formatting string hello2; found both 3 here and 2 in values/formatstrings.xml [StringFormatCount]\n"
-            + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "    res/values/formatstrings.xml:4: Conflicting number of arguments (2) here\n"
-            + "    <string name=\"hello2\">Hello %1＄s, %2＄s?</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "res/values/formatstrings.xml:5: Warning: Formatting string 'missing' is not referencing numbered arguments [1, 2] [StringFormatCount]\n"
-            + "    <string name=\"missing\">Hello %3＄s World</string>\n"
-            + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-            + "9 errors, 2 warnings";
-    lint().files(mFormatstrings, mFormatstrings2, mStringFormatActivity)
-        .skipTestModes(TestMode.CDATA)
-        .run()
-        .expect(expected);
-  }
-
+    public void testAll() {
+        String expected =
+                ""
+                        + "src/test/pkg/StringFormatActivity.java:14: Error: Wrong argument type for formatting argument '#1' in hello: conversion is 'd', received String (argument #2 in method call) [StringFormatMatches]\n"
+                        + "        String output1 = String.format(hello, target);\n"
+                        + "                                              ~~~~~~\n"
+                        + "    res/values-es/formatstrings.xml:3: Conflicting argument declaration here\n"
+                        + "    <string name=\"hello\">%1＄d</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:16: Error: Wrong argument count, format string hello2 requires 3 but format call supplies 2 [StringFormatMatches]\n"
+                        + "        String output2 = String.format(hello2, target, \"How are you\");\n"
+                        + "                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "    res/values-es/formatstrings.xml:4: This definition requires 3 arguments\n"
+                        + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:22: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
+                        + "        String output4 = String.format(score, true);  // wrong\n"
+                        + "                                              ~~~~\n"
+                        + "    res/values/formatstrings.xml:6: Conflicting argument declaration here\n"
+                        + "    <string name=\"score\">Score: %1＄d</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:23: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
+                        + "        String output  = String.format(score, won);   // wrong\n"
+                        + "                                              ~~~\n"
+                        + "    res/values/formatstrings.xml:6: Conflicting argument declaration here\n"
+                        + "    <string name=\"score\">Score: %1＄d</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:25: Error: Wrong argument count, format string hello2 requires 3 but format call supplies 2 [StringFormatMatches]\n"
+                        + "        String.format(getResources().getString(R.string.hello2), target, \"How are you\");\n"
+                        + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "    res/values-es/formatstrings.xml:4: This definition requires 3 arguments\n"
+                        + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:27: Error: Wrong argument count, format string hello2 requires 3 but format call supplies 2 [StringFormatMatches]\n"
+                        + "        getResources().getString(R.string.hello2, target, \"How are you\");\n"
+                        + "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "    res/values-es/formatstrings.xml:4: This definition requires 3 arguments\n"
+                        + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:34: Error: Wrong argument type for formatting argument '#1' in hello: conversion is 'd', received String (argument #2 in method call) [StringFormatMatches]\n"
+                        + "        String output1 = String.format(hello, target);\n"
+                        + "                                              ~~~~~~\n"
+                        + "    res/values-es/formatstrings.xml:3: Conflicting argument declaration here\n"
+                        + "    <string name=\"hello\">%1＄d</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/test/pkg/StringFormatActivity.java:42: Error: Wrong argument type for formatting argument '#1' in score: conversion is 'd', received Boolean (argument #2 in method call) (Did you mean formatting character b?) [StringFormatMatches]\n"
+                        + "        String output1  = String.format(score, won);   // wrong\n"
+                        + "                                               ~~~\n"
+                        + "    res/values/formatstrings.xml:6: Conflicting argument declaration here\n"
+                        + "    <string name=\"score\">Score: %1＄d</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "res/values-es/formatstrings.xml:3: Error: Inconsistent formatting types for argument #1 in format string hello ('%1＄d'): Found both 'd' here and 's' in values/formatstrings.xml [StringFormatMatches]\n"
+                        + "    <string name=\"hello\">%1＄d</string>\n"
+                        + "                         ~~~~\n"
+                        + "    res/values/formatstrings.xml:3: Conflicting argument type (`s') here\n"
+                        + "    <string name=\"hello\">Hello %1＄s</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "res/values-es/formatstrings.xml:4: Warning: Inconsistent number of arguments in formatting string hello2; found both 3 here and 2 in values/formatstrings.xml [StringFormatCount]\n"
+                        + "    <string name=\"hello2\">%3＄d: %1＄s, %2＄s?</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "    res/values/formatstrings.xml:4: Conflicting number of arguments (2) here\n"
+                        + "    <string name=\"hello2\">Hello %1＄s, %2＄s?</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "res/values/formatstrings.xml:5: Warning: Formatting string 'missing' is not referencing numbered arguments [1, 2] [StringFormatCount]\n"
+                        + "    <string name=\"missing\">Hello %3＄s World</string>\n"
+                        + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "9 errors, 2 warnings";
+        lint().files(mFormatstrings, mFormatstrings2, mStringFormatActivity)
+                .skipTestModes(TestMode.CDATA)
+                .run()
+                .expect(expected);
+    }
 
     public void testArgCount() {
         assertEquals(0, StringFormatDetector.getFormatArgumentCount("%n%% ", null));
