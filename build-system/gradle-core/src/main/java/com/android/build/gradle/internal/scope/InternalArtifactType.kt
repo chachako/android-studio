@@ -49,6 +49,8 @@ InternalArtifactType<T : FileSystemLocation>(
     // module: InternalArtifactType<RegularFile>(FILE), Replaceable use AnchorOutputType.ALL_CLASSES
     // Javac task output.
     object JAVAC: InternalArtifactType<Directory>(DIRECTORY), Replaceable
+    // Kotlin Built-in Support compile task output
+    object KOTLINC: InternalArtifactType<Directory>(DIRECTORY), Replaceable
 
     // --- Published classes ---
     // Class-type task output for tasks that generate published classes.

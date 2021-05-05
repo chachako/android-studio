@@ -68,7 +68,6 @@ import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.util.PatternSet
@@ -135,6 +134,8 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         get() = dslInfo.namespace
     override val minSdk: AndroidVersion
         get() = dslInfo.minSdkVersion
+
+    final override val useBuiltInKotlinSupport = false
 
     override val sources = KmpSourcesImpl(
         dslInfo,

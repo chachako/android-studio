@@ -1,0 +1,24 @@
+plugins {
+    id 'com.android.test'
+}
+
+android {
+    namespace = "com.example.apptests"
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
+
+    targetProjectPath ':app'
+
+    defaultConfig {
+        minSdkVersion libs.versions.supportLibMinSdk.get()
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+}
+
+dependencies {
+    implementation testFixtures(project(":app"))
+    implementation testFixtures(project(":javaLib"))
+    implementation testFixtures(project(":lib"))
+
+    implementation 'junit:junit:4.12'
+}

@@ -131,6 +131,7 @@ import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
 import com.android.build.gradle.internal.transforms.ShrinkAppBundleResourcesTask
 import com.android.build.gradle.internal.transforms.ShrinkResourcesNewShrinkerTask
+import com.android.build.gradle.internal.utils.checkKotlinStdLibIsInDependencies
 import com.android.build.gradle.internal.utils.getProjectKotlinPluginKotlinVersion
 import com.android.build.gradle.internal.utils.isKotlinKaptPluginApplied
 import com.android.build.gradle.internal.utils.isKspPluginApplied
@@ -144,6 +145,7 @@ import com.android.build.gradle.tasks.GenerateManifestJarTask
 import com.android.build.gradle.tasks.GenerateResValues
 import com.android.build.gradle.tasks.JavaCompileCreationAction
 import com.android.build.gradle.tasks.JavaPreCompileTask
+import com.android.build.gradle.tasks.KotlinCompileCreationAction
 import com.android.build.gradle.tasks.ManifestProcessorTask
 import com.android.build.gradle.tasks.MapSourceSetPathsTask
 import com.android.build.gradle.tasks.MergeResources
@@ -856,7 +858,18 @@ abstract class TaskManager(
                 )
         }
 
-       creationConfig
+        if (creationConfig.useBuiltInKotlinSupport) {
+            creationConfig
+                .artifacts
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    creationConfig.artifacts,
+                    InternalArtifactType.KOTLINC
+                )
+        }
+
+        creationConfig
            .artifacts
            .forScope(ScopedArtifacts.Scope.PROJECT)
            .setInitialContent(
@@ -874,6 +887,8 @@ abstract class TaskManager(
     protected fun createJavacTask(
             creationConfig: ComponentCreationConfig
     ): TaskProvider<out JavaCompile> {
+        maybeCreateKotlinTasks(creationConfig)
+
         val usingKapt = isKotlinKaptPluginApplied(project)
         val usingKsp = isKspPluginApplied(project)
         taskFactory.register(JavaPreCompileTask.CreationAction(creationConfig, usingKapt, usingKsp))
@@ -887,6 +902,14 @@ abstract class TaskManager(
             )
         postJavacCreation(creationConfig)
         return javacTask
+    }
+
+    private fun maybeCreateKotlinTasks(creationConfig: ComponentCreationConfig) {
+        if (!creationConfig.useBuiltInKotlinSupport) {
+            return
+        }
+        checkKotlinStdLibIsInDependencies(project, creationConfig)
+        KotlinCompileCreationAction(creationConfig).registerTask()
     }
 
     /**

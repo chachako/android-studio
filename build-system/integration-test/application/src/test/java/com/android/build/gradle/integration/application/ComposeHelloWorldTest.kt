@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -53,5 +54,38 @@ class ComposeHelloWorldTest {
         )
         val result = project.executor().run("assembleDebug")
         assertThat(result.didWorkTasks).contains(":app:compileDebugKotlin")
+    }
+
+    @Test
+    fun testScreenshotTestAndTestFixturesCompilation() {
+        project.executor().run(":app:compileDebugTestFixturesKotlin")
+        val testFixturesClassFile =
+            project.getSubproject("app")
+                .getIntermediateFile(
+                    "kotlinc",
+                    "debugTestFixtures",
+                    "compileDebugTestFixturesKotlin",
+                    "classes",
+                    "com",
+                    "example",
+                    "helloworldcompose",
+                    "FixtureKt.class"
+                )
+        assertThat(testFixturesClassFile).exists()
+
+        project.executor().run(":app:compileDebugScreenshotTestKotlin")
+        val screenshotTestClassFile =
+            project.getSubproject("app")
+                .getIntermediateFile(
+                    "kotlinc",
+                    "debugScreenshotTest",
+                    "compileDebugScreenshotTestKotlin",
+                    "classes",
+                    "com",
+                    "example",
+                    "helloworldcompose",
+                    "ScreenshotTestKt.class"
+                )
+        assertThat(screenshotTestClassFile).exists()
     }
 }

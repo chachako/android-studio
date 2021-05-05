@@ -45,6 +45,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
 /**
  * Creation config for global tasks that are not variant-based.
@@ -92,6 +93,8 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
     val androidTestOptions: DeviceTestOptionsDslInfo
     val unitTestOptions: UnitTestOptionsDslInfo
     val testServers: List<TestServer>
+
+    val kotlinOptions: KotlinJvmOptions?
 
     // processed access to some DSL values
 

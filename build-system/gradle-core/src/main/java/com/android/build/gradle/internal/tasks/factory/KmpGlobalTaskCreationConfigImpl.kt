@@ -64,6 +64,7 @@ import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
 internal class KmpGlobalTaskCreationConfigImpl(
     project: Project,
@@ -252,5 +253,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
     override val composeOptions: ComposeOptions
         get() = throw IllegalAccessException("Not supported for kmp")
     override val dataBinding: DataBinding
+        get() = throw IllegalAccessException("Not supported for kmp")
+    override val kotlinOptions: KotlinJvmOptions
         get() = throw IllegalAccessException("Not supported for kmp")
 }

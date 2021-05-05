@@ -1,0 +1,13 @@
+include ':app'
+include ':appTests'
+include ':lib'
+include ':lib2'
+include ':javaLib'
+
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = 'testrepo'
+        }
+    }
+}

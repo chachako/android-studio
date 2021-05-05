@@ -68,4 +68,5 @@ open class ScreenshotTestImpl @Inject constructor(
     global,
     hostTestBuilder,
     HostTestBuilder.SCREENSHOT_TEST_TYPE,
+    useBuiltInKotlinSupport = true
 ), HostTestCreationConfig

@@ -306,6 +306,15 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    /**
+     * Whether to enable kotlin compilation for test fixtures
+     */
+    ENABLE_TEST_FIXTURES_KOTLIN_SUPPORT(
+        "android.experimental.enableTestFixturesKotlinSupport",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

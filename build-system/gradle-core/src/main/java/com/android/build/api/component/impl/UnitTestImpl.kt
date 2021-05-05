@@ -70,6 +70,7 @@ open class UnitTestImpl @Inject constructor(
     global,
     hostTestBuilder,
     HostTestBuilder.UNIT_TEST_TYPE,
+    useBuiltInKotlinSupport = false
 ), UnitTest {
 
     /**

@@ -162,7 +162,7 @@ open class GradleTestProject @JvmOverloads constructor(
         internal const val COMMON_LOCAL_REPO = "commonLocalRepo.gradle"
         private const val COMMON_BUILD_SCRIPT = "commonBuildScript.gradle"
         private const val COMMON_VERSIONS = "commonVersions.gradle"
-        private const val VERSION_CATALOG = "versionCatalog.gradle"
+        const val VERSION_CATALOG = "versionCatalog.gradle"
         const val DEFAULT_TEST_PROJECT_NAME = "project"
 
         @JvmStatic

@@ -789,6 +789,11 @@ class ModelBuilder<
         component.androidResourcesCreationConfig?.compiledRClassArtifact?.get()?.asFile?.let {
             classesFolders.add(it)
         }
+        if (component.useBuiltInKotlinSupport) {
+            classesFolders.add(
+                component.artifacts.get(InternalArtifactType.KOTLINC).get().asFile
+            )
+        }
 
         val generatedClassPaths = addGeneratedClassPaths(component, classesFolders)
 
@@ -930,9 +935,12 @@ class ModelBuilder<
         // steps that create bytecode
         val classesFolders = mutableSetOf<File>()
         classesFolders.add(component.artifacts.get(InternalArtifactType.JAVAC).get().asFile)
-        component.oldVariantApiLegacySupport?.let{
+        component.oldVariantApiLegacySupport?.let {
             classesFolders.addAll(it.variantData.allPreJavacGeneratedBytecode.files)
             classesFolders.addAll(it.variantData.allPostJavacGeneratedBytecode.files)
+        }
+        if (component.useBuiltInKotlinSupport) {
+            classesFolders.add(component.artifacts.get(InternalArtifactType.KOTLINC).get().asFile)
         }
         // The separately compile R class, if applicable.
         if (extension.testOptions.unitTests.isIncludeAndroidResources ||

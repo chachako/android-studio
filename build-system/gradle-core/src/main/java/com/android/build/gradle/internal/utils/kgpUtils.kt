@@ -24,17 +24,22 @@ import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
+import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.builder.errors.IssueReporter
 import com.android.utils.appendCapitalized
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.ClasspathNormalizer
 import org.gradle.api.tasks.SourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinBaseApiPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -160,20 +165,19 @@ fun configureKotlinCompileTasks(
 /** Records information from KGP for analytics. */
 fun recordKgpPropertiesForAnalytics(project: Project, creationConfigs: List<ComponentCreationConfig>) {
     configureKotlinCompileTasks(project, creationConfigs) { kotlinCompile, creationConfig ->
-        recordKotlinCompilePropertiesForAnalytics(kotlinCompile, creationConfig, project)
+        recordKotlinCompilePropertiesForAnalytics(kotlinCompile, creationConfig)
     }
 }
 
-private fun recordKotlinCompilePropertiesForAnalytics(
+fun recordKotlinCompilePropertiesForAnalytics(
     kotlinCompile: KotlinCompile,
-    creationConfig: ComponentCreationConfig,
-    project: Project
+    creationConfig: ComponentCreationConfig
 ) {
     getLanguageVersionUnsafe(kotlinCompile)?.let { languageVersion ->
         getBuildService(
             creationConfig.services.buildServiceRegistry,
             AnalyticsConfiguratorService::class.java
-        ).get().getVariantBuilder(project.path, creationConfig.name)?.apply {
+        ).get().getVariantBuilder(creationConfig.services.projectInfo.path, creationConfig.name)?.apply {
             setKotlinOptions(
                 GradleBuildVariant.KotlinOptions.newBuilder().setLanguageVersion(languageVersion)
             )
@@ -322,3 +326,61 @@ fun findKaptOrKspConfigurationsForVariant(
         creationConfig.services.configurations.findByName(configurationName)
     }
 }
+
+fun isKotlinBaseApiPluginApplied(projectInfo: ProjectInfo): Boolean =
+    try {
+        projectInfo.hasPlugin(KotlinBaseApiPlugin::class.java)
+    } catch (e: Throwable) {
+        if (e is ClassNotFoundException || e is NoClassDefFoundError) false else throw e
+    }
+
+fun findKotlinBaseApiPlugin(projectInfo: ProjectInfo): KotlinBaseApiPlugin? =
+    try {
+        projectInfo.findPlugin(KotlinBaseApiPlugin::class.java)
+    } catch (e: Throwable) {
+        if (e is ClassNotFoundException || e is NoClassDefFoundError) null else throw e
+    }
+
+/**
+ * Check that the kotlin stdlib is present in the compile and runtime classpaths
+ *
+ * KGP automatically adds the kotlin stdlib dependency, which is not desirable behavior. Instead of
+ * doing that, AGP checks for the dependency when the "com.android.kotlin" plugin is applied and
+ * instructs users to add the dependency if it is missing.
+ */
+internal fun checkKotlinStdLibIsInDependencies(
+    project: Project,
+    creationConfig: ComponentCreationConfig
+) {
+    val defaultVersion = creationConfig.services.kotlinServices?.kgpVersion ?: return
+
+    // TODO(b/259523353): add DSL flag to ignore this check
+    fun Configuration.checkKotlinStdlibPresent() {
+        incoming.afterResolve {
+            val hasKotlinStdLib = it.resolutionResult.allDependencies
+                .filterIsInstance<ResolvedDependencyResult>()
+                .map { it.selected.id }
+                .filterIsInstance<ModuleComponentIdentifier>()
+                .any {
+                    it.group == KOTLIN_GROUP && (it.module == "kotlin-stdlib" || it.module == "kotlin-stdlib-jdk8")
+                }
+            if (!hasKotlinStdLib) {
+                creationConfig.services.issueReporter.reportError(
+                    IssueReporter.Type.GENERIC,
+                    """
+Kotlin standard library is missing from ${this.name}. Please add a dependency on
+"$KOTLIN_GROUP:kotlin-stdlib:$defaultVersion" to your build file: `${project.buildFile.toURI()}`
+                """.trimIndent()
+                )
+            }
+        }
+    }
+
+    creationConfig.variantDependencies.compileClasspath.checkKotlinStdlibPresent()
+    creationConfig.variantDependencies.runtimeClasspath.checkKotlinStdlibPresent()
+}
+
+private const val KOTLIN_GROUP = "org.jetbrains.kotlin"
+// The minimum version of KGP required to be on the buildscript classpath for integrated kotlin
+// support in AGP
+const val MINIMUM_INTEGRATED_KOTLIN_VERSION = "1.9.20"

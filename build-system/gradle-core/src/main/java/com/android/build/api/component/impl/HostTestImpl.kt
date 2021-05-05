@@ -59,6 +59,7 @@ abstract class HostTestImpl @Inject constructor(
     global: GlobalTaskCreationConfig,
     hostTestBuilder: HostTestBuilderImpl,
     override val hostTestName: String,
+    override val useBuiltInKotlinSupport: Boolean,
 ) : TestComponentImpl<HostTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,

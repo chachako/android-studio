@@ -64,7 +64,9 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
 class GlobalTaskCreationConfigImpl(
     project: Project,
@@ -187,6 +189,9 @@ class GlobalTaskCreationConfigImpl(
 
     override val testServers: List<TestServer>
         get() = oldExtension.testServers
+
+    override val kotlinOptions: KotlinJvmOptions?
+        get() = (oldExtension as ExtensionAware).extensions.findByName("kotlinOptions") as? KotlinJvmOptions
 
     override val namespacedAndroidResources: Boolean
         get() = extension.androidResources.namespaced
