@@ -1,9 +1,23 @@
-FROM gcr.io/cloud-marketplace/google/rbe-ubuntu18-04@sha256:4c4db0bd706a5410b692dd625345493f623228444f229ffcfcf57ea09eb5f384
+FROM ubuntu:jammy
+
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" TZ="America/Los_Angeles" apt-get install -y \
+  build-essential \
+  curl \
+  python3 \
+  golang-go \
+  file \
+  zip \
+  git \
+  unzip
+
 RUN apt-get update && apt-get --no-install-recommends install -y ca-certificates-java locales && rm -rf /var/lib/apt/lists/*
 # Install lib32ncurses5 for sdk linker dependency on 32 bit libraries.
-RUN apt-get update && apt-get install -y lib32ncurses5 lib32z1
+RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository universe
+RUN apt-get update && apt-get install -y libncurses5 lib32z1
 # Install dependencies for emulator.
 RUN apt-get update && apt-get install -y libpulse-dev libgl1-mesa-glx libxcomposite-dev libxcursor-dev libasound2
+# Integration testing deps
+RUN apt-get install -y libxdamage1 libxtst6 libxi6
 # Container uses dockerUseURandom to mount /dev/urandom as /dev/random.
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
