@@ -31,9 +31,11 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.lint.model.LintModelSerialization
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
@@ -71,6 +73,9 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
     lateinit var partialResultsDirPath: String
         private set
 
+    @get:Input
+    abstract val fatalOnly: Property<Boolean>
+
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
@@ -94,7 +99,8 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         taskCreationServices: TaskCreationServices,
         javaExtension: JavaPluginExtension,
         lintOptions: Lint,
-        partialResultsDir: File
+        partialResultsDir: File,
+        fatalOnly: Boolean
     ) {
         this.group = JavaBasePlugin.VERIFICATION_GROUP
         this.variantName = ""
@@ -109,12 +115,13 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 project,
                 javaExtension,
                 taskCreationServices.projectOptions,
-                fatalOnly = false,
+                fatalOnly = fatalOnly,
                 checkDependencies = true,
                 LintMode.MODEL_WRITING
             )
         this.partialResultsDir = partialResultsDir
         this.partialResultsDirPath = partialResultsDir.absolutePath
+        this.fatalOnly.setDisallowChanges(fatalOnly)
     }
 
     class LintCreationAction(
@@ -122,7 +129,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         checkDependencies: Boolean = true
     ) : BaseCreationAction(variant, checkDependencies) {
 
-        override val useLintVitalPartialResults: Boolean
+        override val fatalOnly: Boolean
             get() = false
 
         override val name: String
@@ -137,7 +144,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         checkDependencies
     ) {
 
-        override val useLintVitalPartialResults: Boolean
+        override val fatalOnly: Boolean
             get() = true
 
         override val name: String
@@ -148,20 +155,22 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
         val variant: VariantWithTests,
         private val checkDependencies: Boolean
     ) : VariantTaskCreationAction<LintModelWriterTask, ConsumableCreationConfig>(variant.main) {
-        abstract val useLintVitalPartialResults: Boolean
+        abstract val fatalOnly: Boolean
 
         final override val type: Class<LintModelWriterTask>
             get() = LintModelWriterTask::class.java
 
         override fun handleProvider(taskProvider: TaskProvider<LintModelWriterTask>) {
             super.handleProvider(taskProvider)
-            if (useLintVitalPartialResults) {
+            registerOutputArtifacts(
+                taskProvider,
+                if (fatalOnly) {
+                    InternalArtifactType.LINT_VITAL_LINT_MODEL
+                } else {
+                    InternalArtifactType.LINT_MODEL
+                },
                 creationConfig.artifacts
-                    .setInitialProvider(taskProvider, LintModelWriterTask::outputDirectory)
-                    .on(InternalArtifactType.LINT_VITAL_LINT_MODEL)
-            } else {
-                registerOutputArtifacts(taskProvider, creationConfig.artifacts)
-            }
+            )
         }
 
         override fun configure(task: LintModelWriterTask) {
@@ -176,7 +185,7 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
             )
             task.partialResultsDir =
                 creationConfig.artifacts.getOutputPath(
-                    if (useLintVitalPartialResults) {
+                    if (fatalOnly) {
                         InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS
                     } else {
                         InternalArtifactType.LINT_PARTIAL_RESULTS
@@ -184,16 +193,18 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                     AndroidLintAnalysisTask.PARTIAL_RESULTS_DIR_NAME
                 )
             task.partialResultsDirPath = task.partialResultsDir.absolutePath
+            task.fatalOnly.setDisallowChanges(fatalOnly)
         }
 
         companion object {
             fun registerOutputArtifacts(
                 taskProvider: TaskProvider<LintModelWriterTask>,
+                internalArtifactType: InternalArtifactType<Directory>,
                 artifacts: ArtifactsImpl
             ) {
                 artifacts
                     .setInitialProvider(taskProvider, LintModelWriterTask::outputDirectory)
-                    .on(InternalArtifactType.LINT_MODEL)
+                    .on(internalArtifactType)
             }
         }
     }

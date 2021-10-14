@@ -1,17 +1,7 @@
 <libraries>
   <library
       name="${projectDir}@@:library::debug"
-      jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
-      resolved="lintKotlin:library:unspecified"
-      folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"
-      manifest="AndroidManifest.xml"
-      resFolder="res"
-      assetsFolder="assets"
-      lintJar="lint.jar"
-      publicResources="public.txt"
-      symbolFile="R.txt"
-      externalAnnotations="annotations.zip"
-      proguardRules="proguard.txt"/>
+      project=":library"/>
   <library
       name="com.android.support:appcompat-v7:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0/jars/classes.jar"
@@ -380,6 +370,5 @@
       resolved="org.jetbrains:annotations:13.0"/>
   <library
       name="${projectDir}@@:app::debug"
-      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
-      resolved="::"/>
+      project=":app"/>
 </libraries>

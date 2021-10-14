@@ -70,7 +70,6 @@ class AndroidLintTaskTest {
         task.textReportToStdOut.set(false)
         task.lintModelDirectory.set(temporaryFolder.newFolder())
         task.lintModelWriterTaskOutputPath.set("lintModelWriterTaskOutputPath")
-        task.checkDependencies.set(true)
         task.printStackTrace.set(true)
         task.lintTool.lintCacheDirectory.set(temporaryFolder.newFolder())
         task.lintTool.versionKey.set(Version.ANDROID_TOOLS_BASE_VERSION + "_foo")

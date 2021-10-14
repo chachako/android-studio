@@ -69,34 +69,38 @@ class LintTaskManager constructor(
         val needsCopyReportTask = needsCopyReportTask(globalTaskCreationConfig.lintOptions)
 
         for (variantWithTests in variantsWithTests.values) {
-            if (componentType.isAar) {
-                // We need the library lint models if checkDependencies is true
-                taskFactory.register(LintModelWriterTask.LintCreationAction(variantWithTests))
-                // We need the library lint model metadata if checkDependencies is false
-                taskFactory.register(LintModelMetadataTask.CreationAction(variantWithTests.main))
-            } else {
-                // We need app and dynamic feature models if there are dynamic features.
-                // TODO (b/180672373) consider also publishing dynamic feature and app lint models
-                //  with checkDependencies = true if that's necessary to properly run lint from an
-                //  app or dynamic feature module with checkDependencies = true.
+            val mainVariant = variantWithTests.main
+            if (componentType.isAar || componentType.isDynamicFeature) {
                 taskFactory.register(
-                    LintModelWriterTask.LintCreationAction(
-                        variantWithTests,
-                        checkDependencies = false
+                    LintModelWriterTask.LintVitalCreationAction(
+                        mainVariant,
+                        checkDependencies = componentType.isAar
                     )
                 )
+                taskFactory.register(
+                    AndroidLintAnalysisTask.LintVitalCreationAction(mainVariant)
+                )
+                if (componentType.isAar) {
+                    // We need the library lint model metadata if checkDependencies is false
+                    taskFactory.register(LintModelMetadataTask.CreationAction(mainVariant))
+
+                }
             }
+            // We need app and dynamic feature models if there are dynamic features.
+            // TODO (b/180672373) consider also publishing dynamic feature and app lint models
+            //  with checkDependencies = true if that's necessary to properly run lint from an
+            //  app or dynamic feature module with checkDependencies = true.
+            taskFactory.register(
+                LintModelWriterTask.LintCreationAction(
+                    variantWithTests,
+                    checkDependencies = componentType.isAar
+                )
+            )
             taskFactory.register(
                 AndroidLintAnalysisTask.SingleVariantCreationAction(variantWithTests)
             )
 
             if (componentType.isDynamicFeature) {
-                taskFactory.register(
-                    AndroidLintAnalysisTask.LintVitalCreationAction(variantWithTests.main)
-                )
-                taskFactory.register(
-                    LintModelWriterTask.LintVitalCreationAction(variantWithTests.main)
-                )
                 // Don't register any lint reporting tasks or lintFix task for dynamic features
                 // because any reporting and/or fixing is done when lint runs from the base app.
                 continue
@@ -109,18 +113,17 @@ class LintTaskManager constructor(
                     .also { it.configure { task -> task.mustRunAfter(updateLintBaselineTask) } }
             val variantLintTextOutputTask =
                 taskFactory.register(
-                    AndroidLintTextOutputTask.SingleVariantCreationAction(variantWithTests.main)
+                    AndroidLintTextOutputTask.SingleVariantCreationAction(mainVariant)
                 )
 
             if (needsCopyReportTask) {
                 val copyLintReportTask =
-                    taskFactory.register(AndroidLintCopyReportTask.CreationAction(variantWithTests.main))
+                    taskFactory.register(AndroidLintCopyReportTask.CreationAction(mainVariant))
                 variantLintTextOutputTask.configure {
                     it.finalizedBy(copyLintReportTask)
                 }
             }
 
-            val mainVariant = variantWithTests.main
             if (mainVariant.componentType.isBaseModule &&
                 !mainVariant.debuggable &&
                 !(mainVariant as ApplicationCreationConfig).profileable &&

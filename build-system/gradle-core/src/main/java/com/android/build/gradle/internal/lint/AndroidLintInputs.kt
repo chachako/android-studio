@@ -888,6 +888,7 @@ abstract class VariantInputs {
         )
         mainArtifact.initialize(
             creationConfig,
+            lintMode,
             checkDependencies,
             addBaseModuleLintModel,
             warnIfProjectTreatedAsExternalDependency
@@ -898,6 +899,7 @@ abstract class VariantInputs {
                 creationConfig.services.newInstance(JavaArtifactInput::class.java)
                     .initialize(
                         unitTest,
+                        lintMode,
                         checkDependencies = false,
                         addBaseModuleLintModel,
                         warnIfProjectTreatedAsExternalDependency,
@@ -912,6 +914,7 @@ abstract class VariantInputs {
                 creationConfig.services.newInstance(AndroidArtifactInput::class.java)
                     .initialize(
                         androidTest,
+                        lintMode,
                         checkDependencies = false,
                         addBaseModuleLintModel,
                         warnIfProjectTreatedAsExternalDependency,
@@ -928,6 +931,7 @@ abstract class VariantInputs {
                 creationConfig.services.newInstance(AndroidArtifactInput::class.java)
                     .initialize(
                         testFixtures,
+                        lintMode,
                         checkDependencies = false,
                         addBaseModuleLintModel,
                         warnIfProjectTreatedAsExternalDependency
@@ -1059,11 +1063,17 @@ abstract class VariantInputs {
 
         name.setDisallowChanges(mainSourceSet.name)
         this.checkDependencies.setDisallowChanges(checkDependencies)
-        mainArtifact.initializeForStandalone(project, projectOptions, mainSourceSet, checkDependencies)
+        mainArtifact.initializeForStandalone(
+            project,
+            projectOptions,
+            mainSourceSet,
+            lintMode,
+            checkDependencies)
         testArtifact.setDisallowChanges(project.objects.newInstance(JavaArtifactInput::class.java).initializeForStandalone(
             project,
             projectOptions,
             testSourceSet,
+            lintMode,
             checkDependencies,
             // analyzing test bytecode is expensive, without much benefit
             includeClassesOutputDirectories = false
@@ -1458,6 +1468,7 @@ abstract class AndroidArtifactInput : ArtifactInput() {
 
     fun initialize(
         creationConfig: ComponentCreationConfig,
+        lintMode: LintMode,
         checkDependencies: Boolean,
         addBaseModuleLintModel: Boolean,
         warnIfProjectTreatedAsExternalDependency: Boolean,
@@ -1503,9 +1514,10 @@ abstract class AndroidArtifactInput : ArtifactInput() {
         this.warnIfProjectTreatedAsExternalDependency.setDisallowChanges(warnIfProjectTreatedAsExternalDependency)
         initializeProjectDependencyLintArtifacts(
             checkDependencies,
-            creationConfig.variantDependencies
+            creationConfig.variantDependencies,
+            lintMode
         )
-        if (!checkDependencies) {
+        if (!checkDependencies && lintMode != LintMode.REPORTING) {
             if (addBaseModuleLintModel) {
                 initializeBaseModuleLintModel(creationConfig.variantDependencies)
             }
@@ -1547,7 +1559,13 @@ abstract class AndroidArtifactInput : ArtifactInput() {
         return this
     }
 
-    fun initializeForStandalone(project: Project, projectOptions: ProjectOptions, sourceSet: SourceSet, checkDependencies: Boolean) {
+    fun initializeForStandalone(
+        project: Project,
+        projectOptions: ProjectOptions,
+        sourceSet: SourceSet,
+        lintMode: LintMode,
+        checkDependencies: Boolean
+    ) {
         applicationId.setDisallowChanges("")
         generatedSourceFolders.disallowChanges()
         generatedResourceFolders.disallowChanges()
@@ -1583,7 +1601,7 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                 buildMapping = project.gradle.computeBuildMapping(),
             )
         )
-        initializeProjectDependencyLintArtifacts(checkDependencies, variantDependencies)
+        initializeProjectDependencyLintArtifacts(checkDependencies, variantDependencies, lintMode)
     }
 
     internal fun toLintModel(dependencyCaches: DependencyCaches): LintModelAndroidArtifact {
@@ -1605,6 +1623,7 @@ abstract class JavaArtifactInput : ArtifactInput() {
 
     fun initialize(
         creationConfig: UnitTestCreationConfig,
+        lintMode: LintMode,
         checkDependencies: Boolean,
         addBaseModuleLintModel: Boolean,
         warnIfProjectTreatedAsExternalDependency: Boolean,
@@ -1631,9 +1650,10 @@ abstract class JavaArtifactInput : ArtifactInput() {
         this.warnIfProjectTreatedAsExternalDependency.setDisallowChanges(warnIfProjectTreatedAsExternalDependency)
         initializeProjectDependencyLintArtifacts(
             checkDependencies,
-            creationConfig.variantDependencies
+            creationConfig.variantDependencies,
+            lintMode
         )
-        if (!checkDependencies) {
+        if (!checkDependencies && lintMode != LintMode.REPORTING) {
             if (addBaseModuleLintModel) {
                 initializeBaseModuleLintModel(creationConfig.variantDependencies)
             }
@@ -1666,6 +1686,7 @@ abstract class JavaArtifactInput : ArtifactInput() {
         project: Project,
         projectOptions: ProjectOptions,
         sourceSet: SourceSet,
+        lintMode: LintMode,
         checkDependencies: Boolean,
         includeClassesOutputDirectories: Boolean
     ): JavaArtifactInput {
@@ -1702,7 +1723,7 @@ abstract class JavaArtifactInput : ArtifactInput() {
                 buildMapping = project.gradle.computeBuildMapping(),
             )
         )
-        initializeProjectDependencyLintArtifacts(checkDependencies, variantDependencies)
+        initializeProjectDependencyLintArtifacts(checkDependencies, variantDependencies, lintMode)
         return this
     }
 
@@ -1787,9 +1808,10 @@ abstract class ArtifactInput {
 
     protected fun initializeProjectDependencyLintArtifacts(
         checkDependencies: Boolean,
-        variantDependencies: VariantDependencies
+        variantDependencies: VariantDependencies,
+        lintMode: LintMode
     ) {
-        if (checkDependencies) {
+        if (checkDependencies || lintMode == LintMode.REPORTING) {
             val runtimeArtifacts = variantDependencies.getArtifactCollectionForToolingModel(
                 AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                 AndroidArtifacts.ArtifactScope.PROJECT,

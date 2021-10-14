@@ -194,7 +194,7 @@ abstract class LintPlugin : Plugin<Project> {
                     customLintChecks,
                     lintOptions!!,
                     artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS),
-                    artifacts.getOutputPath(InternalArtifactType.LINT_MODEL),
+                    artifacts.getOutputPath(InternalArtifactType.LINT_VITAL_LINT_MODEL),
                     LintMode.REPORTING,
                     fatalOnly = true
                 )
@@ -260,10 +260,38 @@ abstract class LintPlugin : Plugin<Project> {
                     artifacts.getOutputPath(
                         InternalArtifactType.LINT_PARTIAL_RESULTS,
                         AndroidLintAnalysisTask.PARTIAL_RESULTS_DIR_NAME
-                    )
+                    ),
+                    fatalOnly = false
                 )
             }
-            LintModelWriterTask.BaseCreationAction.registerOutputArtifacts(lintModelWriterTask, artifacts)
+            LintModelWriterTask.BaseCreationAction
+                .registerOutputArtifacts(
+                    lintModelWriterTask,
+                    InternalArtifactType.LINT_MODEL,
+                    artifacts
+                )
+            val lintVitalModelWriterTask =
+                project.tasks.register(
+                    "generateLintVitalLintModel",
+                    LintModelWriterTask::class.java
+                ) { task ->
+                    task.configureForStandalone(
+                        taskCreationServices,
+                        javaExtension,
+                        lintOptions!!,
+                        artifacts.getOutputPath(
+                            InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS,
+                            AndroidLintAnalysisTask.PARTIAL_RESULTS_DIR_NAME
+                        ),
+                        fatalOnly = true
+                    )
+                }
+            LintModelWriterTask.BaseCreationAction
+                .registerOutputArtifacts(
+                    lintVitalModelWriterTask,
+                    InternalArtifactType.LINT_VITAL_LINT_MODEL,
+                    artifacts
+                )
             val lintModelMetadataWriterTask =
                 project.tasks
                     .register("writeLintModelMetadata", LintModelMetadataTask::class.java) { task ->
@@ -298,8 +326,20 @@ abstract class LintPlugin : Plugin<Project> {
                     )
                     publishArtifactToConfiguration(
                         configuration,
+                        artifacts.get(InternalArtifactType.LINT_VITAL_LINT_MODEL),
+                        AndroidArtifacts.ArtifactType.LINT_VITAL_LINT_MODEL,
+                        AndroidAttributes(category = androidLintCategory)
+                    )
+                    publishArtifactToConfiguration(
+                        configuration,
                         artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
                         AndroidArtifacts.ArtifactType.LINT_PARTIAL_RESULTS,
+                        AndroidAttributes(category = androidLintCategory)
+                    )
+                    publishArtifactToConfiguration(
+                        configuration,
+                        artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS),
+                        AndroidArtifacts.ArtifactType.LINT_VITAL_PARTIAL_RESULTS,
                         AndroidAttributes(category = androidLintCategory)
                     )
                     publishArtifactToConfiguration(

@@ -135,11 +135,15 @@ public class LintDependencyModelTest {
 
         File librariesModelFile = new File(lintModelDir, "debug-mainArtifact-libraries.xml");
         assertThat(librariesModelFile).isFile();
-        List<String> expectedJarNames =
-                Arrays.asList("javalib.jar", "javalib2.jar", "indirectlib.jar", "indirectlib2.jar");
-        for (String jarName : expectedJarNames) {
+        List<String> expectedStrings =
+                Arrays.asList(
+                        "project=\":javalib\"",
+                        "project=\":javalib2\"",
+                        "project=\":indirectlib\"",
+                        "project=\":indirectlib2\"");
+        for (String expectedString : expectedStrings) {
             assertThat(String.join("\n", Files.readAllLines(librariesModelFile.toPath())))
-                    .contains(jarName);
+                    .contains(expectedString);
         }
     }
 

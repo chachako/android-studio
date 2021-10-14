@@ -6,7 +6,7 @@
         simpleName="artifacts::app"/>
     <dependency
         name="${projectDir}@@:app::release"
-        simpleName=":"/>
+        simpleName="artifacts::app"/>
     <dependency
         name="${projectDir}@@:javaLib::testFixtures"
         simpleName=":"/>
@@ -15,7 +15,7 @@
         simpleName=":"/>
     <dependency
         name="${projectDir}@@:lib::release::testFixtures"
-        simpleName="testFixturesApp:lib"/>
+        simpleName="artifacts::lib"/>
     <dependency
         name="${projectDir}@@:lib::release"
         simpleName="artifacts::lib"/>
@@ -75,7 +75,7 @@
         simpleName=":"/>
     <dependency
         name="${projectDir}@@:lib::release::testFixtures"
-        simpleName="testFixturesApp:lib"/>
+        simpleName="artifacts::lib"/>
     <dependency
         name="${projectDir}@@:lib::release"
         simpleName="artifacts::lib"/>
