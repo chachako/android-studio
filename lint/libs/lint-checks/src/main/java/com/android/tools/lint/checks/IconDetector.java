@@ -1768,6 +1768,40 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
         return percentDifferent < 4;
     }
 
+    public static boolean isWhite(BufferedImage image) {
+        for (int y = 0, height = image.getHeight(); y < height; y++) {
+            for (int x = 0, width = image.getWidth(); x < width; x++) {
+                int rgb = image.getRGB(x, y);
+                // If the pixel is not completely transparent, insist that
+                // its RGB channel must be white (with any alpha value)
+                if ((rgb & 0xFF000000) != 0 && (rgb & 0xFFFFFF) != 0xFFFFFF) {
+                    int r = (rgb & 0xFF0000) >>> 16;
+                    int g = (rgb & 0x00FF00) >>> 8;
+                    int b = (rgb & 0x0000FF);
+                    if (r == g && r == b) {
+                        // If the pixel is not white, it might be because of
+                        // anti-aliasing. In that case, at least one neighbor
+                        // should be of a different color
+                        if (x < width - 1 && rgb != image.getRGB(x + 1, y)) {
+                            continue;
+                        }
+                        if (x > 0 && rgb != image.getRGB(x - 1, y)) {
+                            continue;
+                        }
+                        if (y < height - 1 && rgb != image.getRGB(x, y + 1)) {
+                            continue;
+                        }
+                        if (y > 0 && rgb != image.getRGB(x, y - 1)) {
+                            continue;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Check whether the icons in the file are okay. Also return the image size if known (for use by
      * other checks)
@@ -1799,58 +1833,25 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
                     }
                 } else {
                     // else: transparent
-                    checkPixels:
-                    for (int y = 0, height = image.getHeight(); y < height; y++) {
-                        for (int x = 0, width = image.getWidth(); x < width; x++) {
-                            int rgb = image.getRGB(x, y);
-                            // If the pixel is not completely transparent, insist that
-                            // its RGB channel must be white (with any alpha value)
-                            if ((rgb & 0xFF000000) != 0 && (rgb & 0xFFFFFF) != 0xFFFFFF) {
-                                int r = (rgb & 0xFF0000) >>> 16;
-                                int g = (rgb & 0x00FF00) >>> 8;
-                                int b = (rgb & 0x0000FF);
-                                if (r == g && r == b) {
-                                    // If the pixel is not white, it might be because of
-                                    // anti-aliasing. In that case, at least one neighbor
-                                    // should be of a different color
-                                    if (x < width - 1 && rgb != image.getRGB(x + 1, y)) {
-                                        continue;
-                                    }
-                                    if (x > 0 && rgb != image.getRGB(x - 1, y)) {
-                                        continue;
-                                    }
-                                    if (y < height - 1 && rgb != image.getRGB(x, y + 1)) {
-                                        continue;
-                                    }
-                                    if (y > 0 && rgb != image.getRGB(x, y - 1)) {
-                                        continue;
-                                    }
-                                }
+                    if (!isWhite(image)) {
+                        String message = "Notification icons must be entirely white";
+                        Location location = Location.create(file);
 
-                                String message = "Notification icons must be entirely white";
-                                Location location = Location.create(file);
-
-                                String name = getBaseName(file.getName());
-                                UElement usage =
-                                        notificationIcons != null
-                                                ? notificationIcons.get(name)
-                                                : null;
-                                if (usage != null) {
-                                    LintClient client = context.getClient();
-                                    Project project = context.getProject();
-                                    UastParser parser = client.getUastParser(project);
-                                    Location secondary = parser.createLocation(usage);
-                                    secondary.setMessage("Icon used in notification here");
-                                    location.setSecondary(secondary);
-                                }
-
-                                context.report(ICON_COLORS, location, message);
-                                break checkPixels;
-                            }
+                        String name = getBaseName(file.getName());
+                        UElement usage =
+                                notificationIcons != null ? notificationIcons.get(name) : null;
+                        if (usage != null) {
+                            LintClient client = context.getClient();
+                            Project project = context.getProject();
+                            UastParser parser = client.getUastParser(project);
+                            Location secondary = parser.createLocation(usage);
+                            secondary.setMessage("Icon used in notification here");
+                            location.setSecondary(secondary);
                         }
+
+                        context.report(ICON_COLORS, location, message);
                     }
                 }
-
                 return new Dimension(image.getWidth(), image.getHeight());
             }
         } catch (IOException e) {

@@ -47,6 +47,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
         listOf(
           AccessibilityDetector.ISSUE,
           ActionsXmlDetector.ISSUE,
+          ActivityIconColorDetector.ISSUE,
           AddJavascriptInterfaceDetector.ISSUE,
           AlarmDetector.EXACT_ALARM,
           AlarmDetector.SCHEDULE_EXACT_ALARM,
