@@ -56,10 +56,11 @@ constraint_value(
 platform(
     name = "macos",
     constraint_values = [
-        "@platforms//cpu:x86_64",
         "@platforms//os:macos",
         ":macos_latest",
     ],
+    # N.B. we pick the CPU based on the host (x86_64 or arm64).
+    parents = ["@local_config_platform//:host"],
 )
 
 constraint_value(

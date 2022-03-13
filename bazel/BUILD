@@ -367,6 +367,13 @@ config_setting(
 )
 
 config_setting(
+    name = "host_darwin_arm64",
+    values = {"host_cpu": "darwin_arm64"},
+    visibility = ["//visibility:public"],
+)
+
+# N.B. this is macOS with x86_64 specifically.
+config_setting(
     name = "host_darwin",
     values = {"host_cpu": "darwin"},
     visibility = ["//visibility:public"],
@@ -378,6 +385,13 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "darwin_arm64",
+    values = {"cpu": "darwin_arm64"},
+    visibility = ["//visibility:public"],
+)
+
+# N.B. this is macOS with x86_64 specifically.
 config_setting(
     name = "darwin",
     values = {"cpu": "darwin"},
