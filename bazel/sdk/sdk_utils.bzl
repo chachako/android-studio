@@ -29,6 +29,8 @@ def platform_filegroup(name, visibility = ["//visibility:public"]):
 # A glob that only includes files from the current platform Android SDK.
 def sdk_glob(include, exclude = []):
     return select({
+        # TODO(b/224811729): Use native binaries for darwin_arm64.
+        "//tools/base/bazel:darwin_arm64": _sdk_glob("darwin", include, exclude),
         "//tools/base/bazel:darwin": _sdk_glob("darwin", include, exclude),
         "//tools/base/bazel:windows": _sdk_glob("windows", include, exclude),
         "//conditions:default": _sdk_glob("linux", include, exclude),
@@ -43,6 +45,8 @@ def _sdk_glob(platform, include, exclude):
 # A path to a file from the current platform Android SDK.
 def sdk_path(paths):
     return select({
+        # TODO(b/224811729): Use native binaries for darwin_arm64.
+        "//tools/base/bazel:host_darwin_arm64": ["darwin/" + path for path in paths],
         "//tools/base/bazel:host_darwin": ["darwin/" + path for path in paths],
         "//tools/base/bazel:host_windows": ["windows/" + path for path in paths],
         "//conditions:default": ["linux/" + path for path in paths],
