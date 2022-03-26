@@ -60,4 +60,11 @@ public class ApkArchive extends ZipArchive {
         short code = Shorts.fromBytes(content[1], content[0]);
         return code == 0x0003; // Chunk.Type.XML
     }
+
+    @Override
+    public boolean isBaselineProfile(@NonNull Path p, @NonNull byte[] content) {
+        String path = p.toString();
+        return path.equals("/assets/dexopt/baseline.prof") ||
+               path.equals("/assets/dexopt/baseline.profm");
+    }
 }

@@ -44,6 +44,12 @@ public interface Archive extends AutoCloseable {
      */
     boolean isProtoXml(@NonNull Path p, @NonNull byte[] content);
 
+    /**
+     * Returns {@code true} if the entry at the given path in the archive file system is a baseline
+     * profile binary file.
+     */
+    boolean isBaselineProfile(@NonNull Path p, @NonNull byte[] content);
+
     /** Closes the archive file */
     @Override
     void close() throws IOException;

@@ -1,4 +1,4 @@
-load("//tools/base/bazel:coverage.bzl", "coverage_java_test", "coverage_java_library")
+load("//tools/base/bazel:coverage.bzl", "coverage_java_library", "coverage_java_test")
 load("//tools/base/sdklib:sdk.bzl", "sdk_java_binary")
 
 coverage_java_library(
@@ -10,6 +10,7 @@ coverage_java_library(
         "//tools/base/apkparser:tools.binary-resources",
         "//tools/base/apkparser/analyzer:tools.analyzer",
         "//tools/base/common:tools.common",
+        "//tools/base/profgen/profgen",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
         "@maven//:net.sf.jopt-simple.jopt-simple",
@@ -27,6 +28,7 @@ coverage_java_test(
         ":tools.analyzer-cli",
         "//tools/base/apkparser/analyzer:tools.analyzer",
         "//tools/base/common:tools.common",
+        "//tools/base/profgen/profgen",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",

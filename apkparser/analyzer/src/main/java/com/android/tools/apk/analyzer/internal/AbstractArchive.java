@@ -44,6 +44,11 @@ public abstract class AbstractArchive implements Archive {
     }
 
     @Override
+    public boolean isBaselineProfile(@NonNull Path p, @NonNull byte[] content) {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return String.format("%s: path=\"%s\"", getClass().getSimpleName(), path);
     }

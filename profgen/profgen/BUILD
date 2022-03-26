@@ -37,3 +37,16 @@ filegroup(
     ]) + ["build.gradle"],
     visibility = ["//tools/base/build-system:__pkg__"],
 )
+
+load("//tools/base/bazel:bazel.bzl", "iml_module")
+
+# managed by go/iml_to_build
+iml_module(
+    name = "studio.android.sdktools.profgen",
+    srcs = ["src/main/kotlin"],
+    iml_files = ["android.sdktools.profgen.iml"],
+    lint_baseline = "lint_baseline.xml",
+    visibility = ["//visibility:public"],
+    # do not sort: must match IML order
+    deps = ["//prebuilts/studio/intellij-sdk:studio-sdk"],
+)
