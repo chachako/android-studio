@@ -50,7 +50,6 @@ import com.android.build.gradle.internal.ide.dependencies.LibraryService
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
 import com.android.build.gradle.internal.ide.dependencies.computeBuildMapping
 import com.android.build.gradle.internal.ide.dependencies.getVariantName
-import com.android.build.gradle.internal.ide.verifyIDEIsNotOld
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.PROVIDED_CLASSPATH
@@ -216,9 +215,6 @@ class ModelBuilder<
         val projectOptions =
             getBuildService(project.gradle.sharedServices, ProjectOptionService::class.java)
                 .get().projectOptions
-
-        // FIXME: remove?
-        verifyIDEIsNotOld(projectOptions)
 
         val sdkSetupCorrectly = variantModel.versionedSdkLoader.get().sdkSetupCorrectly.get()
 

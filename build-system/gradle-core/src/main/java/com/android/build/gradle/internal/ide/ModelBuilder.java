@@ -325,8 +325,6 @@ public class ModelBuilder<Extension extends BaseExtension>
                     "This Gradle plugin requires a newer IDE able to request IDE model level 3. For Android Studio this means version 3.0+");
         }
 
-        StudioVersions.verifyIDEIsNotOld(projectOptions);
-
         modelWithFullDependency =
                 projectOptions.get(BooleanOption.IDE_BUILD_MODEL_FEATURE_FULL_DEPENDENCIES);
 
