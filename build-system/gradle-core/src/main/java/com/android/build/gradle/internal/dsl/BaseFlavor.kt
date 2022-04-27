@@ -25,6 +25,7 @@ import com.android.build.api.dsl.Shaders
 import com.android.build.api.dsl.TestBaseFlavor
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.gradle.internal.services.DslServices
+import com.android.builder.core.apiVersionFromString
 import com.android.builder.core.AbstractProductFlavor
 import com.android.builder.core.BuilderConstants
 import com.android.builder.core.DefaultApiVersion
@@ -104,7 +105,7 @@ abstract class BaseFlavor(name: String, private val dslServices: DslServices) :
     }
 
     override fun setMinSdkVersion(minSdkVersion: String?) {
-        setMinSdkVersion(getApiVersion(minSdkVersion))
+        setMinSdkVersion(apiVersionFromString(minSdkVersion))
     }
 
     /**
@@ -132,7 +133,7 @@ abstract class BaseFlavor(name: String, private val dslServices: DslServices) :
     }
 
     override fun setTargetSdkVersion(targetSdkVersion: String?) {
-        setTargetSdkVersion(getApiVersion(targetSdkVersion))
+        setTargetSdkVersion(apiVersionFromString(targetSdkVersion))
     }
 
     /**
@@ -519,19 +520,6 @@ abstract class BaseFlavor(name: String, private val dslServices: DslServices) :
      */
     open fun wearAppUnbundled(wearAppUnbundled: Boolean?) {
         this.wearAppUnbundled = wearAppUnbundled
-    }
-
-    private fun getApiVersion(value: String?): ApiVersion? {
-        return if (!Strings.isNullOrEmpty(value)) {
-            if (Character.isDigit(value!![0])) {
-                try {
-                    val apiLevel = Integer.valueOf(value)
-                    DefaultApiVersion(apiLevel)
-                } catch (e: NumberFormatException) {
-                    throw RuntimeException("'$value' is not a valid API level. ", e)
-                }
-            } else DefaultApiVersion(value)
-        } else null
     }
 
     override fun initWith(that: BaseFlavor) {

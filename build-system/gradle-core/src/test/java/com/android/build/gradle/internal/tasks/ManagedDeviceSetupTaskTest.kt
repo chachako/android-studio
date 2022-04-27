@@ -353,6 +353,119 @@ class ManagedDeviceSetupTaskTest {
     }
 
     @Test
+    fun creationAction_configureTaskWithPreview() {
+        try {
+            // Need to use a custom set up environment to ensure deterministic behavior.
+            SystemPropertyOverrides().use { systemPropertyOverrides ->
+                // This will ensure the config believes we are running on an x86_64 Linux machine.
+                // This will guarantee the x86 system-images are selected.
+                systemPropertyOverrides.setProperty("os.name", "Linux")
+                Environment.instance = object : Environment() {
+                    override fun getVariable(name: EnvironmentVariable): String? =
+                        if (name.key == "HOSTTYPE") "x86_64" else null
+                }
+                systemPropertyOverrides.setProperty("os.arch", "x86_64")
+
+                val config = ManagedDeviceSetupTask.CreationAction(
+                    "setupTaskName",
+                    ManagedVirtualDevice("testName").also {
+                        it.device = "Pixel 3"
+                        it.apiPreview = "Q"
+                        it.systemImageSource = "aosp"
+                    },
+                    globalConfig
+                )
+
+                val task = mock(ManagedDeviceSetupTask::class.java, RETURNS_DEEP_STUBS)
+
+                // default path for emulator mode ("auto-no-window")
+                `when`(
+                    globalConfig.services.projectOptions[
+                            StringOption.GRADLE_MANAGED_DEVICE_EMULATOR_GPU_MODE])
+                    .thenReturn(null)
+
+                `when`(globalConfig.compileSdkHashString).thenReturn("some_version")
+                `when`(globalConfig.buildToolsRevision).thenReturn(Revision.parseRevision("5.1"))
+
+                // We need to create mock properties to verify/capture values in the task as
+                // RETURNS_DEEP_STUBS does not work as expected with verify. Also, we can't use
+                // FakeGradleProperties because they do not support disallowChanges().
+                val sdkProperty = mockEmptyProperty<SdkComponentsBuildService>()
+                val avdProperty = mockEmptyProperty<AvdComponentsBuildService>()
+                val compileSdkVersion = mockEmptyProperty<String>()
+                val buildToolsRevision = mockEmptyProperty<Revision>()
+                val abiProperty = mockEmptyProperty<String>()
+                val apiLevel = mockEmptyProperty<Int>()
+                val systemImageVendor = mockEmptyProperty<String>()
+                val hardwareProfile = mockEmptyProperty<String>()
+                val emulatorGpuFlag = mockEmptyProperty<String>()
+                val managedDeviceName = mockEmptyProperty<String>()
+                val require64Bit = mockEmptyProperty<Boolean>()
+
+                `when`(task.sdkService).thenReturn(sdkProperty)
+                `when`(task.avdService).thenReturn(avdProperty)
+                `when`(task.compileSdkVersion).thenReturn(compileSdkVersion)
+                `when`(task.buildToolsRevision).thenReturn(buildToolsRevision)
+                `when`(task.abi).thenReturn(abiProperty)
+                `when`(task.apiLevel).thenReturn(apiLevel)
+                `when`(task.systemImageVendor).thenReturn(systemImageVendor)
+                `when`(task.hardwareProfile).thenReturn(hardwareProfile)
+                `when`(task.emulatorGpuFlag).thenReturn(emulatorGpuFlag)
+                `when`(task.managedDeviceName).thenReturn(managedDeviceName)
+                `when`(task.require64Bit).thenReturn(require64Bit)
+
+                config.configure(task)
+
+                verify(sdkProperty).set(any<Provider<SdkComponentsBuildService>>())
+                verify(sdkProperty).disallowChanges()
+                verifyNoMoreInteractions(sdkProperty)
+
+                verify(avdProperty).set(any<Provider<AvdComponentsBuildService>>())
+                verify(avdProperty).disallowChanges()
+                verifyNoMoreInteractions(avdProperty)
+
+                verify(compileSdkVersion).set("some_version")
+                verify(compileSdkVersion).disallowChanges()
+                verifyNoMoreInteractions(compileSdkVersion)
+
+                verify(buildToolsRevision).set(Revision.parseRevision("5.1"))
+                verify(buildToolsRevision).disallowChanges()
+                verifyNoMoreInteractions(buildToolsRevision)
+
+                verify(abiProperty).set("x86")
+                verify(abiProperty).disallowChanges()
+                verifyNoMoreInteractions(abiProperty)
+
+                verify(apiLevel).set(28)
+                verify(apiLevel).disallowChanges()
+                verifyNoMoreInteractions(apiLevel)
+
+                verify(systemImageVendor).set("aosp")
+                verify(systemImageVendor).disallowChanges()
+                verifyNoMoreInteractions(systemImageVendor)
+
+                verify(hardwareProfile).set("Pixel 3")
+                verify(hardwareProfile).disallowChanges()
+                verifyNoMoreInteractions(hardwareProfile)
+
+                verify(emulatorGpuFlag).set("auto-no-window")
+                verify(emulatorGpuFlag).disallowChanges()
+                verifyNoMoreInteractions(emulatorGpuFlag)
+
+                verify(managedDeviceName).set("testName")
+                verify(managedDeviceName).disallowChanges()
+                verifyNoMoreInteractions(managedDeviceName)
+
+                verify(require64Bit).set(false)
+                verify(require64Bit).disallowChanges()
+                verifyNoMoreInteractions(require64Bit)
+            }
+        } finally {
+            Environment.instance = Environment.SYSTEM
+        }
+    }
+
+    @Test
     fun generateSystemErrorMessage_offlineMode() {
         `when`(mockVersionedSdkLoader.offlineMode).thenReturn(true)
 

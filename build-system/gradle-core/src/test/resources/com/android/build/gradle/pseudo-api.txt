@@ -1619,11 +1619,13 @@ com.android.build.gradle.internal.dsl.ManagedDevices.setDevices: void (org.gradl
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice implements com.android.build.api.dsl.ManagedVirtualDevice
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.<init>: com.android.build.gradle.internal.dsl.ManagedVirtualDevice (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getApiLevel: int ()
+com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getApiPreview: java.lang.String ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getDevice: java.lang.String ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getName: java.lang.String ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getRequire64Bit: boolean ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getSystemImageSource: java.lang.String ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setApiLevel: void (int)
+com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setApiPreview: void (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setDevice: void (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setRequire64Bit: void (boolean)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setSystemImageSource: void (java.lang.String)
@@ -1937,6 +1939,8 @@ com.android.builder.core.AbstractProductFlavor.testInstrumentationRunner: void (
 com.android.builder.core.AbstractProductFlavor.toString: java.lang.String ()
 com.android.builder.core.AbstractProductFlavor.versionCode: void (java.lang.Integer)
 com.android.builder.core.AbstractProductFlavor.versionName: void (java.lang.String)
+com.android.builder.core.ApiLevelUtilsKt
+com.android.builder.core.ApiLevelUtilsKt.apiVersionFromString: com.android.builder.core.DefaultApiVersion (java.lang.String)
 com.android.builder.core.DefaultDexOptions implements com.android.builder.core.DexOptions
 com.android.builder.core.DefaultDexOptions.<init>: com.android.builder.core.DefaultDexOptions ()
 com.android.builder.core.DefaultDexOptions.copyOf: com.android.builder.core.DefaultDexOptions (com.android.builder.core.DexOptions)
