@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
     private val dslServices: DslServices
-): KotlinMultiplatformAndroidExtension {
+): KotlinMultiplatformAndroidExtension, Lockable {
 
     fun lazyInit() {
         buildToolsVersion = ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION.toString()

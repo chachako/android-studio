@@ -31,7 +31,6 @@ import com.android.build.gradle.internal.dependency.AarToClassTransform
 import com.android.build.gradle.internal.dependency.AarTransform
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
 import com.android.build.gradle.internal.dependency.AlternateCompatibilityRule
-import com.android.build.gradle.internal.dependency.AlternateDisambiguationRule
 import com.android.build.gradle.internal.dependency.AndroidXDependencyCheck
 import com.android.build.gradle.internal.dependency.AndroidXDependencySubstitution.replaceOldSupportLibraries
 import com.android.build.gradle.internal.dependency.AsmClassesTransform.Companion.registerAsmTransformForComponent
@@ -52,6 +51,8 @@ import com.android.build.gradle.internal.dependency.JetifyTransform
 import com.android.build.gradle.internal.dependency.LibrarySymbolTableTransform
 import com.android.build.gradle.internal.dependency.MockableJarTransform
 import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRule.Companion.setUp
+import com.android.build.gradle.internal.dependency.MultiVariantBuildTypeRule
+import com.android.build.gradle.internal.dependency.MultiVariantProductFlavorRule
 import com.android.build.gradle.internal.dependency.PlatformAttrTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerGlobalRecalculateStackFramesTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerRecalculateStackFramesTransformForComponent
@@ -710,7 +711,7 @@ class DependencyConfigurator(
             buildTypeStrategy
                 .disambiguationRules
                 .add(
-                    AlternateDisambiguationRule.BuildTypeRule::class.java
+                    MultiVariantBuildTypeRule::class.java
                 ) { config: ActionConfiguration ->
                     config.setParams(
                         alternateMap
@@ -906,7 +907,7 @@ class DependencyConfigurator(
                 }
             flavorStrategy
                 .disambiguationRules
-                .add(AlternateDisambiguationRule.ProductFlavorRule::class.java) {
+                .add(MultiVariantProductFlavorRule::class.java) {
                     it.setParams(alternateMap)
                 }
         }

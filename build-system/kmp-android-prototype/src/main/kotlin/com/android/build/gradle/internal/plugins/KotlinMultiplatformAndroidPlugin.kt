@@ -16,8 +16,13 @@
 
 package com.android.build.gradle.internal.plugins
 
+import com.android.build.api.attributes.AgpVersionAttr
+import com.android.build.api.attributes.BuildTypeAttr
+import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.gradle.internal.SdkComponentsBuildService
-import com.android.build.gradle.internal.crash.afterEvaluate
+import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
+import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
+import com.android.build.gradle.internal.dependency.SingleVariantProductFlavorRule
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
@@ -33,7 +38,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     listenerRegistry: BuildEventsListenerRegistry
 ): AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 
-    private lateinit var androidExtension: KotlinMultiplatformAndroidExtension
+    private lateinit var androidExtension: KotlinMultiplatformAndroidExtensionImpl
 
     private val dslServices by lazy {
         withProject("dslServices") { project ->
@@ -61,11 +66,12 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
     override fun apply(project: Project) {
         super.basePluginApply(project)
 
-        afterEvaluate {
+        project.afterEvaluate {
             if (!project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
                 throw RuntimeException("Kotlin multiplatform plugin was not found. This plugin needs" +
                         " to be applied as part of the kotlin multiplatform plugin.")
             }
+            afterEvaluate(it)
         }
     }
 
@@ -77,6 +83,38 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             "android",
             extensionImplClass,
             dslServices
-        )
+        ) as KotlinMultiplatformAndroidExtensionImpl
+    }
+
+    private fun afterEvaluate(
+        project: Project
+    ) {
+        androidExtension.lock()
+
+        configureDisambiguationRules(project)
+    }
+
+    private fun configureDisambiguationRules(project: Project) {
+        project.dependencies.attributesSchema { schema ->
+            if (androidExtension.buildTypeMatching.isNotEmpty()) {
+                schema.attribute(BuildTypeAttr.ATTRIBUTE)
+                    .disambiguationRules
+                    .add(SingleVariantBuildTypeRule::class.java) { config ->
+                        config.setParams(androidExtension.buildTypeMatching)
+                    }
+            }
+
+            androidExtension.productFlavorsMatching.forEach { (dimension, fallbacks) ->
+                schema.attribute(ProductFlavorAttr.of(dimension))
+                    .disambiguationRules
+                    .add(SingleVariantProductFlavorRule::class.java) { config ->
+                        config.setParams(fallbacks)
+                    }
+            }
+
+            schema.attribute(AgpVersionAttr.ATTRIBUTE)
+                .compatibilityRules
+                .add(AgpVersionCompatibilityRule::class.java)
+        }
     }
 }
