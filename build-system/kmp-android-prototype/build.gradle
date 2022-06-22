@@ -1,0 +1,12 @@
+plugins {
+    id 'com.android.tools.java-library'
+    id 'com.android.tools.kotlin'
+}
+
+dependencies {
+    implementation(project(':base:build-system:gradle-core'))
+
+    implementation libs.com.android.tools.analyticsLibrary.shared
+    implementation libs.com.android.tools.common
+    implementation libs.com.android.tools.repository
+}

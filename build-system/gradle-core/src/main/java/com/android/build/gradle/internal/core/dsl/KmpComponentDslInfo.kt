@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.core.dsl
 
+import com.android.build.gradle.api.JavaCompileOptions
 import com.android.build.gradle.internal.core.dsl.features.AndroidResourcesDslInfo
 
 /**
@@ -32,4 +33,9 @@ interface KmpComponentDslInfo: ComponentDslInfo {
     // KMP doesn't support android resources
     override val androidResourcesDsl: AndroidResourcesDslInfo?
         get() = null
+
+    override val javaCompileOptionsSetInDSL: JavaCompileOptions
+        get() {
+            throw IllegalAccessException("Not supported")
+        }
 }

@@ -30,8 +30,6 @@ interface KmpVariantDslInfo: KmpComponentDslInfo, TestedVariantDslInfo, AarProdu
 
     val aarMetadata: AarMetadata
 
-    val minifiedEnabled: Boolean
-
     val enabledUnitTest: Boolean
     val enableAndroidTest: Boolean
 }

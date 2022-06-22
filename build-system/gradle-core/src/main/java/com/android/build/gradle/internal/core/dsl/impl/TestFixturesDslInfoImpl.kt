@@ -54,7 +54,7 @@ internal class TestFixturesDslInfoImpl(
     extension
 ), TestFixturesComponentDslInfo {
     override val testFixturesAndroidResourcesEnabled: Boolean
-        get() = mainVariantDslInfo.testFixtures.androidResources
+        get() = mainVariantDslInfo.testFixtures?.androidResources ?: false
 
     // for test fixtures, these values are always derived from the main variant
 

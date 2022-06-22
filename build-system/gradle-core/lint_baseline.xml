@@ -425,7 +425,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="159"/>
+            line="151"/>
     </issue>
 
     <issue
@@ -433,7 +433,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="237"/>
+            line="206"/>
     </issue>
 
     <issue
@@ -441,7 +441,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="311"/>
+            line="268"/>
     </issue>
 
     <issue
@@ -449,7 +449,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="321"/>
+            line="278"/>
     </issue>
 
     <issue
@@ -457,7 +457,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="352"/>
+            line="309"/>
     </issue>
 
     <issue
@@ -618,6 +618,22 @@
         <location
             file="src/main/java/com/android/build/gradle/internal/dependency/JetifyTransform.kt"
             line="56"/>
+    </issue>
+
+    <issue
+        id="AvoidByLazy"
+        message="Avoid `by lazy` for simple lazy initialization">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpComponentDslInfoImpl.kt"
+            line="36"/>
+    </issue>
+
+    <issue
+        id="AvoidByLazy"
+        message="Avoid `by lazy` for simple lazy initialization">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpVariantDslInfoImpl.kt"
+            line="139"/>
     </issue>
 
     <issue
@@ -889,7 +905,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantImpl.kt"
-            line="130"/>
+            line="127"/>
     </issue>
 
     <issue
@@ -897,7 +913,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantImpl.kt"
-            line="206"/>
+            line="200"/>
     </issue>
 
     <issue
@@ -1225,7 +1241,7 @@
         message="Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`.">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/DexMergingTask.kt"
-            line="832"/>
+            line="825"/>
     </issue>
 
 </issues>
