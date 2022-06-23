@@ -46,6 +46,7 @@ import com.android.build.gradle.internal.services.TaskCreationServicesImpl
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.services.VariantServicesImpl
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
+import com.android.build.gradle.internal.tasks.KmpTaskManager
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.KmpGlobalTaskCreationConfigImpl
@@ -187,6 +188,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         val variantServices = VariantServicesImpl(projectServices)
         val taskServices = TaskCreationServicesImpl(projectServices)
 
+        val taskManager = KmpTaskManager()
+
         val mainVariant = createVariant(
             project,
             global,
@@ -213,6 +216,16 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             variants = listOf(mainVariant),
             nestedComponents = listOf(),
             bootClasspathConfig = global
+        )
+
+        taskManager.createTasks(
+            project,
+            createVariant(
+                project,
+                global,
+                variantServices,
+                taskServices
+            )
         )
     }
 

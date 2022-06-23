@@ -329,5 +329,4 @@ abstract class LibraryAarJarsTask : NonIncrementalTask() {
             task.localScopeInputFiles.disallowChanges()
         }
     }
-
 }

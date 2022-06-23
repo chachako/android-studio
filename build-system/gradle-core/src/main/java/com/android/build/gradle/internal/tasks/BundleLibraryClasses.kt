@@ -21,6 +21,7 @@ import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.KmpCreationConfig
 import com.android.build.gradle.internal.databinding.DataBindingExcludeDelegate
 import com.android.build.gradle.internal.databinding.configureFrom
 import com.android.build.gradle.internal.dependency.getClassesDirFormat
@@ -32,6 +33,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.ClassesDirF
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.tasks.toSerializable
 import com.android.buildanalyzer.common.TaskCategory
@@ -169,6 +171,36 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
                 false)
         }
     }
+
+    class KotlinMultiplatformCreationAction(
+        creationConfig: KmpCreationConfig
+    ) : VariantTaskCreationAction<BundleLibraryClassesDir, KmpCreationConfig>(
+        creationConfig
+    ) {
+
+        override val name: String = creationConfig.computeTaskName("bundleLibRuntimeToDir")
+
+        override val type: Class<BundleLibraryClassesDir> = BundleLibraryClassesDir::class.java
+
+        override fun handleProvider(taskProvider: TaskProvider<BundleLibraryClassesDir>) {
+            super.handleProvider(taskProvider)
+            creationConfig.artifacts
+                .setInitialProvider(taskProvider, BundleLibraryClassesDir::output)
+                .on(InternalArtifactType.RUNTIME_LIBRARY_CLASSES_DIR)
+        }
+
+        override fun configure(task: BundleLibraryClassesDir) {
+            super.configure(task)
+            task.configure(
+                creationConfig,
+                creationConfig
+                    .artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES),
+                false
+            )
+        }
+    }
 }
 
 /**
@@ -234,6 +266,62 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
                     .getFinalArtifacts(ScopedArtifact.CLASSES)
 
             task.configure(creationConfig, inputs, packageRClass)
+        }
+    }
+
+    class KotlinMultiplatformCreationAction(
+        component: KmpCreationConfig,
+        private val publishedType: PublishedConfigType
+    ) : VariantTaskCreationAction<BundleLibraryClassesJar, KmpCreationConfig>(
+        component
+    ) {
+
+        init {
+            check(
+                publishedType == PublishedConfigType.API_ELEMENTS
+                        || publishedType == PublishedConfigType.RUNTIME_ELEMENTS
+            ) { "Kotlin multiplatform classes bundling is supported only for api and runtime." }
+        }
+
+        override val name: String = creationConfig.computeTaskName(
+            "bundle",
+            if (publishedType == PublishedConfigType.API_ELEMENTS) {
+                "ClassesToCompileJar"
+            } else {
+                "ClassesToRuntimeJar"
+            }
+        )
+
+        override val type: Class<BundleLibraryClassesJar> = BundleLibraryClassesJar::class.java
+
+        override fun handleProvider(
+            taskProvider: TaskProvider<BundleLibraryClassesJar>
+        ) {
+            super.handleProvider(taskProvider)
+
+            creationConfig.artifacts
+                .setInitialProvider(
+                    taskProvider,
+                    BundleLibraryClassesJar::output
+                ).withName(FN_CLASSES_JAR).let {
+                    if (publishedType == PublishedConfigType.API_ELEMENTS) {
+                        it.on(InternalArtifactType.COMPILE_LIBRARY_CLASSES_JAR)
+                    } else {
+                        it.on(InternalArtifactType.RUNTIME_LIBRARY_CLASSES_JAR)
+                    }
+                }
+        }
+
+        override fun configure(task: BundleLibraryClassesJar) {
+            super.configure(task)
+            task.namespace.setDisallowChanges(creationConfig.namespace)
+            task.classes.fromDisallowChanges(
+                creationConfig
+                .artifacts
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .getFinalArtifacts(ScopedArtifact.CLASSES)
+            )
+            task.packageRClass.setDisallowChanges(false)
         }
     }
 }
