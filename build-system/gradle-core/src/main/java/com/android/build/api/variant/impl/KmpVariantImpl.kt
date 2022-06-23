@@ -23,10 +23,8 @@ import com.android.build.api.component.impl.features.OptimizationCreationConfigI
 import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.Packaging
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
-import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.features.NativeBuildCreationConfig
 import com.android.build.gradle.internal.component.features.RenderscriptCreationConfig
 import com.android.build.gradle.internal.component.features.ShadersCreationConfig
@@ -67,7 +65,7 @@ open class KmpVariantImpl @Inject constructor(
     services,
     global,
     manifestFile
-), KmpCreationConfig {
+), KotlinMultiplatformAndroidVariant, KmpCreationConfig {
 
     override val aarOutputFileName: Property<String> =
         internalServices.newPropertyBackingDeprecatedApi(
@@ -98,9 +96,9 @@ open class KmpVariantImpl @Inject constructor(
         )
     }
 
-    override var unitTest: UnitTestCreationConfig? = null
+    override var unitTest = null
 
-    override var androidTest: AndroidTestCreationConfig? = null
+    override var androidTest = null
 
     override val nestedComponents: List<ComponentCreationConfig>
         get() = listOfNotNull(unitTest, androidTest)

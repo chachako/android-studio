@@ -20,7 +20,6 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr.Companion.ATTRIBUTE
 import com.android.build.api.attributes.ProductFlavorAttr
-import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
@@ -82,7 +81,6 @@ import com.android.build.gradle.internal.utils.D8BackportedMethodsGenerator
 import com.android.build.gradle.internal.utils.D8_DESUGAR_METHODS
 import com.android.build.gradle.internal.utils.getDesugarLibConfig
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.build.gradle.internal.variant.ComponentInfo
 import com.android.build.gradle.internal.variant.VariantInputModel
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
@@ -489,20 +487,20 @@ class DependencyConfigurator(
         return this
     }
 
-    fun <VariantBuilderT : VariantBuilder, VariantT : VariantCreationConfig>
-            configurePrivacySandboxSdkVariantTransforms(
-            components: List<ComponentInfo<VariantBuilderT, VariantT>>,
-            compileSdkHashString: String,
-            buildToolsRevision: Revision,
-            bootstrapCreationConfig: BootClasspathConfig): DependencyConfigurator {
+    fun configurePrivacySandboxSdkVariantTransforms(
+        variants: List<VariantCreationConfig>,
+        compileSdkHashString: String,
+        buildToolsRevision: Revision,
+        bootstrapCreationConfig: BootClasspathConfig
+    ): DependencyConfigurator {
         if (!projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
             return this
         }
 
-        fun configureExtractSdkShimTransforms(component: ComponentInfo<VariantBuilderT, VariantT>) {
+        fun configureExtractSdkShimTransforms(variant: VariantCreationConfig) {
             val extractSdkShimTransformParamConfig =
                     { reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
-                        val experimentalProperties = component.variant.experimentalProperties
+                        val experimentalProperties = variant.experimentalProperties
                         experimentalProperties.finalizeValue()
                         val apigeneratorArtifact =
                                 ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR
@@ -584,8 +582,8 @@ class DependencyConfigurator(
             registerExtractSdkShimTransform(Usage.JAVA_RUNTIME)
         }
 
-        for (component in components) {
-            configureExtractSdkShimTransforms(component)
+        for (variant in variants) {
+            configureExtractSdkShimTransforms(variant)
         }
         return this
     }
@@ -777,14 +775,13 @@ class DependencyConfigurator(
     }
 
     /** Configure artifact transforms that require variant-specific attribute information.  */
-    fun <VariantBuilderT : VariantBuilder, VariantT : VariantCreationConfig>
-            configureVariantTransforms(
-        variants: List<ComponentInfo<VariantBuilderT, VariantT>>,
+    fun configureVariantTransforms(
+        variants: List<VariantCreationConfig>,
         nestedComponents: List<ComponentCreationConfig>,
         bootClasspathConfig: BootClasspathConfig
-            ): DependencyConfigurator {
-        val allComponents: List<ComponentCreationConfig> =
-            variants.map { it.variant }.plus(nestedComponents)
+    ): DependencyConfigurator {
+
+        val allComponents: List<ComponentCreationConfig> = variants.plus(nestedComponents)
 
         val dependencies = project.dependencies
         val projectOptions = projectServices.projectOptions

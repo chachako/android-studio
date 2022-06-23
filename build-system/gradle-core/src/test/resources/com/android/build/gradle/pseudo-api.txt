@@ -1567,6 +1567,7 @@ com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTes
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestTargetSdk: java.lang.Integer ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.getTestTargetSdkPreview: java.lang.String ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.isMinifyEnabled: boolean ()
+com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.onVariant: void (kotlin.jvm.functions.Function1<? super com.android.build.api.variant.impl.KotlinMultiplatformAndroidVariant, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setBuildToolsVersion: void (java.lang.String)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setCompileSdk: void (java.lang.Integer)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension.setCompileSdkExtension: void (java.lang.Integer)

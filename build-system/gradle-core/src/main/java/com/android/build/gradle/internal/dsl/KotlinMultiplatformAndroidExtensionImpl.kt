@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.variant.AndroidVersion
+import com.android.build.api.variant.impl.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.impl.MutableAndroidVersion
 import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreLocation
@@ -27,6 +28,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.builder.core.LibraryRequest
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.signing.DefaultSigningConfig
+import org.gradle.api.Action
 import javax.inject.Inject
 
 abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitialization("lazyInit") constructor(
@@ -123,4 +125,29 @@ abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitiali
             target.codename = value
             target.api = null
         }
+
+    private val variantOperations = mutableListOf<Action<KotlinMultiplatformAndroidVariant>>()
+    private var actionsExecuted = false
+
+    override fun onVariant(callback: KotlinMultiplatformAndroidVariant.() -> Unit) {
+        if (actionsExecuted) {
+            throw RuntimeException(
+                """
+                It is too late to add actions as the callbacks already executed.
+                Did you try to call beforeVariants or onVariants from the old variant API
+                'applicationVariants' for instance ? you should always call beforeVariants or
+                onVariants directly from the androidComponents DSL block.
+                """
+            )
+        }
+
+        variantOperations.add(callback)
+    }
+
+    fun executeVariantOperations(variant: KotlinMultiplatformAndroidVariant) {
+        actionsExecuted = true
+        variantOperations.forEach {
+            it.execute(variant)
+        }
+    }
 }

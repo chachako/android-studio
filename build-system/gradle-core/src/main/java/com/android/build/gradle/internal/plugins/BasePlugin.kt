@@ -475,7 +475,7 @@ abstract class BasePlugin<
             return lintChecks
         }
 
-        private fun createAndroidJarConfig(project: Project): Configuration  {
+        fun createAndroidJarConfig(project: Project): Configuration  {
             val androidJarConfig: Configuration = project.configurations
                 .maybeCreate(VariantDependencies.CONFIG_NAME_ANDROID_APIS)
             androidJarConfig.description = "Configuration providing various types of Android JAR file"
@@ -730,7 +730,11 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             .configureDependencySubstitutions()
             .configureDependencyChecks()
             .configureGeneralTransforms(globalConfig.namespacedAndroidResources)
-            .configureVariantTransforms(variants, variantManager.nestedComponents, globalConfig)
+            .configureVariantTransforms(
+                variants.map { it.variant },
+                variantManager.nestedComponents,
+                globalConfig
+            )
             .configureAttributeMatchingStrategies(variantInputModel)
             .configureCalculateStackFramesTransforms(globalConfig)
             .configurePrivacySandboxSdkConsumerTransforms()
@@ -743,7 +747,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
                     }
                 }
                 .configurePrivacySandboxSdkVariantTransforms(
-                        variants,
+                        variants.map { it.variant },
                         globalConfig.compileSdkHashString,
                         globalConfig.buildToolsRevision,
                         globalConfig

@@ -99,7 +99,6 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         )
     }
 
-    // TODO(b/243387425): Add to public API
     val instrumentation: Instrumentation
         get() = instrumentationCreationConfig.instrumentation
     val compileConfiguration: Configuration

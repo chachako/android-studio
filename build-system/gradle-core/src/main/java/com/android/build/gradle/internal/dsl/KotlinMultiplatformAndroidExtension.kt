@@ -22,12 +22,13 @@ import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.Optimization
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestOptions
+import com.android.build.api.variant.impl.KotlinMultiplatformAndroidVariant
 import java.io.File
 
 /**
  * Temporary interface to develop the kotlin multiplatform android plugin.
  *
- * TODO(b/243387425): Move to gradle-api
+ * TODO(b/267309622): Move to gradle-api
  */
 interface KotlinMultiplatformAndroidExtension {
     var minSdk: Int?
@@ -86,4 +87,8 @@ interface KotlinMultiplatformAndroidExtension {
 
     var enableUnitTest: Boolean
     var enableAndroidTest: Boolean
+
+    fun onVariant(
+        callback: KotlinMultiplatformAndroidVariant.() -> Unit
+    )
 }

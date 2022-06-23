@@ -104,11 +104,13 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                     { extension },
             ) {
                 BootClasspathConfigImpl(
-                        project,
-                        projectServices,
-                        versionedSdkLoaderService,
-                        null,
-                        false
+                    project,
+                    projectServices,
+                    versionedSdkLoaderService,
+                    libraryRequests = listOf(),
+                    isJava8Compatible = { true },
+                    returnDefaultValuesForMockableJar = { false },
+                    forUnitTest = false
                 )
             }
         }
