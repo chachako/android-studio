@@ -45,34 +45,21 @@ import com.android.build.gradle.internal.core.ProductFlavor
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.PublishableComponentDslInfo
-import com.android.build.gradle.internal.dependency.AndroidAttributes
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dependency.getProvidedClasspath
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
-import com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType
-import com.android.build.gradle.internal.publishing.PublishedConfigSpec
-import com.android.build.gradle.internal.publishing.PublishingSpecs.Companion.getVariantPublishingSpec
-import com.android.build.gradle.internal.scope.BuildArtifactSpec.Companion.get
-import com.android.build.gradle.internal.scope.BuildArtifactSpec.Companion.has
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
-import com.android.build.gradle.internal.scope.publishArtifactToConfiguration
-import com.android.build.gradle.internal.scope.publishArtifactToDefaultVariant
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
-import com.android.build.gradle.internal.testFixtures.testFixturesClassifier
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
-import com.google.common.base.Preconditions
-import org.gradle.api.attributes.DocsType
-import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
 import java.io.File
 import java.util.Locale
@@ -222,47 +209,10 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
 
     /** Publish intermediate artifacts in the BuildArtifactsHolder based on PublishingSpecs.  */
     override fun publishBuildArtifacts() {
-        for (outputSpec in getVariantPublishingSpec(componentType).outputs) {
-            val buildArtifactType = outputSpec.outputType
-            // Gradle only support publishing single file.  Therefore, unless Gradle starts
-            // supporting publishing multiple files, PublishingSpecs should not contain any
-            // OutputSpec with an appendable ArtifactType.
-            if (has(buildArtifactType) && get(buildArtifactType).appendable) {
-                throw RuntimeException(
-                    "Appendable ArtifactType '${buildArtifactType.name()}' cannot be published."
-                )
-            }
-            val artifactProvider = artifacts.get(buildArtifactType)
-            val artifactContainer = artifacts.getArtifactContainer(buildArtifactType)
-            if (!artifactContainer.needInitialProducer().get()) {
-                val isPublicationConfigs =
-                    outputSpec.publishedConfigTypes.any { it.isPublicationConfig }
-
-                if (isPublicationConfigs) {
-                    val components = (dslInfo as PublishableComponentDslInfo).publishInfo.components
-                    for(component in components) {
-                        publishIntermediateArtifact(
-                                artifactProvider,
-                                outputSpec.artifactType,
-                                outputSpec.publishedConfigTypes.map {
-                                    PublishedConfigSpec(it, component) }.toSet(),
-                                outputSpec.libraryElements?.let {
-                                    internalServices.named(LibraryElements::class.java, it)
-                                }
-                            )
-                    }
-                } else {
-                    publishIntermediateArtifact(
-                            artifactProvider,
-                            outputSpec.artifactType,
-                            outputSpec.publishedConfigTypes.map { PublishedConfigSpec(it) }.toSet(),
-                            outputSpec.libraryElements?.let {
-                                internalServices.named(LibraryElements::class.java, it)
-                            }
-                        )
-                }
-            }
-        }
+        com.android.build.gradle.internal.scope.publishBuildArtifacts(
+            this,
+            (dslInfo as? PublishableComponentDslInfo)?.publishInfo
+        )
     }
 
     override val modelV1LegacySupport = ModelV1LegacySupportImpl(dslInfo, variantSources)
@@ -352,57 +302,5 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
                 allPlaceholders,
                 internalServices
         )
-    }
-
-    /**
-     * Publish an intermediate artifact.
-     *
-     * @param artifact Provider of File or FileSystemLocation to be published.
-     * @param artifactType the artifact type.
-     * @param configSpecs the PublishedConfigSpec.
-     * @param libraryElements the artifact's library elements
-     */
-    private fun publishIntermediateArtifact(
-        artifact: Provider<out FileSystemLocation>,
-        artifactType: AndroidArtifacts.ArtifactType,
-        configSpecs: Set<PublishedConfigSpec>,
-        libraryElements: LibraryElements?
-    ) {
-        Preconditions.checkState(configSpecs.isNotEmpty())
-        for (configSpec in configSpecs) {
-            val config = variantDependencies.getElements(configSpec)
-            val configType = configSpec.configType
-            if (config != null) {
-                if (configType.isPublicationConfig) {
-                    var classifier: String? = null
-                    val isSourcePublication = configType == PublishedConfigType.SOURCE_PUBLICATION
-                    val isJavaDocPublication =
-                        configType == PublishedConfigType.JAVA_DOC_PUBLICATION
-                    if (configSpec.isClassifierRequired) {
-                        classifier = if (isSourcePublication) {
-                            componentIdentity.name + "-" + DocsType.SOURCES
-                        } else if (isJavaDocPublication) {
-                            componentIdentity.name + "-" + DocsType.JAVADOC
-                        } else {
-                            componentIdentity.name
-                        }
-                    } else if (componentType.isTestFixturesComponent) {
-                        classifier = testFixturesClassifier
-                    } else if (isSourcePublication) {
-                        classifier = DocsType.SOURCES
-                    } else if (isJavaDocPublication) {
-                        classifier = DocsType.JAVADOC
-                    }
-                    publishArtifactToDefaultVariant(config, artifact, artifactType, classifier)
-                } else {
-                    publishArtifactToConfiguration(
-                        config,
-                        artifact,
-                        artifactType,
-                        AndroidAttributes(null, libraryElements)
-                    )
-                }
-            }
-        }
     }
 }

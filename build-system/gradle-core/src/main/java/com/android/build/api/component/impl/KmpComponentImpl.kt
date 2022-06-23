@@ -42,7 +42,10 @@ import com.android.build.gradle.internal.core.ProductFlavor
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dependency.getProvidedClasspath
+import com.android.build.gradle.internal.dsl.AbstractPublishing
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.ComponentPublishingInfo
+import com.android.build.gradle.internal.publishing.VariantPublishingInfo
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.TaskCreationServices
@@ -162,7 +165,17 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         }
 
     override fun publishBuildArtifacts() {
-        // TODO(b/243387425): implement
+        com.android.build.gradle.internal.scope.publishBuildArtifacts(
+            creationConfig = this,
+            publishInfo = VariantPublishingInfo(
+                components = listOf(
+                    ComponentPublishingInfo(
+                        componentName = name,
+                        type = AbstractPublishing.Type.AAR
+                    )
+                )
+            )
+        )
     }
 
     // Unsupported features

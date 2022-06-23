@@ -303,7 +303,28 @@ class PublishingSpecs {
                 output(LOCAL_AAR_FOR_LINT, ArtifactType.LOCAL_AAR_FOR_LINT)
             }
 
-            variantSpec(ComponentTypeImpl.KMP_ANDROID)
+            variantSpec(ComponentTypeImpl.KMP_ANDROID) {
+                publish(com.android.build.api.artifact.SingleArtifact.AAR, ArtifactType.AAR)
+
+                api(COMPILE_LIBRARY_CLASSES_JAR, ArtifactType.CLASSES_JAR)
+
+                // manifest is published to both to compare and detect provided-only library
+                // dependencies.
+                output(MERGED_MANIFEST, ArtifactType.MANIFEST)
+                output(FULL_JAR, ArtifactType.JAR)
+
+                runtime(RUNTIME_LIBRARY_CLASSES_JAR, ArtifactType.CLASSES_JAR)
+                // Publish the CLASSES_DIR artifact type with a LibraryElements.CLASSES attribute to
+                // match the behavior of the Java library plugin. The LibraryElements attribute will
+                // be used for incremental dexing of test fixtures.
+                runtime(RUNTIME_LIBRARY_CLASSES_DIR, ArtifactType.CLASSES_DIR, LibraryElements.CLASSES)
+
+                runtime(JAVA_RES, ArtifactType.JAVA_RES)
+                runtime(AAR_METADATA, ArtifactType.AAR_METADATA)
+                // Publish LOCAL_AAR_FOR_LINT to API_AND_RUNTIME_ELEMENTS to support compileOnly
+                // module dependencies.
+                output(LOCAL_AAR_FOR_LINT, ArtifactType.LOCAL_AAR_FOR_LINT)
+            }
 
             // Publishing will be done manually from the lint standalone plugin for now.
             // Eventually we should just unify the infrastructure to declare the publications here.
@@ -349,6 +370,7 @@ class PublishingSpecs {
                 ComponentTypeImpl.BASE_APK -> AppVariantSpecBuilder(componentType)
                 ComponentTypeImpl.LIBRARY -> LibraryVariantSpecBuilder(componentType)
                 ComponentTypeImpl.TEST_FIXTURES -> TestFixturesVariantSpecBuilder(componentType)
+                ComponentTypeImpl.KMP_ANDROID -> KotlinMultiplatformVariantSpecBuilder(componentType)
                 else -> VariantSpecBuilderImpl(componentType)
             }
     }
@@ -513,5 +535,21 @@ private class AppVariantSpecBuilder(componentType: ComponentType): VariantSpecBu
         } else {
             outputs.add(OutputSpecImpl(taskOutputType, artifactType, APK_PUBLICATION))
         }
+    }
+}
+
+private class KotlinMultiplatformVariantSpecBuilder(componentType: ComponentType):
+    VariantSpecBuilderImpl(componentType) {
+
+    override fun publish(taskOutputType: Artifact.Single<*>, artifactType: ArtifactType) {
+        outputs.add(OutputSpecImpl(taskOutputType, artifactType, API_AND_RUNTIME_PUBLICATION))
+    }
+
+    override fun source(taskOutputType: Artifact.Single<*>, artifactType: ArtifactType) {
+        outputs.add(OutputSpecImpl(taskOutputType, artifactType, SOURCE_PUBLICATION))
+    }
+
+    override fun javaDoc(taskOutputType: Artifact.Single<*>, artifactType: ArtifactType) {
+        outputs.add(OutputSpecImpl(taskOutputType, artifactType, JAVA_DOC_PUBLICATION))
     }
 }
