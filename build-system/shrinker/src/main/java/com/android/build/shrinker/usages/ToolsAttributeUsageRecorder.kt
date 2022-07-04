@@ -18,7 +18,9 @@ package com.android.build.shrinker.usages
 
 import com.android.SdkConstants.VALUE_STRICT
 import com.android.build.shrinker.ResourceShrinkerModel
+import com.android.utils.XmlUtils
 import com.google.common.collect.ImmutableMap.copyOf
+import java.io.Reader
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.xml.stream.XMLInputFactory
@@ -60,7 +62,7 @@ class ToolsAttributeUsageRecorder(val rawResourcesPath: Path) : ResourceUsageRec
 
     private fun processResourceToolsAttributes(path: Path): Map<String, String> {
         val toolsAttributes = mutableMapOf<String, String>()
-        Files.newBufferedReader(path).use { reader ->
+        XmlUtils.getUtfReader(path).use { reader: Reader ->
             val factory = XMLInputFactory.newInstance()
             val xmlStreamReader = factory.createXMLStreamReader(reader)
 

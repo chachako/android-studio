@@ -32,24 +32,24 @@ class ToolsAttributeUsageRecorderTest {
 
     @Test
     fun `record tools_keep tools_discard attributes from xml files`() {
+        // Regression test for issue 235863809, where adding a byte order marker caused XML parsing
+        //to fail.
+        val byteOrderMarker = '\uFEFF'
         writeToFile(
             File(temporaryFolder.root, "keep.xml"),
-            """
-                <resources xmlns:tools="http://schemas.android.com/tools"
+            """$byteOrderMarker<resources xmlns:tools="http://schemas.android.com/tools"
                     tools:keep="layout/a,string/*" />
             """.trimIndent()
         )
         writeToFile(
             File(temporaryFolder.root, "keep2.xml"),
-            """
-                <resources xmlns:tools="http://schemas.android.com/tools"
+            """$byteOrderMarker<resources xmlns:tools="http://schemas.android.com/tools"
                     tools:keep="layout/b" />
             """.trimIndent()
         )
         writeToFile(
             File(temporaryFolder.root, "discard_shrinkMode.XML"),
-            """
-                <resources xmlns:tools="http://schemas.android.com/tools"
+            """$byteOrderMarker<resources xmlns:tools="http://schemas.android.com/tools"
                     tools:discard="drawable/hello" tools:shrinkMode="strict" />
             """.trimIndent()
         )
