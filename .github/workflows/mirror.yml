@@ -34,7 +34,13 @@ jobs:
           echo "Run rtyley/bfg-repo-cleaner"
           java -jar bfg.jar --strip-blobs-bigger-than 100M
 
-          echo "Refresh git"
+          echo "Remove git index"
+          git rm --cached --ignore-unmatch profiler/native/trace_processor_daemon/testdata/tank.trace
+          git rm --cached --ignore-unmatch profiler/native/testdata/dex/expected/large.verbose_cfg
+          git rm --cached --ignore-unmatch profiler/native/testdata/dex/expected/large.code_coverage
+          git rm --cached --ignore-unmatch bazel/prebuilts/mac/bazel-real
+
+          echo "Run git gc"
           git reflog expire --expire=now --all
           git gc --prune=now --aggressive
 
