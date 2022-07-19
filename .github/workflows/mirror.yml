@@ -1,0 +1,48 @@
+name: 'mirror'
+on:
+  push:
+    branches:
+      - mirror
+  schedule:
+    - cron:  "0 */4 * * *"
+  workflow_dispatch:
+
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a bare clone of the repository
+        run: |
+          git clone https://android.googlesource.com/platform/tools/base -b mirror-goog-studio-main repo
+      
+      - name: Setup git information
+        run: |
+          cd repo
+          git remote set-url origin "https://$GITHUB_ACTOR:${{secrets.GITHUB_TOKEN}}@github.com/$GITHUB_REPOSITORY.git"
+          git config --local user.email "49699333+dependabot-preview[bot]@users.noreply.github.com"
+          git config --local user.name "android-studio[bot]"
+
+      - name: Install rtyley/bfg-repo-cleaner
+        run: |
+          cd repo
+          curl -fsSL -o bfg.jar https://repo1.maven.org/maven2/com/madgag/bfg/1.14.0/bfg-1.14.0.jar
+      
+      - name: Remove large files
+        run: |
+          cd repo
+
+          echo "Run rtyley/bfg-repo-cleaner"
+          java -jar bfg.jar --strip-blobs-bigger-than 100M
+
+          echo "Refresh git"
+          git reflog expire --expire=now --all
+          git gc --prune=now --aggressive
+
+          echo "Ensure commit"
+          git commit --amend -CHEAD
+      
+      - name: Force-push to this repository
+        run: |
+          cd repo
+          git branch -m main
+          git push -f origin main
