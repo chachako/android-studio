@@ -30,15 +30,14 @@ class ObfuscatedClasses private constructor(builder: Builder) {
     private val obfuscatedMethods = ImmutableMap.copyOf(builder.obfuscatedMethods)
 
     fun resolveOriginalMethod(obfuscatedMethod: ClassAndMethod): ClassAndMethod {
-        return obfuscatedMethods.getOrElse(obfuscatedMethod, {
-            val realClassName = obfuscatedClasses.getOrDefault(
-                obfuscatedMethod.className, obfuscatedMethod.className)
+        return obfuscatedMethods.getOrElse(obfuscatedMethod) {
+            val realClassName = obfuscatedClasses[obfuscatedMethod.className] ?: obfuscatedMethod.className
             ClassAndMethod(realClassName, obfuscatedMethod.methodName)
-        })
+        }
     }
 
     fun resolveOriginalClass(obfuscatedClass: String): String {
-        return obfuscatedClasses.getOrDefault(obfuscatedClass, obfuscatedClass)
+        return obfuscatedClasses[obfuscatedClass] ?: obfuscatedClass
     }
 
     /**
