@@ -92,5 +92,6 @@ class StudioIssueRegistry : IssueRegistry() {
         ShortNameCacheDetector.ISSUE,
         SwingWorkerDetector.ISSUE,
         TerminologyDetector.ISSUE,
+        InconsistentThreadingAnnotationDetector.ISSUE,
     )
 }
