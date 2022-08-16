@@ -64,11 +64,13 @@ class UtpTestTaskStatesTest {
         appProject.buildFile.appendText("""
             android {
                 testOptions {
-                    devices {
-                        device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 2"
-                            apiLevel = 29
-                            systemImageSource = "aosp"
+                    managedDevices {
+                        devices {
+                            device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
+                                device = "Pixel 2"
+                                apiLevel = 29
+                                systemImageSource = "aosp"
+                            }
                         }
                     }
                     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -100,11 +102,13 @@ class UtpTestTaskStatesTest {
         appProject.buildFile.appendText("""
             android {
                 testOptions {
-                    devices {
-                        device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 2"
-                            apiLevel = 29
-                            systemImageSource = "aosp"
+                    managedDevices {
+                        devices {
+                            device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
+                                device = "Pixel 2"
+                                apiLevel = 29
+                                systemImageSource = "aosp"
+                            }
                         }
                     }
                     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -126,16 +130,18 @@ class UtpTestTaskStatesTest {
         appProject.buildFile.appendText("""
             android {
                 testOptions {
-                    devices {
-                        device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 2"
-                            apiLevel = 29
-                            systemImageSource = "aosp"
-                        }
-                        someDeviceName (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 3"
-                            apiLevel = 27
-                            systemImageSource = "aosp"
+                    managedDevices {
+                        devices {
+                            device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
+                                device = "Pixel 2"
+                                apiLevel = 29
+                                systemImageSource = "aosp"
+                            }
+                            someDeviceName (com.android.build.api.dsl.ManagedVirtualDevice) {
+                                device = "Pixel 3"
+                                apiLevel = 27
+                                systemImageSource = "aosp"
+                            }
                         }
                     }
                     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -173,11 +179,13 @@ class UtpTestTaskStatesTest {
                     }
                 }
                 testOptions {
-                    devices {
-                        device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 2"
-                            apiLevel = 29
-                            systemImageSource = "aosp"
+                    managedDevices {
+                        devices {
+                            device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
+                                device = "Pixel 2"
+                                apiLevel = 29
+                                systemImageSource = "aosp"
+                            }
                         }
                     }
                     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -202,16 +210,18 @@ class UtpTestTaskStatesTest {
         appProject.buildFile.appendText("""
             android {
                 testOptions {
-                    devices {
-                        device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 2"
-                            apiLevel = 29
-                            systemImageSource = "aosp"
+                    managedDevices {
+                        devices {
+                            device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
+                                device = "Pixel 2"
+                                apiLevel = 29
+                                systemImageSource = "aosp"
+                            }
                         }
-                    }
-                    deviceGroups {
-                        test {
-                            targetDevices.add(devices.device1)
+                        groups {
+                            test {
+                                targetDevices.add(devices.device1)
+                           }
                         }
                     }
                     execution = "ANDROIDX_TEST_ORCHESTRATOR"

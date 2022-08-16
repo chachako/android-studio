@@ -1615,7 +1615,6 @@ com.android.build.gradle.internal.dsl.ManagedDevices implements com.android.buil
 com.android.build.gradle.internal.dsl.ManagedDevices.<init>: com.android.build.gradle.internal.dsl.ManagedDevices (com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.ManagedDevices.getDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
 com.android.build.gradle.internal.dsl.ManagedDevices.getGroups: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> ()
-com.android.build.gradle.internal.dsl.ManagedDevices.setDevices: void (org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device>)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice implements com.android.build.api.dsl.ManagedVirtualDevice
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.<init>: com.android.build.gradle.internal.dsl.ManagedVirtualDevice (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getApiLevel: int ()
