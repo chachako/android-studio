@@ -19,6 +19,7 @@
 #include <functional>
 #include <unordered_map>
 
+#include "tools/base/deploy/installer/compose_status.h"
 #include "tools/base/deploy/installer/delta_install.h"
 #include "tools/base/deploy/installer/delta_preinstall.h"
 #include "tools/base/deploy/installer/dump.h"
@@ -59,6 +60,8 @@ std::unique_ptr<Command> GetCommand(const char* command_name,
           {"installcoroutineagent",
            [&]() { return new InstallCoroutineAgentCommand(workspace); }},
           {"liveedit", [&]() { return new LiveEditCommand(workspace); }},
+          {"composestatus",
+           [&]() { return new ComposeStatusCommand(workspace); }},
           {"networktest", [&]() { return new NetworkTestCommand(workspace); }},
           {"timeout", [&]() { return new TimeoutCommand(workspace); }},
           // Add here more commands (e.g: version, install, patch, agent, ...)

@@ -21,6 +21,7 @@
 
 #include "slicer/common.h"
 #include "tools/base/deploy/agent/native/capabilities.h"
+#include "tools/base/deploy/agent/native/compose_status.h"
 #include "tools/base/deploy/agent/native/crash_logger.h"
 #include "tools/base/deploy/agent/native/hidden_api_silencer.h"
 #include "tools/base/deploy/agent/native/instrumenter.h"
@@ -181,6 +182,10 @@ jint HandleAgentRequest(jvmtiEnv* jvmti, JNIEnv* jni, char* socket_name) {
   } else if (request.has_le_request()) {
     *response.mutable_le_response() =
         LiveEdit(jvmti, jni, request.le_request());
+    SendResponse(socket, response);
+  } else if (request.has_compose_status_request()) {
+    *response.mutable_compose_status_response() =
+        ComposeStatus(jvmti, jni, request.compose_status_request());
     SendResponse(socket, response);
   } else {
     Log::E("Unknown / Empty Agent Request");

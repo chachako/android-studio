@@ -283,6 +283,21 @@ public abstract class Installer {
         return response;
     }
 
+    public Deploy.ComposeStatusResponse composeStatus(Deploy.ComposeStatusRequest csr)
+            throws IOException {
+        Deploy.InstallerRequest.Builder requestBuilder = buildRequest("composestatus");
+        requestBuilder.setComposeStatusRequest(csr);
+        Deploy.InstallerRequest req = requestBuilder.build();
+
+        Deploy.InstallerResponse resp = send(req, Timeouts.CMD_COMPOSE_STATUS);
+        if (!resp.hasComposeStatusResponse()) {
+            errorAsymetry(req, resp);
+        }
+
+        Deploy.ComposeStatusResponse response = resp.getComposeStatusResponse();
+        return response;
+    }
+
     /**
      * Request the Installer to remain inactive for a the timeout duration. This is only used for
      * testing desync detection system.

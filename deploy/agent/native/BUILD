@@ -13,6 +13,8 @@ cc_binary(
         "capabilities.h",
         "class_finder.cc",
         "class_finder.h",
+        "compose_status.cc",
+        "compose_status.h",
         "crash_logger.cc",
         "crash_logger.h",
         "dex_verify.cc",

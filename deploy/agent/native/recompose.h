@@ -21,6 +21,7 @@
 #include <jvmti.h>
 
 #include <string>
+#include <vector>
 
 #include "tools/base/deploy/agent/native/class_finder.h"
 
@@ -45,6 +46,10 @@ class Recompose {
   // empty string should there be no error messages.
   bool InvalidateGroupsWithKey(jobject reloader, jint groupId,
                                std::string& error) const;
+
+  bool getCurrentErrors(jobject reloader, std::vector<bool>* recoverable,
+                        std::vector<std::string>* exceptions,
+                        std::string& error) const;
 
   // Create ComposeHotReload object if needed.
   jobject GetComposeHotReload() const;

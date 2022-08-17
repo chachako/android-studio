@@ -17,6 +17,7 @@ package com.android.tools.deploy.liveedit;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 /** Support class to invoke Compose API functions. */
 public class ComposeSupport {
@@ -50,6 +51,60 @@ public class ComposeSupport {
             e.printStackTrace();
             return e.getMessage(); // Very unlikely.
         }
+
         return "";
+    }
+
+    public static class LiveEditRecomposeError {
+        public final boolean recoverable;
+        public final String cause;
+
+        private LiveEditRecomposeError(boolean recoverable, Exception cause) {
+            this.recoverable = recoverable;
+            this.cause = cause.toString();
+        }
+    }
+
+    public static LiveEditRecomposeError[] fetchPendingErrors(Object reloader) {
+        Method getCurrentErrors = null;
+        try {
+            getCurrentErrors = reloader.getClass().getMethod("getCurrentErrors", int.class);
+        } catch (NoSuchMethodException ignored) {
+            // The most recent builds of compose started to mangle '$runtime_release' into
+            // certain API calls.
+            try {
+                getCurrentErrors =
+                        reloader.getClass().getMethod("getCurrentErrors$runtime_release");
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        List errors = null;
+        try {
+            errors = (List) getCurrentErrors.invoke(reloader);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        LiveEditRecomposeError[] result = new LiveEditRecomposeError[errors.size()];
+        int index = 0;
+        try {
+            for (Object errorObject : errors) {
+                Method getRecoverable = errorObject.getClass().getDeclaredMethod("getRecoverable");
+                boolean recoverable = ((Boolean) getRecoverable.invoke(errorObject)).booleanValue();
+
+                Method getCause = errorObject.getClass().getDeclaredMethod("getCause");
+                Exception cause = (Exception) getCause.invoke(errorObject);
+
+                result[index] = new LiveEditRecomposeError(recoverable, cause);
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return result;
     }
 }

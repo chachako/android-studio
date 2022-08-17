@@ -248,14 +248,13 @@ public class LiveUpdateDeployer {
         Deploy.LiveLiteralUpdateRequest.Builder requestBuilder =
                 Deploy.LiveLiteralUpdateRequest.newBuilder();
         for (UpdateLiveLiteralParam param : params) {
-            requestBuilder
-                    .addUpdates(
-                            Deploy.LiveLiteral.newBuilder()
-                                    .setKey(param.key)
-                                    .setOffset(param.offset)
-                                    .setHelperClass(param.helper)
-                                    .setType(param.type)
-                                    .setValue(param.value));
+            requestBuilder.addUpdates(
+                    Deploy.LiveLiteral.newBuilder()
+                            .setKey(param.key)
+                            .setOffset(param.offset)
+                            .setHelperClass(param.helper)
+                            .setType(param.type)
+                            .setValue(param.value));
         }
 
         requestBuilder.setPackageName(packageName);
@@ -366,5 +365,41 @@ public class LiveUpdateDeployer {
 
         // TODO: Next CL: Change the return type and return the result object instead.
         return result.errors;
+    }
+
+    /* Temp solution. Going to refactor / move this elsewhere later. */
+    public void retrieveComposeStatus(Installer installer, AdbClient adb, String appId) {
+
+        List<Integer> pids = adb.getPids(appId);
+        Deploy.Arch arch = adb.getArch(pids);
+
+        Deploy.ComposeStatusRequest.Builder requestBuilder =
+                Deploy.ComposeStatusRequest.newBuilder();
+        requestBuilder.setApplicationId(appId);
+        requestBuilder.addAllProcessIds(pids);
+        requestBuilder.setArch(arch);
+
+        Deploy.ComposeStatusRequest request = requestBuilder.build();
+
+        try {
+            Deploy.ComposeStatusResponse response = installer.composeStatus(request);
+
+            // *****************************
+            // TODO: PRINT THESE IN THE UI!
+            // *****************************
+
+            boolean hasException = false;
+            for (Deploy.ComposeException exception : response.getExceptionsList()) {
+                System.out.print("Live Edit Recompose Status Exception: (");
+                System.out.print(exception.getRecoverable() ? "Recoverable" : "Not Recoverable");
+                System.out.println(") " + exception.getMessage());
+                hasException = true;
+            }
+            if (!hasException) {
+                System.out.println("Live Edit Recompose Status Error Free");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

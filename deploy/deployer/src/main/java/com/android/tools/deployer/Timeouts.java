@@ -32,6 +32,7 @@ public class Timeouts {
     static final long CMD_DELTA_INSTALL_MS = T_5_MINUTES;
     static final long CMD_UPDATE_LL = T_5_SECONDS;
     static final long CMD_LIVE_EDIT = T_5_SECONDS;
+    static final long CMD_COMPOSE_STATUS = T_5_SECONDS;
     static final long CMD_INSTALL_COROUTINE = T_5_SECONDS;
     static final long CMD_NETTEST = T_5_MINUTES;
     static final long CMD_TIMEOUT = T_5_SECONDS;

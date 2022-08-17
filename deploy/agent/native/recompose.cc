@@ -128,4 +128,66 @@ bool Recompose::InvalidateGroupsWithKey(jobject reloader, jint groupId,
   return true;
 }
 
+bool Recompose::getCurrentErrors(jobject reloader,
+                                 std::vector<bool>* recoverable,
+                                 std::vector<std::string>* exceptions,
+                                 std::string& error) const {
+  JniClass support(jni_, Recompose::kComposeSupportClass);
+  JniObject reloader_jnio(jni_, reloader);
+
+  jobjectArray jresult = (jobjectArray)support.CallStaticObjectMethod(
+      "fetchPendingErrors",
+      "(Ljava/lang/Object;)[Lcom/android/tools/deploy/liveedit/"
+      "ComposeSupport$LiveEditRecomposeError;",
+      reloader);
+
+  if (jresult == NULL) {
+    error = "getCurrentErrors Failure";
+    return false;
+  }
+
+  if (jni_->ExceptionCheck()) {
+    jni_->ExceptionDescribe();
+    jni_->ExceptionClear();
+    error = "Exception During getCurrentErrors";
+    return false;
+  }
+
+  jsize len = jni_->GetArrayLength(jresult);
+
+  for (int i = 0; i < len; i++) {
+    jobject exception = jni_->GetObjectArrayElement(jresult, i);
+    jclass wrapper_class = jni_->GetObjectClass(exception);
+    jfieldID recoverable_field =
+        jni_->GetFieldID(wrapper_class, "recoverable", "Z");
+
+    if (jni_->ExceptionCheck()) {
+      jni_->ExceptionDescribe();
+      jni_->ExceptionClear();
+      error = "Exception fetching recoverable status of a Compose exception.";
+      return false;
+    }
+    bool re = jni_->GetBooleanField(exception, recoverable_field);
+
+    jfieldID exception_field =
+        jni_->GetFieldID(wrapper_class, "cause", "Ljava/lang/String;");
+    jstring jex = (jstring)jni_->GetObjectField(exception, exception_field);
+
+    if (jni_->ExceptionCheck()) {
+      jni_->ExceptionDescribe();
+      jni_->ExceptionClear();
+      error = "Exception fetching cause of a Compose exception.";
+      return false;
+    }
+    const char* cresult = jni_->GetStringUTFChars(jex, JNI_FALSE);
+    std::string result(cresult);
+
+    recoverable->push_back(re);
+    exceptions->push_back(result);
+    jni_->ReleaseStringUTFChars(jex, cresult);
+  }
+
+  return true;
+}
+
 }  // namespace deploy
