@@ -47,7 +47,7 @@ import java.util.Locale
 
 val googleAdMobAdsActivityTemplate
   get() = template {
-    name = "Google AdMob Ads Activity"
+    name = "Google AdMob Ads View Activity"
     constraints = listOf(TemplateConstraint.AndroidX)
     minApi = MIN_API
     description = "Creates an activity with AdMob Ad fragment"

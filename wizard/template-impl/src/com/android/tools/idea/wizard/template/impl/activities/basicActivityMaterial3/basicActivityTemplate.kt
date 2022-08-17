@@ -44,7 +44,7 @@ import com.android.tools.idea.wizard.template.template
 import java.io.File
 
 val basicActivityMaterial3Template get() = template {
-  name = "Basic Activity (Material3)"
+  name = "Basic Views Activity"
   minApi = MIN_API
   description = "Creates a new basic activity using Material 3 theming"
 

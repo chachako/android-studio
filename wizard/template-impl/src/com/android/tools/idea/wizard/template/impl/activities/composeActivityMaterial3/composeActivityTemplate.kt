@@ -38,7 +38,7 @@ import java.io.File
 
 val composeActivityMaterial3Template
   get() = template {
-    name = "Empty Compose Activity (Material3)"
+    name = "Empty Activity"
     description = "Create a new empty activity with Jetpack Compose"
     minApi = 21
     constraints = listOf(

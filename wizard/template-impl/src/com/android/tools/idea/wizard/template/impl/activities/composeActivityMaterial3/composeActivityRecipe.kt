@@ -20,9 +20,9 @@ import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
-import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_KOTLIN_COMPILER_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_MATERIAL3_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_UI_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_MATERIAL3_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_UI_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.res.values.themesXml
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.mainActivityKt
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.ui.colorKt

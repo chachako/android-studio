@@ -41,7 +41,7 @@ import java.io.File
 
 val scrollActivityTemplate
   get() = template {
-    name = "Scrolling Activity"
+    name = "Scrolling View Activity"
     minApi = MIN_API
     description = "Creates a new vertical scrolling activity"
 

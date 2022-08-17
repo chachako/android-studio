@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.tools.idea.wizard.template.impl.activities.composeActivity.res.values
+package com.android.tools.idea.wizard.template.impl.activities.common
 
-fun themesXml(themeName: String): String = """
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="$themeName" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
-    </style>
-</resources>
-"""
+internal const val COMPOSE_UI_VERSION = "1.2.1"
+internal const val COMPOSE_MATERIAL3_VERSION = "1.0.0-beta01"
+internal const val COMPOSE_KOTLIN_COMPILER_VERSION = "1.3.0"

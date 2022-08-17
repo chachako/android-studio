@@ -40,7 +40,7 @@ import java.io.File
 
 val googlePayActivityTemplate
   get() = template {
-    name = "Google Pay Activity"
+    name = "Google Pay View Activity"
     description = "Creates a new activity with Google Pay, so that your users can start payments quickly using the cards saved under their Google accounts"
     minApi = MIN_API
     constraints = listOf(TemplateConstraint.AndroidX)

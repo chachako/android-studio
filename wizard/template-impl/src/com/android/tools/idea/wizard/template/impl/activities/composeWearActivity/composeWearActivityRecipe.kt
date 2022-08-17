@@ -20,8 +20,8 @@ import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
-import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_KOTLIN_COMPILER_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_UI_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_UI_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.complication.complicationServiceKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.complicationStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.stringsXml

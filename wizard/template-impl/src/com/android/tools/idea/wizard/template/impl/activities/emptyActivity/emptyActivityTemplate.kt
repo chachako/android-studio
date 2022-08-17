@@ -39,7 +39,7 @@ import com.android.tools.idea.wizard.template.template
 import java.io.File
 
 val emptyActivityTemplate get() = template {
-  name = "Empty Activity"
+  name = "Empty View Activity"
   minApi = MIN_API
   description = "Creates a new empty activity"
 
