@@ -24,7 +24,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Verify;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -43,7 +42,7 @@ import org.jetbrains.annotations.NotNull;
  * A version can also be a "previewType" (e.g. 1-alpha1, 1.0.0-rc2) or an unreleased version (or
  * "snapshot") (e.g. 1-SNAPSHOT, 1.0.0-alpha1-SNAPSHOT).
  */
-public class GradleVersion implements Comparable<GradleVersion>, Serializable {
+public class GradleVersion implements Comparable<GradleVersion> {
     private static final String PLUS = "+";
 
     // TODO(b/242691473): This pattern is not inclusive for all the possible versions.
@@ -514,7 +513,7 @@ public class GradleVersion implements Comparable<GradleVersion>, Serializable {
         }
     }
 
-    public static class VersionSegment implements Serializable {
+    public static class VersionSegment {
         @NonNull
         private final String mText;
 
