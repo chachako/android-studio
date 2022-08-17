@@ -273,12 +273,6 @@ public class GradleVersionTest {
         assertEquals(0, version.getPreview());
         assertNull(version.getPreviewType());
         assertFalse(version.isSnapshot());
-
-        List<GradleVersion.VersionSegment> additional = version.getAdditionalSegments();
-        assertEquals(1, additional.size());
-
-        GradleVersion.VersionSegment fourth = additional.get(0);
-        assertEquals(4, fourth.getValue());
     }
 
     @Test
@@ -290,15 +284,6 @@ public class GradleVersionTest {
         assertEquals(0, version.getPreview());
         assertNull(version.getPreviewType());
         assertTrue(version.isSnapshot());
-
-        List<GradleVersion.VersionSegment> additional = version.getAdditionalSegments();
-        assertEquals(2, additional.size());
-
-        GradleVersion.VersionSegment fourth = additional.get(0);
-        assertEquals(4, fourth.getValue());
-
-        GradleVersion.VersionSegment fifth = additional.get(1);
-        assertEquals(5, fifth.getValue());
     }
 
 
@@ -312,17 +297,6 @@ public class GradleVersionTest {
         assertEquals("alpha", version.getPreviewType());
         assertTrue(version.isSnapshot());
 
-        List<GradleVersion.VersionSegment> additional = version.getAdditionalSegments();
-        assertEquals(3, additional.size());
-
-        GradleVersion.VersionSegment fourth = additional.get(0);
-        assertEquals(4, fourth.getValue());
-
-        GradleVersion.VersionSegment fifth = additional.get(1);
-        assertEquals(5, fifth.getValue());
-
-        GradleVersion.VersionSegment sixth = additional.get(2);
-        assertEquals(6, sixth.getValue());
     }
 
     @Test

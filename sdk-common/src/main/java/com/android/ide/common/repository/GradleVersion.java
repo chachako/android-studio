@@ -500,15 +500,6 @@ public class GradleVersion implements Comparable<GradleVersion>, Serializable {
         return mRawValue;
     }
 
-    /**
-     * @return version segments present after the "micro" segments. For example, parsing "1.2.3.4.5"
-     * will result in "4" and "5" to be considered "additional" version segments.
-     */
-    @NonNull
-    public List<VersionSegment> getAdditionalSegments() {
-        return mAdditionalSegments;
-    }
-
     /** Returns the max of the two versions */
     @Nullable
     public static GradleVersion max(@Nullable GradleVersion version1, @Nullable GradleVersion version2) {
