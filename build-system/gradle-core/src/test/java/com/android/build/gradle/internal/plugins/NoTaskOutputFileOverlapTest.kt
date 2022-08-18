@@ -53,6 +53,7 @@ class NoTaskOutputFileOverlapTest {
         val android = project.extensions.getByType(LibraryExtension::class.java)
         android.setCompileSdkVersion(TestConstants.COMPILE_SDK_VERSION)
         android.buildToolsVersion = TestConstants.BUILD_TOOL_VERSION
+        android.namespace = "com.example.namespace"
         val plugin = project.plugins.getPlugin(LibraryPlugin::class.java)
         plugin.createAndroidTasks(project)
 
@@ -68,6 +69,7 @@ class NoTaskOutputFileOverlapTest {
         val android = project.extensions.getByType(AppExtension::class.java)
         android.setCompileSdkVersion(TestConstants.COMPILE_SDK_VERSION)
         android.buildToolsVersion = TestConstants.BUILD_TOOL_VERSION
+        android.namespace = "com.example.namespace"
         val plugin = project.plugins.getPlugin(AppPlugin::class.java)
         plugin.createAndroidTasks(project)
 

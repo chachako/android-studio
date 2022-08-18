@@ -86,6 +86,7 @@ class CmakeSettingsTest(private val cmakeVersionInDsl: String) {
                 apply plugin: 'com.android.application'
 
                 android {
+                    namespace "com.example.hellojni"
                     compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
                     buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                     ndkVersion "$DEFAULT_NDK_SIDE_BY_SIDE_VERSION"

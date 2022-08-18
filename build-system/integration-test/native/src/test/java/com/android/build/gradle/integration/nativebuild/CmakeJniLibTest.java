@@ -64,6 +64,7 @@ public class CmakeJniLibTest {
                 "\n"
                         + "apply plugin: 'com.android.library'\n"
                         + "android {\n"
+                        + "    namespace \"com.example.hellojni\"\n"
                         + "    compileSdkVersion rootProject.latestCompileSdk\n"
                         + "    buildToolsVersion = rootProject.buildToolsVersion\n"
                         + "}\n");

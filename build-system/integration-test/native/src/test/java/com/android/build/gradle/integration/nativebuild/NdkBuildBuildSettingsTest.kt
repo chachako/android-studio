@@ -56,6 +56,7 @@ class NdkBuildBuildSettingsTest {
             """
             apply plugin: 'com.android.application'
                 android {
+                    namespace "com.example.hellojni"
                     compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION
                     ndkPath "${project.ndkPath}"
                     defaultConfig {

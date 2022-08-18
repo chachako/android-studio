@@ -68,8 +68,7 @@ class ExtractNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymb
                 """
                     <?xml version="1.0" encoding="utf-8"?>
                     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                        xmlns:dist="http://schemas.android.com/apk/distribution"
-                        package="com.example.feature">
+                        xmlns:dist="http://schemas.android.com/apk/distribution">
 
                         <dist:module>
                             <dist:fusing dist:include="true"/>

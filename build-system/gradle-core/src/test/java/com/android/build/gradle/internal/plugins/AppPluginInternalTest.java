@@ -78,6 +78,7 @@ public class AppPluginInternalTest {
         AppExtension android = project.getExtensions().getByType(AppExtension.class);
         android.setCompileSdkVersion(TestConstants.COMPILE_SDK_VERSION);
         android.setBuildToolsVersion(TestConstants.BUILD_TOOL_VERSION);
+        android.setNamespace("com.example.namespace");
     }
 
     @Test

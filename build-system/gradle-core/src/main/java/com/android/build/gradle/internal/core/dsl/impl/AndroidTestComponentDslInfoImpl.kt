@@ -49,11 +49,6 @@ internal class AndroidTestComponentDslInfoImpl(
     services: VariantServices,
     buildDirectory: DirectoryProperty,
     override val mainVariantDslInfo: TestedVariantDslInfo,
-    /**
-     *  Whether there are inconsistent applicationId in the test.
-     *  This trigger a mode where the namespaceForR just returns the same as namespace.
-     */
-    private val inconsistentTestAppId: Boolean,
     private val signingConfigOverride: SigningConfig?,
     extension: InternalTestedExtension<*, *, *, *>
 ) : ConsumableComponentDslInfoImpl(
@@ -67,7 +62,7 @@ internal class AndroidTestComponentDslInfoImpl(
     extension
 ), AndroidTestComponentDslInfo {
     override val namespace: Provider<String> by lazy {
-        getTestComponentNamespace(extension, services, dataProvider)
+        getTestComponentNamespace(extension, services)
     }
 
     override val applicationId: Property<String> =
@@ -78,21 +73,6 @@ internal class AndroidTestComponentDslInfoImpl(
 
     override val minSdkVersion: MutableAndroidVersion
         get() = mainVariantDslInfo.minSdkVersion
-
-    override val namespaceForR: Provider<String> by lazy {
-        if (inconsistentTestAppId) {
-            namespace
-        } else {
-            // For legacy reason, this code does the following:
-            // - If testNamespace is set, use it.
-            // - If android.namespace is set, use it with .test added
-            // - else, use the variant applicationId.
-            // TODO(b/176931684) Remove this and use [namespace] directly everywhere.
-            extension.testNamespace?.let { services.provider { it } }
-                ?: extension.namespace?.let { services.provider { it }.map { "$it.test" } }
-                ?: applicationId
-        }
-    }
 
     override val isAndroidTestCoverageEnabled: Boolean
         get() = instrumentedTestDelegate.isAndroidTestCoverageEnabled

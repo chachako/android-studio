@@ -461,12 +461,9 @@ public class ModelBuilder<Extension extends BaseExtension>
             // them. For AndroidTest we take the first non-null variant as well.
             namespace = variant.getNamespace().get();
             if (variant instanceof HasAndroidTest) {
-                // TODO(b/176931684) Use AndroidTest.namespace instead after we stop
-                //  supporting using applicationId to namespace the test component R class.
-
                 AndroidTestCreationConfig test = ((HasAndroidTest) variant).getAndroidTest();
                 if (test != null) {
-                    androidTestNamespace = test.getNamespaceForR().get();
+                    androidTestNamespace = test.getNamespace().get();
                 }
             }
         }

@@ -71,16 +71,22 @@ internal abstract class VariantDslInfoImpl internal constructor(
 
     // extension delegates
 
-    // For main variants we get the namespace from the DSL or read it from the manifest.
-    override val namespace: Provider<String> by lazy {
-        extension.namespace?.let { services.provider { it } }
-            ?: dataProvider.manifestData.map {
-                it.packageName
-                    ?: throw RuntimeException(
-                        getMissingPackageNameErrorMessage(dataProvider.manifestLocation)
-                    )
-            }
-    }
+    // For main variants we get the namespace from the DSL.
+    override val namespace: Provider<String>
+        get() = extension.namespace?.let { services.provider { it } }
+            ?: throw RuntimeException(
+                "Namespace not specified. Please specify a namespace in the module's " +
+                        "build.gradle file like so:\n\n" +
+                        "android {\n" +
+                        "    namespace 'com.example.namespace'\n" +
+                        "}\n\n" +
+                        "If the package attribute is specified in the source " +
+                        "AndroidManifest.xml, it can be migrated automatically to the namespace " +
+                        "value in the build.gradle file using the AGP Upgrade Assistant; please " +
+                        "refer to " +
+                        "https://developer.android.com/studio/build/agp-upgrade-assistant for " +
+                        "more information."
+            )
 
     override val applicationId: Property<String> by lazy {
         services.newPropertyBackingDeprecatedApi(
@@ -118,9 +124,7 @@ internal abstract class VariantDslInfoImpl internal constructor(
                 ?: defaultConfig.applicationId
 
         return if (appIdFromFlavors == null) {
-            // No appId value set from DSL; use the namespace value from the DSL or manifest.
-            // using map will allow us to keep task dependency should the manifest be generated
-            // or transformed via a task.
+            // No appId value set from DSL; use the namespace value from the DSL.
             namespace.map { "$it${computeApplicationIdSuffix()}" }
         } else {
             // use value from flavors/defaultConfig
@@ -129,12 +133,4 @@ internal abstract class VariantDslInfoImpl internal constructor(
             services.provider { "$finalAppIdFromFlavors${computeApplicationIdSuffix()}" }
         }
     }
-
-    protected fun getMissingPackageNameErrorMessage(manifestLocation: String): String =
-        "Package Name not found in $manifestLocation, and namespace not specified. Please " +
-                "specify a namespace for the generated R and BuildConfig classes via " +
-                "android.namespace in the module's build.gradle file like so:\n\n" +
-                "android {\n" +
-                "    namespace 'com.example.namespace'\n" +
-                "}\n\n"
 }

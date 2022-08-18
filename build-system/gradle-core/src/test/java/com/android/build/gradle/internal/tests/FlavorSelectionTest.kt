@@ -55,6 +55,7 @@ class FlavorSelectionTest {
         android = project.extensions.getByType(TestProjects.Plugin.APP.extensionClass) as AppExtension
         android.setCompileSdkVersion(TestConstants.COMPILE_SDK_VERSION)
         android.buildToolsVersion = TestConstants.BUILD_TOOL_VERSION
+        android.namespace = "com.example.namespace"
         plugin = project.plugins.getPlugin(TestProjects.Plugin.APP.pluginClass) as AppPlugin
 
         // manually call the DSL to configure the project.

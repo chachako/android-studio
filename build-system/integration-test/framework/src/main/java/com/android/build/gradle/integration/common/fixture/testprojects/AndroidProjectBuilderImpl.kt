@@ -24,12 +24,11 @@ import org.gradle.api.JavaVersion
 
 internal class AndroidProjectBuilderImpl(
     internal val subProject: SubProjectBuilderImpl,
-    override var packageName: String
+    override var namespace: String
 ): AndroidProjectBuilder {
 
     override var applicationId: String? = null
     override var buildToolsRevision: String? = null
-    override var namespace: String? = null
     override var compileSdk: Int? = null
     override var minSdk: Int? = null
     override var minSdkPreview: String? = null
@@ -114,8 +113,7 @@ internal class AndroidProjectBuilderImpl(
             subProject.addFile("src/main/AndroidManifest.xml",
                 """
                 <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                      package="$packageName">
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
                     <application />
                 </manifest>
             """.trimIndent()
@@ -127,9 +125,7 @@ internal class AndroidProjectBuilderImpl(
 
         sb.append("android {\n")
 
-        namespace?.let {
-            sb.append("    namespace = \"$it\"\n")
-        }
+        sb.append("    namespace = \"$namespace\"\n")
         if (!appliedPlugins.contains(PluginType.FUSED_LIBRARY)) {
             compileSdk?.let {
                 sb.append("  compileSdk = $it\n")

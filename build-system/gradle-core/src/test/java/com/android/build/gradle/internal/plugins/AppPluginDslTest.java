@@ -74,6 +74,7 @@ public class AppPluginDslTest {
         android = (AppExtension) project.getExtensions().getByType(pluginType.getExtensionClass());
         android.setCompileSdkVersion(TestConstants.COMPILE_SDK_VERSION);
         android.setBuildToolsVersion(TestConstants.BUILD_TOOL_VERSION);
+        android.setNamespace("com.example.namespace");
         plugin = (AppPlugin) project.getPlugins().getPlugin(pluginType.getPluginClass());
         checker = VariantCheckers.createAppChecker(android);
     }

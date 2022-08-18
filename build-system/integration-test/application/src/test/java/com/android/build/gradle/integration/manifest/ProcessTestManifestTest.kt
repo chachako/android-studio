@@ -221,8 +221,7 @@ class ProcessTestManifestTest {
         FileUtils.createFile(
                 project.file("src/androidTest/AndroidManifest.xml"),
                 """
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    package="allowedNonUnique.test">
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
                     <application
                         android:isGame="false">
                     </application>
@@ -325,20 +324,17 @@ class ProcessTestManifestTest {
         assertThat(manifestFile).contains("android:label=\"unit test from tested variant\"")
     }
 
+    /**
+     * Test that the testNamespace is used to create the fully qualified namespace when
+     * ".TestActivity" is used as a class shorthand in the androidTest manifest.
+     */
     @Test
-    fun testPackageNameInTestManifest() {
-        TestFileUtils.searchAndReplace(
-            project.buildFile,
-            "namespace \"com.example.helloworld\"",
-            ""
-        )
-
+    fun testClassShorthandInTestManifest() {
         FileUtils.createFile(
             project.file("src/androidTest/AndroidManifest.xml"),
             """
                 <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    package="com.example.test">
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
                     <application>
                         <activity
@@ -355,7 +351,6 @@ class ProcessTestManifestTest {
             """
                 <?xml version="1.0" encoding="utf-8"?>
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                            package="com.example.helloworld"
                             android:versionCode="1"
                             android:versionName="1.0">
 
@@ -376,7 +371,10 @@ class ProcessTestManifestTest {
 
         val manifestContent = getManifestContent(project.testApk.file)
         assertManifestContentContainsString(manifestContent, "com.example.helloworld.HelloWorld")
-        assertManifestContentContainsString(manifestContent, "com.example.test.TestActivity")
+        assertManifestContentContainsString(
+            manifestContent,
+            "com.example.helloworld.test.TestActivity"
+        )
     }
 
     private fun assertManifestContentContainsString(

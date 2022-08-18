@@ -1,5 +1,4 @@
 > AndroidProject:
-   - androidTestNamespace = "customized.application.id.test"
    - variants:
       - debug:
          - mainArtifact:

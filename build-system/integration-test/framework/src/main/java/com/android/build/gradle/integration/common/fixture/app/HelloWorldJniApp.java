@@ -108,7 +108,6 @@ public class HelloWorldJniApp extends GradleProject {
             "src/main", "AndroidManifest.xml",
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
 "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-"      package=\"com.example.hellojni\"\n" +
 "      android:versionCode=\"1\"\n" +
 "      android:versionName=\"1.0\">\n" +
 "\n" +

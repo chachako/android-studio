@@ -142,6 +142,8 @@ public class SdkAutoDownloadTest {
 
         TestFileUtils.appendToFile(
                 project.getBuildFile(), "android.defaultConfig.minSdkVersion = 30");
+        TestFileUtils.appendToFile(
+                project.getBuildFile(), "android.namespace \"com.example.hellojni\"");
     }
 
     /** Tests that the compile SDK target and build tools are automatically downloaded. */

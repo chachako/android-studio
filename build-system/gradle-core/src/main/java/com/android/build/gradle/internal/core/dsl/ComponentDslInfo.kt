@@ -50,12 +50,7 @@ interface ComponentDslInfo {
      * any relative class names that are declared in the AndroidManifest.xml.
      *
      * For test components, this is set to the `testNamespace` DSL value, if present, or else to the
-     * DSL's `namespace` + ".test", if present, or else to the `package` attribute in the test
-     * AndroidManifest.xml, if present, or else to the `package` attribute in the main
-     * AndroidManifest.xml with ".test" appended.
-     *
-     * For non-test components, this value comes from the namespace DSL element, if present, or from
-     * the `package` attribute in the source AndroidManifest.xml if not specified in the DSL.
+     * DSL's `namespace` + ".test".
      */
     val namespace: Provider<String>
 

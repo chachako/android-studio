@@ -19,6 +19,7 @@ buildDir = new File(System.getenv("BUILD_DIR"))
 apply plugin: 'com.android.library'
 
 android {
+    namespace "com.example.mylibrary"
     compileSdkVersion 33
 
     lintOptions {

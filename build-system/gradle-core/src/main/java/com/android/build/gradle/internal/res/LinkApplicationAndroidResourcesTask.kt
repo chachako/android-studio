@@ -516,15 +516,7 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
             )
 
             task.mainSplit = creationConfig.outputs.getMainSplitOrNull()
-            task.namespace.setDisallowChanges(
-                if (creationConfig is AndroidTestCreationConfig) {
-                    // TODO(b/176931684) Use creationConfig.namespace instead after we stop
-                    //  supporting using applicationId to namespace the test component R class.
-                    creationConfig.namespaceForR
-                } else {
-                    creationConfig.namespace
-                }
-            )
+            task.namespace.setDisallowChanges(creationConfig.namespace)
 
             task.taskInputType = creationConfig.global.manifestArtifactType
             creationConfig.artifacts.setTaskInputToFinalProduct(

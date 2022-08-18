@@ -59,7 +59,8 @@ fun mergeManifests(
     optionalFeatures: Collection<ManifestMerger2.Invoker.Feature>,
     dependencyFeatureNames: Collection<String>,
     reportFile: File?,
-    logger: ILogger
+    logger: ILogger,
+    checkIfPackageInMainManifest: Boolean = true
 ): MergingReport {
 
     try {
@@ -74,7 +75,13 @@ fun mergeManifests(
             .setFeatureName(featureName)
             .addDependencyFeatureNames(dependencyFeatureNames)
             .setNamespace(namespace)
-            .withFeatures(ManifestMerger2.Invoker.Feature.WARN_IF_PACKAGE_IN_SOURCE_MANIFEST)
+
+        if (checkIfPackageInMainManifest) {
+            manifestMergerInvoker.withFeatures(
+                ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST
+            )
+        }
+
         val isAppMerge = mergeType == ManifestMerger2.MergeType.APPLICATION
         val injectProfileable = isAppMerge && profileable
 

@@ -158,7 +158,8 @@ abstract class ProcessMultiApkApplicationManifest: ManifestProcessorTask() {
             listOf(),
             listOf(),
             null,
-            LoggerWrapper.getLogger(ProcessApplicationManifest::class.java)
+            LoggerWrapper.getLogger(ProcessApplicationManifest::class.java),
+            checkIfPackageInMainManifest = false
         )
         return mergedManifestOutputFile
     }

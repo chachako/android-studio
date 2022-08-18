@@ -84,9 +84,9 @@ fun AndroidProjectBuilder.setUpHelloWorld(setupDefaultCompileSdk: Boolean = true
         defaultCompileSdk()
     }
     addFile(
-        "src/main/java/${packageName.replace('.','/')}/HelloWorld.java",
+        "src/main/java/${namespace.replace('.','/')}/HelloWorld.java",
         """
-                package $packageName;
+                package $namespace;
 
                 import android.app.Activity;
                 import android.os.Bundle;
@@ -136,7 +136,6 @@ fun AndroidProjectBuilder.setUpHelloWorld(setupDefaultCompileSdk: Boolean = true
         """
                 <?xml version="1.0" encoding="utf-8"?>
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                      package="$packageName"
                       android:versionCode="1"
                       android:versionName="1.0">
 

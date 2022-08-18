@@ -435,7 +435,7 @@ public class ManifestMergingTest {
                 flavors.getBuildFile(), "namespace \"com.android.tests.flavors\"", "");
         GradleBuildResult buildResult =
                 flavors.executor().expectFailure().run("clean", "assembleF1FaDebug");
-        Truth.assertThat(buildResult.getFailureMessage()).contains("namespace not specified");
+        ScannerSubject.assertThat(buildResult.getStderr()).contains("Namespace not specified");
     }
 
     // an integration test to make sure using tool:ignore_warning doesn't cause any failures
@@ -466,6 +466,18 @@ public class ManifestMergingTest {
         ScannerSubject.assertThat(buildResult.getStdout())
                 .contains(
                         "package=\"com.android.tests.flavors\" found in source AndroidManifest.xml");
+    }
+
+    @Test
+    public void checkErrorIfWrongPackageSpecified() throws Exception {
+        TestFileUtils.searchAndReplace(
+                new File(flavors.getLocation().getProjectDir(), "src/main/AndroidManifest.xml"),
+                "<manifest",
+                "<manifest package=\"com.wrong\"");
+        GradleBuildResult buildResult =
+                flavors.executor().expectFailure().run("clean", "assembleF1FaDebug");
+        ScannerSubject.assertThat(buildResult.getStderr())
+                .contains("Incorrect package=\"com.wrong\" found in source AndroidManifest.xml");
     }
 
     @Test

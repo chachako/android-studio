@@ -120,8 +120,7 @@ class NoManifestTest {
 
     @Test
     fun noManifestInLibraryModuleTest() {
-        val warning =
-            "Setting the namespace via a source AndroidManifest.xml's package attribute is deprecated."
+        val warning = "package=\"com.example.lib\" found in source AndroidManifest.xml"
         TestFileUtils.appendToFile(
                 project.getSubproject(":lib").buildFile,
                 """

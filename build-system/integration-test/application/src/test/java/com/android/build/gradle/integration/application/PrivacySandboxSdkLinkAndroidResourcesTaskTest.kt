@@ -46,7 +46,6 @@ internal class PrivacySandboxSdkLinkAndroidResourcesTaskTest {
                     "src/main/res/values/strings.xml",
                     """<resources>
                 <string name="string_from_androidLib1">androidLib1</string>
-                <string name="package_name">pkg.name.androidLib1</string>
                 <string name="permission_name">androidLib1 permission</string>
                 <string name="permission_label">androidLib1 label</string>
               </resources>""")
@@ -69,8 +68,7 @@ internal class PrivacySandboxSdkLinkAndroidResourcesTaskTest {
             addFile(
                     "src/main/AndroidManifest.xml",
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-                            "package=\"@string/package_name\">\n" +
+                            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n" +
                             "          <permission\n" +
                             "          android:name = \"@string/permission_name\"\n" +
                             //"          android:label = \"@string/permission_label\"\n" +

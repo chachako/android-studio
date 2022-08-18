@@ -352,9 +352,7 @@ class ModelBuilder<
             namespace = it.namespace.get()
             if (androidTestNamespace == null && it is HasAndroidTest) {
                 it.androidTest?.let { androidTest ->
-                    // TODO(b/176931684) Use AndroidTest.namespace instead after we stop
-                    //  supporting using applicationId to namespace the test component R class.
-                    androidTestNamespace = androidTest.namespaceForR.get()
+                    androidTestNamespace = androidTest.namespace.get()
                 }
             }
             if (testFixturesNamespace == null && it is HasTestFixtures) {

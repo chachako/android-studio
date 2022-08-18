@@ -28,7 +28,6 @@ import com.android.build.gradle.internal.core.dsl.TestComponentDslInfo
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalTestedExtension
 import com.android.build.gradle.internal.dsl.SigningConfig
-import com.android.build.gradle.internal.manifest.ManifestDataProvider
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.BuilderConstants
@@ -37,26 +36,21 @@ import org.gradle.api.provider.Provider
 
 internal fun TestComponentDslInfo.getTestComponentNamespace(
     extension: InternalTestedExtension<*, *, *, *>,
-    services: VariantServices,
-    dataProvider: ManifestDataProvider
+    services: VariantServices
 ): Provider<String> {
     return extension.testNamespace?.let {
-            services.provider {
-                if (extension.testNamespace == extension.namespace) {
-                    services.issueReporter
-                        .reportError(
-                            IssueReporter.Type.GENERIC,
-                            "namespace and testNamespace have the same value (\"$it\"), which is not allowed."
-                        )
-                }
-                it
+        services.provider {
+            if (extension.testNamespace == extension.namespace) {
+                services.issueReporter
+                    .reportError(
+                        IssueReporter.Type.GENERIC,
+                        "namespace and testNamespace have the same value (\"$it\"), which is not allowed."
+                    )
             }
-        } ?: extension.namespace?.let { services.provider {"$it.test" } }
-        ?: mainVariantDslInfo.namespace.flatMap { testedVariantNamespace ->
-            dataProvider.manifestData.map { manifestData ->
-                manifestData.packageName ?: "$testedVariantNamespace.test"
-            }
+            it
         }
+    } ?: extension.namespace?.let { services.provider {"$it.test" } }
+    ?: mainVariantDslInfo.namespace.map { "$it.test" }
 }
 
 // Special case for test components and separate test sub-projects

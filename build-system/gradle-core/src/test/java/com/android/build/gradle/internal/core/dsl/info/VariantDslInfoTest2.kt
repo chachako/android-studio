@@ -72,6 +72,8 @@ class VariantDslInfoTest2(
             ComponentTypeImpl.OPTIONAL_APK,
             ComponentTypeImpl.LIBRARY
         )
+
+        private const val DEFAULT_NAMESPACE = "com.example.namespace"
     }
 
     @Test
@@ -615,13 +617,11 @@ class VariantDslInfoTest2(
 
             componentType = ComponentTypeImpl.ANDROID_TEST
 
-            namespace = "com.example.namespace"
             testNamespace = "com.example.testNamespace"
         }
 
         expect {
             namespace = "com.example.testNamespace"
-            namespaceForR = "com.example.testNamespace"
         }
     }
 
@@ -637,185 +637,15 @@ class VariantDslInfoTest2(
 
             componentType = ComponentTypeImpl.ANDROID_TEST
 
-            namespace = "com.example.namespace"
-        }
-
-        expect {
-            namespace = "com.example.namespace.test"
-            namespaceForR = "com.example.namespace.test"
-        }
-    }
-
-    @Test
-    fun `testNamespace derived from manifest`() {
-        given {
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData { }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-        }
-
-        expect {
-            namespace = "com.example.fromManifest.test"
-            namespaceForR = "com.example.fromManifest.test"
-        }
-    }
-
-    @Test
-    fun `testNamespace derived from test manifest`() {
-        given {
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData {
-                packageName = "com.example.fromTestManifest"
-            }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-        }
-
-        expect {
-            namespace = "com.example.fromTestManifest"
-            namespaceForR = "com.example.fromManifest.test"
-        }
-    }
-
-    @Test
-    fun `namespaceForR from single appId`() {
-        given {
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData {
-                packageName = "com.example.fromTestManifest"
-            }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-
             defaultConfig {
                 applicationId = "com.applicationId"
             }
         }
 
         expect {
-            namespace = "com.example.fromTestManifest"
-            namespaceForR = "com.applicationId.test"
+            namespace = "${DEFAULT_NAMESPACE}.test"
         }
     }
-
-    @Test
-    fun `namespaceForR from namespace with single appId`() {
-        given {
-            // no specific manifest info
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData {
-                packageName = "com.example.fromTestManifest"
-            }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-
-            namespace = "com.example.namespace"
-
-            defaultConfig {
-                applicationId = "com.applicationId"
-            }
-        }
-
-        expect {
-            namespace = "com.example.namespace.test"
-            namespaceForR = "com.example.namespace.test"
-        }
-    }
-
-    @Test
-    fun `namespaceForR with several appId`() {
-        given {
-            // no specific manifest info
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData {
-                packageName = "com.example.fromTestManifest"
-            }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-
-            productFlavors {
-                create("flavor1") {
-                    applicationId = "com.example.flavor1"
-                }
-                create("flavor2") {
-                    applicationId = "com.example.flavor2"
-                }
-            }
-        }
-
-        expect {
-            namespace = "com.example.fromTestManifest"
-            namespaceForR = "com.example.fromTestManifest"
-        }
-    }
-
-    @Test
-    fun `namespaceForR with mixed appId`() {
-        given {
-            // no specific manifest info
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData {
-                packageName = "com.example.fromTestManifest"
-            }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-
-            productFlavors {
-                create("flavor1") {
-                    applicationId = "com.example.flavor1"
-                }
-                create("flavor2") {
-                }
-            }
-        }
-
-        expect {
-            namespace = "com.example.fromTestManifest"
-            namespaceForR = "com.example.fromTestManifest"
-        }
-    }
-
-    @Test
-    fun `namespaceForR with appIdSuffix`() {
-        given {
-            // no specific manifest info
-            manifestData {
-                packageName = "com.example.fromManifest"
-            }
-            testManifestData {
-                packageName = "com.example.fromTestManifest"
-            }
-
-            componentType = ComponentTypeImpl.ANDROID_TEST
-
-            productFlavors {
-                create("flavor1") {
-                    applicationIdSuffix = "flavor1"
-                }
-                create("flavor2") {
-                }
-            }
-        }
-
-        expect {
-            namespace = "com.example.fromTestManifest"
-            namespaceForR = "com.example.fromTestManifest"
-        }
-    }
-
 
     // ---------------------------------------------------------------------------------------------
 
@@ -843,13 +673,6 @@ class VariantDslInfoTest2(
     override fun defaultWhen(given: GivenData): ResultData {
         val componentIdentity = Mockito.mock(ComponentIdentity::class.java)
         Mockito.`when`(componentIdentity.name).thenReturn("compIdName")
-
-        // this does not quite test what VariantManager does because this only checks
-        // for the product flavors of that one variant, while VariantManager looks
-        // at all of them, but this is good enough to simulate and check the result.
-        val inconsistentTestAppId = VariantManager.checkInconsistentTestAppId(
-            given.flavors
-        )
 
         val extension = when (given.mainComponentType) {
             ComponentTypeImpl.BASE_APK ->
@@ -928,7 +751,6 @@ class VariantDslInfoTest2(
                     dataProvider = DirectManifestDataProvider(given.testManifestData, projectServices),
                     mainVariantDslInfo = mainVariant,
                     signingConfigOverride = null,
-                    inconsistentTestAppId = inconsistentTestAppId,
                     services = services,
                     buildDirectory = buildDirectory,
                     extension = extension,
@@ -954,18 +776,7 @@ class VariantDslInfoTest2(
                     it.handleProfiling = dslInfo.handleProfiling.get()
                     it.functionalTest = dslInfo.functionalTest.get()
                 }
-                try {
-                    it.namespace = dslInfo.namespace.orNull
-                } catch (e: RuntimeException) {
-                    // RuntimeException can be thrown when ManifestData.packageName is null
-                    it.namespace = null
-                }
-                try {
-                    it.namespaceForR = (dslInfo as? AndroidTestComponentDslInfo)?.namespaceForR?.orNull
-                } catch (e: RuntimeException) {
-                    // RuntimeException can be thrown when ManifestData.packageName is null
-                    it.namespaceForR = null
-                }
+                it.namespace = dslInfo.namespace.get()
             }
         }
     }
@@ -977,6 +788,9 @@ class VariantDslInfoTest2(
             result.instrumentationRunner = "android.test.InstrumentationTestRunner" // DEFAULT_TEST_RUNNER
             result.handleProfiling = false // DEFAULT_HANDLE_PROFILING
             result.functionalTest = false //DEFAULT_FUNCTIONAL_TEST
+            result.namespace = "${DEFAULT_NAMESPACE}.test"
+        } else {
+            result.namespace = DEFAULT_NAMESPACE
         }
     }
 
@@ -1017,7 +831,7 @@ class VariantDslInfoTest2(
 
         var dexingType = DexingType.NATIVE_MULTIDEX
 
-        var namespace: String? = null
+        var namespace: String = DEFAULT_NAMESPACE
         var testNamespace: String? = null
 
         /** default Config values */
@@ -1054,8 +868,7 @@ class VariantDslInfoTest2(
         var instrumentationRunner: String? = null,
         var handleProfiling: Boolean? = null,
         var functionalTest: Boolean? = null,
-        var namespace: String? = null,
-        var namespaceForR: String? = null
+        var namespace: String? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -1069,7 +882,6 @@ class VariantDslInfoTest2(
             if (handleProfiling != other.handleProfiling) return false
             if (functionalTest != other.functionalTest) return false
             if (namespace != other.namespace) return false
-            if (namespaceForR != other.namespaceForR) return false
 
             return true
         }
@@ -1081,12 +893,11 @@ class VariantDslInfoTest2(
             result = 31 * result + (handleProfiling?.hashCode() ?: 0)
             result = 31 * result + (functionalTest?.hashCode() ?: 0)
             result = 31 * result + (namespace?.hashCode() ?: 0)
-            result = 31 * result + (namespaceForR?.hashCode() ?: 0)
             return result
         }
 
         override fun toString(): String {
-            return "ResultData(versionCode=$versionCode, versionName=$versionName, instrumentationRunner=$instrumentationRunner, handleProfiling=$handleProfiling, functionalTest=$functionalTest, namespace=$namespace, namespaceForR=$namespaceForR)"
+            return "ResultData(versionCode=$versionCode, versionName=$versionName, instrumentationRunner=$instrumentationRunner, handleProfiling=$handleProfiling, functionalTest=$functionalTest, namespace=$namespace)"
         }
     }
 

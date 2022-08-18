@@ -198,22 +198,34 @@ public class ManifestMerger2 {
         final String originalMainManifestPackageName =
                 mainPackageAttribute.map(XmlAttribute::getValue).orElse(null);
 
-        if (mOptionalFeatures.contains(Invoker.Feature.WARN_IF_PACKAGE_IN_SOURCE_MANIFEST)
+        if (mOptionalFeatures.contains(Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST)
                 && originalMainManifestPackageName != null) {
-            mLogger.warning(
-                    String.format(
-                            "package=\"%1$s\" found in source AndroidManifest.xml: %2$s.\n"
-                                    + "Setting the namespace via a source AndroidManifest.xml's "
-                                    + "package attribute is deprecated.\n"
-                                    + "Please instead set the namespace (or testNamespace) in the "
-                                    + "module's build.gradle file, as described here: "
-                                    + "https://developer.android.com/studio/build/configure-app-module#set-namespace\n"
-                                    + "This migration can be done automatically using the AGP "
-                                    + "Upgrade Assistant, please refer to "
-                                    + "https://developer.android.com/studio/build/agp-upgrade-assistant "
-                                    + "for more information.",
-                            originalMainManifestPackageName,
-                            loadedMainManifestInfo.getLocation().getAbsolutePath()));
+            if (originalMainManifestPackageName.equals(mNamespace)) {
+                String message =
+                        String.format(
+                                "package=\"%1$s\" found in source AndroidManifest.xml: %2$s.\n"
+                                        + "Setting the namespace via the package attribute in the "
+                                        + "source AndroidManifest.xml is no longer supported, "
+                                        + "and the value is ignored.\n"
+                                        + "Recommendation: remove package=\"%1$s\" from the source "
+                                        + "AndroidManifest.xml: %2$s.",
+                                originalMainManifestPackageName,
+                                loadedMainManifestInfo.getLocation().getAbsolutePath());
+                mLogger.warning(message);
+            } else {
+                String message =
+                        String.format(
+                                "Incorrect package=\"%1$s\" found in source AndroidManifest.xml: "
+                                        + "%2$s.\n"
+                                        + "Setting the namespace via the package attribute in the "
+                                        + "source AndroidManifest.xml is no longer supported.\n"
+                                        + "Recommendation: remove package=\"%1$s\" from the source "
+                                        + "AndroidManifest.xml: %2$s.",
+                                originalMainManifestPackageName,
+                                loadedMainManifestInfo.getLocation().getAbsolutePath());
+                mLogger.error(null, message);
+                throw new RuntimeException(message);
+            }
         }
 
         // load all the libraries xml files early to have a list of all possible node:selector
@@ -1708,11 +1720,12 @@ public class ManifestMerger2 {
             DISABLE_MINSDKLIBRARY_CHECK,
 
             /**
-             * Warn if the package attribute is present in a source manifest.
+             * Warn if the package attribute is present in the main manifest, or throw an exception
+             * if it's present and not equal to the component's namespace.
              *
-             * <p>This is used in AGP because users should migrate to the new namespace DSL.
+             * <p>This is used in AGP because users must migrate to the new namespace DSL.
              */
-            WARN_IF_PACKAGE_IN_SOURCE_MANIFEST,
+            CHECK_IF_PACKAGE_IN_MAIN_MANIFEST,
 
             /** Removes target SDK for library manifest */
             DISABLE_STRIP_LIBRARY_TARGET_SDK,

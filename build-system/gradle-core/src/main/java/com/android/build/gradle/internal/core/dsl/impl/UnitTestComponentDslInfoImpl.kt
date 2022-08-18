@@ -24,7 +24,6 @@ import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalTestedExtension
-import com.android.build.gradle.internal.manifest.ManifestDataProvider
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentType
 import org.gradle.api.file.DirectoryProperty
@@ -37,7 +36,6 @@ internal class UnitTestComponentDslInfoImpl(
     defaultConfig: DefaultConfig,
     buildTypeObj: BuildType,
     productFlavorList: List<ProductFlavor>,
-    dataProvider: ManifestDataProvider,
     services: VariantServices,
     buildDirectory: DirectoryProperty,
     override val mainVariantDslInfo: TestedVariantDslInfo,
@@ -54,7 +52,7 @@ internal class UnitTestComponentDslInfoImpl(
 ), UnitTestComponentDslInfo {
 
     override val namespace: Provider<String> by lazy {
-        getTestComponentNamespace(extension, services, dataProvider)
+        getTestComponentNamespace(extension, services)
     }
 
     override val applicationId: Property<String> =

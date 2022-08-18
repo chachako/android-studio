@@ -115,8 +115,6 @@ open class AndroidTestImpl @Inject constructor(
     override val debuggable: Boolean
         get() = dslInfo.isDebuggable
 
-    override val namespaceForR: Provider<String> = dslInfo.namespaceForR
-
     override val minSdkVersion: AndroidVersion
         get() = mainVariant.minSdkVersion
 

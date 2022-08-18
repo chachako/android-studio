@@ -30,6 +30,7 @@ class SimpleNativeLib : GradleProject() {
                     """
 apply plugin: 'com.android.library'
 android {
+    namespace "com.example.mylibrary"
     compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
     externalNativeBuild {
         cmake {
@@ -66,8 +67,7 @@ add_library(foo SHARED ${"$"}{SRC})
                     "src/main",
                     "AndroidManifest.xml",
                     """
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.mylibrary" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
 """)
 
     init {

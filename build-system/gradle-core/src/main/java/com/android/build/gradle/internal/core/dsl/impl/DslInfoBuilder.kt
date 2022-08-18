@@ -143,7 +143,6 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *>, DslInfoT: Co
     var variantSourceProvider: DefaultAndroidSourceSet? = null
     var multiFlavorSourceProvider: DefaultAndroidSourceSet? = null
     var productionVariant: TestedVariantDslInfo? = null
-    var inconsistentTestAppId: Boolean = false
 
     fun addProductFlavor(
         productFlavor: ProductFlavor,
@@ -256,7 +255,6 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *>, DslInfoT: Co
             defaultConfig = defaultConfig,
             buildTypeObj = buildType,
             productFlavorList = flavors.map { it.first },
-            dataProvider = manifestDataProvider,
             services = variantServices,
             buildDirectory = buildDirectory,
             mainVariantDslInfo = productionVariant!!,
@@ -275,7 +273,6 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *>, DslInfoT: Co
             services = variantServices,
             buildDirectory = buildDirectory,
             mainVariantDslInfo = productionVariant!!,
-            inconsistentTestAppId = inconsistentTestAppId,
             signingConfigOverride = signingConfigOverride,
             extension = extension as InternalTestedExtension<*, *, *, *>
         )

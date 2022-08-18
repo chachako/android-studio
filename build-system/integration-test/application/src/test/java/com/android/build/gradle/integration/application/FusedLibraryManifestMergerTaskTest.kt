@@ -77,8 +77,7 @@ internal class FusedLibraryManifestMergerTaskTest {
             }
             addFile("src/main/AndroidManifest.xml",
                     """<?xml version="1.0" encoding="utf-8"?>
-                        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                            package="com.example.androidLib1">
+                        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
                             <uses-permission android:name="android.permission.SEND_SMS"/>
                         </manifest>"""
             )

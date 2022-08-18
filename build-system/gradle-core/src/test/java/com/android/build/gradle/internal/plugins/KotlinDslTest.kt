@@ -61,6 +61,7 @@ class KotlinDslTest {
         android =
             project.extensions.getByType(ApplicationExtension::class.java)
         android.compileSdk = TestConstants.COMPILE_SDK_VERSION
+        android.namespace = "com.example.namespace"
         plugin = project.plugins.getPlugin(AppPlugin::class.java)
     }
 

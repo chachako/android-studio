@@ -101,6 +101,7 @@ public class NdkBuildAndroidMkLibraryTest {
                 "\n"
                         + "        apply plugin: 'com.android.application'\n"
                         + "        android {\n"
+                        + "            namespace \"com.example.hellojni\"\n"
                         + "            compileSdkVersion "
                         + GradleTestProject.DEFAULT_COMPILE_SDK_VERSION
                         + "\n"

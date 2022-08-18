@@ -61,48 +61,6 @@ internal class TestProjectVariantDslInfoImpl(
     extension
 ), TestProjectVariantDslInfo {
 
-    override val namespace: Provider<String> by lazy {
-        // -------------
-        // Special case for separate test sub-projects
-        // If there is no namespace from the DSL or package attribute in the manifest, we use
-        // testApplicationId, if present. This allows the test project to not have a manifest if
-        // all is declared in the DSL.
-        // TODO(b/170945282, b/172361895) Remove this special case - users should use namespace
-        //  DSL instead of testApplicationId DSL for this... currently a warning
-        if (extension.namespace != null) {
-            services.provider { extension.namespace!! }
-        } else {
-            val testAppIdFromFlavors =
-                productFlavorList.asSequence().map { it.testApplicationId }
-                    .firstOrNull { it != null }
-                    ?: defaultConfig.testApplicationId
-
-            dataProvider.manifestData.map {
-                it.packageName
-                    ?: testAppIdFromFlavors?.also {
-                        val message =
-                            "Namespace not specified. Please specify a namespace for " +
-                                    "the generated R and BuildConfig classes via " +
-                                    "android.namespace in the test module's " +
-                                    "build.gradle file. Currently, this test module " +
-                                    "uses the testApplicationId " +
-                                    "($testAppIdFromFlavors) as its namespace, but " +
-                                    "version ${Version.VERSION_8_0} of the Android " +
-                                    "Gradle Plugin will require that a namespace be " +
-                                    "specified explicitly like so:\n\n" +
-                                    "android {\n" +
-                                    "    namespace '$testAppIdFromFlavors'\n" +
-                                    "}\n\n"
-                        services.issueReporter
-                            .reportWarning(IssueReporter.Type.GENERIC, message)
-                    }
-                    ?: throw RuntimeException(
-                        getMissingPackageNameErrorMessage(dataProvider.manifestLocation)
-                    )
-            }
-        }
-    }
-
     override val applicationId: Property<String> =
         services.newPropertyBackingDeprecatedApi(
             String::class.java,

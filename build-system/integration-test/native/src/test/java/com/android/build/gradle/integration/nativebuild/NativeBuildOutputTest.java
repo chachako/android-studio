@@ -89,6 +89,7 @@ public class NativeBuildOutputTest {
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
                 "apply plugin: 'com.android.application'\n"
+                        + "android.namespace \"com.example.hellojni\"\n"
                         + "android.compileSdkVersion "
                         + GradleTestProject.DEFAULT_COMPILE_SDK_VERSION
                         + "\n");

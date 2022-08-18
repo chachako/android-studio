@@ -43,7 +43,6 @@ import com.android.utils.PositionXmlParser
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
@@ -58,7 +57,6 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.workers.WorkerExecutor
-import org.w3c.dom.Document
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -154,7 +152,8 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
                     optionalFeatures = emptyList(),
                     dependencyFeatureNames = emptyList(),
                     reportFile = null,
-                    logger = LoggerWrapper.getLogger(ProcessPackagedManifestTask::class.java)
+                    logger = LoggerWrapper.getLogger(ProcessPackagedManifestTask::class.java),
+                    checkIfPackageInMainManifest = false
                 ).getMergedXmlDocument(MergingReport.MergedManifestKind.MERGED)!!.xml
             } else {
                 BufferedInputStream(FileInputStream(inputFile)).use {

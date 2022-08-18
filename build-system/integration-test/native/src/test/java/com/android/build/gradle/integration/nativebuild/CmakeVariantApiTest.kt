@@ -43,6 +43,7 @@ class CmakeVariantApiTest {
             apply plugin: 'com.android.application'
 
             android {
+                namespace "com.example.hellojni"
                 compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
                 buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                 ndkPath "${project.ndkPath}"
@@ -106,6 +107,7 @@ class CmakeVariantApiTest {
             apply plugin: 'com.android.application'
 
             android {
+                namespace "com.example.hellojni"
                 compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
                 buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                 ndkPath "${project.ndkPath}"
@@ -169,6 +171,7 @@ class CmakeVariantApiTest {
             apply plugin: 'com.android.application'
 
             android {
+                namespace "com.example.hellojni"
                 compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
                 buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
                 ndkPath "${project.ndkPath}"

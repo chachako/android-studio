@@ -68,6 +68,7 @@ class HeaderInCmakeListsTest(private val cmakeVersionInDsl: String) {
         TestFileUtils.appendToFile(
             project.buildFile,
             """apply plugin: 'com.android.application'
+                        android.namespace "com.example.hellojni"
                         android.compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
                         android.ndkPath "${project.ndkPath}"
                         android.externalNativeBuild.cmake.path "src/main/cpp/CMakeLists.txt"
