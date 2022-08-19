@@ -68,7 +68,7 @@ public class CombinedAbiDensitySplits {
         Variant debugVariant = AndroidProjectUtilsV2.getDebugVariant(projectBuildOutput);
 
         // get the outputs.
-        Collection<String> debugOutputs = ProjectBuildOutputUtilsV2.getOutputFiles(debugVariant);
+        Collection<String> debugOutputs = ProjectBuildOutputUtilsV2.getApkFolderOutput(debugVariant);
         assertNotNull(debugOutputs);
 
         // build a set of expectedDensities outputs

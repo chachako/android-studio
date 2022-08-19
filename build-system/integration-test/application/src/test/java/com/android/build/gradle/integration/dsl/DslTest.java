@@ -19,11 +19,13 @@ package com.android.build.gradle.integration.dsl;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.fixture.ModelBuilderV2;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.utils.XmlUtils;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
@@ -157,9 +159,13 @@ public class DslTest {
                         + "        versionCode 0\n"
                         + "    }\n"
                         + "}\n");
-        final ModelContainer<AndroidProject> model =
-                project.model().ignoreSyncIssues().fetchAndroidProjects();
-        Collection<SyncIssue> syncIssues = model.getOnlyModelSyncIssues();
+        ModelContainerV2.ModelInfo model = project.modelV2()
+                .ignoreSyncIssues()
+                .fetchModels()
+                .getContainer()
+                .getProject(null, ":");
+        Collection<com.android.builder.model.v2.ide.SyncIssue> syncIssues = model.getIssues()
+                .getSyncIssues();
         assertThat(syncIssues).hasSize(1);
         assertThat(Iterables.getOnlyElement(syncIssues).getMessage())
                 .contains("android.defaultConfig.versionCode is set to 0");
@@ -177,9 +183,13 @@ public class DslTest {
                         + "        }\n"
                         + "    }\n"
                         + "}\n");
-        final ModelContainer<AndroidProject> flavoredModel =
-                project.model().ignoreSyncIssues().fetchAndroidProjects();
-        Collection<SyncIssue> flavoredSyncIssues = flavoredModel.getOnlyModelSyncIssues();
+        ModelBuilderV2.FetchResult<ModelContainerV2> flavoredModels = project.modelV2()
+                .ignoreSyncIssues()
+                .fetchModels();
+        Collection<SyncIssue> flavoredSyncIssues = flavoredModels.getContainer()
+                .getProject(null, ":")
+                .getIssues()
+                .getSyncIssues();
         assertThat(flavoredSyncIssues).hasSize(1);
         assertThat(Iterables.getOnlyElement(flavoredSyncIssues).getMessage())
                 .contains("versionCode is set to -1 in product flavor red");

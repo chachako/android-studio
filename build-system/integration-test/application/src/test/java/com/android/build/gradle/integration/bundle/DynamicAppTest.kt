@@ -16,25 +16,21 @@
 
 package com.android.build.gradle.integration.bundle
 
-import com.android.AndroidProjectTypes
 import com.android.SdkConstants
 import com.android.apksig.ApkVerifier
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkLocation
 import com.android.build.gradle.integration.common.truth.AabSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.truth.ApkSubject
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.common.utils.getBundleLocation
 import com.android.build.gradle.integration.common.utils.getOutputByName
 import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.builder.model.AppBundleProjectBuildOutput
-import com.android.builder.model.AppBundleVariantBuildOutput
-import com.android.builder.model.SyncIssue
 import com.android.ide.common.signing.KeystoreHelper
 import com.android.testutils.apk.Aab
 import com.android.testutils.apk.Dex
@@ -48,6 +44,10 @@ import com.google.common.base.Throwables
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import groovy.json.StringEscapeUtils
+import org.junit.Assert
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -56,10 +56,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.test.fail
-import org.junit.Assert
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
 
 private const val MAIN_DEX_LIST_PATH = "/BUNDLE-METADATA/com.android.tools.build.bundletool/mainDexList.txt"
 
@@ -138,21 +134,18 @@ class DynamicAppTest {
     @Test
     @Throws(IOException::class)
     fun `test model contains feature information`() {
-        val rootBuildModelMap = project.model()
-            .fetchAndroidProjects()
-            .rootBuildModelMap
+        val modelContainer = project.modelV2()
+                .fetchModels().container
+        val appProject =
+                modelContainer.getProject( ":app").androidProject
+        val feature1Project =
+                modelContainer.getProject( ":feature1").androidProject
 
-        val appModel = rootBuildModelMap[":app"]
-        Truth.assertThat(appModel).named("app model").isNotNull()
-        Truth.assertThat(appModel!!.dynamicFeatures)
-            .named("feature list in app model")
+        Truth.assertThat(appProject).isNotNull()
+        Truth.assertThat(appProject?.dynamicFeatures)
             .containsExactly(":feature1", ":feature2")
 
-        val featureModel = rootBuildModelMap[":feature1"]
-        Truth.assertThat(featureModel).named("feature model").isNotNull()
-        Truth.assertThat(featureModel!!.projectType)
-            .named("feature model type")
-            .isEqualTo(AndroidProjectTypes.PROJECT_TYPE_DYNAMIC_FEATURE)
+        Truth.assertThat(feature1Project).isNotNull()
     }
 
     @Test
@@ -184,7 +177,7 @@ class DynamicAppTest {
         val bundleTaskName = getBundleTaskName("debug")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("debug").bundleFile
+        val bundleFile = getBundleFileOutput("debug")
         assertThat(bundleFile).exists()
 
         val manifestFile = FileUtils.join(project.getSubproject("feature1").buildDir,
@@ -229,7 +222,7 @@ class DynamicAppTest {
         val bundleTaskName = getBundleTaskName("debug")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("debug").bundleFile
+        val bundleFile = getBundleFileOutput("debug")
         assertThat(bundleFile).exists()
 
         Aab(bundleFile).use { aab ->
@@ -321,7 +314,7 @@ class DynamicAppTest {
         val bundleTaskName = getBundleTaskName("release")
         project.executor().run("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("release").bundleFile
+        val bundleFile = getBundleFileOutput("release")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -338,7 +331,7 @@ class DynamicAppTest {
         val bundleTaskName = getBundleTaskName("release")
         project.executor().run("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("release").bundleFile
+        val bundleFile = getBundleFileOutput("release")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -366,7 +359,7 @@ class DynamicAppTest {
         val bundleTaskName = getBundleTaskName("debug")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("debug").bundleFile
+        val bundleFile = getBundleFileOutput("debug")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -397,7 +390,7 @@ class DynamicAppTest {
         val bundleTaskName = getBundleTaskName("debug")
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("debug").bundleFile
+        val bundleFile = getBundleFileOutput("debug")
         assertThat(bundleFile).exists()
 
         val bundleContentWithAbis = debugUnsignedContent.plus(
@@ -496,13 +489,11 @@ class DynamicAppTest {
                 android.defaultConfig.ndk.abiFilters '${SdkConstants.ABI_ARMEABI_V7A}'
                 """.trimIndent()
         )
-        val modelContainer = project.model().ignoreSyncIssues().fetchAndroidProjects()
+        val modelContainer =
+                project.modelV2().ignoreSyncIssues().fetchModels().container
         val issue =
-            ModelContainerSubject.assertThat(modelContainer)
-                .rootBuild()
-                .project(":feature1")
-                .hasSingleIssue(SyncIssue.SEVERITY_WARNING, SyncIssue.TYPE_GENERIC)
-        assertThat(issue.message)
+                modelContainer.getProject(":feature1").issues?.syncIssues?.first()
+        assertThat(issue?.message)
             .contains(
                 "abiFilters should not be declared in dynamic-features. Dynamic-features use the "
                         + "abiFilters declared in the application module."
@@ -524,7 +515,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        var apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -540,9 +531,9 @@ class DynamicAppTest {
         }
 
         // check model
-        val rootBuildModelMap = project.model()
-            .fetchAndroidProjects()
-            .rootBuildModelMap
+        val container = project.modelV2()
+            .fetchModels()
+                .container
 
         fun checkApkFromBundleModelFile(postApkFromBundleTaskModelFile: String) {
             assertThat(postApkFromBundleTaskModelFile).isNotNull()
@@ -558,24 +549,25 @@ class DynamicAppTest {
             //assert it is a FILE type
             assertThat(File(singleOutput.outputFile)).isFile()
         }
-        val appModel = rootBuildModelMap[":app"]
-        val variantsBuildInformation = appModel?.variantsBuildInformation
+        val appModel = container.getProject(":app")
+        val variantsBuildInformation = appModel.androidProject?.variants
         assertThat(variantsBuildInformation).hasSize(2)
         variantsBuildInformation?.forEach { buildInformation ->
-            assertThat(buildInformation.variantName).isAnyOf("debug", "release")
-            assertThat(buildInformation.apkFromBundleTaskName).isNotNull()
-            assertThat(buildInformation.assembleTaskOutputListingFile).isNotNull()
-            assertThat(buildInformation.bundleTaskName).isNotNull()
-            assertThat(buildInformation.bundleTaskOutputListingFile).isNotNull()
-            if (buildInformation.variantName == "debug") {
-                checkApkFromBundleModelFile(buildInformation.apkFromBundleTaskOutputListingFile!!)
+            assertThat(buildInformation.name).isAnyOf("debug", "release")
+            assertThat(buildInformation.mainArtifact.bundleInfo?.apkFromBundleTaskName).isNotNull()
+            assertThat(buildInformation.mainArtifact.assembleTaskOutputListingFile).isNotNull()
+            assertThat(buildInformation.mainArtifact.bundleInfo?.bundleTaskName).isNotNull()
+            assertThat(buildInformation.mainArtifact.bundleInfo?.bundleTaskOutputListingFile).isNotNull()
+            if (buildInformation.name == "debug") {
+                checkApkFromBundleModelFile(
+                        buildInformation.mainArtifact.bundleInfo?.apkFromBundleTaskOutputListingFile?.path!!)
             }
         }
-        val debugVariantModule = appModel?.getVariantByName("debug")
+        val debugVariantModule = appModel.androidProject?.variants?.first { it.name == "debug" }
         val postApkFromBundleTaskModelFile =
-            debugVariantModule?.mainArtifact?.apkFromBundleTaskOutputListingFile
+            debugVariantModule?.mainArtifact?.bundleInfo?.apkFromBundleTaskOutputListingFile
         assertThat(postApkFromBundleTaskModelFile).isNotNull()
-        checkApkFromBundleModelFile(postApkFromBundleTaskModelFile!!)
+        checkApkFromBundleModelFile(postApkFromBundleTaskModelFile?.path!!)
 
         // -------------
         // build apks for API 18
@@ -588,7 +580,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug").apkFolder
+        apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -647,7 +639,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        var apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -666,7 +658,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug").apkFolder
+        apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -716,11 +708,11 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        var apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug").apkFolder
+        apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -741,7 +733,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        apkFolder = getApkFolderOutput("debug").apkFolder
+        apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -781,7 +773,7 @@ class DynamicAppTest {
 
 
         for (flavor in listOf("red", "blue")) {
-            val bundleFile = getApkFolderOutput("${flavor}Debug").bundleFile
+            val bundleFile = getBundleFileOutput("${flavor}Debug")
             assertThat(
                 FileUtils.join(
                     project.getSubproject(":app").projectDir,
@@ -802,7 +794,7 @@ class DynamicAppTest {
             .run("app:bundle")
 
         for (flavor in listOf("red", "blue")) {
-            val bundleFile = getApkFolderOutput("${flavor}Debug").bundleFile
+            val bundleFile = getBundleFileOutput("${flavor}Debug")
             assertThat(
                 FileUtils.join(File(absolutePath), flavor, "debug", bundleFile.name))
                 .exists()
@@ -815,14 +807,14 @@ class DynamicAppTest {
 
         project.execute("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("debug").bundleFile
+        val bundleFile = getBundleFileOutput("debug")
         assertThat(bundleFile).exists()
 
         project.getSubproject(":app").buildFile.appendText("\narchivesBaseName ='foo'")
 
         project.execute("app:$bundleTaskName")
 
-        val newBundleFile = getApkFolderOutput("debug").bundleFile
+        val newBundleFile = getBundleFileOutput("debug")
         assertThat(newBundleFile).exists()
 
         // test the folder is the same as the previous one.
@@ -893,7 +885,7 @@ class DynamicAppTest {
 
         // First check without resConfigs.
         project.executor().run("app:$apkFromBundleTaskName")
-        val bundleFile = getApkFolderOutput("debug").bundleFile
+        val bundleFile = getBundleFileOutput("debug")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -994,7 +986,7 @@ class DynamicAppTest {
             .with(StringOption.IDE_SIGNING_KEY_PASSWORD, unicodeKeyPass)
             .run("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("release").bundleFile
+        val bundleFile = getBundleFileOutput("release")
         assertThat(bundleFile).exists()
 
         Zip(bundleFile).use {
@@ -1100,7 +1092,7 @@ class DynamicAppTest {
             .run("app:$bundleTaskName")
 
 
-        val bundleFile = getApkFolderOutput("release").bundleFile
+        val bundleFile = getBundleFileOutput("release")
         assertThat(bundleFile).exists()
 
         ByteArrayOutputStream().use { outputStream ->
@@ -1147,7 +1139,7 @@ class DynamicAppTest {
             .with(BooleanOption.EXCLUDE_RES_SOURCES_FOR_RELEASE_BUNDLES, false)
             .run("app:$bundleTaskName")
 
-        val bundleFile = getApkFolderOutput("release").bundleFile
+        val bundleFile = getBundleFileOutput("release")
         assertThat(bundleFile).exists()
 
         val bundleTimestamp = bundleFile.lastModified()
@@ -1199,7 +1191,7 @@ class DynamicAppTest {
             .run("app:$apkFromBundleTaskName")
 
         // fetch the build output model
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        var apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No Files at $apkFolder")
@@ -1229,7 +1221,7 @@ class DynamicAppTest {
             .with(BooleanOption.ENABLE_LOCAL_TESTING, true)
             .run("app:$apkFromBundleTaskName")
 
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        var apkFolder = getApkFolderOutput("debug")
         assertThat(apkFolder).isDirectory()
 
         var apkFileArray = apkFolder.list() ?: fail("No files at $apkFolder")
@@ -1268,7 +1260,7 @@ class DynamicAppTest {
                                 .APK_FROM_BUNDLE_IDE_MODEL.getFolderName(),
                         "debug",
                         "output-metadata.json")
-        var apkFolder = getApkFolderOutput("debug").apkFolder
+        var apkFolder = getApkFolderOutput("debug")
         assertThat(outputMetadataFile).isFile()
 
         //make sure that metadata.json file is properly deleted
@@ -1315,34 +1307,43 @@ class DynamicAppTest {
 
     private fun getBundleTaskName(name: String): String {
         // query the model to get the task name
-        val syncModels = project.model()
-            .fetchAndroidProjects()
+        val syncModels = project.modelV2()
+            .fetchModels()
         val appModel =
-            syncModels.rootBuildModelMap[":app"] ?: fail("Failed to get sync model for :app module")
+            syncModels.container.getProject(":app").androidProject ?: fail("Failed to get sync model for :app module")
 
         val debugArtifact = appModel.getVariantByName(name).mainArtifact
-        return debugArtifact.bundleTaskName ?: fail("Module App does not have bundle task name")
+        return debugArtifact.bundleInfo?.bundleTaskName ?: fail("Module App does not have bundle task name")
     }
 
     private fun getApkFromBundleTaskName(name: String): String {
         // query the model to get the task name
-        val syncModels = project.model()
-            .fetchAndroidProjects()
+        val syncModels = project.modelV2().fetchModels()
         val appModel =
-            syncModels.rootBuildModelMap[":app"] ?: fail("Failed to get sync model for :app module")
+                syncModels.container.getProject(":app").androidProject
+                        ?: fail("Failed to get sync model for :app module")
 
         val debugArtifact = appModel.getVariantByName(name).mainArtifact
-        return debugArtifact.apkFromBundleTaskName ?: fail("Module App does not have apkFromBundle task name")
+        return debugArtifact.bundleInfo?.apkFromBundleTaskName
+                ?: fail("Module App does not have apkFromBundle task name")
     }
 
-    private fun getApkFolderOutput(variantName: String): AppBundleVariantBuildOutput {
+    private fun getBundleFileOutput(variantName: String): File {
+        val outputModels = project.modelV2().fetchModels()
+
+        val outputAppModel = outputModels.container.getProject(":app").androidProject
+                ?: fail("Failed to get output model for :app module")
+
+        return outputAppModel.getVariantByName(variantName).getBundleLocation()
+    }
+    private fun getApkFolderOutput(variantName: String): File {
         val outputModels = project.model()
-            .fetchContainer(AppBundleProjectBuildOutput::class.java)
+                .fetchContainer(AppBundleProjectBuildOutput::class.java)
 
         val outputAppModel = outputModels.rootBuildModelMap[":app"]
                 ?: fail("Failed to get output model for :app module")
 
-        return outputAppModel.getOutputByName(variantName)
+        return outputAppModel.getOutputByName(variantName).apkFolder
     }
 
     private fun getJsonFile(api: Int): Path {

@@ -61,19 +61,29 @@ class ModelInstantAppCompatibleTest {
             "dist:onDemand=\"true\"",
             "dist:onDemand=\"false\" dist:instant=\"true\""
         )
-        var models = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelMap
-        for ((_, model) in models) {
-            for (variant in model.variants) {
-                if (model.name == "feature1") {
-                    Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
-                        .isFalse()
-                } else {
-                    Truth.assertThat(variant.isInstantAppCompatible)
-                        .named("Project ${model.name} isInstantAppCompatible property populated from manifest")
-                        .isTrue()
-                }
-            }
+        val feature1 = project.modelV2().ignoreSyncIssues().fetchModels().container
+                .getProject(":feature1").androidProject
+        val feature2 = project.modelV2().ignoreSyncIssues().fetchModels().container
+                .getProject(":feature2").androidProject
+        val app = project.modelV2().ignoreSyncIssues().fetchModels().container
+                .getProject(":feature2").androidProject
+
+        for (variant in feature1!!.variants) {
+            Truth.assertThat(variant.isInstantAppCompatible)
+                    .named("Project :feature1 isInstantAppCompatible property populated from manifest")
+                    .isFalse()
+        }
+
+        for (variant in feature2!!.variants) {
+            Truth.assertThat(variant.isInstantAppCompatible)
+                    .named("Project :feature2 isInstantAppCompatible property populated from manifest")
+                    .isTrue()
+        }
+
+        for (variant in app?.variants!!) {
+            Truth.assertThat(variant.isInstantAppCompatible)
+                    .named("Project :feature2 isInstantAppCompatible property populated from manifest")
+                    .isTrue()
         }
     }
 

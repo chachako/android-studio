@@ -22,10 +22,8 @@ import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.builder.core.BuilderConstants
-import com.android.builder.model.AndroidArtifact
 import com.android.builder.model.AndroidProject
 import com.android.builder.model.VariantBuildInformation
-import com.android.builder.model.v2.ide.Variant
 import org.junit.Assert
 import java.io.File
 import java.lang.RuntimeException
@@ -41,7 +39,7 @@ fun AndroidProject.findOutputFileByVariantName(variantName: String): File {
     val variantOutput = getVariantBuildInformationByName(variantName)
     Assert.assertNotNull("variant '$variantName' null-check", variantOutput)
 
-    val variantOutputFiles = variantOutput.getOutputFiles()
+    val variantOutputFiles = variantOutput.getApkFolderOutput()
     Assert.assertNotNull("variantName '$variantName' outputs null-check", variantOutputFiles)
     // we only support single output artifact in this helper method.
     Assert.assertEquals(
@@ -60,13 +58,13 @@ fun getBuiltArtifacts(assembleTaskOutputListingFile: File): BuiltArtifactsImpl =
         (BuiltArtifactsLoaderImpl.loadFromFile(assembleTaskOutputListingFile)
                 ?: throw RuntimeException("Cannot load built artifacts from $assembleTaskOutputListingFile"))
 
-fun VariantBuildInformation.getOutputFiles() =
+fun VariantBuildInformation.getApkFolderOutput() =
     getBuiltArtifacts(File(assembleTaskOutputListingFile!!))
         .elements
         .map(BuiltArtifactImpl::outputFile)
 
 fun VariantBuildInformation.getSingleOutputFile() =
-    getOutputFiles().single()
+    getApkFolderOutput().single()
 
 /**
  * Convenience method to verify that the given ProjectBuildOutput contains exactly two variants,

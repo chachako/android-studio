@@ -16,6 +16,24 @@
 
 package com.android.build.gradle.integration.dependencies;
 
+import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.builder.model.v2.ide.SyncIssue;
+import com.android.testutils.apk.Apk;
+import com.android.utils.FileUtils;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import org.gradle.tooling.BuildException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.io.File;
+import java.util.Collection;
+
 import static com.android.build.gradle.integration.common.truth.ApkSubject.assertThat;
 import static com.android.build.gradle.integration.common.utils.SyncIssueHelperKt.checkIssuesForSameData;
 import static com.android.build.gradle.integration.common.utils.SyncIssueHelperKt.checkIssuesForSameSeverity;
@@ -24,24 +42,6 @@ import static com.android.build.gradle.integration.common.utils.TestFileUtils.ap
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-
-import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
-import com.android.testutils.apk.Apk;
-import com.android.utils.FileUtils;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import java.io.File;
-import java.util.Collection;
-import org.gradle.tooling.BuildException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class MatchingFallbackTest {
 
@@ -94,10 +94,11 @@ public class MatchingFallbackTest {
         project.executor().run("clean", "app:assembleFoo");
 
         // then query the model
-        ModelContainer<AndroidProject> models =
-                project.model().ignoreSyncIssues().fetchAndroidProjects();
+        ModelContainerV2 models =
+                project.modelV2().ignoreSyncIssues().fetchModels().getContainer();
 
-        final Collection<SyncIssue> syncIssues = models.getOnlyModelSyncIssuesMap().get(":app");
+        final Collection<com.android.builder.model.v2.ide.SyncIssue> syncIssues =
+                models.getProject(":app", ":").getIssues().getSyncIssues();
         assertThat(syncIssues).hasSize(4);
 
         // all the issues should have the same type/severity/data

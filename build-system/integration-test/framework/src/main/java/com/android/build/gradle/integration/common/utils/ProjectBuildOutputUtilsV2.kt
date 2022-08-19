@@ -20,9 +20,9 @@ package com.android.build.gradle.integration.common.utils
 import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.builder.model.v2.ide.Variant
 
-fun Variant.getOutputFiles() =
+fun Variant.getApkFolderOutput() =
         getBuiltArtifacts(mainArtifact.assembleTaskOutputListingFile!!)
                 .elements
                 .map(BuiltArtifactImpl::outputFile)
 
-fun Variant.getSingleOutputFile() = getOutputFiles().single()
+fun Variant.getSingleOutputFile() = getApkFolderOutput().single()

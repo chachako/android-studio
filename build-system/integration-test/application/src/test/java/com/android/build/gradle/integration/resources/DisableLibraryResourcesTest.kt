@@ -230,8 +230,12 @@ class DisableLibraryResourcesTest {
     /** Regression test for b/173134919. */
     @Test
     fun testAndroidAndUnitTestsSync() {
-        project.model()
+        val androidProject = project.modelV2()
                 .with(BooleanOption.BUILD_FEATURE_ANDROID_RESOURCES, false)
-                .fetchAndroidProjects()
+                .fetchModels()
+                .container
+                .getProject(":localLib")
+                .androidProject
+        assertThat(androidProject).isNotNull()
     }
 }

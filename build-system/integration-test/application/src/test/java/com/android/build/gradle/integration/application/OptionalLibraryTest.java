@@ -1,25 +1,26 @@
 package com.android.build.gradle.integration.application;
 
-import static com.android.SdkConstants.FN_FRAMEWORK_LIBRARY;
-import static com.android.testutils.truth.PathSubject.assertThat;
-import static com.google.common.truth.Truth.assertThat;
-
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.SyncIssue;
+import com.android.builder.model.v2.models.BasicAndroidProject;
 import com.android.prefs.AndroidLocationsSingleton;
 import com.android.repository.testframework.FakeProgressIndicator;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.targets.AndroidTargetManager;
-import java.io.File;
-import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+
+import static com.android.SdkConstants.FN_FRAMEWORK_LIBRARY;
+import static com.android.testutils.truth.PathSubject.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 /** Test for the new useLibrary mechanism */
 public class OptionalLibraryTest {
@@ -46,14 +47,18 @@ public class OptionalLibraryTest {
                         + "    useLibrary 'foo'\n"
                         + "}");
 
-        ModelContainer<AndroidProject> container =
-                project.model().ignoreSyncIssues().fetchAndroidProjects();
+        ModelContainerV2 container = project.modelV2()
+                .ignoreSyncIssues()
+                .fetchModels()
+                .getContainer();
 
-        ModelContainerSubject.assertThat(container)
-                .rootBuild()
-                .onlyProject()
-                .hasSingleIssue(
-                        SyncIssue.SEVERITY_ERROR, SyncIssue.TYPE_OPTIONAL_LIB_NOT_FOUND, "foo");
+        Collection<SyncIssue> syncIssues = container.getProject().getIssues().getSyncIssues();
+
+        assertThat(syncIssues).hasSize(1);
+        SyncIssue singleSyncIssue = syncIssues.iterator().next();
+        assertThat(singleSyncIssue.getSeverity()).isEqualTo(SyncIssue.SEVERITY_ERROR);
+        assertThat(singleSyncIssue.getType()).isEqualTo(SyncIssue.TYPE_OPTIONAL_LIB_NOT_FOUND);
+        assertThat(singleSyncIssue.getData()).isEqualTo("foo");
     }
 
     @Test
@@ -75,7 +80,8 @@ public class OptionalLibraryTest {
                         + "    useLibrary 'org.apache.http.legacy'\n"
                         + "}");
 
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModel();
+        ModelContainerV2.ModelInfo model =
+                project.modelV2().fetchModels().getContainer().getProject(null, ":");
 
         // get the SDK folder
         File sdkLocation = project.getAndroidSdkDir();
@@ -92,8 +98,8 @@ public class OptionalLibraryTest {
         // the files that the bootclasspath should contain.
         File androidJar = new File(targetLocation, FN_FRAMEWORK_LIBRARY);
         File httpJar = new File(targetLocation, "optional/org.apache.http.legacy.jar");
-        assertThat(model.getBootClasspath())
-                .containsExactly(androidJar.getAbsolutePath(), httpJar.getAbsolutePath());
+        assertThat(model.getBasicAndroidProject().getBootClasspath())
+                .containsExactly(androidJar.getAbsoluteFile(), httpJar.getAbsoluteFile());
 
         // for safety, let's make sure these files actually exists.
         assertThat(androidJar).isFile();
@@ -118,7 +124,8 @@ public class OptionalLibraryTest {
                         + "'\n"
                         + "}");
 
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModel();
+        BasicAndroidProject model =
+                project.modelV2().fetchModels().getContainer().getProject().getBasicAndroidProject();
 
         // get the SDK folder
         File sdkLocation = project.getAndroidSdkDir();
@@ -133,6 +140,6 @@ public class OptionalLibraryTest {
         File targetLocation = new File(target.getLocation());
 
         assertThat(model.getBootClasspath())
-                .containsExactly(new File(targetLocation, FN_FRAMEWORK_LIBRARY).getAbsolutePath());
+                .containsExactly(new File(targetLocation, FN_FRAMEWORK_LIBRARY).getAbsoluteFile());
     }
 }

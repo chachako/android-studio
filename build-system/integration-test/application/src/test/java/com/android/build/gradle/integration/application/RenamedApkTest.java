@@ -59,7 +59,7 @@ public class RenamedApkTest {
         File projectDir = project.getProjectDir();
         VariantBuildInformation variantBuildOutput =
                 ProjectBuildOutputUtils.getDebugVariantBuildOutput(model);
-        Collection<String> outputFiles = ProjectBuildOutputUtils.getOutputFiles(variantBuildOutput);
+        Collection<String> outputFiles = ProjectBuildOutputUtils.getApkFolderOutput(variantBuildOutput);
 
         File buildDir = new File(projectDir, "build/outputs/apk/debug");
 

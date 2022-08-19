@@ -16,30 +16,31 @@
 
 package com.android.build.gradle.integration.testing.unit;
 
-import static com.android.SdkConstants.FN_R_CLASS_JAR;
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.builder.model.AndroidProject.ARTIFACT_UNIT_TEST;
-import static com.android.testutils.truth.PathSubject.assertThat;
-import static java.util.stream.Collectors.toList;
-
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.scope.ArtifactTypeUtil;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.ArtifactMetaData;
-import com.android.builder.model.JavaArtifact;
-import com.android.builder.model.ProductFlavorContainer;
-import com.android.builder.model.SourceProvider;
-import com.android.builder.model.Variant;
+import com.android.builder.model.SourceProviderContainer;
+import com.android.builder.model.v2.dsl.ProductFlavor;
+import com.android.builder.model.v2.ide.JavaArtifact;
+import com.android.builder.model.v2.ide.SourceProvider;
+import com.android.builder.model.v2.ide.SourceSetContainer;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.BasicAndroidProject;
 import com.android.utils.FileUtils;
 import com.android.utils.StringHelper;
 import com.google.common.truth.Truth;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static com.android.SdkConstants.FN_R_CLASS_JAR;
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 
 /** Tests for the unit-tests related parts of the builder model. */
 public class UnitTestingModelTest {
@@ -53,28 +54,14 @@ public class UnitTestingModelTest {
         // Build the project, so we can verify paths in the model exist.
         project.executor().run("test");
 
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModelMap().get(":app");
+        ModelContainerV2.ModelInfo model = project.modelV2()
+                .fetchModels()
+                .getContainer()
+                .getProject(":app", ":");
 
-        Truth.assertThat(
-                        model.getExtraArtifacts()
-                                .stream()
-                                .map(ArtifactMetaData::getName)
-                                .collect(toList()))
-                .containsExactly(AndroidProject.ARTIFACT_ANDROID_TEST, ARTIFACT_UNIT_TEST);
-
-        ArtifactMetaData unitTestMetadata =
-                model.getExtraArtifacts()
-                        .stream()
-                        .filter(it -> it.getName().equals(ARTIFACT_UNIT_TEST))
-                        .findFirst()
-                        .get();
-
-        Truth.assertThat(unitTestMetadata.isTest()).isTrue();
-        Truth.assertThat(unitTestMetadata.getType()).isEqualTo(ArtifactMetaData.TYPE_JAVA);
-
-        for (Variant variant : model.getVariants()) {
-            List<File> expectedAdditionalClassesFolders = new ArrayList<>();
-            expectedAdditionalClassesFolders.add(
+        for (Variant variant : model.getAndroidProject().getVariants()) {
+            List<File> expectedClassesFolders = new ArrayList<>();
+            expectedClassesFolders.add(
                     new File(
                             ArtifactTypeUtil.getOutputDir(
                                     InternalArtifactType
@@ -83,24 +70,21 @@ public class UnitTestingModelTest {
                                     project.getSubproject("app").getBuildDir()),
                             variant.getName() + "/" + FN_R_CLASS_JAR)
             );
-            expectedAdditionalClassesFolders.add(project.file("app/build/tmp/kotlin-classes/"
+            expectedClassesFolders.add(project.file("app/build/tmp/kotlin-classes/"
                     + variant.getName()));
-            if (variant.getBuildType().equals("release")) {
-                expectedAdditionalClassesFolders.add(
+            if (variant.getName().equals("release")) {
+                expectedClassesFolders.add(
                         project.file("app/build/kotlinToolingMetadata"));
+                expectedClassesFolders.add(
+                        project.file("app/build/intermediates/javac/release/classes"));
+            } else {
+                expectedClassesFolders.add(
+                        project.file("app/build/intermediates/javac/debug/classes"));
             }
-            Truth.assertThat(variant.getMainArtifact().getAdditionalClassesFolders())
-                    .containsExactlyElementsIn(expectedAdditionalClassesFolders);
+            Truth.assertThat(variant.getMainArtifact().getClassesFolders())
+                    .containsExactlyElementsIn(expectedClassesFolders);
 
-            List<JavaArtifact> unitTestArtifacts =
-                    variant.getExtraJavaArtifacts()
-                            .stream()
-                            .filter(it -> it.getName().equals(ARTIFACT_UNIT_TEST))
-                            .collect(toList());
-            Truth.assertThat(unitTestArtifacts).hasSize(1);
-
-            JavaArtifact unitTestArtifact = unitTestArtifacts.get(0);
-            Truth.assertThat(unitTestArtifact.getName()).isEqualTo(ARTIFACT_UNIT_TEST);
+            JavaArtifact unitTestArtifact = variant.getUnitTestArtifact();
             Truth.assertThat(unitTestArtifact.getAssembleTaskName()).contains("UnitTest");
             Truth.assertThat(unitTestArtifact.getAssembleTaskName())
                     .contains(StringHelper.usLocaleCapitalize(variant.getName()));
@@ -108,21 +92,10 @@ public class UnitTestingModelTest {
             Truth.assertThat(unitTestArtifact.getCompileTaskName())
                     .contains(StringHelper.usLocaleCapitalize(variant.getName()));
 
-            // No per-variant source code.
-            Truth.assertThat(unitTestArtifact.getVariantSourceProvider()).isNull();
-            assertThat(unitTestArtifact.getMultiFlavorSourceProvider()).isNull();
+            assertThat(unitTestArtifact.getClassesFolders())
+                    .isNotEqualTo(variant.getMainArtifact().getClassesFolders());
 
-            assertThat(variant.getMainArtifact().getClassesFolder()).isDirectory();
-            assertThat(variant.getMainArtifact().getJavaResourcesFolder()).isDirectory();
-            assertThat(unitTestArtifact.getClassesFolder()).isDirectory();
-            assertThat(unitTestArtifact.getJavaResourcesFolder()).isDirectory();
-
-            assertThat(unitTestArtifact.getClassesFolder())
-                    .isNotEqualTo(variant.getMainArtifact().getClassesFolder());
-            assertThat(unitTestArtifact.getJavaResourcesFolder())
-                    .isNotEqualTo(variant.getMainArtifact().getJavaResourcesFolder());
-
-            assertThat(unitTestArtifact.getAdditionalClassesFolders())
+            assertThat(unitTestArtifact.getClassesFolders())
                     .containsExactly(
                             project.file(
                                     "app/build/tmp/kotlin-classes/"
@@ -131,17 +104,16 @@ public class UnitTestingModelTest {
                             project.file(
                                     "app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/"
                                             + variant.getName()
-                                            + "/R.jar"));
+                                            + "/R.jar"),
+                            project.file("app/build/intermediates/javac/"
+                                    + variant.getName()
+                                    + "UnitTest/classes")
+                    );
         }
 
-        SourceProvider sourceProvider =
-                model.getDefaultConfig()
-                        .getExtraSourceProviders()
-                        .stream()
-                        .filter(it -> it.getArtifactName().equals(ARTIFACT_UNIT_TEST))
-                        .findFirst()
-                        .get()
-                        .getSourceProvider();
+        SourceProvider sourceProvider = model.getBasicAndroidProject()
+                .getMainSourceSet()
+                .getUnitTestSourceProvider();
 
         Truth.assertThat(sourceProvider.getJavaDirectories()).hasSize(1);
         Truth.assertThat(sourceProvider.getJavaDirectories().iterator().next().getAbsolutePath())
@@ -160,22 +132,19 @@ public class UnitTestingModelTest {
                         + "    flavorDimensions 'foo'\n"
                         + "    productFlavors { paid; free }\n"
                         + "}");
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModelMap().get(":app");
+        ModelContainerV2.ModelInfo model =
+                project.modelV2().fetchModels().getContainer().getProject(":app", ":");
 
-        assertThat(model.getProductFlavors()).hasSize(2);
+        assertThat(model.getAndroidDsl().getProductFlavors()).hasSize(2);
 
-        for (ProductFlavorContainer flavor : model.getProductFlavors()) {
-            SourceProvider sourceProvider =
-                    flavor.getExtraSourceProviders()
-                            .stream()
-                            .filter(it -> it.getArtifactName().equals(ARTIFACT_UNIT_TEST))
-                            .findAny()
-                            .get()
-                            .getSourceProvider();
+        Collection<SourceSetContainer> productFlavorSourceSets = model.getBasicAndroidProject()
+                .getProductFlavorSourceSets();
+        assertThat(productFlavorSourceSets).hasSize(2);
 
+        for (SourceSetContainer flavor : productFlavorSourceSets) {
+            SourceProvider sourceProvider = flavor.getUnitTestSourceProvider();
             assertThat(sourceProvider.getJavaDirectories()).hasSize(1);
-            String flavorDir =
-                    StringHelper.appendCapitalized("test", flavor.getProductFlavor().getName());
+            String flavorDir = sourceProvider.getName();
             assertThat(sourceProvider.getJavaDirectories().iterator().next().getAbsolutePath())
                     .endsWith(flavorDir + File.separator + "java");
             Truth.assertThat(sourceProvider.getKotlinDirectories())

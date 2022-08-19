@@ -81,7 +81,7 @@ public class JarJarLibTest {
 
         VariantBuildInformation debugBuildOutput =
                 ProjectBuildOutputUtils.getDebugVariantBuildOutput(outputModel);
-        assertEquals(1, ProjectBuildOutputUtils.getOutputFiles(debugBuildOutput).size());
+        assertEquals(1, ProjectBuildOutputUtils.getApkFolderOutput(debugBuildOutput).size());
 
         // make sure the Gson library has been renamed and the original one is not present.
         File outputFile = new File(ProjectBuildOutputUtils.getSingleOutputFile(debugBuildOutput));

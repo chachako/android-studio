@@ -18,7 +18,7 @@
 
 package com.android.build.gradle.integration.common.utils
 
-import com.android.builder.model.SyncIssue
+import com.android.builder.model.v2.ide.SyncIssue
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
 import org.junit.Assert.fail
@@ -48,13 +48,13 @@ fun checkIssuesForDataIn(issues: Collection<SyncIssue>, vararg data: String) {
 }
 
 fun checkSomeIssuesHaveSeverityValue(issues: Collection<SyncIssue>, data: String): Int =
-    testIssuesForAtleastOneWithValue(issues, data, "severity", SyncIssue::severity)
+        testIssuesForAtleastOneWithValue(issues, data, "severity", SyncIssue::severity)
 
 fun checkSomeIssuesHaveTypeValue(issues: Collection<SyncIssue>, data: String): Int =
-    testIssuesForAtleastOneWithValue(issues, data, "type", SyncIssue::type)
+        testIssuesForAtleastOneWithValue(issues, data, "type", SyncIssue::type)
 
 fun checkSomeIssuesHaveDataValue(issues: Collection<SyncIssue>, data: String): Int =
-    testIssuesForAtleastOneWithValue(issues, data, "data", SyncIssue::data)
+        testIssuesForAtleastOneWithValue(issues, data, "data", SyncIssue::data)
 
 
 private fun <T> testIssuesForSingleValue(

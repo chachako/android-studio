@@ -24,7 +24,6 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.common.utils.getDebugVariantBuildOutput
-import com.android.build.gradle.integration.common.utils.getOutputFiles
 import com.android.build.gradle.integration.common.utils.getSingleOutputFile
 import org.junit.Rule
 import org.junit.Test

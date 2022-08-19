@@ -72,7 +72,7 @@ public class PlaceholderInLibsTest {
                 ProjectBuildOutputUtils.getVariantBuildInformation(projectModel, "flavorDebug");
 
         // get the outputs.
-        Collection<String> debugOutputs = ProjectBuildOutputUtils.getOutputFiles(debugOutput);
+        Collection<String> debugOutputs = ProjectBuildOutputUtils.getApkFolderOutput(debugOutput);
         assertNotNull(debugOutputs);
 
         assertEquals(1, debugOutputs.size());

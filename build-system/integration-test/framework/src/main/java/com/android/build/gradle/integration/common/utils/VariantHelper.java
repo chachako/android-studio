@@ -55,7 +55,7 @@ public class VariantHelper {
 
         assertThat(sourceFolders).named("Gen src Folder count").hasSize(2);
 
-        Collection<String> outputs = ProjectBuildOutputUtils.getOutputFiles(variantOutput);
+        Collection<String> outputs = ProjectBuildOutputUtils.getApkFolderOutput(variantOutput);
         assertThat(outputs).named("artifact output").isNotNull();
         assertThat(outputs).hasSize(1);
 

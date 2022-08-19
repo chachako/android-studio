@@ -109,7 +109,7 @@ public class OutputRenamingTest {
                 AndroidProjectUtilsV2.getVariantByName(model, buildType);
 
         // get the outputs.
-        Collection<String> outputs = ProjectBuildOutputUtilsV2.getOutputFiles(buildOutput);
+        Collection<String> outputs = ProjectBuildOutputUtilsV2.getApkFolderOutput(buildOutput);
         assertNotNull(outputs);
         assertThat(outputs).hasSize(5);
 

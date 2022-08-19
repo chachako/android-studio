@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.model
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.builder.model.v2.ide.SyncIssue
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -41,9 +42,13 @@ class SourceDependencyModelTest {
 
     @Test
     fun checkModelBuildSuccessfully() {
-        project.model()
+        val androidProject = project.modelV2()
                 .withoutOfflineFlag()
                 .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-                .fetchAndroidProjects()
+                .fetchModels()
+                .container
+                .getProject()
+                .androidProject
+        assertThat(androidProject).isNotNull()
     }
 }

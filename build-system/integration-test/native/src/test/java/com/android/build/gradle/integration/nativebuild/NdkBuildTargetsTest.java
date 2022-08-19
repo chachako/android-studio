@@ -16,14 +16,6 @@
 
 package com.android.build.gradle.integration.nativebuild;
 
-import static com.android.build.gradle.integration.common.fixture.GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION;
-import static com.android.build.gradle.integration.common.fixture.model.NativeUtilsKt.dump;
-import static com.android.build.gradle.integration.common.fixture.model.NativeUtilsKt.dumpCompileCommandsJsonBin;
-import static com.android.build.gradle.integration.common.fixture.model.NativeUtilsKt.recoverExistingCxxAbiModels;
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
-import static com.android.build.gradle.internal.cxx.model.CxxModuleModelKt.getNdkMinPlatform;
-
 import com.android.SdkConstants;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2;
@@ -36,10 +28,19 @@ import com.android.builder.model.v2.models.ndk.NativeVariant;
 import com.android.testutils.apk.Apk;
 import com.google.common.collect.ImmutableList;
 import com.google.common.truth.Truth;
-import java.io.IOException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static com.android.build.gradle.integration.common.fixture.GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION;
+import static com.android.build.gradle.integration.common.fixture.model.NativeUtilsKt.dump;
+import static com.android.build.gradle.integration.common.fixture.model.NativeUtilsKt.dumpCompileCommandsJsonBin;
+import static com.android.build.gradle.integration.common.fixture.model.NativeUtilsKt.recoverExistingCxxAbiModels;
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
+import static com.android.build.gradle.internal.cxx.model.CxxModuleModelKt.getNdkMinPlatform;
 
 /** Assemble tests for ndk-build with targets clause. */
 public class NdkBuildTargetsTest {
@@ -136,8 +137,6 @@ public class NdkBuildTargetsTest {
         assertThatApk(apk).contains("lib/armeabi-v7a/libmylibrary2.so");
         assertThatApk(apk).contains("lib/x86/libmylibrary2.so");
         assertThatApk(apk).contains("lib/x86_64/libmylibrary2.so");
-
-        project.model().fetchAndroidProjectsAllowSyncIssues();
 
         assertV2Model();
     }

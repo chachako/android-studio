@@ -1,26 +1,27 @@
 package com.android.build.gradle.integration.application;
 
-import static com.android.build.gradle.integration.common.utils.AssumeBuildToolsUtil.assumeBuildToolsGreaterThan;
-import static com.google.common.truth.Truth.assertThat;
-
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.core.ToolsRevisionUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
+import com.android.builder.model.v2.ide.SyncIssue;
+import com.android.builder.model.v2.models.AndroidDsl;
 import com.android.utils.FileUtils;
 import com.google.common.collect.ImmutableList;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import static com.android.build.gradle.integration.common.utils.AssumeBuildToolsUtil.assumeBuildToolsGreaterThan;
+import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Tests to ensure that changing the build tools version in the build.gradle will trigger
@@ -141,8 +142,13 @@ public class BuildToolsTest {
 
     @Test
     public void buildToolsInModel() throws IOException {
-        AndroidProject model = project.model().fetchAndroidProjects().getOnlyModel();
-        assertThat(model.getBuildToolsVersion())
+        AndroidDsl androidDsl = project.modelV2()
+                .fetchModels()
+                .getContainer()
+                .getProject()
+                .getAndroidDsl();
+
+        assertThat(androidDsl.getBuildToolsVersion())
                 .named("Build Tools Version")
                 .isEqualTo(GradleTestProject.DEFAULT_BUILD_TOOL_VERSION);
     }
@@ -153,11 +159,15 @@ public class BuildToolsTest {
                 project.getBuildFile(),
                 "buildToolsVersion '" + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION + "'",
                 "buildToolsVersion '30.0.2'");
-        ModelContainer<AndroidProject> container =
-                project.model().ignoreSyncIssues().fetchAndroidProjects();
-        ModelContainerSubject.assertThat(container)
-                .rootBuild()
-                .onlyProject()
-                .hasIssue(SyncIssue.SEVERITY_WARNING, SyncIssue.TYPE_BUILD_TOOLS_TOO_LOW);
+        ModelContainerV2 container =
+                project.modelV2().ignoreSyncIssues().fetchModels().getContainer();
+        Collection<com.android.builder.model.v2.ide.SyncIssue> syncIssues = container.getProject()
+                .getIssues()
+                .getSyncIssues();
+        assertThat(syncIssues).hasSize(1);
+        com.android.builder.model.v2.ide.SyncIssue singleSyncIssue =
+                (com.android.builder.model.v2.ide.SyncIssue) syncIssues.toArray()[0];
+        assertThat(singleSyncIssue.getSeverity()).isEqualTo(SyncIssue.SEVERITY_WARNING);
+        assertThat(singleSyncIssue.getType()).isEqualTo(SyncIssue.TYPE_BUILD_TOOLS_TOO_LOW);
     }
 }
