@@ -234,6 +234,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           JobSchedulerDetector.ISSUE,
           KeyboardNavigationDetector.ISSUE,
           KotlinNullnessAnnotationDetector.ISSUE,
+          KotlincFE10Detector.ISSUE,
           LabelForDetector.ISSUE,
           LayoutConsistencyDetector.INCONSISTENT_IDS,
           LayoutInflationDetector.ISSUE,

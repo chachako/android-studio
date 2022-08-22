@@ -22,6 +22,7 @@ import com.android.tools.lint.checks.CommentDetector
 import com.android.tools.lint.checks.DateFormatDetector
 import com.android.tools.lint.checks.DefaultEncodingDetector
 import com.android.tools.lint.checks.InteroperabilityDetector
+import com.android.tools.lint.checks.KotlincFE10Detector
 import com.android.tools.lint.checks.LintDetectorDetector
 import com.android.tools.lint.checks.NoOpDetector
 import com.android.tools.lint.checks.SamDetector
@@ -58,6 +59,7 @@ class StudioIssueRegistry : IssueRegistry() {
       InteroperabilityDetector.LAMBDA_LAST.setEnabledByDefault(true)
       InteroperabilityDetector.KOTLIN_PROPERTY.setEnabledByDefault(true)
       DefaultEncodingDetector.ISSUE.setEnabledByDefault(true)
+      KotlincFE10Detector.ISSUE.setEnabledByDefault(true)
     }
   }
 
