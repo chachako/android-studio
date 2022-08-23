@@ -33,6 +33,7 @@ import com.android.tools.idea.wizard.template.impl.activities.fullscreenActivity
 import com.android.tools.idea.wizard.template.impl.activities.googleAdMobAdsActivity.googleAdMobAdsActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.googleMapsActivity.googleMapsActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.googlePayActivity.googlePayActivityTemplate
+import com.android.tools.idea.wizard.template.impl.activities.googleWalletActivity.googleWalletActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.loginActivity.loginActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.navigationDrawerActivity.navigationDrawerActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.primaryDetailFlow.primaryDetailFlowTemplate
@@ -87,6 +88,7 @@ class WizardTemplateProviderImpl : WizardTemplateProvider() {
     googleAdMobAdsActivityTemplate,
     googleMapsActivityTemplate,
     googlePayActivityTemplate,
+    googleWalletActivityTemplate,
     loginActivityTemplate,
     primaryDetailFlowTemplate,
     navigationDrawerActivityTemplate,
