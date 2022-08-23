@@ -264,6 +264,9 @@ class LibraryServiceImpl(
 
                         lintJar = artifact.publishedLintJar,
                         artifact = artifact.artifactFile!!,
+                        srcJar = null, // Not yet implemented
+                        docJar = null, // Not yet implemented
+                        samplesJar = null, // Not yet implemented
                     )
                 }
 
@@ -274,7 +277,10 @@ class LibraryServiceImpl(
                     LibraryImpl.createJavaLibrary(
                         stringCache.cacheString(libraryInfo.computeKey()),
                         libraryInfo,
-                        folder
+                        folder,
+                        null, // Not yet implemented
+                        null, // Not yet implemented
+                        null, // Not yet implemented
                     )
                 }
 
@@ -283,6 +289,9 @@ class LibraryServiceImpl(
                         stringCache.cacheString(libraryInfo.computeKey()),
                         libraryInfo,
                         artifact.artifactFile!!,
+                        null, // Not yet implemented
+                        null, // Not yet implemented
+                        null, // Not yet implemented
                     )
                 }
 
@@ -318,7 +327,10 @@ class LibraryServiceImpl(
             LibraryImpl.createJavaLibrary(
                 stringCache.cacheString(libraryInfo.computeKey()),
                 libraryInfo,
-                folder
+                folder,
+                null, // Not yet implemented
+                null, // Not yet implemented
+                null, // Not yet implemented
             )
         } else {
             // In general, we do not need to provide the artifact for project dependencies
