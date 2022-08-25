@@ -96,25 +96,45 @@ internal class SubProjectBuilderImpl(override val path: String) : SubProjectBuil
     ) {
         android?.prepareForWriting()
 
+
+        val sb = StringBuilder()
+        // generate the build file
+        sb.append('\n')
+        val pluginsContent = if (useNewPluginsDsl) {
+            val pluginsBlock = StringBuilder()
+            pluginsBlock.append("plugins {\n")
+            for (plugin in plugins) {
+                pluginsBlock.append("id('${plugin.id}')")
+                plugin.version?.let{
+                    if (!plugin.isAndroid) {
+                        pluginsBlock.append(" version '$it'")
+                    }
+                }
+                pluginsBlock.appendLine()
+            }
+            pluginsBlock.append("}\n")
+            pluginsBlock.toString()
+        } else {
+            ""
+        }
+
+        if (buildScriptContent != null) {
+            // The plugin block needs to come after the buildscript block, but before other
+            // declarations in buildScriptContent.
+            sb.append(
+                    buildScriptContent.replace("// plugin block should go here", pluginsContent)
+            )
+        } else {
+            sb.append(pluginsContent)
+            sb.appendLine()
+        }
+
         // write all the files
         for (sourceFile in files.values) {
             val file = File(projectDir, sourceFile.relativePath.replace('/', File.separatorChar))
             FileUtils.mkdirs(file.parentFile)
             file.writeText(sourceFile.content)
         }
-
-        // generate the build file
-        val sb = StringBuilder()
-        buildScriptContent?.let { sb.append(it) }
-        sb.append('\n')
-        if (useNewPluginsDsl) {
-            sb.append("plugins {\n")
-            for (plugin in plugins) {
-                sb.append("  id '${plugin.id}'\n")
-            }
-            sb.append("}\n")
-        }
-
         group?.let {
             sb.append("group = \"$it\"\n")
         }

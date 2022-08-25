@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.common.fixture.testprojects
 
+import com.android.Version
 
 sealed class PluginType(
     val id: String,
@@ -25,7 +26,8 @@ sealed class PluginType(
     val isKotlin: Boolean = false,
     val isJava: Boolean = false,
     val useNewDsl: Boolean = true,
-    val last: Boolean = false
+    val last: Boolean = false,
+    val version: String? = if (isAndroid) Version.ANDROID_GRADLE_PLUGIN_VERSION else null
 ) {
     object JAVA_LIBRARY: PluginType(
         id = "java-library",
@@ -61,6 +63,13 @@ sealed class PluginType(
         isKotlin = true,
         useNewDsl = false,
         last = true
+    )
+    object KSP: PluginType(
+            id = "com.google.devtools.ksp",
+            isKotlin = true,
+            useNewDsl = true,
+            last = true,
+            version = "1.7.10-1.0.6"
     )
     object KOTLIN_MPP: PluginType(
         id = "org.jetbrains.kotlin.multiplatform",

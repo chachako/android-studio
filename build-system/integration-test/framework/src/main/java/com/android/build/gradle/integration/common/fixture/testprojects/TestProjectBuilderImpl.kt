@@ -104,11 +104,11 @@ internal open class TestProjectBuilderImpl(override val name: String, override v
             // write customization
             sb.append("plugins {\n")
             for (plugin in settingsBuilder.plugins) {
-                if (plugin.isAndroid) {
-                    sb.append("id('${plugin.id}') version \"${Version.ANDROID_GRADLE_PLUGIN_VERSION}\"\n")
-                } else {
-                    sb.append("id('${plugin.id}')\n")
+                sb.append("id('${plugin.id}')")
+                plugin.version?.let{
+                    sb.append(" version \"$it\"")
                 }
+                sb.appendLine()
             }
             sb.append("}\n\n")
 

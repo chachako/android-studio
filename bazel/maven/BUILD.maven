@@ -29680,6 +29680,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_1.7.10-1.0.6",
+    pom = "repository/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/1.7.10-1.0.6/com.google.devtools.ksp.gradle.plugin-1.7.10-1.0.6.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/1.7.10-1.0.6",
+    deps = [
+        "com.google.devtools.ksp.symbol-processing-gradle-plugin_1.7.10-1.0.6",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.devtools.ksp.symbol-processing-api_1.5.30-1.0.0",
     pom = "repository/com/google/devtools/ksp/symbol-processing-api/1.5.30-1.0.0/symbol-processing-api-1.5.30-1.0.0.pom",
     repo_root_path = "repository",

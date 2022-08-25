@@ -532,14 +532,16 @@ class GradleTestProject @JvmOverloads internal constructor(
     fun computeGradleBuildscript(): String {
         val projectParentDir = projectDir.parent
         return """
-                apply from: "${File(projectParentDir, "commonHeader.gradle").toURI()}"
                 buildscript { apply from: "${File(projectParentDir, "commonBuildScript.gradle").toURI()}" }
+                // plugin block should go here
+                apply from: "${File(projectParentDir, "commonHeader.gradle").toURI()}"
                 apply from: "${File(projectParentDir, "commonLocalRepo.gradle").toURI()}"
 
                 // Treat javac warnings as errors
                 tasks.withType(JavaCompile) {
                     options.compilerArgs << "-Werror"
                 }
+
                 """.trimIndent()
     }
 

@@ -28,6 +28,7 @@ internal class AndroidProjectBuilderImpl(
 ): AndroidProjectBuilder {
 
     override var applicationId: String? = null
+    override var compileSdkPreview: String? = null
     override var buildToolsRevision: String? = null
     override var compileSdk: Int? = null
     override var minSdk: Int? = null
@@ -154,6 +155,9 @@ internal class AndroidProjectBuilderImpl(
         }
         applicationId?.let {
             sb.append("    applicationId = \"$it\"\n")
+        }
+        compileSdkPreview?.let {
+            sb.append("    compileSdkPreview = \"$it\"\n")
         }
 
         aarMetadata?.let { aarMetadata ->

@@ -72,10 +72,14 @@ class DependenciesBuilderImpl() : DependenciesBuilder {
             ProjectDependencyBuilderImpl(path, testFixtures, configuration)
 
     override fun externalLibrary(path: String, testFixtures: Boolean): ExternalDependencyBuilder =
-        ExternalDependencyBuilderImpl(path, testFixtures)
+            ExternalDependencyBuilderImpl(path, testFixtures)
 
     override fun coreLibraryDesugaring(dependency: Any) {
         dependencies.add("coreLibraryDesugaring" to dependency)
+    }
+
+    override fun ksp(dependency: Any) {
+        dependencies.add("ksp" to dependency)
     }
 
     fun writeBuildFile(sb: StringBuilder, projectDir: File) {

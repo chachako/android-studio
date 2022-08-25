@@ -21,46 +21,87 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
+import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
+import com.android.sdklib.BuildToolInfo
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
+import com.android.testutils.TestUtils
 import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
+import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 import java.util.Objects
 import kotlin.io.path.readText
 
 /** Smoke integration tests for the privacy sandbox SDK production and consumption */
 class PrivacySandboxSdkTest {
 
+    val sandboxApiCompilerLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysanbox.tools:tools-apicompiler:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/tools/tools-apicompiler/1.0.0-SNAPSHOT/tools-apicompiler-1.0.0-SNAPSHOT.jar")
+    val sandboxToolsLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysanbox.tools:tools:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT/tools-1.0.0-SNAPSHOT.jar")
+    val sandboxToolsCoreLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysanbox.tools:tools-core:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/tools/tools-core/1.0.0-SNAPSHOT/tools-core-1.0.0-SNAPSHOT.jar")
+
     private val mavenRepo = MavenRepoGenerator(
             listOf(
-                    MavenRepoGenerator.Library("com.externaldep:externaljar:1", "jar", TestInputsGenerator.jarWithEmptyClasses(
-                            ImmutableList.of("com/externaldep/externaljar/ExternalClass")
-                    ))
+                    MavenRepoGenerator.Library("com.externaldep:externaljar:1",
+                            "jar",
+                            TestInputsGenerator.jarWithEmptyClasses(
+                                    ImmutableList.of("com/externaldep/externaljar/ExternalClass")
+                            )),
+                    sandboxApiCompilerLibrary,
+                    sandboxToolsLibrary,
+                    sandboxToolsCoreLibrary
             )
     )
 
     @get:Rule
     val project = createGradleProjectBuilder {
 
+        val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
+                .replace("""\""", """\\""")
         subProject(":android-lib1") {
+            useNewPluginsDsl = true
             plugins.add(PluginType.ANDROID_LIB)
+            plugins.add(PluginType.KOTLIN_ANDROID)
+            plugins.add(PluginType.KSP)
             android {
                 defaultCompileSdk()
                 namespace = "com.example.androidlib1"
                 minSdk = 12
+                compileSdkPreview = "TiramisuPrivacySandbox"
             }
             dependencies {
                 implementation("junit:junit:4.12")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+                implementation(sandboxToolsLibrary)
+                ksp("com.google.protobuf:protobuf-java:3.19.3")
+                ksp("com.squareup:kotlinpoet:1.12.0")
+                ksp(sandboxToolsCoreLibrary)
+                ksp(sandboxToolsLibrary)
+                ksp(sandboxApiCompilerLibrary)
+                ksp("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+            }
+            appendToBuildFile {
+                "def aidlCompilerPath = '$aidlPath'\n" +
+                        "ksp { arg(\"aidl_compiler_path\", aidlCompilerPath) }"
             }
             addFile(
                     "src/main/res/values/strings.xml",
@@ -98,6 +139,7 @@ class PrivacySandboxSdkTest {
                 defaultCompileSdk()
                 namespace = "com.example.androidlib2"
                 minSdk = 12
+                compileSdkPreview = "TiramisuPrivacySandbox"
             }
             addFile(
                     "src/main/java/com/example/androidlib2/Example.java",
@@ -126,6 +168,7 @@ class PrivacySandboxSdkTest {
             android {
                 defaultCompileSdk()
                 minSdk = 12
+                compileSdkPreview = "TiramisuPrivacySandbox"
             }
             appendToBuildFile {
                 """
@@ -152,6 +195,7 @@ class PrivacySandboxSdkTest {
                 defaultCompileSdk()
                 minSdk = 12
                 namespace = "com.example.privacysandboxsdk.consumer"
+                compileSdkPreview = "TiramisuPrivacySandbox"
             }
             dependencies {
                 implementation(project(":privacy-sandbox-sdk"))
@@ -166,9 +210,14 @@ class PrivacySandboxSdkTest {
                 """.trimIndent()
             }
         }
+        rootProject {
+            useNewPluginsDsl = true
+            plugins.add(PluginType.KSP)
+        }
     }
             .withAdditionalMavenRepo(mavenRepo)
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .addGradleProperties(
                     "${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName}=" +
                             "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT," +
@@ -328,7 +377,7 @@ class PrivacySandboxSdkTest {
             assertThat(manifestContent.normalizeManifestContent()).containsAtLeastElementsIn(
                 listOf(
                 "      E: application (line=14)",
-                "          E: uses-sdk-library (line=15)",
+                "          E: uses-sdk-library (line=17)",
                 "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
                 "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"15:D3:8B:C5:64:63:F1:BE:1E:BE:8C:FD:1F:E8:C9:AB:73:8C:5B:2F:68:2A:35:D7:54:F0:C2:7A:68:B3:3B:AF\" (Raw: \"15:D3:8B:C5:64:63:F1:BE:1E:BE:8C:FD:1F:E8:C9:AB:73:8C:5B:2F:68:2A:35:D7:54:F0:C2:7A:68:B3:3B:AF\")",
                 "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"
@@ -337,9 +386,49 @@ class PrivacySandboxSdkTest {
         }
     }
 
+    @Test
+    fun checkKsp() {
+        val executor = project.executor()
+        val androidLib1 = project.getSubproject("android-lib1")
+        val pkg =
+                FileUtils.join(androidLib1.mainSrcDir, "com", "example", "androidlib1")
+        val mySdkFile = File(pkg, "MySdk.kt")
+
+        // Invalid usage of @PrivacySandboxSdk as interface contains two methods with the same name.
+        mySdkFile.writeText(
+                "package com.example.androidlib1\n" +
+                        "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
+                        "   @PrivacySandboxService\n" +
+                        "   public interface MySdk {\n" +
+                        "       suspend fun doStuff(x: Int, y: Int): String\n" +
+                        "       suspend fun doStuff(x: Int, y: Int)\n" +
+                        "   }\n"
+        )
+
+        executor.expectFailure().run("android-lib1:build")
+
+        mySdkFile.writeText(
+                "package com.example.androidlib1\n" +
+                        "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
+                        "   @PrivacySandboxService\n" +
+                        "   public interface MySdk {\n" +
+                        "       suspend fun doStuff(x: Int, y: Int): String\n" +
+                        "   }\n"
+        )
+        project.execute("android-lib1:build")
+
+        val kspDir = FileUtils.join(androidLib1.generatedDir,"ksp")
+        assertThat(kspDir.exists()).isTrue()
+    }
+
     private fun List<String>.normalizeManifestContent(): List<String> = map {
         certDigestPattern.replace(it, "CERT_DIGEST")
     }
+
+    private fun getPrebuiltAsMavenLib(mavenCoordinate: String, jarName: String) =
+            MavenRepoGenerator.Library(mavenCoordinate,
+                    TestUtils.getLocalMavenRepoFile(jarName).toFile().readBytes()
+            )
 
     companion object {
         private val certDigestPattern = Regex("([0-9A-F]{2}:){31}[0-9A-F]{2}")

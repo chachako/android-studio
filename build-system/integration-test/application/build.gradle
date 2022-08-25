@@ -30,6 +30,7 @@ dependencies {
 
     testImplementation libs.kotlin_stdlib
     testImplementation libs.kotlin_test
+    testImplementation libs.kotlin_coroutines_core
 
     testImplementation gradleApi()
     testImplementation libs.asm_tree
@@ -81,7 +82,7 @@ configure([test, testPrebuilts]) {
     environment = testEnvironment
 
     outputs.upToDateWhen { false }
-    
+
     Float maxParallelForksRatio = 3.0
     if (System.properties["os.arch"] == "aarch64") {
         maxParallelForksRatio = 1.5

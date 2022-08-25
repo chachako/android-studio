@@ -90,6 +90,7 @@ class MinimalPrivacySandboxSdkTest {
         }
     }
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .addGradleProperties(
                     "${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName}=" +
                             "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT," +

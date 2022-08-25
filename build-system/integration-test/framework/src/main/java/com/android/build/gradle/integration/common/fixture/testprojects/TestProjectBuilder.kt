@@ -151,6 +151,7 @@ interface SubProjectBuilder {
 interface AndroidProjectBuilder {
     var namespace: String
     var applicationId: String?
+    var compileSdkPreview: String?
     var buildToolsRevision: String?
     var compileSdk: Int?
     var minSdk: Int?
@@ -339,6 +340,9 @@ interface DependenciesBuilder {
      * Adds a dependency in the coreLibraryDesugaring scope.
      */
     fun coreLibraryDesugaring(dependency: Any)
+
+    /** Adds a dependency that using KSP's configuration. */
+    fun ksp(dependency: Any)
 }
 
 interface LocalJarBuilder {
