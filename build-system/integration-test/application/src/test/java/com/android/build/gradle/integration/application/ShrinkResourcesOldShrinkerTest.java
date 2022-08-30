@@ -53,7 +53,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,22 +69,16 @@ public class ShrinkResourcesOldShrinkerTest {
                     .fromTestProject("shrink")
                     .create();
 
-    @Parameterized.Parameters(name = "bundle={0} useRTxt={1}")
+    @Parameterized.Parameters(name = "bundle={0}")
     public static Iterable<Object[]> data() {
         return ImmutableList.of(
-                // R classes and old resource shrinker.
-                new Object[] {ApkPipeline.NO_BUNDLE, false},
-                new Object[] {ApkPipeline.BUNDLE, false},
-                // R text files and old resource shrinker.
-                new Object[] {ApkPipeline.NO_BUNDLE, true},
-                new Object[] {ApkPipeline.BUNDLE, true});
+                new Object[] {ApkPipeline.NO_BUNDLE},
+                new Object[] {ApkPipeline.BUNDLE}
+          );
     }
 
     @Parameterized.Parameter
     public ApkPipeline apkPipeline;
-
-    @Parameterized.Parameter(1)
-    public Boolean useRTxt;
 
     private enum ApkPipeline {
         NO_BUNDLE("assemble", ""),
@@ -192,7 +185,6 @@ public class ShrinkResourcesOldShrinkerTest {
     @Test
     public void checkShrinkResources() throws Exception {
         project.executor()
-                .with(BooleanOption.ENABLE_R_TXT_RESOURCE_SHRINKING, useRTxt)
                 .with(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER, false)
                 .run(
                         "clean",
@@ -917,11 +909,9 @@ public class ShrinkResourcesOldShrinkerTest {
                             "res/layout/used1.xml")
                     .inOrder();
         }
-        // Check R class keep rule is removed from proguard files when R.txt is used when useRTxt is
-        // enabled and kept when useRTxt is disabled.
         File proguardFilesIntermediateDir =
                 project.getIntermediateFile("default_proguard_files/global");
-        assertThat(containsRClassKeepRule(proguardFilesIntermediateDir)).isEqualTo(!useRTxt);
+        assertThat(containsRClassKeepRule(proguardFilesIntermediateDir)).isEqualTo(false);
     }
 
     /** Checks if a Proguard directory files contain a keep rule to keep R class members. */

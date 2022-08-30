@@ -215,8 +215,6 @@ enum class BooleanOption(
      */
     ENABLE_INCREMENTAL_DATA_BINDING("android.databinding.incremental", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
-    ENABLE_R_TXT_RESOURCE_SHRINKING("android.enableRTxtResourceShrinking", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-
     ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
     ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE(
@@ -546,6 +544,13 @@ enum class BooleanOption(
     ENABLE_NEW_RESOURCE_SHRINKER("android.enableNewResourceShrinker",
             true,
             FeatureStage.Enforced(Version.VERSION_8_0)),
+
+    @Suppress("unused")
+    ENABLE_R_TXT_RESOURCE_SHRINKING(
+            "android.enableRTxtResourceShrinking",
+            true,
+            FeatureStage.Enforced(Version.VERSION_8_0)
+    ),
 
     /* ----------------
      * REMOVED FEATURES

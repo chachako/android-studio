@@ -35,9 +35,6 @@ import org.gradle.work.DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.OPTIMIZATION)
 abstract class ExtractProguardFiles : NonIncrementalGlobalTask() {
 
-    @get:Input
-    abstract val enableKeepRClass: Property<Boolean>
-
     @get:Internal("only for task execution")
     abstract val buildDirectory: DirectoryProperty
 
@@ -48,7 +45,7 @@ abstract class ExtractProguardFiles : NonIncrementalGlobalTask() {
         for (name in ProguardFiles.KNOWN_FILE_NAMES) {
             val defaultProguardFile = ProguardFiles.getDefaultProguardFile(name, buildDirectory)
             if (!defaultProguardFile.isFile) {
-                ProguardFiles.createProguardFile(name, defaultProguardFile, enableKeepRClass.get())
+                ProguardFiles.createProguardFile(name, defaultProguardFile)
             }
         }
     }
@@ -62,10 +59,6 @@ abstract class ExtractProguardFiles : NonIncrementalGlobalTask() {
 
         override fun configure(task: ExtractProguardFiles) {
             super.configure(task)
-
-            task.enableKeepRClass.setDisallowChanges(
-                !creationConfig.services.projectOptions.get(BooleanOption.ENABLE_R_TXT_RESOURCE_SHRINKING)
-            )
             task.buildDirectory.setDisallowChanges(creationConfig.services.projectInfo.buildDirectory)
 
             task.outputs.doNotCacheIf(
