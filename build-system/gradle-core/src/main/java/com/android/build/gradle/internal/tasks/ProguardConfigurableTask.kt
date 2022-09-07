@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.variant.ScopedArtifacts.Scope
 import com.android.build.gradle.ProguardFiles
 import com.android.build.gradle.internal.InternalScope
@@ -266,8 +267,17 @@ abstract class ProguardConfigurableTask(
 
             val transformManager = creationConfig.transformManager
             @Suppress("DEPRECATION") // Legacy support
-            classes = transformManager
-                .getPipelineOutputAsFileCollection(createStreamFilter(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES, inputScopes))
+            classes = creationConfig.services.fileCollection().also {
+                it.from(
+                    transformManager
+                        .getPipelineOutputAsFileCollection(createStreamFilter(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES, inputScopes))
+                )
+                if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
+                    ).getFinalArtifacts(ScopedArtifact.CLASSES))
+                }
+            }
 
             @Suppress("DEPRECATION") // Legacy support
             resources = transformManager
@@ -278,11 +288,22 @@ abstract class ProguardConfigurableTask(
             transformManager.consumeStreams(inputScopes, setOf(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES, com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES))
 
             @Suppress("DEPRECATION") // Legacy support
-            referencedClasses = transformManager
-                .getPipelineOutputAsFileCollection(
-                    createStreamFilter(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES, referencedScopes.toMutableSet())
-                )
+            referencedClasses = creationConfig.services.fileCollection().also {
 
+                it.from(transformManager
+                    .getPipelineOutputAsFileCollection(
+                        createStreamFilter(
+                            com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES,
+                            referencedScopes.toMutableSet()
+                        )
+                    )
+                )
+                if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
+                    ).getFinalArtifacts(ScopedArtifact.CLASSES))
+                }
+            }
             @Suppress("DEPRECATION") // Legacy support
             referencedResources = transformManager
                 .getPipelineOutputAsFileCollection(

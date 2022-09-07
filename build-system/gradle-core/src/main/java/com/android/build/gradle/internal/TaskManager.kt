@@ -23,6 +23,7 @@ import com.android.build.api.artifact.Artifact.Single
 import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.dsl.DataBinding
 import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.DeviceGroup
@@ -854,17 +855,14 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         }
 
         // This might be consumed by RecalculateFixedStackFrames if that's created
-        transformManager.addStream(
-                OriginalStream.builder("ext-libs-classes")
-                        .addContentTypes(TransformManager.CONTENT_CLASS)
-                        .addScope(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)
-                        .setFileCollection(
-                            getFinalRuntimeClassesJarsFromComponent(
-                                creationConfig,
-                                ArtifactScope.EXTERNAL
-                            )
-                        ).build()
-        )
+        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+            .setInitialContent(
+                ScopedArtifact.CLASSES,
+                getFinalRuntimeClassesJarsFromComponent(
+                    creationConfig,
+                    ArtifactScope.EXTERNAL
+                )
+            )
 
         // Add stream of external java resources if EXTERNAL_LIBRARIES isn't in the set of java res
         // merging scopes.
@@ -1212,16 +1210,16 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                 useAaptToGenerateLegacyMultidexMainDexProguardRules
             )
             val rFiles: FileCollection = project.files(
-                    creationConfig.artifacts.get(RUNTIME_R_CLASS_CLASSES))
+                creationConfig.artifacts.get(RUNTIME_R_CLASS_CLASSES))
             @Suppress("DEPRECATION") // Legacy support
             creationConfig
-                    .transformManager
-                    .addStream(
-                            OriginalStream.builder("final-r-classes")
-                                    .addContentTypes(setOf(QualifiedContent.DefaultContentType.CLASSES))
-                                    .addScope(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                                    .setFileCollection(rFiles)
-                                    .build())
+                .transformManager
+                .addStream(
+                    OriginalStream.builder("final-r-classes")
+                        .addContentTypes(setOf(QualifiedContent.DefaultContentType.CLASSES))
+                        .addScope(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
+                        .setFileCollection(rFiles)
+                        .build())
             creationConfig
                     .artifacts
                     .appendTo(MultipleArtifact.ALL_CLASSES_DIRS, RUNTIME_R_CLASS_CLASSES)
@@ -2117,14 +2115,21 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
             .getScopedArtifactsContainer(ScopedArtifact.CLASSES)
             .initialScopedContent
-            .from(
-                creationConfig
-                    .transformManager
-                    .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                        contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                                && scopes.intersect(TransformManager.SCOPE_FULL_PROJECT_WITH_LOCAL_JARS).isNotEmpty()
-                    }
-            )
+            .run {
+                from(
+                    creationConfig
+                        .transformManager
+                        .getPipelineOutputAsFileCollection { contentTypes, scopes ->
+                            contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
+                                    && scopes.intersect(TransformManager.SCOPE_FULL_PROJECT_WITH_LOCAL_JARS)
+                                .isNotEmpty()
+                        }
+                )
+                from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            }
 
         // let's check if the ALL scoped classes are transformed.
         if (creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)

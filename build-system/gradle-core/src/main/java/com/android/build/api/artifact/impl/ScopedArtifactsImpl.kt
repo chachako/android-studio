@@ -39,7 +39,7 @@ import org.gradle.api.tasks.TaskProvider
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ScopedArtifactsImpl(
-    val scope: ScopedArtifacts.Scope,
+    val scopeName: String,
     val variantIdentifier: String,
     val projectLayout: ProjectLayout,
     val fileCollectionCreator: () -> ConfigurableFileCollection,
@@ -203,7 +203,7 @@ class ScopedArtifactsImpl(
                 type.getIntermediateOutputPath(
                     buildDirectory = projectLayout.buildDirectory,
                     variantIdentifier = scopedArtifacts.variantIdentifier,
-                    paths = arrayOf(scopedArtifacts.scope.name) ,
+                    paths = arrayOf(scopedArtifacts.scopeName) ,
                     forceFilename = type.name().lowercase().plus(".jar")
                 )
             )

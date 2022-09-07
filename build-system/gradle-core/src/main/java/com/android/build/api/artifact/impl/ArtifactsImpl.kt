@@ -68,7 +68,7 @@ class ArtifactsImpl(
     }
 
     private val projectScopedArtifacts = ScopedArtifactsImpl(
-        ScopedArtifacts.Scope.PROJECT,
+        ScopedArtifacts.Scope.PROJECT.name,
         identifier,
         project.layout,
         project::files,
@@ -89,10 +89,17 @@ class ArtifactsImpl(
     }
 
     private val allScopedArtifacts = ScopedArtifactsImpl(
-        ScopedArtifacts.Scope.ALL,
+        ScopedArtifacts.Scope.ALL.name,
         identifier,
         project.layout,
         project::files,
+    )
+
+    private val externalLibsScopedArtifacts = ScopedArtifactsImpl(
+        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS.name,
+        identifier,
+        project.layout,
+        project::files
     )
 
     override fun forScope(scope: ScopedArtifacts.Scope): ScopedArtifactsImpl =
@@ -100,6 +107,15 @@ class ArtifactsImpl(
             ScopedArtifacts.Scope.PROJECT -> projectScopedArtifacts
             ScopedArtifacts.Scope.ALL -> allScopedArtifacts
             else -> throw IllegalArgumentException("Not implemented yet !")
+        }
+
+    /**
+     * Returns a [ScopedArtifactsImpl] for internal scope defined by the passed [scope] parameter.
+     */
+    fun forScope(scope: InternalScopedArtifacts.InternalScope): ScopedArtifactsImpl =
+        when(scope) {
+            InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS -> externalLibsScopedArtifacts
+            else -> throw java.lang.IllegalArgumentException("${scope.name} not supported")
         }
 
     override fun <FILE_TYPE : FileSystemLocation> get(

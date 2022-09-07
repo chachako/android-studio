@@ -17,6 +17,9 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.DOT_JAR
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.pipeline.TransformManager
@@ -92,17 +95,12 @@ abstract class MergeClassesTask : NonIncrementalTask() {
     ) {
         override val type = MergeClassesTask::class.java
         override val name: String = computeTaskName("merge", "Classes")
-
-        // Because ordering matters for the transform pipeline, we need to fetch the classes as soon
-        // as this creation action is instantiated.
-        @Suppress("DEPRECATION") // Legacy support
-        private val inputFiles =
-            creationConfig
-                .transformManager
-                .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                    contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                            && scopes.intersect(TransformManager.SCOPE_FULL_PROJECT).isNotEmpty()
-                }
+        private val inputFiles = creationConfig.services.fileCollection().run {
+            from(
+                creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES)
+            )
+        }
 
         override fun handleProvider(
             taskProvider: TaskProvider<MergeClassesTask>

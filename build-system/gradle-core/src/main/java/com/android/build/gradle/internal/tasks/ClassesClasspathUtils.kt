@@ -16,7 +16,10 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.transform.QualifiedContent
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.InternalScope
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -118,14 +121,22 @@ class ClassesClasspathUtils(
             dexExternalLibsInArtifactTransform = false
 
             // Get all classes from the scopes we are interested in.
-            mixedScopeClasses = transformManager.getPipelineOutputAsFileCollection(
-                { _, scopes ->
-                    scopes.isNotEmpty() && scopes.subtract(
-                        TransformManager.SCOPE_FULL_WITH_FEATURES
-                    ).isEmpty()
-                },
-                classesFilter
-            )
+            mixedScopeClasses = creationConfig.services.fileCollection().run {
+                from(transformManager.getPipelineOutputAsFileCollection(
+                    { _, scopes ->
+                        scopes.isNotEmpty() && scopes.subtract(
+                            TransformManager.SCOPE_FULL_WITH_FEATURES
+                        ).isEmpty()
+                    },
+                    classesFilter
+                    )
+                )
+                from(
+                    from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    )
+                )
+            }
             @Suppress("DEPRECATION") // Legacy support
             run {
                 desugaringClasspathScopes.add(QualifiedContent.Scope.TESTED_CODE)
@@ -141,18 +152,16 @@ class ClassesClasspathUtils(
                     { _, scopes -> scopes == setOf(QualifiedContent.Scope.SUB_PROJECTS) },
                     classesFilter
                 )
-            @Suppress("DEPRECATION") // Legacy support
-            externalLibraryClasses =
-                transformManager.getPipelineOutputAsFileCollection(
-                    { _, scopes -> scopes == setOf(QualifiedContent.Scope.EXTERNAL_LIBRARIES) },
-                    classesFilter
-                )
+            externalLibraryClasses = creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                .getFinalArtifacts(ScopedArtifact.CLASSES)
+
             // Get all classes that have more than 1 scope. E.g. project & subproject, or
             // project & subproject & external libs.
             mixedScopeClasses = transformManager.getPipelineOutputAsFileCollection(
                 { _, scopes -> scopes.size > 1 && scopes.subtract(TransformManager.SCOPE_FULL_PROJECT).isEmpty() },
                 classesFilter
             )
+
             dexExternalLibsInArtifactTransform =
                 creationConfig.services.projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS]
         }
