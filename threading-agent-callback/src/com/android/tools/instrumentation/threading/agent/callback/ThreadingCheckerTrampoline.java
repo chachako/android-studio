@@ -16,6 +16,8 @@
 
 package com.android.tools.instrumentation.threading.agent.callback;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
@@ -63,7 +65,7 @@ public final class ThreadingCheckerTrampoline {
             skippedChecksCounter.incrementAndGet();
             return;
         }
-        if (getBaselineViolations().isIgnored(getInstrumentedMethodSignature())) {
+        if (getBaselineViolations().isIgnored(getInstrumentedMethodStackTrace())) {
             return;
         }
         for (ThreadingCheckerHook hook : hooks) {
@@ -77,7 +79,7 @@ public final class ThreadingCheckerTrampoline {
             skippedChecksCounter.incrementAndGet();
             return;
         }
-        if (getBaselineViolations().isIgnored(getInstrumentedMethodSignature())) {
+        if (getBaselineViolations().isIgnored(getInstrumentedMethodStackTrace())) {
             return;
         }
         for (ThreadingCheckerHook hook : hooks) {
@@ -95,17 +97,17 @@ public final class ThreadingCheckerTrampoline {
         }
     }
 
-    private static String getInstrumentedMethodSignature() {
+    private static List<StackTraceElement> getInstrumentedMethodStackTrace() {
         // Stack trace here will look like
         // Thread#getStackTrace
-        // ThreadingCheckerTrampoline#getInstrumentedMethodSignature
+        // ThreadingCheckerTrampoline#getInstrumentedMethodStackTrace
         // ThreadingCheckerTrampoline.verifyOnUiThread
         // [method-of-interest]
         // ...
         //
-        // And so we are interested in the fourth frame. If this changes please update the frame
-        // index below
-        StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[3];
-        return stackTraceElement.getClassName() + "#" + stackTraceElement.getMethodName();
+        // And so we are interested in the stack trace starting with the fourth frame. If this
+        // changes please update the frame index below
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        return Arrays.asList(stackTrace).subList(3, stackTrace.length);
     }
 }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -40,14 +41,14 @@ public class BaselineViolations {
     }
 
     /**
-     * Checks if the method should not be checked for threading violations.
-     *
-     * @param method should be specified as FullClassName[$InternalClassName]#MethodName. For
-     *     example: com.android.tools.SomeClass#doSomething,
-     *     com.android.tools.SomeClass$InnerClass#doSomethingElse
+     * Checks if the stack trace should be excluded from the threading checks due to its presence in
+     * the baseline_violations.txt.
      */
-    public boolean isIgnored(String method) {
-        return violatingMethods.contains(method);
+    public boolean isIgnored(List<StackTraceElement> stackTrace) {
+        if (stackTrace.isEmpty()) {
+            throw new IllegalArgumentException("stackTrace is empty");
+        }
+        return violatingMethods.contains(traceElementToMethodSignature(stackTrace.get(0)));
     }
 
     static BaselineViolations fromResource() {
@@ -69,5 +70,16 @@ public class BaselineViolations {
                         .map(String::trim)
                         .filter(l -> !l.startsWith("#") && !l.isEmpty())
                         .collect(Collectors.toSet()));
+    }
+
+    /**
+     * Converts a stack frame to a method signature as described in baseline_violations.txt which
+     * looks like FullClassName[$InternalClassName]#MethodName.
+     *
+     * <p>For example: com.android.tools.SomeClass#doSomething,
+     * com.android.tools.SomeClass$InnerClass#doSomethingElse
+     */
+    private static String traceElementToMethodSignature(StackTraceElement stackTraceElement) {
+        return stackTraceElement.getClassName() + "#" + stackTraceElement.getMethodName();
     }
 }
