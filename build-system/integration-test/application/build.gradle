@@ -80,7 +80,7 @@ configure([test, testPrebuilts]) {
     environment = testEnvironment
 
     outputs.upToDateWhen { false }
-
+    
     Float maxParallelForksRatio = 3.0
     if (System.properties["os.arch"] == "aarch64") {
         maxParallelForksRatio = 1.5

@@ -880,17 +880,14 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         }
 
         // for the sub modules, new intermediary classes artifact has its own stream
-        transformManager.addStream(
-                OriginalStream.builder("sub-projects-classes")
-                        .addContentTypes(TransformManager.CONTENT_CLASS)
-                        .addScope(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)
-                        .setFileCollection(
-                                getFinalRuntimeClassesJarsFromComponent(
-                                    creationConfig,
-                                    ArtifactScope.PROJECT
-                                )
-                        ).build()
-        )
+        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+            .setInitialContent(
+                ScopedArtifact.CLASSES,
+                getFinalRuntimeClassesJarsFromComponent(
+                    creationConfig,
+                    ArtifactScope.PROJECT
+                )
+            )
 
         // same for the java resources, if SUB_PROJECTS isn't in the set of java res merging scopes.
         if (!getJavaResMergingScopes(creationConfig).contains(
@@ -2122,6 +2119,10 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                                     && scopes.intersect(TransformManager.SCOPE_FULL_PROJECT_WITH_LOCAL_JARS)
                                 .isNotEmpty()
                         }
+                )
+                from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
                 )
                 from(
                     creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)

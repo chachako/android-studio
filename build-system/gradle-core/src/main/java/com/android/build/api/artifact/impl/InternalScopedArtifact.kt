@@ -28,6 +28,7 @@ interface InternalScopedArtifacts: ScopedArtifacts {
      * AGP Private scopes.
      */
     enum class InternalScope {
-        EXTERNAL_LIBS
+        SUB_PROJECT,
+        EXTERNAL_LIBS,
     }
 }

@@ -277,6 +277,11 @@ abstract class ProguardConfigurableTask(
                         InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
                     ).getFinalArtifacts(ScopedArtifact.CLASSES))
                 }
+                if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                    ).getFinalArtifacts(ScopedArtifact.CLASSES))
+                }
             }
 
             @Suppress("DEPRECATION") // Legacy support
@@ -298,6 +303,11 @@ abstract class ProguardConfigurableTask(
                         )
                     )
                 )
+                if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                    ).getFinalArtifacts(ScopedArtifact.CLASSES))
+                }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
                     it.from(creationConfig.artifacts.forScope(
                         InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS

@@ -104,7 +104,8 @@ class ClassesClasspathUtils(
             mixedScopeClasses = creationConfig.services.fileCollection()
             dexExternalLibsInArtifactTransform = false
         } else if (enableDexingArtifactTransform) {
-            subProjectsClasses = creationConfig.services.fileCollection()
+            subProjectsClasses = creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                .getFinalArtifacts(ScopedArtifact.CLASSES)
             externalLibraryClasses = creationConfig.services.fileCollection()
             mixedScopeClasses = creationConfig.services.fileCollection()
             dexExternalLibsInArtifactTransform = false
@@ -147,20 +148,14 @@ class ClassesClasspathUtils(
         } else {
             // legacy Transform API
             @Suppress("DEPRECATION") // Legacy support
-            subProjectsClasses =
-                transformManager.getPipelineOutputAsFileCollection(
-                    { _, scopes -> scopes == setOf(QualifiedContent.Scope.SUB_PROJECTS) },
-                    classesFilter
-                )
+            subProjectsClasses = creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                .getFinalArtifacts(ScopedArtifact.CLASSES)
             externalLibraryClasses = creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
                 .getFinalArtifacts(ScopedArtifact.CLASSES)
 
-            // Get all classes that have more than 1 scope. E.g. project & subproject, or
-            // project & subproject & external libs.
-            mixedScopeClasses = transformManager.getPipelineOutputAsFileCollection(
-                { _, scopes -> scopes.size > 1 && scopes.subtract(TransformManager.SCOPE_FULL_PROJECT).isEmpty() },
-                classesFilter
-            )
+            // mixed scoped classes are not possible any longer since each jar is individually
+            // present in a single scope.
+            mixedScopeClasses = creationConfig.services.fileCollection()
 
             dexExternalLibsInArtifactTransform =
                 creationConfig.services.projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS]
