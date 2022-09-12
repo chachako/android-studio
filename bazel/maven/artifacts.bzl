@@ -322,6 +322,7 @@ DATA = [
     "com.google.android.gms:play-services-gass:20.0.0",
     "com.google.android.gms:play-services-maps:17.0.1",
     "com.google.android.gms:play-services-maps:18.0.2",
+    "com.google.android.gms:play-services-pay:16.0.3",
     "com.google.android.gms:play-services-wallet:19.1.0",
     "com.google.android.gms:play-services-wearable:17.1.0",
     "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1",

@@ -27137,6 +27137,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.gms.play-services-pay_16.0.3",
+    pom = "repository/com/google/android/gms/play-services-pay/16.0.3/play-services-pay-16.0.3.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-pay/16.0.3",
+    deps = [
+        "com.google.android.gms.play-services-base_18.0.1",
+        "com.google.android.gms.play-services-basement_18.0.0",
+        "com.google.android.gms.play-services-tasks_18.0.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.gms.play-services-tasks-license_12.0.1",
     pom = "repository/com/google/android/gms/play-services-tasks-license/12.0.1/play-services-tasks-license-12.0.1.pom",
     repo_root_path = "repository",
