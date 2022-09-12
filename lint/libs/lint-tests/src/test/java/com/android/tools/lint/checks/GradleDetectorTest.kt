@@ -2389,7 +2389,7 @@ class GradleDetectorTest : AbstractCheckTest() {
 
     fun testDeprecatedAppIndexingDependency() {
         val expected = "" +
-            "build.gradle:9: Warning: Deprecated: Replace 'com.google.android.gms:play-services-appindexing:9.8.0' with 'com.google.firebase:firebase-appindexing:10.0.0' or above. More info: http://firebase.google.com/docs/app-indexing/android/migrate [GradleDeprecated]\n" +
+            "build.gradle:8: Warning: Deprecated: Replace 'com.google.android.gms:play-services-appindexing:9.8.0' with 'com.google.firebase:firebase-appindexing:10.0.0' or above. More info: http://firebase.google.com/docs/app-indexing/android/migrate [GradleDeprecated]\n" +
             "compile 'com.google.android.gms:play-services-appindexing:9.8.0'\n" +
             "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
             "0 errors, 1 warnings\n"
@@ -2401,7 +2401,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                     "\n" +
                     "android {\n" +
                     "    compileSdkVersion 25\n" +
-                    "    buildToolsVersion \"25.0.2\"\n" +
                     "}\n" +
                     "\n" +
                     "dependencies {\n" +
@@ -2414,8 +2413,8 @@ class GradleDetectorTest : AbstractCheckTest() {
             .expect(expected)
             .expectFixDiffs(
                 "" +
-                    "Fix for build.gradle line 9: Replace with Firebase:\n" +
-                    "@@ -9 +9\n" +
+                    "Fix for build.gradle line 8: Replace with Firebase:\n" +
+                    "@@ -8 +8\n" +
                     "- compile 'com.google.android.gms:play-services-appindexing:9.8.0'\n" +
                     "+ compile 'com.google.firebase:firebase-appindexing:10.2.1'\n"
             )
@@ -2559,16 +2558,16 @@ class GradleDetectorTest : AbstractCheckTest() {
 
     fun testORequirements() {
         val expected = "" +
-            "build.gradle:14: Error: Version must be at least 10.2.1 when targeting O [GradleCompatible]\n" +
+            "build.gradle:13: Error: Version must be at least 10.2.1 when targeting O [GradleCompatible]\n" +
             "    compile 'com.google.android.gms:play-services-gcm:10.2.0'\n" +
             "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "build.gradle:15: Error: Version must be at least 10.2.1 when targeting O [GradleCompatible]\n" +
+            "build.gradle:14: Error: Version must be at least 10.2.1 when targeting O [GradleCompatible]\n" +
             "    compile 'com.google.firebase:firebase-messaging:10.2.0'\n" +
             "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "build.gradle:16: Error: Version must be at least 0.6.0 when targeting O [GradleCompatible]\n" +
+            "build.gradle:15: Error: Version must be at least 0.6.0 when targeting O [GradleCompatible]\n" +
             "    compile 'com.google.firebase:firebase-jobdispatcher:0.5.0'\n" +
             "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "build.gradle:17: Error: Version must be at least 0.6.0 when targeting O [GradleCompatible]\n" +
+            "build.gradle:16: Error: Version must be at least 0.6.0 when targeting O [GradleCompatible]\n" +
             "    compile 'com.google.firebase:firebase-jobdispatcher-with-gcm-dep:0.5.0'\n" +
             "            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
             "4 errors, 0 warnings\n"
@@ -2579,7 +2578,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                     "\n" +
                     "android {\n" +
                     "    compileSdkVersion \"android-O\"\n" +
-                    "    buildToolsVersion \"26.0.0 rc1\"\n" +
                     "\n" +
                     "    defaultConfig {\n" +
                     "        minSdkVersion 15\n" +
@@ -2950,7 +2948,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                     "}\n" +
                     "\n" +
                     "android {\n" +
-                    "    buildToolsVersion(\"25.0.0\")\n" +
                     "    compileSdkVersion(23)\n" +
                     "\n" +
                     "    defaultConfig {\n" +
@@ -2988,10 +2985,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                 build.gradle.kts:3: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
                     id("android") version "2.3.3"
                         ~~~~~~~
-                build.gradle.kts:30: Warning: A newer version of com.android.support.constraint:constraint-layout than 1.0.0-alpha8 is available: 1.0.3-alpha8 [GradleDependency]
+                build.gradle.kts:29: Warning: A newer version of com.android.support.constraint:constraint-layout than 1.0.0-alpha8 is available: 1.0.3-alpha8 [GradleDependency]
                     compile("com.android.support.constraint:constraint-layout:1.0.0-alpha8")
                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:12: Warning: The value of minSdkVersion is too low. It can be incremented without noticeably reducing the number of supported devices. [MinSdkTooLow]
+                build.gradle.kts:11: Warning: The value of minSdkVersion is too low. It can be incremented without noticeably reducing the number of supported devices. [MinSdkTooLow]
                         minSdkVersion(7)
                         ~~~~~~~~~~~~~~~~
                 0 errors, 3 warnings
@@ -3003,12 +3000,12 @@ class GradleDetectorTest : AbstractCheckTest() {
                 @@ -3 +3
                 -     id("android") version "2.3.3"
                 +     id("com.android.application") version "2.3.3"
-                Fix for build.gradle.kts line 30: Change to 1.0.3-alpha8:
-                @@ -30 +30
+                Fix for build.gradle.kts line 29: Change to 1.0.3-alpha8:
+                @@ -29 +29
                 -     compile("com.android.support.constraint:constraint-layout:1.0.0-alpha8")
                 +     compile("com.android.support.constraint:constraint-layout:1.0.3-alpha8")
-                Fix for build.gradle.kts line 12: Update minSdkVersion to $LOWEST_ACTIVE_API:
-                @@ -12 +12
+                Fix for build.gradle.kts line 11: Update minSdkVersion to $LOWEST_ACTIVE_API:
+                @@ -11 +11
                 -         minSdkVersion(7)
                 +         minSdkVersion($LOWEST_ACTIVE_API)
                 """

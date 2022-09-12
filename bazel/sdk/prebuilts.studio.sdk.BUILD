@@ -86,13 +86,8 @@ filegroup(
         "//prebuilts/studio/buildbenchmarks:__pkg__",
         "//tools/adt/idea/old-agp-tests:__pkg__",
         "//tools/adt/idea/sync-perf-tests:__pkg__",
+        "//tools/vendor/google/android-ndk:__pkg__",
     ],
-)
-
-filegroup(
-    name = "build-tools/minimum",
-    srcs = [":build-tools/25.0.0"],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -146,33 +141,6 @@ filegroup(
     ),
     visibility = [
         "//tools/base/build-system/gradle-core:__pkg__",
-    ],
-)
-
-filegroup(
-    name = "build-tools/25.0.2",
-    srcs = sdk_glob(
-        include = ["build-tools/25.0.2/**"],
-    ),
-)
-
-filegroup(
-    name = "build-tools/25.0.0",
-    srcs = sdk_glob(
-        include = ["build-tools/25.0.0/**"],
-    ),
-    visibility = [
-        "//tools/base/build-system/gradle-core:__pkg__",
-    ],
-)
-
-filegroup(
-    name = "build-tools/24.0.3",
-    srcs = sdk_glob(
-        include = ["build-tools/24.0.3/**"],
-    ),
-    visibility = [
-        "//tools/base/build-system/integration-test:__pkg__",
     ],
 )
 

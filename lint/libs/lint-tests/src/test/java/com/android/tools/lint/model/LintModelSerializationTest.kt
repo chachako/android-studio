@@ -69,7 +69,6 @@ class LintModelSerializationTest {
 
             android {
                 compileSdkVersion 25
-                buildToolsVersion "25.0.0"
                 defaultConfig {
                     applicationId "com.android.tools.test"
                     minSdkVersion 5

@@ -154,7 +154,6 @@ dependencies {
         val mocker = createMocker(
             """android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "com.android.tools.test"
         minSdkVersion 5
@@ -234,7 +233,6 @@ android {
         val mocker = createMocker(
             """android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "com.android.tools.test"
         minSdkVersion 5

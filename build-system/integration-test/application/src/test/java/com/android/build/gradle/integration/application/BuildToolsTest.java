@@ -152,7 +152,7 @@ public class BuildToolsTest {
         TestFileUtils.searchAndReplace(
                 project.getBuildFile(),
                 "buildToolsVersion '" + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION + "'",
-                "buildToolsVersion '24.0.3'");
+                "buildToolsVersion '30.0.2'");
         ModelContainer<AndroidProject> container =
                 project.model().ignoreSyncIssues().fetchAndroidProjects();
         ModelContainerSubject.assertThat(container)
