@@ -27,6 +27,7 @@ import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getIntermediateOutputPath
 import com.android.build.gradle.internal.scope.getOutputPath
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -84,6 +85,12 @@ class ArtifactsImpl(
                     getAll(MultipleArtifact.ALL_CLASSES_DIRS),
                     getAll(MultipleArtifact.ALL_CLASSES_JARS),
                 )
+            }
+        )
+        it.setInitialContent(
+            ScopedArtifact.JAVA_RES,
+            project.files().also { configurableFileCollection ->
+                configurableFileCollection.from(get(InternalArtifactType.MERGED_JAVA_RES))
             }
         )
     }

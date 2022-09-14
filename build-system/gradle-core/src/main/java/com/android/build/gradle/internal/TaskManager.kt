@@ -868,17 +868,15 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         // merging scopes.
         if (!getJavaResMergingScopes(creationConfig)
                         .contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
-            transformManager.addStream(
-                    OriginalStream.builder("ext-libs-java-res")
-                            .addContentTypes(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES)
-                            .addScope(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)
-                            .setArtifactCollection(
-                                    creationConfig
-                                            .variantDependencies
-                                            .getArtifactCollection(ConsumedConfigType.RUNTIME_CLASSPATH,
-                                                    ArtifactScope.EXTERNAL,
-                                                    AndroidArtifacts.ArtifactType.JAVA_RES))
-                            .build())
+            creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                .setInitialContent(
+                    ScopedArtifact.JAVA_RES,
+                    creationConfig
+                        .variantDependencies
+                        .getArtifactFileCollection(ConsumedConfigType.RUNTIME_CLASSPATH,
+                            ArtifactScope.EXTERNAL,
+                            AndroidArtifacts.ArtifactType.JAVA_RES)
+                )
         }
 
         // for the sub modules, new intermediary classes artifact has its own stream
@@ -2128,6 +2126,25 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                 from(
                     creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
                         .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            }
+
+        creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
+            .getScopedArtifactsContainer(ScopedArtifact.JAVA_RES)
+            .initialScopedContent
+            .run {
+                from(
+                    creationConfig
+                        .transformManager
+                        .getPipelineOutputAsFileCollection { contentTypes, scopes ->
+                            contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES)
+                                    && scopes.intersect(TransformManager.SCOPE_FULL_PROJECT_WITH_LOCAL_JARS)
+                                .isNotEmpty()
+                        }
+                )
+                from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
                 )
             }
 
