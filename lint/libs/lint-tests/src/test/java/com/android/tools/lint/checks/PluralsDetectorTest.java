@@ -197,7 +197,34 @@ public class PluralsDetectorTest extends AbstractCheckTest {
                                 + "0 errors, 1 warnings");
     }
 
-    public void testFrenchOtherAndMany() {
+    public void testFrenchManyPreS() {
+        lint().files(
+            manifest(
+              "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+              "    package=\"test.pkg\">\n" +
+              "   <uses-sdk android:targetSdkVersion=\"30\"/>\n" +
+              "   <application\n" +
+              "          android:icon=\"@drawable/ic_launcher\"\n" +
+              "          android:label=\"@string/app_name\" >\n" +
+              "    </application>\n" +
+              "</manifest>"
+            ).indented(),
+            xml(
+              "res/values-fr/plurals.xml",
+              ""
+              + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+              + "<resources>\n"
+              + "  <plurals name=\"draft\">\n"
+              + "    <item quantity=\"one\">\"brouillon\"</item>\n"
+              + "    <item quantity=\"other\">\"brouillons\"</item>\n"
+              + "  </plurals>\n"
+              + "</resources>\n"))
+          .issues(PluralsDetector.MISSING)
+          .run()
+          .expectClean();
+    }
+
+    public void testFrItPtOtherAndMany() {
         lint().files(
                         xml(
                                 "res/values-fr/plurals.xml",
@@ -211,14 +238,98 @@ public class PluralsDetectorTest extends AbstractCheckTest {
                                         + "  <plurals name=\"draft\">\n"
                                         + "    <item quantity=\"one\">\"brouillon\"</item>\n"
                                         + "  </plurals>\n"
+                                        + "</resources>\n"),
+                        xml(
+                            "res/values-it/plurals.xml",
+                          ""
+                                        + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                        + "<resources>\n"
+                                        + "  <plurals name=\"draft\">\n"
+                                        + "    <item quantity=\"one\">\"bozza\"</item>\n"
+                                        + "    <item quantity=\"other\">\"bozze\"</item>\n"
+                                        + "  </plurals>\n"
+                                        + "</resources>\n"),
+                        xml(
+                          "res/values-pt/plurals.xml",
+                          ""
+                                        + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                        + "<resources>\n"
+                                        + "  <plurals name=\"draft\">\n"
+                                        + "    <item quantity=\"one\">\"esboço\"</item>\n"
+                                        + "    <item quantity=\"other\">\"esboços\"</item>\n"
+                                        + "  </plurals>\n"
                                         + "</resources>\n"))
                 .issues(PluralsDetector.MISSING)
                 .run()
                 .expect(
-                        "res/values-fr/plurals.xml:3: Warning: For locale \"fr\" (French) the following quantity should also be defined: many (e.g. \"1000000 de jours\") [MissingQuantity]\n"
-                                + "  <plurals name=\"draft\">\n"
-                                + "  ^\n"
-                                + "0 errors, 1 warnings");
+                        "res/values-fr/plurals.xml:3: Warning: For locale \"fr\" (French) the following quantity should also be defined: many (e.g. \"1000000 de jours\") [MissingQuantity]\n" +
+                        "  <plurals name=\"draft\">\n" +
+                        "  ^\n" +
+                        "res/values-it/plurals.xml:3: Warning: For locale \"it\" (Italian) the following quantity should also be defined: many [MissingQuantity]\n" +
+                        "  <plurals name=\"draft\">\n" +
+                        "  ^\n" +
+                        "res/values-pt/plurals.xml:3: Warning: For locale \"pt\" (Portuguese) the following quantity should also be defined: many [MissingQuantity]\n" +
+                        "  <plurals name=\"draft\">\n" +
+                        "  ^\n" +
+                        "0 errors, 3 warnings");
+    }
+
+    public void testHebrewManyPostICU42() {
+        lint().files(
+            manifest(
+              "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+              "    package=\"test.pkg\">\n" +
+              "   <application\n" +
+              "          android:icon=\"@drawable/ic_launcher\"\n" +
+              "          android:label=\"@string/app_name\" >\n" +
+              "    </application>\n" +
+              "</manifest>"
+            ).indented(),
+            xml(
+              "res/values-he/plurals.xml",
+              ""
+              + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+              + "<resources>\n"
+              + "  <plurals name=\"messages\">\n"
+              + "    <item quantity=\"one\">\"הודעות חדשות\"</item>\n"
+              + "    <item quantity=\"two\">\"הודעות חדשות\"</item>\n"
+              + "    <item quantity=\"other\">\"הודעות חדשות\"</item>"
+              + "  </plurals>\n"
+              + "</resources>\n"))
+          .issues(PluralsDetector.MISSING)
+          .run()
+          .expectClean();
+    }
+
+    public void testHebrewManyPreICU42() {
+        lint().files(
+            manifest(
+              "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+              "    package=\"test.pkg\">\n" +
+              "   <uses-sdk android:targetSdkVersion=\"30\"/>\n" +
+              "   <application\n" +
+              "          android:icon=\"@drawable/ic_launcher\"\n" +
+              "          android:label=\"@string/app_name\" >\n" +
+              "    </application>\n" +
+              "</manifest>"
+            ).indented(),
+            xml(
+              "res/values-he/plurals.xml",
+              ""
+              + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+              + "<resources>\n"
+              + "  <plurals name=\"messages\">\n"
+              + "    <item quantity=\"one\">\"הודעות חדשות\"</item>\n"
+              + "    <item quantity=\"two\">\"הודעות חדשות\"</item>\n"
+              + "    <item quantity=\"other\">\"הודעות חדשות\"</item>"
+              + "  </plurals>\n"
+              + "</resources>\n"))
+          .issues(PluralsDetector.MISSING)
+          .run()
+          .expect("res/values-he/plurals.xml:3: Error: For locale \"he\" (Hebrew) the following quantity should also be defined: many [MissingQuantity]\n" +
+                  "  <plurals name=\"messages\">\n" +
+                  "  ^\n" +
+                  "1 errors, 0 warnings");
     }
 
     public void testImpliedQuantity() {

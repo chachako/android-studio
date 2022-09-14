@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,239 +15,162 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.sdklib.AndroidVersion.VersionCodes
+import com.android.tools.lint.checks.plurals.CLDR36Database
+import com.android.tools.lint.checks.plurals.CLDR38Database
+import com.android.tools.lint.checks.plurals.CLDR41Database
+import com.android.tools.lint.checks.plurals.CLDR42Database
 import com.android.tools.lint.detector.api.formatList
-import com.google.common.collect.Maps
 import java.util.Arrays
 import java.util.EnumSet
 
-/**
- * Database used by the [PluralsDetector] to get information about plural forms for a given
- * language
- */
-class PluralsDatabase {
-  private val plurals = mutableMapOf<String, EnumSet<Quantity>>()
-  fun getRelevant(language: String): EnumSet<Quantity>? {
-    var set = plurals[language]
-    if (set == null) {
-      val index = getLanguageIndex(language)
-      if (index == -1) {
-        plurals[language] = NONE
-        return null
-      }
+abstract class PluralsDatabase(private val languageCodes: Array<String>, private val languageFlags: IntArray, internal val apiLevel: Int) {
+    private val plurals = mutableMapOf<String, EnumSet<Quantity>>()
 
-      // Process each item and look for relevance
-      val flag = FLAGS[index]
-      set = EnumSet.noneOf(Quantity::class.java)
-      if (flag and FLAG_ZERO != 0) {
-        set.add(Quantity.zero)
-      }
-      if (flag and FLAG_ONE != 0) {
-        set.add(Quantity.one)
-      }
-      if (flag and FLAG_TWO != 0) {
-        set.add(Quantity.two)
-      }
-      if (flag and FLAG_FEW != 0) {
-        set.add(Quantity.few)
-      }
-      if (flag and FLAG_MANY != 0) {
-        set.add(Quantity.many)
-      }
-      plurals[language] = set
-    }
-    return if (set === NONE) null else set
-  }
-
-  fun hasMultipleValuesForQuantity(
-    language: String, quantity: Quantity
-  ): Boolean {
-    return when (quantity) {
-      Quantity.one -> {
-        getFlags(language) and FLAG_MULTIPLE_ONE != 0
-      }
-      Quantity.two -> {
-        getFlags(language) and FLAG_MULTIPLE_TWO != 0
-      }
-      else -> {
-        quantity == Quantity.zero && getFlags(language) and FLAG_MULTIPLE_ZERO != 0
-      }
-    }
-  }
-
-  fun findIntegerExamples(language: String, quantity: Quantity): String? {
-    return if (quantity == Quantity.one) {
-      getExampleForQuantityOne(language)
-    } else if (quantity == Quantity.two) {
-      getExampleForQuantityTwo(language)
-    } else if (quantity == Quantity.zero) {
-      getExampleForQuantityZero(language)
-    } else {
-      null
-    }
-  }
-
-  enum class Quantity {
-    // deliberately lower case to match attribute names
-    few, many, one, two, zero, other;
-
-    companion object {
-      operator fun get(name: String): Quantity? {
-        for (quantity in values()) {
-          if (name == quantity.name) {
-            return quantity
-          }
+    init {
+        check(languageCodes.size == languageFlags.size) {
+            "Language code list and flag list have different lengths"
         }
-        return null
-      }
+    }
 
-      fun formatSet(set: EnumSet<Quantity>): String {
-        val list: MutableList<String> = ArrayList(set.size)
-        for (quantity in set) {
-          list.add('`'.toString() + quantity.name + '`')
+    fun getRelevant(language: String): EnumSet<Quantity>? {
+        var set = plurals[language]
+        if (set == null) {
+            val index = getLanguageIndex(language)
+            if (index == -1) {
+                plurals[language] = EMPTY_SET
+                return null
+            }
+
+            // Process each item and look for relevance
+            val flag = languageFlags[index]
+            set = EnumSet.noneOf(Quantity::class.java)
+            if (flag and FLAG_ZERO != 0) {
+                set.add(Quantity.zero)
+            }
+            if (flag and FLAG_ONE != 0) {
+                set.add(Quantity.one)
+            }
+            if (flag and FLAG_TWO != 0) {
+                set.add(Quantity.two)
+            }
+            if (flag and FLAG_FEW != 0) {
+                set.add(Quantity.few)
+            }
+            if (flag and FLAG_MANY != 0) {
+                set.add(Quantity.many)
+            }
+            plurals[language] = set
         }
-        return formatList(list, Int.MAX_VALUE)
-      }
+        return if (set === EMPTY_SET) null else set
     }
-  }
 
-  companion object {
-    private val NONE = EnumSet.noneOf(Quantity::class.java)
-    private val sInstance = PluralsDatabase()
-
-    /** Bit set if this language uses quantity zero  */
-    const val FLAG_ZERO = 1 shl 0
-
-    /** Bit set if this language uses quantity one  */
-    const val FLAG_ONE = 1 shl 1
-
-    /** Bit set if this language uses quantity two  */
-    const val FLAG_TWO = 1 shl 2
-
-    /** Bit set if this language uses quantity few  */
-    const val FLAG_FEW = 1 shl 3
-
-    /** Bit set if this language uses quantity many  */
-    const val FLAG_MANY = 1 shl 4
-
-    /** Bit set if this language has multiple values that match quantity zero  */
-    const val FLAG_MULTIPLE_ZERO = 1 shl 5
-
-    /** Bit set if this language has multiple values that match quantity one  */
-    const val FLAG_MULTIPLE_ONE = 1 shl 6
-
-    /** Bit set if this language has multiple values that match quantity two  */
-    const val FLAG_MULTIPLE_TWO = 1 shl 7
-    fun get(): PluralsDatabase {
-      return sInstance
+    fun hasMultipleValuesForQuantity(
+        language: String, quantity: Quantity
+    ): Boolean {
+        return when (quantity) {
+            Quantity.one -> getFlags(language) and FLAG_MULTIPLE_ONE != 0
+            Quantity.two -> getFlags(language) and FLAG_MULTIPLE_TWO != 0
+            else -> quantity == Quantity.zero && getFlags(language) and FLAG_MULTIPLE_ZERO != 0
+        }
     }
+
+    fun findIntegerExamples(language: String, quantity: Quantity): String? {
+        return when (quantity) {
+            Quantity.one -> getExampleForQuantityOne(language)
+            Quantity.two -> getExampleForQuantityTwo(language)
+            Quantity.zero -> getExampleForQuantityZero(language)
+            else -> {
+                null
+            }
+        }
+    }
+
+    protected abstract fun getExampleForQuantityZero(language: String): String?
+    protected abstract fun getExampleForQuantityOne(language: String): String?
+    protected abstract fun getExampleForQuantityTwo(language: String): String?
 
     private fun getFlags(language: String): Int {
-      val index = getLanguageIndex(language)
-      return if (index != -1) {
-        FLAGS[index]
-      } else 0
+        val index = getLanguageIndex(language)
+        return if (index != -1) {
+            languageFlags[index]
+        } else 0
     }
 
-    private fun getLanguageIndex(language: String): Int {
-      val index = Arrays.binarySearch(LANGUAGE_CODES, language)
-      return if (index >= 0) {
-        assert(LANGUAGE_CODES[index] == language)
-        index
-      } else {
-        -1
-      }
-    }
-    // GENERATED DATA.
-    // This data is generated by the #testDatabaseAccurate method in PluralsDatabaseTest
-    // which will generate the following if it can find an ICU plurals database file
-    // in the unit test data folder.
-    /** Set of language codes relevant to plurals data  */
-    private val LANGUAGE_CODES = arrayOf(
-      "af", "ak", "am", "an", "ar", "as", "az", "be", "bg", "bm",
-      "bn", "bo", "br", "bs", "ca", "ce", "cs", "cy", "da", "de",
-      "dv", "dz", "ee", "el", "en", "eo", "es", "et", "eu", "fa",
-      "ff", "fi", "fo", "fr", "fy", "ga", "gd", "gl", "gu", "gv",
-      "ha", "he", "hi", "hr", "hu", "hy", "ia", "id", "ig", "ii",
-      "in", "io", "is", "it", "iu", "iw", "ja", "ji", "jv", "ka",
-      "kk", "kl", "km", "kn", "ko", "ks", "ku", "kw", "ky", "lb",
-      "lg", "ln", "lo", "lt", "lv", "mg", "mk", "ml", "mn", "mr",
-      "ms", "mt", "my", "nb", "nd", "ne", "nl", "nn", "no", "nr",
-      "ny", "om", "or", "os", "pa", "pl", "ps", "pt", "rm", "ro",
-      "ru", "sc", "sd", "se", "sg", "si", "sk", "sl", "sn", "so",
-      "sq", "sr", "ss", "st", "su", "sv", "sw", "ta", "te", "th",
-      "ti", "tk", "tl", "tn", "to", "tr", "ts", "ug", "uk", "ur",
-      "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo", "zh",
-      "zu"
-    )
-
-    /**
-     * Relevant flags for each language (corresponding to each language listed in the same position
-     * in [.LANGUAGE_CODES])
-     */
-    private val FLAGS = intArrayOf(
-      0x0002, 0x0042, 0x0042, 0x0002, 0x001f, 0x0042, 0x0002, 0x005a,
-      0x0002, 0x0000, 0x0042, 0x0000, 0x00de, 0x004a, 0x0002, 0x0002,
-      0x001a, 0x001f, 0x0002, 0x0002, 0x0002, 0x0000, 0x0002, 0x0002,
-      0x0002, 0x0002, 0x0002, 0x0002, 0x0002, 0x0042, 0x0042, 0x0002,
-      0x0002, 0x0052, 0x0002, 0x001e, 0x00ce, 0x0002, 0x0042, 0x00de,
-      0x0002, 0x0016, 0x0042, 0x004a, 0x0002, 0x0042, 0x0002, 0x0000,
-      0x0000, 0x0000, 0x0000, 0x0002, 0x0042, 0x0002, 0x0006, 0x0016,
-      0x0000, 0x0002, 0x0000, 0x0002, 0x0002, 0x0002, 0x0000, 0x0042,
-      0x0000, 0x0002, 0x0002, 0x009f, 0x0002, 0x0002, 0x0002, 0x0042,
-      0x0000, 0x005a, 0x0063, 0x0042, 0x0042, 0x0002, 0x0002, 0x0002,
-      0x0000, 0x001a, 0x0000, 0x0002, 0x0002, 0x0002, 0x0002, 0x0002,
-      0x0002, 0x0002, 0x0002, 0x0002, 0x0002, 0x0002, 0x0042, 0x001a,
-      0x0002, 0x0042, 0x0002, 0x000a, 0x005a, 0x0002, 0x0002, 0x0006,
-      0x0000, 0x0042, 0x001a, 0x00ce, 0x0002, 0x0002, 0x0002, 0x004a,
-      0x0002, 0x0002, 0x0000, 0x0002, 0x0002, 0x0002, 0x0002, 0x0000,
-      0x0042, 0x0002, 0x0042, 0x0002, 0x0000, 0x0002, 0x0002, 0x0002,
-      0x005a, 0x0002, 0x0002, 0x0002, 0x0000, 0x0002, 0x0042, 0x0000,
-      0x0002, 0x0002, 0x0000, 0x0000, 0x0042
-    )
-
-    private fun getExampleForQuantityZero(language: String): String? {
-      return when (getLanguageIndex(language)) {
-        74 -> "0, 10~20, 30, 40, 50, 60, 100, 1000, 10000, 100000, 1000000, \u2026"
-        -1 -> null
-        else -> null
-      }
+    protected fun getLanguageIndex(language: String): Int {
+        val index = Arrays.binarySearch(languageCodes, language)
+        return if (index >= 0) {
+            check(languageCodes[index] == language)
+            index
+        } else {
+            -1
+        }
     }
 
-    private fun getExampleForQuantityOne(language: String): String? {
-      return when (getLanguageIndex(language)) {
-        2, 5, 10, 29, 38, 42, 63, 140 -> "0, 1"
-        52 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        76 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        122 -> "0~3, 5, 7, 8, 10~13, 15, 17, 18, 20, 21, 100, 1000, 10000, 100000, 1000000, \u2026"
-        74 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        13, 43, 111 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        30, 45 -> "0, 1"
-        33 -> "0, 1"
-        36 -> "1, 11"
-        107 -> "1, 101, 201, 301, 401, 501, 601, 701, 1001, \u2026"
-        7 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        73 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        97 -> "0, 1"
-        100, 128 -> "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026"
-        12 -> "1, 21, 31, 41, 51, 61, 81, 101, 1001, \u2026"
-        39 -> "1, 11, 21, 31, 41, 51, 61, 71, 101, 1001, \u2026"
-        105 -> "0, 1"
-        1, 71, 75, 94, 120, 134 -> "0, 1"
-        -1 -> null
-        else -> null
-      }
+    companion object {
+        private val EMPTY_SET = EnumSet.noneOf(Quantity::class.java)
+
+        /** Bit set if this language uses quantity zero  */
+        const val FLAG_ZERO = 1 shl 0
+
+        /** Bit set if this language uses quantity one  */
+        const val FLAG_ONE = 1 shl 1
+
+        /** Bit set if this language uses quantity two  */
+        const val FLAG_TWO = 1 shl 2
+
+        /** Bit set if this language uses quantity few  */
+        const val FLAG_FEW = 1 shl 3
+
+        /** Bit set if this language uses quantity many  */
+        const val FLAG_MANY = 1 shl 4
+
+        /** Bit set if this language has multiple values that match quantity zero  */
+        const val FLAG_MULTIPLE_ZERO = 1 shl 5
+
+        /** Bit set if this language has multiple values that match quantity one  */
+        const val FLAG_MULTIPLE_ONE = 1 shl 6
+
+        /** Bit set if this language has multiple values that match quantity two  */
+        const val FLAG_MULTIPLE_TWO = 1 shl 7
+
+        private val datasets = mapOf(
+            VersionCodes.R to CLDR36Database,
+            VersionCodes.S to CLDR38Database,
+            VersionCodes.S_V2 to CLDR38Database,
+            VersionCodes.TIRAMISU to CLDR41Database,
+        )
+
+        val OLDEST get() = CLDR36Database
+
+        val LATEST get() = CLDR42Database
+
+        operator fun get(version: Int): PluralsDatabase {
+            return datasets[version] ?: if (version < OLDEST.apiLevel && version != -1) OLDEST else LATEST
+        }
     }
 
-    private fun getExampleForQuantityTwo(language: String): String? {
-      return when (getLanguageIndex(language)) {
-        36 -> "2, 12"
-        107 -> "2, 102, 202, 302, 402, 502, 602, 702, 1002, \u2026"
-        12 -> "2, 22, 32, 42, 52, 62, 82, 102, 1002, \u2026"
-        39 -> "2, 12, 22, 32, 42, 52, 62, 72, 102, 1002, \u2026"
-        67 -> "2, 22, 42, 62, 82, 102, 122, 142, 1000, 10000, 100000, \u2026"
-        -1 -> null
-        else -> null
-      }
+    enum class Quantity {
+        // deliberately lower case to match attribute names
+        few, many, one, two, zero, other;
+
+        companion object {
+            operator fun get(name: String): Quantity? {
+                for (quantity in values()) {
+                    if (name == quantity.name) {
+                        return quantity
+                    }
+                }
+                return null
+            }
+
+            fun formatSet(set: EnumSet<Quantity>): String {
+                val list: MutableList<String> = ArrayList(set.size)
+                for (quantity in set) {
+                    list.add('`'.toString() + quantity.name + '`')
+                }
+                return formatList(list, Int.MAX_VALUE)
+            }
+        }
     }
-  }
 }

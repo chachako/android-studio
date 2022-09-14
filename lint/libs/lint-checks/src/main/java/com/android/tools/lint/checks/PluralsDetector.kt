@@ -20,8 +20,8 @@ import com.android.SdkConstants.TAG_ITEM
 import com.android.SdkConstants.TAG_PLURALS
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceFolderType.VALUES
-import com.android.tools.lint.checks.PluralsDatabase.Quantity
 import com.android.tools.lint.checks.TranslationDetector.Companion.getLanguageDescription
+import com.android.tools.lint.checks.PluralsDatabase.Quantity
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
@@ -64,7 +64,7 @@ class PluralsDetector : ResourceXmlDetector() {
         }
         // checked hasLanguage().
         val language = locale.language!!
-        val plurals = PluralsDatabase.get()
+        val plurals = PluralsDatabase[context.project.targetSdk]
         val relevant = plurals.getRelevant(language) ?: return
         val defined = EnumSet.noneOf(Quantity::class.java)
         val children = element.childNodes
@@ -86,7 +86,7 @@ class PluralsDetector : ResourceXmlDetector() {
                 i++
                 continue
             }
-            val quantity = Quantity.get(quantityString)
+            val quantity = Quantity[quantityString]
             if (quantity == null || quantity == Quantity.other) { // Not stored in the database
                 i++
                 continue
@@ -136,7 +136,8 @@ class PluralsDetector : ResourceXmlDetector() {
                 "For locale $languageDescription the following quantities should also be defined: ${withExamples.joinToString(", ")}"
             }
             val incident = Incident(MISSING, element, context.getLocation(element), message)
-            if (NEW_PLURAL_FORMS.containsKey(language) && missing.singleOrNull() == NEW_PLURAL_FORMS[language]) {
+            val baselineDatabase = PluralsDatabase.OLDEST.getRelevant(language)
+            if (baselineDatabase != null && missing.all { !baselineDatabase.contains(it) }) {
                 incident.overrideSeverity(Severity.WARNING)
             }
             context.report(incident)
@@ -158,15 +159,6 @@ class PluralsDetector : ResourceXmlDetector() {
     companion object {
         private val IMPLEMENTATION = Implementation(
             PluralsDetector::class.java, Scope.RESOURCE_FILE_SCOPE
-        )
-
-        /**
-         * For these languages and plural forms, issue a warning as opposed to an error, since they have been recently
-         * added in the database. Will be removed once [PluralsDatabase] has a diff table for handling successive versions
-         * of the ICU database (i.e. version 40 and above).
-         */
-        private val NEW_PLURAL_FORMS = mapOf(
-            "fr" to Quantity.many
         )
 
         /**
