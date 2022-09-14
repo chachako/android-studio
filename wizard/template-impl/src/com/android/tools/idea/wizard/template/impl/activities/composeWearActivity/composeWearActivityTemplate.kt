@@ -37,7 +37,7 @@ import java.io.File
 
 val composeWearActivityTemplate
     get() = template {
-        name = "Empty Wear OS Compose Activity"
+        name = "Basic Wear App Without Associated Tile And Complication"
         minApi = 25
         description = "Creates a blank activity for Wear OS"
 
@@ -112,6 +112,112 @@ val composeWearActivityTemplate
                     greeting.value,
                     wearAppName.value,
                     defaultPreview.value
+            )
+        }
+    }
+
+val composeWearActivityWithTileAndComplicationTemplate
+    get() = template {
+        name = "Basic Wear App"
+        minApi = 25
+        description = "Creates a blank activity for Wear OS including a Tile and Complication"
+
+        constraints = listOf(
+            TemplateConstraint.AndroidX,
+            TemplateConstraint.Kotlin,
+            TemplateConstraint.Compose)
+        category = Category.Wear
+        formFactor = FormFactor.Wear
+        screens =
+            listOf(WizardUiContext.MenuEntry,
+                   WizardUiContext.NewProject,
+                   WizardUiContext.NewModule)
+
+        val activityClass = stringParameter {
+            name = "Activity Name"
+            default = "MainActivity"
+            help = "The name of the activity class to create"
+            constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+        }
+        val tileServiceClass = stringParameter {
+            name = "Tile Service Name"
+            default = "MainTileService"
+            help = "The name of the tile service class to create"
+            constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+        }
+        val complciationServiceClass = stringParameter {
+            name = "Tile Service Name"
+            default = "MainComplicationService"
+            help = "The name of the compliction service class to create"
+            constraints = listOf(CLASS, UNIQUE, NONEMPTY)
+        }
+
+        val packageName = defaultPackageNameParameter
+
+        val isLauncher = booleanParameter {
+            name = "Launcher Activity"
+            default = false
+            help =
+                "If true, this activity will have a CATEGORY_LAUNCHER intent filter, making it visible in the launcher"
+        }
+
+        val greeting = stringParameter {
+            name = "Greeting function name"
+            default = "Greeting"
+            help = "Used for deduplication"
+            visible = { false }
+            constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+        }
+
+        val wearAppName = stringParameter {
+            name = "WearApp function name"
+            default = "WearApp"
+            help = "Used for deduplication"
+            visible = { false }
+            constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+        }
+
+        val defaultPreview = stringParameter {
+            name = "Default Preview function name"
+            default = "DefaultPreview"
+            help = "Used for deduplication"
+            visible = { false }
+            constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+        }
+        val tilePreview = stringParameter {
+            name = "Tile Default Preview function name"
+            default = "TilePreview"
+            help = "Used for deduplication"
+            visible = { false }
+            constraints = listOf(UNIQUE, Constraint.KOTLIN_FUNCTION)
+        }
+
+        widgets(
+            TextFieldWidget(activityClass),
+            TextFieldWidget(tileServiceClass),
+            TextFieldWidget(complciationServiceClass),
+            PackageNameWidget(packageName),
+            CheckBoxWidget(isLauncher),
+            // Invisible widgets to pass data
+            TextFieldWidget(greeting),
+            TextFieldWidget(defaultPreview),
+            TextFieldWidget(tilePreview),
+        )
+
+        thumb { File("compose-wear-activity").resolve("templates-WatchViewStub-Wear.png") }
+
+        recipe = { data: TemplateData ->
+            composeWearActivityWithTileAndComplicationRecipe(
+                data as ModuleTemplateData,
+                activityClass.value,
+                tileServiceClass.value,
+                tilePreview.value,
+                complciationServiceClass.value,
+                packageName.value,
+                isLauncher.value,
+                greeting.value,
+                wearAppName.value,
+                defaultPreview.value
             )
         }
     }

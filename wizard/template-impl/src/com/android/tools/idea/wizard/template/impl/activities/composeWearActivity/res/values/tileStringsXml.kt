@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.tools.idea.wizard.template.impl.other.watchFaceService.res.values
+package com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values
 
-
-fun colorsXml() = """
-<?xml version="1.0" encoding="utf-8"?>
+fun tileStringsXml(): String {
+    return """
 <resources>
-    <color name="background">#000000</color>
-    <color name="digital_text">#ffffff</color>
+    <string name="tile_label">Example tile</string>
+    <string name="title_activity_presentation._main">presentation.MainActivity</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>
 """
+}

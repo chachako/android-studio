@@ -22,14 +22,19 @@ import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotli
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
 import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.composeActivity.COMPOSE_UI_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.complication.complicationServiceKt
+import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.complicationStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.stringsXml
+import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.tileStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.mainActivityKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.colorKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.themeKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.theme.typeKt
+import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package.tile.tileServiceKt
+import java.io.File
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values_round.stringsXml as stringsRoundXml
 
-fun RecipeExecutor.composeWearActivityRecipe(
+private fun RecipeExecutor.commonComposeRecipe(
     moduleData: ModuleTemplateData,
     activityClass: String,
     packageName: String,
@@ -38,7 +43,6 @@ fun RecipeExecutor.composeWearActivityRecipe(
     wearAppName: String,
     defaultPreview: String
 ) {
-    val (_, srcOut, resOut, manifestOut) = moduleData
     addAllKotlinDependencies(moduleData)
 
     val composeVersionVarName = getDependencyVarName("androidx.compose.ui:ui", "compose_version")
@@ -75,6 +79,8 @@ fun RecipeExecutor.composeWearActivityRecipe(
         hasNoActionBar = true,
         generateActivityTitle = true
     )
+
+    val (_, srcOut, resOut, manifestOut) = moduleData
     mergeXml(androidManifestWearOsAdditions(), manifestOut.resolve("AndroidManifest.xml"))
     mergeXml(
         stringsXml(
@@ -87,6 +93,8 @@ fun RecipeExecutor.composeWearActivityRecipe(
     val themeName = "${moduleData.themesData.appName}Theme"
     save(
         mainActivityKt(
+            // when a new project is being created, there will not be an applicationPackage
+            moduleData.projectTemplateData.applicationPackage ?: packageName,
             activityClass,
             defaultPreview,
             greeting,
@@ -105,6 +113,102 @@ fun RecipeExecutor.composeWearActivityRecipe(
     setBuildFeature("compose", true)
     // Note: kotlinCompilerVersion default is declared in TaskManager.COMPOSE_KOTLIN_COMPILER_VERSION
     setComposeOptions(kotlinCompilerExtensionVersion = COMPOSE_KOTLIN_COMPILER_VERSION)
+}
 
+fun RecipeExecutor.composeWearActivityRecipe(
+    moduleData: ModuleTemplateData,
+    activityClass: String,
+    packageName: String,
+    isLauncher: Boolean,
+    greeting: String,
+    wearAppName: String,
+    defaultPreview: String
+) {
+    commonComposeRecipe(
+        moduleData,
+        activityClass,
+        packageName,
+        isLauncher,
+        greeting,
+        wearAppName,
+        defaultPreview
+    )
+
+    val (_, srcOut, _, _) = moduleData
     open(srcOut.resolve("${activityClass}.kt"))
+}
+
+fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
+    moduleData: ModuleTemplateData,
+    activityClass: String,
+    tileServiceClass: String,
+    tilePreviewName: String,
+    complicationServiceClass: String,
+    packageName: String,
+    isLauncher: Boolean,
+    greeting: String,
+    wearAppName: String,
+    defaultPreview: String
+) {
+    commonComposeRecipe(
+        moduleData,
+        activityClass,
+        packageName,
+        isLauncher,
+        greeting,
+        wearAppName,
+        defaultPreview
+    )
+
+    val horologistVersionVarName =
+        getDependencyVarName(
+            "com.google.android.horologist:horologist-compose-tools",
+            "horologist_version"
+        )
+    setExtVar(horologistVersionVarName, "0.1.5")
+
+    val wearTilesVersionVarName =
+        getDependencyVarName("androidx.wear.tiles:tiles", "wear_tiles_version")
+    setExtVar(wearTilesVersionVarName, "1.1.0")
+
+    addDependency(mavenCoordinate = "androidx.wear.tiles:tiles:\${$wearTilesVersionVarName}")
+    addDependency(mavenCoordinate = "androidx.wear.tiles:tiles-material:\${$wearTilesVersionVarName}")
+    addDependency(mavenCoordinate = "com.google.android.horologist:horologist-compose-tools:\${$horologistVersionVarName}")
+    addDependency(mavenCoordinate = "com.google.android.horologist:horologist-tiles:\${$horologistVersionVarName}")
+
+    addDependency(mavenCoordinate = "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1")
+
+    val (_, srcOut, resOut, manifestOut) = moduleData
+    save(
+        tileServiceKt(
+            tileServiceClass,
+            tilePreviewName,
+            packageName,
+        ),
+        srcOut.resolve("tile/${tileServiceClass}.kt")
+    )
+    mergeXml(
+        tileStringsXml(), resOut.resolve("values/strings.xml")
+    )
+    mergeXml(
+        tileServiceManifestXml(tileServiceClass, packageName),
+        manifestOut.resolve("AndroidManifest.xml")
+    )
+    copy(File("wear-app").resolve("drawable"), resOut.resolve("drawable"))
+    copy(File("wear-app").resolve("drawable-round"), resOut.resolve("drawable-round"))
+
+    save(
+        complicationServiceKt(
+            complicationServiceClass,
+            packageName,
+        ),
+        srcOut.resolve("complication/${complicationServiceClass}.kt")
+    )
+    mergeXml(
+        complicationStringsXml(), resOut.resolve("values/strings.xml")
+    )
+    mergeXml(
+        complicationServiceManifestXml(tileServiceClass, packageName),
+        manifestOut.resolve("AndroidManifest.xml")
+    )
 }

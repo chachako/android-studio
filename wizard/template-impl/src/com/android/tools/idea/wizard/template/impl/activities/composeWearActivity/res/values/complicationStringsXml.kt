@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.tools.idea.wizard.template.impl.other.watchFaceService.res.xml
+package com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values
 
-fun watchFaceXml() = """
-<?xml version="1.0" encoding="UTF-8"?>
-<wallpaper xmlns:android="http://schemas.android.com/apk/res/android" />
+fun complicationStringsXml(): String {
+    return """
+<resources>
+    <string name="complication_label">Example complication</string>
+</resources>
 """
+}

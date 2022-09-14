@@ -21,11 +21,11 @@ import com.android.tools.idea.wizard.template.WizardTemplateProvider
 import com.android.tools.idea.wizard.template.impl.activities.androidTVActivity.androidTVActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.basicActivity.basicActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.basicActivityMaterial3.basicActivityMaterial3Template
-import com.android.tools.idea.wizard.template.impl.activities.blankWearActivity.blankWearActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.bottomNavigationActivity.bottomNavigationActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.composeActivity.composeActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.composeActivityMaterial3Template
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.composeWearActivityTemplate
+import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.composeWearActivityWithTileAndComplicationTemplate
 import com.android.tools.idea.wizard.template.impl.activities.cppEmptyActivity.cppEmptyActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.cppGameActivity.cppGameActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.emptyActivity.emptyActivityTemplate
@@ -68,7 +68,6 @@ import com.android.tools.idea.wizard.template.impl.other.folders.folderTemplates
 import com.android.tools.idea.wizard.template.impl.other.intentService.intentServiceTemplate
 import com.android.tools.idea.wizard.template.impl.other.service.serviceTemplate
 import com.android.tools.idea.wizard.template.impl.other.sliceProvider.sliceProviderTemplate
-import com.android.tools.idea.wizard.template.impl.other.watchFaceService.watchFaceServiceTemplate
 
 /**
  * Implementation of the Android Wizard Template plugin extension point.
@@ -78,8 +77,8 @@ class WizardTemplateProviderImpl : WizardTemplateProvider() {
     androidTVActivityTemplate,
     basicActivityTemplate,
     basicActivityMaterial3Template,
-    blankWearActivityTemplate,
     composeWearActivityTemplate,
+    composeWearActivityWithTileAndComplicationTemplate,
     bottomNavigationActivityTemplate,
     composeActivityTemplate,
     composeActivityMaterial3Template,
@@ -121,7 +120,6 @@ class WizardTemplateProviderImpl : WizardTemplateProvider() {
     intentServiceTemplate,
     serviceTemplate,
     sliceProviderTemplate,
-    watchFaceServiceTemplate
   ) + folderTemplates + fileTemplates
 
   private val fileTemplates = listOf(

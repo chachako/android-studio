@@ -16,9 +16,12 @@
 
 package com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.src.app_package
 
+import com.android.tools.idea.wizard.template.PackageName
 import com.android.tools.idea.wizard.template.escapeKotlinIdentifier
+import com.android.tools.idea.wizard.template.renderIf
 
 fun mainActivityKt(
+    applicationPackage: PackageName,
     activityClass: String,
     defaultPreview: String,
     greeting: String,
@@ -51,7 +54,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import ${escapeKotlinIdentifier(packageName)}.R
+${renderIf(applicationPackage != null) { "import ${escapeKotlinIdentifier(applicationPackage.toString())}.R" }}
 import ${escapeKotlinIdentifier(packageName)}.presentation.theme.${themeName}
 
 class $activityClass : ComponentActivity() {
