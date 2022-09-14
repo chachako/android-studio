@@ -112,9 +112,10 @@ class BasicInstantExecutionTest {
     @Test
     fun testWithProjectIsolation() {
         // TODO(b/228885012): Make plugin version checks compatible with project isolation.
+        // TODO(b/262305101): Migrate away from using "project.hasProperty(xxx)"
         executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION)
-            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=30")
+            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=38")
             .run("assemble")
     }
 

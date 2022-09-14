@@ -72,7 +72,7 @@ task("createTestTempDirectory") {
 test {
     description =
             "Runs the data binding gradle integration tests"
-    systemProperties['jar.path'] = jar.archivePath
+    systemProperties['jar.path'] = jar.archiveFile.get().getAsFile().path
     systemProperties['java.io.tmpdir'] = tempFile.absolutePath
     environment = testEnvironment
 

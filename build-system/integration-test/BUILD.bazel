@@ -98,6 +98,12 @@ KGP_LATEST = [
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0-Beta",
 ]
 
+# Kotlin dependencies for Gradle
+KTS = [
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0-RC2",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.0-RC2",
+]
+
 # Kotlin Gradle plugin dependencies
 # IMPORTANT: This list should generally not be used as it contains mixed versions. It's here only
 # for historical reasons and should be removed at some point. Consider using
@@ -115,7 +121,7 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.6.21",
         "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.6.21",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.6.21",
-    ],
+    ] + KTS,
     visibility = ["//visibility:public"],
 )
 

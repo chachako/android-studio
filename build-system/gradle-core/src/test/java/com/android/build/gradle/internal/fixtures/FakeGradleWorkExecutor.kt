@@ -23,7 +23,6 @@ import org.gradle.workers.ProcessWorkerSpec
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkQueue
-import org.gradle.workers.WorkerConfiguration
 import org.gradle.workers.WorkerExecutionException
 import org.gradle.workers.WorkerExecutor
 import org.gradle.workers.WorkerSpec
@@ -62,13 +61,6 @@ open class FakeGradleWorkExecutor(
             check(executionMode == ExecutionMode.CAPTURING) { "Recording params is possible only in capturing mode." }
             return workQueue.capturedParameters
         }
-
-    override fun submit(
-        aClass: Class<out Runnable?>,
-        action: Action<in WorkerConfiguration?>
-    ) {
-        TODO()
-    }
 
     override fun noIsolation(): WorkQueue {
         return workQueue

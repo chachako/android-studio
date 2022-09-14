@@ -77,7 +77,7 @@ configure([test, testPrebuilts]) {
     description =
             "Runs the project integration tests. This requires an SDK either from the Android " +
                     "source tree, under out/..., or an env var ANDROID_SDK_ROOT."
-    systemProperties['jar.path'] = jar.archivePath
+    systemProperties['jar.path'] = jar.archiveFile.get().getAsFile().path
     systemProperties['java.io.tmpdir'] = tempFile.absolutePath
     environment = testEnvironment
 
@@ -156,7 +156,7 @@ configure(allConnectedTestTasks) {
                     "from the Android source tree, under out/..., or an env var ANDROID_SDK_ROOT " +
                     "and a device."
     group = "verification"
-    systemProperties['jar.path'] = jar.archivePath
+    systemProperties['jar.path'] = jar.archiveFile.get().getAsFile().path
     systemProperties['java.io.tmpdir'] = tempFile.absolutePath
 
     environment testEnvironment + ["APPLY_DEVICEPOOL_PLUGIN": true]

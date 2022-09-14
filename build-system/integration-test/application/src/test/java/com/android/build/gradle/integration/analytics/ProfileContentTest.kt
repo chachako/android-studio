@@ -27,8 +27,6 @@ import com.android.testutils.TestUtils
 import com.google.common.collect.Iterables
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import com.google.wireless.android.sdk.stats.GradleBuildProject.GradlePlugin.ORG_JETBRAINS_KOTLIN_GRADLE_PLUGIN_KOTLINANDROIDPLUGINWRAPPER
-import com.google.wireless.android.sdk.stats.GradleBuildProject.GradlePlugin.ORG_GRADLE_API_PLUGINS_HELPTASKSPLUGIN
-import com.google.wireless.android.sdk.stats.GradleBuildProject.GradlePlugin.ORG_GRADLE_API_PLUGINS_BASEPLUGIN
 import com.google.wireless.android.sdk.stats.GradleBuildProject.GradlePlugin.COM_ANDROID_BUILD_GRADLE_APPPLUGIN
 import java.util.HashSet
 import org.junit.Rule
@@ -77,8 +75,6 @@ class ProfileContentTest {
                     Iterable<GradleBuildProject.GradlePlugin>>(gbp.pluginList)
                 .containsAtLeast(
                         ORG_JETBRAINS_KOTLIN_GRADLE_PLUGIN_KOTLINANDROIDPLUGINWRAPPER,
-                        ORG_GRADLE_API_PLUGINS_HELPTASKSPLUGIN,
-                        ORG_GRADLE_API_PLUGINS_BASEPLUGIN,
                         COM_ANDROID_BUILD_GRADLE_APPPLUGIN
                 )
             assertThat(gbp.variantCount).isGreaterThan(0)

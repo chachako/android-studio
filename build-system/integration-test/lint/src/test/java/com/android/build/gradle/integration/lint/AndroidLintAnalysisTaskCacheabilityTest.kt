@@ -347,7 +347,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         project1.executor().run(":app:lintDebug")
         assertThat(project1.buildResult.getTask(":app:lintReportDebug")).didWork()
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebug")).wasUpToDate()
-        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).didWork()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).wasUpToDate()
         assertThat(project1.buildResult.getTask(":lib:generateDebugLintModel")).didWork()
 
         // Switch the order of the fake source directory and check again.

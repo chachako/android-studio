@@ -97,20 +97,20 @@ class UnresolvedVariantDependencyModelTest {
             UnresolvedDependencyImpl(
                 "project :lib",
                 """
-No matching variant of project :lib was found. The consumer was configured to find an API of a component, preferably optimized for Android, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging', attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}' but:
-  - Variant 'debugApiElements' capability project:lib:unspecified declares an API of a component, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+No matching variant of project :lib was found. The consumer was configured to find a component for use during compile-time, preferably optimized for Android, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging', attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}' but:
+  - Variant 'debugApiElements' capability project:lib:unspecified declares a component for use during compile-time, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'debug' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attribute:
           - Doesn't say anything about its target Java environment (preferred optimized for Android)
-  - Variant 'debugRuntimeElements' capability project:lib:unspecified declares a runtime of a component, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+  - Variant 'debugRuntimeElements' capability project:lib:unspecified declares a component for use during runtime, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'debug' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attribute:
           - Doesn't say anything about its target Java environment (preferred optimized for Android)
-  - Variant 'releaseApiElements' capability project:lib:unspecified declares an API of a component, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+  - Variant 'releaseApiElements' capability project:lib:unspecified declares a component for use during compile-time, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'release' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attribute:
           - Doesn't say anything about its target Java environment (preferred optimized for Android)
-  - Variant 'releaseRuntimeElements' capability project:lib:unspecified declares a runtime of a component, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+  - Variant 'releaseRuntimeElements' capability project:lib:unspecified declares a component for use during runtime, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'release' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attribute:
           - Doesn't say anything about its target Java environment (preferred optimized for Android)""".trimIndent()

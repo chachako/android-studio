@@ -69,7 +69,9 @@ public class ManifestMergingTest {
 
     @Test
     public void simpleManifestMerger() throws Exception {
-        simpleManifestMergingTask.execute("clean", "manifestMerger");
+        // TODO Run two tasks together. See b/264447663
+        simpleManifestMergingTask.execute("clean");
+        simpleManifestMergingTask.execute("manifestMerger");
     }
 
     @Test

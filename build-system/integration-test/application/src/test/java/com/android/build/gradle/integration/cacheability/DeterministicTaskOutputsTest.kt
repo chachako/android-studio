@@ -70,7 +70,10 @@ class DeterministicTaskOutputsTest {
 
             // This is @LocalState for the dexing task
             "app/build/intermediates/dex_archive_input_jar_hashes/debug/out",
-            "app/build/intermediates/desugar_graph/debug/out/currentProject/"
+            "app/build/intermediates/desugar_graph/debug/out/currentProject/",
+
+            // Gradle's own cache
+            "app/build/tmp/.cache/expanded/"
         )
     }
 

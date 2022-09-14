@@ -80,7 +80,7 @@ class LibWithNavigationTest {
             assertThat(gradleException)
                 .hasCauseThat()
                 .hasMessageThat()
-                .contains("Task '$taskName' not found in project '$subprojectPath'.")
+                .contains("Cannot locate tasks that match '$subprojectPath:$taskName'")
         }
     }
 }

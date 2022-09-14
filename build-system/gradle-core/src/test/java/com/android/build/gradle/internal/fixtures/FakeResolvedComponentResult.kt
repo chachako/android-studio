@@ -37,7 +37,6 @@ class FakeResolvedComponentResult(
     override fun getId() = id ?: error("value not set")
     override fun getDependencies() = dependencies
     override fun getSelectionReason() = selectionReason ?: error("value not set")
-    override fun getVariant() = variant ?: error("value not set")
     override fun getModuleVersion() = moduleVersion ?: error("value not set")
     override fun getVariants(): List<ResolvedVariantResult> = variant?.let { listOf(it) } ?: error("value not set")
     override fun getDependenciesForVariant(p0: ResolvedVariantResult): MutableList<out DependencyResult> =
