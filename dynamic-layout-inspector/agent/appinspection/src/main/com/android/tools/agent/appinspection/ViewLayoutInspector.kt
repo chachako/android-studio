@@ -32,19 +32,12 @@ import com.android.tools.agent.appinspection.framework.SynchronousPixelCopy
 import com.android.tools.agent.appinspection.framework.flatten
 import com.android.tools.agent.appinspection.framework.takeScreenshot
 import com.android.tools.agent.appinspection.framework.toByteArray
-import com.android.tools.agent.appinspection.proto.StringTable
-import com.android.tools.agent.appinspection.proto.createAppContext
-import com.android.tools.agent.appinspection.proto.createConfiguration
 import com.android.tools.agent.appinspection.proto.createGetPropertiesResponse
-import com.android.tools.agent.appinspection.proto.createPropertyGroup
-import com.android.tools.agent.appinspection.proto.toNode
 import com.android.tools.agent.appinspection.util.ThreadUtils
 import com.android.tools.agent.appinspection.util.compress
-import com.android.tools.idea.protobuf.ByteString
 import com.android.tools.layoutinspector.BitmapType
 import com.android.tools.layoutinspector.errors.errorCode
 import com.android.tools.layoutinspector.errors.noHardwareAcceleration
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -53,15 +46,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Command
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Configuration
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Event
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesCommand
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesResponse
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.LayoutEvent
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Point
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.ProgressEvent
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.ProgressEvent.ProgressCheckpoint
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.PropertiesEvent
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Response
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Screenshot
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.StartFetchCommand
@@ -76,15 +66,8 @@ import java.io.PrintStream
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.Callable
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.timerTask
 
 private const val LAYOUT_INSPECTION_ID = "layoutinspector.view.inspection"
@@ -102,8 +85,11 @@ private const val MAX_START_FETCH_RETRIES = 10
 class ViewLayoutInspector(connection: Connection, private val environment: InspectorEnvironment) :
     Inspector(connection) {
 
-    @property:VisibleForTesting
-    var basicExecutorFactory = { body: (Runnable) -> Unit -> Executor { body(it) } }
+    /**
+     * This exists only for testing purposes.
+     */
+    @VisibleForTesting
+    var doBeforeCapture: (() -> Unit)? = null
 
     private var checkpoint: ProgressCheckpoint = ProgressCheckpoint.NOT_STARTED
         set(value) {
@@ -120,82 +106,10 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
             }
         }
 
-    /**
-     * Context data associated with a capture of a single layout tree.
-     */
-    private data class CaptureContext(
-        /**
-         * A handle returned by a system that does continuous capturing, which, when closed, tells
-         * the system to stop as soon as possible.
-         */
-        val callbackHandle: AutoCloseable,
-        val screenshotType: Screenshot.Type,
-        val rootView: View,
-        /**
-         * An [Executor] used to execute the code that does the screen capturing.
-         * It runs some code before and after executing the screen capture logic.
-         */
-        val captureExecutor: Executor,
-        /**
-         * The output stream on which the screen capture is written.
-         */
-        val captureOutputStream: OutputStream,
-        /**
-         * Executor used during capture
-         */
-        val executorService: ExecutorService,
-        /**
-         * When true, indicates we should stop capturing after the next one
-         */
-        var isLastCapture: Boolean = false,
-    ) {
-        fun shutdown() {
-            callbackHandle.close()
-            executorService.shutdown()
-        }
-    }
-
-    private data class ScreenshotSettings(
-        val type: Screenshot.Type,
-        val scale: Float = 1.0f
-    )
-
-    private class SnapshotRequest {
-        enum class State { NEW, PROCESSING }
-        val result = CompletableDeferred<LayoutInspectorViewProtocol.CaptureSnapshotResponse.WindowSnapshot>()
-        val state = AtomicReference(State.NEW)
-    }
-
-    private class InspectorState {
-        /**
-         * A mapping of root view IDs to screen capture data that should be accessed across multiple threads.
-         */
-        val captureContextMap = mutableMapOf<Long, CaptureContext>()
-
-        /**
-         * When true, the inspector will keep generating layout events as the screen changes.
-         * Otherwise, it will only return a single layout snapshot before going back to waiting.
-         */
-        var fetchContinuously: Boolean = false
-
-        /**
-         * Settings that determine the format of screenshots taken when doing a layout capture.
-         */
-        var screenshotSettings = ScreenshotSettings(Screenshot.Type.BITMAP)
-
-        /**
-         * When a snapshot is requested an entry will be added to this map for each window. Then
-         * when content for that window is processed it will be set into the Deferred rather than
-         * sent back as a normal Event.
-         */
-        var snapshotRequests: MutableMap<Long, SnapshotRequest> = ConcurrentHashMap()
-    }
-
     private val scope =
         CoroutineScope(SupervisorJob() + environment.executors().primary().asCoroutineDispatcher())
 
-    private val stateLock = Any()
-    @GuardedBy("stateLock")
+    @GuardedBy("state.lock")
     private val state = InspectorState()
 
     private val foldSupport = createFoldSupport(connection, { state.fetchContinuously })
@@ -204,11 +118,12 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
     @property:VisibleForTesting
     var foldSupportOverrideForTests: FoldSupport? = null
 
-    private val rootsDetector =
-        RootsDetector(connection, ::onRootsChanged) { checkpoint = it }
+    private val rootsDetector = RootsDetector(connection, ::onRootsChanged) { checkpoint = it }
 
-    private var previousConfig = Configuration.getDefaultInstance()
-    private var previousContext = LayoutInspectorViewProtocol.AppContext.getDefaultInstance()
+    private val deviceInfo = DeviceInfo(
+        LayoutInspectorViewProtocol.AppContext.getDefaultInstance(),
+        LayoutInspectorViewProtocol.Configuration.getDefaultInstance()
+    )
 
     override fun onReceiveCommand(data: ByteArray, callback: CommandCallback) {
         val command = Command.parseFrom(data)
@@ -246,7 +161,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
      * may start capturing new roots.
      */
     private fun onRootsChanged(added: List<Long>, removed: List<Long>, roots: Map<Long, View>) {
-        synchronized(stateLock) {
+        synchronized(state.lock) {
             for (toRemove in removed) {
                 state.captureContextMap.remove(toRemove)?.shutdown()
             }
@@ -294,7 +209,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
 
     private fun forceStopAllCaptures() {
         rootsDetector.stop()
-        synchronized(stateLock) {
+        synchronized(state.lock) {
             for (context in state.captureContextMap.values) {
                 context.shutdown()
             }
@@ -309,32 +224,19 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         }
 
         val captureOutputStream = ByteArrayOutputStream()
-        val currentRequestId = AtomicLong()
 
-        val captureExecutor = basicExecutorFactory { command ->
-            val requestId = currentRequestId.incrementAndGet()
-            checkpoint = ProgressCheckpoint.VIEW_INVALIDATION_CALLBACK
-            val executorService = state.captureContextMap[root.uniqueDrawingId]?.executorService ?: return@basicExecutorFactory
+        val captureExecutor = CaptureExecutor(
+            captureOutputStream,
+            state,
+            root,
+            rootsDetector,
+            foldSupport,
+            updateState = { checkpoint = it },
+            connection,
+            deviceInfo,
+        )
+        captureExecutor.doBeforeRun = doBeforeCapture
 
-            try {
-                executorService.execute {
-                    if (requestId != currentRequestId.get()) {
-                        // This request is obsolete, just return
-                        command.run()
-                        captureOutputStream.reset()
-                        return@execute
-                    }
-                    executeCapture(command, captureOutputStream, root)
-                }
-            } catch (exception: RejectedExecutionException) {
-                // this can happen if we stop capture and then start again immediately: "executor"
-                // above can be shutdown in between when it's retrieved and when the execution
-                // starts on the next line.
-                connection.sendEvent {
-                    errorEventBuilder.message = "ViewLayoutInspector got RejectedExecutionException during capture: ${exception.message}"
-                }
-            }
-        }
         updateCapturingCallback(root, captureExecutor, captureOutputStream)
         checkpoint = ProgressCheckpoint.STARTED
         root.invalidate() // Force a re-render so we send the current screen
@@ -372,10 +274,10 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
      * The capturing callback can be to capture SKP or BITMAP.
      * The function creates a new [CaptureContext] associated with [rootView].
      */
-    private fun updateCapturingCallback(rootView: View, captureExecutor: Executor, captureOutputStream: OutputStream) {
+    private fun updateCapturingCallback(rootView: View, captureExecutor: CaptureExecutor, captureOutputStream: OutputStream) {
         // Starting rendering captures must be called on the View thread or else it throws
         ThreadUtils.runOnMainThread {
-            synchronized(stateLock) {
+            synchronized(state.lock) {
                 var screenshotType = if (state.snapshotRequests.isNotEmpty()) {
                     // snapshots only support SKP. If there is a snapshot request, use SKP.
                     Screenshot.Type.SKP
@@ -455,7 +357,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
 
     private fun registerScreenshotCallback(
         rootView: View,
-        captureExecutor: Executor,
+        captureExecutor: CaptureExecutor,
         captureOutputStream: OutputStream
     ): AutoCloseable {
         val timer = Timer("ViewLayoutInspectorTimer")
@@ -503,184 +405,11 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
 
     }
 
-    /**
-     * @param doCapture Triggers a capture, the output of which is written into [captureOutputStream].
-     */
-    private fun executeCapture(doCapture: Runnable, captureOutputStream: ByteArrayOutputStream, rootView: View) {
-        var snapshotRequest: SnapshotRequest?
-        var context: CaptureContext
-        var screenshotSettings: ScreenshotSettings
-        synchronized(stateLock) {
-            snapshotRequest = state.snapshotRequests[rootView.uniqueDrawingId]
-            if (snapshotRequest?.state?.compareAndSet(
-                    SnapshotRequest.State.NEW, SnapshotRequest.State.PROCESSING
-                ) != true
-            ) {
-                snapshotRequest = null
-            }
-            screenshotSettings = if (snapshotRequest != null) {
-                ScreenshotSettings(Screenshot.Type.SKP)
-            } else {
-                state.screenshotSettings
-            }
-            // We might get some lingering captures even though we already finished
-            // listening earlier (this would be indicated by no context). Just abort
-            // early in that case.
-            // Note: We copy the context instead of returning it directly, to avoid rare
-            // but potential threading issues as other threads can modify the context, e.g.
-            // handling the stop fetch command.
-            context = state.captureContextMap[rootView.uniqueDrawingId]?.copy() ?: return
-            if (snapshotRequest == null && context.isLastCapture) {
-                state.captureContextMap.remove(rootView.uniqueDrawingId)
-            }
-        }
-
-        // Just in case, always check roots before sending a layout event, as this may send
-        // out a roots event. We always want layout events to follow up-to-date root events.
-        rootsDetector.checkRoots()
-
-        val snapshotResponse = if (snapshotRequest != null) {
-            LayoutInspectorViewProtocol.CaptureSnapshotResponse.WindowSnapshot.newBuilder()
-        }
-        else null
-        run {
-            // Prepare and send LayoutEvent
-            // Triggers image fetch into `os`
-            // We always have to do this even if we don't use the bytes it gives us,
-            // because otherwise an internal queue backs up
-            doCapture.run()
-
-            // If we have a snapshot request, we can remove it from the request map now that
-            // it's no longer needed to indicate that SKPs need to be collected.
-            if (snapshotRequest != null) {
-                state.snapshotRequests.remove(rootView.uniqueDrawingId)
-            }
-
-            // This root is no longer visible. Ignore this update.
-            if (!rootsDetector.lastRootIds.contains(rootView.uniqueDrawingId)) {
-                return@run
-            }
-            sendLayoutEvent(rootView, context, screenshotSettings, captureOutputStream, snapshotResponse)
-        }
-        if (snapshotResponse != null || context.isLastCapture) {
-            sendAllPropertiesEvent(rootView, snapshotResponse)
-
-            // Send the updated fold state, in case we haven't been sending it continuously.
-            foldSupport?.sendFoldStateEventNow()
-        }
-        snapshotResponse?.let { snapshotRequest?.result?.complete(it.build()) }
-        return
-    }
-
-    private fun sendAllPropertiesEvent(
-        root: View,
-        snapshotResponse: LayoutInspectorViewProtocol.CaptureSnapshotResponse.WindowSnapshot.Builder?
-    ) {
-        // Prepare and send PropertiesEvent
-        // We get here either if the client requested a one-time snapshot of the layout
-        // or if the client just stopped an in-progress fetch. Collect and send all
-        // properties, so that the user can continue to explore all values in the UI and
-        // they will match exactly the layout at this moment in time.
-
-        val allViews = ThreadUtils.runOnMainThread {
-            root.flatten().toList()
-        }.get(10, TimeUnit.SECONDS) ?: throw TimeoutException()
-        val stringTable = StringTable()
-        val propertyGroups = allViews.map { it.createPropertyGroup(stringTable) }
-        val properties = PropertiesEvent.newBuilder().apply {
-            rootId = root.uniqueDrawingId
-            addAllPropertyGroups(propertyGroups)
-            addAllStrings(stringTable.toStringEntries())
-        }.build()
-        if (snapshotResponse != null) {
-            snapshotResponse.properties = properties
-        } else {
-            connection.sendEvent {
-                propertiesEvent = properties
-            }
-        }
-    }
-
-    private fun sendLayoutEvent(
-        root: View,
-        context: CaptureContext,
-        screenshotSettings: ScreenshotSettings,
-        os: ByteArrayOutputStream,
-        snapshotResponse: LayoutInspectorViewProtocol.CaptureSnapshotResponse.WindowSnapshot.Builder?
-    ) {
-        val screenshot = ByteString.copyFrom(os.toByteArray())
-
-        os.reset() // Clear stream, ready for next frame
-        checkpoint = ProgressCheckpoint.SCREENSHOT_CAPTURED
-        if (context.isLastCapture) {
-            context.shutdown()
-        }
-
-        val stringTable = StringTable()
-        val appContext = root.createAppContext(stringTable)
-        val configuration = root.createConfiguration(stringTable)
-
-        val (rootView, rootOffset) = ThreadUtils.runOnMainThread {
-            val rootView = root.toNode(stringTable)
-            val rootOffset = IntArray(2)
-            root.getLocationInSurface(rootOffset)
-
-            (rootView to rootOffset)
-        }.get()
-
-        checkpoint = ProgressCheckpoint.VIEW_HIERARCHY_CAPTURED
-        val layout =
-            createLayoutMessage(
-                stringTable,
-                appContext,
-                configuration,
-                rootView,
-                rootOffset,
-                screenshotSettings,
-                screenshot
-            )
-        if (snapshotResponse != null) {
-            snapshotResponse.layout = layout
-        } else {
-            checkpoint = ProgressCheckpoint.RESPONSE_SENT
-            connection.sendEvent {
-                layoutEvent = layout
-            }
-        }
-    }
-
     private fun sendEmptyLayoutEvent() {
         connection.sendEvent {
             layoutEvent = LayoutEvent.getDefaultInstance()
         }
     }
-
-    private fun createLayoutMessage(
-        stringTable: StringTable,
-        appContext: LayoutInspectorViewProtocol.AppContext,
-        configuration: Configuration,
-        rootView: LayoutInspectorViewProtocol.ViewNode,
-        rootOffset: IntArray,
-        screenshotSettings: ScreenshotSettings,
-        screenshot: ByteString?
-    ) = LayoutEvent.newBuilder().apply {
-        addAllStrings(stringTable.toStringEntries())
-        if (appContext != previousContext || configuration != previousConfig) {
-            previousConfig = configuration
-            previousContext = appContext
-            this.configuration = configuration
-            this.appContext = appContext
-        }
-        this.rootView = rootView
-        this.rootOffset = Point.newBuilder().apply {
-            x = rootOffset[0]
-            y = rootOffset[1]
-        }.build()
-        this.screenshot = Screenshot.newBuilder().apply {
-            type = screenshotSettings.type
-            bytes = screenshot
-        }.build()
-    }.build()
 
     private fun handleStartFetchCommand(
         startFetchCommand: StartFetchCommand,
@@ -689,7 +418,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         checkpoint = ProgressCheckpoint.START_RECEIVED
         forceStopAllCaptures()
 
-        synchronized(stateLock) {
+        synchronized(state.lock) {
             state.fetchContinuously = startFetchCommand.continuous
             if (!startFetchCommand.continuous) {
                 state.screenshotSettings =
@@ -749,7 +478,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         callback: CommandCallback
     ) {
         var changed: Boolean
-        synchronized(stateLock) {
+        synchronized(state.lock) {
             val oldSettings = state.screenshotSettings
             val newSettings = updateScreenshotTypeCommand.let {
                 ScreenshotSettings(
@@ -780,7 +509,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         }
 
         rootsDetector.stop()
-        synchronized(stateLock) {
+        synchronized(state.lock) {
             val contextMap = state.captureContextMap
             for (context in contextMap.values) {
                 context.isLastCapture = true

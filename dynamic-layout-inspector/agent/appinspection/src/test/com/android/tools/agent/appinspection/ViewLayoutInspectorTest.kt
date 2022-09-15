@@ -1974,16 +1974,13 @@ abstract class ViewLayoutInspectorTestBase {
         // removed from the context.
         val t2StartedExecution = CountDownLatch(1)
         val receivedLayoutResponse = CountDownLatch(1)
-        viewInspector.basicExecutorFactory = { body: (Runnable) -> Unit ->
-            Executor {
-                if (Thread.currentThread() == t1) {
-                    t2StartedExecution.await()
-                }
-                if (Thread.currentThread() == t2) {
-                    t2StartedExecution.countDown()
-                    receivedLayoutResponse.await()
-                }
-                body(it)
+        viewInspector.doBeforeCapture = {
+            if (Thread.currentThread() == t1) {
+                t2StartedExecution.await()
+            }
+            if (Thread.currentThread() == t2) {
+                t2StartedExecution.countDown()
+                receivedLayoutResponse.await()
             }
         }
 
