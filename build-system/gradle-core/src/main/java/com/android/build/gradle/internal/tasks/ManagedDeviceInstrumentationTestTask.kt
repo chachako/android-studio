@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.computeManagedDeviceEmulatorMode
+import com.android.build.gradle.internal.dsl.EmulatorControl
 import com.android.build.gradle.internal.dsl.EmulatorSnapshots
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -37,9 +38,11 @@ import com.android.build.gradle.internal.test.recordOkInstrumentedTestRun
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.test.report.TestReport
 import com.android.build.gradle.internal.testing.TestData
+import com.android.build.gradle.internal.testing.utp.EmulatorControlConfig
 import com.android.build.gradle.internal.testing.utp.ManagedDeviceTestRunner
 import com.android.build.gradle.internal.testing.utp.RetentionConfig
 import com.android.build.gradle.internal.testing.utp.UtpDependencies
+import com.android.build.gradle.internal.testing.utp.createEmulatorControlConfig
 import com.android.build.gradle.internal.testing.utp.createRetentionConfig
 import com.android.build.gradle.internal.testing.utp.maybeCreateUtpConfigurations
 import com.android.build.gradle.internal.testing.utp.resolveDependencies
@@ -95,6 +98,9 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
 
         @get: Input
         abstract val executionEnum: Property<TestOptions.Execution>
+
+        @get: Input
+        abstract val emulatorControlConfig: Property<EmulatorControlConfig>
 
         @get: Input
         abstract val retentionConfig: Property<RetentionConfig>
@@ -155,6 +161,7 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 workerExecutor,
                 utpDependencies,
                 sdkBuildService.get().sdkLoader(compileSdkVersion, buildToolsRevision),
+                emulatorControlConfig.get(),
                 retentionConfig.get(),
                 useOrchestrator,
                 numShards,
@@ -487,11 +494,19 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             )
 
             task.testRunnerFactory
+                .emulatorControlConfig
+                .setDisallowChanges(
+                    createEmulatorControlConfig(
+                        projectOptions,
+                        globalConfig.testOptions.emulatorControl as EmulatorControl))
+
+            task.testRunnerFactory
                 .retentionConfig
                 .setDisallowChanges(
                         createRetentionConfig(
                                 projectOptions,
                                 globalConfig.testOptions.emulatorSnapshots as EmulatorSnapshots))
+
             task.testRunnerFactory
                 .installApkTimeout
                 .setDisallowChanges(projectOptions[IntegerOption.INSTALL_APK_TIMEOUT])

@@ -142,6 +142,7 @@ dependencies {
     implementation libs.com.android.tools.utp.androidDeviceProviderGradleProto
     implementation libs.com.android.tools.utp.androidTestPluginHostAdditionalTestOutputProto
     implementation libs.com.android.tools.utp.androidTestPluginHostCoverageProto
+    implementation libs.com.android.tools.utp.androidTestPluginHostEmulatorControlProto
     implementation libs.com.android.tools.utp.androidTestPluginHostLogcatProto
     implementation libs.com.android.tools.utp.androidTestPluginHostApkInstallerProto
     implementation libs.com.android.tools.utp.androidTestPluginHostRetentionProto

@@ -22,6 +22,7 @@ import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.SdkComponentsBuildService.VersionedSdkLoader
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.dsl.EmulatorControl
 import com.android.build.gradle.internal.dsl.EmulatorSnapshots
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
@@ -31,6 +32,7 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
+import com.android.build.gradle.internal.testing.utp.EmulatorControlConfig
 import com.android.build.gradle.internal.testing.utp.ManagedDeviceTestRunner
 import com.android.build.gradle.internal.testing.utp.RetentionConfig
 import com.android.build.gradle.internal.testing.utp.UtpDependencies
@@ -245,6 +247,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
         `when`(factory.retentionConfig)
             .thenReturn(FakeGradleProperty(mock(RetentionConfig::class.java)))
+        `when`(factory.emulatorControlConfig)
+            .thenReturn(FakeGradleProperty(mock(EmulatorControlConfig::class.java)))
         `when`(factory.compileSdkVersion).thenReturn(FakeGradleProperty("sdkVersion"))
         `when`(factory.buildToolsRevision)
             .thenReturn(FakeGradleProperty(mock(Revision::class.java)))
@@ -288,9 +292,11 @@ class ManagedDeviceInstrumentationTestTaskTest {
             it.apiLevel = 27
             it.systemImageSource = "aosp"
         }
+        val emulatorControl = mock(EmulatorControl::class.java)
         // Needed for cast from api class to internal class
         val snapshots = mock(EmulatorSnapshots::class.java)
         `when`(creationConfig.global.testOptions.emulatorSnapshots).thenReturn(snapshots)
+        `when`(creationConfig.global.testOptions.emulatorControl).thenReturn(emulatorControl)
         // Needed to ensure that UTP is active
         `when`(
             creationConfig.services

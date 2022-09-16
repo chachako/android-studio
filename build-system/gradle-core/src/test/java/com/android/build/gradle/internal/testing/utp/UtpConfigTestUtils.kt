@@ -21,6 +21,7 @@ import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAn
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto
+import com.android.tools.utp.plugins.host.emulatorcontrol.proto.EmulatorControlPluginProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerConfigProto
@@ -41,6 +42,7 @@ private val protoPrinter: ProtoPrinter = ProtoPrinter(listOf(
     AndroidTestLogcatConfigProto.AndroidTestLogcatConfig::class.java,
     GradleAndroidTestResultListenerConfigProto.GradleAndroidTestResultListenerConfig::class.java,
     GradleManagedAndroidDeviceProviderProto.GradleManagedAndroidDeviceProviderConfig::class.java,
+    EmulatorControlPluginProto.EmulatorControlPlugin::class.java,
     IceboxPluginProto.IceboxPlugin::class.java,
     LocalAndroidDeviceProviderProto.LocalAndroidDeviceProvider::class.java,
     PathProto.Path::class.java,
@@ -57,6 +59,7 @@ fun assertRunnerConfigProto(
     noWindowAnimation: Boolean = false,
     instrumentationArgs: Map<String, String> = mapOf(),
     iceboxConfig: String = "",
+    emulatorControlConfig: String = "",
     useGradleManagedDeviceProvider: Boolean = false,
     testCoverageConfig: String = "",
     additionalTestOutputConfig: String = "",
@@ -159,6 +162,27 @@ fun assertRunnerConfigProto(
             type_url: "type.googleapis.com/com.android.tools.utp.plugins.host.icebox.proto.IceboxPlugin"
             value {
               ${"\n" + iceboxConfig.trimIndent().prependIndent(" ".repeat(14))}
+            }
+          }
+        }
+        """
+    } else {
+        ""
+    }
+
+    val emulatorAccessPluginProto = if (emulatorControlConfig.isNotBlank()) { """
+        host_plugin {
+          label {
+            label: "ANDROID_TEST_PLUGIN_HOST_EMULATOR_CONTROL"
+          }
+          class_name: "com.android.tools.utp.plugins.host.emulatorcontrol.EmulatorControlPlugin"
+          jar {
+            path: "path-to-TestEmulatorAccessPlugin.jar"
+          }
+          config {
+            type_url: "type.googleapis.com/com.android.tools.utp.plugins.host.emulatorcontrol.proto.EmulatorControlPlugin"
+            value {
+              ${"\n" + emulatorControlConfig.trimIndent().prependIndent(" ".repeat(14))}
             }
           }
         }
@@ -272,6 +296,7 @@ fun assertRunnerConfigProto(
           test_fixture_id {
             id: "AGP_Test_Fixture"
           }
+          ${"\n" + emulatorAccessPluginProto.trimIndent().prependIndent(" ".repeat(10))}
           ${"\n" + iceboxPluginProto.trimIndent().prependIndent(" ".repeat(10))}
           ${"\n" + testApkInstallerConfigProto.trimIndent().prependIndent(" ".repeat(10))}
           host_plugin {

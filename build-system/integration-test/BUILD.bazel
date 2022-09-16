@@ -194,6 +194,8 @@ maven_repository(
         "//tools/base/utp/android-test-plugin-host-apk-installer-proto:android-test-plugin-host-apk-installer-proto",
         "//tools/base/utp/android-test-plugin-host-coverage:android-test-plugin-host-coverage",
         "//tools/base/utp/android-test-plugin-host-device-info:android-test-plugin-host-device-info",
+        "//tools/base/utp/android-test-plugin-host-emulator-control:android-test-plugin-host-emulator-control",
+        "//tools/base/utp/android-test-plugin-host-emulator-control-proto:android-test-plugin-host-emulator-control-proto",
         "//tools/base/utp/android-test-plugin-host-logcat:android-test-plugin-host-logcat",
         "//tools/base/utp/android-test-plugin-host-logcat-proto:android-test-plugin-host-logcat-proto",
         "//tools/base/utp/android-test-plugin-host-retention:android-test-plugin-host-retention",

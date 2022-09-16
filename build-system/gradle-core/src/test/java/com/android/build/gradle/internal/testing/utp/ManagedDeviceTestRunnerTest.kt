@@ -67,6 +67,7 @@ class ManagedDeviceTestRunnerTest {
     @Mock lateinit var mockHelperApk: File
     @Mock lateinit var mockLogger: Logger
     @Mock lateinit var mockUtpConfigFactory: UtpConfigFactory
+    @Mock lateinit var mockemulatorControlConfig: EmulatorControlConfig
     @Mock lateinit var mockRetentionConfig: RetentionConfig
     @Mock lateinit var mockCoverageOutputDir: File
     @Mock lateinit var mockAdditionalTestOutputDir: File
@@ -103,6 +104,7 @@ class ManagedDeviceTestRunnerTest {
         `when`(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
         `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { extractedSdkApks }
         `when`(mockUtpConfigFactory.createRunnerConfigProtoForManagedDevice(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -179,6 +181,7 @@ class ManagedDeviceTestRunnerTest {
                 mockWorkerExecutor,
                 mockUtpDependencies,
                 mockVersionedSdkLoader,
+                mockemulatorControlConfig,
                 mockRetentionConfig,
                 useOrchestrator = false,
                 numShards,

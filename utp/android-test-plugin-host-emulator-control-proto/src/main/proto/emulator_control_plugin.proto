@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package com.android.tools.utp.plugins.host.emulatorcontrol.proto;
+option java_package = 'com.android.tools.utp.plugins.host.emulatorcontrol.proto';
+option java_outer_classname = 'EmulatorControlPluginProto';
+
+
+message EmulatorControlPlugin {
+    // The emulator gRPC port
+    int32 emulator_grpc_port = 1;
+
+    // The token that should be used when running the test. This should be a
+    // JWT token signed with RS256, RS384, RS512, ES256, ES384 or ES512
+    string token = 2;
+
+    // An unencrypted PKCS#8 key (file headers have "BEGIN CERTIFICATE"
+    //  and "BEGIN PRIVATE KEY") used to configure client side tls.
+    string emulator_client_private_key_file_path = 3;
+
+    // A PEM-encoded certificate chain used to configure client side tls.
+    string emulator_client_ca_file_path = 4;
+
+    //  When present Use the provided root certificates to verify the
+    //  server's identity instead of the system's default. Generally the file contents should be
+    //  PEM-encoded with all the certificates concatenated together, ie.
+    //  file header has "BEGIN CERTIFICATE", and would occur once per certificate.
+    string trusted_collection_root_path = 5;
+
+    // Unique file prefix used for writing the tls configuration file.
+    // This points to a path that is only accessible by the application, and should be
+    // unique
+    string tls_cfg_prefix = 6;
+
+    // Location where the generated jwk was written.
+    string jwk_file = 7;
+}

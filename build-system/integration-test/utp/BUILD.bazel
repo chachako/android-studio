@@ -11,5 +11,7 @@ kotlin_library(
         "//tools/base/build-system/integration-test/framework",
         "//tools/base/testutils:tools.testutils",
         "//tools/base/utp/android-test-plugin-host-device-info-proto",
+        "//tools/base/utp/android-test-plugin-host-emulator-control",
+        "//tools/base/utp/android-test-plugin-host-emulator-control-proto",
     ],
 )

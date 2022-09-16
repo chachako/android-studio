@@ -477,6 +477,7 @@ com.android.tools.build:gradle
     com.android.tools.utp:android-device-provider-gradle-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-additional-test-output-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-coverage-proto (runtime)
+    com.android.tools.utp:android-test-plugin-host-emulator-control-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-logcat-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-apk-installer-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-retention-proto (runtime)
@@ -818,6 +819,28 @@ com.android.tools.utp:android-test-plugin-host-device-info-proto
   pomName=com.android.tools.utp.android-test-plugin-host-device-info-proto
   description=A protobuf message used in a UTP plugin to export additional Android device information
   dependencies:
+    com.google.protobuf:protobuf-java (runtime)
+
+com.android.tools.utp:android-test-plugin-host-emulator-control
+  pomName=com.android.tools.utp.android-test-plugin-host-emulator-control
+  description=A UTP plugin that provides access to the gRPC endpoint of the emulator.
+  dependencies:
+    com.android.tools:common (runtime)
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    org.jetbrains.kotlinx:kotlinx-coroutines-core (runtime)
+    commons-io:commons-io (runtime)
+    com.google.code.gson:gson (runtime)
+    com.google.protobuf:protobuf-java (runtime)
+    com.google.guava:guava (runtime)
+    com.android.tools.utp:android-test-plugin-host-emulator-control-proto (runtime)
+    com.android.tools.emulator:proto (runtime)
+    com.google.testing.platform:android-device-provider-local (runtime)
+
+com.android.tools.utp:android-test-plugin-host-emulator-control-proto
+  pomName=com.android.tools.utp.android-test-plugin-host-emulator-control-proto
+  description=A protobuf message used in UTP plugin to make the emulator gRPC endpoint .
+  dependencies:
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (compile)
     com.google.protobuf:protobuf-java (runtime)
 
 com.android.tools.utp:android-test-plugin-host-logcat

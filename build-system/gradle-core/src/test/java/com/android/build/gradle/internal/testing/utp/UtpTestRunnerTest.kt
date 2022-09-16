@@ -69,6 +69,7 @@ class UtpTestRunnerTest {
     @Mock lateinit var mockDevice: DeviceConnector
     @Mock lateinit var mockLogger: ILogger
     @Mock lateinit var mockUtpConfigFactory: UtpConfigFactory
+    @Mock lateinit var mockemulatorControlConfig: EmulatorControlConfig
     @Mock lateinit var mockRetentionConfig: RetentionConfig
     @Mock lateinit var mockTestResultListener: UtpTestResultListener
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -99,6 +100,7 @@ class UtpTestRunnerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 anyBoolean(),
                 nullable(File::class.java),
                 anyInt(),
@@ -123,6 +125,7 @@ class UtpTestRunnerTest {
             mockExecutorServiceAdapter,
             mockUtpDependencies,
             mockVersionedSdkLoader,
+            mockemulatorControlConfig,
             mockRetentionConfig,
             useOrchestrator = false,
             uninstallIncompatibleApks = false,

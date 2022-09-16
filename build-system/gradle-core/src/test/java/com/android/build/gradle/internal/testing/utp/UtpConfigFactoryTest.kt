@@ -64,6 +64,7 @@ class UtpConfigFactoryTest {
     @Mock private lateinit var mockAdbProvider: Provider<RegularFile>
     @Mock private lateinit var mockBuildToolInfo: BuildToolInfo
     @Mock private lateinit var mockBuildToolInfoProvider: Provider<BuildToolInfo>
+    @Mock private lateinit var mockemulatorControlConfig: EmulatorControlConfig
     @Mock private lateinit var mockRetentionConfig: RetentionConfig
     @Mock private lateinit var mockResultListenerClientCert: File
     @Mock private lateinit var mockResultListenerClientPrivateKey: File
@@ -177,6 +178,7 @@ class UtpConfigFactoryTest {
                 versionedSdkLoader,
                 mockOutputDir,
                 mockTmpDir,
+                mockemulatorControlConfig,
                 mockRetentionConfig,
                 mockCoverageOutputDir,
                 useOrchestrator,
@@ -220,6 +222,7 @@ class UtpConfigFactoryTest {
                 versionedSdkLoader,
                 mockOutputDir,
                 mockTmpDir,
+                mockemulatorControlConfig,
                 mockRetentionConfig,
                 mockCoverageOutputDir,
                 additionalTestOutputDir,
@@ -275,6 +278,22 @@ class UtpConfigFactoryTest {
         assertRunnerConfigProto(
             runnerConfigProto,
             noWindowAnimation = true)
+    }
+
+    @Test
+    fun createRunnerConfigProtoWithEmulatorAccess() {
+        `when`(mockemulatorControlConfig.enabled).thenReturn(true)
+        `when`(mockemulatorControlConfig.secondsValid).thenReturn(100)
+
+        assertThat(mockemulatorControlConfig.enabled).isTrue()
+
+        val runnerConfigProto = createForLocalDevice()
+        assertRunnerConfigProto(
+            runnerConfigProto,
+            instrumentationArgs = mapOf("grpc.port" to "8554", "grpc.token" to ""),
+            emulatorControlConfig = """
+                emulator_grpc_port: 8554
+            """)
     }
 
     @Test
