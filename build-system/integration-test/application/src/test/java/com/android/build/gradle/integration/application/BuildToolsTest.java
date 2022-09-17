@@ -69,6 +69,7 @@ public class BuildToolsTest {
                         + "    buildToolsVersion '"
                         + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                         + "'\n"
+                        + "    buildFeatures.aidl true\n"
                         + "}\n");
 
         // Add an Aidl file so that it's not skipped due to no-source.

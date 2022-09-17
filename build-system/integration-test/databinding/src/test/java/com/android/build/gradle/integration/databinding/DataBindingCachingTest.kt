@@ -58,7 +58,6 @@ class DataBindingCachingTest(private val withKotlin: Boolean) {
         // Sort by alphabetical order for easier searching
         ":checkDebugAarMetadata" to DID_WORK, /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckAarMetadataTask] */
         ":clean" to UP_TO_DATE,
-        ":compileDebugAidl" to SKIPPED,
         ":compileDebugJavaWithJavac" to FROM_CACHE,
         ":createDebugCompatibleScreenManifests" to DID_WORK, /** Intentionally not cacheable. See [com.android.build.gradle.tasks.CompatibleScreensManifest] */
         ":dataBindingGenBaseClassesDebug" to FROM_CACHE,

@@ -182,6 +182,8 @@ public class AidlTest {
                             + "\" }.isEmpty()\n"
                             + "}\n");
         }
+
+        TestFileUtils.appendToFile(project.getBuildFile(), "android.buildFeatures.aidl true");
     }
 
     @Test

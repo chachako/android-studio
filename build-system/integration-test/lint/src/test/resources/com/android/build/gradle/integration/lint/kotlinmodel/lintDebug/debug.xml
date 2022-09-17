@@ -13,7 +13,7 @@
   <sourceProviders>
     <sourceProvider
         manifests="src/main/AndroidManifest.xml"
-        javaDirectories="src/main/java:src/debug/java:build/generated/source/buildConfig/debug:build/generated/aidl_source_output_dir/debug/out:src/main/kotlin:src/debug/kotlin"
+        javaDirectories="src/main/java:src/debug/java:build/generated/source/buildConfig/debug:src/main/kotlin:src/debug/kotlin"
         resDirectories="build/generated/res/resValues/debug:src/debug/res:src/main/res"
         assetsDirectories="src/debug/assets:src/main/assets"/>
   </sourceProviders>
@@ -25,7 +25,7 @@
         unitTest="true"/>
     <sourceProvider
         manifests="src/androidTest/AndroidManifest.xml"
-        javaDirectories="src/androidTest/java:src/androidTestDebug/java:build/generated/source/buildConfig/androidTest/debug:build/generated/aidl_source_output_dir/debugAndroidTest/out:src/androidTest/kotlin:src/androidTestDebug/kotlin"
+        javaDirectories="src/androidTest/java:src/androidTestDebug/java:build/generated/source/buildConfig/androidTest/debug:src/androidTest/kotlin:src/androidTestDebug/kotlin"
         resDirectories="build/generated/res/resValues/androidTest/debug:src/androidTestDebug/res:src/androidTest/res"
         assetsDirectories="src/androidTestDebug/assets:src/androidTest/assets"
         androidTest="true"/>
@@ -35,7 +35,7 @@
   <mainArtifact
       classOutputs="build/intermediates/javac/debug/classes:build/tmp/kotlin-classes/debug:build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar"
       applicationId="com.example.android.lint.kotlin"
-      generatedSourceFolders="build/generated/ap_generated_sources/debug/out:build/generated/aidl_source_output_dir/debug/out:build/generated/source/buildConfig/debug"
+      generatedSourceFolders="build/generated/ap_generated_sources/debug/out:build/generated/source/buildConfig/debug"
       generatedResourceFolders="build/generated/res/resValues/debug"
       desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
   </mainArtifact>

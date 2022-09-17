@@ -122,7 +122,6 @@ class CacheabilityTest {
                     listOf("", "Debug", "DebugUnitTest", "Release", "ReleaseUnitTest")),
 
             TaskInfo(SKIPPED, "assemble", "", listOf("Debug", "Release")),
-            TaskInfo(SKIPPED, "compile", "Aidl", listOf("Debug", "Release")),
             TaskInfo(SKIPPED, "compile", "Shaders", listOf("Debug", "Release")),
             TaskInfo(SKIPPED, "extract", "NativeSymbolTables", listOf("Release")),
             TaskInfo(SKIPPED, "merge", "NativeDebugMetadata", listOf("Debug", "Release")),

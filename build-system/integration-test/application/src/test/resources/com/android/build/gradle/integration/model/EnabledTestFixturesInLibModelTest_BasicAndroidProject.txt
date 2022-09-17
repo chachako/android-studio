@@ -10,8 +10,7 @@
             * {PROJECT}/src/testFixtures/kotlin{!}
          - resourcesDirectories:
             * {PROJECT}/src/testFixtures/resources{!}
-         - aidlDirectories:
-            * {PROJECT}/src/testFixtures/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {PROJECT}/src/testFixtures/res{!}
@@ -37,8 +36,7 @@
                * {PROJECT}/src/testFixturesDebug/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/src/testFixturesDebug/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/src/testFixturesDebug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/src/testFixturesDebug/res{!}
@@ -63,8 +61,7 @@
                * {PROJECT}/src/testFixturesRelease/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/src/testFixturesRelease/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/src/testFixturesRelease/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/src/testFixturesRelease/res{!}

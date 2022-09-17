@@ -16,8 +16,7 @@
             * {INCLUDED_BUILD(other-build)}/lib/src/main/kotlin{!}
          - resourcesDirectories:
             * {INCLUDED_BUILD(other-build)}/lib/src/main/resources{!}
-         - aidlDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/main/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {INCLUDED_BUILD(other-build)}/lib/src/main/res{D}
@@ -40,8 +39,7 @@
             * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/kotlin{!}
          - resourcesDirectories:
             * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/resources{!}
-         - aidlDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {INCLUDED_BUILD(other-build)}/lib/src/androidTest/res{!}
@@ -64,8 +62,7 @@
             * {INCLUDED_BUILD(other-build)}/lib/src/test/kotlin{!}
          - resourcesDirectories:
             * {INCLUDED_BUILD(other-build)}/lib/src/test/resources{!}
-         - aidlDirectories:
-            * {INCLUDED_BUILD(other-build)}/lib/src/test/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {INCLUDED_BUILD(other-build)}/lib/src/test/res{!}
@@ -92,8 +89,7 @@
                * {INCLUDED_BUILD(other-build)}/lib/src/debug/kotlin{!}
             - resourcesDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/debug/resources{!}
-            - aidlDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/debug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/debug/res{!}
@@ -116,8 +112,7 @@
                * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/kotlin{!}
             - resourcesDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/resources{!}
-            - aidlDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/androidTestDebug/res{!}
@@ -140,8 +135,7 @@
                * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/kotlin{!}
             - resourcesDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/resources{!}
-            - aidlDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/testDebug/res{!}
@@ -167,8 +161,7 @@
                * {INCLUDED_BUILD(other-build)}/lib/src/release/kotlin{!}
             - resourcesDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/release/resources{!}
-            - aidlDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/release/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/release/res{!}
@@ -192,8 +185,7 @@
                * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/kotlin{!}
             - resourcesDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/resources{!}
-            - aidlDirectories:
-               * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {INCLUDED_BUILD(other-build)}/lib/src/testRelease/res{!}

@@ -16,8 +16,7 @@
             * {PROJECT}/app/src/main/kotlin{!}
          - resourcesDirectories:
             * {PROJECT}/app/src/main/resources{!}
-         - aidlDirectories:
-            * {PROJECT}/app/src/main/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {PROJECT}/app/src/main/res{D}
@@ -40,8 +39,7 @@
             * {PROJECT}/app/src/androidTest/kotlin{!}
          - resourcesDirectories:
             * {PROJECT}/app/src/androidTest/resources{!}
-         - aidlDirectories:
-            * {PROJECT}/app/src/androidTest/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {PROJECT}/app/src/androidTest/res{!}
@@ -64,8 +62,7 @@
             * {PROJECT}/app/src/test/kotlin{!}
          - resourcesDirectories:
             * {PROJECT}/app/src/test/resources{!}
-         - aidlDirectories:
-            * {PROJECT}/app/src/test/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {PROJECT}/app/src/test/res{!}
@@ -92,8 +89,7 @@
                * {PROJECT}/app/src/debug/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/app/src/debug/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/app/src/debug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/app/src/debug/res{!}
@@ -116,8 +112,7 @@
                * {PROJECT}/app/src/androidTestDebug/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/app/src/androidTestDebug/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/app/src/androidTestDebug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/app/src/androidTestDebug/res{!}
@@ -140,8 +135,7 @@
                * {PROJECT}/app/src/testDebug/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/app/src/testDebug/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/app/src/testDebug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/app/src/testDebug/res{!}
@@ -167,8 +161,7 @@
                * {PROJECT}/app/src/release/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/app/src/release/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/app/src/release/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/app/src/release/res{!}
@@ -192,8 +185,7 @@
                * {PROJECT}/app/src/testRelease/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/app/src/testRelease/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/app/src/testRelease/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/app/src/testRelease/res{!}

@@ -17,7 +17,6 @@
                * {PROJECT}/build/intermediates/javac/proPlayDebug/classes{!}
             - ideSetupTaskNames             = ["generateProPlayDebugSources"]
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/proPlayDebug/out{!}
                * {PROJECT}/build/generated/ap_generated_sources/proPlayDebug/out{!}
                * {PROJECT}/build/generated/source/buildConfig/proPlay/debug{!}
             - minSdkVersion:
@@ -51,7 +50,6 @@
                * {PROJECT}/build/intermediates/javac/proPlayDebugAndroidTest/classes{!}
             - ideSetupTaskNames             = ["generateProPlayDebugAndroidTestSources"]
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/proPlayDebugAndroidTest/out{!}
                * {PROJECT}/build/generated/ap_generated_sources/proPlayDebugAndroidTest/out{!}
                * {PROJECT}/build/generated/source/buildConfig/androidTest/proPlay/debug{!}
             - minSdkVersion:

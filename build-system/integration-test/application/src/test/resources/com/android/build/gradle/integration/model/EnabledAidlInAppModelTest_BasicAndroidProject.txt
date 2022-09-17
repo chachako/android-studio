@@ -2,32 +2,32 @@
    > defaultConfig:
       - sourceProvider:
          - aidlDirectories:
-            * {PROJECT}/src/main/aidl{!}{REMOVED}
+            * {PROJECT}/src/main/aidl{!}{ADDED}
       - androidTestSourceProvider:
          - aidlDirectories:
-            * {PROJECT}/src/androidTest/aidl{!}{REMOVED}
+            * {PROJECT}/src/androidTest/aidl{!}{ADDED}
       - unitTestSourceProvider:
          - aidlDirectories:
-            * {PROJECT}/src/test/aidl{!}{REMOVED}
+            * {PROJECT}/src/test/aidl{!}{ADDED}
    < defaultConfig
    > buildTypes:
       > debug:
          - sourceProvider:
             - aidlDirectories:
-               * {PROJECT}/src/debug/aidl{!}{REMOVED}
+               * {PROJECT}/src/debug/aidl{!}{ADDED}
          - androidTestSourceProvider:
             - aidlDirectories:
-               * {PROJECT}/src/androidTestDebug/aidl{!}{REMOVED}
+               * {PROJECT}/src/androidTestDebug/aidl{!}{ADDED}
          - unitTestSourceProvider:
             - aidlDirectories:
-               * {PROJECT}/src/testDebug/aidl{!}{REMOVED}
+               * {PROJECT}/src/testDebug/aidl{!}{ADDED}
       < debug
       - release:
          - sourceProvider:
             - aidlDirectories:
-               * {PROJECT}/src/release/aidl{!}{REMOVED}
+               * {PROJECT}/src/release/aidl{!}{ADDED}
          - unitTestSourceProvider:
             - aidlDirectories:
-               * {PROJECT}/src/testRelease/aidl{!}{REMOVED}
+               * {PROJECT}/src/testRelease/aidl{!}{ADDED}
    < buildTypes
 < BasicAndroidProject

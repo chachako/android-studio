@@ -53,7 +53,7 @@ public class VariantHelper {
 
         Collection<File> sourceFolders = artifact.getGeneratedSourceFolders();
 
-        assertThat(sourceFolders).named("Gen src Folder count").hasSize(3);
+        assertThat(sourceFolders).named("Gen src Folder count").hasSize(2);
 
         Collection<String> outputs = ProjectBuildOutputUtils.getOutputFiles(variantOutput);
         assertThat(outputs).named("artifact output").isNotNull();

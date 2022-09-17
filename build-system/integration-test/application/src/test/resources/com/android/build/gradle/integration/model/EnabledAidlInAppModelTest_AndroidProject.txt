@@ -3,13 +3,13 @@
       - debug:
          - mainArtifact:
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/debug/out{!}{REMOVED}
+               * {PROJECT}/build/generated/aidl_source_output_dir/debug/out{!}{ADDED}
          - androidTestArtifact:
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/debugAndroidTest/out{!}{REMOVED}
+               * {PROJECT}/build/generated/aidl_source_output_dir/debugAndroidTest/out{!}{ADDED}
       - release:
          - mainArtifact:
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/release/out{!}{REMOVED}
+               * {PROJECT}/build/generated/aidl_source_output_dir/release/out{!}{ADDED}
    < variants
 < AndroidProject

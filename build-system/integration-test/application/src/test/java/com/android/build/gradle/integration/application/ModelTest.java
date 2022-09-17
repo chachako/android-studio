@@ -110,7 +110,6 @@ public class ModelTest {
 
         ImmutableList.Builder<File> expectedGeneratedSourceFolders = ImmutableList.builder();
         expectedGeneratedSourceFolders.add(
-                project.file("build/generated/aidl_source_output_dir/debug/out"),
                 project.file("build/generated/ap_generated_sources/debug/out"));
 
         if (!project.getIntermediateFile(
@@ -130,7 +129,6 @@ public class ModelTest {
 
         ImmutableList.Builder<File> expectedGeneratedTestSourceFolders = ImmutableList.builder();
         expectedGeneratedTestSourceFolders.add(
-                project.file("build/generated/aidl_source_output_dir/debugAndroidTest/out"),
                 project.file("build/generated/ap_generated_sources/debugAndroidTest/out"));
 
         if (!project.getIntermediateFile(

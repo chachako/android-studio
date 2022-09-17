@@ -92,7 +92,6 @@ class MinifyCacheabilityTest {
         ),
         SKIPPED to setOf(
             ":assembleMinified",
-            ":compileMinifiedAidl",
             ":compileMinifiedShaders",
             ":mergeMinifiedNativeDebugMetadata",
             ":mergeMinifiedNativeLibs",

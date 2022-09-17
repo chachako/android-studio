@@ -55,6 +55,10 @@ public class LibraryPluginDslTest {
         android.setCompileSdkVersion(TestConstants.COMPILE_SDK_VERSION);
         android.setBuildToolsVersion(TestConstants.BUILD_TOOL_VERSION);
         android.setNamespace("com.example.namespace");
+        android.buildFeatures(
+                buildFeatures -> {
+                    buildFeatures.setAidl(true);
+                });
         plugin = project.getPlugins().getPlugin(LibraryPlugin.class);
         checker = VariantCheckers.createLibraryChecker(android);
     }

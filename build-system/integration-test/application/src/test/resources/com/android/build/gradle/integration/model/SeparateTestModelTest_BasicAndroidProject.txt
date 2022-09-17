@@ -16,8 +16,7 @@
             * {PROJECT}/test/src/main/kotlin{!}
          - resourcesDirectories:
             * {PROJECT}/test/src/main/resources{!}
-         - aidlDirectories:
-            * {PROJECT}/test/src/main/aidl{!}
+         - aidlDirectories         = (null)
          - renderscriptDirectories = (null)
          - resDirectories:
             * {PROJECT}/test/src/main/res{!}
@@ -46,8 +45,7 @@
                * {PROJECT}/test/src/debug/kotlin{!}
             - resourcesDirectories:
                * {PROJECT}/test/src/debug/resources{!}
-            - aidlDirectories:
-               * {PROJECT}/test/src/debug/aidl{!}
+            - aidlDirectories         = (null)
             - renderscriptDirectories = (null)
             - resDirectories:
                * {PROJECT}/test/src/debug/res{!}

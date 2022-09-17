@@ -199,7 +199,6 @@ class DynamicFeaturesCacheabilityTest {
                 ),
                 SKIPPED to setOf(
                     ":app:assembleDebug",
-                    ":app:compileDebugAidl",
                     ":app:compileDebugShaders",
                     ":app:mergeDebugNativeDebugMetadata",
                     ":app:mergeDebugNativeLibs",
@@ -207,14 +206,12 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:stripDebugDebugSymbols",
 
                     ":feature1:assembleDebug",
-                    ":feature1:compileDebugAidl",
                     ":feature1:compileDebugShaders",
                     ":feature1:mergeDebugNativeLibs",
                     ":feature1:processDebugJavaRes",
                     ":feature1:stripDebugDebugSymbols",
 
                     ":feature2:assembleDebug",
-                    ":feature2:compileDebugAidl",
                     ":feature2:compileDebugShaders",
                     ":feature2:mergeDebugNativeLibs",
                     ":feature2:processDebugJavaRes",

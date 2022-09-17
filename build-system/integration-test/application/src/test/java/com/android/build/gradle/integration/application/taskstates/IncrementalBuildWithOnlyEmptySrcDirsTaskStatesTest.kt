@@ -115,14 +115,12 @@ class IncrementalBuildWithOnlyEmptySrcDirsTaskStatesTest {
                             }),
                 SKIPPED to
                     setOf(
-                        ":app:compileDebugAidl",
                         ":app:compileDebugShaders",
                         ":app:mergeDebugNativeDebugMetadata",
                         ":app:mergeDebugNativeLibs",
                         ":app:processDebugJavaRes",
                         ":app:stripDebugDebugSymbols",
                         ":lib:bundleLibResDebug",
-                        ":lib:compileDebugAidl",
                         ":lib:compileDebugShaders",
                         ":lib:mergeDebugNativeLibs",
                         ":lib:processDebugJavaRes",

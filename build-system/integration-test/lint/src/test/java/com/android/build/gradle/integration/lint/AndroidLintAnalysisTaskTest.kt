@@ -54,7 +54,7 @@ class AndroidLintAnalysisTaskTest {
                 )
             )
         assertThat(File(partialResultsDir, "lint-definite-debug.xml"))
-            .contains("{:app*debug*sourceProvider*0*javaDir*4}")
+            .contains("{:app*debug*sourceProvider*0*javaDir*3}")
     }
 
     @Test

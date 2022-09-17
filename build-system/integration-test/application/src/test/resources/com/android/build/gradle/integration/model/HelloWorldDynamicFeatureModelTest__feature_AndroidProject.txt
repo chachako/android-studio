@@ -17,7 +17,6 @@
                * {PROJECT}/feature/build/intermediates/javac/debug/classes{!}
             - ideSetupTaskNames             = ["generateDebugSources"]
             - generatedSourceFolders:
-               * {PROJECT}/feature/build/generated/aidl_source_output_dir/debug/out{!}
                * {PROJECT}/feature/build/generated/ap_generated_sources/debug/out{!}
                * {PROJECT}/feature/build/generated/source/buildConfig/debug{!}
             - minSdkVersion:
@@ -47,7 +46,6 @@
                * {PROJECT}/feature/build/intermediates/javac/debugAndroidTest/classes{!}
             - ideSetupTaskNames             = ["generateDebugAndroidTestSources"]
             - generatedSourceFolders:
-               * {PROJECT}/feature/build/generated/aidl_source_output_dir/debugAndroidTest/out{!}
                * {PROJECT}/feature/build/generated/ap_generated_sources/debugAndroidTest/out{!}
                * {PROJECT}/feature/build/generated/source/buildConfig/androidTest/debug{!}
             - minSdkVersion:
@@ -101,7 +99,6 @@
                * {PROJECT}/feature/build/intermediates/javac/release/classes{!}
             - ideSetupTaskNames             = ["generateReleaseSources"]
             - generatedSourceFolders:
-               * {PROJECT}/feature/build/generated/aidl_source_output_dir/release/out{!}
                * {PROJECT}/feature/build/generated/ap_generated_sources/release/out{!}
                * {PROJECT}/feature/build/generated/source/buildConfig/release{!}
             - minSdkVersion:

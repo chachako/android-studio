@@ -42,16 +42,6 @@ class DisabledSrcResGenTest {
     }
 
     @Test
-    fun `test disabling AIDL via gradle-properties`() {
-        checkViaGradleProperties(BooleanOption.BUILD_FEATURE_AIDL, "compileDebugAidl")
-    }
-
-    @Test
-    fun `test disabling AIDL via build-gradle`() {
-        checkViaBuildFile("aidl", "compileDebugAidl")
-    }
-
-    @Test
     fun `test disabling Res Values via gradle-properties`() {
         checkViaGradleProperties(BooleanOption.BUILD_FEATURE_RESVALUES, "generateDebugResValues")
     }

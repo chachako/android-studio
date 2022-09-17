@@ -17,7 +17,6 @@
                * {PROJECT}/build/intermediates/javac/proDebug/classes{!}
             - ideSetupTaskNames             = ["generateProDebugSources"]
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/proDebug/out{!}
                * {PROJECT}/build/generated/ap_generated_sources/proDebug/out{!}
                * {PROJECT}/build/generated/source/buildConfig/pro/debug{!}
             - minSdkVersion:
@@ -51,7 +50,6 @@
                * {PROJECT}/build/intermediates/javac/proDebugAndroidTest/classes{!}
             - ideSetupTaskNames             = ["generateProDebugAndroidTestSources"]
             - generatedSourceFolders:
-               * {PROJECT}/build/generated/aidl_source_output_dir/proDebugAndroidTest/out{!}
                * {PROJECT}/build/generated/ap_generated_sources/proDebugAndroidTest/out{!}
                * {PROJECT}/build/generated/source/buildConfig/androidTest/pro/debug{!}
             - minSdkVersion:

@@ -91,7 +91,7 @@ class ApplicationIdInAppModelTest: ReferenceModelComparator(
     }
 }
 
-class DisabledAidlInAppModelTest: ReferenceModelComparator(
+class EnabledAidlInAppModelTest: ReferenceModelComparator(
     referenceConfig = {
         rootProject {
             plugins.add(PluginType.ANDROID_APP)
@@ -104,7 +104,7 @@ class DisabledAidlInAppModelTest: ReferenceModelComparator(
         rootProject {
             android {
                 buildFeatures {
-                    aidl = false
+                    aidl = true
                 }
             }
         }
