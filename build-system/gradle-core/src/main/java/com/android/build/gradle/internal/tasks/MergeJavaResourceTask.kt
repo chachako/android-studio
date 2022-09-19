@@ -16,6 +16,8 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.gradle.internal.InternalScope.FEATURES
 import com.android.build.gradle.internal.InternalScope.LOCAL_DEPS
 import com.android.build.gradle.internal.TaskManager

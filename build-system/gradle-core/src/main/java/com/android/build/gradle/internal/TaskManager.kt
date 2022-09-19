@@ -2128,6 +2128,10 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                     creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
                         .getFinalArtifacts(ScopedArtifact.CLASSES)
                 )
+                from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
             }
 
         creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)

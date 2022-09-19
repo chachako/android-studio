@@ -30,5 +30,6 @@ interface InternalScopedArtifacts: ScopedArtifacts {
     enum class InternalScope {
         SUB_PROJECT,
         EXTERNAL_LIBS,
+        LOCAL_DEPS,
     }
 }

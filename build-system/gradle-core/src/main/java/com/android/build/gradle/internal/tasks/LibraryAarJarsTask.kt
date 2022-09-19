@@ -17,7 +17,10 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.databinding.DataBindingExcludeDelegate
 import com.android.build.gradle.internal.databinding.configureFrom
 import com.android.build.gradle.internal.pipeline.TransformManager
@@ -356,17 +359,14 @@ abstract class LibraryAarJarsTask : NonIncrementalTask() {
             )
             task.mainScopeResourceFiles.disallowChanges()
 
-            @Suppress("DEPRECATION") // Legacy support
-            task.localScopeInputFiles.from(
-                creationConfig.transformManager
-                    .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                        (contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                                || contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES))
-                                && scopes.intersect(
-                            TransformManager.SCOPE_FULL_LIBRARY_WITH_LOCAL_JARS).isNotEmpty()
-                                && !scopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                    }
-            )
+            // if minification is enabled, local deps will be processed by the R8 Task and do not
+            // need to be individually repackaged in the resulting AAR.
+            if (!minifyEnabled) {
+                task.localScopeInputFiles.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            }
             task.localScopeInputFiles.disallowChanges()
         }
     }

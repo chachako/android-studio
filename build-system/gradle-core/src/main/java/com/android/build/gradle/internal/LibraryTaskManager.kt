@@ -16,7 +16,9 @@
 package com.android.build.gradle.internal
 
 import com.android.SdkConstants
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.variant.LibraryVariantBuilder
 import com.android.build.gradle.BaseExtension
@@ -336,13 +338,11 @@ class LibraryTaskManager(
         // add the same jars twice in the same stream as the EXTERNAL_LIB in the task manager
         // so that filtering of duplicates in proguard can work.
         creationConfig
-            .transformManager
-            .addStream(
-                OriginalStream.builder("local-deps-classes")
-                    .addContentTypes(TransformManager.CONTENT_CLASS)
-                    .addScope(InternalScope.LOCAL_DEPS)
-                    .setFileCollection(creationConfig.computeLocalPackagedJars())
-                    .build()
+            .artifacts
+            .forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+            .setInitialContent(
+                ScopedArtifact.CLASSES,
+                creationConfig.computeLocalPackagedJars()
             )
     }
 

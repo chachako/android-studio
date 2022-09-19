@@ -272,6 +272,12 @@ abstract class ProguardConfigurableTask(
                     transformManager
                         .getPipelineOutputAsFileCollection(createStreamFilter(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES, inputScopes))
                 )
+                if (inputScopes.contains(InternalScope.LOCAL_DEPS)) {
+                    it.from(
+                        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                            .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    )
+                }
                 if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
                     it.from(creationConfig.artifacts.forScope(
                         InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS

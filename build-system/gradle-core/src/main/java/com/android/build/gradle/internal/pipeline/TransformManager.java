@@ -52,19 +52,8 @@ import org.gradle.api.tasks.TaskProvider;
  */
 public class TransformManager extends FilterableStreamCollection {
 
-    private static final boolean DEBUG = true;
-
-    private static final String FD_TRANSFORMS = "transforms";
-
-    public static final Set<ScopeType> EMPTY_SCOPES = ImmutableSet.of();
-
     public static final Set<ContentType> CONTENT_CLASS = ImmutableSet.of(CLASSES);
-    public static final Set<ContentType> CONTENT_JARS = ImmutableSet.of(CLASSES, RESOURCES);
     public static final Set<ContentType> CONTENT_RESOURCES = ImmutableSet.of(RESOURCES);
-    public static final Set<ContentType> CONTENT_DEX = ImmutableSet.of(ExtendedContentType.DEX);
-    public static final Set<ContentType> CONTENT_DEX_WITH_RESOURCES =
-            ImmutableSet.of(ExtendedContentType.DEX, RESOURCES);
-    public static final Set<ScopeType> PROJECT_ONLY = ImmutableSet.of(Scope.PROJECT);
     public static final Set<ScopeType> SCOPE_FULL_PROJECT =
             ImmutableSet.of(Scope.PROJECT, Scope.SUB_PROJECTS, Scope.EXTERNAL_LIBRARIES);
     public static final Set<ScopeType> SCOPE_FULL_WITH_FEATURES =
@@ -72,7 +61,6 @@ public class TransformManager extends FilterableStreamCollection {
                     .addAll(SCOPE_FULL_PROJECT)
                     .add(InternalScope.FEATURES)
                     .build();
-    public static final Set<ScopeType> SCOPE_FEATURES = ImmutableSet.of(InternalScope.FEATURES);
     public static final Set<ScopeType> SCOPE_FULL_LIBRARY_WITH_LOCAL_JARS =
             ImmutableSet.of(Scope.PROJECT, InternalScope.LOCAL_DEPS);
     public static final Set<ScopeType> SCOPE_FULL_PROJECT_WITH_LOCAL_JARS =
