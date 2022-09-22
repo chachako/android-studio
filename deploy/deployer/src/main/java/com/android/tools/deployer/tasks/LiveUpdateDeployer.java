@@ -303,7 +303,7 @@ public class LiveUpdateDeployer {
         requestBuilder.setPackageName(packageName);
         requestBuilder.setComposable(param.isComposable);
         requestBuilder.setGroupId(param.groupId);
-        requestBuilder.setTargetClass(
+        requestBuilder.addTargetClasses(
                 Deploy.LiveEditClass.newBuilder()
                         .setClassName(param.className)
                         .setClassData(ByteString.copyFrom(param.classData))

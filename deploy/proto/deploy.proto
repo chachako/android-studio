@@ -726,8 +726,8 @@ message InstallServerResponse {
 }
 
 message LiveEditRequest {
-  // The class that the user changed during LiveEdit.
-  LiveEditClass target_class = 1;
+  // The classes that the user changed during LiveEdit.
+  repeated LiveEditClass target_classes = 1;
 
   // Classes generated or modified as a result of that
   // changed (lambdas, Compose classes, etc.)

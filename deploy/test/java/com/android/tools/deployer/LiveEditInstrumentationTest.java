@@ -71,7 +71,7 @@ public class LiveEditInstrumentationTest extends AgentTestBase {
                         .build();
         Deploy.LiveEditRequest request =
                 Deploy.LiveEditRequest.newBuilder()
-                        .setTargetClass(clazz)
+                        .addTargetClasses(clazz)
                         .setPackageName(PACKAGE)
                         .build();
 
@@ -93,7 +93,7 @@ public class LiveEditInstrumentationTest extends AgentTestBase {
                         .build();
         Deploy.LiveEditRequest request =
                 Deploy.LiveEditRequest.newBuilder()
-                        .setTargetClass(clazz)
+                        .addTargetClasses(clazz)
                         .setComposable(true)
                         .setPackageName(PACKAGE)
                         .build();

@@ -56,27 +56,36 @@ bool PrimeClass(jvmtiEnv* jvmti, JNIEnv* jni, const std::string& class_name) {
 
 jobjectArray UpdateClassBytecode(JNIEnv* jni, JniClass* live_edit_stubs,
                                  const proto::LiveEditRequest& req) {
-  auto target_class = req.target_class();
-  jbyteArray target_bytes = jni->NewByteArray(target_class.class_data().size());
-  jni->SetByteArrayRegion(target_bytes, 0, target_class.class_data().size(),
-                          (jbyte*)target_class.class_data().data());
-
-  jobjectArray proxy_arr = jni->NewObjectArray(req.support_classes_size(),
-                                               jni->FindClass("[B"), nullptr);
-  for (int i = 0; i < req.support_classes_size(); ++i) {
-    auto support_class = req.support_classes()[i];
-    jbyteArray proxy_bytes =
-        jni->NewByteArray(support_class.class_data().size());
-    jni->SetByteArrayRegion(proxy_bytes, 0, support_class.class_data().size(),
-                            (jbyte*)support_class.class_data().data());
-    jni->SetObjectArrayElement(proxy_arr, i, proxy_bytes);
+  // Build an array of array of byte containing the target classes bytecode.
+  jobjectArray arrayClasses = jni->NewObjectArray(
+      req.target_classes_size(), jni->FindClass("[B"), nullptr);
+  for (int i = 0; i < req.target_classes_size(); i++) {
+    auto target_class = req.target_classes()[i];
+    jbyteArray class_bytes =
+        jni->NewByteArray(target_class.class_data().size());
+    jni->SetByteArrayRegion(class_bytes, 0, target_class.class_data().size(),
+                            (jbyte*)target_class.class_data().data());
+    jni->SetObjectArrayElement(arrayClasses, i, class_bytes);
   }
 
+  // Build an array of array of bytes containing the support classes bytecode.
+  jobjectArray arraySupportClasses = jni->NewObjectArray(
+      req.support_classes_size(), jni->FindClass("[B"), nullptr);
+  for (int i = 0; i < req.support_classes_size(); ++i) {
+    auto support_class = req.support_classes()[i];
+    jbyteArray class_bytes =
+        jni->NewByteArray(support_class.class_data().size());
+    jni->SetByteArrayRegion(class_bytes, 0, support_class.class_data().size(),
+                            (jbyte*)support_class.class_data().data());
+    jni->SetObjectArrayElement(arraySupportClasses, i, class_bytes);
+  }
+
+  // Send everything for validation.
   return (jobjectArray)live_edit_stubs->CallStaticObjectMethod(
       "addClasses",
-      "([B[[B)[Lcom/"
+      "([[B[[B)[Lcom/"
       "android/tools/deploy/liveedit/BytecodeValidator$UnsupportedChange;",
-      target_bytes, proxy_arr);
+      arrayClasses, arraySupportClasses);
 }
 
 void SetDebugMode(JNIEnv* jni, bool debugMode) {
@@ -169,19 +178,24 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
     return resp;
   }
 
-  const auto& target_class = req.target_class();
-  const bool hasNewlyPrimedClass =
-      PrimeClass(jvmti, jni, target_class.class_name());
+  bool hasNewlyPrimedClass = false;
+  for (auto& target_class : req.target_classes()) {
+    bool primed = PrimeClass(jvmti, jni, target_class.class_name());
+    hasNewlyPrimedClass |= primed;
+  }
+
   for (auto support_class : req.support_classes()) {
     PrimeClass(jvmti, jni, support_class.class_name());
   }
 
-  live_edit_stubs.CallStaticVoidMethod(
-      "addLiveEditedMethod",
-      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-      jni->NewStringUTF(target_class.class_name().c_str()),
-      jni->NewStringUTF(target_class.method_name().c_str()),
-      jni->NewStringUTF(target_class.method_desc().c_str()));
+  for (auto& target_class : req.target_classes()) {
+    live_edit_stubs.CallStaticVoidMethod(
+        "addLiveEditedMethod",
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+        jni->NewStringUTF(target_class.class_name().c_str()),
+        jni->NewStringUTF(target_class.method_name().c_str()),
+        jni->NewStringUTF(target_class.method_desc().c_str()));
+  }
 
   Recompose recompose(jvmti, jni);
   jobject reloader = recompose.GetComposeHotReload();

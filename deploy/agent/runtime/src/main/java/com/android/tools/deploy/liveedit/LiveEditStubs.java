@@ -18,6 +18,7 @@ package com.android.tools.deploy.liveedit;
 
 import com.android.annotations.VisibleForTesting;
 import com.android.tools.deploy.liveedit.BytecodeValidator.UnsupportedChange;
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused") // Used by native instrumentation code.
@@ -39,16 +40,23 @@ public final class LiveEditStubs {
         }
     }
 
-    public static UnsupportedChange[] addClasses(byte[] primaryClass, byte[][] proxyClasses) {
-        Interpretable primary = new Interpretable(primaryClass);
-        List<UnsupportedChange> errors =
-                BytecodeValidator.validateBytecode(primary, context.getClassLoader());
+    public static UnsupportedChange[] addClasses(byte[][] primaryClasses, byte[][] proxyClasses) {
+        // Process all main classes
+        List<UnsupportedChange> errors = new ArrayList<>();
+        for (byte[] primaryClass : primaryClasses) {
+            Interpretable primary = new Interpretable(primaryClass);
+            List err = BytecodeValidator.validateBytecode(primary, context.getClassLoader());
+            errors.addAll(err);
+            if (err.isEmpty()) {
+                addClass(primary.getInternalName(), primary, false);
+            }
+        }
 
         if (!errors.isEmpty()) {
             return errors.toArray(new UnsupportedChange[0]);
         }
 
-        addClass(primary.getInternalName(), primary, false);
+        // Process all support classes
         for (byte[] proxyBytes : proxyClasses) {
             Interpretable proxy = new Interpretable(proxyBytes);
             addClass(proxy.getInternalName(), proxy, true);
