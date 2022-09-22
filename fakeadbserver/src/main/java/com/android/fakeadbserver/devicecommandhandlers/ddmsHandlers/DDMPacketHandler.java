@@ -18,6 +18,7 @@ package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers;
 import com.android.annotations.NonNull;
 import com.android.fakeadbserver.ClientState;
 import com.android.fakeadbserver.DeviceState;
+import java.io.IOException;
 import java.io.OutputStream;
 
 public interface DDMPacketHandler {
@@ -37,4 +38,10 @@ public interface DDMPacketHandler {
             @NonNull ClientState client,
             @NonNull DdmPacket packet,
             @NonNull OutputStream oStream);
+
+    default void replyDdmFail(@NonNull OutputStream oStream, int packetId) throws IOException {
+        // Android seems to always reply to invalid DDM commands with an empty JDWP reply packet
+        JdwpPacket packet = new JdwpPacket(packetId, true, (short) 0, new byte[0], 0, 0);
+        packet.write(oStream);
+    }
 }

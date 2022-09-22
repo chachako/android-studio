@@ -34,6 +34,8 @@ public class ClientState {
     // Whether this client is waiting for a debugger connection or not
     private boolean mWaiting;
 
+    private final ClientViewsState mViewsState = new ClientViewsState();
+
     @Nullable private Socket jdwpSocket;
 
     ClientState(
@@ -69,6 +71,11 @@ public class ClientState {
 
     public boolean getIsWaiting() {
         return mWaiting;
+    }
+
+    @NonNull
+    public ClientViewsState getViewsState() {
+        return mViewsState;
     }
 
     public synchronized boolean startJdwpSession(@NonNull Socket socket) {

@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit
  * Implementation of [SharedJdwpSession]
  */
 internal class SharedJdwpSessionImpl(
-    val session: AdbSession,
+    override val session: AdbSession,
     override val pid: Int,
     private val jdwpSession: JdwpSession
 ) : SharedJdwpSession {

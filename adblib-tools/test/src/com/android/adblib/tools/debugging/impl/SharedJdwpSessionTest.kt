@@ -22,8 +22,10 @@ import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.clone
@@ -485,6 +487,26 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
         // Assert: Wait until client process is gone
         yieldUntil { fakeDevice.getClient(10) == null }
+    }
+
+    @Test
+    fun handleInvalidDdmsCommandThrows() = runBlockingWithTimeout {
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+        val session = createSession(fakeAdb)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+
+        // Act
+        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+
+        exceptionRule.expect(DdmsCommandException::class.java)
+        jdwpSession.handleDdmsCaptureView("foo", "bar") {
+            // Never called
+        }
+
+        // Assert: Wait until client process is gone
+        fail("Should not reach")
     }
 
     private suspend fun DdmsChunkView.toBufferedInputChannel(): AdbBufferedInputChannel {

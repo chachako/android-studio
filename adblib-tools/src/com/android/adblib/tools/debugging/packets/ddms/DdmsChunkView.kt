@@ -21,7 +21,7 @@ import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
  * Provides access to various elements of a DDMS "chunk". A DDMS "chunk" always starts with
  * an 8-byte header, followed by variable size buffer of [length] bytes.
  */
-internal interface DdmsChunkView {
+interface DdmsChunkView {
     /**
      * The chunk type, a 4-byte integer, see [DdmsChunkTypes]
      */

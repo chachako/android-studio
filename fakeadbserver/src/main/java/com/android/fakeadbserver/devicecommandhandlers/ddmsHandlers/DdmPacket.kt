@@ -66,8 +66,9 @@ class DdmPacket private constructor(
             val buffer = ByteBuffer.wrap(packet.payload)
             val chunkType = buffer.int
             val chunkLength = buffer.int
-            val ddmPayload = buffer.array()
-            return DdmPacket(packet.id, packet.errorCode, chunkType, ddmPayload)
+            val payloadBytes = ByteArray(buffer.remaining())
+            buffer.get(payloadBytes)
+            return DdmPacket(packet.id, packet.errorCode, chunkType, payloadBytes)
         }
 
         @JvmStatic
@@ -92,6 +93,19 @@ class DdmPacket private constructor(
                 value = value or typeName[i].code.toByte().toInt()
             }
             return value
+        }
+
+        /**
+         * Convert an integer type to a 4-character string.
+         */
+        @JvmStatic
+        fun chunkTypeToString(type: Int): String {
+            val ascii = ByteArray(4)
+            ascii[0] = (type shr 24 and 0xff).toByte()
+            ascii[1] = (type shr 16 and 0xff).toByte()
+            ascii[2] = (type shr 8 and 0xff).toByte()
+            ascii[3] = (type and 0xff).toByte()
+            return String(ascii, Charsets.US_ASCII)
         }
 
         private fun getDdmPayload(chunkType: Int, payload: ByteArray): ByteArray {

@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbSession
+import com.android.adblib.AdbSessionHost
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +44,7 @@ import java.io.EOFException
  *   of receivers coroutine does not close the underlying [socket][AdbChannel].
  */
 interface SharedJdwpSession : AutoCloseable {
+    val session: AdbSession
 
     /**
      * The process ID this [SharedJdwpSession] handles

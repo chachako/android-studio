@@ -15,7 +15,7 @@
  */
 package com.android.adblib.tools.debugging.packets.ddms
 
-internal class DdmsChunkTypes {
+class DdmsChunkTypes {
     @Suppress("SpellCheckingInspection")
     companion object {
         val HELO: Int = chunkTypeFromString("HELO")
@@ -34,9 +34,38 @@ internal class DdmsChunkTypes {
         val EXIT: Int = chunkTypeFromString("EXIT")
 
         /**
+         * List `ViewRootImpl`'s of this process
+         */
+        val VULW: Int = chunkTypeFromString("VULW")
+
+        /**
+         * Operation on view root, first parameter in packet should be one of VURT_* constants
+         */
+        val VURT: Int = chunkTypeFromString("VURT")
+
+        enum class VURTOpCode(val value: Int) {
+            /**
+             * Dump view hierarchy
+             */
+            VURT_DUMP_HIERARCHY(1);
+        }
+
+        /**
+         * Generic View Operation, first parameter in the packet should be one of the VUOP_* constants
+         * below.
+         */
+        val VUOP: Int = chunkTypeFromString("VUOP")
+
+        enum class VUOPOpCode(val value: Int) {
+
+            /** Capture View.  */
+            VUOP_CAPTURE_VIEW(1);
+        }
+
+        /**
          * Convert a 4-character string to a 32-bit chunk type.
          */
-        fun chunkTypeFromString(type: String): Int {
+        private fun chunkTypeFromString(type: String): Int {
             var result = 0
             check(type.length == 4) { "Type name must be 4 letter long" }
             for (i in 0..3) {

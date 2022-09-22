@@ -108,9 +108,9 @@ class MutableJdwpPacket : JdwpPacketView {
     override var payload = AdbBufferedInputChannel.empty()
 
     override fun toString(): String {
-        return "JdwpPacket(length=%d, id=%d, flags=0x%02X, %s)".format(
-            length,
+        return "JdwpPacket(id=%d, length=%d, flags=0x%02X, %s)".format(
             id,
+            length,
             flags,
             if (isReply) {
                 "isReply=true, errorCode=%s[%d]".format(
