@@ -668,17 +668,11 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         if (!component.buildFeatures.androidResources) {
             return
         }
-        val compileRClass: FileCollection = project.files(
-            component.artifacts
-                .get(InternalArtifactType.COMPILE_R_CLASS_JAR)
-        )
-        component.transformManager
-            .addStream(
-                OriginalStream.builder("compile-only-r-class")
-                    .addContentTypes(TransformManager.CONTENT_CLASS)
-                    .addScope(com.android.build.api.transform.QualifiedContent.Scope.PROVIDED_ONLY)
-                    .setFileCollection(compileRClass)
-                    .build()
+        component.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
+            .setInitialContent(
+                ScopedArtifact.CLASSES,
+                component.artifacts,
+                InternalArtifactType.COMPILE_R_CLASS_JAR
             )
     }
 
@@ -910,38 +904,32 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         // only
         if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true ||
             (creationConfig as? ApkCreationConfig)?.dexingCreationConfig?.needsMainDexListForBundle == true) {
-            transformManager.addStream(
-                    OriginalStream.builder("metadata-classes")
-                            .addContentTypes(TransformManager.CONTENT_CLASS)
-                            .addScope(InternalScope.FEATURES)
-                            .setArtifactCollection(
-                                    creationConfig
-                                            .variantDependencies
-                                            .getArtifactCollection(ConsumedConfigType.REVERSE_METADATA_VALUES,
-                                                    ArtifactScope.PROJECT,
-                                                    AndroidArtifacts.ArtifactType.REVERSE_METADATA_CLASSES))
-                            .build())
+            creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.FEATURES)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    creationConfig
+                        .variantDependencies
+                        .getArtifactCollection(ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            AndroidArtifacts.ArtifactType.REVERSE_METADATA_CLASSES).artifactFiles
+                )
         }
 
         // provided only scopes.
-        transformManager.addStream(
-                OriginalStream.builder("provided-classes")
-                        .addContentTypes(TransformManager.CONTENT_CLASS)
-                        .addScope(com.android.build.api.transform.QualifiedContent.Scope.PROVIDED_ONLY)
-                        .setFileCollection(creationConfig.providedOnlyClasspath)
-                        .build())
-        (creationConfig as? TestComponentCreationConfig)?.onTestedVariant { testedVariant ->
-            val testedCodeDeps = getFinalRuntimeClassesJarsFromComponent(
-                testedVariant,
-                ArtifactScope.ALL
+        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
+            .setInitialContent(
+                ScopedArtifact.CLASSES,
+                creationConfig.providedOnlyClasspath
             )
-            transformManager.addStream(
-                    OriginalStream.builder("tested-code-deps")
-                            .addContentTypes(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                            .addScope(com.android.build.api.transform.QualifiedContent.Scope.TESTED_CODE)
-                            .setFileCollection(testedCodeDeps)
-                            .build())
-            null
+        (creationConfig as? TestComponentCreationConfig)?.onTestedVariant { testedVariant ->
+            creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    getFinalRuntimeClassesJarsFromComponent(
+                        testedVariant,
+                        ArtifactScope.ALL
+                    )
+                )
         }
     }
 

@@ -328,19 +328,8 @@ abstract class LibraryAarJarsTask : NonIncrementalTask() {
                     creationConfig.artifacts
                         .get(InternalArtifactType.SHRUNK_CLASSES)
                 } else {
-                    @Suppress("DEPRECATION") // Legacy support
-                    creationConfig.transformManager
-                        .getPipelineOutputAsFileCollection(
-                            { contentTypes, scopes ->
-                                contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                                        && scopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                            },
-                            { contentTypes, scopes ->
-                                (contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                                        && !contentTypes.contains(
-                                    com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES))
-                                        && scopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                            })
+                    creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
                 }
             )
             task.mainScopeClassFiles.disallowChanges()

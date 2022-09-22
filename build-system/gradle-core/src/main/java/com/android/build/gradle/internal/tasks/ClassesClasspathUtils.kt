@@ -197,14 +197,29 @@ class ClassesClasspathUtils(
         }
 
         @Suppress("DEPRECATION") // Legacy support
-        desugaringClasspathClasses =
-            creationConfig.transformManager.getPipelineOutputAsFileCollection(
+        desugaringClasspathClasses = creationConfig.services.fileCollection().also {
+            it.from(creationConfig.transformManager.getPipelineOutputAsFileCollection(
                 { _, scopes ->
                     scopes.contains(QualifiedContent.Scope.TESTED_CODE)
                             || scopes.subtract(desugaringClasspathScopes).isEmpty()
                 },
-                classesFilter
+                classesFilter)
             )
+
+            if (desugaringClasspathScopes.contains(QualifiedContent.Scope.TESTED_CODE)) {
+                it.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            }
+
+            if (desugaringClasspathScopes.contains(QualifiedContent.Scope.PROVIDED_ONLY)) {
+                it.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            }
+        }
 
         @Suppress("DEPRECATION") // Legacy support
         transformManager.consumeStreams(

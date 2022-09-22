@@ -31,5 +31,8 @@ interface InternalScopedArtifacts: ScopedArtifacts {
         SUB_PROJECT,
         EXTERNAL_LIBS,
         LOCAL_DEPS,
+        FEATURES,
+        PROVIDED,
+        TESTED_CODE,
     }
 }

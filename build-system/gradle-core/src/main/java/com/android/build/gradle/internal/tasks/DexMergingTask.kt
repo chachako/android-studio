@@ -18,6 +18,8 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.artifact.MultipleArtifact
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.transform.TransformException
 import com.android.build.api.variant.impl.getFeatureLevel
@@ -311,15 +313,23 @@ abstract class DexMergingTask : NewIncrementalTask() {
                     .setDisallowChanges(getPlatformRules())
 
                 val libraryScopes = setOf(
-                    QualifiedContent.Scope.PROVIDED_ONLY,
                     QualifiedContent.Scope.TESTED_CODE
                 )
-                val libraryClasses = creationConfig.transformManager
-                    .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                        contentTypes.contains(
-                            QualifiedContent.DefaultContentType.CLASSES
-                        ) && libraryScopes.intersect(scopes).isNotEmpty()
-                    }
+                val libraryClasses = creationConfig.services.fileCollection().also {
+                    it.from(creationConfig.transformManager
+                        .getPipelineOutputAsFileCollection { contentTypes, scopes ->
+                            contentTypes.contains(
+                                QualifiedContent.DefaultContentType.CLASSES
+                            ) && libraryScopes.intersect(scopes).isNotEmpty()
+                        }
+                    )
+                    it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES))
+                    it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES))
+                }
+
+
 
                 val bootClasspath = creationConfig.global.bootClasspath
                 task.sharedParams.mainDexListConfig.libraryClasses

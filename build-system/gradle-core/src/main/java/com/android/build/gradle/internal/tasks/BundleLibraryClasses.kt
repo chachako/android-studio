@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.FN_CLASSES_JAR
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.databinding.DataBindingExcludeDelegate
@@ -154,20 +155,6 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
     ) : VariantTaskCreationAction<BundleLibraryClassesDir, ComponentCreationConfig>(
         creationConfig
     ) {
-
-        private val inputs: FileCollection
-
-        init {
-            // Because ordering matters for TransformAPI, we need to fetch classes from the
-            // transform pipeline as soon as this creation action is instantiated.
-            @Suppress("DEPRECATION") // Legacy support
-            inputs =
-                creationConfig.transformManager.getPipelineOutputAsFileCollection { types, scopes ->
-                    types.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                            && scopes.size == 1 && scopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                }
-        }
-
         override val name: String = creationConfig.computeTaskName("bundleLibRuntimeToDir")
 
         override val type: Class<BundleLibraryClassesDir> = BundleLibraryClassesDir::class.java
@@ -181,7 +168,11 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
 
         override fun configure(task: BundleLibraryClassesDir) {
             super.configure(task)
-            task.configure(creationConfig, inputs, false)
+            task.configure(
+                creationConfig,
+                creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES),
+                false)
         }
     }
 }
