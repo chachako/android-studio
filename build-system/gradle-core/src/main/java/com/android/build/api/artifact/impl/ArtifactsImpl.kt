@@ -68,62 +68,61 @@ class ArtifactsImpl(
         return BuiltArtifactsLoaderImpl()
     }
 
-    private val projectScopedArtifacts = ScopedArtifactsImpl(
-        ScopedArtifacts.Scope.PROJECT.name,
-        identifier,
-        project.layout,
-        project::files,
-    ).also {
-        // provide the initial content of the CLASSES Scoped artifact using the deprecated
-        // public artifact type in case some third-party is appending/transforming using those
-        // types.
-        it.setInitialContent(
-            ScopedArtifact.CLASSES,
-            project.files().also { configurableFileCollection ->
-                @Suppress("DEPRECATION")
-                configurableFileCollection.from(
-                    getAll(MultipleArtifact.ALL_CLASSES_DIRS),
-                    getAll(MultipleArtifact.ALL_CLASSES_JARS),
-                )
-            }
-        )
-        it.setInitialContent(
-            ScopedArtifact.JAVA_RES,
-            project.files().also { configurableFileCollection ->
-                configurableFileCollection.from(get(InternalArtifactType.MERGED_JAVA_RES))
-            }
-        )
+    private val publicScopedArtifacts : Map<ScopedArtifacts.Scope, ScopedArtifactsImpl>
+    private val internalScopedArtifacts : Map<InternalScopedArtifacts.InternalScope, ScopedArtifactsImpl>
+
+    init {
+        publicScopedArtifacts = ScopedArtifacts.Scope.values().associateWith {
+            ScopedArtifactsImpl(
+                it.name,
+                identifier,
+                project.layout,
+                project::files
+            )
+        }
+
+        internalScopedArtifacts = InternalScopedArtifacts.InternalScope.values().associateWith {
+            ScopedArtifactsImpl(
+                it.name,
+                identifier,
+                project.layout,
+                project::files
+            )
+        }
+
+        publicScopedArtifacts[ScopedArtifacts.Scope.PROJECT]?.let {
+            // provide the initial content of the CLASSES Scoped artifact using the deprecated
+            // public artifact type in case some third-party is appending/transforming using those
+            // types.
+            it.setInitialContent(
+                ScopedArtifact.CLASSES,
+                project.files().also { configurableFileCollection ->
+                    @Suppress("DEPRECATION")
+                    configurableFileCollection.from(
+                        getAll(MultipleArtifact.ALL_CLASSES_DIRS),
+                        getAll(MultipleArtifact.ALL_CLASSES_JARS),
+                    )
+                }
+            )
+            it.setInitialContent(
+                ScopedArtifact.JAVA_RES,
+                project.files().also { configurableFileCollection ->
+                    configurableFileCollection.from(get(InternalArtifactType.MERGED_JAVA_RES))
+                }
+            )
+        }
     }
 
-    private val allScopedArtifacts = ScopedArtifactsImpl(
-        ScopedArtifacts.Scope.ALL.name,
-        identifier,
-        project.layout,
-        project::files,
-    )
-
-    private val externalLibsScopedArtifacts = ScopedArtifactsImpl(
-        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS.name,
-        identifier,
-        project.layout,
-        project::files
-    )
-
     override fun forScope(scope: ScopedArtifacts.Scope): ScopedArtifactsImpl =
-        when(scope) {
-            ScopedArtifacts.Scope.PROJECT -> projectScopedArtifacts
-            ScopedArtifacts.Scope.ALL -> allScopedArtifacts
-            else -> throw IllegalArgumentException("Not implemented yet !")
-        }
+        publicScopedArtifacts[scope] ?:
+            throw IllegalArgumentException("${scope.name} is not implemented yet !")
 
     /**
      * Returns a [ScopedArtifactsImpl] for internal scope defined by the passed [scope] parameter.
      */
     fun forScope(scope: InternalScopedArtifacts.InternalScope): ScopedArtifactsImpl =
-        when(scope) {
-            InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS -> externalLibsScopedArtifacts
-            else -> throw java.lang.IllegalArgumentException("${scope.name} not supported")
-        }
+        internalScopedArtifacts[scope]
+            ?: throw java.lang.IllegalArgumentException("${scope.name} not supported")
 
     override fun <FILE_TYPE : FileSystemLocation> get(
         type: SingleArtifact<FILE_TYPE>
