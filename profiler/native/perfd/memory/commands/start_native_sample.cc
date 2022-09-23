@@ -16,10 +16,11 @@
 #include "start_native_sample.h"
 
 #include "proto/memory_data.pb.h"
+#include "proto/trace.pb.h"
 
 using grpc::Status;
 using profiler::proto::Event;
-using profiler::proto::MemoryNativeTrackingData;
+using profiler::proto::TraceStartStatus;
 using std::string;
 
 namespace profiler {
@@ -35,16 +36,17 @@ Status StartNativeSample::ExecuteOn(Daemon* daemon) {
   std::vector<Event> events_to_send;
   Event status_event;
   status_event.set_pid(command().pid());
-  status_event.set_kind(Event::MEMORY_NATIVE_SAMPLE_STATUS);
+  status_event.set_kind(Event::TRACE_STATUS);
   status_event.set_command_id(command().command_id());
   status_event.set_is_ended(true);
   status_event.set_group_id(start_timestamp);
   status_event.set_timestamp(start_timestamp);
 
-  auto* status = status_event.mutable_memory_native_tracking_status();
+  auto* status =
+      status_event.mutable_trace_status()->mutable_trace_start_status();
   if (sample_started) {
-    status->set_status(MemoryNativeTrackingData::SUCCESS);
-    status->set_start_time(start_timestamp);
+    status->set_status(TraceStartStatus::SUCCESS);
+    status->set_start_time_ns(start_timestamp);
 
     Event start_event;
     start_event.set_pid(command().pid());
@@ -58,8 +60,8 @@ Status StartNativeSample::ExecuteOn(Daemon* daemon) {
     events_to_send.push_back(start_event);
 
   } else {
-    status->set_status(MemoryNativeTrackingData::FAILURE);
-    status->set_failure_message(error_message);
+    status->set_status(TraceStartStatus::FAILURE);
+    status->set_error_message(error_message);
   }
   events_to_send.push_back(status_event);
   // For the case of startup tracing, the command could be sent before 

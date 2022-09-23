@@ -39,7 +39,7 @@ class StartNativeSample : public CommandT<StartNativeSample> {
   }
 
   // Starts recording a heapprofd sample. This generates a single event.
-  // |MEMORY_NATIVE_SAMPLE_STATUS| event indicating if the recording has started
+  // |TRACE_STATUS| event indicating if the recording has started
   // or an error was generated. If an error occurs the |failure_message|  field
   // is populated.
   virtual grpc::Status ExecuteOn(Daemon* daemon) override;

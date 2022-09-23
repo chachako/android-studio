@@ -44,10 +44,12 @@ message Event {
 
     // Profilers Prefix = 100
     // Session is a profiler only concept.
-    // Trace status is shared across all profiler tracing status events.
     // group_id: session id
     SESSION = 101;
-    // group_id:: trace id (populated only if the trace record exists)
+    // Trace status is shared across all profiler tracing status events.
+    // group_id (cpu): trace id (populated only if the trace record exists)
+    // group_id (mem): capture id (start timestamp)
+    // TODO: Unify id to use trace id
     TRACE_STATUS = 102;
 
     // Network Profiler Prefix = 200
@@ -97,8 +99,6 @@ message Event {
     MEMORY_ALLOC_STATS = 411;
     // group_id: capture id (start timestamp)
     MEMORY_NATIVE_SAMPLE_CAPTURE = 412;
-    // group_id: capture id (start timestamp)
-    MEMORY_NATIVE_SAMPLE_STATUS =  413;
 
     // Energy Profiler Prefix = 500
     // no specified group id.
@@ -210,8 +210,7 @@ message Event {
     MemoryAllocEventsData memory_alloc_events = 409;
     MemoryJniRefData memory_jni_ref_events = 410;
     MemoryAllocStatsData memory_alloc_Stats = 411;
-    MemoryNativeTrackingData memory_native_tracking_status = 412;
-    MemoryNativeSampleData memory_native_sample = 413;
+    MemoryNativeSampleData memory_native_sample = 412;
 
     // Energy Profiler Prefix = 500
     // Energy consumption calculated from CPU, network and location activities.

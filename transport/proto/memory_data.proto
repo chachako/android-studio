@@ -403,31 +403,6 @@ message AllocationEvent {
   }
 }
 
-// Return status for the |START_NATIVE_HEAP_SAMPLE| and |STOP_NATIVE_HEAP_SAMPLE|
-// command. Caller of the command should query this status message using the
-// command id to check if the command was successful.
-message MemoryNativeTrackingData {
-  enum Status {
-    UNSPECIFIED = 0;
-    SUCCESS = 1;
-    // A heap dump is already in progress.
-    IN_PROGRESS = 2;
-    // Triggered when a profiling has stopped.
-    NOT_RECORDING = 3;
-    // If start or stop recording fails this status is set
-    // along with a |failure_message|.
-    FAILURE = 4;
-  }
-  Status status = 1;
-  // If |SUCCESS|, the start time of the heapprofd record,
-  // which is the id that can be used to retrieve the recording.
-  int64 start_time = 2;
-
-  // If |FAILURE| the failure message field will be populated
-  // informing the user of what the error was.
-  string failure_message = 3;
-}
-
 // Returns the capture information for |START_NATIVE_HEAP_SAMPLE|.
 // This even gets generated on the |STOP_NATIVE_HEAP_SAMPLE|. The
 // |start_time| is the trace_id that can be used with getBytes to

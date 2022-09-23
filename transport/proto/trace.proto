@@ -28,6 +28,8 @@ message TraceStartStatus {
 
   Status status = 1;
   string error_message = 2;
+  // The time at which the trace was started (in nanoseconds).
+  int64 start_time_ns = 3;
 }
 
 message TraceStopStatus {
@@ -47,11 +49,13 @@ message TraceStopStatus {
     CANNOT_COPY_FILE = 12;
     CANNOT_FORM_FILE = 13;
     CANNOT_READ_FILE = 14;
+    // Generic failure status for non-defined failures.
+    OTHER_FAILURE = 15;
   }
 
   Status status = 1;
   string error_message = 2;
-  // The time taken to stop the trace;
+  // The time taken (i.e. elapsed duration) to stop the trace (in nanoseconds).
   int64 stopping_time_ns = 3;
 }
 

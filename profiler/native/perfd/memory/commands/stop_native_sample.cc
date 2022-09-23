@@ -16,11 +16,12 @@
 #include "stop_native_sample.h"
 
 #include "proto/memory_data.pb.h"
+#include "proto/trace.pb.h"
 
 using grpc::Status;
 using profiler::proto::Event;
 using profiler::proto::MemoryHeapDumpData;
-using profiler::proto::MemoryNativeTrackingData;
+using profiler::proto::TraceStopStatus;
 using std::string;
 
 namespace profiler {
@@ -36,18 +37,18 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
 
   Event status_event;
   status_event.set_pid(command().pid());
-  status_event.set_kind(Event::MEMORY_NATIVE_SAMPLE_STATUS);
+  status_event.set_kind(Event::TRACE_STATUS);
   status_event.set_command_id(command().command_id());
   status_event.set_is_ended(true);
   status_event.set_group_id(config.start_time());
   status_event.set_timestamp(end_timestamp);
-  auto* status = status_event.mutable_memory_native_tracking_status();
+  auto* status =
+      status_event.mutable_trace_status()->mutable_trace_stop_status();
   if (sampling_stopped) {
-    status->set_status(MemoryNativeTrackingData::NOT_RECORDING);
-    status->set_start_time(config.start_time());
+    status->set_status(TraceStopStatus::SUCCESS);
   } else {
-    status->set_status(MemoryNativeTrackingData::FAILURE);
-    status->set_failure_message(error_message);
+    status->set_status(TraceStopStatus::OTHER_FAILURE);
+    status->set_error_message(error_message);
   }
   daemon->buffer()->Add(status_event);
 

@@ -35,7 +35,8 @@
 
 using std::string;
 
-using profiler::proto::MemoryNativeTrackingData;
+using profiler::proto::TraceStartStatus;
+using profiler::proto::TraceStopStatus;
 using ::testing::_;
 using ::testing::Return;
 
@@ -147,12 +148,13 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
   EXPECT_EQ(events_[1].memory_native_sample().start_time(), 10);
   EXPECT_EQ(events_[1].memory_native_sample().end_time(), LLONG_MAX);
 
-  EXPECT_EQ(events_[2].kind(), proto::Event::MEMORY_NATIVE_SAMPLE_STATUS);
-  EXPECT_TRUE(events_[2].has_memory_native_tracking_status());
-  EXPECT_EQ(events_[2].memory_native_tracking_status().status(),
-            MemoryNativeTrackingData::SUCCESS);
-  EXPECT_EQ(events_[2].memory_native_tracking_status().start_time(), 10);
-  EXPECT_EQ(events_[2].memory_native_tracking_status().failure_message(), "");
+  EXPECT_EQ(events_[2].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[2].has_trace_status());
+  EXPECT_TRUE(events_[2].trace_status().has_trace_start_status());
+  EXPECT_EQ(events_[2].trace_status().trace_start_status().status(),
+            TraceStartStatus::SUCCESS);
+  EXPECT_EQ(events_[2].trace_status().trace_start_status().start_time_ns(), 10);
+  EXPECT_EQ(events_[2].trace_status().trace_start_status().error_message(), "");
 
   // Execute the stop command
   clock_.SetCurrentTime(20);
@@ -167,12 +169,12 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
                             [this] { return events_.size() == 5; }));
   }
 
-  EXPECT_EQ(events_[3].kind(), proto::Event::MEMORY_NATIVE_SAMPLE_STATUS);
-  EXPECT_TRUE(events_[3].has_memory_native_tracking_status());
-  EXPECT_EQ(events_[3].memory_native_tracking_status().status(),
-            MemoryNativeTrackingData::NOT_RECORDING);
-  EXPECT_EQ(events_[3].memory_native_tracking_status().start_time(), 10);
-  EXPECT_EQ(events_[3].memory_native_tracking_status().failure_message(), "");
+  EXPECT_EQ(events_[3].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[3].has_trace_status());
+  EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
+  EXPECT_EQ(events_[3].trace_status().trace_stop_status().status(),
+            TraceStopStatus::SUCCESS);
+  EXPECT_EQ(events_[3].trace_status().trace_stop_status().error_message(), "");
   EXPECT_TRUE(events_[3].is_ended());
 
   EXPECT_EQ(events_[4].kind(), proto::Event::MEMORY_NATIVE_SAMPLE_CAPTURE);
