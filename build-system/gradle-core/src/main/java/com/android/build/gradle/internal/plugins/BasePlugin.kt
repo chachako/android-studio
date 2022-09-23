@@ -75,6 +75,7 @@ import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.ClassesHierarchyBuildService
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.DslServicesImpl
+import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
 import com.android.build.gradle.internal.services.LintClassLoaderBuildService
 import com.android.build.gradle.internal.services.StringCachingBuildService
 import com.android.build.gradle.internal.services.SymbolTableBuildService
@@ -393,6 +394,8 @@ abstract class BasePlugin<
         LintFixBuildService.RegistrationAction(project).execute()
         LintClassLoaderBuildService.RegistrationAction(project).execute()
         JacocoInstrumentationService.RegistrationAction(project).execute()
+
+        FakeDependencyJarBuildService.RegistrationAction(project).execute()
 
         projectOptions
             .allOptions

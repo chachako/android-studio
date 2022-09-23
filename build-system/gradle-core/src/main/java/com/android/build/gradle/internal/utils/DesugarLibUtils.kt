@@ -23,7 +23,9 @@ import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.dependency.ATTR_ENABLE_DESUGARING
 import com.android.build.gradle.internal.dependency.GenericTransformParameters
 import com.android.build.gradle.internal.dependency.VariantDependencies.Companion.CONFIG_NAME_CORE_LIBRARY_DESUGARING
+import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
 import com.android.build.gradle.internal.services.TaskCreationServices
+import com.android.build.gradle.internal.services.getBuildService
 import com.android.builder.dexing.D8DesugaredMethodsGenerator
 import com.android.builder.packaging.JarFlinger
 import com.android.builder.utils.SynchronizedFile
@@ -61,17 +63,20 @@ import java.util.zip.ZipInputStream
 private const val DESUGAR_LIB_CONFIG_FILE = "desugar.json"
 private const val ANDROID_SUBDIR = "android"
 private const val FAKE_DEPENDENCY_JAR = "FakeDependency.jar"
+
 // The output of L8 invocation, which is the dex output of desugar lib jar
 const val DESUGAR_LIB_DEX = "_internal-desugar-lib-dex"
+
 // The output of DesugarLibConfigExtractor which extracts the desugar config json file from
 // desugar lib configuration jar
 const val DESUGAR_LIB_CONFIG = "_internal-desugar-lib-config"
 private const val DESUGAR_LIB_LINT = "_internal-desugar-lib-lint"
 private const val D8_DESUGAR_METHODS = "_internal-d8-desugar-methods"
 private val ATTR_LINT_MIN_SDK: Attribute<String> = Attribute.of("lint-min-sdk", String::class.java)
-private val ATTR_LINT_COMPILE_SDK: Attribute<String> = Attribute.of("lint-compile-sdk", String::class.java)
+private val ATTR_LINT_COMPILE_SDK: Attribute<String> =
+    Attribute.of("lint-compile-sdk", String::class.java)
 private val ATTR_ENABLE_CORE_LIBRARY_DESUGARING: Attribute<String> =
-        Attribute.of("enable-core-library-desugaring", String::class.java)
+    Attribute.of("enable-core-library-desugaring", String::class.java)
 
 /**
  * Returns a file collection which contains desugar lib jars
@@ -82,8 +87,10 @@ fun getDesugarLibJarFromMaven(services: TaskCreationServices): FileCollection {
 }
 
 /** Implementation of provider holding JSON file value. */
-abstract class DesugarConfigJson: ValueSource<String, DesugarConfigJson.Parameters> {
-    interface Parameters: ValueSourceParameters {
+abstract class DesugarConfigJson : ValueSource<String, DesugarConfigJson.Parameters> {
+
+    interface Parameters : ValueSourceParameters {
+
         val desugarJson: ConfigurableFileCollection
     }
 
@@ -127,6 +134,11 @@ fun getDesugaredMethods(
     compileSdkVersion: String?,
     bootclasspath: Provider<List<RegularFile>>
 ): FileCollection {
+
+    val fakeJarService = getBuildService(
+        services.buildServiceRegistry, FakeDependencyJarBuildService::class.java
+    ).get()
+
     val desugaredMethodsFiles = services.fileCollection()
 
     val coreLibDesugarConfig =
@@ -136,30 +148,25 @@ fun getDesugaredMethods(
         val compileSdk = AndroidTargetHash.getPlatformVersion(compileSdkVersion)!!.featureLevel
         registerDesugarLibLintTransform(services, minSdk, compileSdk)
         desugaredMethodsFiles.from(
-            getDesugarLibLintFromTransform(coreLibDesugarConfig, minSdk, compileSdk))
+            getDesugarLibLintFromTransform(coreLibDesugarConfig, minSdk, compileSdk)
+        )
     }
 
-    return SynchronizedFile.getInstanceWithMultiProcessLocking(services.projectInfo.gradleUserHomeDir.resolve(ANDROID_SUBDIR)).write {
-        val fakeJar = it.resolve(FAKE_DEPENDENCY_JAR)
-        if (!fakeJar.exists()) {
-            fakeJar.parentFile.mkdirs()
-            JarFlinger(fakeJar.toPath()).use {}
-        }
+    val fakeJar = fakeJarService.lazyCachedFakeJar
+    val fakeDependency = services.dependencies.create(services.files(fakeJar))
+    val adhocConfiguration =services.configurations.detachedConfiguration(fakeDependency)
 
-        val fakeDependency = services.dependencies.create(services.files(fakeJar))
-        val adhocConfiguration = services.configurations.detachedConfiguration(fakeDependency)
+    registerD8BackportedMethodsTransform(
+        services,
+        coreLibDesugar,
+        services.files(bootclasspath),
+        Version.getVersionString()
+    )
+    desugaredMethodsFiles.fromDisallowChanges(
+        getD8DesugarMethodFileFromTransform(adhocConfiguration, coreLibDesugar)
+    )
+    return desugaredMethodsFiles
 
-        registerD8BackportedMethodsTransform(
-            services,
-            coreLibDesugar,
-            services.files(bootclasspath),
-            Version.getVersionString()
-        )
-        desugaredMethodsFiles.fromDisallowChanges(
-            getD8DesugarMethodFileFromTransform(adhocConfiguration, coreLibDesugar)
-        )
-        return@write desugaredMethodsFiles
-    }
 }
 
 /**
@@ -171,9 +178,11 @@ fun getDesugaredMethods(
 private fun getDesugarLibConfiguration(services: TaskCreationServices): Configuration {
     val configuration = services.configurations.findByName(CONFIG_NAME_CORE_LIBRARY_DESUGARING)!!
     if (configuration.dependencies.isEmpty()) {
-        throw RuntimeException("$CONFIG_NAME_CORE_LIBRARY_DESUGARING configuration contains no " +
-                "dependencies. If you intend to enable core library desugaring, please add " +
-                "dependencies to $CONFIG_NAME_CORE_LIBRARY_DESUGARING configuration.")
+        throw RuntimeException(
+            "$CONFIG_NAME_CORE_LIBRARY_DESUGARING configuration contains no " +
+                    "dependencies. If you intend to enable core library desugaring, please add " +
+                    "dependencies to $CONFIG_NAME_CORE_LIBRARY_DESUGARING configuration."
+        )
     }
     return configuration
 }
@@ -206,7 +215,11 @@ private fun registerDesugarLibConfigTransform(services: TaskCreationServices) {
     }
 }
 
-private fun registerDesugarLibLintTransform(services: TaskCreationServices, minSdkVersion: Int, compileSdkVersion: Int) {
+private fun registerDesugarLibLintTransform(
+    services: TaskCreationServices,
+    minSdkVersion: Int,
+    compileSdkVersion: Int
+) {
     services.dependencies.registerTransform(DesugarLibLintExtractor::class.java) { spec ->
         spec.parameters { parameters ->
             parameters.minSdkVersion.set(minSdkVersion)
@@ -260,7 +273,10 @@ private fun getDesugarLibLintFromTransform(
     }.artifacts.artifactFiles
 }
 
-private fun getD8DesugarMethodFileFromTransform(configuration: Configuration, coreLibDesugar: Boolean): FileCollection {
+private fun getD8DesugarMethodFileFromTransform(
+    configuration: Configuration,
+    coreLibDesugar: Boolean
+): FileCollection {
     return configuration.incoming.artifactView { configuration ->
         configuration.attributes {
             it.attribute(ArtifactAttributes.ARTIFACT_FORMAT, D8_DESUGAR_METHODS)
@@ -274,6 +290,7 @@ private fun getD8DesugarMethodFileFromTransform(configuration: Configuration, co
  */
 @CacheableTransform
 abstract class DesugarLibConfigExtractor : TransformAction<TransformParameters.None> {
+
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:InputArtifact
     abstract val inputArtifact: Provider<FileSystemLocation>
@@ -281,10 +298,11 @@ abstract class DesugarLibConfigExtractor : TransformAction<TransformParameters.N
     override fun transform(outputs: TransformOutputs) {
         val inputFile = inputArtifact.get().asFile
         ZipInputStream(inputFile.inputStream().buffered()).use { zipInputStream ->
-            while(true) {
+            while (true) {
                 val entry = zipInputStream.nextEntry ?: break
                 if (entry.name.endsWith(DESUGAR_LIB_CONFIG_FILE)) {
-                    val outputFile = outputs.file(inputFile.nameWithoutExtension + "-$DESUGAR_LIB_CONFIG_FILE")
+                    val outputFile =
+                        outputs.file(inputFile.nameWithoutExtension + "-$DESUGAR_LIB_CONFIG_FILE")
                     Files.newOutputStream(outputFile.toPath()).buffered().use { output ->
                         ByteStreams.copy(zipInputStream, output)
                     }
@@ -295,14 +313,15 @@ abstract class DesugarLibConfigExtractor : TransformAction<TransformParameters.N
     }
 }
 
-
 /**
  * Extract the specific lint file with desugared APIs based on minSdkVersion & compileSdkVersion
  * from desugar lib configuration jar.
  */
 @CacheableTransform
 abstract class DesugarLibLintExtractor : TransformAction<DesugarLibLintExtractor.Parameters> {
-    interface Parameters: GenericTransformParameters {
+
+    interface Parameters : GenericTransformParameters {
+
         @get:Input
         val minSdkVersion: Property<Int>
 
@@ -329,10 +348,11 @@ abstract class DesugarLibLintExtractor : TransformAction<DesugarLibLintExtractor
             }
 
             ZipInputStream(inputFile.inputStream().buffered()).use { zipInputStream ->
-                while(true) {
+                while (true) {
                     val entry = zipInputStream.nextEntry ?: break
                     if (entry.name.endsWith(pattern)) {
-                        val outputFile = outputs.file(inputFile.nameWithoutExtension + "-desugar-lint.txt")
+                        val outputFile =
+                            outputs.file(inputFile.nameWithoutExtension + "-desugar-lint.txt")
                         Files.newOutputStream(outputFile.toPath()).buffered().use { output ->
                             ByteStreams.copy(zipInputStream, output)
                         }
@@ -351,7 +371,9 @@ abstract class DesugarLibLintExtractor : TransformAction<DesugarLibLintExtractor
 @CacheableTransform
 abstract class D8BackportedMethodsGenerator
     : TransformAction<D8BackportedMethodsGenerator.Parameters> {
-    interface Parameters: GenericTransformParameters {
+
+    interface Parameters : GenericTransformParameters {
+
         @get:Input
         val d8Version: Property<String>
 
@@ -374,7 +396,7 @@ abstract class D8BackportedMethodsGenerator
             D8DesugaredMethodsGenerator.generate(
                 parameters.coreLibDesugarConfig.orNull,
                 parameters.bootclasspath.files
-            ).forEach { method->
+            ).forEach { method ->
                 it.println(method)
             }
         }
