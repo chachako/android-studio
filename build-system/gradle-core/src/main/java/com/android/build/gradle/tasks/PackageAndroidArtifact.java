@@ -1398,21 +1398,13 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
         }
 
         @NonNull
-        private FileCollection getJavaResources(@NonNull ApkCreationConfig creationConfig) {
+        private Provider<RegularFile> getJavaResources(@NonNull ApkCreationConfig creationConfig) {
             ArtifactsImpl artifacts = creationConfig.getArtifacts();
 
             if (creationConfig.getOptimizationCreationConfig().getMinifiedEnabled()) {
-                Provider<RegularFile> mergedJavaResProvider =
-                        artifacts.get(SHRUNK_JAVA_RES.INSTANCE);
-                return creationConfig.getServices().fileCollection(mergedJavaResProvider);
-            } else if (creationConfig.getNeedsMergedJavaResStream()) {
-                return creationConfig
-                        .getTransformManager()
-                        .getPipelineOutputAsFileCollection(StreamFilter.RESOURCES);
+                return artifacts.get(SHRUNK_JAVA_RES.INSTANCE);
             } else {
-                Provider<RegularFile> mergedJavaResProvider =
-                        artifacts.get(MERGED_JAVA_RES.INSTANCE);
-                return creationConfig.getServices().fileCollection(mergedJavaResProvider);
+                return artifacts.get(MERGED_JAVA_RES.INSTANCE);
             }
         }
 

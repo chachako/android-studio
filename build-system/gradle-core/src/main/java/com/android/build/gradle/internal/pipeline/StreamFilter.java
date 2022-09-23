@@ -29,12 +29,6 @@ public interface StreamFilter {
             @NonNull Set<QualifiedContent.ContentType> types,
             @NonNull Set<? super QualifiedContent.Scope> scopes);
 
-    StreamFilter RESOURCES =
-            (types, scopes) ->
-                    types.contains(QualifiedContent.DefaultContentType.RESOURCES)
-                            && !scopes.contains(QualifiedContent.Scope.PROVIDED_ONLY)
-                            && !scopes.contains(QualifiedContent.Scope.TESTED_CODE);
-
     StreamFilter PROJECT_RESOURCES =
             (types, scopes) ->
                     types.contains(QualifiedContent.DefaultContentType.RESOURCES)

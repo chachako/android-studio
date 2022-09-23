@@ -31,9 +31,6 @@ interface ConsumableCreationConfig: ComponentCreationConfig {
 
     val optimizationCreationConfig: OptimizationCreationConfig
 
-    /** Returns whether we need to create a stream from the merged java resources */
-    val needsMergedJavaResStream: Boolean
-
     val isAndroidTestCoverageEnabled: Boolean
 
     /**

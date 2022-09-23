@@ -17,10 +17,8 @@
 package com.android.build.gradle.internal.pipeline;
 
 import static com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES;
-import static com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES;
 
 import com.android.annotations.NonNull;
-import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.QualifiedContent.ContentType;
 import com.android.build.api.transform.QualifiedContent.Scope;
 import com.android.build.api.transform.QualifiedContent.ScopeType;
@@ -29,7 +27,6 @@ import com.android.build.gradle.internal.InternalScope;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.tasks.factory.TaskFactory;
 import com.android.builder.errors.IssueReporter;
-import com.android.builder.errors.IssueReporter.Type;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -53,7 +50,6 @@ import org.gradle.api.tasks.TaskProvider;
 public class TransformManager extends FilterableStreamCollection {
 
     public static final Set<ContentType> CONTENT_CLASS = ImmutableSet.of(CLASSES);
-    public static final Set<ContentType> CONTENT_RESOURCES = ImmutableSet.of(RESOURCES);
     public static final Set<ScopeType> SCOPE_FULL_PROJECT =
             ImmutableSet.of(Scope.PROJECT, Scope.SUB_PROJECTS, Scope.EXTERNAL_LIBRARIES);
     public static final Set<ScopeType> SCOPE_FULL_WITH_FEATURES =

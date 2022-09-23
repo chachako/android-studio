@@ -329,13 +329,6 @@ open class AndroidTestImpl @Inject constructor(
 
     override val advancedProfilingTransforms: List<String> = emptyList()
 
-    override val needsMergedJavaResStream: Boolean
-        get() {
-            // We need to create a stream from the merged java resources if we're in a library module,
-            // or if we're in an app/feature module which uses the transform pipeline.
-            return (dslInfo.componentType.isAar || optimizationCreationConfig.minifiedEnabled)
-        }
-
     override val isAndroidTestCoverageEnabled: Boolean
         get() = dslInfo.isAndroidTestCoverageEnabled
 

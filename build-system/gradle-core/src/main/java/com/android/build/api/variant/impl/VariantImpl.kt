@@ -274,13 +274,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     override val isAndroidTestCoverageEnabled: Boolean
         get() = (this as? HasAndroidTest)?.androidTest?.isAndroidTestCoverageEnabled == true
 
-    override val needsMergedJavaResStream: Boolean
-        get() {
-            // We need to create a stream from the merged java resources if we're in a library module,
-            // or if we're in an app/feature module which uses the transform pipeline.
-            return (dslInfo.componentType.isAar || optimizationCreationConfig.minifiedEnabled)
-        }
-
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = if (this is ApkCreationConfig) {
             dexingCreationConfig.isCoreLibraryDesugaringEnabled

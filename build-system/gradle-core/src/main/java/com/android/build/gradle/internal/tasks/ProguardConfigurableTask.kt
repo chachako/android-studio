@@ -289,10 +289,29 @@ abstract class ProguardConfigurableTask(
                     ).getFinalArtifacts(ScopedArtifact.CLASSES))
                 }
             }
-
-            @Suppress("DEPRECATION") // Legacy support
-            resources = transformManager
-                .getPipelineOutputAsFileCollection(createStreamFilter(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES, inputScopes))
+            resources = creationConfig.services.fileCollection().also {
+                if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        Scope.PROJECT
+                    ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
+                }
+                if (inputScopes.contains(InternalScope.LOCAL_DEPS)) {
+                    it.from(
+                        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                            .getFinalArtifacts(ScopedArtifact.JAVA_RES)
+                    )
+                }
+                if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
+                    ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
+                }
+                if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
+                    it.from(creationConfig.artifacts.forScope(
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                    ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
+                }
+            }
 
             // Consume non referenced inputs
             @Suppress("DEPRECATION") // Legacy support

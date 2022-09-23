@@ -892,17 +892,16 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         // same for the java resources, if SUB_PROJECTS isn't in the set of java res merging scopes.
         if (!getJavaResMergingScopes(creationConfig).contains(
                 com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
-            transformManager.addStream(
-                    OriginalStream.builder("sub-projects-java-res")
-                            .addContentTypes(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES)
-                            .addScope(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)
-                            .setArtifactCollection(
-                                    creationConfig
-                                            .variantDependencies
-                                            .getArtifactCollection(ConsumedConfigType.RUNTIME_CLASSPATH,
-                                                    ArtifactScope.PROJECT,
-                                                    AndroidArtifacts.ArtifactType.JAVA_RES))
-                            .build())
+            creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                .setInitialContent(
+                    ScopedArtifact.JAVA_RES,
+                    creationConfig
+                        .variantDependencies
+                        .getArtifactCollection(ConsumedConfigType.RUNTIME_CLASSPATH,
+                            ArtifactScope.PROJECT,
+                            AndroidArtifacts.ArtifactType.JAVA_RES).artifactFiles
+                )
+
         }
 
         // if consumesFeatureJars, add streams of classes from features or
@@ -1337,17 +1336,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         @Suppress("DEPRECATION") // Legacy support
         val mergeScopes = getJavaResMergingScopes(creationConfig)
         taskFactory.register(MergeJavaResourceTask.CreationAction(mergeScopes, creationConfig))
-
-        // also add a new merged java res stream if needed.
-        if (creationConfig.needsMergedJavaResStream) {
-            val mergedJavaResProvider = creationConfig.artifacts.get(MERGED_JAVA_RES)
-            transformManager.addStream(
-                    OriginalStream.builder("merged-java-res")
-                            .addContentTypes(TransformManager.CONTENT_RESOURCES)
-                            .addScopes(mergeScopes)
-                            .setFileCollection(project.layout.files(mergedJavaResProvider))
-                            .build())
-        }
     }
 
     fun createAidlTask(creationConfig: ConsumableCreationConfig) {
@@ -2139,16 +2127,19 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
             .initialScopedContent
             .run {
                 from(
-                    creationConfig
-                        .transformManager
-                        .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                            contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES)
-                                    && scopes.intersect(TransformManager.SCOPE_FULL_PROJECT_WITH_LOCAL_JARS)
-                                .isNotEmpty()
-                        }
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
+                )
+                from(
+                    creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
                 )
                 from(
                     creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
+                )
+                from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
                         .getFinalArtifacts(ScopedArtifact.JAVA_RES)
                 )
             }

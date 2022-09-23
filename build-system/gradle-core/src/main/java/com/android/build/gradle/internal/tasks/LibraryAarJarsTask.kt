@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.SdkConstants
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.databinding.DataBindingExcludeDelegate
@@ -346,15 +347,16 @@ abstract class LibraryAarJarsTask : NonIncrementalTask() {
 
             task.mainScopeResourceFiles.from(
                 if (minifyEnabled) {
-                    creationConfig.artifacts
-                        .get(InternalArtifactType.SHRUNK_JAVA_RES)
+                    creationConfig.artifacts.get(InternalArtifactType.SHRUNK_JAVA_RES)
                 } else {
-                    @Suppress("DEPRECATION") // Legacy support
-                    creationConfig.transformManager
-                        .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                            contentTypes.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.RESOURCES)
-                                    && scopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                        }
+                    // this is really brittle. we should really have a pipeline of JAVA_RES that
+                    // will get populated and transformed into merged and shrunk potentially and
+                    // avoid this sort of branching.
+                    if (creationConfig.componentType.isTestFixturesComponent) {
+                        creationConfig.artifacts.get(InternalArtifactType.JAVA_RES)
+                    } else {
+                        creationConfig.artifacts.get(InternalArtifactType.MERGED_JAVA_RES)
+                    }
                 }
             )
             task.mainScopeResourceFiles.disallowChanges()

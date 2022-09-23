@@ -364,16 +364,9 @@ abstract class PerModuleBundleTask @Inject constructor(objects: ObjectFactory) :
             )
             task.javaResFiles.from(
                 if (creationConfig.optimizationCreationConfig.minifiedEnabled) {
-                    creationConfig.services.fileCollection(
-                        artifacts.get(InternalArtifactType.SHRUNK_JAVA_RES)
-                    )
-                } else if (creationConfig.needsMergedJavaResStream) {
-                    creationConfig.transformManager
-                        .getPipelineOutputAsFileCollection(StreamFilter.RESOURCES)
+                    artifacts.get(InternalArtifactType.SHRUNK_JAVA_RES)
                 } else {
-                    creationConfig.services.fileCollection(
-                        artifacts.get(InternalArtifactType.MERGED_JAVA_RES)
-                    )
+                    artifacts.get(InternalArtifactType.MERGED_JAVA_RES)
                 }
             )
             task.nativeLibsFiles.from(getNativeLibsFiles(creationConfig))
