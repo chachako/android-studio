@@ -22,31 +22,37 @@ test --jvmopt='-XX:ErrorFile=$TEST_UNDECLARED_OUTPUTS_DIR/jvm_crash.log'
 test --verbose_failures
 
 # TODO(b/242203555) cleanup opens/exports that was added for JDK17 migration
-test:jdk17 --jvmopt='--add-opens=java.base/java.io=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.base/java.lang=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.base/java.nio.charset=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.base/java.util=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.base/java.util.concurrent=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/java.awt=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/java.awt.event=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/javax.swing=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/sun.awt=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/sun.font=ALL-UNNAMED'
-test:jdk17 --jvmopt='--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.io=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.lang=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.nio.charset=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.util=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.util.concurrent=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/java.awt=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/java.awt.event=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/javax.swing=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/sun.awt=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/sun.font=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.time=ALL-UNNAMED'
+test --jvmopt='--add-opens=java.base/java.lang.ref=ALL-UNNAMED'
 
-build:jdk17 --jvmopt='--add-exports java.base/jdk.internal.vm=ALL-UNNAMED'
-build:jdk17 --jvmopt='--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED'
-build:jdk17 --jvmopt='--add-exports=java.desktop/sun.java2d=ALL-UNNAMED'
-build:jdk17 --jvmopt='--add-exports=java.desktop/sun.swing=ALL-UNNAMED'
-build:jdk17 --jvmopt='--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED'
-build:jdk17 --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED'
-build:jdk17 --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED'
+build --jvmopt='--add-exports java.base/jdk.internal.vm=ALL-UNNAMED'
+build --jvmopt='--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED'
+build --jvmopt='--add-exports=java.desktop/sun.java2d=ALL-UNNAMED'
+build --jvmopt='--add-exports=java.desktop/sun.swing=ALL-UNNAMED'
+build --jvmopt='--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED'
+build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED'
+build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED'
+build --//prebuilts/studio/jdk:embedded_jdk_version=17
 
-build:jdk17 --java_runtime_version=jdk17
-build:jdk17 --//prebuilts/studio/jdk:embedded_jdk_version=17
-test:jdk17 --jvmopt='-Dembedded.jdk.path=prebuilts/studio/jdk/jdk17'
+test --jvmopt='-Dembedded.jdk.path=prebuilts/studio/jdk/jdk17'
+
+# temporary 11 runtime config for troubleshooting after jre17 update
+build:jdk11 --//prebuilts/studio/jdk:embedded_jdk_version=11
+build:jdk11 --java_runtime_version=jdk11
+test:jdk11 --jvmopt='-Dembedded.jdk.path=prebuilts/studio/jdk/jdk11'
 
 # Local runs require longer timeouts.
 test:local --test_timeout=120,600,1800,7200
@@ -86,7 +92,7 @@ build --test_env=SHELL
 
 # Bazel will find the matching java toolchain registered in WORKSPACE.
 build --java_language_version=8
-build --java_runtime_version=jdk11
+build --java_runtime_version=jdk17
 build --tool_java_runtime_version=jdk11
 
 # Use prebuilt native toolchain
