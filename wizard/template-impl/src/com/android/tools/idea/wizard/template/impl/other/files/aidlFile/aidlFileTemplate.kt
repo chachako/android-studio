@@ -23,6 +23,7 @@ import com.android.tools.idea.wizard.template.Constraint.NONEMPTY
 import com.android.tools.idea.wizard.template.Constraint.UNIQUE
 import com.android.tools.idea.wizard.template.FormFactor
 import com.android.tools.idea.wizard.template.ModuleTemplateData
+import com.android.tools.idea.wizard.template.TemplateConstraint
 import com.android.tools.idea.wizard.template.TemplateData
 import com.android.tools.idea.wizard.template.TextFieldWidget
 import com.android.tools.idea.wizard.template.WizardUiContext
@@ -34,6 +35,7 @@ import java.io.File
 val aidlFileTemplate
   get() = template {
     name = "AIDL File"
+    constraints = listOf(TemplateConstraint.Aidl)
     description = "Creates a new Android Interface Description Language file"
     minApi = MIN_API
     category = Category.AIDL
