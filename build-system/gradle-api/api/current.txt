@@ -1613,12 +1613,12 @@ package com.android.build.api.dsl {
   }
 
   public interface Split {
-    method @org.gradle.api.Incubating public void exclude(java.lang.String... excludes);
-    method @org.gradle.api.Incubating public void include(java.lang.String... includes);
-    method @org.gradle.api.Incubating public boolean isEnable();
-    method @org.gradle.api.Incubating public void reset();
-    method @org.gradle.api.Incubating public void setEnable(boolean isEnable);
-    property @org.gradle.api.Incubating public abstract boolean isEnable;
+    method public void exclude(java.lang.String... excludes);
+    method public void include(java.lang.String... includes);
+    method public boolean isEnable();
+    method public void reset();
+    method public void setEnable(boolean isEnable);
+    property public abstract boolean isEnable;
   }
 
   public interface Splits {
