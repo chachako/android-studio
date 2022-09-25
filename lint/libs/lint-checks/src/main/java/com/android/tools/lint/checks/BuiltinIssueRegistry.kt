@@ -120,6 +120,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 ClickableViewAccessibilityDetector.ISSUE,
                 CommentDetector.EASTER_EGG,
                 CommentDetector.STOP_SHIP,
+                CommunicationDeviceDetector.ISSUE,
                 ConstraintLayoutDetector.ISSUE,
                 CordovaVersionDetector.ISSUE,
                 CustomViewDetector.ISSUE,
