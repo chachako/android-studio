@@ -1589,22 +1589,22 @@ package com.android.build.api.dsl {
   }
 
   public interface SigningConfig {
-    method @org.gradle.api.Incubating public String? getKeyAlias();
-    method @org.gradle.api.Incubating public String? getKeyPassword();
-    method @org.gradle.api.Incubating public java.io.File? getStoreFile();
-    method @org.gradle.api.Incubating public String? getStorePassword();
-    method @org.gradle.api.Incubating public String? getStoreType();
-    method @org.gradle.api.Incubating public void initWith(com.android.build.api.dsl.SigningConfig that);
-    method @org.gradle.api.Incubating public void setKeyAlias(String? keyAlias);
-    method @org.gradle.api.Incubating public void setKeyPassword(String? keyPassword);
-    method @org.gradle.api.Incubating public void setStoreFile(java.io.File? storeFile);
-    method @org.gradle.api.Incubating public void setStorePassword(String? storePassword);
-    method @org.gradle.api.Incubating public void setStoreType(String? storeType);
-    property @org.gradle.api.Incubating public abstract String? keyAlias;
-    property @org.gradle.api.Incubating public abstract String? keyPassword;
-    property @org.gradle.api.Incubating public abstract java.io.File? storeFile;
-    property @org.gradle.api.Incubating public abstract String? storePassword;
-    property @org.gradle.api.Incubating public abstract String? storeType;
+    method public String? getKeyAlias();
+    method public String? getKeyPassword();
+    method public java.io.File? getStoreFile();
+    method public String? getStorePassword();
+    method public String? getStoreType();
+    method public void initWith(com.android.build.api.dsl.SigningConfig that);
+    method public void setKeyAlias(String? keyAlias);
+    method public void setKeyPassword(String? keyPassword);
+    method public void setStoreFile(java.io.File? storeFile);
+    method public void setStorePassword(String? storePassword);
+    method public void setStoreType(String? storeType);
+    property public abstract String? keyAlias;
+    property public abstract String? keyPassword;
+    property public abstract java.io.File? storeFile;
+    property public abstract String? storePassword;
+    property public abstract String? storeType;
   }
 
   public interface SingleVariant extends com.android.build.api.dsl.PublishingOptions {
