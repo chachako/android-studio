@@ -1391,7 +1391,7 @@ package com.android.build.api.dsl {
     method public void includeFlavorDimensionAndValues(String dimension, java.lang.String... values);
   }
 
-  @org.gradle.api.Incubating public interface Ndk {
+  public interface Ndk {
     method public java.util.Set<java.lang.String> getAbiFilters();
     method public String? getCFlags();
     method public String? getDebugSymbolLevel();
