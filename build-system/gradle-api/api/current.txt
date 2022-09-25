@@ -1579,7 +1579,7 @@ package com.android.build.api.dsl {
     property public abstract org.gradle.api.provider.Provider<org.gradle.api.file.Directory> sdkDirectory;
   }
 
-  @org.gradle.api.Incubating public interface Shaders {
+  public interface Shaders {
     method public java.util.List<java.lang.String> getGlslcArgs();
     method public com.google.common.collect.ListMultimap<java.lang.String,java.lang.String> getScopedGlslcArgs();
     method public void glslcArgs(java.lang.String... options);
