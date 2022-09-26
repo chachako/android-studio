@@ -97,7 +97,7 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
                             3,
                             Severity.ERROR,
                             XML_IMPLEMENTATION)
-                    .setEnabledByDefault(false)
+                    .setEnabledByDefault(true)
                     .addMoreInfo(
                             "https://developer.android.com/topic/arc/manifest.html#implied-features");
 
