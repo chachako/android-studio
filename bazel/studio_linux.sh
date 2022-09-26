@@ -54,6 +54,8 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/sdklib/commandlinetools_*.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/ddmlib/tools.ddmlib.jar ${artifacts_dir}/ddmlib.jar
+  cp -a ${bin_dir}/tools/base/annotations/annotations.jar ${artifacts_dir}/annotations.jar
+  cp -a ${bin_dir}/tools/base/common/tools.common.jar ${artifacts_dir}/tools.common.jar
   cp -a ${bin_dir}/tools/base/ddmlib/libincfs.jar ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/lint/libs/lint-tests/lint-tests.jar ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/deploy/deployer/deployer.runner_deploy.jar ${artifacts_dir}/deployer.jar
