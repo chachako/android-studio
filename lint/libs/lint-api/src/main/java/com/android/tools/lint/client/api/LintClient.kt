@@ -220,8 +220,21 @@ abstract class LintClient {
     }
 
     /**
-     * Returns a partial result where a [Detector] can store state for
-     * later analysis in [Detector.checkPartialResults].
+     * Returns a [PartialResult] where a [Detector] can write state about
+     * the current project, and/or read state about dependent projects.
+     * See [supportsPartialAnalysis]. [Detector]s should only write state
+     * for the current project being analyzed; any changes made to other
+     * project's state will not be persisted. Instead of this method,
+     * [Detector]s should call [Context.getPartialResults], which ensures
+     * the correct [project] parameter is passed.
+     *
+     * The [project] parameter is used to load state from dependent
+     * projects, and so should always be the current project that is
+     * being analyzed.
+     *
+     * The returned [PartialResult] contains a reference to the
+     * requested [project] so that [PartialResult.map] returns the
+     * [LintMap] for [project].
      */
     open fun getPartialResults(project: Project, issue: Issue): PartialResult {
         // the default client does not support partial analysis so just return an empty result
@@ -230,22 +243,25 @@ abstract class LintClient {
 
     /**
      * Whether this client supports the "partial analysis" mechanism.
-     * When this is true, a module is analyzed by lint in isolation (the
-     * detectors are not allowed to query information outside of that
-     * library, such as downstream information about minSdkVersions
-     * in the consuming app module), and then the results can be
-     * reported **provisionally** (via [Context.report] with either
-     * a [Constraint] or [LintMap]). Lint will store these results,
-     * and later when the app module report is generated, load the
-     * provisional errors and give the detectors a chance to (cheaply)
-     * filter their previously provisionally reported incidents given
-     * the actual minSdkVersion, merged manifest, etc, of the consuming
-     * module. For conditions, this is handled automatically; for
-     * manual logic via [LintMap], override [Detector.filterIncident]
-     * which returns the persisted map with state to consider.
+     * When this is true, a module is analyzed by lint in isolation, so
+     * [Detector]s cannot see the sources, resources, nor manifests of
+     * other modules. [Detector]s _can_ retrieve [PartialResult] objects
+     * from dependent modules that were already analyzed via
+     * Context.getPartialResults(ISSUE).map() and can process the partial
+     * results from all modules in the final reporting phase via
+     * [Detector.checkPartialResults]. [Detector]s can also report issues
+     * **provisionally** (via [Context.report] with either a [Constraint]
+     * or [LintMap]). Lint will store these issues, and, later, when the
+     * app module report is generated, load the provisional errors and
+     * give the detectors a chance to (cheaply) filter their previously
+     * provisionally reported incidents given (for example) the actual
+     * minSdkVersion, merged manifest, etc., of the final app. For
+     * conditions, this is handled automatically; for manual logic via
+     * [LintMap], override [Detector.filterIncident] which returns the
+     * persisted map with state to consider.
      *
-     * In the IDE, for example, where we have always have access to
-     * all the project metadata, this returns false. When this returns
+     * In the IDE, for example, where we always have access to
+     * all project metadata, this returns false. When this returns
      * false, all provisionally reported issues are directly passed over
      * to the conditions or [Detector.filterIncident] for immediate
      * filtering and reporting. This lets detectors handle both

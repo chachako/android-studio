@@ -26,29 +26,39 @@ package com.android.tools.lint.detector.api
  * produce a warning for each resource found to be declared anywhere but
  * not used anywhere.
  *
- * (This is normally just a [LintMap] for each project, but we're using
+ * This is normally just a [LintMap] for each project, but we're using
  * a wrapper class here to make it straightforward to add more state
  * in the future without breaking detectors overriding the method to
  * process the partial results.
  */
-class PartialResult(val issue: Issue, private val data: MutableMap<Project, LintMap>) :
+class PartialResult private constructor(
+    val issue: Issue,
+    private val data: MutableMap<Project, LintMap>,
+    private val requestedProject: Project?
+) :
     Iterable<Map.Entry<@JvmSuppressWildcards Project, @JvmSuppressWildcards LintMap>> {
     // @JvmSuppressWildcards above: Make it easy to iterate from Java
 
-    /** Returns the [LintMap] for the given project. */
+    constructor(issue: Issue, data: MutableMap<Project, LintMap>) : this(issue, data, null)
+
+    /** Returns the [LintMap] for the given [project]. */
     fun mapFor(project: Project): LintMap {
         return data[project] ?: LintMap().also { data[project] = it }
     }
 
     /**
-     * Returns the "current" map. This is valid during analysis
-     * when you're reporting partial results. In this case there's
-     * always just a single project being looked at and this
-     * is its map. This is more convenient than having to call
-     * [mapFor(context.getProject)].
+     * Returns the [LintMap] for the "requested project", which is set when the
+     * [PartialResult] object is created. For
+     * "context.getPartialResults(ISSUE)", the returned [PartialResult] (which
+     * may contain several [LintMap]s for already-analyzed projects) will have
+     * its "requested project" set to [Context.project], such that
+     * "context.getPartialResults(ISSUE).map()" yields the [LintMap] for the
+     * "current project" ([Context.project]).
      */
-    fun map(): LintMap = data.values.firstOrNull()
-        ?: error("This method should only be called during module analysis")
+    fun map(): LintMap {
+        val project = requestedProject ?: error("requestedProject was not set")
+        return mapFor(project)
+    }
 
     /**
      * Returns all the maps with partial results from the various
@@ -72,5 +82,17 @@ class PartialResult(val issue: Issue, private val data: MutableMap<Project, Lint
     /** Iterates over the pairs (Project, LintMap) */
     override fun iterator(): Iterator<Map.Entry<Project, LintMap>> {
         return data.entries.iterator()
+    }
+
+    companion object {
+        /**
+         * This is **only** intended for use by lint to be able to create a
+         * clone with the [requestedProject] field set.
+         */
+        fun withRequestedProject(
+            partialResult: PartialResult,
+            requestedProject: Project
+        ) =
+            PartialResult(partialResult.issue, partialResult.data, requestedProject)
     }
 }

@@ -15,8 +15,11 @@
  */
 package com.android.tools.lint.client.api
 
+import com.android.SdkConstants
+import com.android.resources.ResourceFolderType
 import com.android.testutils.TestUtils
 import com.android.tools.lint.LintCliClient
+import com.android.tools.lint.checks.infrastructure.ProjectDescription
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestFiles.xml
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
@@ -27,12 +30,17 @@ import com.android.tools.lint.client.api.LintClient.Companion.isGradle
 import com.android.tools.lint.client.api.LintClient.Companion.isStudio
 import com.android.tools.lint.client.api.LintClient.Companion.resetClientName
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.Location
+import com.android.tools.lint.detector.api.PartialResult
+import com.android.tools.lint.detector.api.ResourceXmlDetector
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.XmlContext
 import com.google.common.truth.Truth.assertThat
 import com.intellij.psi.PsiMethod
 import org.jetbrains.kotlin.cli.common.isWindows
@@ -42,6 +50,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.FileNotFoundException
@@ -153,6 +162,70 @@ class LintClientTest {
             )
     }
 
+    @Test
+    fun testGetPartialResults() {
+        // Test for: b/239337003
+        //
+        // context.getPartialResults(ISSUE).map() was returning the map for a
+        // dependent project, not the current project. Also, Lint was using this
+        // method internally to decide which LintMap to serialize. This led to
+        // serialized partial results with the expected entries, plus unexpected
+        // entries from other projects.
+        //
+        // This test creates two projects, project_a and project_b, where
+        // project_b depends on project_a. Both projects contain a string
+        // resource. We use a simple detector, TestXmlFakeIssueDetector, that
+        // just adds an entry to the LintMap for the current project that
+        // contains:
+        //
+        //  - the name of the project that added the entry
+        //  - the string name
+        //
+        // In checkPartialResults, the detector reports every entry from all
+        // projects as an "error", including:
+        //
+        //  - in which LintMap the entry was found
+        //  - the name of the project that added the entry
+        //  - the string name
+        //
+        // The expected output ensures that we see string "project_x_string"
+        // added by "project_x" in the LintMap for "project_x", for x in {a,b}.
+
+        lint().projects(
+            ProjectDescription(
+                xml(
+                    "res/values/strings.xml",
+                    """
+                    <resources>
+                        <string name="project_a_string">project_a_string</string>
+                    </resources>
+                    """
+                ).indented()
+            ).name("project_a"),
+            ProjectDescription(
+                xml(
+                    "res/values/strings.xml",
+                    """
+                    <resources>
+                        <string name="project_b_string">project_b_string</string>
+                    </resources>
+                    """
+                ).indented()
+            ).name("project_b").dependsOn("project_a")
+        )
+            .issues(TestXmlFakeIssueDetector.ISSUE)
+            .testModes(TestMode.PARTIAL)
+            .allowMissingSdk()
+            .run()
+            .expect(
+                """
+                project_b: Error: Found in LintMap for: project_a; Added by: project_a; Tag: project_a_string [TestXmlFakeIssueDetector]
+                project_b: Error: Found in LintMap for: project_b; Added by: project_b; Tag: project_b_string [TestXmlFakeIssueDetector]
+                2 errors, 0 warnings
+                """
+            )
+    }
+
     /** Detector used by [testGetXmlDocument] */
     @SuppressWarnings("ALL")
     class TestXmlParsingDetector : Detector(), Detector.UastScanner, Detector.XmlScanner {
@@ -206,6 +279,47 @@ class LintClientTest {
                 implementation = Implementation(
                     TestXmlParsingDetector::class.java,
                     EnumSet.of(Scope.JAVA_FILE, Scope.RESOURCE_FILE)
+                )
+            )
+        }
+    }
+
+    /** Detector used by [testGetPartialResults] */
+    @SuppressWarnings("ALL")
+    class TestXmlFakeIssueDetector : ResourceXmlDetector() {
+
+        override fun appliesTo(folderType: ResourceFolderType) = folderType == ResourceFolderType.VALUES
+
+        override fun getApplicableElements() = setOf(SdkConstants.TAG_STRING)
+
+        override fun visitElement(context: XmlContext, element: Element) {
+            context.getPartialResults(ISSUE).map().put("Added by: ${context.project.name}; Tag: ${element.getAttribute("name")}", true)
+        }
+
+        override fun checkPartialResults(context: Context, partialResults: PartialResult) {
+            partialResults.projects().forEach { project ->
+                partialResults.mapFor(project).forEach { key ->
+                    // Example message:
+                    //  Found in LintMap for: project_a; Added by: project_a; Tag: project_a_string
+                    context.report(
+                        issue = ISSUE,
+                        location = Location.create(context.file),
+                        message = "Found in LintMap for: ${project.name}; $key",
+                    )
+                }
+            }
+        }
+
+        companion object {
+            @JvmField
+            val ISSUE = Issue.create(
+                id = "TestXmlFakeIssueDetector",
+                briefDescription = "Fake lint check for testing partial analysis",
+                explanation = "Stores data to each project's PartialResult via context.getPartialResults(ISSUE).map()",
+                category = Category.TESTING, priority = 10, severity = Severity.ERROR,
+                implementation = Implementation(
+                    TestXmlFakeIssueDetector::class.java,
+                    EnumSet.of(Scope.ALL_RESOURCE_FILES)
                 )
             )
         }

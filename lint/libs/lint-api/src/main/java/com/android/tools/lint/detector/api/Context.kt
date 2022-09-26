@@ -428,10 +428,15 @@ open class Context(
     }
 
     /**
-     * Returns a [PartialResult] where state can be stored for later
-     * analysis. This is a more general mechanism for reporting
+     * Returns a [PartialResult] where a [Detector] can write state about
+     * the current project, and/or read state about dependent projects.
+     * See [LintClient.supportsPartialAnalysis]. [Detector]s should only
+     * write state for the current project being analyzed; any changes
+     * made to other project's state will not be persisted.
+     *
+     * This is a more general mechanism for reporting
      * provisional issues when you need to collect a lot of data and do
-     * some post processing before figuring out what to report and you
+     * some post-processing before figuring out what to report, and you
      * can't enumerate out specific [Incident] occurrences up front.
      *
      * Note that in this case, the lint infrastructure will not
@@ -439,6 +444,11 @@ open class Context(
      * yet) to see if the issue has been suppressed (via annotations,
      * lint.xml and other mechanisms), so you should do this
      * yourself, via the various [LintDriver.isSuppressed] methods.
+     *
+     * The returned [PartialResult] contains a reference to the
+     * current project being analyzed ([Context.project]) such that
+     * "context.getPartialResults(ISSUE).map()" yields the [LintMap] for
+     * the current project.
      */
     fun getPartialResults(issue: Issue): PartialResult {
         return client.getPartialResults(project, issue)

@@ -137,7 +137,29 @@ class VectorDrawableCompatDetector : ResourceXmlDetector() {
         // it will visit the drawable folders before it visits the layout folders)
         val partialResults = context.getPartialResults(ISSUE)
         val drawableName = resourceUrl.name
-        val useSupportLibrary = partialResults.map().getBoolean(drawableName) ?: return
+
+        var useSupportLibrary: Boolean? = null
+        var project: Project = context.project
+
+        // Try to find the drawable name in the current project partial results first.
+        val currentProjectPartialResultBool = partialResults.map().getBoolean(drawableName)
+        if (currentProjectPartialResultBool != null) {
+            useSupportLibrary = currentProjectPartialResultBool
+        } else {
+            // Search for the drawable name in partial results from dependent projects.
+            for (projectToMap in partialResults.filter { it !== context.project }) {
+                val partialResultBool = projectToMap.value.getBoolean(drawableName)
+                if (partialResultBool != null) {
+                    useSupportLibrary = partialResultBool
+                    project = projectToMap.key
+                    break
+                }
+            }
+        }
+        if (useSupportLibrary == null) {
+            return
+        }
+
         if (useSupportLibrary && ATTR_SRC == name) {
             val location = context.getNameLocation(attribute)
             val message = "When using VectorDrawableCompat, you need to use `app:srcCompat`"
@@ -148,19 +170,8 @@ class VectorDrawableCompatDetector : ResourceXmlDetector() {
         } else if (!useSupportLibrary && ATTR_SRC_COMPAT == name) {
             val location = context.getNameLocation(attribute)
 
-            // Find the project that defines the icon
-            var iconProject: Project = context.project
-            if (partialResults.mapFor(iconProject).getBoolean(drawableName) == null) {
-                for (project in partialResults.projects()) {
-                    val projectMap = partialResults.mapFor(project)
-                    if (projectMap.getBoolean(drawableName) != null) {
-                        iconProject = project
-                        break
-                    }
-                }
-            }
             var path = FN_BUILD_GRADLE
-            val model = iconProject.buildModule
+            val model = project.buildModule
             if (model != null) {
                 path = model.modulePath + File.separator + path
             }

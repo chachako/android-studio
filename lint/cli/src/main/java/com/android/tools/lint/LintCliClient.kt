@@ -473,7 +473,7 @@ open class LintCliClient : LintClient {
         val partialFile = getSerializationFile(project, type)
         partialResults?.let { map: MutableMap<Issue, PartialResult> ->
             partialFile.parentFile?.mkdirs()
-            val resultMap = map.mapValues { it.value.map() }
+            val resultMap = map.mapValues { it.value.mapFor(project) }
             XmlWriter(this, partialFile, type).writePartialResults(resultMap, project)
         } ?: partialFile.delete()
     }
@@ -609,7 +609,7 @@ open class LintCliClient : LintClient {
             if (dataMap.isNotEmpty()) {
                 val detectorMap = HashMap<Issue, Detector>()
                 for ((issue, map) in dataMap.entries) {
-                    val results = PartialResult(issue, map)
+                    val results = PartialResult.withRequestedProject(PartialResult(issue, map), root)
                     val detector = detectorMap[issue]
                         ?: issue.implementation.detectorClass.newInstance()
                             .also { detectorMap[issue] = it }
@@ -1079,25 +1079,30 @@ open class LintCliClient : LintClient {
                     for ((loadedIssue: Issue, map) in results) {
                         val target: PartialResult = partialResults[loadedIssue]
                             ?: run {
-                                val newMap = HashMap<Project, LintMap>()
+                                val newMap = LinkedHashMap<Project, LintMap>()
                                 newMap[dep] = LintMap()
                                 PartialResult(loadedIssue, newMap)
                                     .also { partialResults[loadedIssue] = it }
                             }
-                        val targetMap = target.map()
+                        val targetMap = target.mapFor(dep)
                         targetMap.putAll(map)
                     }
                 }
                 partialResults
             }
 
-        return partialResults[issue]
+        val partialResult = partialResults[issue]
             ?: run {
-                val map = HashMap<Project, LintMap>()
+                val map = LinkedHashMap<Project, LintMap>()
                 val default = LintMap()
                 map[project] = default
                 PartialResult(issue, map).also { partialResults[issue] = it }
             }
+
+        // PartialResult.map needs to return the LintMap for the "requested project"
+        // (i.e. whichever project was passed in to this method).
+        // Thus, we return a clone of partialResult with the requestedProject field set.
+        return PartialResult.withRequestedProject(partialResult, project)
     }
 
     override fun readFile(file: File): CharSequence {
