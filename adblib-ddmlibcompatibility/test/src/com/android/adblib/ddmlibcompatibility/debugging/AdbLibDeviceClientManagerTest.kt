@@ -15,6 +15,7 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.ddmlibcompatibility.testutils.AndroidDebugBridgeListenerRule
 import com.android.adblib.ddmlibcompatibility.testutils.FakeIDevice
 import com.android.adblib.ddmlibcompatibility.testutils.TestDeviceClientManagerListener
 import com.android.adblib.ddmlibcompatibility.testutils.TestDeviceClientManagerListener.EventKind.PROCESS_LIST_UPDATED
@@ -25,8 +26,13 @@ import com.android.adblib.ddmlibcompatibility.testutils.disconnectTestDevice
 import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
+import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener
 import com.android.ddmlib.Client
 import com.android.ddmlib.DebugViewDumpHandler
+import com.android.ddmlib.IDevice
+import com.android.ddmlib.clientmanager.DeviceClientManager
+import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 import com.android.ddmlib.testing.FakeAdbRule
 import junit.framework.Assert
 import kotlinx.coroutines.TimeoutCancellationException
@@ -40,6 +46,7 @@ import org.junit.Test
 import org.junit.rules.ExpectedException
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 class AdbLibDeviceClientManagerTest {
 
@@ -53,7 +60,11 @@ class AdbLibDeviceClientManagerTest {
 
     @JvmField
     @Rule
-    var exceptionRule: ExpectedException = ExpectedException.none()
+    val exceptionRule: ExpectedException = ExpectedException.none()
+
+    @JvmField
+    @Rule
+    val androidDebugBridgeRule = AndroidDebugBridgeListenerRule()
 
     @Test
     fun testTrackingWaitsUntilDeviceIsTracked() = runBlockingWithTimeout {
@@ -173,6 +184,75 @@ class AdbLibDeviceClientManagerTest {
         assertThrows { client.enableAllocationTracker(false) }
         Assert.assertEquals(Unit, client.notifyVmMirrorExited())
         assertThrows { client.dumpDisplayList("v", "v1") }
+    }
+
+    @Test
+    fun testClientListUpdatesAreSerialized() = runBlockingWithTimeout {
+        // Prepare
+        val session = fakeAdb.createAdbSession(closeables)
+        val clientManager = AdbLibClientManager(session)
+        val listener = AndroidDebugBridgeListener()
+        val (device, deviceState) = fakeAdb.connectTestDevice()
+        val deviceClientManager =
+            clientManager.createDeviceClientManager(
+                fakeAdb.bridge,
+                device,
+                listener
+            )
+
+        // Act
+        val ddmlibListener = object : IDeviceChangeListener {
+            val lock = Any()
+
+            @Volatile
+            var totalCalls = 0
+
+            @Volatile
+            var concurrentCalls = 0
+
+            @Volatile
+            var maxConcurrentCalls = 0
+
+            override fun deviceConnected(device: IDevice) {
+            }
+
+            override fun deviceDisconnected(device: IDevice) {
+            }
+
+            override fun deviceChanged(device: IDevice, changeMask: Int) {
+                synchronized(lock) {
+                    totalCalls++
+                    concurrentCalls++
+                    maxConcurrentCalls = max(concurrentCalls, maxConcurrentCalls)
+                }
+                Thread.sleep(1)
+                synchronized(lock) {
+                    concurrentCalls--
+                }
+            }
+        }
+        androidDebugBridgeRule.addDeviceChangeListener(ddmlibListener)
+
+        while (ddmlibListener.totalCalls < 100) {
+            deviceState.startClient(10, 0, "foo.bar", false)
+            deviceState.startClient(12, 0, "foo.bar.baz", false)
+            delay(5)
+            deviceState.startClient(14, 0, "foo.bar.baz.blah", false)
+            // Wait for both processes to show up and for both the JDWP proxy
+            // and process properties to be initialized.
+            yieldUntil { deviceClientManager.clients.size == 3 }
+            deviceState.stopClient(14)
+            delay(1)
+            deviceState.stopClient(12)
+            deviceState.stopClient(10)
+        }
+
+        // Assert
+        Assert.assertEquals(
+            "There were more than one concurrent call to the listener, meaning calls were not serialized as expected",
+            1,
+            ddmlibListener.maxConcurrentCalls
+        )
     }
 
     @Test
@@ -572,6 +652,39 @@ class AdbLibDeviceClientManagerTest {
         Assert.assertEquals(expected.remaining(), value.remaining())
         for(index in 0 until expected.remaining()) {
             Assert.assertEquals("Bytes at offset $index should be equal", expected.get(index), value.get(index))
+        }
+    }
+
+    class AndroidDebugBridgeListener : DeviceClientManagerListener {
+        override fun processListUpdated(
+            bridge: AndroidDebugBridge,
+            deviceClientManager: DeviceClientManager
+        ) {
+            if (bridge === AndroidDebugBridge.getBridge()) {
+                AndroidDebugBridge.deviceChanged(
+                    deviceClientManager.device, IDevice.CHANGE_CLIENT_LIST
+                )
+            }
+        }
+
+        override fun processNameUpdated(
+            bridge: AndroidDebugBridge,
+            deviceClientManager: DeviceClientManager,
+            client: Client
+        ) {
+            if (bridge === AndroidDebugBridge.getBridge()) {
+                AndroidDebugBridge.clientChanged(client, Client.CHANGE_NAME)
+            }
+        }
+
+        override fun processDebuggerStatusUpdated(
+            bridge: AndroidDebugBridge,
+            deviceClientManager: DeviceClientManager,
+            client: Client
+        ) {
+            if (bridge === AndroidDebugBridge.getBridge()) {
+                AndroidDebugBridge.clientChanged(client, Client.CHANGE_DEBUGGER_STATUS)
+            }
         }
     }
 }

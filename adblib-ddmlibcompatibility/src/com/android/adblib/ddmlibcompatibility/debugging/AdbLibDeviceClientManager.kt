@@ -15,6 +15,7 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.DeviceSelector
 import com.android.adblib.DeviceState
@@ -25,6 +26,7 @@ import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.JdwpProcessTracker
 import com.android.adblib.trackDeviceInfo
 import com.android.adblib.trackDevices
+import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
 import com.android.ddmlib.ClientData
@@ -34,10 +36,12 @@ import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
@@ -59,9 +63,9 @@ internal class AdbLibDeviceClientManager(
     private val listener: DeviceClientManagerListener
 ) : DeviceClientManager {
 
-    private val logger = thisLogger(clientManager.session)
-
     private val deviceSelector = DeviceSelector.fromSerialNumber(iDevice.serialNumber)
+
+    private val logger = thisLogger(clientManager.session).withPrefix("device '$deviceSelector': ")
 
     internal val session: AdbSession
         get() = clientManager.session
@@ -69,6 +73,8 @@ internal class AdbLibDeviceClientManager(
     private val retryDelay = Duration.ofSeconds(2)
 
     private val clientList = AtomicReference<List<Client>>(emptyList())
+
+    private val ddmlibEventQueue = DdmlibEventQueue(logger, "ProcessUpdates")
 
     override fun getDevice(): IDevice {
         return iDevice
@@ -79,6 +85,10 @@ internal class AdbLibDeviceClientManager(
     }
 
     fun startDeviceTracking() {
+        session.scope.launch {
+            ddmlibEventQueue.runDispatcher()
+        }
+
         session.scope.launch {
             // Wait for the device to show in the list of tracked devices
             val deviceScope = withTimeoutOrNull(DEVICE_TRACKER_WAIT_TIMEOUT.toMillis()) {
@@ -148,7 +158,7 @@ internal class AdbLibDeviceClientManager(
     /**
      * Update our list of processes and invoke listeners.
      */
-    private fun updateProcessList(
+    private suspend fun updateProcessList(
         deviceScope: CoroutineScope,
         currentProcessEntryMap: MutableMap<Int, AdblibClientWrapper>,
         newJdwpProcessList: List<JdwpProcess>
@@ -175,7 +185,7 @@ internal class AdbLibDeviceClientManager(
 
         assert(currentProcessEntryMap.keys.size == newJdwpProcessList.size)
         clientList.set(currentProcessEntryMap.values.toList())
-        invokeListener(deviceScope) {
+        ddmlibEventQueue.post(deviceScope, "processListUpdated") {
             listener.processListUpdated(bridge, this)
         }
     }
@@ -198,7 +208,7 @@ internal class AdbLibDeviceClientManager(
         }
     }
 
-    private fun updateProcessInfo(
+    private suspend fun updateProcessInfo(
         clientWrapper: AdblibClientWrapper,
         previousProcessInfo: JdwpProcessProperties,
         newProcessInfo: JdwpProcessProperties
@@ -223,7 +233,7 @@ internal class AdbLibDeviceClientManager(
                 hasChanged(isWaitingForDebugger, newProcessInfo.isWaitingForDebugger) ||
                 hasChanged(isNativeDebuggable, newProcessInfo.isNativeDebuggable)
             ) {
-                invokeListener(clientWrapper.jdwpProcess.scope) {
+                ddmlibEventQueue.post(clientWrapper.jdwpProcess.scope, "processNameUpdated") {
                     // Note that "name" is really "any property"
                     listener.processNameUpdated(
                         bridge,
@@ -237,7 +247,7 @@ internal class AdbLibDeviceClientManager(
         // Debugger status change is handled through its own callback
         if (hasChanged(previousDebuggerStatus, newDebuggerStatus)) {
             clientWrapper.clientData.debuggerConnectionStatus = newDebuggerStatus
-            invokeListener(clientWrapper.jdwpProcess.scope) {
+            ddmlibEventQueue.post(clientWrapper.jdwpProcess.scope, "processDebuggerStatusUpdated") {
                 listener.processDebuggerStatusUpdated(
                     bridge,
                     this@AdbLibDeviceClientManager,
@@ -279,13 +289,38 @@ internal class AdbLibDeviceClientManager(
         }
     }
 
-    private fun invokeListener(scope: CoroutineScope, block: () -> Unit) {
-        scope.launch(session.host.ioDispatcher) {
-            kotlin.runCatching {
-                block()
-            }.onFailure { throwable ->
-                logger.warn(throwable, "Invoking ddmlib listener threw an exception: $throwable")
+    class DdmlibEventQueue(logger: AdbLogger, name: String) {
+
+        private val logger = logger.withPrefix("DDMLIB EventQueue '$name': ")
+
+        /**
+         * We limit to [QUEUE_CAPACITY] events in case a ddmlib handler is slowing down
+         * event dispatching. When the limit is reached, [posting][post] events is throttled.
+         */
+        private val queue = Channel<Event>(QUEUE_CAPACITY)
+
+        suspend fun post(scope: CoroutineScope, name: String, handler: () -> Unit) {
+            queue.send(Event(scope, name, handler))
+        }
+
+        suspend fun runDispatcher() {
+            queue.receiveAsFlow().collect { event ->
+                event.scope.launch {
+                    kotlin.runCatching {
+                        logger.verbose { "Invoking ddmlib listener '${event.name}'" }
+                        event.handler()
+                        logger.verbose { "Invoking ddmlib listener '${event.name}' - done" }
+                    }.onFailure { throwable ->
+                        logger.warn(throwable, "Invoking ddmlib listener '${event.name}' threw an exception: $throwable")
+                    }
+                }.join()
             }
+        }
+
+        private class Event(val scope: CoroutineScope, val name: String, val handler: () -> Unit)
+
+        companion object {
+            const val QUEUE_CAPACITY = 1_000
         }
     }
 }
