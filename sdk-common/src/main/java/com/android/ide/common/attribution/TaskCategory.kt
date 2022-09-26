@@ -19,132 +19,52 @@ package com.android.ide.common.attribution
 /**
  * Enum class for Category-Based Task Analyzer for Build Analyzer.
  * Each field corresponds to a specific atomic function/execution of a task.
- * All task categories can be in secondaryTaskCategories, but not
- * primaryTaskCategory in [BuildAnalyzer.kt]
+ *
+ * @param isPrimary indicates whether the category would be the primary category of some task
+ * @param description the description of the category which is shown to the user, all primary
+ *  categories should have descriptions.
  **/
-enum class TaskCategory {
+enum class TaskCategory(val isPrimary: Boolean = false, val description: String = "") {
+    // ---------------------------------------------------------------------------------------------
+    // PRIMARY CATEGORIES
+    // ---------------------------------------------------------------------------------------------
+    TEST(isPrimary = true, description = "Tasks related to test execution."),
+    MANIFEST(isPrimary = true, description = "Tasks related to Android Manifest merging and compiling."),
+    ANDROID_RESOURCES(isPrimary = true, description = "Tasks related to Android resources compilation, processing, linking and merging."),
+    NATIVE(isPrimary = true, description = "Tasks related to Native build compilation, linking and packaging."),
+    JAVA(isPrimary = true, description = "Tasks related to Java source compilation, processing and merging."),
+    JAVA_RESOURCES(isPrimary = true, description = "Tasks related to Java resources merging and packaging."),
+    JAVA_DOC(isPrimary = true, description = "Tasks related to Java Doc generation and processing."),
+    KOTLIN(isPrimary = true, description = "Tasks related to Kotlin source compilation, processing and merging."),
+    AIDL(isPrimary = true, description = "Tasks related to AIDL source compilation and processing."),
+    RENDERSCRIPT(isPrimary = true, description = "Tasks related to Renderscript sources compilation and processing."),
+    SHADER(isPrimary = true, description = "Tasks related to Shader sources compilation and processing."),
+    DEXING(isPrimary = true, description = "Tasks related to generating Dex files."),
+    ART_PROFILE(isPrimary = true, description = "Tasks related to ART optimization profiles compilation and processing"),
+    LINT(isPrimary = true, description = "Tasks created by the Lint tool."),
+    DATA_BINDING(isPrimary = true, description = "Tasks related to data binding."),
+    METADATA(isPrimary = true, description = "Tasks related to Metadata generation and processing"),
+    VERIFICATION(isPrimary = true, description = "Tasks that verify the project and dependencies setup."),
+    SYNC(isPrimary = true, description = "Tasks related to syncing IDE sources with Gradle."),
+    DEPLOYMENT(isPrimary = true, description = "Tasks related to device deployment."),
+    HELP(isPrimary = true, description = "Tasks that provide helpful information on the project"),
+    APK_PACKAGING(isPrimary = true, description = "Tasks related to packaging APKs."),
+    AAR_PACKAGING(isPrimary = true, description = "Tasks related to packaging AARs."),
+    BUNDLE_PACKAGING(isPrimary = true, description = "Tasks related to packaging bundles."),
+    OPTIMIZATION(isPrimary = true, description = "Tasks related to shrinking sources and resources."),
+    COMPILED_CLASSES(isPrimary = true, description = "Tasks that process the output of compilation tasks."),
+    GRADLE(isPrimary = true, description = "Core tasks created by Gradle."),
+    MISC(isPrimary = true, description = "Miscellaneous Android Gradle Plugin tasks."),
+    UNKNOWN(isPrimary = true, description = "Third-Party plugin tasks."),
+
+    // ---------------------------------------------------------------------------------------------
+    // SECONDARY CATEGORIES
+    // ---------------------------------------------------------------------------------------------
+
     /**
      * Tasks that involves compilation of files/sources.
      */
     COMPILATION,
-    /**
-     * This is a primary category for tasks that perform test execution.
-     */
-    TEST,
-    /**
-     * This is a primary category for tasks that perform
-     * Android manifest merging and compiling
-     */
-    MANIFEST,
-    /**
-     * This is a primary category for tasks that perform
-     * Android resources compilation, processing, linking
-     * and merging.
-     */
-    ANDROID_RESOURCES,
-    /**
-     * This is a primary category for tasks that are related to
-     * Native build compilatoin, linking and packaging.
-     */
-    NATIVE,
-    /**
-     * This is a primary category for tasks that are related to
-     * Java source compilation, processing and merging.
-     */
-    JAVA,
-    /**
-     * Primary task category for tasks related to Java resources
-     * merging and packaging.
-     */
-    JAVA_RESOURCES,
-    /**
-     * Primary task category for tasks related to Java Doc generation
-     * and processing.
-     */
-    JAVA_DOC,
-    /**
-     * Marks a task that is related to the Kotlin plugin,
-     * including processing or compiling Kotlin sources.
-     * This is a primary category for tasks that belong to the Kotlin plugin.
-     */
-    KOTLIN,
-    /**
-     * Primary task category for tasks that perform AIDL source
-     * compilation and processing.
-     */
-    AIDL,
-    /**
-     * Primary task category for tasks related to Renderscript source
-     * compilation and processing.
-     */
-    RENDERSCRIPT,
-    /**
-     * Primary task category for tasks related to Shader sources compilation
-     * and processing.
-     */
-    SHADER,
-    /**
-     * This is a primary category for tasks whose main function is
-     * generating Dex files.
-     */
-    DEXING,
-    /**
-     * Primary task category for ART profile tasks.
-     */
-    ART_PROFILE,
-    /**
-     * Primary task category for tasks related to the
-     * Lint tool.
-     */
-    LINT,
-    /**
-     * Primary task category for tasks related to data binding.
-     */
-    DATA_BINDING,
-    /**
-     * Primary task category for tasks whose main function is to
-     * read/write metadata.
-     */
-    METADATA,
-    /**
-     * Primary task category for tasks whose main function is to
-     * verify the validity of the project and dependencies setup.
-     */
-    VERIFICATION,
-    /**
-     * Primary task category for tasks that sync IDE sources with Gradle.
-     */
-    SYNC,
-    /**
-     * Primary task category for tasks related to device deployment.
-     */
-    DEPLOYMENT,
-    /**
-     * This is a primary category for tasks that would not be
-     * executed as part of the build, but rather users would
-     * invoke them to check something.
-     */
-    HELP,
-    /**
-     * This is a primary category for tasks whose main function
-     * is packaging APKs.
-     */
-    APK_PACKAGING,
-    /**
-     * This is a primary category for tasks whose main function
-     * is packaging AARs.
-     */
-    AAR_PACKAGING,
-    /**
-     * This is a primary category for tasks whose main function
-     * is packaging bundles.
-     */
-    BUNDLE_PACKAGING,
-    /**
-     * This is a primary category for tasks whose main function
-     * is optimization of the project (eg. shrinking files).
-     */
-    OPTIMIZATION,
     /**
      * Tasks related to generating sources.
      */
@@ -169,21 +89,4 @@ enum class TaskCategory {
      * Tasks part of fusing library.
      */
     FUSING,
-    /**
-     * Primary task category for tasks that perform their
-     * execution on compiles classes (eg. bytecode).
-     */
-    COMPILED_CLASSES,
-    /**
-     * Task category for Gradle plugins. No task in AGP should use this.
-     */
-    GRADLE,
-    /**
-     * Primary task category for general AGP tasks.
-     */
-    MISC,
-    /**
-     * Task category for third-party plugins. No task in AGP should use this.
-     */
-    UNKNOWN
 }

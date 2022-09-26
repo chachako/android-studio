@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
 import com.android.build.gradle.tasks.sync.AppIdListTask
 import com.android.build.gradle.internal.tasks.TaskCategory
+import com.android.utils.HelpfulEnumConverter
 import org.gradle.api.Task
 import com.google.common.reflect.ClassPath
 import com.google.common.reflect.TypeToken
@@ -36,35 +37,6 @@ import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 class BuildAnalyzerTest {
-
-    private val primaryTaskCategories = listOf(
-            TaskCategory.JAVA,
-            TaskCategory.ANDROID_RESOURCES,
-            TaskCategory.KOTLIN,
-            TaskCategory.NATIVE,
-            TaskCategory.MISC,
-            TaskCategory.AAR_PACKAGING,
-            TaskCategory.SYNC,
-            TaskCategory.APK_PACKAGING,
-            TaskCategory.MANIFEST,
-            TaskCategory.BUNDLE_PACKAGING,
-            TaskCategory.DEPLOYMENT,
-            TaskCategory.ART_PROFILE,
-            TaskCategory.TEST,
-            TaskCategory.DEXING,
-            TaskCategory.LINT,
-            TaskCategory.JAVA_DOC,
-            TaskCategory.JAVA_RESOURCES,
-            TaskCategory.RENDERSCRIPT,
-            TaskCategory.SHADER,
-            TaskCategory.VERIFICATION,
-            TaskCategory.OPTIMIZATION,
-            TaskCategory.DATA_BINDING,
-            TaskCategory.METADATA,
-            TaskCategory.AIDL,
-            TaskCategory.HELP,
-            TaskCategory.COMPILED_CLASSES
-    )
 
     // Allow-list of tasks that are defined to not have annotations.
     // Usually due to it being a base task, and hence is implemented by other tasks.
@@ -117,14 +89,20 @@ class BuildAnalyzerTest {
     @Test
     fun `primaryTaskCategory field only has primary task categories`() {
         val allTasks = getAllTasks()
+        val converter = HelpfulEnumConverter(com.android.ide.common.attribution.TaskCategory::class.java)
         val tasksWithIncorrectPrimaryTaskCategories = allTasks.filter {
-            it.isAnnotationPresent(BuildAnalyzer::class.java) &&
-                    it.getAnnotation(BuildAnalyzer::class.java).primaryTaskCategory !in primaryTaskCategories
+            it.isAnnotationPresent(BuildAnalyzer::class.java)
+        }.filter {
+            val primaryCategory = it.getAnnotation(BuildAnalyzer::class.java).primaryTaskCategory
+            !converter.convert(primaryCategory.toString())!!.isPrimary
         }
-        assertWithMessage("These tasks should only have the allowed primary task categories" +
-                "as the primaryTaskCategory field. Refer to primaryTaskCategories in this file or " +
-                "TaskCategory.kt on which labels can be primary.").that(
-                tasksWithIncorrectPrimaryTaskCategories).isEmpty()
+        assertWithMessage(
+            "These tasks should only have the allowed primary task categories" +
+                    " as the primaryTaskCategory field. Refer to TaskCategory on which categories" +
+                    " can be primary."
+        ).that(
+            tasksWithIncorrectPrimaryTaskCategories
+        ).isEmpty()
     }
 
     @Test

@@ -17,13 +17,14 @@
 package com.android.build.gradle.tasks
 
 import com.android.utils.HelpfulEnumConverter
+import com.google.common.truth.Truth.assertWithMessage
 import junit.framework.TestCase.fail
 import org.junit.Test
 
 class TaskCategoryTest {
 
     @Test
-    fun `All sdk-common TaskCategory enum elements is in gradle-core TaskCategory enum`() {
+    fun `all sdk-common TaskCategory enum elements is in gradle-core TaskCategory enum`() {
         val gradleCoreTaskCategoryConverter = HelpfulEnumConverter(com.android.build.gradle.internal.tasks.TaskCategory::class.java)
         try {
             com.android.ide.common.attribution.TaskCategory.values().forEach {
@@ -34,7 +35,7 @@ class TaskCategoryTest {
     }
 
     @Test
-    fun `All gradle-core TaskCategory enum elements is in sdk-common TaskCategory enum`() {
+    fun `all gradle-core TaskCategory enum elements is in sdk-common TaskCategory enum`() {
         val sdkCommonTaskCategoryConverter = HelpfulEnumConverter(com.android.ide.common.attribution.TaskCategory::class.java)
         try {
             com.android.build.gradle.internal.tasks.TaskCategory.values().forEach {
@@ -44,4 +45,13 @@ class TaskCategoryTest {
         }
     }
 
+    @Test
+    fun `all primary task categories have a description`() {
+        com.android.ide.common.attribution.TaskCategory.values().filter { it.isPrimary }.forEach {
+            assertWithMessage("All primary task categories should have a description as it will be " +
+                    "shown to users on the IDE side.")
+                .that(it.description)
+                .isNotEmpty()
+        }
+    }
 }
