@@ -81,7 +81,6 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
 
             initialized = true
             val taskCategoryConverter = HelpfulEnumConverter(TaskCategory::class.java)
-            val sendTaskCategoryInfo = projectOptions.get(BooleanOption.BUILD_ANALYZER_TASK_LABELS)
             project.gradle.taskGraph.whenReady { taskGraph ->
                 val outputFileToTasksMap = mutableMapOf<String, MutableList<String>>()
                 val taskNameToTaskInfoMap = mutableMapOf<String, TaskInfo>()
@@ -93,8 +92,7 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                         }.add(task.path)
                     }
 
-                    val taskCategoryInfo = if (sendTaskCategoryInfo
-                            && task::class.java.isAnnotationPresent(BuildAnalyzer::class.java)) {
+                    val taskCategoryInfo = if (task::class.java.isAnnotationPresent(BuildAnalyzer::class.java)) {
                         val annotation = task::class.java.getAnnotation(BuildAnalyzer::class.java)
                         val primaryTaskCategory =
                                 taskCategoryConverter.convert(annotation.primaryTaskCategory.toString())!!
@@ -136,9 +134,7 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                 )
                 parameters.taskNameToTaskInfoMap.set(taskNameToTaskInfoMap)
 
-                if (sendTaskCategoryInfo) {
-                    parameters.buildAnalyzerTaskCategoryIssues.set(getBuildAnalyzerIssues(projectOptions))
-                }
+                parameters.buildAnalyzerTaskCategoryIssues.set(getBuildAnalyzerIssues(projectOptions))
             }
         }
 

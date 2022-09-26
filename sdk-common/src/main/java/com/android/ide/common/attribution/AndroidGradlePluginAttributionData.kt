@@ -68,7 +68,6 @@ data class AndroidGradlePluginAttributionData(
 
     /**
      * A map of task names to its class name, and primary and secondary task categories.
-     * Only sends task categories if flag BUILD_ANALYZER_TASK_LABELS is enabled.
      */
     val taskNameToTaskInfoMap: Map<String, TaskInfo> = emptyMap(),
 
