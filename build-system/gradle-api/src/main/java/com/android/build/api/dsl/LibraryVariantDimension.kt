@@ -16,7 +16,6 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Action
 import java.io.File
 import org.gradle.api.Incubating
 
@@ -45,7 +44,6 @@ interface LibraryVariantDimension : VariantDimension {
      *
      * This is only valid for Library project. This is ignored in Application project.
      */
-
     @get:Incubating
     val consumerProguardFiles: MutableList<File>
 
@@ -61,7 +59,6 @@ interface LibraryVariantDimension : VariantDimension {
      *
      * This method has a return value for legacy reasons.
      */
-
     @Incubating
     fun consumerProguardFile(proguardFile: Any): Any
 
@@ -81,19 +78,11 @@ interface LibraryVariantDimension : VariantDimension {
     fun consumerProguardFiles(vararg proguardFiles: Any): Any
 
     /** The associated signing config or null if none are set on the variant dimension. */
-    @get:Incubating
-    @set:Incubating
     var signingConfig: ApkSigningConfig?
 
     /** Options for configuring AAR metadata. */
-    @get:Incubating
     val aarMetadata: AarMetadata
 
     /** Options for configuring AAR metadata. */
-    @Incubating
     fun aarMetadata(action: AarMetadata.() -> Unit)
-
-    /** Options for configuring AAR metadata. */
-    @Incubating
-    fun aarMetadata(action: Action<AarMetadata>)
 }
