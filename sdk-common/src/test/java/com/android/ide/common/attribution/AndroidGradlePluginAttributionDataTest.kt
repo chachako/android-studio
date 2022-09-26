@@ -36,7 +36,6 @@ class AndroidGradlePluginAttributionDataTest {
     val temporaryFolder = TemporaryFolder()
 
     private val data = AndroidGradlePluginAttributionData(
-        taskNameToClassNameMap = mapOf("a" to "b", "c" to "d"),
         tasksSharingOutput = mapOf("e" to listOf("f", "g")),
         garbageCollectionData = mapOf("gc" to 100L),
         buildSrcPlugins = setOf("h", "i"),
@@ -55,15 +54,15 @@ class AndroidGradlePluginAttributionDataTest {
                 agpVersion = "7.0.0",
                 configurationCacheIsOn = true
         ),
-        taskNameToTaskInfoMap = mapOf("k" to TaskInfo(
-            className = "l",
+        taskNameToTaskInfoMap = mapOf("a" to TaskInfo(
+            className = "b",
             taskCategoryInfo = TaskCategoryInfo(
                 primaryTaskCategory = TaskCategory.ANDROID_RESOURCES,
                 secondaryTaskCategories = listOf(
                     TaskCategory.COMPILATION,
                     TaskCategory.SOURCE_PROCESSING
                 ))),
-            "m" to TaskInfo(className = "n", taskCategoryInfo = TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN))
+            "c" to TaskInfo(className = "d", taskCategoryInfo = TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN))
         ),
         buildAnalyzerTaskCategoryIssues = listOf(BuildAnalyzerTaskCategoryIssue.TEST_SHARDING_DISABLED, BuildAnalyzerTaskCategoryIssue.NON_TRANSITIVE_R_CLASS_DISABLED)
     )
@@ -90,7 +89,6 @@ class AndroidGradlePluginAttributionDataTest {
         )
         assertThat(file.readLines()[0]).isEqualTo("""
 |{
-|"taskNameToClassNameMap":[{"taskName":"a","className":"b"},{"taskName":"c","className":"d"}],
 |"tasksSharingOutput":[{"filePath":"e","tasksList":["f","g"]}],
 |"garbageCollectionData":[{"gcName":"gc","duration":100}],
 |"buildSrcPlugins":["h","i"],
@@ -109,9 +107,9 @@ class AndroidGradlePluginAttributionDataTest {
     |"agpVersion":"7.0.0",
     |"configurationCacheIsOn":true
 |},
-|"taskNameToTaskInfoMap":[{"taskName":"k","className":"l","primaryTaskCategory":"ANDROID_RESOURCES",
+|"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
                 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
-                |{"taskName":"m","className":"n","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
+                |{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
 |],
 |"buildAnalyzerTaskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
@@ -141,7 +139,20 @@ class AndroidGradlePluginAttributionDataTest {
 
         val deserializedData = AndroidGradlePluginAttributionData.load(outputDir)!!
 
-        assertThat(deserializedData.taskNameToClassNameMap).isEqualTo(data.taskNameToClassNameMap)
+        fun Map<String, TaskInfo>.normalizeForOlderAgpVersions(): Map<String, TaskInfo> {
+            return map {
+                it.key to TaskInfo(
+                    className = it.value.className,
+                    // This data isn't available in older AGP versions
+                    taskCategoryInfo = TaskCategoryInfo(TaskCategory.UNKNOWN)
+                )
+            }.toMap()
+        }
+
+        assertThat(
+            deserializedData.taskNameToTaskInfoMap
+        ).containsExactlyEntriesIn(data.taskNameToTaskInfoMap.normalizeForOlderAgpVersions())
+
         assertThat(deserializedData.noncacheableTasks).isEqualTo(data.noncacheableTasks)
         assertThat(deserializedData.tasksSharingOutput).isEqualTo(data.tasksSharingOutput)
         assertThat(deserializedData.buildSrcPlugins).isEqualTo(data.buildSrcPlugins)
@@ -185,9 +196,9 @@ class AndroidGradlePluginAttributionDataTest {
     |"agpVersion":"7.0.0",
     |"configurationCacheIsOn":true
 |},
-|"taskNameToTaskInfoMap":[{"taskName":"k","className":"l","primaryTaskCategory":"ANDROID_RESOURCES",
+|"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
-|{"taskName":"m","className":"n","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
+|{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
 |],
 |"buildAnalyzerTaskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}

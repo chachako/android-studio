@@ -84,10 +84,8 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
             val sendTaskCategoryInfo = projectOptions.get(BooleanOption.BUILD_ANALYZER_TASK_LABELS)
             project.gradle.taskGraph.whenReady { taskGraph ->
                 val outputFileToTasksMap = mutableMapOf<String, MutableList<String>>()
-                val taskNameToClassNameMap = mutableMapOf<String, String>()
                 val taskNameToTaskInfoMap = mutableMapOf<String, TaskInfo>()
                 taskGraph.allTasks.forEach { task ->
-                    taskNameToClassNameMap[task.name] = getTaskClassName(task.javaClass.name)
 
                     task.outputs.files.forEach { outputFile ->
                         outputFileToTasksMap.computeIfAbsent(outputFile.absolutePath) {
@@ -118,7 +116,6 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                         .map { "${it.group}:${it.module}:${it.version}" }
 
                 parameters.attributionFileLocation.set(attributionFileLocation)
-                parameters.taskNameToClassNameMap.set(taskNameToClassNameMap)
                 parameters.tasksSharingOutputs.set(
                         outputFileToTasksMap.filter { it.value.size > 1 }
                 )
@@ -207,7 +204,6 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         saveAttributionData(
             File(parameters.attributionFileLocation.get()),
             AndroidGradlePluginAttributionData(
-                taskNameToClassNameMap = parameters.taskNameToClassNameMap.get(),
                 tasksSharingOutput = parameters.tasksSharingOutputs.get(),
                 garbageCollectionData = gcData,
                 buildSrcPlugins = getBuildSrcPlugins(this.javaClass.classLoader),
@@ -231,8 +227,6 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         val attributionFileLocation: Property<String>
 
         val tasksSharingOutputs: MapProperty<String, List<String>>
-
-        val taskNameToClassNameMap: MapProperty<String, String>
 
         val javaInfo: Property<JavaInfo>
 

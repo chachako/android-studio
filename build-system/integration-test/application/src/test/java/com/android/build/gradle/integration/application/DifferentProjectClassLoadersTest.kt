@@ -108,8 +108,8 @@ class DifferentProjectClassLoadersTest {
             .run("assembleDebug")
 
         val attributionData = AndroidGradlePluginAttributionData.load(attributionDir)!!
-        assertThat(attributionData.taskNameToClassNameMap.keys).contains("firstLibTask")
-        assertThat(attributionData.taskNameToClassNameMap.keys).contains("secondLibTask")
+        assertThat(attributionData.taskNameToTaskInfoMap.keys).contains("firstLibTask")
+        assertThat(attributionData.taskNameToTaskInfoMap.keys).contains("secondLibTask")
     }
 
     private fun addDirectClasspath(name: String) {

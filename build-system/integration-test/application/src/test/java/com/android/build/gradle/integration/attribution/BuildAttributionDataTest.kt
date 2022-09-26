@@ -81,7 +81,7 @@ class BuildAttributionDataTest {
         val originalAttributionData =
                 AndroidGradlePluginAttributionData.load(attributionFileLocation)!!
 
-        assertThat(originalAttributionData.taskNameToClassNameMap).isNotEmpty()
+        assertThat(originalAttributionData.taskNameToTaskInfoMap).isNotEmpty()
         assertThat(originalAttributionData.tasksSharingOutput).isNotEmpty()
 
         // delete the report and re-run
@@ -96,8 +96,8 @@ class BuildAttributionDataTest {
         val newAttributionData =
                 AndroidGradlePluginAttributionData.load(attributionFileLocation)!!
 
-        assertThat(newAttributionData.taskNameToClassNameMap).containsExactlyEntriesIn(
-                originalAttributionData.taskNameToClassNameMap)
+        assertThat(newAttributionData.taskNameToTaskInfoMap).containsExactlyEntriesIn(
+                originalAttributionData.taskNameToTaskInfoMap)
         assertThat(newAttributionData.tasksSharingOutput).containsExactlyEntriesIn(
                 originalAttributionData.tasksSharingOutput)
     }
