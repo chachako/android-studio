@@ -145,7 +145,7 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
               proto::INITIATED_BY_STARTUP);
     }
     ongoing_capture->end_timestamp = clock_->GetCurrentTime();
-    status->set_stopping_time_ns(stopwatch.GetElapsed());
+    status->set_stopping_duration_ns(stopwatch.GetElapsed());
   }
 
   status->set_status(stop_status);

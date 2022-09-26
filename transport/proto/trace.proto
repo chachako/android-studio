@@ -56,7 +56,7 @@ message TraceStopStatus {
   Status status = 1;
   string error_message = 2;
   // The time taken (i.e. elapsed duration) to stop the trace (in nanoseconds).
-  int64 stopping_time_ns = 3;
+  int64 stopping_duration_ns = 3;
 }
 
 
