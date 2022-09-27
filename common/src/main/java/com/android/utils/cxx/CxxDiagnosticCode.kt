@@ -29,6 +29,7 @@ enum class CxxDiagnosticCode(val errorCode: Int) {
     NDK_DIR_IS_DEPRECATED(1106),
     NDK_FEATURE_NOT_SUPPORTED_FOR_VERSION(1107),
     NDK_DOES_NOT_SUPPORT_API_LEVEL(1108),
+    NDK_SYMLINK_FAILED(1109),
 
     // ABI errors
     ABI_IS_INVALID(1200),
