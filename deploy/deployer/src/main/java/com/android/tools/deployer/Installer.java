@@ -295,6 +295,22 @@ public abstract class Installer {
         }
 
         Deploy.ComposeStatusResponse response = resp.getComposeStatusResponse();
+        logger.verbose("installer composeStatus:: " + response.getStatus().toString());
+        return response;
+    }
+
+    public Deploy.RecomposeResponse recompose(Deploy.RecomposeRequest request) throws IOException {
+        Deploy.InstallerRequest.Builder reqBuilder = buildRequest("recompose");
+        reqBuilder.setRecomposeRequest(request);
+        Deploy.InstallerRequest req = reqBuilder.build();
+
+        Deploy.InstallerResponse resp = send(req, Timeouts.CMD_RECOMPOSE);
+        if (!resp.hasRecomposeResponse()) {
+            errorAsymetry(req, resp);
+        }
+
+        Deploy.RecomposeResponse response = resp.getRecomposeResponse();
+        logger.verbose("installer recompose: " + response.getStatus().toString());
         return response;
     }
 

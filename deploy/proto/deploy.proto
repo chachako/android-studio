@@ -262,7 +262,21 @@ message AgentResponse {
     AgentLiveLiteralUpdateResponse live_literal_response = 5;
     AgentLiveEditResponse le_response = 6;
     AgentComposeStatusResponse compose_status_response = 7;
+    AgentRecomposeResponse recompose_response = 8;
   }
+}
+
+message AgentRecomposeResponse{
+  enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+    ERROR = 2;
+    INSTRUMENTATION_FAILED = 3;
+    LAMBDA_DEX_LOAD_FAILED = 4;
+    UNSUPPORTED_CHANGE = 5;
+  }
+
+  Status status = 1;
 }
 
 // A response detailing the results of a AgentRequest.
@@ -327,6 +341,7 @@ message AgentLiveEditResponse {
     NORMAL = 1;        // Normal Recomposition with minimal invalidation
     INIT_RESET = 2;    // State reset due to first time editing (newly primed)
     FORCED_RESET = 3;  // Compose runtime only support full reset (pre-1.2.0)
+    RESET_SKIPPED= 4;  // Recompose was skipped due to class Priming
   }
   RecomposeType recompose_type = 3;
 }
@@ -475,6 +490,7 @@ message InstallerRequest {
     TimeoutRequest timeout_request = 13;
     RootPushInstallRequest root_push_install_request = 15;
     ComposeStatusRequest compose_status_request = 16;
+    RecomposeRequest recompose_request = 17;
   }
 
   // The InstallerResponse should match the ID of the request.
@@ -510,6 +526,7 @@ message InstallerResponse {
     TimeoutResponse timeout_response = 13;
     RootPushInstallResponse root_push_install_response = 16;
     ComposeStatusResponse compose_status_response = 17;
+    RecomposeResponse recompose_response = 18;
   }
 
   string error_message = 14;
@@ -705,6 +722,7 @@ message AgentRequest {
     LiveLiteralUpdateRequest live_literal_request = 2;
     LiveEditRequest le_request = 3;
     ComposeStatusRequest compose_status_request = 4;
+    RecomposeRequest recompose_request = 5;
   }
 }
 
@@ -785,6 +803,30 @@ message LiveEditRequest {
   // The recompose group ID used for partial recomposition
   // API calls.
   int32 group_id = 8;
+
+  // In manual mode we don't want to recompose if a class had to be primed.
+  bool recompose_after_priming = 9;
+}
+
+message RecomposeRequest {
+  string application_id = 1;
+  Arch arch = 2;
+  repeated int32 process_ids = 3;
+}
+
+message RecomposeResponse {
+  enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+    READY_FOR_AGENTS_NOT_RECEIVED = 2;
+    AGENT_ATTACH_FAILED = 3;
+    INSTALL_SERVER_COM_ERR = 4;       // InstallServer internal or pipe rw error
+    AGENT_ERROR = 5;                  // One or more of the agents reported failure
+  }
+  Status status = 1;
+
+  repeated AgentResponse failed_agents = 2;
+  repeated AgentResponse success_agents = 3;
 }
 
 message LiveEditClass {

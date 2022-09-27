@@ -69,6 +69,7 @@ public class LiveUpdateDeployer {
         public final byte[] classData;
         public final Map<String, byte[]> supportClasses;
         final boolean debugModeEnabled;
+        final boolean recomposeAfterPriming;
 
         public UpdateLiveEditsParam(
                 String className,
@@ -78,7 +79,8 @@ public class LiveUpdateDeployer {
                 int groupId,
                 byte[] classData,
                 Map<String, byte[]> supportClasses,
-                boolean debugModeEnabled) {
+                boolean debugModeEnabled,
+                boolean recomposeAfterPriming) {
             this.className = className;
             this.methodName = methodName;
             this.methodDesc = methodDesc;
@@ -87,12 +89,21 @@ public class LiveUpdateDeployer {
             this.classData = classData;
             this.supportClasses = supportClasses;
             this.debugModeEnabled = debugModeEnabled;
+            this.recomposeAfterPriming = recomposeAfterPriming;
         }
     }
 
     public static final class UpdateLiveEditResult {
         public final List<UpdateLiveEditError> errors;
         public final Deploy.AgentLiveEditResponse.RecomposeType recomposeType;
+
+        public UpdateLiveEditResult() {
+            this(new ArrayList<>(), Deploy.AgentLiveEditResponse.RecomposeType.NONE);
+        }
+
+        public UpdateLiveEditResult(List<UpdateLiveEditError> errors) {
+            this(errors, Deploy.AgentLiveEditResponse.RecomposeType.NONE);
+        }
 
         public UpdateLiveEditResult(
                 List<UpdateLiveEditError> errors, Deploy.AgentLiveEditResponse.RecomposeType type) {
@@ -276,13 +287,13 @@ public class LiveUpdateDeployer {
     }
 
     /** Temp solution. Going to refactor / move this elsewhere later. */
-    public List<UpdateLiveEditError> updateLiveEdit(
+    public UpdateLiveEditResult updateLiveEdit(
             Installer installer, AdbClient adb, String packageName, UpdateLiveEditsParam param) {
 
         // Sometimes we get a PSI event for a top-level file when no top-level class exists. In this
         // case, just treat it as a no-op success.
         if (param.classData.length == 0) {
-            return new ArrayList<>();
+            return new UpdateLiveEditResult();
         }
 
         List<Integer> pids = adb.getPids(packageName);
@@ -290,7 +301,7 @@ public class LiveUpdateDeployer {
             System.out.println("Cancelling LiveEdit request(No target pids)");
             List<UpdateLiveEditError> error = new LinkedList<>();
             error.add(new UpdateLiveEditError("No target pids to Live Edit"));
-            return error;
+            return new UpdateLiveEditResult(error);
         }
 
         Deploy.Arch arch = adb.getArch(pids);
@@ -315,6 +326,7 @@ public class LiveUpdateDeployer {
                     Deploy.LiveEditClass.newBuilder().setClassName(name).setClassData(data));
         }
         requestBuilder.setDebugModeEnabled(param.debugModeEnabled);
+        requestBuilder.setRecomposeAfterPriming(param.recomposeAfterPriming);
         Deploy.LiveEditRequest request = requestBuilder.build();
 
 
@@ -351,10 +363,14 @@ public class LiveUpdateDeployer {
                     }
                     Deploy.AgentLiveEditResponse ler = success.getLeResponse();
                     recomposeType = ler.getRecomposeType();
+
                 }
             } else {
                 errors.add(new UpdateLiveEditError(response.getStatus().toString()));
             }
+            // TODO: Handle multiple recomposeType resuls. It seems we only process the last one.
+            // If we requested to not recompose after priming and indeed recompose was skipped we
+            // need to let the user know.
             result = new UpdateLiveEditResult(errors, recomposeType);
         } catch (IOException e) {
             result =
@@ -364,7 +380,26 @@ public class LiveUpdateDeployer {
         }
 
         // TODO: Next CL: Change the return type and return the result object instead.
-        return result.errors;
+        return result;
+    }
+
+    public void recompose(Installer installer, AdbClient adb, String applicationId) {
+        Deploy.RecomposeRequest.Builder builder = Deploy.RecomposeRequest.newBuilder();
+        List<Integer> pids = adb.getPids(applicationId);
+        if (pids.isEmpty()) {
+            System.out.println("Cancelling Recompose (No target pids)");
+            return;
+        }
+
+        builder.setArch(adb.getArch(pids));
+        builder.addAllProcessIds(pids);
+        builder.setApplicationId(applicationId);
+        try {
+            installer.recompose(builder.build());
+        } catch (IOException e) {
+            // TODO: All the printStackTrace in this class should be logged to a logger.
+            e.printStackTrace();
+        }
     }
 
     /* Temp solution. Going to refactor / move this elsewhere later. */

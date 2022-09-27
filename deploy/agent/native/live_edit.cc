@@ -26,6 +26,7 @@
 #include "tools/base/deploy/agent/native/recompose.h"
 #include "tools/base/deploy/agent/native/transform/stub_transform.h"
 #include "tools/base/deploy/agent/native/transform/transforms.h"
+#include "tools/base/deploy/common/event.h"
 #include "tools/base/deploy/common/log.h"
 
 // TODO: We need some global state that holds all these information
@@ -203,24 +204,32 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
     // This is a temp solution. If the new compose flag is set, we would
     // use the new recompose API. Otherwise we just recompose everything.
 
+    // TODO: Rename composable proto field.
+    //       It should be called 'usePartialRecompose'.
+    bool usePartialRecomposition = req.composable();
+
     // When the recompose API is stable, we will only call the new API
     // and never call whole program recompose.
-    if (req.composable() && !hasNewlyPrimedClass) {
-      std::string error = "";
-      bool result =
-          recompose.InvalidateGroupsWithKey(reloader, req.group_id(), error);
-      Log::V("InvalidateGroupsWithKey %d", req.group_id());
-      if (result) {
-        resp.set_recompose_type(proto::AgentLiveEditResponse::NORMAL);
-      } else {
-        resp.set_recompose_type(proto::AgentLiveEditResponse::FORCED_RESET);
+    if (hasNewlyPrimedClass) {
+      if (req.recompose_after_priming()) {
+        resp.set_recompose_type(proto::AgentLiveEditResponse::INIT_RESET);
         jobject state = recompose.SaveStateAndDispose(reloader);
         recompose.LoadStateAndCompose(reloader, state);
+        InfoEvent("Recomposed after priming (likely automatic modde");
+      } else {
+        resp.set_recompose_type(proto::AgentLiveEditResponse::RESET_SKIPPED);
+        InfoEvent("Skipped Recompose as requested (likely manual mode)");
       }
-    } else {
-      resp.set_recompose_type(proto::AgentLiveEditResponse::INIT_RESET);
+    } else {  // No newlyPrimedClasses
+      if (usePartialRecomposition) {
+        std::string error = "";
+        bool result =
+            recompose.InvalidateGroupsWithKey(reloader, req.group_id(), error);
+        Log::V("InvalidateGroupsWithKey %d", req.group_id());
+      }
       jobject state = recompose.SaveStateAndDispose(reloader);
       recompose.LoadStateAndCompose(reloader, state);
+      resp.set_recompose_type(proto::AgentLiveEditResponse::NORMAL);
     }
   }
 
