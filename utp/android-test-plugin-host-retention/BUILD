@@ -41,6 +41,7 @@ kotlin_test(
     ]),
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
     resources = glob(["src/test/resources/**"]),
+    tags = ["no_windows"],  # b/249357577
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         # Don't change dependency order or the test fails. This launcher jar
