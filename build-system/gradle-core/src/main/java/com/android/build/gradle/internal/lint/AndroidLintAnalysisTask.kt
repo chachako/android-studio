@@ -35,6 +35,7 @@ import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.tasks.TaskCategory
+import com.android.build.gradle.options.BooleanOption
 import com.android.ide.common.repository.GradleVersion
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.utils.FileUtils
@@ -352,7 +353,9 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 project.providers
                     .environmentVariable(LINT_PRINT_STACKTRACE_ENVIRONMENT_VARIABLE)
                     .map { it.equals("true", ignoreCase = true) }
-                    .orElse(false)
+                    .orElse(
+                        services.projectOptions.getProvider(BooleanOption.PRINT_LINT_STACK_TRACE)
+                    )
             )
         }
         systemPropertyInputs.initialize(project.providers, LintMode.ANALYSIS)

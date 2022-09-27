@@ -71,7 +71,7 @@ class AndroidLintTaskTest {
         task.lintModelDirectory.set(temporaryFolder.newFolder())
         task.lintModelWriterTaskOutputPath.set("lintModelWriterTaskOutputPath")
         task.checkDependencies.set(true)
-        task.printStackTrace.set(false)
+        task.printStackTrace.set(true)
         task.lintTool.lintCacheDirectory.set(temporaryFolder.newFolder())
         task.lintTool.versionKey.set(Version.ANDROID_TOOLS_BASE_VERSION + "_foo")
         task.lintTool.version.set(Version.ANDROID_TOOLS_BASE_VERSION)
@@ -85,5 +85,6 @@ class AndroidLintTaskTest {
             .contains("--client-version ${Version.ANDROID_GRADLE_PLUGIN_VERSION}")
         assertThat(commandLineArguments).contains("--missing-baseline-is-empty-baseline")
         assertThat(commandLineArguments).contains("--offline")
+        assertThat(commandLineArguments).contains("--stacktrace")
     }
 }

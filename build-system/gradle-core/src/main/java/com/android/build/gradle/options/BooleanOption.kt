@@ -212,6 +212,8 @@ enum class BooleanOption(
     PRIVACY_SANDBOX_SDK_SUPPORT("android.experimental.privacysandboxsdk.enable", false, FeatureStage.Experimental),
 
     BUILD_ANALYZER_TASK_LABELS("android.experimental.buildanalyzer.tasklabels.enable", false, FeatureStage.Experimental),
+
+    PRINT_LINT_STACK_TRACE("android.lint.printStackTrace", false, FeatureStage.Experimental),
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

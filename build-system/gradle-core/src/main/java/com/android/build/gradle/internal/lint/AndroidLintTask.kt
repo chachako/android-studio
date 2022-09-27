@@ -576,6 +576,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             task.description = description
 
             task.initializeGlobalInputs(
+                variant.main.services,
                 isAndroid = true,
                 lintMode
             )
@@ -797,6 +798,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     }
 
     private fun initializeGlobalInputs(
+        services: TaskCreationServices,
         isAndroid: Boolean,
         lintMode: LintMode
     ) {
@@ -824,7 +826,10 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         } else {
             printStackTrace.setDisallowChanges(
                 project.providers.environmentVariable(LINT_PRINT_STACKTRACE_ENVIRONMENT_VARIABLE)
-                    .map { it.equals("true", ignoreCase = true) }.orElse(false)
+                    .map { it.equals("true", ignoreCase = true) }
+                    .orElse(
+                        services.projectOptions.getProvider(BooleanOption.PRINT_LINT_STACK_TRACE)
+                    )
             )
         }
         systemPropertyInputs.initialize(project.providers, lintMode)
@@ -844,6 +849,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     ) {
         val projectInfo = taskCreationServices.projectInfo
         initializeGlobalInputs(
+            taskCreationServices,
             isAndroid = false,
             lintMode
         )
