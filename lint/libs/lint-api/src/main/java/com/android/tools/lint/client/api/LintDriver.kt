@@ -2814,7 +2814,7 @@ class LintDriver(
             exception: Throwable?,
             format: String?,
             vararg args: Any
-        ) = delegate.log(exception, format, *args)
+        ) = delegate.log(severity, exception, format, *args)
 
         override fun getTestLibraries(project: Project): List<File> =
             delegate.getTestLibraries(project)
