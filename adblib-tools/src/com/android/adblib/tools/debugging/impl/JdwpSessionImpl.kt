@@ -40,11 +40,7 @@ internal class JdwpSessionImpl(
     session: AdbSession,
     private val channel: AdbChannel,
     private val pid: Int,
-    /**
-     *  This value is from DDMLIB, using it should help avoid potential back compat issues
-     *  if someone depends on this somehow
-     */
-    firstPacketId: Int = 100
+    nextPacketIdBase: Int
 ) : JdwpSession {
 
     private val logger = thisLogger(session)
@@ -65,7 +61,7 @@ internal class JdwpSessionImpl(
 
     private val receiveMutex = Mutex()
 
-    private val atomicPacketId = AtomicInteger(firstPacketId)
+    private val atomicPacketId = AtomicInteger(nextPacketIdBase)
 
     override fun close() {
         logger.debug { "pid=$pid: Closing JDWP session handler (and underlying channel)" }

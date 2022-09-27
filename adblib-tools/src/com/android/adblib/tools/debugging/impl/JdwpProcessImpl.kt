@@ -90,7 +90,13 @@ internal class JdwpProcessImpl(
      * lasts until the debugging session ends.
      */
     private val jdwpSessionRef = ReferenceCountedResource(session, session.host.ioDispatcher) {
-        JdwpSession.openJdwpSession(session, device, pid).closeOnException { jdwpSession ->
+        /**
+         * This value is from DDMLIB, using it should help avoid potential back compat issues
+         * if someone depends on this somehow
+         */
+        val JDWP_SESSION_FIRST_PACKET_ID = 0x40000000
+
+        JdwpSession.openJdwpSession(session, device, pid, JDWP_SESSION_FIRST_PACKET_ID).closeOnException { jdwpSession ->
             SharedJdwpSession.create(session, pid, jdwpSession)
         }
     }

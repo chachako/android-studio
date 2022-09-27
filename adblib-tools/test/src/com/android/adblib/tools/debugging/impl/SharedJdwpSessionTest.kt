@@ -544,7 +544,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         device: DeviceSelector,
         pid: Int
     ): SharedJdwpSession {
-        val jdwpSession = JdwpSession.openJdwpSession(session, device, 10)
+        val jdwpSession = JdwpSession.openJdwpSession(session, device, 10, 100)
         return registerCloseable(SharedJdwpSession.create(session, pid, jdwpSession))
     }
 

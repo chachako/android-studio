@@ -74,11 +74,12 @@ internal interface JdwpSession : AutoCloseable {
         suspend fun openJdwpSession(
             session: AdbSession,
             device: DeviceSelector,
-            pid: Int
+            pid: Int,
+            nextPacketIdBase: Int
         ): JdwpSession {
             val channel = session.deviceServices.jdwp(device, pid)
             channel.closeOnException {
-                return JdwpSessionImpl(session, channel, pid)
+                return JdwpSessionImpl(session, channel, pid, nextPacketIdBase)
             }
         }
 
@@ -86,8 +87,13 @@ internal interface JdwpSession : AutoCloseable {
          * Returns a [JdwpSession] that wraps an existing socket [channel] and allows
          * exchanging `JDWP` packets.
          */
-        fun wrapSocketChannel(session: AdbSession, channel: AdbChannel, pid: Int, firstPacketId: Int = 100): JdwpSession {
-            return JdwpSessionImpl(session, channel, pid, firstPacketId)
+        fun wrapSocketChannel(
+            session: AdbSession,
+            channel: AdbChannel,
+            pid: Int,
+            nextPacketIdBase: Int
+        ): JdwpSession {
+            return JdwpSessionImpl(session, channel, pid, nextPacketIdBase)
         }
     }
 }
