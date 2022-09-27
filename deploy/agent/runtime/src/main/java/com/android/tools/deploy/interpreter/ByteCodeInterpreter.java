@@ -70,10 +70,51 @@ public class ByteCodeInterpreter {
         handlers = computeHandlers(im.getTarget());
     }
 
+    // Detect infinite loop by detecting GOTO instructions that target themselves.
+    private boolean isSelfTargetingGoto(AbstractInsnNode cur, AbstractInsnNode next) {
+        // Only consider unconditional branch
+        if (cur.getOpcode() != GOTO) {
+            return false;
+        }
+
+        InsnList instructions = im.getTarget().instructions;
+
+        // Any loop in the instruction must contain a back edge.
+        if (instructions.indexOf(cur) < instructions.indexOf(next)) {
+            return false;
+        }
+
+        // Skip all pseudo-instructions until we find out the actual bytecode target of the GOTO.
+        skip:
+        while (next != null) {
+            switch (next.getType()) {
+                case AbstractInsnNode.LABEL:
+                case AbstractInsnNode.FRAME:
+                case AbstractInsnNode.LINE:
+                    next = next.getNext();
+                    continue;
+                default:
+                    break skip;
+            }
+        }
+        return cur == next;
+    }
+
+    private void checkProvenInfiniteLoop(@NonNull AbstractInsnNode nextInsn) {
+        if (!isSelfTargetingGoto(currentInsn, nextInsn)) {
+            // We are not 100% sure it is an infinite loop but definitely not a simple self looping
+            // GOTO.
+            return;
+        }
+        throw new RuntimeException(
+                "Possible Infinite Loop in " + im.getFilename() + " line " + getLineNumber());
+    }
+
     void goTo(@Nullable AbstractInsnNode nextInsn) {
         if (nextInsn == null) {
             throw new IllegalArgumentException("Instruction flow ended with no RETURN");
         }
+        checkProvenInfiniteLoop(nextInsn);
         currentInsn = nextInsn;
     }
 
