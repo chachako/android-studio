@@ -45,6 +45,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
+import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 
 /**
  * CMake lib<-app project where lib is published as Prefab
@@ -550,5 +551,24 @@ class ModuleToModuleDepsTest(
         project.modelV2()
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING) // CMake cannot detect compiler attributes
             .fetchNativeModules(ModelBuilderV2.NativeModuleParams())
+    }
+
+    @Test
+    fun `changing a cpp file causes a rebuild`() {
+        Assume.assumeFalse(expectGradleConfigureError())
+        Assume.assumeFalse(expectGradleBuildError())
+
+        val executor = project.executor()
+
+        val buildTask = ":app:build${appBuildSystem.build}Debug[arm64-v8a]"
+
+        executor.run(buildTask)
+        executor.run(buildTask)
+        assertThat(project.buildResult.getTask(":lib:prefabDebugPackage")).wasUpToDate()
+
+        val cppSrc = project.getSubproject(":lib").buildFile.resolveSibling("src/main/cpp/foo.cpp")
+        cppSrc.writeText("int foo() { return 6; }")
+        executor.run(buildTask)
+        assertThat(project.buildResult.getTask(":lib:prefabDebugPackage")).didWork()
     }
 }
