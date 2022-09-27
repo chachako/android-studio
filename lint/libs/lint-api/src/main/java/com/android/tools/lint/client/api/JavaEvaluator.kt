@@ -85,6 +85,7 @@ const val TYPE_LONG_WRAPPER = "java.lang.Long"
 const val TYPE_DOUBLE_WRAPPER = "java.lang.Double"
 const val TYPE_FLOAT_WRAPPER = "java.lang.Float"
 const val TYPE_CHARACTER_WRAPPER = "java.lang.Character"
+const val TYPE_CLASS = "java.lang.Class"
 
 abstract // Some of these methods may be overridden by LintClients
 class JavaEvaluator {

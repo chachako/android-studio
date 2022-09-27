@@ -441,6 +441,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 UastImplementationDetector.ISSUE,
                 UnsafeBroadcastReceiverDetector.ACTION_STRING,
                 UnsafeBroadcastReceiverDetector.BROADCAST_SMS,
+                UnsafeImplicitIntentDetector.ISSUE,
                 UnsafeNativeCodeDetector.LOAD,
                 UnsafeNativeCodeDetector.UNSAFE_NATIVE_CODE_LOCATION,
                 UnusedResourceDetector.ISSUE,
