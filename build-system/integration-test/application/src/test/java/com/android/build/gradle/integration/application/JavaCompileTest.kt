@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.app.EmptyActivityProjectBuilder
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType.JAVAC
 import com.android.build.gradle.internal.scope.getOutputDir
@@ -28,7 +29,6 @@ import org.junit.rules.TemporaryFolder
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
-import java.io.File
 
 class JavaCompileTest {
 
@@ -160,6 +160,25 @@ class JavaCompileTest {
         Truth.assertThat(content).containsMatch("room.schemaLocation=.*schemas")
         Truth.assertThat(content).contains("room.incremental=true")
         Truth.assertThat(content).contains("room.expandProjection=true")
+    }
+
+    @Test
+    fun `check error messages for setting release flag `() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+
+                tasks.withType(JavaCompile).configureEach {
+                    it.options.release.set(8)
+                }
+            """.trimIndent()
+        )
+        val result = project.executor().expectFailure().run(":app:compileDebugJavaWithJavac")
+        result.stderr.use {
+            ScannerSubject.assertThat(it).contains("Using '--release' option prevents Android " +
+                    "Gradle Plugin from setting correct bootclasspath when compiling source with" +
+                    " Java 8")
+        }
     }
 
 

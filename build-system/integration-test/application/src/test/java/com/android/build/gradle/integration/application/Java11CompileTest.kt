@@ -200,6 +200,24 @@ class Java11CompileTest {
         executor().run("assembleDebug")
     }
 
+    @Test
+    fun testWarningForSettingReleaseFlag() {
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+
+                tasks.withType(JavaCompile).configureEach {
+                    it.options.release.set(11)
+                }
+            """.trimIndent()
+        )
+        val result = project.executor().run("compileDebugJavaWithJavac")
+        result.stdout.use {
+            ScannerSubject.assertThat(it).contains("WARNING: Using '--release' option could cause " +
+                    "issues when using Android Gradle Plugin to compile sources with Java 9+")
+        }
+    }
+
     private fun customJdkLocation(jdkVersion: JdkVersion): String {
         return when(jdkVersion) {
             JdkVersion.JDK8 -> TestUtils.getJava8Jdk()
