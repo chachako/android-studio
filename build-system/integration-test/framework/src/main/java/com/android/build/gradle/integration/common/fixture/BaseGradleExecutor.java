@@ -366,6 +366,9 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
             jvmArguments.add("-XX:LogFile=" + jvmLogDir.resolve("java_log.log").toString());
         }
 
+        // b/243667039
+        jvmArguments.add("--add-opens=java.base/java.util.concurrent=ALL-UNNAMED");
+
         launcher.setJvmArguments(Iterables.toArray(jvmArguments, String.class));
     }
 
