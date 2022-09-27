@@ -59,9 +59,14 @@ public class JpgFormatTest {
 
     @Test
     public void jpg8Cmyk() throws IOException {
-        // CMYK JPEGs as written by Photoshop are not supported
-        thrown.expect(IOException.class);
-        ImageUtils.loadImage("jpg/jpg_8_cmyk.jpg");
+        Image image = ImageUtils.loadImage("jpg/jpg_8_cmyk.jpg");
+        Assert.assertNotNull(image.getMergedImage());
+        Assert.assertEquals(ColorMode.CMYK, image.getColorMode());
+        Assert.assertEquals(8, image.getColorDepth());
+        Assert.assertEquals(0, image.getLayers().size());
+        Assert.assertEquals(0, image.getGuides().size());
+        Assert.assertEquals(ColorSpace.TYPE_CMYK, image.getColorSpace().getType());
+        Assert.assertFalse(Images.isColorSpace_sRGB(image.getMergedImage()));
     }
 
     @Test
