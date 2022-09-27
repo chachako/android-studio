@@ -22,7 +22,6 @@ import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLog
 import com.android.repository.Revision
 import com.android.repository.api.LocalPackage
 import com.android.repository.testframework.FakePackage
-import com.android.utils.cxx.CxxDiagnosticCode
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_IS_MISSING
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_VERSION_IS_INVALID
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_VERSION_IS_UNSUPPORTED
@@ -30,7 +29,6 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.File
 import java.io.IOException
-import java.util.function.Consumer
 
 class CmakeLocatorTest {
     private val newline = System.lineSeparator()
@@ -86,7 +84,7 @@ class CmakeLocatorTest {
                     encounter.sdkPackagesRetrieved = true
                     repositoryPackages()
                 },
-                downloader = Consumer {
+                downloader = {
                     encounter.downloadAttempts = encounter.downloadAttempts + 1
                     downloader()
                 }
@@ -787,5 +785,27 @@ class CmakeLocatorTest {
                 .isSatisfiedBy(forkCmakeSdkVersionRevision)
         CmakeVersionRequirements(CMakeVersion.FORK.sdkFolderName)
                 .isSatisfiedBy(forkCmakeReportedVersion)
+    }
+
+    @Test
+    fun `bug 226225504 prefer SDK CMake over PATH when both satisfy`() {
+        val sdkPackage = fakeLocalCmakeOf(CMakeVersion.DEFAULT)
+        val encounter = findCmakePath(
+            cmakeVersionFromDsl = CMakeVersion.DEFAULT.version,
+            environmentPaths = { listOf(File("/path/from/environment/cmake/bin")) },
+            repositoryPackages = { listOf(sdkPackage) },
+            cmakeVersionGetter = { folder ->
+                when(val path = folder.toString().replace("\\", "/")) {
+                    "/path/from/environment/cmake/bin" -> Revision.parseRevision(CMakeVersion.DEFAULT.version)
+                    else -> error(path)
+                }
+            })
+        assertThat(encounter.result).isNotNull()
+        assertThat(encounter.result!!.toString()).isEqualTo(
+            "/sdk/cmake/3.22.1"
+        )
+        assertThat(encounter.warnings).hasSize(0)
+        assertThat(encounter.errors).hasSize(0)
+        assertThat(encounter.downloadAttempts).isEqualTo(0)
     }
 }

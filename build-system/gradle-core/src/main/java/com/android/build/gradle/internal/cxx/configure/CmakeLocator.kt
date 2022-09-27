@@ -377,15 +377,33 @@ fun findCmakePathLogic(
 
     val cmakePaths = mutableSetOf<String>()
 
-    // Gather acceptable environment paths
-    for (environmentPath in environmentPaths()) {
-        if (cmakePaths.contains(environmentPath.path)) continue
-        val version = versionGetter(environmentPath) ?: continue
+    // Gather acceptable SDK package paths
+    for (localPackage in repositoryPackages()) {
+        val packagePath = localPackage.location.resolve("bin")
+        if (cmakePaths.contains(packagePath.toString())) continue
+        val version = if (localPackage.version == forkCmakeSdkVersionRevision) {
+            forkCmakeReportedVersion
+        } else {
+            localPackage.version
+        }
         if (!dsl.isSatisfiedBy(version)) {
-            nonsatisfiers += "'$version' found in PATH"
+            nonsatisfiers += "'$version' found in SDK"
             continue
         }
-        cmakePaths.add(environmentPath.path)
+        cmakePaths.add(packagePath.toString())
+    }
+
+    // Gather acceptable environment paths
+    if (cmakePaths.isEmpty()) {
+        for (environmentPath in environmentPaths()) {
+            if (cmakePaths.contains(environmentPath.path)) continue
+            val version = versionGetter(environmentPath) ?: continue
+            if (!dsl.isSatisfiedBy(version)) {
+                nonsatisfiers += "'$version' found in PATH"
+                continue
+            }
+            cmakePaths.add(environmentPath.path)
+        }
     }
 
     // This is a fallback case for backward compatibility. In the past,
@@ -410,23 +428,7 @@ fun findCmakePathLogic(
     }
 
 
-    if (cmakePaths.isEmpty()) {
-        // Gather acceptable SDK package paths
-        for (localPackage in repositoryPackages()) {
-            val packagePath = localPackage.location.resolve("bin")
-            if (cmakePaths.contains(packagePath.toString())) continue
-            val version = if (localPackage.version == forkCmakeSdkVersionRevision) {
-                forkCmakeReportedVersion
-            } else {
-                localPackage.version
-            }
-            if (!dsl.isSatisfiedBy(version)) {
-                nonsatisfiers += "'$version' found in SDK"
-                continue
-            }
-            cmakePaths.add(packagePath.toString())
-        }
-    }
+
 
     // Handle case where there is no match.
     if (cmakePaths.isEmpty()) {
