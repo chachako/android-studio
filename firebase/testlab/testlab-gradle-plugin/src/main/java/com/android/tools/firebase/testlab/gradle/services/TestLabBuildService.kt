@@ -604,7 +604,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         if (!deviceModel.supportedVersionIds.contains(apiLevel.toString())) {
             error("""
-                $apiLevel is not supported by $deviceModel. Available Api levels are:
+                apiLevel: $apiLevel is not supported by device: $deviceId. Available Api levels are:
                 ${deviceModel.supportedVersionIds}
             """.trimIndent())
         }
