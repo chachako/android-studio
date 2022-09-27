@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.bundle
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
@@ -56,5 +57,36 @@ class DynamicAppPackageDependenciesTest {
                         .withArgument("--build-cache")
                         .run(":app:generateReleaseFeatureTransitiveDeps")
         assertThat(buildResult.getTask(":app:generateReleaseFeatureTransitiveDeps")).didWork()
+    }
+
+    /**
+     * Regression test for http://b/248576022
+     */
+    @Test
+    fun testPackagingOfDifferentVersionsOfTheSameArtifact() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                dependencies {
+                  api 'com.google.guava:guava:19.0'
+                }
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("feature1").buildFile,
+            """
+                dependencies {
+                  api 'com.google.guava:guava:20.0'
+                }
+            """.trimIndent()
+        )
+
+        project.executor().run(":feature1:generateDebugFeatureTransitiveDeps")
+
+        val feature1Dependencies = project.getSubproject("feature1").getIntermediateFile(
+            InternalArtifactType.PACKAGED_DEPENDENCIES.getFolderName(),
+            "debug/deps.txt"
+        )
+        assertThat(feature1Dependencies).doesNotContain("guava")
     }
 }

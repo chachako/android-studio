@@ -43,10 +43,6 @@ class CheckMultiApkLibrariesTaskTest {
 
     private val otherFeature2 = createFeatureSplit("com.example.otherFeature2")
 
-    private val app =
-        MinimalSubProject.app("com.example.app")
-            .appendToBuild("android.defaultConfig.minSdkVersion 14")
-
     private val testApp =
         MultiModuleTestProject.builder()
             .subproject(":lib", lib)
@@ -67,9 +63,9 @@ class CheckMultiApkLibrariesTaskTest {
         val result = project.executor().expectFailure().run("assembleDebug")
 
         assertThat(result.failureMessage).contains(
-            "[:otherFeature1, :otherFeature2] all package the same library [:lib;capability group='project', name='lib', version='unspecified'].")
+            "[:otherFeature1, :otherFeature2] all package the same library [:lib;Capability: group='project', name='lib'].")
         assertThat(result.failureMessage).contains(
-            "[:otherFeature1, :otherFeature2] all package the same library [com.android.support:support-core-utils;capability group='com.android.support', name='support-core-utils', version='28.0.0'].")
+            "[:otherFeature1, :otherFeature2] all package the same library [com.android.support:support-core-utils;Capability: group='com.android.support', name='support-core-utils'].")
         assertThat(result.failureMessage).contains(
             "Multiple APKs packaging the same library can cause runtime errors."
         )
