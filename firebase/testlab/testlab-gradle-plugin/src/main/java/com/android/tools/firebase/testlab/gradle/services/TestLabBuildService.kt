@@ -81,7 +81,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         const val clientApplicationName: String = "Firebase TestLab Gradle Plugin"
         const val xGoogUserProjectHeaderKey: String = "X-Goog-User-Project"
         val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
-        val TAG: String = TestLabBuildService::class.java.simpleName
 
         const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
 
@@ -421,7 +420,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             }
 
             for (testIssue in step.testExecutionStep.testIssues) {
-                logger.error(TAG, testIssue.errorMessage)
                 testSuiteResult.apply {
                     addIssue(Issue.newBuilder().apply {
                         message = testIssue.errorMessage
