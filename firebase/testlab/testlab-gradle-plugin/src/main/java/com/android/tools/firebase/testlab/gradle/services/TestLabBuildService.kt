@@ -483,13 +483,19 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     testSuiteResult.apply {
                         addTestResult(TestResult.newBuilder().apply {
                             testCase = TestCaseProto.TestCase.newBuilder().apply {
-                                var packageName: String = case.testCaseReference!!.className!!
+                                val packageName: String = case.testCaseReference!!.className!!
                                 val className: String = packageName.split(".").last()
                                 testClass = className
                                 testPackage = packageName.dropLast(className.length + 1)
                                 testMethod = case.testCaseReference!!.name
-                                startTime = Timestamps.fromNanos(case.startTime!!.nanos!!.toLong())
-                                endTime = Timestamps.fromNanos(case.endTime!!.nanos!!.toLong())
+                                startTimeBuilder.apply {
+                                    seconds = case.startTime!!.seconds!!.toLong()
+                                    nanos = case.startTime!!.nanos!!.toInt()
+                                }
+                                endTimeBuilder.apply {
+                                    seconds = case.endTime!!.seconds!!.toLong()
+                                    nanos = case.endTime!!.nanos!!.toInt()
+                                }
                             }.build()
 
                             val status = case.status
