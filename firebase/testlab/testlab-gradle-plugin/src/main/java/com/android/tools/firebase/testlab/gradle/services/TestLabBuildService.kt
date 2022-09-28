@@ -19,6 +19,7 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.build.api.instrumentation.StaticTestData
 import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceTestRunner.Companion.FtlTestRunResult
+import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.googleapis.util.Utils
@@ -78,6 +79,7 @@ import org.gradle.api.services.BuildServiceRegistry
 abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters> {
 
     companion object {
+        const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
         const val clientApplicationName: String = "Firebase TestLab Gradle Plugin"
         const val xGoogUserProjectHeaderKey: String = "X-Goog-User-Project"
         val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
@@ -146,6 +148,12 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         testData: StaticTestData,
         resultsOutDir: File,
     ): ArrayList<FtlTestRunResult> {
+        resultsOutDir.apply {
+            if (!exists()) {
+                mkdirs()
+            }
+        }
+
         val projectName = parameters.quotaProjectName.get()
         val requestId = UUID.randomUUID().toString()
 
@@ -291,6 +299,18 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             val testPassed = testSuitePassed && !hasAnyFailedTestCase && !testSuiteResult.hasPlatformError()
             ftlTestRunResults.add(FtlTestRunResult(testPassed, testSuiteResult))
         }
+
+        val resultProtos = ftlTestRunResults.mapNotNull(FtlTestRunResult::resultsProto)
+        if (resultProtos.isNotEmpty()) {
+            val resultsMerger = UtpTestSuiteResultMerger()
+            resultProtos.forEach(resultsMerger::merge)
+
+            val mergedTestResultPbFile = File(resultsOutDir, TEST_RESULT_PB_FILE_NAME)
+            mergedTestResultPbFile.outputStream().use {
+                resultsMerger.result.writeTo(it)
+            }
+        }
+
         return ftlTestRunResults
     }
 
