@@ -354,6 +354,22 @@ class CleanupDetector : Detector(), SourceCodeScanner {
             override fun returns(expression: UReturnExpression) {
                 escapes = true
             }
+
+            override fun returnsSelf(call: UCallExpression): Boolean {
+                val returnsSelf = super.returnsSelf(call)
+                if (returnsSelf || !(recycleType == INPUT_STREAM_CLS || recycleType == OUTPUT_STREAM_CLS)) {
+                    return returnsSelf
+                }
+
+                val callName = call.methodName ?: call.methodIdentifier?.name ?: return false
+                // For okio, treat input streams as sources and output streams as sinks
+                // such that calling stream.source().use { } treats the stream as used.
+                if (callName == "source" || callName == "sink") {
+                    return call.resolve()?.containingClass?.qualifiedName == "okio.Okio"
+                }
+
+                return false
+            }
         }
         method.accept(visitor)
 

@@ -25,13 +25,20 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLocalVariable
+import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
+import org.jetbrains.kotlin.asJava.unwrapped
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UClass
@@ -46,12 +53,14 @@ import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UResolvable
 import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.UUnaryExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.internal.acceptList
+import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.visitor.UastVisitor
 
@@ -501,6 +510,32 @@ fun UElement.isBelow(parent: UElement, strict: Boolean = false): Boolean {
 fun PsiElement?.isBelow(parent: PsiElement, strict: Boolean = false): Boolean {
     this ?: return false
     return PsiTreeUtil.isAncestor(parent, this, strict)
+}
+
+/**
+ * Returns the class "containing" the given method. This is normally
+ * just `member.containingClass`, but for extension functions
+ * and properties it's slightly more complicated (e.g. for `fun
+ * String.test()` the containing class is `java.lang.String`).
+ */
+fun PsiMember.getReceiverOrContainingClass(): PsiClass? {
+    return getReceiver() ?: containingClass
+}
+
+/**
+ * Given a [PsiMethod] or [PsiField], if it's an extension method or
+ * an extension property, returns the [PsiClass] for the extension.
+ * For example, for `fun String.test()` the containing class is
+ * `java.lang.String`.
+ */
+fun PsiMember.getReceiver(): PsiClass? {
+    val callable = when (val unwrapped = this.unwrapped) {
+        is KtNamedFunction, is KtProperty -> unwrapped as KtCallableDeclaration
+        is KtPropertyAccessor -> getNonStrictParentOfType<KtProperty>(unwrapped)
+        else -> return null
+    } ?: return null
+    val typeReference = callable.receiverTypeReference?.toUElement() as? UTypeReferenceExpression
+    return (typeReference?.type as? PsiClassType)?.resolve()
 }
 
 /**

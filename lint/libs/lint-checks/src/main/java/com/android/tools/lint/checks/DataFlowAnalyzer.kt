@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.getMethodName
+import com.android.tools.lint.detector.api.getReceiverOrContainingClass
 import com.android.tools.lint.detector.api.isBelow
 import com.android.tools.lint.detector.api.isJava
 import com.intellij.psi.PsiClass
@@ -175,7 +176,7 @@ abstract class DataFlowAnalyzer(
             }
         }
 
-        val containingClass = resolvedCall.containingClass ?: return false
+        val containingClass = resolvedCall.getReceiverOrContainingClass() ?: return false
         val returnTypeClass = (call.returnType as? PsiClassType)?.resolve()
         if (returnTypeClass == containingClass) {
             return true

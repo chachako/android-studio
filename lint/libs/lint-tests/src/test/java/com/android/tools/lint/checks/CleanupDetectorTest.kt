@@ -3153,4 +3153,75 @@ class CleanupDetectorTest : AbstractCheckTest() {
             """
         )
     }
+
+    fun testOkio() {
+        // Regression test for
+        // 248675800: Lint false positive Recycle regarding openInputStream
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+
+                import android.content.ContentResolver
+                import android.net.Uri
+                import okio.buffer
+                import okio.source
+                import java.io.FileNotFoundException
+
+                fun testInput(contentResolver: ContentResolver, uri: Uri) {
+                    val inputStream = contentResolver.openInputStream(uri) ?: throw FileNotFoundException()
+                    inputStream.source().buffer().use { input -> }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg
+
+                import android.content.ContentResolver
+                import android.net.Uri
+                import okio.buffer
+                import okio.sink
+                import java.io.FileNotFoundException
+
+                fun testOutput(contentResolver: ContentResolver, uri: Uri) {
+                    val outputStream = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException()
+                    outputStream.sink().buffer().use { output ->
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                // Okio stubs
+                @file:JvmName("Okio")
+                package okio
+
+                import java.io.Closeable
+                import java.io.InputStream
+                import java.io.OutputStream
+
+                interface Source : Closeable {
+                    override fun close() { }
+                }
+                interface BufferedSource : Source
+                class RealBufferedSource(source: Source) : BufferedSource
+                private open class InputStreamSource(input: InputStream) : Source
+                private open class OutputStreamSource(output: OutputStream) : Sink
+
+                interface Sink : Closeable {
+                    override fun close() { }
+                }
+                interface BufferedSink : Sink
+                class RealBufferedSink(sink: Sink) : BufferedSink
+
+                fun InputStream.source(): Source = InputStreamSource(this)
+                fun OutputStream.sink(): Sink = OutputStreamSource(this)
+
+                fun Source.buffer(): BufferedSource = RealBufferedSource(this)
+                fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
+                """
+            ).indented()
+        ).run().expectClean()
+    }
 }
