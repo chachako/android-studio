@@ -608,7 +608,7 @@ public class LocalMavenRepositoryGenerator {
 
             DependencyResult result = system.resolveDependencies(session, request);
 
-            addImportDependencies(result);
+            addImportDependencies(result, resolveConflicts);
 
             return result.getRoot();
         }
@@ -618,8 +618,8 @@ public class LocalMavenRepositoryGenerator {
          * removed from the Maven models when the effective Maven model is constructed from the raw
          * Maven model.
          */
-        private void addImportDependencies(DependencyResult result) {
-            result.getRoot().accept(new ImportDependencyVisitor(result.getRoot(),this));
+        private void addImportDependencies(DependencyResult result, boolean resolveConflicts) {
+            result.getRoot().accept(new ImportDependencyVisitor(result.getRoot(), this, resolveConflicts));
         }
 
         private ModelBuildingResult getModelBuildingResult(Artifact artifact) {
@@ -870,30 +870,54 @@ public class LocalMavenRepositoryGenerator {
      * adds new dependency nodes and edges that represent dependencies that
      * have "scope=import".
      *
-     * This ignores any possible dependency version conflicts over the
-     * scope=import edges.
      */
     private static class ImportDependencyVisitor implements DependencyVisitor{
 
         private final CustomMavenRepository repository;
 
         // Contains all nodes in the dependency graph.
-        // Key: The associated Artifact's toString() representation.
+        // Key: The toString() representation of the Artifact associated with
+        // the DependencyNode, with certain fields/aspects erased/fixed for grouping.
+        // Specifically, the following are not taken into account when building the key:
+        //     Dependency scope
+        //     Artifact extension
+        //     Artifact version (used in key if resolveConflicts=false).
         private final Map<String, DependencyNode> allNodes = new HashMap<>();
 
         // Contains processed nodes, so that we process each node only once,
         // in order to improve performance.
         private final Set<DependencyNode> visitedNodes = new HashSet<>();
 
-        public ImportDependencyVisitor(DependencyNode root, CustomMavenRepository repository) {
+        // For parsing artifact versions, e.g., "1.0".
+        private final VersionScheme versionScheme = new GenericVersionScheme();
+
+        // If true, then version conflict resolution will be performed on the
+        // discovered import dependencies.
+        private final boolean resolveConflicts;
+
+        public ImportDependencyVisitor(
+                DependencyNode root,
+                CustomMavenRepository repository,
+                boolean resolveConflicts) {
             // Gather all nodes in the dependency graph.
             PreorderNodeListGenerator generator = new PreorderNodeListGenerator();
             root.accept(generator);
             for (DependencyNode node : generator.getNodes()) {
-                allNodes.put(node.getArtifact().toString(), node);
+
+                String key =
+                        new DefaultArtifact(
+                                node.getArtifact().getGroupId(),
+                                node.getArtifact().getArtifactId(),
+                                Strings.emptyToNull(node.getArtifact().getClassifier()),
+                                node.getArtifact().getExtension(),
+                                resolveConflicts ? null : node.getArtifact().getVersion(),
+                                Collections.emptyMap(),
+                                node.getArtifact().getFile()).toString();
+                allNodes.put(key, node);
             }
 
             this.repository = repository;
+            this.resolveConflicts = resolveConflicts;
         }
 
         @Override
@@ -951,20 +975,105 @@ public class LocalMavenRepositoryGenerator {
                                     })
                             .map(
                                     a -> {
-                                        // If there already is a node that represents this import
-                                        // dependency, then we don't want to re-create the same
-                                        // dependency node.
-                                        // If there already is a node that represents the target
-                                        // artifact, but with a different scope
-                                        // (e.g., scope=compile|runtime), then we prefer
-                                        // to use that node (i.e., perform scope resolution).
-                                        String key = a.toString();
+                                        // Deduplication:
+                                        // When the dependency graph contains multiple nodes that
+                                        // have import dependencies to the same target, then we
+                                        // create a single node in the dependency graph for that
+                                        // target.
+                                        //
+                                        // Scope Resolution:
+                                        // When the dependency graph has a node that has an import
+                                        // dependency to a target that is already represented in
+                                        // the dependency graph with a node with
+                                        // scope=compile|runtime, then we use that existing node
+                                        // to represent the target of the import dependency.
+                                        //
+                                        // Version Resolution: (only if resolveConflicts=true)
+                                        // When the dependency graph has multiple nodes that
+                                        // have import dependencies to different versions of the
+                                        // same target, then we create one node for each such
+                                        // version, where the node with the highest version is
+                                        // the "conflict winner", and all the other nodes (i.e.,
+                                        // "conflict losers") are annotated to point to the
+                                        // conflict winner.
+
+                                        String key =
+                                                new DefaultArtifact(
+                                                        a.getGroupId(),
+                                                        a.getArtifactId(),
+                                                        Strings.emptyToNull(a.getClassifier()),
+                                                        "pom",
+                                                        resolveConflicts ? null : a.getVersion(),
+                                                        Collections.emptyMap(),
+                                                        a.getFile()).toString();
+
                                         if (!allNodes.containsKey(key)) {
+                                            // This is the first import dependency we have seen
+                                            // with this key. No need for conflict resolution.
+                                            // Save and continue.
                                             allNodes.put(
                                                     key,
                                                     new DefaultDependencyNode(
                                                             new Dependency(a, "import")));
+                                            return allNodes.get(key);
                                         }
+
+                                        // Compare scopes.
+                                        if (!allNodes.get(key)
+                                                .getDependency()
+                                                .getScope()
+                                                .equals("import")) {
+                                            // There already is a node with a compile/runtime scope
+                                            // in the dependency graph for this import. That node
+                                            // has priority over this one, so use it.
+                                            return allNodes.get(key);
+                                        }
+
+                                        if (resolveConflicts) {
+                                            // Compare versions of the two imports.
+                                            try {
+                                                Version keyVersion =
+                                                        versionScheme.parseVersion(
+                                                                allNodes.get(key)
+                                                                        .getArtifact()
+                                                                        .getVersion());
+                                                Version aVersion =
+                                                        versionScheme.parseVersion(a.getVersion());
+                                                if (keyVersion.compareTo(aVersion) < 0) {
+                                                    // The version of the newly seen import dependency
+                                                    // is higher than the import dependency that we
+                                                    // already have in allNodes.
+
+                                                    // Annotate the existing entry (conflict loser) in allNodes
+                                                    // to point to the conflict winner. This is how Aether
+                                                    // annotates conflict losers in its own dependency conflict
+                                                    // resolution, and we know how to handle dependency graphs
+                                                    // that use these annotations.
+                                                    DefaultDependencyNode winnerNode = new DefaultDependencyNode(
+                                                            new Dependency(a, "import"));
+                                                    HashMap data = new HashMap();
+                                                    data.put(ConflictResolver.NODE_DATA_WINNER, winnerNode);
+                                                    allNodes.get(key).setData(data);
+
+                                                    // This dependency with a higher version should
+                                                    // replace the entry in allNodes, so that the new
+                                                    // version is used by remaining nodes.
+                                                    allNodes.put(key, winnerNode);
+                                                } else {
+                                                    // The version of the current import is lower
+                                                    // than the one we have in allNodes. I don't think
+                                                    // there is any point in creating a new node and
+                                                    // then marking it as a conflict loser.
+                                                    // We can directly associate the current dependency
+                                                    // with the latest version (conflict winner) that
+                                                    // we know so far.
+                                                    // Fall through intended.
+                                                }
+                                            } catch (InvalidVersionSpecificationException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        }
+
                                         return allNodes.get(key);
                                     })
                             .collect(Collectors.toList());
