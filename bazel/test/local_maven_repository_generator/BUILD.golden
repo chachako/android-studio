@@ -485,6 +485,7 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/example/u/1",
     deps = [
+        "com.google.example.w_1",
         "com.google.example.v_1",
     ],
     visibility = ["//visibility:public"],
@@ -496,7 +497,11 @@ maven_import(
     jars = [
         "repository/com/google/example/u/1/u-1.jar"
     ],
+    exports = [
+        "com.google.example.w",
+    ],
     original_deps = [
+        "com.google.example.w_1",
         "com.google.example.v_1",
     ],
     pom = "repository/com/google/example/u/1/u-1.pom",
@@ -522,6 +527,27 @@ maven_import(
     pom = "repository/com/google/example/v/1/v-1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/example/v/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.example.w_1",
+    pom = "repository/com/google/example/w/1/w-1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/w/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.example.w",
+    classifiers = [],
+    jars = [
+        "repository/com/google/example/w/1/w-1.jar"
+    ],
+    original_deps = [],
+    pom = "repository/com/google/example/w/1/w-1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/w/1",
     visibility = ["//visibility:public"],
 )
 

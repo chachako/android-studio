@@ -18,4 +18,10 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.example</groupId>
+      <artifactId>w</artifactId>
+   </dependency>
+  </dependencies>
 </project>
