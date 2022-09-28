@@ -553,15 +553,17 @@ abstract class MergeResources : NewIncrementalTask() {
                 val rootProjectDir = projectRootDir.asFile.get()
                 val normalizedInputFile: RelativizableFile
                 if (FileUtils.isFileInDirectory(inputFile, rootProjectDir)) {
-                    // Check that the input file's absolute path has NOT been
-                    // annotated as @Input via this task's
-                    // getResourceDirsOutsideRootProjectDir() input file property.
-                    Preconditions.checkState(
+                    // Check that the layout file's absolute path is not an @Input (i.e., it must
+                    // not be located in resourceDirsOutsideRootProjectDir, which is an @Input)
+                    check(
                         !resourceIsInResourceDirs(
                             inputFile, resourceDirsOutsideRootProjectDir.get()
-                        ),
-                        inputFile.absolutePath + " should not be annotated as @Input"
-                    )
+                        )
+                    ) {
+                        "Layout file ${inputFile.canonicalPath} is not expected be located in " +
+                                resourceDirsOutsideRootProjectDir.get()
+                                    .joinToString(", ", "[", "]") { File(it).canonicalPath }
+                    }
 
                     // The base directory of the relative path has to be the root
                     // project directory, not the current project directory, because
@@ -572,15 +574,17 @@ abstract class MergeResources : NewIncrementalTask() {
                     )
                     Preconditions.checkState(normalizedInputFile.relativeFile != null)
                 } else {
-                    // Check that the input file's absolute path has been annotated
-                    // as @Input via this task's
-                    // getResourceDirsOutsideRootProjectDir() input file property.
-                    Preconditions.checkState(
+                    // Check that the layout file's absolute path is an @Input (i.e., it must be
+                    // located in resourceDirsOutsideRootProjectDir, which is an @Input)
+                    check(
                         resourceIsInResourceDirs(
                             inputFile, resourceDirsOutsideRootProjectDir.get()
-                        ),
-                        inputFile.absolutePath + " is not annotated as @Input"
-                    )
+                        )
+                    ) {
+                        "Layout file ${inputFile.canonicalPath} is not located in " +
+                                resourceDirsOutsideRootProjectDir.get()
+                                    .joinToString(", ", "[", "]") { File(it).canonicalPath }
+                    }
                     normalizedInputFile =
                         RelativizableFile.fromAbsoluteFile(inputFile.canonicalFile, null)
                     Preconditions.checkState(normalizedInputFile.relativeFile == null)
