@@ -1653,9 +1653,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
     }
 
     private fun createRunUnitTestTask(unitTestCreationConfig: UnitTestCreationConfig) {
-        val ant = JacocoConfigurations.getJacocoAntTaskConfiguration(
-            project, JacocoTask.getJacocoVersion(unitTestCreationConfig))
-
         if (unitTestCreationConfig.isUnitTestCoverageEnabled) {
            project.pluginManager.apply(JacocoPlugin::class.java)
         }
@@ -1666,6 +1663,8 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         }
 
         if (unitTestCreationConfig.isUnitTestCoverageEnabled) {
+            val ant = JacocoConfigurations.getJacocoAntTaskConfiguration(
+                    project, JacocoTask.getJacocoVersion(unitTestCreationConfig))
             project.plugins.withType(JacocoPlugin::class.java) {
                 // Jacoco plugin is applied and test coverage enabled, ∴ generate coverage report.
                 taskFactory.register(

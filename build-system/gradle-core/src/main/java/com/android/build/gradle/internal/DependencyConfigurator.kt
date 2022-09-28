@@ -447,7 +447,7 @@ class DependencyConfigurator(
     }
 
     fun configurePrivacySandboxSdkConsumerTransforms(
-            compileSdkHashString: String, buildToolsRevision: Revision, bootstrapCreationConfig : BootClasspathConfig) {
+            compileSdkHashString: String, buildToolsRevision: Revision, bootstrapCreationConfig : BootClasspathConfig) : DependencyConfigurator {
         if (projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
             registerTransform(
                     AsarToApksTransform::class.java,
@@ -570,6 +570,7 @@ class DependencyConfigurator(
                 }
             }
         }
+        return this
     }
 
     fun configureCalculateStackFramesTransforms(

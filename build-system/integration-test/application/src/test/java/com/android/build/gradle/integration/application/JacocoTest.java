@@ -16,12 +16,17 @@
 
 package com.android.build.gradle.integration.application;
 
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.TemporaryProjectModification;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
+import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.internal.coverage.JacocoConfigurations;
 import com.android.testutils.TestInputsGenerator;
 import com.android.testutils.apk.Apk;
 import com.android.testutils.apk.Dex;
@@ -30,16 +35,13 @@ import com.android.testutils.truth.DexSubject;
 import com.android.utils.FileUtils;
 import com.google.common.base.Charsets;
 import com.google.common.truth.Truth8;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Scanner;
-
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class JacocoTest {
 
@@ -230,6 +232,38 @@ public class JacocoTest {
             DexClassSubject.assertThat(
                             libraryDexClasses.getClasses().get("Lcom/example/helloworld/HelloWorldTest;"))
                     .doesNotHaveField("$jacocoData");
+        }
+    }
+
+    @Test
+    public void checkJacocoAntConfiguration() throws IOException, InterruptedException {
+        // Verify jacoco ant configuration is not set when android test coverage disabled.
+        TestFileUtils.searchAndReplace(
+                project.getBuildFile(),
+                "android.buildTypes.debug.enableAndroidTestCoverage true",
+                "android.buildTypes.debug.enableAndroidTestCoverage false");
+        GradleBuildResult result =
+                project.executor()
+                        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.NONE)
+                        .run(":dep");
+        try (Scanner scanner = result.getStdout()) {
+            ScannerSubject.assertThat(scanner)
+                    .doesNotContain(JacocoConfigurations.ANT_CONFIGURATION_NAME);
+        }
+
+        // Once enableAndroidTestCoverage is enabled in a variant, we expect the configuration to be
+        // present.
+        TestFileUtils.searchAndReplace(
+                project.getBuildFile(),
+                "android.buildTypes.debug.enableAndroidTestCoverage false",
+                "android.buildTypes.debug.enableAndroidTestCoverage true");
+        result =
+                project.executor()
+                        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.NONE)
+                        .run(":dep");
+        try (Scanner scanner = result.getStdout()) {
+            ScannerSubject.assertThat(scanner)
+                    .contains(JacocoConfigurations.ANT_CONFIGURATION_NAME);
         }
     }
 }
