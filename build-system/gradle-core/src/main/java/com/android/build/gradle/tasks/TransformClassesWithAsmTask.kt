@@ -339,6 +339,7 @@ abstract class TransformClassesWithAsmTask : NewIncrementalTask() {
                 visitors = parameters.visitorsList.get(),
                 apiVersion = parameters.asmApiVersion.get(),
                 classesHierarchyResolver = classesHierarchyResolver,
+                issueHandler = parameters.classesHierarchyBuildService.get().issueHandler,
                 framesComputationMode = parameters.framesComputationMode.get(),
                 excludes = parameters.excludes.get(),
                 profilingTransforms = parameters.profilingTransforms.getOrElse(emptyList())

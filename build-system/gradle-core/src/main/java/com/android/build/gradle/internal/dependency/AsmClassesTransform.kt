@@ -134,6 +134,7 @@ abstract class AsmClassesTransform : TransformAction<AsmClassesTransform.Paramet
             parameters.visitorsList.get(),
             parameters.asmApiVersion.get(),
             classesHierarchyResolver,
+            parameters.classesHierarchyBuildService.get().issueHandler,
             parameters.framesComputationMode.get(),
             parameters.excludes.get(),
             parameters.profilingTransforms.get()

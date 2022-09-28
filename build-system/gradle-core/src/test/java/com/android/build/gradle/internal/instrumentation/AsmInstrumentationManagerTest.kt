@@ -78,6 +78,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
     private val androidJar =
         TestUtils.resolvePlatformPath("android.jar", TestUtils.TestType.AGP).toFile()
     private val classesCache = ClassesDataCache()
+    private val issueHandler = InstrumentationIssueHandler()
 
     private lateinit var classesHierarchyResolver: ClassesHierarchyResolver
     private lateinit var inputDir: File
@@ -147,6 +148,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             listOf(),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             emptySet()
         ).instrument(inputDir, outputDir)
@@ -172,6 +174,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             listOf(visitorFactory),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             emptySet()
         ).instrument(inputDir, outputDir)
@@ -252,6 +255,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             ),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             emptySet()
         ).instrument(inputDir, outputDir)
@@ -380,6 +384,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             ),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             emptySet()
         ).instrument(inputDir, outputDir)
@@ -403,6 +408,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             ),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             setOf(
                 "**/*ImplementsI",
@@ -488,6 +494,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             listOf(getConfiguredVisitorFactory(MaxsInvalidatingVisitorFactory::class.java)),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             emptySet()
         ).instrument(inputDir, newInputDir)
@@ -514,6 +521,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             listOf(getConfiguredVisitorFactory(MethodInjectingVisitorFactory::class.java)),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COPY_FRAMES,
             emptySet()
         ).instrument(newInputDir, outputDir)
@@ -538,6 +546,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             listOf(getConfiguredVisitorFactory(MethodInjectingVisitorFactory::class.java)),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS,
             emptySet()
         ).instrument(newInputDir, outputDir)
@@ -562,6 +571,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             listOf(getConfiguredVisitorFactory(MethodInjectingVisitorFactory::class.java)),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES,
             emptySet()
         ).instrument(newInputDir, outputDir)
@@ -623,6 +633,7 @@ class AsmInstrumentationManagerTest(private val testMode: TestMode) {
             ),
             apiVersion,
             classesHierarchyResolver,
+            issueHandler,
             FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES,
             emptySet()
         ).instrument(inputDir, outputDir)
