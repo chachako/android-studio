@@ -246,9 +246,14 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }.execute()
 
         lateinit var resultTestMatrix: TestMatrix
+        var previousTestMatrixState = ""
         while (true) {
             val latestTestMatrix = testMatricesClient.get(
                 projectName, updatedTestMatrix.testMatrixId).execute()
+            if (previousTestMatrixState != latestTestMatrix.state) {
+                previousTestMatrixState = latestTestMatrix.state
+                logger.lifecycle("Firebase TestLab Test execution state: $previousTestMatrixState")
+            }
             val testFinished = when (latestTestMatrix.state) {
                 "VALIDATING", "PENDING", "RUNNING" -> false
                 else -> true
