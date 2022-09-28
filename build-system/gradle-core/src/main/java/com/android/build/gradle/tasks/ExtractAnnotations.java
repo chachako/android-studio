@@ -16,9 +16,6 @@
 
 package com.android.build.gradle.tasks;
 
-import static com.android.AndroidXConstants.INT_DEF_ANNOTATION;
-import static com.android.AndroidXConstants.LONG_DEF_ANNOTATION;
-import static com.android.AndroidXConstants.STRING_DEF_ANNOTATION;
 import static com.android.SdkConstants.DOT_JAVA;
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.EXTERNAL;
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.CLASSES_JAR;
@@ -270,12 +267,9 @@ public abstract class ExtractAnnotations extends NonIncrementalTask {
                 return lines.anyMatch(
                         line ->
                                 line.contains("Def")
-                                        && (line.contains(INT_DEF_ANNOTATION.oldName())
-                                                || line.contains(INT_DEF_ANNOTATION.newName())
-                                                || line.contains(LONG_DEF_ANNOTATION.oldName())
-                                                || line.contains(LONG_DEF_ANNOTATION.newName())
-                                                || line.contains(STRING_DEF_ANNOTATION.oldName())
-                                                || line.contains(STRING_DEF_ANNOTATION.newName())));
+                                        && (line.contains("@IntDef")
+                                                || line.contains("@LongDef")
+                                                || line.contains("@StringDef")));
             }
         } catch (IOException e) {
             return false;

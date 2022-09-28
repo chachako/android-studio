@@ -26,6 +26,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.testutils.apk.Zip;
 import com.google.common.truth.Truth;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -208,5 +209,27 @@ public class ExtractAnnotationsTest {
                         + "    )\n"
                         + "}\n");
         project.execute("clean", "assembleDebug");
+    }
+
+    /** Regression test for b/228751486 */
+    @Test
+    public void checkContainsTypeDefs() throws Exception {
+        File srcFileDir =
+                new File(
+                        project.getProjectDir(),
+                        "src/main/java/com/android/tests/extractannotations");
+        File intDefFile = new File(srcFileDir, "TopLevelTypeDef.java");
+        File extractTestFile = new File(srcFileDir, "ExtractTest.java");
+        TestFileUtils.searchAndReplace(
+                intDefFile, "android.support.annotation.IntDef", "android.support.annotation.*");
+        assertThat(extractTestFile.delete()).isTrue();
+
+        project.execute("clean", "assembleDebug");
+        project.getAar(
+                "debug",
+                debugAar -> {
+                    Zip annotationZip = debugAar.getEntryAsZip("annotations.zip");
+                    assertThat(annotationZip).isNotNull();
+                });
     }
 }
