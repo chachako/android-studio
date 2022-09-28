@@ -48,6 +48,7 @@ dependencies {
     implementation libs.unified_test_platform_device_provider
     implementation libs.unified_test_platform
     implementation libs.protobuf_util
+    implementation libs.com.android.tools.utp.androidTestPluginHostDeviceInfoProto
 }
 
 sourceSets {

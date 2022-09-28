@@ -40,6 +40,7 @@ maven_repository(
     name = "maven_dependencies",
     # keep sorted
     artifacts = [
+        "//tools/base/utp/android-test-plugin-host-device-info-proto",
         "@maven//:com.google.apis.google-api-services-storage",
         "@maven//:com.google.apis.google-api-services-testing",
         "@maven//:com.google.apis.google-api-services-toolresults",

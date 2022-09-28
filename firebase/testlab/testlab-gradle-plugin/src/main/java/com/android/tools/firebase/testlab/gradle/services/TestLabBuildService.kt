@@ -20,6 +20,7 @@ import com.android.build.api.instrumentation.StaticTestData
 import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.tools.firebase.testlab.gradle.ManagedDeviceTestRunner.Companion.FtlTestRunResult
 import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
+import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.googleapis.util.Utils
@@ -48,7 +49,6 @@ import com.google.api.services.testing.model.TestSpecification
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.StackTrace
 import com.google.firebase.testlab.gradle.ManagedDevice
-import com.google.protobuf.util.Timestamps
 import com.google.testing.platform.proto.api.core.ErrorProto.Error
 import com.google.testing.platform.proto.api.core.IssueProto.Issue
 import com.google.testing.platform.proto.api.core.LabelProto.Label
@@ -62,6 +62,7 @@ import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuite
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.UUID
@@ -266,6 +267,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             Thread.sleep (CHECK_TEST_STATE_WAIT_MS)
         }
 
+        val deviceInfoFile = createDeviceInfoFile(resultsOutDir, device)
+
         val ftlTestRunResults: ArrayList<FtlTestRunResult> = ArrayList()
         resultTestMatrix.testExecutions.forEach { testExecution ->
             if (testExecution.toolResultsStep != null) {
@@ -295,6 +298,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 toolResultsClient,
                 resultTestMatrix,
                 testExecution,
+                deviceInfoFile,
             )
 
             val testSuitePassed = testSuiteResult.testStatus.isPassedOrSkipped()
@@ -338,7 +342,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     private fun getTestSuiteResult(
         toolResultsClient: ToolResults,
         testMatrix: TestMatrix,
-        testExecution: TestExecution
+        testExecution: TestExecution,
+        deviceInfoFile: File,
     ): TestSuiteResult {
         val testSuiteResult = TestSuiteResult.newBuilder()
 
@@ -528,6 +533,12 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                                     }.build())
                                 }
                             }
+
+                            addOutputArtifactBuilder().apply {
+                                labelBuilder.label = "device-info"
+                                labelBuilder.namespace = "android"
+                                sourcePathBuilder.path = deviceInfoFile.path
+                            }
                         }.build())
                     }
                 }
@@ -598,6 +609,23 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             "INVALID_APK_PREVIEW_SDK" -> "APK is built for a preview SDK which is unsupported"
             else -> "The matrix is INVALID, but there are no further details available."
         }
+    }
+
+    private fun createDeviceInfoFile(
+        resultsOutDir: File,
+        device: ManagedDevice,
+    ): File {
+        val deviceInfoFile = File(resultsOutDir, "device-info.pb")
+        val androidTestDeviceInfo = AndroidTestDeviceInfoProto.AndroidTestDeviceInfo.newBuilder()
+            .setName(device.name)
+            .setApiLevel(device.apiLevel.toString())
+            .setGradleDslDeviceName(device.name)
+            .setModel(device.device)
+            .build()
+        FileOutputStream(deviceInfoFile).use {
+            androidTestDeviceInfo.writeTo(it)
+        }
+        return deviceInfoFile
     }
 
     /**
