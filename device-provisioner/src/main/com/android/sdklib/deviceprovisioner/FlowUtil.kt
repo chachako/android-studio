@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 sealed interface SetChange<T> {
@@ -49,5 +50,9 @@ fun <T> Flow<Set<T>>.trackSetChanges(): Flow<SetChange<T>> = flow {
 fun <T, S> Flow<Iterable<T>>.pairWithNestedState(
   innerState: (T) -> Flow<S>
 ): Flow<List<Pair<T, S>>> = flatMapLatest { ts ->
-  combine(ts.map { t -> innerState(t).map { Pair(t, it) } }) { it.toList() }
+  val innerFlows = ts.map { t -> innerState(t).map { Pair(t, it) } }
+  when {
+    innerFlows.isEmpty() -> flowOf(emptyList())
+    else -> combine(innerFlows) { it.toList() }
+  }
 }
