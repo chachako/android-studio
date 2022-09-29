@@ -86,8 +86,7 @@ class AsmTransformApiIncrementalityTest {
 
         val taskOutputDir = FileUtils.join(
                 project.getSubproject(":app").intermediatesDir,
-                "asm_instrumented_project_classes",
-                "debug"
+            "classes", "debug", "transformDebugClassesWithAsm", "dirs"
         )
         val originalFiles = getClassFilesModifiedTimeMap(taskOutputDir)
 
@@ -237,8 +236,7 @@ class AsmTransformApiIncrementalityTest {
 
         val taskOutputDir = FileUtils.join(
             project.getSubproject(":app").intermediatesDir,
-            "asm_instrumented_project_classes",
-            "debug"
+            "classes", "debug", "transformDebugClassesWithAsm", "dirs"
         )
         var originalFiles = getClassFilesModifiedTimeMap(taskOutputDir)
 

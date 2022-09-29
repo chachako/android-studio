@@ -17,11 +17,15 @@
 package com.android.build.gradle.internal.feature
 
 import com.android.SdkConstants.FN_CLASSES_JAR
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.instrumentation.FramesComputationMode
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.getDirectories
+import com.android.build.gradle.internal.scope.getRegularFiles
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
@@ -162,36 +166,18 @@ abstract class BundleAllClasses : NonIncrementalTask() {
         override fun configure(task: BundleAllClasses) {
             super.configure(task)
             // Only add the instrumented classes to the runtime jar
-            if (publishedType == AndroidArtifacts.PublishedConfigType.RUNTIME_ELEMENTS &&
-                creationConfig.instrumentationCreationConfig?.projectClassesAreInstrumented == true) {
-                if (creationConfig.instrumentationCreationConfig?.asmFramesComputationMode ==
-                    FramesComputationMode.COMPUTE_FRAMES_FOR_ALL_CLASSES) {
-                    task.inputDirs.from(
-                        creationConfig.artifacts.get(
-                            InternalArtifactType.FIXED_STACK_FRAMES_ASM_INSTRUMENTED_PROJECT_CLASSES
-                        )
+            if (publishedType == AndroidArtifacts.PublishedConfigType.RUNTIME_ELEMENTS) {
+                val projectClasses = creationConfig.artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES)
+
+                task.inputJars
+                    .from(projectClasses
+                        .getRegularFiles(creationConfig.services.projectInfo.projectDirectory)
                     )
-                    task.inputJars.from(
-                        creationConfig.services.fileCollection(
-                            creationConfig.artifacts.get(
-                                InternalArtifactType.FIXED_STACK_FRAMES_ASM_INSTRUMENTED_PROJECT_JARS
-                            )
-                        ).asFileTree
-                    )
-                } else {
-                    task.inputDirs.from(
-                        creationConfig.artifacts.get(
-                            InternalArtifactType.ASM_INSTRUMENTED_PROJECT_CLASSES
-                        )
-                    )
-                    task.inputJars.from(
-                        creationConfig.services.fileCollection(
-                            creationConfig.artifacts.get(
-                                InternalArtifactType.ASM_INSTRUMENTED_PROJECT_JARS
-                            )
-                        ).asFileTree
-                    )
-                }
+                task.inputDirs
+                    .from(projectClasses
+                        .getDirectories(creationConfig.services.projectInfo.projectDirectory))
             } else {
                 task.inputDirs.from(
                     listOfNotNull(
@@ -214,6 +200,8 @@ abstract class BundleAllClasses : NonIncrementalTask() {
                     )
                 }
             }
+            task.inputDirs.disallowChanges()
+            task.inputJars.disallowChanges()
             task.modulePath = task.project.path
         }
     }

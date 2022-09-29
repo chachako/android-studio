@@ -17,6 +17,7 @@ package com.android.build.gradle.internal.coverage
 
 import com.android.Version
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -26,6 +27,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.builder.core.BuilderConstants
 import com.android.build.gradle.internal.tasks.TaskCategory
+import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.utils.usLocaleCapitalize
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.ImmutableList
@@ -176,16 +178,16 @@ abstract class JacocoReportTask : NonIncrementalTask() {
             task.outputReportDir.disallowChanges()
             task.reportName.setDisallowChanges(creationConfig.mainVariant.name)
             task.tabWidth.setDisallowChanges(4)
-
-            task.classFileCollection.setFrom(
-                creationConfig.mainVariant.artifacts
-                    .forScope(ScopedArtifacts.Scope.PROJECT)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES)
-            )
             creationConfig.mainVariant.sources.java { javaSources ->
                 task.javaSources.set(javaSources.getAsFileTrees())
             }
             task.javaSources.disallowChanges()
+            task.classFileCollection.fromDisallowChanges(
+                creationConfig.mainVariant.artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getScopedArtifactsContainer(InternalScopedArtifact.PRE_JACOCO_TRANSFORMED_CLASSES)
+                    .finalScopedContent
+            )
         }
     }
 
@@ -243,7 +245,6 @@ abstract class JacocoReportTask : NonIncrementalTask() {
                     InternalArtifactType.MANAGED_DEVICE_CODE_COVERAGE,
                     task.jacocoConnectedTestsCoverageDir
                 )
-
         }
     }
 

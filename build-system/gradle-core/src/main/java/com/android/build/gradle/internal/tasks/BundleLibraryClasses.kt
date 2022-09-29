@@ -207,29 +207,6 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
     ) : VariantTaskCreationAction<BundleLibraryClassesJar, ComponentCreationConfig>(
         creationConfig
     ) {
-
-        private val inputs: FileCollection
-
-        init {
-            check(
-                publishedType == PublishedConfigType.API_ELEMENTS
-                        || publishedType == PublishedConfigType.RUNTIME_ELEMENTS
-            ) { "Library classes bundling is supported only for api and runtime." }
-            // Because ordering matters for TransformAPI, we need to fetch classes from the
-            // transform pipeline as soon as this creation action is instantiated.
-            @Suppress("DEPRECATION") // Legacy support
-            inputs = if (publishedType == PublishedConfigType.RUNTIME_ELEMENTS) {
-                creationConfig.transformManager.getPipelineOutputAsFileCollection { types, scopes ->
-                    types.contains(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES)
-                            && scopes.size == 1 && scopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROJECT)
-                }
-            } else {
-                creationConfig.artifacts
-                    .forScope(ScopedArtifacts.Scope.PROJECT)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES)
-            }
-        }
-
         override val name: String = creationConfig.computeTaskName(
             if (publishedType == PublishedConfigType.API_ELEMENTS) {
                 "bundleLibCompileToJar"
@@ -264,6 +241,11 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
                 creationConfig.services.projectOptions[BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES] &&
                         publishedType == PublishedConfigType.API_ELEMENTS &&
                         creationConfig.buildFeatures.androidResources
+
+            val inputs = creationConfig.artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES)
+
             task.configure(creationConfig, inputs, packageRClass)
         }
     }

@@ -52,6 +52,7 @@ import com.android.utils.FileUtils
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
@@ -470,19 +471,6 @@ abstract class TransformClassesWithAsmTask : NewIncrementalTask() {
         override val type: Class<TransformClassesWithAsmTask> =
                 TransformClassesWithAsmTask::class.java
 
-        override fun handleProvider(taskProvider: TaskProvider<TransformClassesWithAsmTask>) {
-            super.handleProvider(taskProvider)
-            creationConfig
-                    .artifacts
-                    .setInitialProvider(taskProvider) { it.classesOutputDir }
-                    .on(InternalArtifactType.ASM_INSTRUMENTED_PROJECT_CLASSES)
-
-            creationConfig
-                    .artifacts
-                    .setInitialProvider(taskProvider) { it.jarsOutputDir }
-                    .on(InternalArtifactType.ASM_INSTRUMENTED_PROJECT_JARS)
-        }
-
         override fun configure(task: TransformClassesWithAsmTask) {
             super.configure(task)
             task.incrementalFolder = creationConfig.paths.getIncrementalDir(task.name)
@@ -498,18 +486,6 @@ abstract class TransformClassesWithAsmTask : NewIncrementalTask() {
             task.asmApiVersion.setDisallowChanges(creationConfig.global.asmApiVersion)
 
             task.excludes.setDisallowChanges(instrumentationCreationConfig.instrumentation.excludes)
-
-            val projectClasses = creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-                .getFinalArtifacts(ScopedArtifact.CLASSES)
-            task.inputClassesDir.from(
-                projectClasses.getDirectories(creationConfig.services.projectInfo.projectDirectory)
-            )
-            task.inputClassesDir.disallowChanges()
-
-            task.inputJarsWithIdentity.inputJars.from(
-                projectClasses.getRegularFiles(creationConfig.services.projectInfo.projectDirectory)
-            )
-            task.inputJarsWithIdentity.inputJars.disallowChanges()
 
             task.bootClasspath.from(creationConfig.global.bootClasspath)
             task.bootClasspath.disallowChanges()

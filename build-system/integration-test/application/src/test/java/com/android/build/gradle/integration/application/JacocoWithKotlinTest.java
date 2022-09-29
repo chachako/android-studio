@@ -68,11 +68,11 @@ public class JacocoWithKotlinTest {
 
         File kotlinModuleFile =
                 FileUtils.join(
-                        ArtifactTypeUtil.getOutputDir(
-                                InternalArtifactType.JACOCO_INSTRUMENTED_CLASSES.INSTANCE,
-                                project.getBuildDir()),
+                        project.getIntermediatesDir(),
+                       "classes",
                         "debug",
-                        "out",
+                        "jacocoDebug",
+                        "dirs",
                         "META-INF",
                         "project_debug.kotlin_module");
         assertThat(kotlinModuleFile).isFile();

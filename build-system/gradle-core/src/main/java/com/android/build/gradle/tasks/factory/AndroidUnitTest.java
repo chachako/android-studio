@@ -266,17 +266,11 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
             }
 
             // 2. the test creationConfig classes and java_res
-            if (creationConfig.getInstrumentationCreationConfig() != null) {
-                collection.from(
-                        creationConfig
-                                .getInstrumentationCreationConfig()
-                                .getProjectClassesPostInstrumentation());
-            } else {
-                collection.from(
-                        artifacts
-                                .forScope(ScopedArtifacts.Scope.PROJECT)
-                                .getFinalArtifacts$gradle_core(ScopedArtifact.CLASSES.INSTANCE));
-            }
+            collection.from(
+                    artifacts
+                            .forScope(ScopedArtifacts.Scope.PROJECT)
+                            .getFinalArtifacts$gradle_core(ScopedArtifact.CLASSES.INSTANCE));
+
             // TODO is this the right thing? this doesn't include the res merging via transform
             // AFAIK
             collection.from(artifacts.get(InternalArtifactType.JAVA_RES.INSTANCE));

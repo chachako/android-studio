@@ -76,24 +76,10 @@ class ClassesClasspathUtils(
         // (3) No Jacoco Transforms:
         //      then: Provide the project classes from the legacy transform API classes.
 
-        projectClasses = if (jacocoTransformEnabled && !classesAlteredTroughVariantAPI) {
-            creationConfig.services.fileCollection(
-                creationConfig.artifacts.get(
-                    InternalArtifactType.JACOCO_INSTRUMENTED_CLASSES
-                ),
-                creationConfig.services.fileCollection(
-                    creationConfig.artifacts.get(
-                        InternalArtifactType.JACOCO_INSTRUMENTED_JARS
-                    )
-                ).asFileTree
-            )
-        } else {
-            @Suppress("DEPRECATION") // Legacy support
-            transformManager.getPipelineOutputAsFileCollection(
-                { _, scopes -> scopes == setOf(QualifiedContent.Scope.PROJECT) },
-                classesFilter
-            )
-        }
+        projectClasses = creationConfig.artifacts.forScope(
+            if (classesAlteredTroughVariantAPI) ScopedArtifacts.Scope.ALL
+            else ScopedArtifacts.Scope.PROJECT
+        ).getFinalArtifacts(ScopedArtifact.CLASSES)
 
         @Suppress("DEPRECATION") // Legacy support
         val desugaringClasspathScopes: MutableSet<QualifiedContent.ScopeType> =

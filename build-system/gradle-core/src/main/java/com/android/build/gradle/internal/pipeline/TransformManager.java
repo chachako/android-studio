@@ -99,10 +99,6 @@ public class TransformManager extends FilterableStreamCollection {
         return project;
     }
 
-    public void addStream(@NonNull TransformStream stream) {
-        streams.add(stream);
-    }
-
     /**
      * Adds a Transform.
      *
@@ -203,36 +199,5 @@ public class TransformManager extends FilterableStreamCollection {
         // update the list of available streams.
         streams.clear();
         streams.addAll(oldStreams);
-    }
-
-    @NonNull
-    private List<TransformStream> grabReferencedStreams(@NonNull Transform transform) {
-        Set<? super Scope> requestedScopes = transform.getReferencedScopes();
-        if (requestedScopes.isEmpty()) {
-            return ImmutableList.of();
-        }
-
-        List<TransformStream> streamMatches = Lists.newArrayListWithExpectedSize(streams.size());
-
-        Set<ContentType> requestedTypes = transform.getInputTypes();
-        for (TransformStream stream : streams) {
-            // streams may contain more than we need. In this case, we'll provide the whole
-            // stream as-is since it's not actually consumed.
-            // It'll be up to the TransformTask to make sure that the content of the stream is
-            // usable (for instance when a stream
-            // may contain two scopes, these scopes could be combined or not, impacting consumption)
-            Set<ContentType> availableTypes = stream.getContentTypes();
-            Set<? super Scope> availableScopes = stream.getScopes();
-
-            Set<ContentType> commonTypes = Sets.intersection(requestedTypes,
-                    availableTypes);
-            Set<? super Scope> commonScopes = Sets.intersection(requestedScopes, availableScopes);
-
-            if (!commonTypes.isEmpty() && !commonScopes.isEmpty()) {
-                streamMatches.add(stream);
-            }
-        }
-
-        return streamMatches;
     }
 }

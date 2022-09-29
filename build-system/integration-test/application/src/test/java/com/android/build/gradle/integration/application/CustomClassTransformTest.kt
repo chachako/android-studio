@@ -53,8 +53,10 @@ class CustomClassTransformTest {
     private fun assertProjectClassWasTransformed() {
         val transformedHelloWorldClass = FileUtils.join(
             project.intermediatesDir,
-            "asm_instrumented_project_classes",
+            "classes",
             "debug",
+            "transformDebugClassesWithAsm",
+            "dirs",
             "com",
             "example",
             "helloworld",

@@ -163,7 +163,6 @@ public abstract class AbstractAppTaskManager<
 
     private void createCompileTask(@NonNull ApkCreationConfig creationConfig) {
         TaskProvider<? extends JavaCompile> javacTask = createJavacTask(creationConfig);
-        addJavacClassesStream(creationConfig);
         setJavaCompilerTask(javacTask, creationConfig);
         createPostCompilationTasks(creationConfig);
     }

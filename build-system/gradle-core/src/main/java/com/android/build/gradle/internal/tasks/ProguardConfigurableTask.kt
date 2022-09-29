@@ -269,8 +269,8 @@ abstract class ProguardConfigurableTask(
             @Suppress("DEPRECATION") // Legacy support
             classes = creationConfig.services.fileCollection().also {
                 it.from(
-                    transformManager
-                        .getPipelineOutputAsFileCollection(createStreamFilter(com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES, inputScopes))
+                    creationConfig.artifacts.forScope(Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
                 )
                 if (inputScopes.contains(InternalScope.LOCAL_DEPS)) {
                     it.from(

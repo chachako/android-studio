@@ -16,12 +16,22 @@
 
 package com.android.build.api.artifact.impl
 
-import com.android.build.api.artifact.Artifact
-import org.gradle.api.file.RegularFile
+import com.android.build.api.variant.ScopedArtifacts
 
-sealed class InternalScopedArtifact: Artifact.Single<RegularFile>(FILE, Category.INTERMEDIATES) {
+/**
+ * [ScopedArtifacts] that are private to the AGP.
+ */
+interface InternalScopedArtifacts: ScopedArtifacts {
 
-    object PRE_JACOCO_TRANSFORMED_CLASSES: InternalScopedArtifact()
-
-    object JACOCO_TRANSFORMED_CLASSES: InternalScopedArtifact()
+    /**
+     * AGP Private scopes.
+     */
+    enum class InternalScope {
+        SUB_PROJECT,
+        EXTERNAL_LIBS,
+        LOCAL_DEPS,
+        FEATURES,
+        PROVIDED,
+        TESTED_CODE,
+    }
 }
