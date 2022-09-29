@@ -27,6 +27,7 @@ import com.android.tools.lint.checks.infrastructure.ProjectDescription;
 import com.android.tools.lint.checks.infrastructure.TestFile;
 import com.android.tools.lint.checks.infrastructure.TestIssueRegistry;
 import com.android.tools.lint.checks.infrastructure.TestLintTask;
+import com.android.tools.lint.checks.infrastructure.TestMode;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Issue;
 import com.google.common.collect.Sets;
@@ -98,8 +99,17 @@ public abstract class AbstractCheckTest extends LintDetectorTest {
         // detector results below
         TestLintTask task = TestLintTask.lint();
 
-        task.addTestModes(PLATFORM_ANNOTATIONS_TEST_MODE);
-        task.addTestModes(ANDROIDX_TEST_MODE);
+        // Our Windows CI machines are slower than Linux and with many test modes
+        // running sometimes get killed for taking too long. The test modes are not
+        // OS sensitive, so let's just not run these extra test modes on Windows;
+        // the default test mode is good enough.
+        // If windows and bazel, only use default test mode
+        if (isWindows() && TestUtils.runningFromBazel()) {
+            task.testModes(TestMode.DEFAULT);
+        } else {
+            task.addTestModes(PLATFORM_ANNOTATIONS_TEST_MODE);
+            task.addTestModes(ANDROIDX_TEST_MODE);
+        }
 
         // Make sure we have access to compileSdkVersions specified by tests; if not,
         // there's potential flakiness differences based on which SDKs are available

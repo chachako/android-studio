@@ -865,10 +865,11 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
                                 method.containingClass?.qualifiedName}.${method.name
                                 }) should be last to improve Kotlin interoperability; see " +
                                     "https://kotlinlang.org/docs/reference/java-interop.html#sam-conversions"
+                            val last = parameters[lastIndex] as UElement
                             context.report(
                                 LAMBDA_LAST,
-                                method,
-                                context.getLocation(parameters[lastIndex] as UElement),
+                                last,
+                                context.getLocation(last),
                                 message
                             )
                             break

@@ -16,8 +16,7 @@
 
 package com.android.tools.lint.checks.infrastructure
 
-import com.android.tools.lint.LintIssueDocGenerator.Companion.MESSAGE_PATTERN
-import com.android.tools.lint.checks.infrastructure.LintFixVerifier.Companion.FIX_PATTERN
+import com.android.tools.lint.LintIssueDocGenerator
 import com.android.tools.lint.detector.api.JavaContext
 
 /**
@@ -77,15 +76,12 @@ abstract class SourceTransformationTestMode(description: String, testMode: Strin
 
         // Just compare the error lines. Change details about the source
         // line included in the diff should not affect comparison.
-        val (pattern, group) = if (type == OutputKind.REPORT) Pair(MESSAGE_PATTERN, 3) else Pair(FIX_PATTERN, 0)
-        val expectedLines = expected.lines().mapNotNull {
-            val matcher = pattern.matcher(it)
-            if (matcher.matches()) matcher.group(group) else null
-        }.toList()
-        val actualLines = actual.lines().mapNotNull {
-            val matcher = pattern.matcher(it)
-            if (matcher.matches()) matcher.group(group) else null
-        }.toList()
+        val filterOutput = if (type == OutputKind.REPORT)
+            LintIssueDocGenerator::getOutputLines
+        else
+            LintIssueDocGenerator::getFixLines
+        val expectedLines = filterOutput(expected)
+        val actualLines = filterOutput(actual)
         if (expectedLines.size != actualLines.size) {
             return false
         }

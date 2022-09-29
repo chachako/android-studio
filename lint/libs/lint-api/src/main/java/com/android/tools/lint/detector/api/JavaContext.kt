@@ -230,7 +230,7 @@ open class JavaContext(
             return uastParser.getNameLocation(this, element as UElement)
                 .withOriginalSource(element)
         }
-        return uastParser.getLocation(this, element)
+        return uastParser.getLocation(this, element).withOriginalSource(element)
     }
 
     fun getLocation(element: UMethod): Location =

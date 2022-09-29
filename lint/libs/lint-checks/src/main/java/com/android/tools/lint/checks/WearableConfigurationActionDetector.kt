@@ -117,40 +117,44 @@ class WearableConfigurationActionDetector : Detector(), XmlScanner {
         val foundMetaData = foundMetaData
         val foundCategory = foundCategory
         if (duplicateAction != null) {
+            val location = context.getLocation(duplicateAction)
             context.report(
                 Incident(
                     ACTION_DUPLICATE,
-                    duplicateAction,
-                    context.getLocation(duplicateAction),
+                    location.source ?: duplicateAction,
+                    location,
                     "Duplicate watch face configuration activities found",
                 )
             )
         }
         if (foundMetaData != null && foundAction == null) {
+            val location = context.getLocation(foundMetaData.getAttributeNodeNS(ANDROID_URI, "name"))
             context.report(
                 Incident(
                     CONFIGURATION_ACTION,
-                    foundMetaData,
-                    context.getLocation(foundMetaData.getAttributeNodeNS(ANDROID_URI, "name")),
+                    location.source ?: foundMetaData,
+                    location,
                     "Watch face configuration activity is missing",
                 )
             )
         } else if (foundMetaData != null && foundAction != null && foundCategory == null) {
+            val location = context.getLocation(foundAction)
             context.report(
                 Incident(
                     CONFIGURATION_ACTION,
-                    foundAction,
-                    context.getLocation(foundAction),
+                    location.source ?: foundAction,
+                    location,
                     "Watch face configuration tag is required",
                 ),
                 minSdkLessThan(30)
             )
         } else if (foundAction != null && foundMetaData == null) {
+            val location = context.getLocation(foundAction.getAttributeNodeNS(ANDROID_URI, "name"))
             context.report(
                 Incident(
                     CONFIGURATION_ACTION,
-                    foundAction,
-                    context.getLocation(foundAction.getAttributeNodeNS(ANDROID_URI, "name")),
+                    location.source ?: foundAction,
+                    location,
                     "`wearableConfigurationAction` metadata is missing",
                 ),
                 minSdkLessThan(30)
