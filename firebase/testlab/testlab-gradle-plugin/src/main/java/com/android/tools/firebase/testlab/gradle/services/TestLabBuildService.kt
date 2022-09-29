@@ -280,17 +280,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                         testExecution.toolResultsStep.stepId
                     ).execute()
                 executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
-                    val matchResult = cloudStorageUrlRegex.find(suiteOverview.xmlSource.fileUri)
-                    if (matchResult != null) {
-                        val (bucketName, objectName) = matchResult.destructured
-                        File(resultsOutDir, "TEST-${objectName.replace("/", "_")}").apply {
-                            parentFile.mkdirs()
-                            createNewFile()
-                        }.outputStream().use {
-                            storageClient.objects()
-                                .get(bucketName, objectName)
-                                .executeMediaAndDownloadTo(it)
-                        }
+                    downloadFromCloudStorage(storageClient, suiteOverview.xmlSource.fileUri) {
+                        File(resultsOutDir, "TEST-${it.replace("/", "_")}")
                     }
                 }
             }
@@ -299,6 +290,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 resultTestMatrix,
                 testExecution,
                 deviceInfoFile,
+                storageClient,
+                resultsOutDir,
             )
 
             val testSuitePassed = testSuiteResult.testStatus.isPassedOrSkipped()
@@ -344,6 +337,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         testMatrix: TestMatrix,
         testExecution: TestExecution,
         deviceInfoFile: File,
+        storageClient: Storage,
+        resultsOutDir: File,
     ): TestSuiteResult {
         val testSuiteResult = TestSuiteResult.newBuilder()
 
@@ -521,16 +516,35 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
                             if (case.toolOutputs != null) {
                                 for (toolOutput in (case.toolOutputs as List<ToolOutputReference>)) {
-                                    addOutputArtifact(Artifact.newBuilder().apply {
-                                        Label.newBuilder().apply {
-                                            label = "firebase.toolOutput"
-                                            namespace = "android"
-                                        }.build()
-                                        sourcePath = Path.newBuilder().apply {
-                                            path = toolOutput.output!!.fileUri
-                                        }.build()
-                                        type = ArtifactType.TEST_DATA
-                                    }.build())
+                                    if (toolOutput.output!!.fileUri!!.endsWith("logcat")) {
+                                        val logcatFile = downloadFromCloudStorage(
+                                            storageClient, toolOutput.output!!.fileUri!!) {
+                                            File(resultsOutDir, it)
+                                        }
+                                        if (logcatFile != null) {
+                                            addOutputArtifactBuilder().apply {
+                                                labelBuilder.apply {
+                                                    label = "logcat"
+                                                    namespace = "android"
+                                                }
+                                                sourcePathBuilder.apply {
+                                                    path = logcatFile.path
+                                                }.build()
+                                                type = ArtifactType.TEST_DATA
+                                            }
+                                        }
+                                    } else {
+                                        addOutputArtifactBuilder().apply {
+                                            labelBuilder.apply {
+                                                label = "firebase.toolOutput"
+                                                namespace = "android"
+                                            }
+                                            sourcePathBuilder.apply {
+                                                path = toolOutput.output!!.fileUri
+                                            }.build()
+                                            type = ArtifactType.TEST_DATA
+                                        }
+                                    }
                                 }
                             }
 
@@ -651,6 +665,24 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 name = "${runId}_${file.name}"
             }.execute()
         }
+
+    /**
+     * Downloads the given file from cloud storage.
+     */
+    private fun downloadFromCloudStorage(
+        storageClient: Storage, fileUri: String,
+        destination: (objectName: String) -> File): File? {
+        val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
+        val (bucketName, objectName) = matchResult.destructured
+        return destination(objectName).apply {
+            parentFile.mkdirs()
+            outputStream().use {
+                storageClient.objects()
+                    .get(bucketName, objectName)
+                    .executeMediaAndDownloadTo(it)
+            }
+        }
+    }
 
     private fun createConfigProvider(
         deviceId: String, locale: Locale, apiLevel: Int
