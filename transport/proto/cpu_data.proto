@@ -176,17 +176,12 @@ message CpuTraceConfiguration {
 
     CpuTraceType trace_type = 3;
 
-    // Whether to disable live allocation tracking during tracing.
-    // This is primarily used to reduce app performance overhead from live
-    // allocation tracking. For Studio-side only.
-    bool disable_live_allocation = 4;
-
     // When using ATrace/Perfetto, the size of the buffer that holds tracing
     // data.
-    int32 buffer_size_in_mb = 5;
+    int32 buffer_size_in_mb = 4;
 
     // When using sampling, the sampling interval in microseconds.
-    int32 sampling_interval_us = 6;
+    int32 sampling_interval_us = 5;
   }
 
   UserOptions user_options = 1;
