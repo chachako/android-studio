@@ -58,7 +58,7 @@ import com.android.build.gradle.internal.cxx.model.prefabPackageDirectoryList
 import com.android.build.gradle.internal.cxx.model.shouldGeneratePrefabPackages
 import com.android.build.gradle.internal.cxx.model.symbolFolderIndexFile
 import com.android.build.gradle.internal.cxx.model.writeJsonToFile
-import com.android.build.gradle.internal.cxx.os.which
+import com.android.utils.cxx.os.which
 import com.android.build.gradle.internal.cxx.process.ExecuteProcessCommand
 import com.android.build.gradle.internal.cxx.timing.TimingEnvironment
 import com.android.build.gradle.internal.cxx.timing.time

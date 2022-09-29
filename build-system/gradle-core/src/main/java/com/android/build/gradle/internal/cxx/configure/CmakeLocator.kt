@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLog
 import com.android.build.gradle.internal.cxx.logging.ThreadLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.build.gradle.internal.cxx.logging.warnln
-import com.android.build.gradle.internal.cxx.os.exe
 import com.android.prefs.AndroidLocationsProvider
 import com.android.repository.Revision
 import com.android.repository.api.LocalPackage
@@ -33,6 +32,8 @@ import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_IS_MISSING
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_PACKAGES_SDK
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_VERSION_IS_INVALID
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_VERSION_IS_UNSUPPORTED
+import com.android.utils.cxx.os.exe
+import com.android.utils.cxx.os.getEnvironmentPaths
 import java.io.File
 import java.io.IOException
 import java.util.function.Consumer
@@ -184,21 +185,6 @@ internal val forkCmakeSdkVersionRevision = Revision.parseRevision(CMakeVersion.F
 internal val forkCmakeReportedVersion = Revision.parseRevision(CMakeVersion.FORK.version)
 
 val defaultCmakeVersion = Revision.parseRevision(CMakeVersion.DEFAULT.version)
-
-/**
- * @return list of folders (as Files) retrieved from PATH environment variable and from Sdk
- * cmake folder.
- */
-fun getEnvironmentPaths(): List<File> {
-    val envPath = System.getenv("PATH") ?: ""
-    val pathSeparator = System.getProperty("path.separator").toRegex()
-    return envPath
-        .split(pathSeparator)
-        .asSequence()
-        .filter { it.isNotEmpty() }
-        .map { File(it) }
-        .toList()
-}
 
 /**
  * @return list of folders (as Files) for CMakes in the SDK.

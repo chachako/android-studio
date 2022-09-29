@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.os
+package com.android.utils.cxx.os
 
 import com.android.SdkConstants.CURRENT_PLATFORM
 import com.android.SdkConstants.PLATFORM_LINUX
 import com.android.SdkConstants.PLATFORM_WINDOWS
-import com.android.build.gradle.internal.cxx.configure.getEnvironmentPaths
 import com.android.utils.StringHelperPOSIX
 import com.android.utils.StringHelperWindows
 import java.io.File
+
+/**
+ * Convenience methods like [exe], [bat], and [which] should be preferred over
+ * [os.exe] etc except in cases where the behavior should be overridden/mocked
+ * for testing.
+ */
 
 /**
  * File extension to use for executable files for the current host OS.
@@ -198,16 +203,28 @@ fun createOsBehavior(
  * Retrieve the file extensions that this [platform] uses for executables.
  */
 private fun getExecutableExtensions(platform : Int) = when(platform) {
-        PLATFORM_WINDOWS ->
-            // See https://ss64.com/nt/path.html
-            (System.getenv("PATHEXT") ?: ".COM;.EXE;.BAT;.CMD").split(';')
-        else -> listOf()
-    }
+    PLATFORM_WINDOWS ->
+        // See https://ss64.com/nt/path.html
+        (System.getenv("PATHEXT") ?: ".COM;.EXE;.BAT;.CMD").split(';')
+    else -> listOf()
+}
 
+/**
+ * @return list of folders (as Files) retrieved from PATH environment variable and from Sdk
+ * cmake folder.
+ */
+fun getEnvironmentPaths(): List<File> {
+    val envPath = System.getenv("PATH") ?: ""
+    val pathSeparator = System.getProperty("path.separator").toRegex()
+    return envPath
+        .split(pathSeparator)
+        .asSequence()
+        .filter { it.isNotEmpty() }
+        .map { File(it) }
+        .toList()
+}
 
 fun createOsBehavior() = createOsBehavior(CURRENT_PLATFORM)
 fun createWindowsBehavior() = createOsBehavior(PLATFORM_WINDOWS)
 fun createLinuxBehavior() = createOsBehavior(PLATFORM_LINUX)
-
-
 

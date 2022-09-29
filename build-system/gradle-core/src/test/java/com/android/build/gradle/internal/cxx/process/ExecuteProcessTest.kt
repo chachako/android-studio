@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.cxx.process
 
 import com.android.SdkConstants.CURRENT_PLATFORM
 import com.android.SdkConstants.PLATFORM_WINDOWS
-import com.android.build.gradle.internal.cxx.os.bat
+import com.android.utils.cxx.os.bat
 import org.gradle.api.Action
 import org.gradle.internal.file.PathToFileResolver
 import org.gradle.process.ExecOperations

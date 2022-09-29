@@ -28,7 +28,7 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.android.build.gradle.internal.cxx.configure.ndkMetaAbisFile
 import com.android.build.gradle.internal.cxx.configure.trySymlinkNdk
 import com.android.build.gradle.internal.cxx.gradle.generator.CxxConfigurationParameters
-import com.android.build.gradle.internal.cxx.os.exe
+import com.android.utils.cxx.os.exe
 import com.android.build.gradle.internal.cxx.timing.time
 import com.android.build.gradle.tasks.NativeBuildSystem.CMAKE
 import com.android.build.gradle.tasks.NativeBuildSystem.NINJA

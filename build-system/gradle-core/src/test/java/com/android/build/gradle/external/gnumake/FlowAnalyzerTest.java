@@ -30,7 +30,7 @@
  */
 package com.android.build.gradle.external.gnumake;
 
-import static com.android.build.gradle.internal.cxx.os.OsBehaviorKt.createOsBehavior;
+import static com.android.utils.cxx.os.OsBehaviorKt.createOsBehavior;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.annotations.NonNull;

@@ -18,6 +18,8 @@ package com.android.build.gradle.internal.cxx.os
 
 import com.android.SdkConstants.PLATFORM_LINUX
 import com.android.SdkConstants.PLATFORM_WINDOWS
+import com.android.utils.cxx.os.OsBehavior
+import com.android.utils.cxx.os.createOsBehavior
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test

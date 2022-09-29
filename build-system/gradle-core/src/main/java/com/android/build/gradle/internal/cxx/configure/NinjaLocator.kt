@@ -16,12 +16,13 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.cxx.os.exe
 import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.utils.cxx.CxxDiagnosticCode.NINJA_IS_MISSING
+import com.android.utils.cxx.os.exe
 import org.jetbrains.kotlin.com.google.common.annotations.VisibleForTesting
 import java.io.File
+import com.android.utils.cxx.os.getEnvironmentPaths
 
 /**
  * Method for locating ninja.exe. The search order is:

@@ -70,7 +70,7 @@ import com.android.build.gradle.internal.cxx.model.ndkMinPlatform
 import com.android.build.gradle.internal.cxx.model.ninjaBuildFile
 import com.android.build.gradle.internal.cxx.model.ninjaDepsFile
 import com.android.build.gradle.internal.cxx.model.predictableRepublishFolder
-import com.android.build.gradle.internal.cxx.os.bat
+import com.android.utils.cxx.os.bat
 import com.android.build.gradle.internal.cxx.process.decodeExecuteProcess
 import com.android.build.gradle.internal.cxx.settings.Macro.ENV_THIS_FILE_DIR
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_ABI

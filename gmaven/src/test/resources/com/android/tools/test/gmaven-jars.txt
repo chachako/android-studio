@@ -441,7 +441,6 @@ com/android/tools/build/gradle
   com/android/build/gradle/internal/cxx/logging/
   com/android/build/gradle/internal/cxx/model/
   com/android/build/gradle/internal/cxx/ninja/
-  com/android/build/gradle/internal/cxx/os/
   com/android/build/gradle/internal/cxx/prefab/
   com/android/build/gradle/internal/cxx/process/
   com/android/build/gradle/internal/cxx/settings/
@@ -631,6 +630,7 @@ com/android/tools/common
   com/android/utils/
   com/android/utils/concurrency/
   com/android/utils/cxx/
+  com/android/utils/cxx/os/
   com/android/utils/reflection/
   com/android/version.properties
   com/android/xml/

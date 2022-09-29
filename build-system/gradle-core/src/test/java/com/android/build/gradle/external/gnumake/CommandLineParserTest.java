@@ -30,8 +30,8 @@
  */
 package com.android.build.gradle.external.gnumake;
 
-import static com.android.build.gradle.internal.cxx.os.OsBehaviorKt.createLinuxBehavior;
-import static com.android.build.gradle.internal.cxx.os.OsBehaviorKt.createWindowsBehavior;
+import static com.android.utils.cxx.os.OsBehaviorKt.createLinuxBehavior;
+import static com.android.utils.cxx.os.OsBehaviorKt.createWindowsBehavior;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.annotations.NonNull;

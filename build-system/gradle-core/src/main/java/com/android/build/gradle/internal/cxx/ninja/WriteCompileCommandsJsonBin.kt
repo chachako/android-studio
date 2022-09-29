@@ -20,7 +20,7 @@ import com.android.SdkConstants.CURRENT_PLATFORM
 import com.android.build.gradle.internal.cxx.io.ProgressCallback
 import com.android.build.gradle.internal.cxx.io.filenameEndsWithIgnoreCase
 import com.android.build.gradle.internal.cxx.io.hasExtensionIgnoreCase
-import com.android.build.gradle.internal.cxx.os.createOsBehavior
+import com.android.utils.cxx.os.createOsBehavior
 import com.android.build.gradle.internal.cxx.collections.DoubleStringBuilder
 import com.android.utils.TokenizedCommandLine
 import com.android.utils.allocateTokenizeCommandLineBuffer
