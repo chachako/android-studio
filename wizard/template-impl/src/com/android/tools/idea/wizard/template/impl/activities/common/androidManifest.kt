@@ -48,7 +48,7 @@ fun androidManifestXml(
 
   val toolsNameSpace = renderIf(isResizeable) {"xmlns:tools=\"http://schemas.android.com/tools\""}
 
-  val appNameBlock = renderIf(appName.isNotEmpty()) { "<meta-data android:name=\"android.app.lib_name\" android:value=\"$libraryName\" />" }
+  val appNameBlock = renderIf(libraryName.isNotEmpty()) { "<meta-data android:name=\"android.app.lib_name\" android:value=\"$libraryName\" />" }
 
   val launcher = isLauncher || isNewModule
   return """
