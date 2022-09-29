@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.ndk
 
+import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2
@@ -150,8 +151,14 @@ class ModuleToModuleDepsTest(
                     arrayOf(HeaderType.Normal, HeaderType.DirectoryButNoFile, HeaderType.None)
                 )
                 .minimizeUsingTupleCoverage(4)
-            println("Test configuration count: ${tests.size}")
-            return tests
+
+            // Because Windows runs much slower, limit the tests that run on Windows to a (stable) sample
+            // Because of the way minimizeUsingTupleCoverage works, the tests are sorted in descending
+            // order of coverage power (the earlier ones tend to cover more "tuples") the first N
+            // tests still have significant coverage.
+            val result = if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_WINDOWS) tests.take(50).toTypedArray() else tests
+            println("Test configuration count: ${result.size}")
+            return result
         }
     }
 

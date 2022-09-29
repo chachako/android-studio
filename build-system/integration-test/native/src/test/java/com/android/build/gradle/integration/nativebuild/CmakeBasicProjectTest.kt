@@ -127,13 +127,20 @@ class CmakeBasicProjectTest(
     companion object {
         @Parameterized.Parameters(name = "version={0} mode={1}")
         @JvmStatic
-        fun data() = cartesianOf(
-            // This test covers a wider range of CMake versions than most other tests to verify that
-            // the basic functionality of each mode works.
-            CMakeVersion.values().map { it.version }.toTypedArray(),
-            Mode.values())
-        // Shuffle helps find problems earlier by not grouping similar cases with each other
-        .toList().shuffled(Random(192))
+        fun data() : Array<Array<*>> {
+            val result : Array<Array<*>> = cartesianOf(
+                // This test covers a wider range of CMake versions than most other tests to verify that
+                // the basic functionality of each mode works.
+                CMakeVersion.values().map { it.version }.toTypedArray(),
+                Mode.values())
+                // Shuffle helps find problems earlier by not grouping similar cases with each other
+                .toList().shuffled(Random(192))
+                .toTypedArray()
+            return if (CURRENT_PLATFORM == PLATFORM_WINDOWS) {
+                // Because Windows runs much slower, limit the tests that run on Windows to a (stable) sample
+                result.take(50).toTypedArray()
+            } else result
+        }
     }
 
     @Before
