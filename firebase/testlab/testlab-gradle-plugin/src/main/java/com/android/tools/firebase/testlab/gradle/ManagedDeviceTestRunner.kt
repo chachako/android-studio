@@ -49,6 +49,8 @@ class ManagedDeviceTestRunner(
             managedDevice as ManagedDevice,
             testData,
             outputDirectory,
+            projectPath,
+            variantName,
         )
         return results.all(FtlTestRunResult::testPassed)
     }

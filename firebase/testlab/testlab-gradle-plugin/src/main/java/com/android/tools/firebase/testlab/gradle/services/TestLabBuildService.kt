@@ -66,6 +66,10 @@ import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.UUID
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
@@ -73,6 +77,8 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.services.BuildServiceRegistry
+import org.w3c.dom.Element
+import org.w3c.dom.Node
 
 /**
  * A Gradle Build service that provides APIs to talk to the Firebase Test Lab backend server.
@@ -148,6 +154,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         device: ManagedDevice,
         testData: StaticTestData,
         resultsOutDir: File,
+        projectPath: String,
+        variantName: String,
     ): ArrayList<FtlTestRunResult> {
         resultsOutDir.apply {
             if (!exists()) {
@@ -282,6 +290,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
                     downloadFromCloudStorage(storageClient, suiteOverview.xmlSource.fileUri) {
                         File(resultsOutDir, "TEST-${it.replace("/", "_")}")
+                    }?.also {
+                        updateTestResultXmlFile(it, device, projectPath, variantName)
                     }
                 }
             }
@@ -716,6 +726,55 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
             override fun getApiLevel() = apiLevel
         }
+    }
+
+    private fun updateTestResultXmlFile(
+        xmlFile: File,
+        device: ManagedDevice,
+        projectPath: String,
+        variantName: String,
+    ) {
+        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val document = builder.parse(xmlFile)
+        val testSuiteElements = document.getElementsByTagName("testsuite").let { nodeList ->
+            List(nodeList.length) { index ->
+                nodeList.item(index)
+            }
+        }
+        testSuiteElements.forEach { testSuite ->
+            val propertyNode = testSuite.childNodes.let { nodeList ->
+                List(nodeList.length) { index ->
+                    nodeList.item(index)
+                }
+            }.firstOrNull { node ->
+                node.nodeType == Node.ELEMENT_NODE && node.nodeName.lowercase() == "properties"
+            }
+
+            val propertyElement = if (propertyNode == null) {
+                document.createElement("properties").also {
+                    testSuite.appendChild(it)
+                }
+            } else {
+                propertyNode as Element
+            }
+
+            propertyElement.appendChild(document.createElement("property").apply {
+                setAttribute("name", "device")
+                setAttribute("value", device.name)
+            })
+            propertyElement.appendChild(document.createElement("property").apply {
+                setAttribute("name", "flavor")
+                setAttribute("value", variantName)
+            })
+            propertyElement.appendChild(document.createElement("property").apply {
+                setAttribute("name", "project")
+                setAttribute("value", projectPath)
+            })
+        }
+
+        val transformerFactory = TransformerFactory.newInstance()
+        val transformer = transformerFactory.newTransformer()
+        transformer.transform(DOMSource(document), StreamResult(xmlFile))
     }
 
     /**
