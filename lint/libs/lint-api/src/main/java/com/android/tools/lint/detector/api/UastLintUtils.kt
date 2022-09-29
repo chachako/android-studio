@@ -17,6 +17,8 @@
 package com.android.tools.lint.detector.api
 
 import com.android.SdkConstants.ATTR_VALUE
+import com.android.tools.lint.client.api.AndroidPlatformAnnotations
+import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.fromPlatformAnnotation
 import com.android.tools.lint.client.api.ResourceReference
 import com.android.tools.lint.detector.api.ConstantEvaluator.LastAssignmentFinder.LastAssignmentValueUnknown
 import com.intellij.psi.PsiClass
@@ -28,15 +30,22 @@ import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
+import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
+import org.jetbrains.kotlin.asJava.elements.KtLightMember
+import org.jetbrains.kotlin.asJava.elements.KtLightParameter
 import org.jetbrains.kotlin.asJava.unwrapped
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.uast.UAnnotation
@@ -406,6 +415,54 @@ class UastLintUtils {
             list: List<UAnnotation>,
             qualifiedName: String
         ): Boolean = list.stream().anyMatch { e -> e.qualifiedName == qualifiedName }
+
+        /**
+         * Returns any default-use site annotations for this owner,
+         * **even though** in Kotlin these annotations may not belong
+         * on this element. This is done because Kotlin's annotations
+         * semantics means that if you don't specify a use site on a
+         * property for example, the annotation *only* applies to the
+         * private backing field, not the get method and not the set
+         * method! However, if you added `@Suppress` on a property you
+         * probably expected it to apply to the getter/setter as well.
+         */
+        @JvmStatic
+        fun getDefaultUseSiteAnnotations(owner: PsiModifierListOwner): List<UAnnotation>? {
+            if (owner is KtLightMember<*>) {
+                val origin = owner.unwrapped
+                if (origin is KtProperty) {
+                    return getDefaultUseSiteAnnotations(owner, origin.annotationEntries)
+                }
+            } else if (owner is KtLightParameter) {
+                val origin = owner.method.unwrapped as? KtDeclaration
+                if (origin is KtProperty || origin is KtParameter) {
+                    return getDefaultUseSiteAnnotations(owner, origin.annotationEntries)
+                }
+            }
+
+            return null
+        }
+
+        private fun getDefaultUseSiteAnnotations(owner: PsiModifierListOwner, entries: List<KtAnnotationEntry>): List<UAnnotation>? {
+            var annotations: MutableList<UAnnotation>? = null
+            for (ktAnnotation in entries) {
+                val site = ktAnnotation.useSiteTarget?.getAnnotationUseSiteTarget()
+                if (site == null || site == AnnotationUseSiteTarget.PROPERTY) {
+                    val annotation = (UastFacade.convertElement(ktAnnotation, null) as? UAnnotation ?: continue).let {
+                        val signature = it.qualifiedName ?: ""
+                        if (AndroidPlatformAnnotations.isPlatformAnnotation(signature)) {
+                            it.fromPlatformAnnotation(signature)
+                        } else {
+                            it
+                        }
+                    }
+                    val list = annotations ?: mutableListOf<UAnnotation>().also { annotations = it }
+                    list.add(annotation)
+                }
+            }
+
+            return annotations
+        }
     }
 }
 

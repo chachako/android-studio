@@ -206,13 +206,13 @@ class TestLintRunner(private val task: TestLintTask) {
         // For example, the UInjectionHost tests are only relevant
         // if the project contains Kotlin source files.
         val projectList = projects.projects
-        if (!mode.applies(TestModeContext(this, rootDir, projectList, emptyList(), null))) {
+        if (!mode.applies(TestModeContext(this, rootDir, projectList, emptyList(), null, results = results))) {
             notApplicable.add(mode)
             return
         }
         val (root, files) = getTestModeFiles(mode, rootDir, projectMap)
         val partitions = results[TestMode.DEFAULT]?.let {
-            val state = TestModeContext(this, root, projectList, files, null)
+            val state = TestModeContext(this, root, projectList, files, null, results = results)
             mode.partition(state)
         } ?: listOf(mode)
 
@@ -234,7 +234,7 @@ class TestLintRunner(private val task: TestLintTask) {
         projectList: List<ProjectDescription>,
         files: List<File>
     ) {
-        val beforeState = TestModeContext(this, root, projectList, files, null)
+        val beforeState = TestModeContext(this, root, projectList, files, null, results = results)
         val clientState: Any? = mode.before(beforeState)
         if (clientState === TestMode.CANCEL) {
             return
@@ -253,7 +253,7 @@ class TestLintRunner(private val task: TestLintTask) {
                         ) {
                             val testContext = TestModeContext(
                                 task, root, projectList, files,
-                                clientState, driver, context
+                                clientState, driver, context, results
                             )
                             it.invoke(testContext, type, clientState)
                         }
@@ -291,7 +291,7 @@ class TestLintRunner(private val task: TestLintTask) {
                 }
             }
         } finally {
-            val afterState = TestModeContext(this, root, projectList, files, clientState)
+            val afterState = TestModeContext(this, root, projectList, files, clientState, results = results)
             mode.after(afterState)
             if (listener != null) {
                 listeners.remove(listener)
@@ -348,7 +348,11 @@ class TestLintRunner(private val task: TestLintTask) {
         if (!mode.sameOutput(expected, actual, TestMode.OutputKind.REPORT)) {
             val line = "-".repeat(70)
             val expectedLabel = first.description + "\n\n$line\n\n"
-            val actualLabel = mode.description + "\n(To run in isolation, change .run() to .testModes(${mode.fieldName}).run())\n$line\n\n"
+            var actualLabel = mode.description + "\n(To run in isolation, change .run() to .testModes(${mode.fieldName}).run())\n$line\n\n"
+            if (mode == TestMode.SUPPRESSIBLE) {
+                actualLabel = actualLabel.trimEnd() + "\n(Expected all of these warnings to disappear, not to equal the left hand side,\n" +
+                    "because suppress annotations have been inserted.\n\n"
+            }
             val message = mode.diffExplanation
                 ?: """
                 The lint output was different between the test types

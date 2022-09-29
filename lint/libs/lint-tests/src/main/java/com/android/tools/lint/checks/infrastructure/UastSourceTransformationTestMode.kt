@@ -42,12 +42,22 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
      * The result list should be a mutable list because the test
      * infrastructure will merge these lists.
      */
+    @Deprecated("Override the one with a testModeContext instead")
     abstract fun transform(
         source: String,
         context: JavaContext,
         root: UFile,
         clientData: MutableMap<String, Any>
     ): MutableList<Edit>
+
+    @Suppress("DEPRECATION")
+    open fun transform(
+        source: String,
+        context: JavaContext,
+        root: UFile,
+        clientData: MutableMap<String, Any>,
+        testModeContext: TestModeContext
+    ): MutableList<Edit> = transform(source, context, root, clientData)
 
     protected open fun isRelevantFile(file: TestFile): Boolean {
         return file.targetRelativePath.endsWith(SdkConstants.DOT_KT) || file.targetRelativePath.endsWith(SdkConstants.DOT_JAVA)
@@ -87,7 +97,7 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
             sdkHome = sdkHome
         )
         try {
-            return processTestFiles(contexts, changeCallback)
+            return processTestFiles(contexts, testContext, changeCallback)
         } finally {
             Disposer.dispose(disposable)
         }
@@ -97,7 +107,17 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
     open fun processTestFiles(
         testFiles: List<TestFile>,
         sdkHome: File?,
-        changeCallback: (JavaContext, String) -> Unit = { _, _ -> },
+        changeCallback: (JavaContext, String) -> Unit = { _, _ -> }
+    ): Boolean {
+        return processTestFiles(testFiles, sdkHome, null, changeCallback)
+    }
+
+    // For unit tests only
+    open fun processTestFiles(
+        testFiles: List<TestFile>,
+        sdkHome: File?,
+        testModeContext: TestModeContext? = null,
+        changeCallback: (JavaContext, String) -> Unit = { _, _ -> }
     ): Boolean {
         val temporaryFolder = TemporaryFolder().apply { create() }
         try {
@@ -107,7 +127,9 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
                 testFiles = testFiles.toTypedArray()
             )
             try {
-                return processTestFiles(contexts, changeCallback)
+                val context = testModeContext
+                    ?: TestModeContext(TestLintTask(), temporaryFolder.root, emptyList(), listOf(contexts.first().project.dir), null)
+                return processTestFiles(contexts, context, changeCallback)
             } finally {
                 Disposer.dispose(disposable)
             }
@@ -118,9 +140,10 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
 
     private fun processTestFiles(
         contexts: List<JavaContext>,
+        testContext: TestModeContext,
         changeCallback: (JavaContext, String) -> Unit
     ): Boolean {
-        val fileEdits = processTestFiles(contexts, mutableMapOf())
+        val fileEdits = processTestFiles(contexts, mutableMapOf(), testContext)
         if (fileEdits.isEmpty()) {
             return false
         }
@@ -138,13 +161,14 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
 
     protected open fun processTestFiles(
         contexts: List<JavaContext>,
-        clientData: MutableMap<String, Any>
+        clientData: MutableMap<String, Any>,
+        testModeContext: TestModeContext
     ): List<Pair<JavaContext, List<Edit>>> {
         val result: MutableList<Pair<JavaContext, List<Edit>>> = mutableListOf()
         for (context in contexts.sortedBy { it.file.path }) {
             val file = context.uastFile ?: continue
             val source = file.sourcePsi.text
-            val edits = transform(source, context, file, clientData)
+            val edits = transform(source, context, file, clientData, testModeContext)
             if (edits.isNotEmpty()) {
                 if (!ensureConflictFree(this, context, edits)) {
                     return emptyList()

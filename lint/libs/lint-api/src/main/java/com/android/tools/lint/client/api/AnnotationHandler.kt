@@ -16,9 +16,9 @@
 
 package com.android.tools.lint.client.api
 
+import com.android.AndroidXConstants.SUPPORT_ANNOTATIONS_PREFIX
 import com.android.SdkConstants.ATTR_VALUE
 import com.android.SdkConstants.KOTLIN_SUPPRESS
-import com.android.AndroidXConstants.SUPPORT_ANNOTATIONS_PREFIX
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.fromPlatformAnnotation
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.isPlatformAnnotation
 import com.android.tools.lint.detector.api.AnnotationInfo

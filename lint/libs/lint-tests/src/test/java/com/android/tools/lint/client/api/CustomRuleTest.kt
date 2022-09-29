@@ -33,6 +33,10 @@ import java.io.File
 class CustomRuleTest {
     private fun lint(): TestLintTask {
         return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
+            // with lazy loading of issue registries, we don't have access to the
+            // Issue metadata to discard bytecode-based checks (where suppressible
+            // checks don't work since @SuppressWarnings has source retention.)
+            .skipTestModes(TestMode.SUPPRESSIBLE)
     }
 
     @Test

@@ -1751,6 +1751,8 @@ class LintIssueDocGenerator constructor(
         val LOCATION_PATTERN: Pattern = Pattern.compile("""(.+):(\d+)""")
         private val YEAR_PATTERN = Pattern.compile("""\b(\d\d\d\d)\b""")
         private val ANDROID_SUPPORT_SYMBOL_PATTERN = Pattern.compile("\\b(android.support.[a-zA-Z0-9_.]+)\\b")
+        /** Pattern recognizing lint quickfix test output messages */
+        val FIX_PATTERN: Pattern = Pattern.compile("((Fix|Data) for .* line )(\\d+)(: .+)")
 
         @Suppress("SpellCheckingInspection")
         private const val AOSP_CS =
@@ -1765,6 +1767,74 @@ class LintIssueDocGenerator constructor(
         )
 
         private val NUMBER_PATTERN = Pattern.compile("^\\d+\\. ")
+
+        /**
+         * Given lint test output (lint CLI text report output), return
+         * the corresponding lines (including only the error lines, not
+         * for example source code snippets)
+         */
+        fun getOutputLines(output: String): List<String> {
+            return output.lines().mapNotNull {
+                val matcher = MESSAGE_PATTERN.matcher(it)
+                if (matcher.matches()) matcher.group(3) else null
+            }.toList()
+        }
+
+        data class ReportedIncident(
+            /** Relative path, always using unix file separators */
+            val path: String,
+            /** Line number (0-based) */
+            val lineNumber: Int,
+            /** Column number (0-based) */
+            val column: Int,
+            /** The lint error message */
+            val message: String,
+            /** Lint issue id */
+            val id: String
+        )
+
+        fun getOutputIncidents(output: String): List<ReportedIncident> {
+            val lines = output.lines()
+            return lines.mapIndexedNotNull { i, line ->
+                val matcher = MESSAGE_PATTERN.matcher(line)
+                if (matcher.matches()) {
+                    val message = matcher.group(3)
+                    val location = matcher.group(1)
+                    val locationMatcher = LOCATION_PATTERN.matcher(location)
+                    val path: String
+                    var lineNumber: Int = -1
+                    var column = -1
+                    if (locationMatcher.find()) {
+                        path = locationMatcher.group(1)
+                        lineNumber = locationMatcher.group(2).toInt()
+                        if (i < lines.size - 2) {
+                            val next1 = lines[i + 1]
+                            if (next1.startsWith(" ") || next1.indexOf(':') == -1 || !MESSAGE_PATTERN.matcher(next1).matches()) {
+                                val next2 = lines[i + 2]
+                                column = next2.indexOfFirst { !it.isWhitespace() }
+                            }
+                        }
+                    } else {
+                        path = location
+                        lineNumber = -1
+                    }
+                    val id = matcher.group(4).substringBefore(' ') // Sometimes output includes library source
+                    ReportedIncident(path.replace('\\', '/'), lineNumber, column, message, id)
+                } else null
+            }.toList()
+        }
+
+        /**
+         * Given lint unit test quickfix output, return just the fix
+         * lines.
+         */
+        fun getFixLines(output: String): List<String> {
+            return output.lines().mapNotNull {
+                val matcher = FIX_PATTERN.matcher(it)
+                if (matcher.matches()) matcher.group(0) else null
+            }.toList()
+        }
+
         private fun String.isListItem(): Boolean {
             return startsWith("- ") || startsWith("* ") || startsWith("+ ") ||
                 firstOrNull()?.isDigit() == true && NUMBER_PATTERN.matcher(this).find()

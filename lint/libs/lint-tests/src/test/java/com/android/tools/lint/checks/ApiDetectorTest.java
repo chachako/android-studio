@@ -5297,6 +5297,30 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expect(expected);
     }
 
+    public void testSuppressExceptionVariable() {
+        lint().files(
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import java.io.BufferedReader;\n"
+                                        + "import java.io.FileReader;\n"
+                                        + "import java.io.IOException;\n"
+                                        + "\n"
+                                        + "@SuppressWarnings({\"ClassNameDiffersFromFileName\", \"MethodMayBeStatic\"})\n"
+                                        + "public class TryWithResources {\n"
+                                        + "    public String testTryWithResources(String path) throws IOException {\n"
+                                        + "        try (@SuppressWarnings(\"NewApi\") BufferedReader br = new BufferedReader(new FileReader(path))) {\n"
+                                        + "             return br.readLine();\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "}"),
+                        gradleVersion231)
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expectClean();
+    }
+
     public void testExceptionHandlingDalvik() {
         // Regression test for 131349148: Dalvik: java.lang.VerifyError
         lint().files(
