@@ -218,13 +218,13 @@ java_import(
     neverlink = 1,
     visibility = [
         "//tools/adt/idea/emulator/screen-sharing-agent:__pkg__",
+        "//tools/base/adb-proxy/reverse-daemon:__pkg__",
         "//tools/base/app-inspection/agent:__pkg__",
         "//tools/base/app-inspection/inspectors:__subpackages__",
         "//tools/base/deploy/agent/runtime:__pkg__",
         "//tools/base/dynamic-layout-inspector/agent:__subpackages__",
         "//tools/base/experimental/live-sql-inspector:__pkg__",
         "//tools/base/profiler/app:__pkg__",
-        "//tools/vendor/google/directaccess-client/reverse-daemon:__pkg__",
     ],
 )
 
