@@ -880,6 +880,36 @@ public class MainTest extends AbstractCheckTest {
                 });
     }
 
+    public void testUnicodeFileName() throws Exception {
+        File project =
+                getProjectDir(
+                        null,
+                        java(
+                                "src/test/pkg/HelløWorld.java",
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "class HelløWorld {\n"
+                                        + "    String s = \"/sdcard/path\";\n"
+                                        + "}"));
+        checkDriver(
+                ""
+                        + "src/test/pkg/HelløWorld.java:3: Error: Do not hardcode \"/sdcard/\"; use Environment.getExternalStorageDirectory().getPath() instead [SdCardPath]\n"
+                        + "    String s = \"/sdcard/path\";\n"
+                        + "               ~~~~~~~~~~~~~~\n"
+                        + "1 errors, 0 warnings",
+                "",
+                // Expected exit code
+                ERRNO_SUCCESS,
+
+                // Args
+                new String[] {
+                    "-Werror",
+                    "--disable",
+                    "LintError,UsesMinSdkAttributes,UnusedResources",
+                    project.getPath()
+                });
+    }
+
     public void testWrongThreadOff() throws Exception {
         // Make sure the wrong thread interprocedural check is not included with -Wall
         File project =
