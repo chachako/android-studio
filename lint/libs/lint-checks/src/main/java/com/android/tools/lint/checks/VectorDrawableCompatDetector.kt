@@ -27,6 +27,7 @@ import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceFolderType.DRAWABLE
 import com.android.resources.ResourceFolderType.LAYOUT
 import com.android.resources.ResourceUrl
+import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Implementation
@@ -82,6 +83,11 @@ class VectorDrawableCompatDetector : ResourceXmlDetector() {
 
     override fun beforeCheckRootProject(context: Context) {
         skipChecks = context.project.minSdk >= 21
+
+        // TODO(b/249387643): Enable IDE analysis once partial result maps are supported in the IDE.
+        if (LintClient.isStudio) {
+            skipChecks = true
+        }
     }
 
     override fun appliesTo(folderType: ResourceFolderType): Boolean {
