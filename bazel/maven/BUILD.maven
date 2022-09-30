@@ -13981,6 +13981,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.databinding.viewbinding_7.2.0",
+    pom = "repository/androidx/databinding/viewbinding/7.2.0/viewbinding-7.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/databinding/viewbinding/7.2.0",
+    deps = [
+        "androidx.annotation.annotation_1.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.documentfile.documentfile_1.0.0",
     pom = "repository/androidx/documentfile/documentfile/1.0.0/documentfile-1.0.0.pom",
     repo_root_path = "repository",
@@ -17532,6 +17543,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.application.com.android.application.gradle.plugin_7.2.0",
+    pom = "repository/com/android/application/com.android.application.gradle.plugin/7.2.0/com.android.application.gradle.plugin-7.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/application/com.android.application.gradle.plugin/7.2.0",
+    deps = [
+        "com.android.tools.build.gradle_7.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.databinding.baseLibrary_1.0-rc5",
     pom = "repository/com/android/databinding/baseLibrary/1.0-rc5/baseLibrary-1.0-rc5.pom",
     repo_root_path = "repository",
@@ -17753,6 +17775,17 @@ maven_artifact(
         "org.jetbrains.kotlin.kotlin-stdlib-jre8_1.2.0",
         "com.google.code.gson.gson_2.7",
         "com.android.tools.annotations_26.1.4",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.library.com.android.library.gradle.plugin_7.2.0",
+    pom = "repository/com/android/library/com.android.library.gradle.plugin/7.2.0/com.android.library.gradle.plugin-7.2.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/library/com.android.library.gradle.plugin/7.2.0",
+    deps = [
+        "com.android.tools.build.gradle_7.2.0",
     ],
     visibility = ["//visibility:public"],
 )
