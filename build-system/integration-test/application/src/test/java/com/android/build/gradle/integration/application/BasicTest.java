@@ -19,7 +19,6 @@ package com.android.build.gradle.integration.application;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.category.SmokeTests;
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
@@ -49,10 +48,7 @@ public class BasicTest {
 
     @Test
     public void report() throws Exception {
-        project.executor()
-                // https://github.com/gradle/gradle/issues/12871
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
-                .run("androidDependencies");
+        project.executor().run("androidDependencies");
     }
 
     @Test
