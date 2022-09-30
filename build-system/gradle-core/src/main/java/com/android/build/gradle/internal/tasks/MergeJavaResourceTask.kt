@@ -16,10 +16,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
-import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
-import com.android.build.gradle.internal.InternalScope.FEATURES
-import com.android.build.gradle.internal.InternalScope.LOCAL_DEPS
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -27,7 +24,6 @@ import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
 import com.android.build.gradle.internal.packaging.defaultExcludes
-import com.android.build.gradle.internal.pipeline.StreamFilter.PROJECT_RESOURCES
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -40,7 +36,6 @@ import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.tasks.getChangesInSerializableForm
 import com.android.builder.files.SerializableInputChanges
-import com.android.build.gradle.internal.tasks.TaskCategory
 import org.gradle.api.attributes.Usage
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
@@ -101,9 +96,7 @@ abstract class MergeJavaResourceTask
     abstract val featureJavaRes: ConfigurableFileCollection
 
     @get:Input
-    @Suppress("DEPRECATION") // Legacy support
-    lateinit var mergeScopes: Collection<com.android.build.api.transform.QualifiedContent.ScopeType>
-        private set
+    abstract val mergeScopes: SetProperty<InternalScopedArtifacts.InternalScope>
 
     @get:Input
     abstract val excludes: SetProperty<String>
@@ -203,8 +196,7 @@ abstract class MergeJavaResourceTask
     }
 
     class CreationAction(
-        @Suppress("DEPRECATION") // Legacy support
-        private val mergeScopes: Collection<com.android.build.api.transform.QualifiedContent.ScopeType>,
+        private val mergeScopes: Set<InternalScopedArtifacts.InternalScope>,
         creationConfig: ConsumableCreationConfig
     ) : VariantTaskCreationAction<MergeJavaResourceTask, ConsumableCreationConfig>(
         creationConfig
@@ -245,9 +237,8 @@ abstract class MergeJavaResourceTask
             task.projectJavaRes.from(projectJavaRes.asFileTree.matching(patternSet))
             task.projectJavaRes.disallowChanges()
 
-            @Suppress("DEPRECATION") // Legacy support
             run {
-                if (mergeScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
+                if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.SUB_PROJECT)) {
                     task.subProjectJavaRes.fromDisallowChanges(
                         creationConfig.variantDependencies.getArtifactFileCollection(
                             AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
@@ -258,8 +249,9 @@ abstract class MergeJavaResourceTask
                 }
                 task.subProjectJavaRes.disallowChanges()
 
-                if (mergeScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES) || mergeScopes.contains(
-                        LOCAL_DEPS
+                if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                    || mergeScopes.contains(
+                        InternalScopedArtifacts.InternalScope.LOCAL_DEPS
                     )
                 ) {
                     // Local jars are treated the same as external libraries
@@ -268,7 +260,7 @@ abstract class MergeJavaResourceTask
                 task.externalLibJavaRes.disallowChanges()
             }
 
-            if (mergeScopes.contains(FEATURES)) {
+            if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.FEATURES)) {
                 task.featureJavaRes.fromDisallowChanges(
                     creationConfig.variantDependencies.getArtifactFileCollection(
                         AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
@@ -279,7 +271,8 @@ abstract class MergeJavaResourceTask
             }
             task.featureJavaRes.disallowChanges()
 
-            task.mergeScopes = mergeScopes
+            task.mergeScopes.addAll(mergeScopes)
+            task.mergeScopes.disallowChanges()
             task.excludes.setDisallowChanges(creationConfig.packaging.resources.excludes)
             task.pickFirsts.setDisallowChanges(creationConfig.packaging.resources.pickFirsts)
             task.merges.setDisallowChanges(creationConfig.packaging.resources.merges)
@@ -346,9 +339,6 @@ abstract class MergeJavaResourceTask
             task.projectJavaResAsJars.disallowChanges()
             task.unfilteredProjectJavaRes = task.project.files()
             task.featureJavaRes.disallowChanges()
-
-            // mergeScopes is unused by the task.
-            task.mergeScopes = setOf()
         }
 
     }
@@ -402,9 +392,6 @@ abstract class MergeJavaResourceTask
             task.projectJavaResAsJars.disallowChanges()
             task.unfilteredProjectJavaRes = task.project.files()
             task.featureJavaRes.disallowChanges()
-
-            // mergeScopes is unused by the task.
-            task.mergeScopes = setOf()
         }
 
     }
@@ -462,12 +449,10 @@ fun getProjectJavaRes(
 
 private fun getExternalLibJavaRes(
     creationConfig: ComponentCreationConfig,
-    @Suppress("DEPRECATION") // Legacy support
-    mergeScopes: Collection<com.android.build.api.transform.QualifiedContent.ScopeType>
+    mergeScopes: Collection<InternalScopedArtifacts.InternalScope>
 ): FileCollection {
     val externalLibJavaRes = creationConfig.services.fileCollection()
-    @Suppress("DEPRECATION") // Legacy support
-    if (mergeScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
+    if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)) {
         externalLibJavaRes.from(
             creationConfig.variantDependencies.getArtifactFileCollection(
                 AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
@@ -476,7 +461,7 @@ private fun getExternalLibJavaRes(
             )
         )
     }
-    if (mergeScopes.contains(LOCAL_DEPS)) {
+    if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)) {
         externalLibJavaRes.from(creationConfig.computeLocalPackagedJars())
     }
     return externalLibJavaRes

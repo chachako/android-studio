@@ -49,7 +49,6 @@ import com.android.build.gradle.internal.dependency.AndroidAttributes;
 import com.android.build.gradle.internal.manifest.ManifestData;
 import com.android.build.gradle.internal.manifest.ManifestDataKt;
 import com.android.build.gradle.internal.packaging.IncrementalPackagerBuilder;
-import com.android.build.gradle.internal.pipeline.StreamFilter;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType;

@@ -24,11 +24,8 @@ import com.android.build.gradle.internal.InternalScope
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
-import com.android.build.gradle.internal.pipeline.StreamFilter
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.PublishingSpecs
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import org.gradle.api.file.FileCollection
 
@@ -52,16 +49,6 @@ class ClassesClasspathUtils(
     val dexExternalLibsInArtifactTransform: Boolean
 
     init {
-        @Suppress("DEPRECATION") // Legacy support
-        val classesFilter =
-            StreamFilter { types, _ -> QualifiedContent.DefaultContentType.CLASSES in types }
-
-        val transformManager = creationConfig.transformManager
-
-        val jacocoTransformEnabled =
-            creationConfig.isAndroidTestCoverageEnabled &&
-                    !creationConfig.componentType.isForTesting
-
         // The source of project classes depend on whether; Jacoco instrumentation is enabled,
         // instrumentation is collected using an artifact transform and or
         // the user registers a transform using the legacy Transform
@@ -102,35 +89,6 @@ class ClassesClasspathUtils(
                 desugaringClasspathScopes.add(QualifiedContent.Scope.TESTED_CODE)
                 desugaringClasspathScopes.add(QualifiedContent.Scope.SUB_PROJECTS)
             }
-        } else if ((creationConfig as? ApplicationCreationConfig)?.consumesFeatureJars == true) {
-            subProjectsClasses = creationConfig.services.fileCollection()
-            externalLibraryClasses = creationConfig.services.fileCollection()
-            dexExternalLibsInArtifactTransform = false
-
-            // Get all classes from the scopes we are interested in.
-            mixedScopeClasses = creationConfig.services.fileCollection().run {
-                from(transformManager.getPipelineOutputAsFileCollection(
-                    { _, scopes ->
-                        scopes.isNotEmpty() && scopes.subtract(
-                            TransformManager.SCOPE_FULL_WITH_FEATURES
-                        ).isEmpty()
-                    },
-                    classesFilter
-                    )
-                )
-                from(
-                    from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
-                    )
-                )
-            }
-            @Suppress("DEPRECATION") // Legacy support
-            run {
-                desugaringClasspathScopes.add(QualifiedContent.Scope.TESTED_CODE)
-                desugaringClasspathScopes.add(QualifiedContent.Scope.EXTERNAL_LIBRARIES)
-                desugaringClasspathScopes.add(QualifiedContent.Scope.SUB_PROJECTS)
-            }
-            desugaringClasspathScopes.add(InternalScope.FEATURES)
         } else {
             // legacy Transform API
             @Suppress("DEPRECATION") // Legacy support
@@ -166,51 +124,60 @@ class ClassesClasspathUtils(
                         AndroidArtifacts.PublishedConfigType.RUNTIME_ELEMENTS
                     )!!.outputType
                 creationConfig.services.fileCollection(
-                    it.artifacts.get(artifactType)
+                    it.artifacts.get(artifactType), testedExternalLibs, externalLibraryClasses
                 )
             } ?: creationConfig.services.fileCollection()
 
-            creationConfig.services.fileCollection(
-                creationConfig.transformManager.getPipelineOutputAsFileCollection(
-                    { _, scopes ->
-                        scopes.subtract(desugaringClasspathScopes).isEmpty()
-                    },
-                    classesFilter
-                ), testedExternalLibs, externalLibraryClasses
-            ).minus(testedProject)
+            getArtifactFiles(desugaringClasspathScopes, ScopedArtifact.CLASSES)
+                .minus(testedProject)
+
         } else {
             creationConfig.services.fileCollection()
         }
 
         @Suppress("DEPRECATION") // Legacy support
-        desugaringClasspathClasses = creationConfig.services.fileCollection().also {
-            it.from(creationConfig.transformManager.getPipelineOutputAsFileCollection(
-                { _, scopes ->
-                    scopes.contains(QualifiedContent.Scope.TESTED_CODE)
-                            || scopes.subtract(desugaringClasspathScopes).isEmpty()
-                },
-                classesFilter)
-            )
+        desugaringClasspathClasses =
+            getArtifactFiles(desugaringClasspathScopes, ScopedArtifact.CLASSES)
+    }
 
-            if (desugaringClasspathScopes.contains(QualifiedContent.Scope.TESTED_CODE)) {
+    private fun getArtifactFiles(inputScopes: Collection<QualifiedContent.ScopeType>, type: ScopedArtifact) =
+        creationConfig.services.fileCollection().also {
+            if (inputScopes.contains(InternalScope.LOCAL_DEPS)) {
                 it.from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                        .getFinalArtifacts(type)
                 )
             }
-
-            if (desugaringClasspathScopes.contains(QualifiedContent.Scope.PROVIDED_ONLY)) {
+            if (inputScopes.contains(InternalScope.FEATURES)) {
+                it.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.FEATURES)
+                        .getFinalArtifacts(type)
+                )
+            }
+            if (inputScopes.contains(QualifiedContent.Scope.SUB_PROJECTS)) {
+                it.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                        .getFinalArtifacts(type)
+                )
+            }
+            if (inputScopes.contains(QualifiedContent.Scope.TESTED_CODE)) {
+                it.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
+                        .getFinalArtifacts(type)
+                )
+            }
+            if (inputScopes.contains(QualifiedContent.Scope.PROVIDED_ONLY)) {
                 it.from(
                     creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                        .getFinalArtifacts(type)
+                )
+            }
+            if (inputScopes.contains(QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
+                it.from(
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(type)
                 )
             }
         }
 
-        @Suppress("DEPRECATION") // Legacy support
-        transformManager.consumeStreams(
-            TransformManager.SCOPE_FULL_WITH_FEATURES,
-            TransformManager.CONTENT_CLASS
-        )
-    }
 }

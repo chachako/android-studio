@@ -38,9 +38,6 @@ import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.dsl.NdkOptions
-import com.android.build.gradle.internal.dsl.NdkOptions.DebugSymbolLevel
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.publishing.VariantPublishingInfo
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
@@ -67,7 +64,6 @@ open class ApplicationVariantImpl @Inject constructor(
     variantData: BaseVariantData,
     taskContainer: MutableTaskContainer,
     dependenciesInfoBuilder: DependenciesInfoBuilder,
-    transformManager: TransformManager,
     internalServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     globalTaskCreationConfig: GlobalTaskCreationConfig
@@ -81,7 +77,6 @@ open class ApplicationVariantImpl @Inject constructor(
     artifacts,
     variantData,
     taskContainer,
-    transformManager,
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig

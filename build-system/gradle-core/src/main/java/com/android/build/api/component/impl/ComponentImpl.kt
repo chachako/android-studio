@@ -51,7 +51,6 @@ import com.android.build.gradle.internal.core.dsl.PublishableComponentDslInfo
 import com.android.build.gradle.internal.dependency.AndroidAttributes
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dependency.getProvidedClasspath
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
@@ -101,7 +100,6 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
     override val artifacts: ArtifactsImpl,
     private val variantData: BaseVariantData? = null,
     override val taskContainer: MutableTaskContainer,
-    override val transformManager: TransformManager,
     protected val internalServices: VariantServices,
     final override val services: TaskCreationServices,
     final override val global: GlobalTaskCreationConfig,

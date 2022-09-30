@@ -469,7 +469,6 @@ com/android/tools/build/gradle
   com/android/build/gradle/internal/model/
   com/android/build/gradle/internal/ndk/
   com/android/build/gradle/internal/packaging/
-  com/android/build/gradle/internal/pipeline/
   com/android/build/gradle/internal/plugins/
   com/android/build/gradle/internal/privaysandboxsdk/
   com/android/build/gradle/internal/process/

@@ -316,13 +316,6 @@ abstract class DexMergingTask : NewIncrementalTask() {
                     QualifiedContent.Scope.TESTED_CODE
                 )
                 val libraryClasses = creationConfig.services.fileCollection().also {
-                    it.from(creationConfig.transformManager
-                        .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                            contentTypes.contains(
-                                QualifiedContent.DefaultContentType.CLASSES
-                            ) && libraryScopes.intersect(scopes).isNotEmpty()
-                        }
-                    )
                     it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
                         .getFinalArtifacts(ScopedArtifact.CLASSES))
                     it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)

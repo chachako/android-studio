@@ -38,7 +38,6 @@ import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.DynamicFeatureVariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
@@ -69,7 +68,6 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     artifacts: ArtifactsImpl,
     variantData: BaseVariantData,
     taskContainer: MutableTaskContainer,
-    transformManager: TransformManager,
     internalServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     globalTaskCreationConfig: GlobalTaskCreationConfig,
@@ -83,7 +81,6 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     artifacts,
     variantData,
     taskContainer,
-    transformManager,
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig

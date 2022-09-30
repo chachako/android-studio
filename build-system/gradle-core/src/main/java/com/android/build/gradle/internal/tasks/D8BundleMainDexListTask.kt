@@ -167,13 +167,6 @@ abstract class D8BundleMainDexListTask : NonIncrementalTask() {
 
             @Suppress("DEPRECATION") // Legacy support
             libraryClasses = creationConfig.services.fileCollection().also {
-                it.from(creationConfig.transformManager
-                    .getPipelineOutputAsFileCollection { contentTypes, scopes ->
-                        contentTypes.contains(
-                            com.android.build.api.transform.QualifiedContent.DefaultContentType.CLASSES
-                        ) && libraryScopes.intersect(scopes).isNotEmpty()
-                    }
-                )
                 it.from(creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.TESTED_CODE)
                     .getFinalArtifacts(ScopedArtifact.CLASSES)
                 )

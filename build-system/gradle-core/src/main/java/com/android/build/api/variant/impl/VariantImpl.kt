@@ -48,7 +48,6 @@ import com.android.build.gradle.internal.component.features.ShadersCreationConfi
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.TaskCreationServices
@@ -75,7 +74,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     artifacts: ArtifactsImpl,
     variantData: BaseVariantData,
     taskContainer: MutableTaskContainer,
-    transformManager: TransformManager,
     variantServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig
@@ -89,7 +87,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     artifacts,
     variantData,
     taskContainer,
-    transformManager,
     variantServices,
     taskCreationServices,
     global

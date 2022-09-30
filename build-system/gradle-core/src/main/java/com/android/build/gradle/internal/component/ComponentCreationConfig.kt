@@ -38,7 +38,6 @@ import com.android.build.gradle.internal.component.legacy.ModelV1LegacySupport
 import com.android.build.gradle.internal.component.legacy.OldVariantApiLegacySupport
 import com.android.build.gradle.internal.core.ProductFlavor
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
@@ -109,7 +108,6 @@ interface ComponentCreationConfig : ComponentIdentity {
     val artifacts: ArtifactsImpl
     val sources: InternalSources
     val taskContainer: MutableTaskContainer
-    val transformManager: TransformManager
     val paths: VariantPathHelper
     val services: TaskCreationServices
 

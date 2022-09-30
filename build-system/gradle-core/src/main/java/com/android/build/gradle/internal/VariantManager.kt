@@ -63,7 +63,6 @@ import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.manifest.LazyManifestParser
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
 import com.android.build.gradle.internal.profile.AnalyticsUtil
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -364,7 +363,6 @@ class VariantManager<
             )
         val artifacts = ArtifactsImpl(project, componentIdentity.name)
         val taskContainer = MutableTaskContainer()
-        val transformManager = TransformManager(project, dslServices.issueReporter)
 
         // and the obsolete variant data
         val variantData = variantFactory.createVariantData(
@@ -386,7 +384,6 @@ class VariantManager<
             artifacts,
             variantData,
             taskContainer,
-            transformManager,
             variantPropertiesApiServices,
             taskCreationServices,
             globalTaskCreationConfig,
@@ -531,7 +528,6 @@ class VariantManager<
         val componentIdentity = variantDslInfo.componentIdentity
         val artifacts = ArtifactsImpl(project, componentIdentity.name)
         val taskContainer = MutableTaskContainer()
-        val transformManager = TransformManager(project, dslServices.issueReporter)
         val testFixturesBuildFeatureValues = variantFactory.createTestFixturesBuildFeatureValues(
             dslExtension.buildFeatures,
             dslServices.projectOptions,
@@ -548,7 +544,6 @@ class VariantManager<
             artifacts,
             taskContainer,
             mainComponentInfo.variant,
-            transformManager,
             variantPropertiesApiServices,
             taskCreationServices,
             globalTaskCreationConfig
@@ -683,7 +678,6 @@ class VariantManager<
         val componentIdentity = variantDslInfo.componentIdentity
         val artifacts = ArtifactsImpl(project, componentIdentity.name)
         val taskContainer = MutableTaskContainer()
-        val transformManager = TransformManager(project, dslServices.issueReporter)
 
         // create the internal storage for this variant.
         val testVariantData = TestVariantData(
@@ -710,7 +704,6 @@ class VariantManager<
                 testVariantData,
                 taskContainer,
                 testedComponentInfo.variant,
-                transformManager,
                 variantPropertiesApiServices,
                 taskCreationServices,
                 globalTaskCreationConfig
@@ -734,7 +727,6 @@ class VariantManager<
                 testVariantData,
                 taskContainer,
                 testedComponentInfo.variant,
-                transformManager,
                 variantPropertiesApiServices,
                 taskCreationServices,
                 globalTaskCreationConfig

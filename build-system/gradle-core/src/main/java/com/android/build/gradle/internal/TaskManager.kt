@@ -64,8 +64,6 @@ import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
 import com.android.build.gradle.internal.lint.LintTaskManager
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreLocation
-import com.android.build.gradle.internal.pipeline.OriginalStream
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
@@ -830,8 +828,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         creationConfig.instrumentationCreationConfig?.configureAndLockAsmClassesVisitors(
             project.objects
         )
-        val transformManager = creationConfig.transformManager
-
         fun getFinalRuntimeClassesJarsFromComponent(
             component: ComponentCreationConfig,
             scope: ArtifactScope
@@ -858,7 +854,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         // Add stream of external java resources if EXTERNAL_LIBRARIES isn't in the set of java res
         // merging scopes.
         if (!getJavaResMergingScopes(creationConfig)
-                        .contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
+                        .contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)) {
             creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
                 .setInitialContent(
                     ScopedArtifact.JAVA_RES,
@@ -881,8 +877,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
             )
 
         // same for the java resources, if SUB_PROJECTS isn't in the set of java res merging scopes.
-        if (!getJavaResMergingScopes(creationConfig).contains(
-                com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
+        if (!getJavaResMergingScopes(creationConfig).contains(InternalScopedArtifacts.InternalScope.SUB_PROJECT)) {
             creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
                 .setInitialContent(
                     ScopedArtifact.JAVA_RES,
@@ -1287,9 +1282,8 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
      * @param contentType the contentType of java resources, must be RESOURCES or NATIVE_LIBS
      * @return the list of scopes for which to merge the java resources.
      */
-    @Suppress("DEPRECATION") // Legacy support
     protected abstract fun getJavaResMergingScopes(
-            creationConfig: ComponentCreationConfig): Set<com.android.build.api.transform.QualifiedContent.ScopeType>
+            creationConfig: ComponentCreationConfig): Set<InternalScopedArtifacts.InternalScope>
 
     /**
      * Creates the java resources processing tasks.
@@ -1311,10 +1305,8 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
      * @see .createProcessJavaResTask
      */
     fun createMergeJavaResTask(creationConfig: ConsumableCreationConfig) {
-        val transformManager = creationConfig.transformManager
 
         // Compute the scopes that need to be merged.
-        @Suppress("DEPRECATION") // Legacy support
         val mergeScopes = getJavaResMergingScopes(creationConfig)
         taskFactory.register(MergeJavaResourceTask.CreationAction(mergeScopes, creationConfig))
     }
@@ -2029,7 +2021,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
      */
     fun createPostCompilationTasks(creationConfig: ApkCreationConfig) {
         Preconditions.checkNotNull(creationConfig.taskContainer.javacTask)
-        val transformManager = creationConfig.transformManager
         taskFactory.register(MergeGeneratedProguardFilesCreationAction(creationConfig))
 
         // Merge Java Resources.

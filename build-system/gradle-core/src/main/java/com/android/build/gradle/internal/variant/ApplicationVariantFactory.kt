@@ -36,7 +36,6 @@ import com.android.build.gradle.internal.component.features.NativeBuildCreationC
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.scope.AndroidTestBuildFeatureValuesImpl
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.BuildFeatureValuesImpl
@@ -56,7 +55,6 @@ import com.android.builder.errors.IssueReporter
 import com.android.ide.common.build.GenericBuiltArtifact
 import com.android.ide.common.build.GenericBuiltArtifactsSplitOutputMatcher
 import com.android.ide.common.build.GenericFilterConfiguration
-import com.android.resources.Density
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
 import java.util.Arrays
@@ -96,7 +94,6 @@ class ApplicationVariantFactory(
         artifacts: ArtifactsImpl,
         variantData: BaseVariantData,
         taskContainer: MutableTaskContainer,
-        transformManager: TransformManager,
         variantServices: VariantServices,
         taskCreationServices: TaskCreationServices,
         globalConfig: GlobalTaskCreationConfig,
@@ -114,7 +111,6 @@ class ApplicationVariantFactory(
                 variantData,
                 taskContainer,
                 variantBuilder.dependenciesInfo,
-                transformManager,
                 variantServices,
                 taskCreationServices,
                 globalConfig,

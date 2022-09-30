@@ -20,7 +20,6 @@ import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
-import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.variant.LibraryVariantBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.BaseExtension
@@ -29,8 +28,6 @@ import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
 import com.android.build.gradle.internal.dependency.ConfigurationVariantMapping
-import com.android.build.gradle.internal.pipeline.OriginalStream
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType
 import com.android.build.gradle.internal.publishing.ComponentPublishingInfo
 import com.android.build.gradle.internal.publishing.PublishedConfigSpec
@@ -436,11 +433,18 @@ class LibraryTaskManager(
 
     override fun getJavaResMergingScopes(
         creationConfig: ComponentCreationConfig
-    ): Set<QualifiedContent.ScopeType> {
-        return if (creationConfig.componentType.isTestComponent) {
-            TransformManager.SCOPE_FULL_PROJECT_WITH_LOCAL_JARS
-        } else TransformManager.SCOPE_FULL_LIBRARY_WITH_LOCAL_JARS
-    }
+    ): Set<InternalScopedArtifacts.InternalScope> =
+        if (creationConfig.componentType.isTestComponent) {
+            setOf(
+                InternalScopedArtifacts.InternalScope.SUB_PROJECT,
+                InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS,
+                InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
+            )
+        } else {
+            setOf(
+                InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
+            )
+        }
 
     override fun createPrepareLintJarForPublishTask() {
         super.createPrepareLintJarForPublishTask()

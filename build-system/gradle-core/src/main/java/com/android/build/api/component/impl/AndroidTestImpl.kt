@@ -56,7 +56,6 @@ import com.android.build.gradle.internal.component.features.ShadersCreationConfi
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.ProjectServices
@@ -65,7 +64,6 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.file.RegularFile
@@ -87,7 +85,6 @@ open class AndroidTestImpl @Inject constructor(
     variantData: BaseVariantData,
     taskContainer: MutableTaskContainer,
     mainVariant: VariantCreationConfig,
-    transformManager: TransformManager,
     variantServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig,
@@ -102,7 +99,6 @@ open class AndroidTestImpl @Inject constructor(
     variantData,
     taskContainer,
     mainVariant,
-    transformManager,
     variantServices,
     taskCreationServices,
     global,
