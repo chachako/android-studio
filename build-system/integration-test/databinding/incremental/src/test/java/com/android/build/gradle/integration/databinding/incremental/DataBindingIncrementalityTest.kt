@@ -27,10 +27,8 @@ import com.android.build.gradle.integration.common.fixture.app.LayoutFileBuilder
 import com.android.build.gradle.integration.common.fixture.app.ManifestFileBuilder
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils.searchAndReplace
-import com.android.build.gradle.options.BooleanOption.ENABLE_INCREMENTAL_DATA_BINDING
 import com.android.build.gradle.options.BooleanOption.USE_ANDROID_X
 import com.android.testutils.TestUtils.waitForFileSystemTick
 import com.android.testutils.truth.PathSubject.assertThat
@@ -38,8 +36,6 @@ import com.google.common.truth.Expect
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 
 /**
@@ -96,15 +92,9 @@ import java.io.File
  * The following tests will change each of the files marked with [*** changed ***] above to trigger
  * incremental builds and verify the set of re-generated source files and recompiled classes.
  */
-@RunWith(FilterableParameterized::class)
-class DataBindingIncrementalityTest(private val withIncrementalDB: Boolean) {
+class DataBindingIncrementalityTest {
 
     companion object {
-
-        @Parameterized.Parameters(name = "incrementalDB_{0}")
-        @JvmStatic
-        fun parameters() = listOf(true, false)
-
         // Modules
         private const val APP_MODULE = ":app"
         private const val LIB_MODULE = ":lib"
@@ -164,7 +154,6 @@ class DataBindingIncrementalityTest(private val withIncrementalDB: Boolean) {
     @get:Rule
     val project = GradleTestProject.builder().fromTestApp(setUpTestProject())
         .addGradleProperties("${USE_ANDROID_X.propertyName}=true")
-        .addGradleProperties("${ENABLE_INCREMENTAL_DATA_BINDING.propertyName}=$withIncrementalDB")
         .create()
 
     private fun setUpTestProject(): TestProject {
@@ -721,22 +710,12 @@ class DataBindingIncrementalityTest(private val withIncrementalDB: Boolean) {
             )
 
         // The irrelevant (original or generated) source files should not be recompiled
-        if (withIncrementalDB) {
-            expect.that(changedFiles)
-                .named("Recompiled classes")
-                .containsNoneOf(
-                    libLoner2Class,
-                    libLoner1Class
-                )
-        } else {
-            // These classes are still recompiled in non-incremental mode
-            expect.that(changedFiles)
-                .named("Recompiled classes")
-                .containsAtLeast(
-                    libLoner1Class,
-                    libLoner2Class
-                )
-        }
+        expect.that(changedFiles)
+            .named("Recompiled classes")
+            .containsNoneOf(
+                libLoner2Class,
+                libLoner1Class
+            )
 
         // Check the tasks' states
         assertThat(result.getTask(LIB_COMPILE_TASK)).didWork()
@@ -803,22 +782,13 @@ class DataBindingIncrementalityTest(private val withIncrementalDB: Boolean) {
             )
 
         // The irrelevant (original or generated) source files should not be recompiled
-        if (withIncrementalDB) {
-            expect.that(changedFiles)
-                .named("Recompiled classes")
-                .containsNoneOf(
-                    libLoner1Class,
-                    libLoner2Class
-                )
-        } else {
-            // These classes are still recompiled in non-incremental mode
-            expect.that(changedFiles)
-                .named("Recompiled classes")
-                .containsAtLeast(
-                    libLoner1Class,
-                    libLoner2Class
-                )
-        }
+        expect.that(changedFiles)
+            .named("Recompiled classes")
+            .containsNoneOf(
+                libLoner1Class,
+                libLoner2Class
+            )
+
         expect.that(changedFiles)
             .named("Recompiled classes")
             .containsNoneOf(
@@ -900,16 +870,10 @@ class DataBindingIncrementalityTest(private val withIncrementalDB: Boolean) {
             )
 
         // The irrelevant (original or generated) source files should not be recompiled
-        if (withIncrementalDB) {
-            expect.that(changedFiles)
-                .named("Recompiled classes")
-                .doesNotContain(libLoner2Class)
-        } else {
-            // These classes are still recompiled in non-incremental mode
-            expect.that(changedFiles)
-                .named("Recompiled classes")
-                .contains(libLoner2Class)
-        }
+        expect.that(changedFiles)
+            .named("Recompiled classes")
+            .doesNotContain(libLoner2Class)
+
         expect.that(changedFiles)
             .named("Recompiled classes")
             .containsNoneOf(
