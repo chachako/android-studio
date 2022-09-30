@@ -20,7 +20,6 @@ package com.android.build.gradle.internal.utils
 
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.impl.getFeatureLevel
-import com.android.build.gradle.internal.dependency.ATTR_ENABLE_DESUGARING
 import com.android.build.gradle.internal.dependency.GenericTransformParameters
 import com.android.build.gradle.internal.dependency.VariantDependencies.Companion.CONFIG_NAME_CORE_LIBRARY_DESUGARING
 import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
@@ -32,7 +31,6 @@ import com.android.builder.utils.SynchronizedFile
 import com.android.sdklib.AndroidTargetHash
 import com.android.tools.r8.Version
 import com.google.common.io.ByteStreams
-import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.transform.CacheableTransform
 import org.gradle.api.artifacts.transform.InputArtifact
@@ -50,6 +48,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
@@ -291,7 +290,7 @@ private fun getD8DesugarMethodFileFromTransform(
 @CacheableTransform
 abstract class DesugarLibConfigExtractor : TransformAction<TransformParameters.None> {
 
-    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    @get:PathSensitive(PathSensitivity.NONE)
     @get:InputArtifact
     abstract val inputArtifact: Provider<FileSystemLocation>
 
@@ -330,7 +329,7 @@ abstract class DesugarLibLintExtractor : TransformAction<DesugarLibLintExtractor
     }
 
     @get:InputArtifact
-    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val inputArtifact: Provider<FileSystemLocation>
 
     override fun transform(outputs: TransformOutputs) {

@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.dependency
 
-import android.databinding.tool.ext.parameterSpec
 import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
@@ -62,8 +61,6 @@ import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
 import org.gradle.work.FileChange
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
@@ -96,10 +93,7 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
     @get:Inject
     abstract val inputChanges: InputChanges
 
-    // Use RELATIVE path sensitivity since we use [FileChange.normalizedPath] to calculate the
-    // derived dex file relative path. This will ensure we find the derived file when deletion is
-    // required. Revert to CLASSPATH once Gradle 7.5 is used : b/224524454
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Classpath
     @get:InputArtifact
     @get:Incremental
     abstract val primaryInput: Provider<FileSystemLocation>
