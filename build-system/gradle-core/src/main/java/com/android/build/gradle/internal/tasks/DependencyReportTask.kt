@@ -61,5 +61,6 @@ abstract class DependencyReportTask : DefaultTask() {
             renderer.startComponent(component)
             renderer.render(component)
         }
+        logger.warn("DependencyReportTask has been deprecated and will be removed in AGP 9.0")
     }
 }
