@@ -41,7 +41,6 @@ class OptionVersionTest {
          */
         private val KNOWN_VIOLATING_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
             BooleanOption.ENABLE_INCREMENTAL_DATA_BINDING,
-            BooleanOption.ENABLE_RESOURCE_OPTIMIZATIONS,
             BooleanOption.ENABLE_R_TXT_RESOURCE_SHRINKING,
             BooleanOption.INCLUDE_REPOSITORIES_IN_DEPENDENCY_REPORT,
             BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM,

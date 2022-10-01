@@ -1288,8 +1288,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                         COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR)
 
                 if (!creationConfig.debuggable &&
-                        !creationConfig.componentType.isForTesting &&
-                         projectOptions[BooleanOption.ENABLE_RESOURCE_OPTIMIZATIONS]) {
+                        !creationConfig.componentType.isForTesting) {
                     taskFactory.register(OptimizeResourcesTask.CreateAction(creationConfig))
                 }
             }

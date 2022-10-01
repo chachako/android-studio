@@ -217,9 +217,6 @@ enum class BooleanOption(
      */
     ENABLE_INCREMENTAL_DATA_BINDING("android.databinding.incremental", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
-
-    ENABLE_RESOURCE_OPTIMIZATIONS("android.enableResourceOptimizations", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-
     ENABLE_R_TXT_RESOURCE_SHRINKING("android.enableRTxtResourceShrinking", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
     INCLUDE_REPOSITORIES_IN_DEPENDENCY_REPORT("android.bundletool.includeRepositoriesInDependencyReport", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
@@ -518,6 +515,12 @@ enum class BooleanOption(
 
     USE_RELATIVE_PATH_IN_TEST_CONFIG(
         "android.testConfig.useRelativePath",
+        true,
+        FeatureStage.Enforced(Version.VERSION_8_0)
+    ),
+
+    ENABLE_RESOURCE_OPTIMIZATIONS(
+        "android.enableResourceOptimizations",
         true,
         FeatureStage.Enforced(Version.VERSION_8_0)
     ),
