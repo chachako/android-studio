@@ -89,9 +89,6 @@ class PerModuleReportDependenciesTaskTest {
 
     @Test
     fun testReportGeneration() {
-        // Test-specific Task configuration -- stipulate that Repositories should not be included
-        task.includeRepositoryInfo.set(false)
-
         // Test-specific Project configuration -- Build a fake dependency graph
         val rootComponent = createProjectComponent("root_module")
         val subProjectComponent = createProjectComponent("lib_module")
@@ -142,8 +139,6 @@ class PerModuleReportDependenciesTaskTest {
 
     @Test
     fun testReportGenerationWithRepositoriesIncluded() {
-        // Test-specific Task configuration -- stipulate that Repositories should be included
-        task.includeRepositoryInfo.set(true)
         project.repositories.add(mavenRepoMock("maven1", "fakeUrl1"))
         project.repositories.add(ivyRepoMock("ivy1", "fakeUrl2"))
         project.repositories.add(mavenRepoMock("maven2", "file://fakeUrl3"))

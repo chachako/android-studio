@@ -219,8 +219,6 @@ enum class BooleanOption(
 
     ENABLE_R_TXT_RESOURCE_SHRINKING("android.enableRTxtResourceShrinking", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
-    INCLUDE_REPOSITORIES_IN_DEPENDENCY_REPORT("android.bundletool.includeRepositoriesInDependencyReport", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-
     ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
     ENABLE_NEW_RESOURCE_SHRINKER("android.enableNewResourceShrinker", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
@@ -523,6 +521,12 @@ enum class BooleanOption(
         "android.enableResourceOptimizations",
         true,
         FeatureStage.Enforced(Version.VERSION_8_0)
+    ),
+
+    INCLUDE_REPOSITORIES_IN_DEPENDENCY_REPORT(
+    "android.bundletool.includeRepositoriesInDependencyReport",
+    true,
+    FeatureStage.Enforced(Version.VERSION_8_0)
     ),
 
     /* ----------------
