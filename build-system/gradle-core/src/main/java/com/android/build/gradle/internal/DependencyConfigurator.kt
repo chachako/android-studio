@@ -34,7 +34,6 @@ import com.android.build.gradle.internal.dependency.AlternateCompatibilityRule
 import com.android.build.gradle.internal.dependency.AlternateDisambiguationRule
 import com.android.build.gradle.internal.dependency.AndroidXDependencyCheck
 import com.android.build.gradle.internal.dependency.AndroidXDependencySubstitution.replaceOldSupportLibraries
-import com.android.build.gradle.internal.dependency.ExtractPrivacySandboxSdkApiFromAsarTransform
 import com.android.build.gradle.internal.dependency.AsmClassesTransform.Companion.registerAsmTransformForComponent
 import com.android.build.gradle.internal.dependency.ClassesDirToClassesTransform
 import com.android.build.gradle.internal.dependency.CollectClassesTransform
@@ -73,9 +72,8 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.getBuildService
-import com.android.build.gradle.internal.tasks.AsarMetadataExtractionTransform
 import com.android.build.gradle.internal.tasks.AsarToApksTransform
-import com.android.build.gradle.internal.tasks.AsarToManifestSnippetTransform
+import com.android.build.gradle.internal.tasks.AsarTransform
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.utils.getDesugarLibConfig
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -466,21 +464,15 @@ class DependencyConfigurator(
                                 "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
                 )
             }
-            registerTransform(
-                    AsarToManifestSnippetTransform::class.java,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_EXTRACTED_MANIFEST_SNIPPET
-            )
-            registerTransform(
-                AsarMetadataExtractionTransform::class.java,
-                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_METADATA_PROTO
-            )
-            registerTransform(
-                    ExtractPrivacySandboxSdkApiFromAsarTransform::class.java,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR
-            )
+            for (from in AsarTransform.supportedAsarTransformTypes) {
+                registerTransform(
+                        AsarTransform::class.java,
+                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
+                        from
+                ) {
+                    it.targetType.set(from)
+                }
+            }
 
             val apiGeneratorCoordinates = projectServices.projectOptions
                     .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
