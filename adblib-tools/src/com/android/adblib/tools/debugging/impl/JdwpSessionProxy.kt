@@ -25,7 +25,6 @@ import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
-import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.retained
@@ -106,7 +105,9 @@ internal class JdwpSessionProxy(
     private suspend fun proxyJdwpSession(debuggerSocket: AdbChannel) {
         logger.debug { "pid=$pid: Start proxying socket between external debugger and process on device" }
         jdwpSessionRef.retained().use { deviceSessionRef ->
-            JdwpSession.wrapSocketChannel(session, debuggerSocket, pid, JDWP_PROXY_SESSION_NEXT_PACKET_ID_BASE).use { debuggerSession ->
+            // The JDWP Session proxy does not need to send custom JDWP packets,
+            // so we pass a `null` value for `nextPacketIdBase`.
+            JdwpSession.wrapSocketChannel(session, debuggerSocket, pid, null).use { debuggerSession ->
                 coroutineScope {
                     // Note about termination of this coroutine scope:
                     // * [automatic] The common case is to wait for job1 and job2 to complete
@@ -194,14 +195,5 @@ internal class JdwpSessionProxy(
             logger.verbose { "pid=$pid: Emitting session packet to upstream flow: $packet" }
             emit(packet)
         }
-    }
-
-    companion object {
-
-        /**
-         * This value is not used, as the JDWP Session proxy does not need to send custom
-         * [JdwpPacketView] packets, and so does not need to use [JdwpSession.nextPacketId].
-         */
-        const val JDWP_PROXY_SESSION_NEXT_PACKET_ID_BASE = 40_000_000
     }
 }

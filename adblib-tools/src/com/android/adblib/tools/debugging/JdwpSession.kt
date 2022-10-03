@@ -60,6 +60,9 @@ internal interface JdwpSession : AutoCloseable {
      * in this session. Each call returns a new unique value.
      *
      * Note: This method is thread-safe.
+     *
+     * @throws UnsupportedOperationException if this session is not intended for sending
+     * arbitrary [JdwpPacketView].
      */
     fun nextPacketId(): Int
 
@@ -69,13 +72,18 @@ internal interface JdwpSession : AutoCloseable {
          * Returns a [JdwpSession] that opens a `JDWP` session for the given process [pid]
          * on the given [device].
          *
+         * [nextPacketIdBase] represents the initial value returned by [JdwpSession.nextPacketId].
+         * If the value is `null`, the returned [JdwpSession] is not intended to be used for
+         * sending custom [JdwpPacketView], and [JdwpSession.nextPacketId] throws an
+         * [UnsupportedOperationException] when called.
+         *
          * @see [AdbDeviceServices.jdwp]
          */
         suspend fun openJdwpSession(
             session: AdbSession,
             device: DeviceSelector,
             pid: Int,
-            nextPacketIdBase: Int
+            nextPacketIdBase: Int?
         ): JdwpSession {
             val channel = session.deviceServices.jdwp(device, pid)
             channel.closeOnException {
@@ -86,12 +94,17 @@ internal interface JdwpSession : AutoCloseable {
         /**
          * Returns a [JdwpSession] that wraps an existing socket [channel] and allows
          * exchanging `JDWP` packets.
+         *
+         * [nextPacketIdBase] represents the initial value returned by [JdwpSession.nextPacketId].
+         * If the value is `null`, the returned [JdwpSession] is not intended to be used for
+         * sending custom [JdwpPacketView], and [JdwpSession.nextPacketId] throws an
+         * [UnsupportedOperationException] when called.
          */
         fun wrapSocketChannel(
             session: AdbSession,
             channel: AdbChannel,
             pid: Int,
-            nextPacketIdBase: Int
+            nextPacketIdBase: Int?
         ): JdwpSession {
             return JdwpSessionImpl(session, channel, pid, nextPacketIdBase)
         }

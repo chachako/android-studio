@@ -71,6 +71,23 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     @Test
+    fun nextPacketIdThrowsIfNotSupported() = runBlockingWithTimeout {
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+        val session = createSession(fakeAdb)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(session, deviceSelector, 10, null))
+
+        // Act
+        exceptionRule.expect(UnsupportedOperationException::class.java)
+        jdwpSession.nextPacketId()
+
+        // Assert
+        fail("Should not reach")
+    }
+
+    @Test
     fun sendAndReceivePacketWorks() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)

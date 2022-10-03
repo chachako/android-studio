@@ -40,7 +40,7 @@ internal class JdwpSessionImpl(
     session: AdbSession,
     private val channel: AdbChannel,
     private val pid: Int,
-    nextPacketIdBase: Int
+    nextPacketIdBase: Int?
 ) : JdwpSession {
 
     private val logger = thisLogger(session)
@@ -61,7 +61,7 @@ internal class JdwpSessionImpl(
 
     private val receiveMutex = Mutex()
 
-    private val atomicPacketId = AtomicInteger(nextPacketIdBase)
+    private val atomicPacketId: AtomicInteger? = nextPacketIdBase?.let { AtomicInteger(it) }
 
     override fun close() {
         logger.debug { "pid=$pid: Closing JDWP session handler (and underlying channel)" }
@@ -90,7 +90,10 @@ internal class JdwpSessionImpl(
         }
     }
 
-    override fun nextPacketId(): Int = atomicPacketId.getAndIncrement()
+    override fun nextPacketId(): Int {
+        return atomicPacketId?.getAndIncrement()
+            ?: throw UnsupportedOperationException("JDWP session does not support custom packet (IDs)")
+    }
 
     private suspend fun sendHandshake() {
         handshakeHandler.sendHandshake()
