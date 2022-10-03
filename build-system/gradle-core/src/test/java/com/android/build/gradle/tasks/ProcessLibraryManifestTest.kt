@@ -16,8 +16,6 @@
 
 package com.android.build.gradle.tasks
 
-import com.android.build.api.variant.impl.VariantOutputConfigurationImpl
-import com.android.build.api.variant.impl.VariantOutputImpl
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.google.common.truth.Truth.assertThat
@@ -60,16 +58,6 @@ class ProcessLibraryManifestTest {
         task.targetSdkVersion.set("1")
         task.namespace.set("com.example.foo")
         task.manifestPlaceholders.set(mapOf())
-        task.mainSplit.set(
-            VariantOutputImpl(
-                versionCode = project.objects.property(Int::class.java).also { it.set(1) },
-                versionName = project.objects.property(String::class.java).also { it.set("version_name")},
-                enabled = project.objects.property(Boolean::class.java).also { it.set(true) },
-                variantOutputConfiguration = VariantOutputConfigurationImpl(),
-                baseName = "base_name",
-                fullName = "fooRelease",
-                outputFileName = project.objects.property(String::class.java).also { it.set("output_file_name") }
-        ))
         task.analyticsService.set(FakeNoOpAnalyticsService())
     }
 
@@ -80,7 +68,6 @@ class ProcessLibraryManifestTest {
         assertThat(task.inputs.properties).containsKey("targetSdkVersion")
         assertThat(task.inputs.properties).containsKey("manifestPlaceholders")
         assertThat(task.inputs.properties).containsKey("namespace")
-        assertThat(task.inputs.properties).containsEntry("mainSplit.fullName", "fooRelease")
     }
 
     @Test

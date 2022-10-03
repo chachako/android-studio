@@ -909,20 +909,25 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
     }
 
     fun createMergeApkManifestsTask(creationConfig: ApkCreationConfig) {
-        val apkVariantData = creationConfig.oldVariantApiLegacySupport!!.variantData as ApkVariantData
-        val screenSizes = apkVariantData.compatibleScreens
-        taskFactory.register(
-                CompatibleScreensManifest.CreationAction(creationConfig, screenSizes))
+        if (creationConfig is ApplicationCreationConfig) {
+            taskFactory.register(
+                CompatibleScreensManifest.CreationAction(
+                    creationConfig,
+                    screenSizes = (creationConfig.oldVariantApiLegacySupport!!.variantData as ApkVariantData).compatibleScreens
+                )
+            )
+        }
         val processManifestTask = createMergeManifestTasks(creationConfig)
         val taskContainer = creationConfig.taskContainer
-        if (taskContainer.microApkTask != null) {
+        if (taskContainer.microApkTask != null && processManifestTask != null) {
             processManifestTask.dependsOn(taskContainer.microApkTask)
         }
     }
 
     /** Creates the merge manifests task.  */
     protected open fun createMergeManifestTasks(
-            creationConfig: ApkCreationConfig): TaskProvider<out ManifestProcessorTask?> {
+        creationConfig: ApkCreationConfig
+    ): TaskProvider<out ManifestProcessorTask?>? {
         taskFactory.register(ProcessManifestForBundleTask.CreationAction(creationConfig))
         taskFactory.register(
                 ProcessManifestForMetadataFeatureTask.CreationAction(creationConfig))
@@ -930,8 +935,12 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         taskFactory.register(ProcessPackagedManifestTask.CreationAction(creationConfig))
         taskFactory.register(GenerateManifestJarTask.CreationAction(creationConfig))
         taskFactory.register(ProcessApplicationManifest.CreationAction(creationConfig))
-        return taskFactory.register(
-                ProcessMultiApkApplicationManifest.CreationAction(creationConfig))
+
+        return if (creationConfig is ApplicationCreationConfig) {
+            taskFactory.register(ProcessMultiApkApplicationManifest.CreationAction(creationConfig))
+        } else {
+            null
+        }
     }
 
     protected fun createProcessTestManifestTask(creationConfig: TestCreationConfig) {
@@ -1199,7 +1208,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
             useAaptToGenerateLegacyMultidexMainDexProguardRules: Boolean) {
         val artifacts = creationConfig.artifacts
         val projectOptions = creationConfig.services.projectOptions
-        when(mergeType) {
+        when (mergeType) {
             MergeType.PACKAGE -> {
                 // MergeType.PACKAGE means we will only merged the resources from our current module
                 // (little merge). This is used for finding what goes into the AAR (packaging), and also
@@ -1230,6 +1239,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                 }
             }
             MergeType.MERGE -> {
+
                 // MergeType.MERGE means we merged the whole universe.
                 taskFactory.register(
                         LinkApplicationAndroidResourcesTask.CreationAction(
@@ -1237,15 +1247,20 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                                 useAaptToGenerateLegacyMultidexMainDexProguardRules,
                                 mergeType,
                                 baseName,
-                                creationConfig.componentType.isAar))
+                                isLibrary = false
+                        )
+                )
                 if (packageOutputType != null) {
                     creationConfig.artifacts.republish(PROCESSED_RES, packageOutputType)
                 }
 
                 // TODO: also support stable IDs for the bundle (does it matter?)
                 // create the task that creates the aapt output for the bundle.
-                if (creationConfig is ApkCreationConfig
-                        && !creationConfig.componentType.isForTesting) {
+                if (!creationConfig.componentType.isForTesting) {
+                    check(creationConfig is ApkCreationConfig) {
+                        "Expected a component that produces an apk, instead found " +
+                                "${creationConfig.name} of type ${creationConfig::class.java}."
+                    }
                     taskFactory.register(
                             LinkAndroidResForBundleTask.CreationAction(
                                     creationConfig))
@@ -1261,10 +1276,13 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
 
                 if (!creationConfig.debuggable &&
                         !creationConfig.componentType.isForTesting) {
+                    check(creationConfig is ApkCreationConfig) {
+                        "Expected a component that produces an apk, instead found " +
+                                "${creationConfig.name} of type ${creationConfig::class.java}."
+                    }
                     taskFactory.register(OptimizeResourcesTask.CreateAction(creationConfig))
                 }
             }
-            else -> throw RuntimeException("Unhandled merge type : $mergeType")
         }
     }
 
@@ -1463,8 +1481,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                         .files(testConfigInputs.mergedManifest)
                         .withPropertyName("mergedManifest")
                         .withPathSensitivity(PathSensitivity.RELATIVE)
-                taskInputs.property(
-                        "mainVariantOutput", testConfigInputs.mainVariantOutput)
                 taskInputs.property(
                         "packageNameOfFinalRClassProvider",
                         testConfigInputs.packageNameOfFinalRClass)
@@ -2803,7 +2819,8 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
      * If resource shrinker is enabled, set-up and register the appropriate tasks.
      */
     private fun maybeCreateResourcesShrinkerTasks(
-            creationConfig: ConsumableCreationConfig) {
+        creationConfig: ApkCreationConfig
+    ) {
         if (creationConfig.androidResourcesCreationConfig?.useResourceShrinker != true) {
             return
         }

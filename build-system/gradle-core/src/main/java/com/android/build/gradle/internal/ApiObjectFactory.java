@@ -140,6 +140,7 @@ public class ApiObjectFactory {
                         component.getTaskContainer());
 
         component
+                .getOldVariantApiLegacySupport()
                 .getOutputs()
                 .forEach(
                         // pass the new api variant output object so the override method can

@@ -33,6 +33,7 @@ import com.android.build.api.variant.DependenciesInfoBuilder
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
+import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
@@ -180,17 +181,41 @@ open class ApplicationVariantImpl @Inject constructor(
     override val consumesFeatureJars: Boolean
         get() = optimizationCreationConfig.minifiedEnabled && global.hasDynamicFeatures
 
-    override fun createVersionNameProperty(): Property<String?> =
+    private fun createVersionNameProperty(): Property<String?> =
         internalServices.newNullablePropertyBackingDeprecatedApi(
             String::class.java,
             dslInfo.versionName,
         )
 
-    override fun createVersionCodeProperty() : Property<Int?> =
+    private fun createVersionCodeProperty() : Property<Int?> =
         internalServices.newNullablePropertyBackingDeprecatedApi(
             Int::class.java,
             dslInfo.versionCode,
         )
+
+    private val variantOutputs = mutableListOf<VariantOutputImpl>()
+
+    override val outputs: VariantOutputList
+        get() = VariantOutputList(variantOutputs.toList())
+
+    override fun addVariantOutput(variantOutputConfiguration: VariantOutputConfiguration) {
+        variantOutputs.add(
+            VariantOutputImpl(
+                createVersionCodeProperty(),
+                createVersionNameProperty(),
+                internalServices.newPropertyBackingDeprecatedApi(Boolean::class.java, true),
+                variantOutputConfiguration,
+                variantOutputConfiguration.baseName(this),
+                variantOutputConfiguration.fullName(this),
+                internalServices.newPropertyBackingDeprecatedApi(
+                    String::class.java,
+                    internalServices.projectInfo.getProjectBaseName().map {
+                        paths.getOutputFileName(it, variantOutputConfiguration.baseName(this))
+                    },
+                )
+            )
+        )
+    }
 
     override fun <T : Component> createUserVisibleVariantObject(
             projectServices: ProjectServices,

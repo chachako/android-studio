@@ -275,8 +275,6 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
             creationConfig.artifacts.setTaskInputToFinalProduct(
                 SingleArtifact.MERGED_MANIFEST, task.mergedManifestFile)
 
-            task.mainSplit = creationConfig.outputs.getMainSplit()
-
             // This task can produce R classes with either constant IDs ("0") or sequential IDs
             // mimicking the way AAPT2 numbers IDs. If we're generating a compile time only R class
             // (either for the small merge in app or when using compile classpath resources in libs)
@@ -333,7 +331,6 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
             task.nonTransitiveRClass.setDisallowChanges(projectOptions[BooleanOption.NON_TRANSITIVE_R_CLASS])
             task.compileClasspathLibraryRClasses.setDisallowChanges(false)
             task.namespace.setDisallowChanges(creationConfig.namespace)
-            task.mainSplit = creationConfig.outputs.getMainSplit()
             task.useConstantIds.setDisallowChanges(false)
             task.symbolTableBuildService.setDisallowChanges(getBuildService(creationConfig.services.buildServiceRegistry))
 

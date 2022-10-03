@@ -237,7 +237,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     // The public API does not expose this so this is ok, but it's safer to make it read-only
     // directly to catch potential errors.
     // The old API has a check for this type of plugins to avoid calling set() on it.
-    override fun createVersionNameProperty(): Property<String?> =
+    override val baseModuleVersionName: Property<String?> =
         internalServices.nullablePropertyOf(
             String::class.java,
             baseModuleMetadata.map { it.versionName },
@@ -251,7 +251,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     // The public API does not expose this so this is ok, but it's safer to make it read-only
     // directly to catch potential errors.
     // The old API has a check for this type of plugins to avoid calling set() on it.
-    override fun createVersionCodeProperty() : Property<Int?> =
+    override val baseModuleVersionCode : Property<Int?> =
         internalServices.nullablePropertyOf(
             Int::class.java,
             baseModuleMetadata.map { it.versionCode?.toInt() },

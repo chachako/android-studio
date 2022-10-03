@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.component.legacy
 
 import com.android.build.api.dsl.BuildType
 import com.android.build.api.dsl.ProductFlavor
+import com.android.build.api.variant.impl.VariantOutputList
 import com.android.build.gradle.api.JavaCompileOptions
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.core.MergedFlavor
@@ -36,6 +37,7 @@ interface OldVariantApiLegacySupport {
     val variantData: BaseVariantData
     val dslSigningConfig: com.android.build.gradle.internal.dsl.SigningConfig?
     val variantSources: VariantSources
+    val outputs: VariantOutputList
 
     fun getJavaClasspathArtifacts(
         configType: AndroidArtifacts.ConsumedConfigType,

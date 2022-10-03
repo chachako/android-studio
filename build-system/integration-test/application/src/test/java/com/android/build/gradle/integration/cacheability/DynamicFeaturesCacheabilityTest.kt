@@ -109,7 +109,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature1:packageDebugResources",
                     ":feature1:parseDebugLocalResources",
                     ":feature1:processDebugMainManifest",
-                    ":feature1:processDebugManifest",
                     ":feature1:processDebugManifestForPackage",
                     ":feature1:processDebugResources",
                     ":feature1:processManifestDebugForFeature",
@@ -135,7 +134,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature2:packageDebugResources",
                     ":feature2:parseDebugLocalResources",
                     ":feature2:processDebugMainManifest",
-                    ":feature2:processDebugManifest",
                     ":feature2:processDebugManifestForPackage",
                     ":feature2:processDebugResources",
                     ":feature2:processManifestDebugForFeature",
@@ -180,7 +178,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature1:checkDebugAarMetadata", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckAarMetadataTask] */
                     ":feature1:checkDebugDuplicateClasses", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckDuplicateClassesTask] */
                     ":feature1:createDebugApkListingFileRedirect",
-                    ":feature1:createDebugCompatibleScreenManifests", /** Intentionally not cacheable. See [com.android.build.gradle.tasks.CompatibleScreensManifest] */
                     ":feature1:extractProguardFiles", // intentionally not cacheable
                     ":feature1:featureDebugWriter",
                     ":feature1:generateDebugLintModel", // intentionally not cacheable
@@ -192,7 +189,6 @@ class DynamicFeaturesCacheabilityTest {
                     ":feature2:checkDebugAarMetadata", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckAarMetadataTask] */
                     ":feature2:checkDebugDuplicateClasses", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.CheckDuplicateClassesTask] */
                     ":feature2:createDebugApkListingFileRedirect",
-                    ":feature2:createDebugCompatibleScreenManifests", /** Intentionally not cacheable. See [com.android.build.gradle.tasks.CompatibleScreensManifest] */
                     ":feature2:extractProguardFiles", // intentionally not cacheable
                     ":feature2:featureDebugWriter",
                     ":feature2:generateDebugLintModel", // intentionally not cacheable

@@ -129,10 +129,6 @@ interface ComponentType {
      */
     val analyticsVariantType: GradleBuildVariant.VariantType
     /**
-     * Whether this variant can have split outputs.
-     */
-    val canHaveSplits: Boolean
-    /**
      * Whether the manifest file is required to exist.
      */
     val requiresManifest: Boolean
@@ -179,7 +175,6 @@ enum class ComponentTypeImpl(
     override val artifactType: Int,
     override val isExportDataBindingClassList: Boolean = false,
     override val analyticsVariantType: GradleBuildVariant.VariantType,
-    override val canHaveSplits: Boolean = false
 ): ComponentType {
     BASE_APK(
         isApk = true,
@@ -191,7 +186,6 @@ enum class ComponentTypeImpl(
         artifactName = AndroidProject.ARTIFACT_MAIN,
         artifactType = ArtifactMetaData.TYPE_ANDROID,
         analyticsVariantType = GradleBuildVariant.VariantType.APPLICATION,
-        canHaveSplits = true
     ),
     OPTIONAL_APK(
         isApk = true,
@@ -202,8 +196,8 @@ enum class ComponentTypeImpl(
         suffix = "",
         artifactName = AndroidProject.ARTIFACT_MAIN,
         artifactType = ArtifactMetaData.TYPE_ANDROID,
-        analyticsVariantType = GradleBuildVariant.VariantType.OPTIONAL_APK,
-        canHaveSplits = true),
+        analyticsVariantType = GradleBuildVariant.VariantType.OPTIONAL_APK
+    ),
     LIBRARY(
         isAar = true,
         publishToRepository = true,
@@ -213,8 +207,8 @@ enum class ComponentTypeImpl(
         artifactName = AndroidProject.ARTIFACT_MAIN,
         artifactType = ArtifactMetaData.TYPE_ANDROID,
         isExportDataBindingClassList = true,
-        analyticsVariantType = GradleBuildVariant.VariantType.LIBRARY,
-        canHaveSplits = true),
+        analyticsVariantType = GradleBuildVariant.VariantType.LIBRARY
+    ),
     TEST_APK(
         isApk = true,
         isForTesting = true,

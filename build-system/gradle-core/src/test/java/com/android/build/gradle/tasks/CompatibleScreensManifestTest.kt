@@ -38,7 +38,6 @@ import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.profile.NameAnonymizer
 import com.android.builder.profile.NameAnonymizerSerializer
 import com.google.common.base.Joiner
-import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.GradleBuildProfile
 import org.gradle.testfixtures.ProjectBuilder
@@ -61,7 +60,6 @@ class CompatibleScreensManifestTest {
     @get:Rule var projectFolder = TemporaryFolder()
     @get:Rule var temporaryFolder = TemporaryFolder()
 
-    @Suppress("DEPRECATION")
     @Mock private lateinit var artifacts: ArtifactsImpl
     @Mock private lateinit var taskContainer: MutableTaskContainer
     @Mock private lateinit var appVariant: ApplicationVariantImpl
@@ -138,10 +136,9 @@ class CompatibleScreensManifestTest {
         assertThat(task.variantName).isEqualTo("fullVariantName")
         assertThat(task.name).isEqualTo("test")
         assertThat(task.minSdkVersion.get()).isEqualTo("21")
-        assertThat(task.screenSizes).containsExactly("xxhpi", "xxxhdpi")
+        assertThat(task.screenSizes.get()).containsExactly("xxhpi", "xxxhdpi")
         assertThat(task.outputFolder.get().asFile).isEqualTo(temporaryFolder.root)
         assertThat(task.applicationId.get()).isEqualTo("com.foo")
-        assertThat(task.componentType.get()).isEqualTo(ComponentTypeImpl.BASE_APK.toString())
         assertThat(task.analyticsService.get()).isInstanceOf(AnalyticsService::class.java)
     }
 
@@ -159,9 +156,8 @@ class CompatibleScreensManifestTest {
 
         task.variantName = "variant"
         task.minSdkVersion.set("22" )
-        task.screenSizes = ImmutableSet.of("mdpi", "xhdpi")
+        task.screenSizes.set(setOf("mdpi", "xhdpi"))
         task.applicationId.set("com.foo")
-        task.componentType.set(ComponentTypeImpl.BASE_APK.toString())
         task.analyticsService.set(FakeNoOpAnalyticsService())
 
         task.taskAction()
@@ -187,9 +183,8 @@ class CompatibleScreensManifestTest {
 
         task.variantName = "variant"
         task.minSdkVersion.set("22")
-        task.screenSizes = ImmutableSet.of("xhdpi")
+        task.screenSizes.set(setOf("xhdpi"))
         task.applicationId.set("com.foo")
-        task.componentType.set(ComponentTypeImpl.BASE_APK.toString())
         task.analyticsService.set(FakeNoOpAnalyticsService())
 
         task.taskAction()
@@ -221,9 +216,8 @@ class CompatibleScreensManifestTest {
 
         task.variantName = "variant"
         task.minSdkVersion.set(task.project.provider { null })
-        task.screenSizes = ImmutableSet.of("xhdpi")
+        task.screenSizes.set(setOf("xhdpi"))
         task.applicationId.set("com.foo")
-        task.componentType.set(ComponentTypeImpl.BASE_APK.toString())
         task.analyticsService.set(FakeNoOpAnalyticsService())
 
         task.taskAction()
@@ -265,9 +259,8 @@ class CompatibleScreensManifestTest {
 
         task.variantName = "variant"
         task.minSdkVersion.set("23")
-        task.screenSizes = ImmutableSet.of("xhdpi", "xxhdpi")
+        task.screenSizes.set(setOf("xhdpi", "xxhdpi"))
         task.applicationId.set("com.foo")
-        task.componentType.set(ComponentTypeImpl.BASE_APK.toString())
         task.analyticsService.set(FakeNoOpAnalyticsService())
 
         task.taskAction()

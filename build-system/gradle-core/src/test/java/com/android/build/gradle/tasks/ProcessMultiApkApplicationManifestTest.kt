@@ -18,12 +18,15 @@ package com.android.build.gradle.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.variant.FilterConfiguration
+import com.android.build.api.variant.MultiOutputHandler
 import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.api.variant.impl.FilterConfigurationImpl
 import com.android.build.api.variant.impl.VariantOutputConfigurationImpl
 import com.android.build.api.variant.impl.VariantOutputImpl
+import com.android.build.api.variant.impl.VariantOutputList
+import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -34,6 +37,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Mockito
 import java.io.File
 import kotlin.test.fail
 
@@ -45,7 +49,6 @@ class ProcessMultiApkApplicationManifestTest {
     private lateinit var project: Project
     private lateinit var task: ProcessMultiApkApplicationManifest
     private lateinit var sourceManifestFolder: File
-
 
     @Before
     fun setUp() {
@@ -74,8 +77,9 @@ class ProcessMultiApkApplicationManifestTest {
             "main_full_name",
             FakeGradleProperty(value = "output_file_name")
         )
-        task.variantOutputs.add(mainOutput)
-        task.singleVariantOutput.set(mainOutput)
+        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
+        Mockito.`when`(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainOutput)))
+        task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
 
         BuiltArtifactsImpl(
             artifactType = InternalArtifactType.COMPATIBLE_SCREEN_MANIFEST,
@@ -107,17 +111,17 @@ class ProcessMultiApkApplicationManifestTest {
     fun testAbiSplit() {
         val x86 = createVariantOutputForAbi("x86")
         x86.versionCode.set(24)
-        task.variantOutputs.add(x86)
         val arm = createVariantOutputForAbi("arm")
         arm.versionCode.set(23)
-        task.variantOutputs.add(arm)
         val x86_64 = createVariantOutputForAbi("x86_64")
         x86_64.versionCode.set(22)
-        task.variantOutputs.add(x86_64)
 
         val mainOutput = createVariantOutput()
-        task.singleVariantOutput.set(mainOutput)
-        task.variantOutputs.add(mainOutput)
+        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
+        Mockito.`when`(creationConfig.outputs).thenReturn(
+            VariantOutputList(listOf(mainOutput, x86, arm, x86_64))
+        )
+        task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
 
         BuiltArtifactsImpl(
             artifactType = InternalArtifactType.COMPATIBLE_SCREEN_MANIFEST,
@@ -166,11 +170,14 @@ class ProcessMultiApkApplicationManifestTest {
     @Test
     fun testSeveralSplitNoUniversal() {
         val xxhpdi = createVariantOutputForDensity("xxhdpi")
-        task.variantOutputs.add(xxhpdi)
         val xhdpi = createVariantOutputForDensity("xhdpi")
-        task.variantOutputs.add(xhdpi)
         val hdpi = createVariantOutputForDensity("hdpi")
-        task.variantOutputs.add(hdpi)
+
+        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
+        Mockito.`when`(creationConfig.outputs).thenReturn(
+            VariantOutputList(listOf(xxhpdi, xhdpi, hdpi))
+        )
+        task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
 
         BuiltArtifactsImpl(
             artifactType = InternalArtifactType.COMPATIBLE_SCREEN_MANIFEST,
@@ -219,15 +226,18 @@ class ProcessMultiApkApplicationManifestTest {
         val xxhdpi = createVariantOutputForDensity("xxhdpi")
         xxhdpi.versionCode.set(24)
         xxhdpi.versionName.set("twentyfour")
-        task.variantOutputs.add(xxhdpi)
         val xhdpi = createVariantOutputForDensity("xhdpi")
         xhdpi.versionCode.set(23)
         xhdpi.versionName.set("twentythree")
-        task.variantOutputs.add(xhdpi)
         val hdpi = createVariantOutputForDensity("hdpi")
         hdpi.versionCode.set(22)
         hdpi.versionName.set("twentytwo")
-        task.variantOutputs.add(hdpi)
+
+        val creationConfig = Mockito.mock(ApplicationCreationConfig::class.java)
+        Mockito.`when`(creationConfig.outputs).thenReturn(
+            VariantOutputList(listOf(xxhdpi, xhdpi, hdpi))
+        )
+        task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
 
         BuiltArtifactsImpl(
             artifactType = InternalArtifactType.COMPATIBLE_SCREEN_MANIFEST,

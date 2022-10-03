@@ -15,8 +15,10 @@
  */
 package com.android.build.gradle.tasks
 
+import com.android.SdkConstants
 import com.android.build.api.artifact.SingleArtifact
-import com.android.build.api.variant.impl.VariantOutputImpl
+import com.android.build.api.variant.impl.BuiltArtifactImpl
+import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.getApiString
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
@@ -52,6 +54,7 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
@@ -63,8 +66,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -132,8 +135,17 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
     var navigationJsons: FileCollection? = null
         private set
 
-    @Throws(IOException::class)
+    /**
+     * For non-application components, we still depend on the multiApkManifests artifacts as part of
+     * the manifest processing pipeline, and since these components don't have splits, we can just
+     * use this task to output the main manifest to that directory without having to run a task to
+     * just copy the manifest.
+     */
+    @get:Optional
+    @get:OutputDirectory
+    abstract val multiApkManifestOutputDirectory: DirectoryProperty
 
+    @Throws(IOException::class)
     override fun doTaskAction() {
         if (baseModuleDebuggable.isPresent) {
             val isDebuggable = optionalFeatures.get()
@@ -167,8 +179,8 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             packageOverride.get(),
             namespace.get(),
             profileable.get(),
-            variantOutput.get().versionCode.orNull,
-            variantOutput.get().versionName.orNull,
+            versionCode.orNull,
+            versionName.orNull,
             minSdkVersion.orNull,
             targetSdkVersion.orNull,
             maxSdkVersion.orNull,
@@ -189,6 +201,27 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             LoggerWrapper.getLogger(ProcessApplicationManifest::class.java)
         )
         outputMergeBlameContents(mergingReport, mergeBlameFile.get().asFile)
+
+        // This is a non-application variant, add the main manifest to the
+        // multiApkManifestOutputDirectory directly.
+        if (multiApkManifestOutputDirectory.isPresent) {
+            val outputFile = File(
+                multiApkManifestOutputDirectory.get().asFile,
+                SdkConstants.ANDROID_MANIFEST_XML
+            )
+            mergedManifest.get().asFile.copyTo(outputFile, overwrite = true)
+
+            BuiltArtifactsImpl(
+                artifactType = InternalArtifactType.MERGED_MANIFESTS,
+                applicationId = applicationId.get(),
+                variantName = variantName,
+                elements = listOf(
+                    BuiltArtifactImpl.make(
+                        outputFile = outputFile.absolutePath
+                    )
+                )
+            ).save(multiApkManifestOutputDirectory.get())
+        }
     }
 
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -251,9 +284,6 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
     @get:Input
     abstract val applicationId: Property<String>
 
-    @get:Input
-    abstract val componentType: Property<String?>
-
     @get:Optional
     @get:Input
     abstract val minSdkVersion: Property<String?>
@@ -294,8 +324,13 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
     @get:Internal("only for task execution")
     abstract val projectBuildFile: RegularFileProperty
 
-    @get:Nested
-    abstract val variantOutput: Property<VariantOutputImpl>
+    @get:Input
+    @get:Optional
+    abstract val versionCode: Property<Int?>
+
+    @get:Input
+    @get:Optional
+    abstract val versionName: Property<String?>
 
     class CreationAction(
         creationConfig: ApkCreationConfig
@@ -349,6 +384,13 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
                 )
                 .withName("manifest-merger-" + creationConfig.baseName + "-report.txt")
                 .on(MANIFEST_MERGE_REPORT)
+
+            if (creationConfig !is ApplicationCreationConfig) {
+                creationConfig.artifacts.setInitialProvider(
+                    taskProvider,
+                    ProcessApplicationManifest::multiApkManifestOutputDirectory
+                ).on(InternalArtifactType.MERGED_MANIFESTS)
+            }
         }
 
         override fun configure(
@@ -376,8 +418,6 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
 
             task.applicationId.set(creationConfig.applicationId)
             task.applicationId.disallowChanges()
-            task.componentType.set(creationConfig.componentType.toString())
-            task.componentType.disallowChanges()
             task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
             task.targetSdkVersion
                 .setDisallowChanges(
@@ -396,9 +436,15 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             task.jniLibsUseLegacyPackaging.setDisallowChanges(
                 creationConfig.packaging.jniLibs.useLegacyPackaging
             )
-            task.variantOutput.setDisallowChanges(
-                creationConfig.outputs.getMainSplit()
-            )
+            if (creationConfig is ApplicationCreationConfig) {
+                creationConfig.outputs.getMainSplit().let {
+                    task.versionCode.setDisallowChanges(it.versionCode)
+                    task.versionName.setDisallowChanges(it.versionName)
+                }
+            } else if (creationConfig is DynamicFeatureCreationConfig) {
+                task.versionCode.setDisallowChanges(creationConfig.baseModuleVersionCode)
+                task.versionName.setDisallowChanges(creationConfig.baseModuleVersionName)
+            }
             // set optional inputs per module type
             if (componentType.isBaseModule) {
                 task.featureManifests = creationConfig

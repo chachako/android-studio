@@ -16,10 +16,14 @@
 
 package com.android.build.gradle.tasks
 
-import com.android.build.api.variant.VariantOutputConfiguration
+import com.android.build.api.variant.MultiOutputHandler
 import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
+import com.android.build.api.variant.impl.VariantOutputConfigurationImpl
 import com.android.build.api.variant.impl.VariantOutputImpl
+import com.android.build.api.variant.impl.VariantOutputList
+import com.android.build.gradle.internal.component.ApplicationCreationConfig
+import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.google.common.truth.Truth
@@ -42,7 +46,7 @@ class ProcessManifestForBundleTaskTest {
     @JvmField var temporaryFolder = TemporaryFolder()
 
     @Mock
-    lateinit var mainSplit: VariantOutputImpl
+    lateinit var creationConfig: ApplicationCreationConfig
 
     @Mock
     lateinit var workers: WorkerExecutor
@@ -58,10 +62,18 @@ class ProcessManifestForBundleTaskTest {
         val taskProvider = project.tasks.register("testManifestForBundle", ProcessManifestForBundleTask::class.java)
         task = taskProvider.get()
         sourceManifestFolder = temporaryFolder.newFolder("source_manifest")
-        Mockito.`when`(mainSplit.outputType).thenReturn(
-            VariantOutputConfiguration.OutputType.SINGLE)
-        Mockito.`when`(mainSplit.filters).thenReturn(listOf())
-        task.mainSplit.set(mainSplit)
+
+        val mainSplit = VariantOutputImpl(
+            FakeGradleProperty(5),
+            FakeGradleProperty("version_name"),
+            FakeGradleProperty(true),
+            VariantOutputConfigurationImpl(),
+            "base_name",
+            "split_full_name",
+            FakeGradleProperty(value = "output_file_name")
+        )
+        Mockito.`when`(creationConfig.outputs).thenReturn(VariantOutputList(listOf(mainSplit)))
+        task.outputsHandler.set(MultiOutputHandler.create(creationConfig))
         task.analyticsService.set(FakeNoOpAnalyticsService())
     }
 
@@ -97,11 +109,11 @@ class ProcessManifestForBundleTaskTest {
                     featureSplit="feature1"
                     package="com.example.app"
                     android:versionCode="11" >
-                
+
                     <application android:debuggable="true" >
                         <activity
                             android:name="com.example.feature1.FeatureActivity"
-                            android:label="Feature Activity" 
+                            android:label="Feature Activity"
                             android:splitName="feature1">
                             <intent-filter>
                                 <action android:name="android.intent.action.MAIN" />

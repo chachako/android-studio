@@ -16,7 +16,9 @@
 
 package com.android.build.gradle.internal.component
 
+import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.api.variant.impl.BundleConfigImpl
+import com.android.build.api.variant.impl.VariantOutputList
 
 interface ApplicationCreationConfig: ApkCreationConfig, VariantCreationConfig, PublishableCreationConfig {
     val profileable: Boolean
@@ -24,4 +26,8 @@ interface ApplicationCreationConfig: ApkCreationConfig, VariantCreationConfig, P
     val needAssetPackTasks: Boolean
     val isWearAppUnbundled: Boolean?
     override val bundleConfig: BundleConfigImpl
+
+    val outputs: VariantOutputList
+
+    fun addVariantOutput(variantOutputConfiguration: VariantOutputConfiguration)
 }

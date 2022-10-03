@@ -17,9 +17,8 @@ package com.android.build.gradle.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.variant.BuiltArtifacts
+import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
-import com.android.build.api.variant.impl.VariantOutputImpl
-import com.android.build.api.variant.impl.dirName
 import com.android.build.api.variant.impl.getApiString
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
@@ -50,7 +49,6 @@ import com.android.utils.FileUtils
 import com.android.utils.ILogger
 import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
-import com.google.common.base.Strings
 import com.google.common.io.Files
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.DirectoryProperty
@@ -62,7 +60,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -95,9 +92,6 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
 
     private var manifests: ArtifactCollection? = null
 
-    @get:Nested
-    abstract val apkData: Property<VariantOutputImpl>
-
     @get:Optional
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:InputFiles
@@ -105,10 +99,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
         private set
 
     override fun doTaskAction() {
-        val dirName = apkData.get().variantOutputConfiguration.dirName()
-        val manifestOutputFolder =
-            if (Strings.isNullOrEmpty(dirName)) packagedManifestOutputDirectory.get().asFile
-            else packagedManifestOutputDirectory.get().file(dirName).asFile
+        val manifestOutputFolder = packagedManifestOutputDirectory.get().asFile
         FileUtils.mkdirs(manifestOutputFolder)
         val manifestOutputFile = File(manifestOutputFolder, SdkConstants.ANDROID_MANIFEST_XML)
         val navJsons = navigationJsons?.files ?: listOf<File>()
@@ -138,12 +129,11 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             testApplicationId.get(),
             variantName,
             listOf(
-                apkData.get().toBuiltArtifact(
-                    manifestOutputFile
+                BuiltArtifactImpl.make(
+                    manifestOutputFile.absolutePath
                 )
             )
-        )
-            .saveToDirectory(packagedManifestOutputDirectory.get().asFile)
+        ).saveToDirectory(packagedManifestOutputDirectory.get().asFile)
     }
 
     /**
@@ -477,7 +467,6 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             task.testManifestFile.disallowChanges()
             creationConfig.sources.manifestOverlays.forEach(task.manifestOverlays::add)
             task.manifestOverlays.disallowChanges()
-            task.apkData.set(creationConfig.outputs.getMainSplit())
             task.componentType.setDisallowChanges(creationConfig.componentType.toString())
             task.tmpDir.setDisallowChanges(
                 creationConfig.paths.intermediatesDir(

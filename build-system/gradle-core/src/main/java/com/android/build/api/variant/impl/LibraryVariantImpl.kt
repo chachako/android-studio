@@ -42,7 +42,9 @@ import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.BuilderConstants
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import javax.inject.Inject
 
@@ -109,6 +111,14 @@ open class LibraryVariantImpl @Inject constructor(
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
+
+    override val aarOutputFileName: Property<String> =
+        internalServices.newPropertyBackingDeprecatedApi(
+            String::class.java,
+            services.projectInfo.getProjectBaseName().map {
+                "$it-$baseName.${BuilderConstants.EXT_LIB_ARCHIVE}"
+            }
+        )
 
     override val debuggable: Boolean
         get() = dslInfo.isDebuggable

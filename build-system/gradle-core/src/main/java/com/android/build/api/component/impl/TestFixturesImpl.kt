@@ -51,6 +51,7 @@ import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.testFixtures.testFixturesFeatureName
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.BuilderConstants
 import com.android.utils.appendCapitalized
 import com.android.utils.capitalizeAndAppend
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
@@ -132,6 +133,14 @@ open class TestFixturesImpl @Inject constructor(
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
+
+    override val aarOutputFileName: Property<String> =
+        variantServices.newPropertyBackingDeprecatedApi(
+            String::class.java,
+            services.projectInfo.getProjectBaseName().map {
+                "it-$baseName-testFixtures.${BuilderConstants.EXT_LIB_ARCHIVE}"
+            }
+        )
 
     override val buildConfigCreationConfig: BuildConfigCreationConfig? = null
 

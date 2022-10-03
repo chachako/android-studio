@@ -26,8 +26,6 @@ import com.android.build.api.variant.InternalSources
 import com.android.build.api.variant.JavaCompilation
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
-import com.android.build.api.variant.VariantOutputConfiguration
-import com.android.build.api.variant.impl.VariantOutputList
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.AssetsCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
@@ -95,11 +93,6 @@ interface ComponentCreationConfig : ComponentIdentity {
     val instrumentationCreationConfig: InstrumentationCreationConfig?
     val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig?
 
-    // TODO figure out whether these properties are needed by all
-    // TODO : remove as it is now in Variant.
-    // ---------------------------------------------------------------------------------------------
-    val outputs: VariantOutputList
-
     // ---------------------------------------------------------------------------------------------
     // INTERNAL DELEGATES
     // ---------------------------------------------------------------------------------------------
@@ -134,11 +127,6 @@ interface ComponentCreationConfig : ComponentIdentity {
     val providedOnlyClasspath: FileCollection
 
     val javaCompilation: JavaCompilation
-
-    fun addVariantOutput(
-        variantOutputConfiguration: VariantOutputConfiguration,
-        outputFileName: Provider<String>? = null
-    )
 
     fun computeLocalFileDependencies(filePredicate: Predicate<File>): FileCollection
 

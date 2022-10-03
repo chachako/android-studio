@@ -30,14 +30,9 @@ import com.android.build.api.variant.Component
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.JavaCompilation
-import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.SourcesImpl
-import com.android.build.api.variant.impl.VariantOutputImpl
-import com.android.build.api.variant.impl.VariantOutputList
-import com.android.build.api.variant.impl.baseName
-import com.android.build.api.variant.impl.fullName
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.AssetsCreationConfig
@@ -82,7 +77,6 @@ import org.gradle.api.attributes.DocsType
 import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemLocation
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import java.io.File
 import java.util.Locale
@@ -182,17 +176,13 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
 
-    // this is technically a public API for the Application Variant (only)
-    override val outputs: VariantOutputList
-        get() = VariantOutputList(variantOutputs.toList())
-
     override val componentType: ComponentType
         get() = dslInfo.componentType
 
     override val dirName: String
         get() = paths.dirName
 
-    override val baseName: String
+    final override val baseName: String
         get() = paths.baseName
 
     override val productFlavorList: List<ProductFlavor> = dslInfo.componentIdentity.productFlavors.map {
@@ -202,47 +192,6 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
     // ---------------------------------------------------------------------------------------------
     // Private stuff
     // ---------------------------------------------------------------------------------------------
-
-    private val variantOutputs = mutableListOf<VariantOutputImpl>()
-
-    override fun addVariantOutput(
-        variantOutputConfiguration: VariantOutputConfiguration,
-        outputFileName: Provider<String>?
-    ) {
-        variantOutputs.add(
-            VariantOutputImpl(
-                createVersionCodeProperty(),
-                createVersionNameProperty(),
-                internalServices.newPropertyBackingDeprecatedApi(Boolean::class.java, true),
-                variantOutputConfiguration,
-                variantOutputConfiguration.baseName(this),
-                variantOutputConfiguration.fullName(this),
-                internalServices.newPropertyBackingDeprecatedApi(
-                    String::class.java,
-                    outputFileName
-                        ?: internalServices.projectInfo.getProjectBaseName().map {
-                            paths.getOutputFileName(it, variantOutputConfiguration.baseName(this))
-                        }
-                )
-            )
-        )
-    }
-
-    // default impl for variants that don't actually have versionName
-    protected open fun createVersionNameProperty(): Property<String?> {
-        val stringValue: String? = null
-        return internalServices.nullablePropertyOf(String::class.java, stringValue).also {
-            it.disallowChanges()
-        }
-    }
-
-    // default impl for variants that don't actually have versionCode
-    protected open fun createVersionCodeProperty() : Property<Int?> {
-        val intValue: Int? = null
-        return internalServices.nullablePropertyOf(Int::class.java, intValue).also {
-            it.disallowChanges()
-        }
-    }
 
     override fun computeTaskName(prefix: String): String =
         prefix.appendCapitalized(name)
@@ -365,7 +314,8 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
             this,
             dslInfo,
             variantData!!,
-            variantSources
+            variantSources,
+            internalServices
         )
     }
 

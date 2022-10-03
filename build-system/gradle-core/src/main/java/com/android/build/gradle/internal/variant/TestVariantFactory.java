@@ -31,7 +31,6 @@ import com.android.build.api.variant.TestVariantBuilder;
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig;
 import com.android.build.api.variant.impl.TestVariantBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantImpl;
-import com.android.build.api.variant.impl.VariantOutputConfigurationImpl;
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.component.TestVariantCreationConfig;
@@ -62,7 +61,6 @@ import com.android.build.gradle.options.ProjectOptions;
 import com.android.builder.core.BuilderConstants;
 import com.android.builder.core.ComponentType;
 import com.android.builder.core.ComponentTypeImpl;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.gradle.api.GradleException;
@@ -110,28 +108,20 @@ public class TestVariantFactory
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
             @NonNull GlobalTaskCreationConfig globalConfig) {
-
-        TestVariantImpl variant =
-                dslServices.newInstance(
-                        TestVariantImpl.class,
-                        variantBuilder,
-                        buildFeatures,
-                        variantDslInfo,
-                        variantDependencies,
-                        variantSources,
-                        paths,
-                        artifacts,
-                        variantData,
-                        taskContainer,
-                        variantServices,
-                        taskCreationServices,
-                        globalConfig);
-
-        // create default output
-        variant.addVariantOutput(
-                new VariantOutputConfigurationImpl(false, ImmutableList.of()), null);
-
-        return variant;
+        return dslServices.newInstance(
+                TestVariantImpl.class,
+                variantBuilder,
+                buildFeatures,
+                variantDslInfo,
+                variantDependencies,
+                variantSources,
+                paths,
+                artifacts,
+                variantData,
+                taskContainer,
+                variantServices,
+                taskCreationServices,
+                globalConfig);
     }
 
     @NonNull

@@ -15,7 +15,6 @@
  */
 package com.android.build.gradle.internal.test
 
-import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.test.BuiltArtifactsSplitOutputMatcher.computeBestOutput
@@ -41,15 +40,6 @@ class TestDataImpl(
     testApkDir,
     testedApksDir
 ) {
-
-    init {
-        if (testConfig.outputs.getSplitsByType(
-                VariantOutputConfiguration.OutputType.ONE_OF_MANY
-            ).isNotEmpty()
-        ) {
-            throw RuntimeException("Multi-output in test variant not yet supported")
-        }
-    }
 
     override val libraryType =
         testConfig.services.provider { testConfig.mainVariant.componentType.isAar }

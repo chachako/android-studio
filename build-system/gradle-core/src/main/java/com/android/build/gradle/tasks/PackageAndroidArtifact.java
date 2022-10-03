@@ -34,12 +34,12 @@ import com.android.build.api.artifact.ArtifactTransformationRequest;
 import com.android.build.api.artifact.impl.ArtifactsImpl;
 import com.android.build.api.variant.BuiltArtifact;
 import com.android.build.api.variant.FilterConfiguration;
+import com.android.build.api.variant.MultiOutputHandler;
 import com.android.build.api.variant.impl.BuiltArtifactImpl;
 import com.android.build.api.variant.impl.BuiltArtifactsImpl;
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl;
 import com.android.build.api.variant.impl.VariantOutputConfigurationImplKt;
 import com.android.build.api.variant.impl.VariantOutputImpl;
-import com.android.build.api.variant.impl.VariantOutputListKt;
 import com.android.build.gradle.internal.LoggerWrapper;
 import com.android.build.gradle.internal.component.ApkCreationConfig;
 import com.android.build.gradle.internal.component.ApplicationCreationConfig;
@@ -385,15 +385,10 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
     public abstract RegularFileProperty getIdeModelOutputFile();
 
     @Nested
-    public abstract ListProperty<VariantOutputImpl> getVariantOutputs();
+    public abstract Property<MultiOutputHandler> getOutputsHandler();
 
     @Input
     public abstract ArtifactTransformationRequest getTransformationRequest();
-
-    private static File computeBuildOutputFile(
-            VariantOutputImpl variantOutput, File outputDirectory) {
-        return new File(outputDirectory, variantOutput.getOutputFileName().get());
-    }
 
     @Override
     public void doTaskAction(@NonNull InputChanges changes) {
@@ -419,14 +414,29 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
     private Function3<BuiltArtifact, Directory, SplitterParams, File> configure(
             @NonNull HashSet<File> changedResourceFiles, @NonNull InputChanges changes) {
 
+        MultiOutputHandler outputsHandler = getOutputsHandler().get();
+
         return (builtArtifact, directory, parameter) -> {
-            VariantOutputImpl variantOutput =
-                    VariantOutputListKt.getVariantOutput(
-                            getVariantOutputs().get(),
-                            ((BuiltArtifactImpl) builtArtifact).getVariantOutputConfiguration());
+            VariantOutputImpl.SerializedForm variantOutput =
+                    outputsHandler
+                            .getOutput(((BuiltArtifactImpl) builtArtifact)
+                                    .getVariantOutputConfiguration());
+
+            parameter.getVariantOutput().set(variantOutput);
+
+            parameter.getOutputHandler().set(outputsHandler.toSerializable());
+
             File outputFile =
-                    computeBuildOutputFile(variantOutput, getOutputDirectory().get().getAsFile());
-            parameter.getVariantOutput().set(variantOutput.toSerializedForm());
+                    outputsHandler.computeBuildOutputFile(
+                            getOutputDirectory().get().getAsFile(), variantOutput);
+            parameter
+                    .getIncrementalDirForSplit()
+                    .set(
+                            outputsHandler.computeUniqueDirForSplit(
+                                    getIncrementalFolder().get().getAsFile(),
+                                    variantOutput,
+                                    variantName
+                            ));
             parameter.getAndroidResourcesFile().set(new File(builtArtifact.getOutputFile()));
             parameter
                     .getAndroidResourcesChanged()
@@ -611,6 +621,9 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
         public abstract Property<VariantOutputImpl.SerializedForm> getVariantOutput();
 
         @NonNull
+        public abstract Property<MultiOutputHandler> getOutputHandler();
+
+        @NonNull
         public abstract Property<String> getProjectPath();
 
         @NonNull
@@ -624,6 +637,9 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
         @NonNull
         public abstract DirectoryProperty getIncrementalFolder();
+
+        @NonNull
+        public abstract DirectoryProperty getIncrementalDirForSplit();
 
         @NonNull
         public abstract Property<SerializableInputChanges> getDexFiles();
@@ -768,10 +784,10 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                 ImmutableMap.builder();
         javaResourcesForApk.putAll(changedJavaResources);
 
-        // find the manifest file for this split.
-        BuiltArtifact manifestForSplit =
-                manifestOutputs.getBuiltArtifact(
-                        params.getVariantOutput().get().getVariantOutputConfiguration());
+        BuiltArtifact manifestForSplit = params.getOutputHandler().get().extractArtifactForSplit(
+                manifestOutputs,
+                params.getVariantOutput().get().getVariantOutputConfiguration()
+        );
 
         if (manifestForSplit == null) {
             throw new RuntimeException(
@@ -916,10 +932,10 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
      * @param params the {@link SplitterParams}
      */
     private static Set<String> getAcceptedAbis(@NonNull SplitterParams params) {
-        FilterConfiguration splitAbiFilter =
-                VariantOutputConfigurationImplKt.getFilter(
-                        params.getVariantOutput().get().getVariantOutputConfiguration(),
-                        FilterConfiguration.FilterType.ABI);
+        FilterConfiguration splitAbiFilter = VariantOutputConfigurationImplKt.getFilter(
+                params.getVariantOutput().get().getVariantOutputConfiguration(),
+                FilterConfiguration.FilterType.ABI);
+
         final Set<String> acceptedAbis =
                 splitAbiFilter != null
                         ? ImmutableSet.of(splitAbiFilter.getIdentifier())
@@ -977,10 +993,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
         public void doExecute() {
             SplitterParams params = getParameters();
             try {
-                File incrementalDirForSplit =
-                        new File(
-                                params.getIncrementalFolder().get().getAsFile(),
-                                params.getVariantOutput().get().getFullName());
+                File incrementalDirForSplit = params.getIncrementalDirForSplit().getAsFile().get();
 
                 File cacheDir = new File(incrementalDirForSplit, ZIP_DIFF_CACHE_DIR);
                 if (!cacheDir.exists()) {
@@ -1140,7 +1153,10 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
             packageAndroidArtifact.getApplicationId().set(creationConfig.getApplicationId());
             packageAndroidArtifact.getApplicationId().disallowChanges();
 
-            packageAndroidArtifact.getVariantOutputs().set(creationConfig.getOutputs());
+            packageAndroidArtifact.getOutputsHandler().set(
+                    MultiOutputHandler.Companion.create(creationConfig)
+            );
+            packageAndroidArtifact.getOutputsHandler().disallowChanges();
 
             packageAndroidArtifact
                     .getIncrementalFolder()
