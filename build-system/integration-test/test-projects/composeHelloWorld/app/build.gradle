@@ -32,7 +32,9 @@ android {
           "-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
         ]
     }
-
+    composeOptions {
+        kotlinCompilerExtensionVersion = "${rootProject.composeCompilerVersion}"
+    }
 }
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

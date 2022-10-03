@@ -637,6 +637,7 @@ ext {
     latestCompileSdk = %2${"$"}s
     kotlinVersion = '%4${"$"}s'
     composeVersion = '%5${"$"}s'
+    composeCompilerVersion = '%6${"$"}s'
 }
 allprojects {
     ${generateProjectRepoScript()}
@@ -646,6 +647,7 @@ allprojects {
             compileSdkVersion,
             false,
             kotlinVersion,
+            TaskManager.COMPOSE_UI_VERSION,
             TaskManager.COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION,
         )
         if (APPLY_DEVICEPOOL_PLUGIN) {

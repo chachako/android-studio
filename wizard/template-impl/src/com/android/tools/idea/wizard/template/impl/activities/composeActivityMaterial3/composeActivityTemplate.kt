@@ -74,7 +74,7 @@ val composeActivityMaterial3Template
 
     val defaultPreview = stringParameter {
       name = "Default Preview function name"
-      default = "DefaultPreview"
+      default = "${greeting.value}Preview"
       help = "Used for deduplication"
       visible = { false }
       constraints = listOf(UNIQUE, KOTLIN_FUNCTION)

@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.internal.TaskManager.Companion.COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION
+import com.android.build.gradle.internal.TaskManager.Companion.COMPOSE_UI_VERSION
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
 import org.junit.Rule
@@ -39,8 +40,8 @@ class KotlinMultiplatformComposeTest {
                 minSdk = 24
             }
             dependencies {
-                implementation("androidx.compose.ui:ui-tooling:$COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION")
-                implementation("androidx.compose.material:material:$COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION")
+                implementation("androidx.compose.ui:ui-tooling:$COMPOSE_UI_VERSION")
+                implementation("androidx.compose.material:material:$COMPOSE_UI_VERSION")
             }
             appendToBuildFile {
                 """

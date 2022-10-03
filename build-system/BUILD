@@ -215,13 +215,13 @@ KGP_LATEST = [
 # compatible Compose version yet).
 # DO NOT MIX different versions in this list.
 KGP_FOR_COMPOSE = [
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.7.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.7.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.7.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.7.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.7.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.7.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.0",
+    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.7.20",
+    "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.7.20",
+    "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.7.20",
+    "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.7.20",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.7.20",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.7.20",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.20",
 ]
 
 # m2 repository used by performance tests
@@ -237,13 +237,13 @@ maven_repository(
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android_1.3.6",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.3.6",
         "@maven//:androidx.activity.activity-compose_1.5.1",
-        "@maven//:androidx.compose.compiler.compiler_1.3.0",
-        "@maven//:androidx.compose.material.material_1.2.1",
-        "@maven//:androidx.compose.animation.animation_1.2.1",
-        "@maven//:androidx.compose.foundation.foundation_1.2.1",
-        "@maven//:androidx.compose.material.material-icons-extended_1.2.1",
-        "@maven//:androidx.compose.ui.ui-tooling_1.2.1",
-        "@maven//:androidx.compose.runtime.runtime-livedata_1.2.1",
+        "@maven//:androidx.compose.compiler.compiler_1.3.2",
+        "@maven//:androidx.compose.material.material_1.3.0",
+        "@maven//:androidx.compose.animation.animation_1.3.0",
+        "@maven//:androidx.compose.foundation.foundation_1.3.0",
+        "@maven//:androidx.compose.material.material-icons-extended_1.3.0",
+        "@maven//:androidx.compose.ui.ui-tooling_1.3.0",
+        "@maven//:androidx.compose.runtime.runtime-livedata_1.3.0",
         "@maven//:androidx.appcompat.appcompat_1.3.0-beta01",
         "@maven//:androidx.lifecycle.lifecycle-livedata-ktx_2.2.0",
         "@maven//:androidx.lifecycle.lifecycle-common-java8_2.4.0",

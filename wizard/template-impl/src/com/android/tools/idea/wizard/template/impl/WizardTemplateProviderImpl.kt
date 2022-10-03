@@ -72,12 +72,12 @@ import com.android.tools.idea.wizard.template.impl.other.sliceProvider.sliceProv
  */
 class WizardTemplateProviderImpl : WizardTemplateProvider() {
   override fun getTemplates(): List<Template> = listOf(
+      composeActivityMaterial3Template,
     androidTVActivityTemplate,
     basicActivityMaterial3Template,
     composeWearActivityTemplate,
     composeWearActivityWithTileAndComplicationTemplate,
     bottomNavigationActivityTemplate,
-    composeActivityMaterial3Template,
     emptyActivityTemplate,
     fullscreenActivityTemplate,
     googleAdMobAdsActivityTemplate,

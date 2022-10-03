@@ -54,8 +54,11 @@ class $activityClass : ComponentActivity() {
 }
 
 @Composable
-fun ${greeting}(name: String) {
-    Text(text = "Hello ${"$"}name!")
+fun ${greeting}(name: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "Hello ${"$"}name!",
+        modifier = modifier
+    )
 }
 
 @Preview(showBackground = true)

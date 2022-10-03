@@ -64,7 +64,7 @@ public class TestUtils {
      * upgrade the test projects to the latest version of the Kotlin Gradle plugin if there isn't a
      * compatible Compose version yet.
      */
-    public static final String KOTLIN_VERSION_FOR_COMPOSE_TESTS = "1.7.0";
+    public static final String KOTLIN_VERSION_FOR_COMPOSE_TESTS = "1.7.20";
 
     /**
      * The Android platform version used in the gradle-core and builder unit tests.
