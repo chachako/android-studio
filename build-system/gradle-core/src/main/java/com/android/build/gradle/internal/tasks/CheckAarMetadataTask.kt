@@ -31,8 +31,7 @@ import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT
 import com.android.build.gradle.internal.utils.parseTargetHash
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.builder.core.ToolsRevisionUtils
-import com.android.build.gradle.internal.tasks.TaskCategory
-import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.repository.Revision
 import com.android.sdklib.SdkVersionInfo
 import com.google.common.annotations.VisibleForTesting
@@ -450,8 +449,7 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
         // check agpVersion
         val minAgpVersion = aarMetadataReader.minAgpVersion
         if (minAgpVersion != null) {
-            val parsedMinAgpVersion =
-                GradleVersion.tryParseStableAndroidGradlePluginVersion(minAgpVersion)
+            val parsedMinAgpVersion = AgpVersion.tryParseStable(minAgpVersion)
             if (parsedMinAgpVersion == null) {
                 errorMessages.add(
                     """
@@ -463,8 +461,7 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
                         """.trimIndent()
                 )
             } else {
-                val parsedAgpVersion =
-                    GradleVersion.parseAndroidGradlePluginVersion(parameters.agpVersion.get())
+                val parsedAgpVersion = AgpVersion.parse(parameters.agpVersion.get())
                 if (parsedMinAgpVersion > parsedAgpVersion) {
                     errorMessages.add(
                         """

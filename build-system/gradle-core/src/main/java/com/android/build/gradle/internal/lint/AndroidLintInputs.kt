@@ -58,6 +58,7 @@ import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.ApiVersion
 import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.sdklib.AndroidVersion
 import com.android.tools.lint.model.DefaultLintModelAndroidArtifact
 import com.android.tools.lint.model.DefaultLintModelBuildFeatures
@@ -1884,7 +1885,7 @@ internal fun getLintMavenArtifactVersion(
         return defaultVersion
     }
     // Only verify versions that parse. If it is not valid, it will fail later anyway.
-    val parsed = GradleVersion.tryParseAndroidGradlePluginVersion(versionOverride)
+    val parsed = AgpVersion.tryParse(versionOverride)
     if (parsed == null) {
         reporter?.reportError(
             IssueReporter.Type.GENERIC,
@@ -1896,11 +1897,11 @@ internal fun getLintMavenArtifactVersion(
         return defaultVersion
     }
 
-    val default = GradleVersion.parseAndroidGradlePluginVersion(defaultVersion)
+    val default = AgpVersion.parse(defaultVersion)
 
     // Heuristic when given an AGP version, find the corresponding lint version (that's 23 higher)
     val normalizedOverride: String = (parsed.major + 23).toString() + versionOverride.removePrefix(parsed.major.toString())
-    val normalizedParsed = GradleVersion.tryParseAndroidGradlePluginVersion(normalizedOverride) ?: error("Unexpected parse error")
+    val normalizedParsed = AgpVersion.tryParse(normalizedOverride) ?: error("Unexpected parse error")
 
     // Only fail if the major version is outdated.
     // e.g. if the default lint version is 31.1.0 (as will be for AGP 8.1.0), fail is specifying

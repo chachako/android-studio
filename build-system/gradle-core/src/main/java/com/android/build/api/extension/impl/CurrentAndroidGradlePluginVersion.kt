@@ -18,12 +18,12 @@ package com.android.build.api.extension.impl
 
 import com.android.Version
 import com.android.build.api.AndroidPluginVersion
-import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.google.common.annotations.VisibleForTesting
 
 @VisibleForTesting
 internal fun parseAndroidGradlePluginVersion(version: String): AndroidPluginVersion {
-    val parsed = GradleVersion.parseAndroidGradlePluginVersion(version)
+    val parsed = AgpVersion.parse(version)
     val stable = AndroidPluginVersion(parsed.major, parsed.minor, parsed.micro)
     if (version.endsWith("-dev")) {
         return stable.dev()

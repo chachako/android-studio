@@ -17,7 +17,7 @@
 package com.android.build.gradle.options
 
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
-import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import org.junit.Test
 
 /** Tests the validity of the Android Gradle plugin versions associated with the [Option]s. */
@@ -29,7 +29,7 @@ class OptionVersionTest {
          * The AGP stable version that is going to be published (ignoring dot releases for the
          * purpose of this test).
          */
-        private val AGP_STABLE_VERSION: GradleVersion = getStableVersionIgnoringDotReleases(ANDROID_GRADLE_PLUGIN_VERSION)
+        private val AGP_STABLE_VERSION: AgpVersion = getStableAgpVersionIgnoringDotReleases(ANDROID_GRADLE_PLUGIN_VERSION)
 
         /**
          * Deprecated [Option]s that have invalid deprecation versions and need to be fixed as soon
@@ -51,15 +51,15 @@ class OptionVersionTest {
             BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS,
         )
 
-        private fun getStableVersionIgnoringDotReleases(versionString: String): GradleVersion {
+        private fun getStableAgpVersionIgnoringDotReleases(versionString: String): AgpVersion {
             // Normalize the version string first (e.g., "7.0" => "7.0.0")
             val normalizedVersionString = if (versionString.count { it=='.' }==1) {
                 "$versionString.0"
             } else {
                 versionString
             }
-            val gradleVersion = GradleVersion.parseAndroidGradlePluginVersion(normalizedVersionString)
-            return GradleVersion(gradleVersion.major, gradleVersion.minor, 0)
+            val gradleVersion = AgpVersion.parse(normalizedVersionString)
+            return AgpVersion(gradleVersion.major, gradleVersion.minor, 0)
         }
     }
 
@@ -68,7 +68,7 @@ class OptionVersionTest {
         val violatingOptions = getAllOptions()
                 .filter { it.status is Option.Status.Deprecated }
                 .filter {
-                    val deprecationVersion = getStableVersionIgnoringDotReleases(
+                    val deprecationVersion = getStableAgpVersionIgnoringDotReleases(
                             (it.status as Option.Status.Deprecated).deprecationTarget.removalTarget.versionString!!)
                     deprecationVersion <= AGP_STABLE_VERSION
                 }
@@ -89,7 +89,7 @@ class OptionVersionTest {
                 .filter { it.status is Option.Status.Removed }
                 .filter { option ->
                     val removedVersion = (option.status as Option.Status.Removed).removedVersion.versionString?.let {
-                        getStableVersionIgnoringDotReleases(it)
+                        getStableAgpVersionIgnoringDotReleases(it)
                     }
                     removedVersion?.let { removedVersion > AGP_STABLE_VERSION } ?: false
                 }

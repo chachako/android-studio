@@ -608,7 +608,7 @@ public class GradleVersion implements Comparable<GradleVersion> {
      * @see #tryParse(String)
      */
     @Nullable
-    public static GradleVersion tryParseAndroidGradlePluginVersion(@NonNull String value) {
+    protected static GradleVersion tryParseAndroidGradlePluginVersion(@NonNull String value) {
         if (value.matches("\\d+\\.\\d+\\.\\d+(-(((alpha|beta|rc)\\d+)|(dev\\d*)))?")) {
             // Any string that matches the above pattern is a valid Android Gradle plugin version
             // and should be parsable by tryParse()
@@ -633,7 +633,7 @@ public class GradleVersion implements Comparable<GradleVersion> {
      * @see #tryParseAndroidGradlePluginVersion(String)
      */
     @Nullable
-    public static GradleVersion tryParseStableAndroidGradlePluginVersion(@NonNull String value) {
+    protected static GradleVersion tryParseStableAndroidGradlePluginVersion(@NonNull String value) {
         if (value.matches("\\d+\\.\\d+\\.\\d+")) {
             // Any string that matches the above pattern is a valid Android Gradle plugin version
             // and should be parsable by tryParse()
@@ -644,7 +644,7 @@ public class GradleVersion implements Comparable<GradleVersion> {
     }
 
     @NonNull
-    public static GradleVersion parseAndroidGradlePluginVersion(@NonNull String value) {
+    protected static GradleVersion parseAndroidGradlePluginVersion(@NonNull String value) {
         GradleVersion version = tryParseAndroidGradlePluginVersion(value);
         if (version == null) {
             throw new IllegalArgumentException(
@@ -689,6 +689,11 @@ public class GradleVersion implements Comparable<GradleVersion> {
         @Nullable
         public static AgpVersion tryParse(@NonNull String value) {
             return (AgpVersion) GradleVersion.tryParseAndroidGradlePluginVersion(value);
+        }
+
+        @Nullable
+        public static AgpVersion tryParseStable(@NonNull String value) {
+            return (AgpVersion) GradleVersion.tryParseStableAndroidGradlePluginVersion(value);
         }
     }
 }

@@ -25,7 +25,7 @@ import com.android.SdkConstants.MIN_COMPILE_SDK_PROPERTY
 import com.android.Version
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
-import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
@@ -122,8 +122,7 @@ class AarMetadataTaskTest {
             task.taskAction()
             fail("expecting RuntimeException")
         } catch (e: RuntimeException) {
-            val currentAgpVersion =
-                GradleVersion.parseAndroidGradlePluginVersion(Version.ANDROID_GRADLE_PLUGIN_VERSION)
+            val currentAgpVersion = AgpVersion.parse(Version.ANDROID_GRADLE_PLUGIN_VERSION)
             assertThat(e.message).contains(
                 "The specified minAgpVersion (10000.0.0) is not valid because it is a later " +
                         "version than the version of AGP used for this build ($currentAgpVersion)."

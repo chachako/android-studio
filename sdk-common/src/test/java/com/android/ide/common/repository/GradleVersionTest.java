@@ -15,20 +15,13 @@
  */
 package com.android.ide.common.repository;
 
-import static com.android.ide.common.repository.GradleVersion.parseAndroidGradlePluginVersion;
-import static com.android.ide.common.repository.GradleVersion.tryParseAndroidGradlePluginVersion;
-import static com.android.ide.common.repository.GradleVersion.tryParseStableAndroidGradlePluginVersion;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import java.util.List;
 import org.junit.Test;
 
 public class GradleVersionTest {
@@ -542,143 +535,6 @@ public class GradleVersionTest {
     }
 
     @Test
-    public void testAndroidGradlePluginVersion_tryParse() {
-        /*
-         * Valid versions
-         */
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.0")))
-                .isEqualTo("3.0.0");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.1")))
-                .isEqualTo("3.0.1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.1.0")))
-                .isEqualTo("3.1.0");
-
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.0-alpha1")))
-                .isEqualTo("3.0.0-alpha1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.0-beta1")))
-                .isEqualTo("3.0.0-beta1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.0-rc1")))
-                .isEqualTo("3.0.0-rc1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.1.0-alpha01")))
-                .isEqualTo("3.1.0-alpha1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.1.0-beta01")))
-                .isEqualTo("3.1.0-beta1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.1.0-rc01")))
-                .isEqualTo("3.1.0-rc1");
-
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.0-dev")))
-                .isEqualTo("3.0.0-dev");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.0.0-dev01")))
-                .isEqualTo("3.0.0-dev1");
-        assertThat(convertAGPVersionToString(tryParseAndroidGradlePluginVersion("3.1.0-dev")))
-                .isEqualTo("3.1.0-dev");
-
-        /*
-         * Invalid versions
-         */
-        assertThat(tryParseAndroidGradlePluginVersion("")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("foo")).isNull();
-
-        assertThat(tryParseAndroidGradlePluginVersion("3.1")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1-0")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.foo")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0.0")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-0")).isNull();
-
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0alpha01")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-01")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-alpha")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0.alpha01")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-gamma01")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0.alpha-01")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-alpha01.0")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-alpha01-0")).isNull();
-
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0dev")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0.dev")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-dev-01")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-dev.0")).isNull();
-        assertThat(tryParseAndroidGradlePluginVersion("3.1.0-dev-0")).isNull();
-    }
-
-    @Test
-    public void testAndroidGradlePluginVersion_tryParseStable() {
-        /*
-         * Valid versions
-         */
-        assertThat(convertAGPVersionToString(tryParseStableAndroidGradlePluginVersion("0.0.0")))
-                .isEqualTo("0.0.0");
-        assertThat(convertAGPVersionToString(tryParseStableAndroidGradlePluginVersion("3.0.0")))
-                .isEqualTo("3.0.0");
-        assertThat(convertAGPVersionToString(tryParseStableAndroidGradlePluginVersion("10.10.10")))
-                .isEqualTo("10.10.10");
-
-        /*
-         * Invalid versions
-         */
-        assertThat(tryParseStableAndroidGradlePluginVersion("")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("foo")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("3")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("3.0")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("3.0.0-alpha01")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("3.0.0-beta01")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("3.0.0-rc01")).isNull();
-        assertThat(tryParseStableAndroidGradlePluginVersion("3.0.0-dev")).isNull();
-    }
-
-    @Test
-    public void testAndroidGradlePluginVersion_parse() {
-        // Valid version
-        assertThat(convertAGPVersionToString(parseAndroidGradlePluginVersion("3.0.0")))
-                .isEqualTo("3.0.0");
-
-        // Invalid version
-        try {
-            parseAndroidGradlePluginVersion("3.1");
-            fail("Expect IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage())
-                    .isEqualTo("3.1 is not a valid Android Gradle plugin version");
-        }
-    }
-
-    @Test
-    public void testAndroidGradlePluginVersion_compareVersions() {
-        assertThat(compareAGPVersions("3.1.0", "3.1.0")).isEqualTo(0);
-        assertThat(compareAGPVersions("3.1.0-alpha01", "3.1.0-alpha01")).isEqualTo(0);
-        assertThat(compareAGPVersions("3.1.0-beta01", "3.1.0-beta01")).isEqualTo(0);
-        assertThat(compareAGPVersions("3.1.0-rc01", "3.1.0-rc01")).isEqualTo(0);
-        assertThat(compareAGPVersions("3.1.0-dev", "3.1.0-dev")).isEqualTo(0);
-
-        assertThat(compareAGPVersions("3.0.0-alpha1", "3.0.0-alpha2")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0-alpha2", "3.0.0-beta1")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0-beta1", "3.0.0-beta2")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0-beta2", "3.0.0-rc1")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0-rc1", "3.0.0-rc2")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0-rc2", "3.0.0")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0", "3.0.1")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.1", "3.0.2")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.2", "3.1.0-alpha01")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0-alpha01", "3.1.0-beta01")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0-beta01", "3.1.0-rc01")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0-rc01", "3.1.0")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0", "3.0.0-alpha01")).isGreaterThan(0);
-
-        // Dev versions should be older than stable versions
-        assertThat(compareAGPVersions("3.0.0-dev", "3.0.0")).isLessThan(0);
-        assertThat(compareAGPVersions("3.0.0", "3.1.0-dev")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0-dev", "3.1.0")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0", "3.0.0-dev")).isGreaterThan(0);
-
-        // Dev versions are currently considered to be newer than preview versions (although they
-        // are not exactly compare-able)
-        assertThat(compareAGPVersions("3.0.0-dev", "3.1.0-alpha01")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0-rc02", "3.1.0-dev")).isLessThan(0);
-        assertThat(compareAGPVersions("3.1.0-dev", "3.0.0-dev")).isGreaterThan(0);
-    }
-
-    @Test
     public void testJacocoVersions() {
         GradleVersion fst = GradleVersion.parse("0.7.7.201606060606");
         GradleVersion snd = GradleVersion.parse("0.7.8");
@@ -686,35 +542,5 @@ public class GradleVersionTest {
         assertThat(fst).isLessThan(snd);
         assertThat(fst).isLessThan(thrd);
         assertThat(snd).isLessThan(thrd);
-    }
-
-    @NonNull
-    private static String convertAGPVersionToString(@Nullable GradleVersion version) {
-        assertThat(version).isNotNull();
-
-        // Reimplement this method instead of using version.toString() directly to prevent the
-        // GradleVersion class from "remembering" the input string without actually parsing it.
-        if (version.isPreview()) {
-            if (version.getPreviewType() != null) {
-                return String.format(
-                        "%d.%d.%d-%s%d",
-                        version.getMajor(),
-                        version.getMinor(),
-                        version.getMicro(),
-                        version.getPreviewType(),
-                        version.getPreview());
-            } else {
-                return String.format(
-                        "%d.%d.%d-dev", version.getMajor(), version.getMinor(), version.getMicro());
-            }
-        } else {
-            return String.format(
-                    "%d.%d.%d", version.getMajor(), version.getMinor(), version.getMicro());
-        }
-    }
-
-    private static int compareAGPVersions(@NonNull String version1, @NonNull String version2) {
-        return parseAndroidGradlePluginVersion(version1)
-                .compareTo(parseAndroidGradlePluginVersion(version2));
     }
 }
