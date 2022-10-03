@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 
-import com.android.build.gradle.internal.cxx.RandomInstanceGenerator
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.LiteralType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.CommentType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.LiteralType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.CommentType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.StringReader
@@ -77,7 +76,7 @@ class StreamUnescapedNinjaTest {
                             if grep -v '^#' file.txt | a${'$'}
                                b c
             """.trimIndent(),
-            """
+              """
                 rule my_rule
                     command = if grep -v '^#' file.txt | ab c
             """.trimIndent(),
@@ -87,8 +86,8 @@ class StreamUnescapedNinjaTest {
     @Test
     fun `indented comment after rule`() {
         check("rule cat\n" +
-                "  #command = a",
-            """
+                      "  #command = a",
+              """
               rule cat
                 /*command = a*/
             """.trimIndent())
@@ -149,7 +148,7 @@ class StreamUnescapedNinjaTest {
               comment $
                 indented
         """.trimIndent(),
-            "/* Comment*/\nNon-comment indented")
+              "/* Comment*/\nNon-comment indented")
     }
 
     @Test
@@ -163,17 +162,5 @@ class StreamUnescapedNinjaTest {
     @Test
     fun `build with spaces in file names`() {
         check("build a$ b|c$ d:ru$ le e$ f|g$ h||i$ j", "build a[esc:space]b|c[esc:space]d:ru[esc:space]le e[esc:space]f|g[esc:space]h||i[esc:space]j")
-    }
-
-    @Test
-    fun fuzz() {
-        RandomInstanceGenerator().strings(10000).forEach { text ->
-            try {
-                StringReader(text).streamUnescapedNinja { _, _  -> }
-            } catch (e : Throwable) {
-                println("\'$text\'")
-                throw e
-            }
-        }
     }
 }

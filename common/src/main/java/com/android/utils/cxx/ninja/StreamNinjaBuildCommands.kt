@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 
-import com.android.build.gradle.internal.cxx.io.ProgressCallback
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.LiteralType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.CommentType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
-import com.android.build.gradle.internal.cxx.collections.DoubleStringBuilder
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
-import org.apache.commons.io.input.CharSequenceReader
+import com.android.utils.cxx.io.ProgressCallback
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.LiteralType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.CommentType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
+import com.android.utils.cxx.collections.DoubleStringBuilder
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
+import com.android.utils.CharSequenceReader
 import java.io.File
 import java.util.Locale
 

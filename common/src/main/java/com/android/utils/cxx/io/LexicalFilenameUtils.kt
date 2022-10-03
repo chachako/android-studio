@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.io
+package com.android.utils.cxx.io
 
 /**
  * Methods for dealing with file names without first converting to [java.io.File].
@@ -90,11 +90,11 @@ fun LexicalFilename.removeExtensionIfPresent(ext : String) : String {
     val lastIndexOfName = lastIndexOfName()
     val firstIndexOfName = firstIndexOfName(lastIndexOfName = lastIndexOfName)
     if (!areEqualIgnoreCase(
-        extension(
-            firstIndexOfName = firstIndexOfName,
-            lastIndexOfName = lastIndexOfName
-        ),
-        ext)) {
+            extension(
+                firstIndexOfName = firstIndexOfName,
+                lastIndexOfName = lastIndexOfName
+            ),
+            ext)) {
         return toString()
     }
     val indexOfExtensionDot = indexOfExtensionDot(
@@ -189,7 +189,7 @@ private fun LexicalFilename.nameWithoutExtension(
     indexOfExtensionDot : Int
 ) : CharSequence  {
     return if (indexOfExtensionDot == -1) subSequence(firstIndexOfName, lastIndex + 1)
-        else subSequence(firstIndexOfName, indexOfExtensionDot)
+    else subSequence(firstIndexOfName, indexOfExtensionDot)
 }
 
 /**

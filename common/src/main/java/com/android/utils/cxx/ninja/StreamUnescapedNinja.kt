@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.ABSORB_WHITESPACE_AFTER_LINE_CONTINUATION
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.AFTER_COMMENT_HASH
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.AFTER_FIRST_DOLLAR
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.IN_DOLLAR_CURLY_VARIABLE
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.IN_DOLLAR_VARIABLE
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.START
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeState.START_AFTER_NON_WHITESPACE
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.LiteralType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.CommentType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
+import com.android.utils.cxx.ninja.NinjaUnescapeState.ABSORB_WHITESPACE_AFTER_LINE_CONTINUATION
+import com.android.utils.cxx.ninja.NinjaUnescapeState.AFTER_COMMENT_HASH
+import com.android.utils.cxx.ninja.NinjaUnescapeState.AFTER_FIRST_DOLLAR
+import com.android.utils.cxx.ninja.NinjaUnescapeState.IN_DOLLAR_CURLY_VARIABLE
+import com.android.utils.cxx.ninja.NinjaUnescapeState.IN_DOLLAR_VARIABLE
+import com.android.utils.cxx.ninja.NinjaUnescapeState.START
+import com.android.utils.cxx.ninja.NinjaUnescapeState.START_AFTER_NON_WHITESPACE
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.LiteralType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.CommentType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
 import java.io.Reader
 
 /**

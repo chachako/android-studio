@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.utils.cxx.ninja
 
-package com.android.build.gradle.internal.cxx.ninja
-
-import com.android.build.gradle.internal.cxx.RandomInstanceGenerator
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.DoublePipeType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.EOFType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.EOLType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.IndentType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.PipeType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.TextType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.DoublePipeType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.EOFType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.EOLType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.IndentType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.PipeType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.TextType
 import java.io.StringReader
 
 class StreamNinjaBuildTokensTest {
@@ -79,7 +77,7 @@ class StreamNinjaBuildTokensTest {
             # Comment
             output.txt :CREATE input.txt
         """.trimIndent(),
-            "[output.txt][:][CREATE][input.txt][EOL]")
+              "[output.txt][:][CREATE][input.txt][EOL]")
     }
 
     @Test
@@ -90,7 +88,7 @@ class StreamNinjaBuildTokensTest {
                             if grep -v '^#' file.txt | a${'$'}
                                b c
             """.trimIndent(),
-            "[rule][my_rule][EOL][Indent][command][=][if grep -v '^#' file.txt | ab c][EOL]"
+              "[rule][my_rule][EOL][Indent][command][=][if grep -v '^#' file.txt | ab c][EOL]"
         )
     }
 
@@ -100,7 +98,7 @@ class StreamNinjaBuildTokensTest {
             # Comment
             output.txt: CREATE input.txt
         """.trimIndent(),
-            "[output.txt][:][CREATE][input.txt][EOL]")
+              "[output.txt][:][CREATE][input.txt][EOL]")
     }
 
     @Test
@@ -109,7 +107,7 @@ class StreamNinjaBuildTokensTest {
             rule my_rule
                 command = my_command
         """.trimIndent(),
-            "[rule][my_rule][EOL][Indent][command][=][my_command][EOL]")
+              "[rule][my_rule][EOL][Indent][command][=][my_command][EOL]")
     }
 
     @Test
@@ -118,7 +116,7 @@ class StreamNinjaBuildTokensTest {
             # Comment
             output.txt:CREATE | input1.txt input2.txt
         """.trimIndent(),
-            "[output.txt][:][CREATE][Pipe][input1.txt][input2.txt][EOL]")
+              "[output.txt][:][CREATE][Pipe][input1.txt][input2.txt][EOL]")
     }
 
     @Test
@@ -131,14 +129,14 @@ class StreamNinjaBuildTokensTest {
             # Comment
             output.txt:CREATE || input1.txt input2.txt
         """.trimIndent(),
-            "[output.txt][:][CREATE][DoublePipe][input1.txt][input2.txt][EOL]")
+              "[output.txt][:][CREATE][DoublePipe][input1.txt][input2.txt][EOL]")
     }
 
     @Test
     fun `indented comment after rule`() {
         check("rule cat\n" +
-                "  #command = a",
-        "[rule][cat][EOL][Indent][EOL]")
+                      "  #command = a",
+              "[rule][cat][EOL][Indent][EOL]")
     }
 
     @Test
@@ -159,12 +157,12 @@ class StreamNinjaBuildTokensTest {
     @Test
     fun `line continuation`() {
         check("rule link\n" +
-                "  command = foo bar $\n" +
-                "    baz\n" +
-                "\n" +
-                "build a: link c $\n" +
-                " d e f\n",
-        "[rule][link][EOL][Indent][command][=][foo bar baz][EOL][build][a][:][link][c][d][e][f][EOL]")
+                      "  command = foo bar $\n" +
+                      "    baz\n" +
+                      "\n" +
+                      "build a: link c $\n" +
+                      " d e f\n",
+              "[rule][link][EOL][Indent][command][=][foo bar baz][EOL][build][a][:][link][c][d][e][f][EOL]")
     }
 
     @Test
@@ -173,7 +171,7 @@ class StreamNinjaBuildTokensTest {
             build a: b
               COMMAND = C:\x\y\z\cmake.exe
               restat = 1""".trimIndent(),
-        "[build][a][:][b][EOL][Indent][COMMAND][=][C:\\x\\y\\z\\cmake.exe][EOL][Indent][restat][=][1][EOL]")
+              "[build][a][:][b][EOL][Indent][COMMAND][=][C:\\x\\y\\z\\cmake.exe][EOL][Indent][restat][=][1][EOL]")
     }
 
     @Test
@@ -182,7 +180,7 @@ class StreamNinjaBuildTokensTest {
             build a: b
               COMMAND = x|b
               restat = 1""".trimIndent(),
-            "[build][a][:][b][EOL][Indent][COMMAND][=][x|b][EOL][Indent][restat][=][1][EOL]")
+              "[build][a][:][b][EOL][Indent][COMMAND][=][x|b][EOL][Indent][restat][=][1][EOL]")
     }
 
     @Test
@@ -191,7 +189,7 @@ class StreamNinjaBuildTokensTest {
             build a: b
               COMMAND = x||b
               restat = 1""".trimIndent(),
-            "[build][a][:][b][EOL][Indent][COMMAND][=][x||b][EOL][Indent][restat][=][1][EOL]")
+              "[build][a][:][b][EOL][Indent][COMMAND][=][x||b][EOL][Indent][restat][=][1][EOL]")
     }
 
     @Test
@@ -200,21 +198,21 @@ class StreamNinjaBuildTokensTest {
             build a: b
               COMMAND = x # not a comment
               restat = 1""".trimIndent(),
-            "[build][a][:][b][EOL][Indent][COMMAND][=][x # not a comment][EOL][Indent][restat][=][1][EOL]")
+              "[build][a][:][b][EOL][Indent][COMMAND][=][x # not a comment][EOL][Indent][restat][=][1][EOL]")
     }
 
     @Test
     fun `comment no comment`() {
         check("# this is a comment\n" +
-                "foo = not # a comment\n",
-        "[foo][=][not # a comment][EOL]")
+                      "foo = not # a comment\n",
+              "[foo][=][not # a comment][EOL]")
     }
 
     @Test
     fun `variable use in rule assignment`() {
         check("rule e1\n" +
-                "  command = e2 \$in > \$out\n\n\n",
-            "[rule][e1][EOL][Indent][command][=][e2 \$in > \$out][EOL]")
+                      "  command = e2 \$in > \$out\n\n\n",
+              "[rule][e1][EOL][Indent][command][=][e2 \$in > \$out][EOL]")
     }
 
     /**
@@ -229,19 +227,19 @@ class StreamNinjaBuildTokensTest {
               comment $
                 indented
         """.trimIndent(),
-            "[Non-comment][indented][EOL]")
+              "[Non-comment][indented][EOL]")
     }
 
     @Test
     fun rules() {
         check("rule cat\n" +
-                "  command = cat \$in > \$out\n" +
-                "\n" +
-                "rule date\n" +
-                "  command = date > \$out\n" +
-                "\n" +
-                "build result: cat in_1.cc in-2.O\n",
-            "[rule][cat][EOL][Indent][command][=][cat \$in > \$out][EOL][rule][date][EOL][Indent][command][=][date > \$out][EOL][build][result][:][cat][in_1.cc][in-2.O][EOL]")
+                      "  command = cat \$in > \$out\n" +
+                      "\n" +
+                      "rule date\n" +
+                      "  command = date > \$out\n" +
+                      "\n" +
+                      "build result: cat in_1.cc in-2.O\n",
+              "[rule][cat][EOL][Indent][command][=][cat \$in > \$out][EOL][rule][date][EOL][Indent][command][=][date > \$out][EOL][build][result][:][cat][in_1.cc][in-2.O][EOL]")
     }
 
     @Test
@@ -262,7 +260,7 @@ class StreamNinjaBuildTokensTest {
             # utility
             build x/y.z: e3
         """.trimIndent(),
-        "[build][e1][:][e2][a/b.c][EOL][build][x/y.z][:][e3][EOL]")
+              "[build][e1][:][e2][a/b.c][EOL][build][x/y.z][:][e3][EOL]")
     }
 
     @Test
@@ -288,25 +286,13 @@ class StreamNinjaBuildTokensTest {
         check("|=")
         check("|:")
         check("'deps --?'-W C_TEST_WAS_RUN = --GC_TEST_WAS_RUN =-helpC_TEST_WAS_RUN =-W " +
-                "C_TEST_WAS_RUN= --?-DC_TEST_WAS_RUN =-help prop = x--W C_TEST_WAS_RUN = " +
-                "-help C_TEST_WAS_RUN =/-?  C_TEST_WAS_RUN=^& --W C_TEST_WAS_RUN =-D  " +
-                "C_TEST_WAS_RUN = --helpC_TEST_WAS_RUN=libnative-lib.so --G C_TEST_WAS_RUN=--?  " +
-                "C_TEST_WAS_RUN= --helpC_TEST_WAS_RUN =HELP--H|-B '--G --W\"--help  " +
-                "C_TEST_WAS_RUN=_libnative-lib.so-W C_TEST_WAS_RUN= -W C_TEST_WAS_RUN " +
-                "=--help C_TEST_WAS_RUN= -GC_TEST_WAS_RUN= --GC_TEST_WAS_RUN = " +
-                "-helpC_TEST_WAS_RUN =--D-G  C_TEST_WAS_RUN = --W C_TEST_WAS_RUN= " +
-                "-W C_TEST_WAS_RUN = -?-DC_TEST_WAS_RUN = --?0--H C_TEST_WAS_RUN =rules.ninja'")
-    }
-
-    @Test
-    fun fuzz() {
-        RandomInstanceGenerator().strings(10000).forEach { text ->
-            try {
-                StringReader(text).streamNinjaBuildTokens { _, _ -> }
-            } catch (e : Throwable) {
-                println("\'$text\'")
-                throw e
-            }
-        }
+                      "C_TEST_WAS_RUN= --?-DC_TEST_WAS_RUN =-help prop = x--W C_TEST_WAS_RUN = " +
+                      "-help C_TEST_WAS_RUN =/-?  C_TEST_WAS_RUN=^& --W C_TEST_WAS_RUN =-D  " +
+                      "C_TEST_WAS_RUN = --helpC_TEST_WAS_RUN=libnative-lib.so --G C_TEST_WAS_RUN=--?  " +
+                      "C_TEST_WAS_RUN= --helpC_TEST_WAS_RUN =HELP--H|-B '--G --W\"--help  " +
+                      "C_TEST_WAS_RUN=_libnative-lib.so-W C_TEST_WAS_RUN= -W C_TEST_WAS_RUN " +
+                      "=--help C_TEST_WAS_RUN= -GC_TEST_WAS_RUN= --GC_TEST_WAS_RUN = " +
+                      "-helpC_TEST_WAS_RUN =--D-G  C_TEST_WAS_RUN = --W C_TEST_WAS_RUN= " +
+                      "-W C_TEST_WAS_RUN = -?-DC_TEST_WAS_RUN = --?0--H C_TEST_WAS_RUN =rules.ninja'")
     }
 }

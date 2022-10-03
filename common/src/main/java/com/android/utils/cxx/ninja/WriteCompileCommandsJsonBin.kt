@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 
 import com.android.SdkConstants.CURRENT_PLATFORM
-import com.android.build.gradle.internal.cxx.io.ProgressCallback
-import com.android.build.gradle.internal.cxx.io.filenameEndsWithIgnoreCase
-import com.android.build.gradle.internal.cxx.io.hasExtensionIgnoreCase
+import com.android.utils.cxx.io.ProgressCallback
+import com.android.utils.cxx.io.filenameEndsWithIgnoreCase
+import com.android.utils.cxx.io.hasExtensionIgnoreCase
 import com.android.utils.cxx.os.createOsBehavior
-import com.android.build.gradle.internal.cxx.collections.DoubleStringBuilder
+import com.android.utils.cxx.collections.DoubleStringBuilder
 import com.android.utils.TokenizedCommandLine
 import com.android.utils.allocateTokenizeCommandLineBuffer
 import com.android.utils.cxx.CompileCommandsEncoder

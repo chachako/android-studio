@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.io
+package com.android.utils.cxx.io
 
 import java.io.BufferedReader
 import java.io.File

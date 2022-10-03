@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.io
+package com.android.utils.cxx.io
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test

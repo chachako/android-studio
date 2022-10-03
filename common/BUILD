@@ -4,6 +4,11 @@ load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:utils.bzl", "dir_archive", "fileset")
 load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
 
+fileset(
+    name = "TestData",
+    srcs = glob(["src/test/data/**"]),
+)
+
 # managed by go/iml_to_build
 iml_module(
     name = "studio.android.sdktools.common",
@@ -84,6 +89,9 @@ kotlin_test(
         "src/test/java/**/*.kt",
         "src/test/java/**/*.java",
     ]),
+    data = [
+        ":TestData",
+    ],
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
@@ -91,6 +99,7 @@ kotlin_test(
         ":tools.fixtures",
         "//tools/base/annotations",
         "//tools/base/testutils:tools.testutils",
+        "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
         "@maven//:org.jetbrains.kotlin.kotlin-test",
@@ -100,6 +109,9 @@ kotlin_test(
 # managed by go/iml_to_build
 iml_module(
     name = "studio.android.sdktools.common.tests",
+    data = [
+        ":TestData",
+    ],
     iml_files = ["android.sdktools.common.tests.iml"],
     test_srcs = ["src/test/java"],
     visibility = ["//visibility:public"],
@@ -113,6 +125,7 @@ iml_module(
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
         "//tools/base/common:studio.android.sdktools.common[module]",
+        "//tools/adt/idea/.idea/libraries:gson[test]",
     ],
 )
 

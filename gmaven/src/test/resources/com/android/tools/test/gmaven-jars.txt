@@ -630,6 +630,9 @@ com/android/tools/common
   com/android/utils/
   com/android/utils/concurrency/
   com/android/utils/cxx/
+  com/android/utils/cxx/collections/
+  com/android/utils/cxx/io/
+  com/android/utils/cxx/ninja/
   com/android/utils/cxx/os/
   com/android/utils/reflection/
   com/android/version.properties

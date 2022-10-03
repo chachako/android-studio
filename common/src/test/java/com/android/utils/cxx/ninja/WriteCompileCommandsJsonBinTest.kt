@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.File
-import java.lang.Double.max
-import java.lang.Double.min
 import kotlin.math.roundToInt
 
 class WriteCompileCommandsJsonBinTest {

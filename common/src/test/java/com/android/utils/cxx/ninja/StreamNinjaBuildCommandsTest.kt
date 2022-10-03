@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 
 import com.android.SdkConstants
-import com.android.build.gradle.internal.cxx.collections.DoubleStringBuilder
+import com.android.utils.cxx.collections.DoubleStringBuilder
 import com.android.testutils.TestUtils
 import com.android.utils.TokenizedCommandLineMap
 import com.android.utils.cxx.STRIP_FLAGS_WITHOUT_ARG
@@ -32,18 +31,14 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 class StreamNinjaBuildCommandsTest {
-
     @Rule
     @JvmField
     val tempFolder = TemporaryFolder()
-
-    private val bazelFolderBase = "tools/base/build-system/gradle-core/src/test/data/ninja-build-samples"
-
+    private val bazelFolderBase = "tools/base/common/src/test/data/ninja-build-samples"
     private fun locate(subFolder : String) : File {
         val base = TestUtils.resolveWorkspacePath(bazelFolderBase).toFile()
         return base.resolve(subFolder)
     }
-
     @Test
     fun `dolphin via CMake 3 18 1`() {
         val originalWorkingFolder = File("/Users/jomof/projects/studio-main/out/build/base/build-system/integration-test/native/build/tmp/junit2760794059956044528/junit4505799956879287491/src/Source/Android/app/.cxx/RelWithDebInfo/4z4p6154/arm64-v8a",)
@@ -71,7 +66,6 @@ class StreamNinjaBuildCommandsTest {
         val unseenOutputs = commands.keys - sawOutputs
         assertThat(unseenOutputs).isEmpty()
     }
-
     @Test
     fun `dolphin via CMake 3 10 2`() {
         val originalWorkingFolder = File("/Users/jomof/projects/studio-main/out/build/base/build-system/integration-test/native/build/tmp/junit2760794059956044528/junit4505799956879287491/src/Source/Android/app/.cxx/RelWithDebInfo/4z4p6154/arm64-v8a",)
@@ -99,7 +93,6 @@ class StreamNinjaBuildCommandsTest {
         val unseenOutputs = commands.keys - sawOutputs
         assertThat(unseenOutputs).isEmpty()
     }
-
     private val tokenMap =
         TokenizedCommandLineMap<Command>(
             raw = false,
@@ -110,7 +103,6 @@ class StreamNinjaBuildCommandsTest {
                 sourceFile,
                 0,
                 filePathSlashAgnostic = true)
-
             for (flag in STRIP_FLAGS_WITH_ARG) {
                 tokens.removeTokenGroup(flag, 1)
             }
@@ -121,7 +113,6 @@ class StreamNinjaBuildCommandsTest {
                 tokens.removeTokenGroup(flag, 0)
             }
         }
-
     private fun parseCommand(
         command : String,
         sourceFile : String,
@@ -137,7 +128,6 @@ class StreamNinjaBuildCommandsTest {
             Command(tokenList[0], tokenList.subList(1, tokenList.size), outputFile!!, sourceFile, workingDirectory)
         }
     }
-
     private data class Command(
         val compiler : String,
         val flags : List<String>,
@@ -145,7 +135,6 @@ class StreamNinjaBuildCommandsTest {
         val sourceFile : String,
         val workingDirectory : String
     )
-
     private fun parseCompileCommandsJson(json : File) : Map<String, Command> {
         val result = mutableMapOf<String, Command>()
         JsonReader(json.reader(StandardCharsets.UTF_8)).use { reader ->

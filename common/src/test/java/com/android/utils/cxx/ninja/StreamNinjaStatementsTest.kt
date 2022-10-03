@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.utils.cxx.ninja
 
-package com.android.build.gradle.internal.cxx.ninja
-
-import com.android.build.gradle.internal.cxx.RandomInstanceGenerator
-import com.android.build.gradle.internal.cxx.logging.LoggingMessage
-import com.android.build.gradle.internal.cxx.logging.ThreadLoggingEnvironment
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.Assignment
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.BuildDef
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.Default
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.Include
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.PoolDef
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.RuleDef
-import com.android.build.gradle.internal.cxx.ninja.NinjaStatement.SubNinja
+import com.android.utils.cxx.ninja.NinjaStatement.Assignment
+import com.android.utils.cxx.ninja.NinjaStatement.BuildDef
+import com.android.utils.cxx.ninja.NinjaStatement.Default
+import com.android.utils.cxx.ninja.NinjaStatement.Include
+import com.android.utils.cxx.ninja.NinjaStatement.PoolDef
+import com.android.utils.cxx.ninja.NinjaStatement.RuleDef
+import com.android.utils.cxx.ninja.NinjaStatement.SubNinja
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.Reader
@@ -139,28 +135,28 @@ class StreamNinjaStatementsTest {
     @Test
     fun ruleAttributes() {
         parseNinja("rule cat\n" +
-                    "  command = a\n" +
-                    "  depfile = a\n" +
-                    "  deps = a\n" +
-                    "  description = a\n" +
-                    "  generator = a\n" +
-                    "  restat = a\n" +
-                    "  rspfile = a\n" +
-                    "  rspfile_content = a\n")
+                           "  command = a\n" +
+                           "  depfile = a\n" +
+                           "  deps = a\n" +
+                           "  description = a\n" +
+                           "  generator = a\n" +
+                           "  restat = a\n" +
+                           "  rspfile = a\n" +
+                           "  rspfile_content = a\n")
     }
 
     @Test
     fun indentedComments() {
         val ninja = parseNinja("rule cat\n" +
-                    "  command = a\n" +
-                    "  depfile = a\n" +
-                    "  # Deps comment\n" +
-                    "  deps = a\n" +
-                    "  description = a\n" +
-                    "  generator = a\n" +
-                    "  restat = a\n" +
-                    "  rspfile = a\n" +
-                    "  rspfile_content = a\n")
+                                       "  command = a\n" +
+                                       "  depfile = a\n" +
+                                       "  # Deps comment\n" +
+                                       "  deps = a\n" +
+                                       "  description = a\n" +
+                                       "  generator = a\n" +
+                                       "  restat = a\n" +
+                                       "  rspfile = a\n" +
+                                       "  rspfile_content = a\n")
         assertThat(writeNinjaToString(ninja)).isEqualTo("""
             rule cat
               command = a
@@ -182,7 +178,7 @@ class StreamNinjaStatementsTest {
     @Test
     fun indentedCommentsAfterRule() {
         parseNinja("rule cat\n" +
-                    "  #command = a")
+                           "  #command = a")
     }
 
     @Test
@@ -195,14 +191,14 @@ class StreamNinjaStatementsTest {
     @Test
     fun `rule assignment with blank value`() {
         val def = parseNinja("rule cat\n" +
-                "  command = ")
+                                     "  command = ")
         assertThat((def.tops[0] as RuleDef).properties.getValue("command")).isEqualTo("")
     }
 
     @Test
     fun backslash() {
         val ninja = parseNinja("foo = bar\\baz\n" +
-                    "foo2 = bar\\ baz\n")
+                                       "foo2 = bar\\ baz\n")
         val assign = ninja.tops[1] as Assignment
         val literal = assign.value
         assertThat(literal).isEqualTo("bar\\ baz")
@@ -211,13 +207,13 @@ class StreamNinjaStatementsTest {
     @Test
     fun indentedCommentsAfterBuild() {
         parseNinja("build cat: Rule\n" +
-                    "  #command = a")
+                           "  #command = a")
     }
 
     @Test
     fun commentNoComment() {
         val ninja = parseNinja("# this is a comment\n" +
-                    "foo = not # a comment\n")
+                                       "foo = not # a comment\n")
         val assignment = ninja.tops[0] as Assignment
         val literal = assignment.value
         assertThat(literal).isEqualTo("not # a comment")
@@ -226,17 +222,17 @@ class StreamNinjaStatementsTest {
     @Test
     fun indentedBlankLine() {
         parseNinja("build cat: Rule\n" +
-                    "  \n" +
-                    "  command = a")
+                           "  \n" +
+                           "  command = a")
     }
 
     @Test
     fun dollars() {
         val ninja = parseNinja("rule foo\n" +
-                    "  command = \${out}bar\$\$baz\$\$\$\n" +
-                    "blah\n" +
-                    "x = \$\$dollar\n" +
-                    "build \$x: foo y\n")
+                                       "  command = \${out}bar\$\$baz\$\$\$\n" +
+                                       "blah\n" +
+                                       "x = \$\$dollar\n" +
+                                       "build \$x: foo y\n")
         val rule = ninja.tops[0] as RuleDef
         val literal = rule.properties.values.first()
         assertThat(literal).isEqualTo("\${out}bar$\$baz$\$blah")
@@ -289,11 +285,11 @@ class StreamNinjaStatementsTest {
     @Test
     fun continuation() {
         parseNinja("rule link\n" +
-                    "  command = foo bar $\n" +
-                    "    baz\n" +
-                    "\n" +
-                    "build a: link c $\n" +
-                    " d e f\n")
+                           "  command = foo bar $\n" +
+                           "    baz\n" +
+                           "\n" +
+                           "build a: link c $\n" +
+                           " d e f\n")
     }
 
     @Test
@@ -434,20 +430,6 @@ class StreamNinjaStatementsTest {
         val ninja = parseNinja("rule my_rule")
         assertThat(writeNinjaToString(ninja))
             .isEqualTo("rule my_rule")
-    }
-
-    @Test
-    fun fuzz() {
-        RandomInstanceGenerator().strings(10000).forEach { text ->
-            try {
-                parseNinja(StringReader(text))
-            } catch(e : NinjaStatementSyntaxException) {
-                // Syntax error is okay
-            } catch (e : Throwable) {
-                println("\'$text\'")
-                throw e
-            }
-        }
     }
 
     @Test
@@ -704,8 +686,8 @@ class StreamNinjaStatementsTest {
                         RULE ${'$'}
                           B ${'$'}
                           """.trimIndent())
-       assertThat(writeNinjaToString(ninja))
-           .isEqualTo("""
+        assertThat(writeNinjaToString(ninja))
+            .isEqualTo("""
                build a : RULE b
                build A : RULE B
            """.trimIndent())
@@ -715,9 +697,7 @@ class StreamNinjaStatementsTest {
     private data class NinjaFileDef(val tops: List<NinjaStatement>)
 
     private fun parseNinja(text: String) : NinjaFileDef {
-        ThrowOnErrorLoggingEnvironment().use {
-            return parseNinja(StringReader(text))
-        }
+        return parseNinja(StringReader(text))
     }
 
     private fun parseNinjaExpectError(text: String) {
@@ -735,12 +715,6 @@ class StreamNinjaStatementsTest {
             expressions += expression
         }
         return NinjaFileDef(expressions)
-    }
-
-    class ThrowOnErrorLoggingEnvironment() : ThreadLoggingEnvironment() {
-        override fun log(message: LoggingMessage) {
-            if (message.level == LoggingMessage.LoggingLevel.ERROR) error(message.message)
-        }
     }
 
     private fun writeNinjaToString(ninja : NinjaFileDef) : String {

@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.cxx.ninja
+package com.android.utils.cxx.ninja
 
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.DoublePipeType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.EOFType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.EOLType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.IndentType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.PipeType
-import com.android.build.gradle.internal.cxx.ninja.NinjaBuildTokenType.TextType
-import com.android.build.gradle.internal.cxx.ninja.TokenizerState.AFTER_EOL
-import com.android.build.gradle.internal.cxx.ninja.TokenizerState.IN_PIPE
-import com.android.build.gradle.internal.cxx.ninja.TokenizerState.IN_INDENT
-import com.android.build.gradle.internal.cxx.ninja.TokenizerState.IN_EXPRESSION
-import com.android.build.gradle.internal.cxx.ninja.TokenizerState.IN_ASSIGNMENT_EXPRESSION
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.LiteralType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.CommentType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
-import com.android.build.gradle.internal.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.DoublePipeType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.EOFType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.EOLType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.IndentType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.PipeType
+import com.android.utils.cxx.ninja.NinjaBuildTokenType.TextType
+import com.android.utils.cxx.ninja.TokenizerState.AFTER_EOL
+import com.android.utils.cxx.ninja.TokenizerState.IN_PIPE
+import com.android.utils.cxx.ninja.TokenizerState.IN_INDENT
+import com.android.utils.cxx.ninja.TokenizerState.IN_EXPRESSION
+import com.android.utils.cxx.ninja.TokenizerState.IN_ASSIGNMENT_EXPRESSION
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.LiteralType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.CommentType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedSpaceType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedDollarType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.EscapedColonType
+import com.android.utils.cxx.ninja.NinjaUnescapeTokenType.VariableWithCurliesType
 import com.google.common.annotations.VisibleForTesting
 import java.io.Reader
 
