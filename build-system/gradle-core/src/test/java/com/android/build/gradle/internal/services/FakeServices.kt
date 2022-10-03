@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.errors.SyncIssueReporter
 import com.android.build.gradle.internal.fixtures.FakeDeprecationReporter
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.fixtures.FakeLogger
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.fixtures.FakeSyncIssueReporter
 import com.android.build.gradle.internal.fixtures.ProjectFactory
 import com.android.build.gradle.internal.lint.LintFromMaven
@@ -47,7 +46,7 @@ fun createProjectServices(
     objectFactory: ObjectFactory = project.objects,
     logger: Logger = FakeLogger(),
     providerFactory: ProviderFactory = project.providers,
-    projectOptions: ProjectOptions = ProjectOptions(ImmutableMap.of(), FakeProviderFactory(providerFactory, ImmutableMap.of())),
+    projectOptions: ProjectOptions = ProjectOptions(ImmutableMap.of(), providerFactory),
     fileResolver: (Any) -> File = { File(it.toString()) }
 ): ProjectServices =
     ProjectServices(

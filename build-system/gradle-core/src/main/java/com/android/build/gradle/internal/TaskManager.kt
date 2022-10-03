@@ -34,6 +34,7 @@ import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.api.AndroidSourceSet
+import com.android.build.gradle.internal.attribution.BuildAttributionService
 import com.android.build.gradle.internal.attribution.CheckJetifierBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
@@ -190,8 +191,10 @@ import com.android.build.gradle.internal.variant.ComponentInfo
 import com.android.build.gradle.internal.variant.VariantModel
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
+import com.android.build.gradle.options.StringOption
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.AnalyzeDependenciesTask
+import com.android.build.gradle.tasks.BuildAnalyzerTask
 import com.android.build.gradle.tasks.BundleAar
 import com.android.build.gradle.tasks.CompatibleScreensManifest
 import com.android.build.gradle.tasks.CompileLibraryResourcesTask
@@ -367,6 +370,14 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         // Global tasks required for privacy sandbox sdk consumption
         if (globalConfig.services.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
             taskFactory.register(ValidateSigningTask.PrivacySandboxSdkCreationAction(globalConfig))
+        }
+
+        if (globalConfig.services.projectOptions.get(StringOption.IDE_ATTRIBUTION_FILE_LOCATION) != null) {
+            val buildAnalyzerTask =
+                taskFactory.register(BuildAnalyzerTask.CreationAction(globalConfig))
+            taskFactory.configure(MAIN_PREBUILD) {
+                it.dependsOn(buildAnalyzerTask)
+            }
         }
     }
 

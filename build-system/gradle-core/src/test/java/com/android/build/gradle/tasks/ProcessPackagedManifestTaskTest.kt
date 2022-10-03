@@ -18,32 +18,26 @@ package com.android.build.gradle.tasks
 
 import com.android.SdkConstants
 import com.android.SdkConstants.PRIVACY_SANDBOX_SDK_DEPENDENCY_MANIFEST_SNIPPET_NAME_SUFFIX
-import com.android.build.api.variant.impl.VariantOutputImpl
 import com.android.build.gradle.internal.component.ApkCreationConfig
-import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.fixtures.FakeFileCollection
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
+import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.createProjectServices
 import com.android.build.gradle.internal.services.createTaskCreationServices
 import com.android.build.gradle.internal.services.getBuildServiceName
-import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
-import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.ProjectOptions
 import com.android.testutils.MockitoKt.whenever
 import com.android.utils.toSystemLineSeparator
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import java.io.File
@@ -381,11 +375,15 @@ class ProcessPackagedManifestTaskTest {
 
         val apkCreationConfig =
             Mockito.mock(ApkCreationConfig::class.java, Mockito.RETURNS_DEEP_STUBS)
-        val projectOptions = Mockito.mock(ProjectOptions::class.java, Mockito.RETURNS_DEEP_STUBS)
-        val projectServices = createProjectServices(project, projectOptions = projectOptions)
+        val projectServices = createProjectServices(
+            project,
+            providerFactory = FakeProviderFactory(
+                project.providers,
+                mapOf(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName to "true")
+            )
+        )
         whenever(apkCreationConfig.name).thenReturn("debug")
         whenever(apkCreationConfig.services).thenReturn(createTaskCreationServices(projectServices))
-        whenever(projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)).thenReturn(true)
         whenever(apkCreationConfig.componentType.isBaseModule).thenReturn(isBaseModule)
         whenever(
             apkCreationConfig.variantDependencies.getArtifactFileCollection(

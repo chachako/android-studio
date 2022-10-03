@@ -132,7 +132,7 @@ abstract class AndroidPluginBaseServices(
             projectOptions.get(StringOption.IDE_ATTRIBUTION_FILE_LOCATION)
         if (attributionFileLocation != null) {
             BuildAttributionService.RegistrationAction(
-                project, attributionFileLocation, listenerRegistry, projectOptions
+                project, attributionFileLocation, listenerRegistry
             ).execute()
         }
         configuratorService.getProjectBuilder(project.path)?.let {

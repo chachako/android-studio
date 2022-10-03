@@ -16,14 +16,13 @@
 
 package com.android.build.gradle.internal.attribution
 
+import com.android.SdkConstants
 import com.android.Version
 import com.android.build.gradle.internal.isConfigurationCache
 import com.android.build.gradle.internal.services.ServiceRegistrationAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.utils.getBuildSrcPlugins
 import com.android.build.gradle.internal.utils.getBuildscriptDependencies
-import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.ProjectOptions
 import com.android.builder.utils.SynchronizedFile
 import com.android.ide.common.attribution.AndroidGradlePluginAttributionData
 import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.BuildInfo
@@ -34,8 +33,8 @@ import com.android.ide.common.attribution.TaskCategory
 import com.android.ide.common.attribution.BuildAnalyzerTaskCategoryIssue
 import com.android.utils.HelpfulEnumConverter
 import com.android.tools.analytics.HostData
+import com.android.utils.FileUtils
 import org.gradle.api.Project
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -49,6 +48,7 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.lang.management.ManagementFactory
+import java.util.Collections
 
 /**
  * Collects information for Build Analyzer in the IDE.
@@ -61,20 +61,11 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         AutoCloseable {
 
     companion object {
-
-        val booleanOptionBasedIssues = mapOf(
-                BuildAnalyzerTaskCategoryIssue.NON_FINAL_RES_IDS_DISABLED to BooleanOption.USE_NON_FINAL_RES_IDS,
-                BuildAnalyzerTaskCategoryIssue.NON_TRANSITIVE_R_CLASS_DISABLED to BooleanOption.NON_TRANSITIVE_R_CLASS,
-                BuildAnalyzerTaskCategoryIssue.TEST_SHARDING_DISABLED to BooleanOption.ENABLE_TEST_SHARDING,
-                BuildAnalyzerTaskCategoryIssue.RESOURCE_VALIDATION_ENABLED to BooleanOption.DISABLE_RESOURCE_VALIDATION
-        )
-
         private var initialized = false
 
         private fun init(project: Project,
                         attributionFileLocation: String,
-                        parameters: Parameters,
-                        projectOptions: ProjectOptions) {
+                        parameters: Parameters) {
             if (initialized) {
                 return
             }
@@ -92,30 +83,36 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                         }.add(task.path)
                     }
 
-                    val taskCategoryInfo = if (task::class.java.isAnnotationPresent(BuildAnalyzer::class.java)) {
-                        val annotation = task::class.java.getAnnotation(BuildAnalyzer::class.java)
-                        val primaryTaskCategory =
+                    val taskCategoryInfo =
+                        if (task::class.java.isAnnotationPresent(BuildAnalyzer::class.java)) {
+                            val annotation =
+                                task::class.java.getAnnotation(BuildAnalyzer::class.java)
+                            val primaryTaskCategory =
                                 taskCategoryConverter.convert(annotation.primaryTaskCategory.toString())!!
-                        val secondaryTaskCategories =
-                                annotation.secondaryTaskCategories.map { taskCategoryConverter.convert(it.toString())!! }
-                        TaskCategoryInfo(
+                            val secondaryTaskCategories =
+                                annotation.secondaryTaskCategories.map {
+                                    taskCategoryConverter.convert(
+                                        it.toString()
+                                    )!!
+                                }
+                            TaskCategoryInfo(
                                 primaryTaskCategory = primaryTaskCategory,
                                 secondaryTaskCategories = secondaryTaskCategories
-                        )
-                    } else TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN)
+                            )
+                        } else TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN)
 
                     taskNameToTaskInfoMap[task.name] = TaskInfo(
-                            className = getTaskClassName(task.javaClass.name),
-                            taskCategoryInfo = taskCategoryInfo
+                        className = getTaskClassName(task.javaClass.name),
+                        taskCategoryInfo = taskCategoryInfo
                     )
                 }
 
                 val buildscriptDependenciesInfo = getBuildscriptDependencies(project.rootProject)
-                        .map { "${it.group}:${it.module}:${it.version}" }
+                    .map { "${it.group}:${it.module}:${it.version}" }
 
                 parameters.attributionFileLocation.set(attributionFileLocation)
                 parameters.tasksSharingOutputs.set(
-                        outputFileToTasksMap.filter { it.value.size > 1 }
+                    outputFileToTasksMap.filter { it.value.size > 1 }
                 )
                 parameters.javaInfo.set(
                     JavaInfo(
@@ -133,20 +130,12 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                     )
                 )
                 parameters.taskNameToTaskInfoMap.set(taskNameToTaskInfoMap)
-
-                parameters.buildAnalyzerTaskCategoryIssues.set(getBuildAnalyzerIssues(projectOptions))
             }
-        }
-
-        private fun getBuildAnalyzerIssues(projectOptions: ProjectOptions): List<BuildAnalyzerTaskCategoryIssue> {
-            return booleanOptionBasedIssues.map { (issue, booleanOption) ->
-                issue.takeIf { !projectOptions.get(booleanOption) }
-            }.filterNotNull()
         }
 
         private fun saveAttributionData(
             outputDir: File,
-            attributionData: AndroidGradlePluginAttributionData
+            attributionData: () -> AndroidGradlePluginAttributionData
         ) {
             val file = AndroidGradlePluginAttributionData.getAttributionFile(outputDir)
             file.parentFile.mkdirs()
@@ -162,7 +151,7 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                 BufferedWriter(FileWriter(file)).use {
                     it.write(
                         AndroidGradlePluginAttributionData.AttributionDataAdapter.toJson(
-                            attributionData
+                            attributionData.invoke()
                         )
                     )
                 }
@@ -178,8 +167,15 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
     }
 
     private val initialGarbageCollectionData: Map<String, Long> =
-            ManagementFactory.getGarbageCollectorMXBeans().map { it.name to it.collectionTime }
-                    .toMap()
+        ManagementFactory.getGarbageCollectorMXBeans().associate { it.name to it.collectionTime }
+
+    private val buildAnalyzerTaskCategoryIssues = Collections.synchronizedSet(
+        mutableSetOf<BuildAnalyzerTaskCategoryIssue>()
+    )
+
+    fun reportBuildAnalyzerIssue(issue: BuildAnalyzerTaskCategoryIssue) {
+        buildAnalyzerTaskCategoryIssues.add(issue)
+    }
 
     override fun close() {
         initialized = false
@@ -199,6 +195,23 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
 
         saveAttributionData(
             File(parameters.attributionFileLocation.get()),
+        ) {
+            val partialResults = BuildAnalyzerPartialResult(buildAnalyzerTaskCategoryIssues)
+
+            val partialResultsOutputDir = FileUtils.join(
+                File(parameters.attributionFileLocation.get()),
+                SdkConstants.FD_BUILD_ATTRIBUTION,
+                "partial-results"
+            )
+
+            // This will be invoked under a file lock, and so it's safe to read the output of other
+            // build services at this point
+            BuildAnalyzerPartialResult.getAllPartialResults(
+                partialResultsOutputDir
+            ).forEach { partialResults.combineWith(it) }
+
+            partialResults.saveToDir(partialResultsOutputDir)
+
             AndroidGradlePluginAttributionData(
                 tasksSharingOutput = parameters.tasksSharingOutputs.get(),
                 garbageCollectionData = gcData,
@@ -207,9 +220,9 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                 buildscriptDependenciesInfo = parameters.buildscriptDependenciesInfo.get(),
                 buildInfo = parameters.buildInfo.get(),
                 taskNameToTaskInfoMap = parameters.taskNameToTaskInfoMap.get(),
-                buildAnalyzerTaskCategoryIssues = parameters.buildAnalyzerTaskCategoryIssues.get()
+                buildAnalyzerTaskCategoryIssues = partialResults.issues.toList()
             )
-        )
+        }
     }
 
     override fun onFinish(p0: FinishEvent?) {
@@ -231,23 +244,20 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         val buildInfo: Property<BuildInfo>
 
         val taskNameToTaskInfoMap: MapProperty<String, TaskInfo>
-
-        val buildAnalyzerTaskCategoryIssues: ListProperty<BuildAnalyzerTaskCategoryIssue>
     }
 
     @Suppress("UnstableApiUsage")
     class RegistrationAction(
         project: Project,
         private val attributionFileLocation: String,
-        private val listenersRegistry: BuildEventsListenerRegistry,
-        private val projectOptions: ProjectOptions
+        private val listenersRegistry: BuildEventsListenerRegistry
     ) : ServiceRegistrationAction<BuildAttributionService, Parameters>(
         project,
         BuildAttributionService::class.java
     ) {
 
         override fun configure(parameters: Parameters) {
-            init(project, attributionFileLocation, parameters, projectOptions)
+            init(project, attributionFileLocation, parameters)
         }
 
         override fun execute(): Provider<BuildAttributionService> {

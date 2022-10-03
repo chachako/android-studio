@@ -33,6 +33,7 @@ import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.SdkComponentsBuildService
+import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
@@ -44,6 +45,7 @@ import com.android.build.gradle.internal.services.BaseServices
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.StringOption
 import com.android.builder.core.LibraryRequest
 import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestServer
@@ -230,4 +232,9 @@ class GlobalTaskCreationConfigImpl(
             .get()
             .versionedNdkHandler(compileSdkHashString, ndkVersion, ndkPath)
     }
+
+    override val buildAnalyzerIssueReporter: BuildAnalyzerIssueReporter? =
+        services.projectOptions.get(StringOption.IDE_ATTRIBUTION_FILE_LOCATION)?.let {
+            BuildAnalyzerIssueReporter(services.projectOptions)
+        }
 }

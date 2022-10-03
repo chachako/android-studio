@@ -29,6 +29,7 @@ import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
 import com.android.build.gradle.internal.SdkComponentsBuildService
+import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -130,4 +131,6 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
 
     // Options from the settings plugin
     val settingsOptions: SettingsOptions
+
+    val buildAnalyzerIssueReporter: BuildAnalyzerIssueReporter?
 }
