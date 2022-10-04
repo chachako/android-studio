@@ -23,18 +23,21 @@ import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
-import com.android.builder.dexing.ClassFileInput.CLASS_MATCHER
+import com.android.build.gradle.options.StringOption
+import com.android.utils.FileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
-import java.io.FileOutputStream
-import java.util.jar.JarOutputStream
-import java.util.zip.ZipEntry
+import java.net.URLClassLoader
+import java.nio.file.Path
 
 /**
  * Task generates empty jar containing all classes to be included in a privacy sandbox sdk.
@@ -46,25 +49,26 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
     @get:Classpath
     abstract val mergedClasses: ConfigurableFileCollection
 
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val apiPackager: ConfigurableFileCollection
+
     @get:OutputFile
-    abstract val outputStubJar: RegularFileProperty
+    abstract val outputJar: RegularFileProperty
 
     @TaskAction
     fun doTaskAction() {
-        val dotClassFiles = mergedClasses.asFileTree
-                .filterNotNull()
-                .filter { CLASS_MATCHER.test(it.invariantSeparatorsPath) }
-        JarOutputStream(FileOutputStream(outputStubJar.get().asFile)).use {
-            outputStream ->
-            for (clazz in dotClassFiles) {
-                val zipEntry =
-                        ZipEntry(clazz.relativeTo(mergedClasses.singleFile).invariantSeparatorsPath)
-                outputStream.putNextEntry(zipEntry)
-                clazz.inputStream().use { inputStream ->
-                    outputStream.write(inputStream.readBytes())
-                }
-                outputStream.closeEntry()
-            }
+        val classFilesDir = mergedClasses.singleFile
+        FileUtils.deleteIfExists(outputJar.get().asFile)
+        val outJar = outputJar.get().asFile
+        val apiPackager = apiPackager.files.map { it.toURI().toURL() }.toTypedArray()
+        if (apiPackager.isEmpty()) {
+            throw RuntimeException("No libraries specified for packaging sandbox APIs.")
+        }
+        URLClassLoader(apiPackager).use {
+            PrivacySandboxApiPackager(it).packageSdkDescriptors(
+                    classFilesDir.toPath(), outJar.toPath()
+            )
         }
     }
 
@@ -77,25 +81,59 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
         override val type: Class<PrivacySandboxSdkGenerateJarStubsTask>
             get() = PrivacySandboxSdkGenerateJarStubsTask::class.java
 
-        override fun handleProvider(taskProvider: TaskProvider<PrivacySandboxSdkGenerateJarStubsTask>) {
+        override fun handleProvider(
+                taskProvider: TaskProvider<PrivacySandboxSdkGenerateJarStubsTask>) {
             super.handleProvider(taskProvider)
             creationConfig.artifacts.setInitialProvider(
                     taskProvider,
-                    PrivacySandboxSdkGenerateJarStubsTask::outputStubJar
+                    PrivacySandboxSdkGenerateJarStubsTask::outputJar
             ).withName(privacySandboxSdkStubJarFilename)
                     .on(PrivacySandboxSdkInternalArtifactType.STUB_JAR)
         }
 
         override fun configure(task: PrivacySandboxSdkGenerateJarStubsTask) {
+            val apiPackagerCoordinates = creationConfig.services.projectOptions
+                    .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER)?.split(",")
+                    ?: defaultApiPackagerRuntimeDependencies
+            val apiPackager = creationConfig.services.configurations.detachedConfiguration()
+            val apiPackagerDeps = apiPackagerCoordinates.map {
+                creationConfig.services.dependencies.create(it)
+            }
+            apiPackager.dependencies.addAll(apiPackagerDeps)
+
+            task.apiPackager.setFrom(apiPackager.files)
             task.mergedClasses.fromDisallowChanges(
                     creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_CLASSES)
             )
         }
     }
 
+    /* For invoking the sandbox-apipackager via reflection. */
+    class PrivacySandboxApiPackager(val classLoader: URLClassLoader) {
+        private val apiPackagerPackage = "androidx.privacysandbox.tools.apipackager"
+        private val privacySandboxApiPackagerClass =
+                classLoader.loadClass("$apiPackagerPackage.PrivacySandboxApiPackager")
+        private val privacySandboxSdkPackager = privacySandboxApiPackagerClass
+                .getConstructor()
+                .newInstance()
+        private val packageSdkDescriptorsMethod = privacySandboxApiPackagerClass
+                .getMethod("packageSdkDescriptors", Path::class.java, Path::class.java)
+        fun packageSdkDescriptors(sdkClasspath: Path, outputPath: Path) {
+            packageSdkDescriptorsMethod
+                    .invoke(privacySandboxSdkPackager, sdkClasspath, outputPath)
+        }
+    }
+
     companion object {
 
-        const val privacySandboxSdkStubJarFilename = "sdk-interface-descriptors.jar"
+        /** Name of jar file containing api description that is packaged in an ASAR file. */
+        const val privacySandboxSdkStubJarFilename: String = "sdk-interface-descriptors.jar"
+
+        /* If there are no set API packager dependencies, the following can be used. */
+        val defaultApiPackagerRuntimeDependencies = listOf(
+                "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT",
+                "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT"
+        )
     }
 }
 

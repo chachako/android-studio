@@ -16,10 +16,19 @@
 
 package com.android.build.gradle.tasks
 
+import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
+import com.android.build.gradle.internal.transforms.testdata.Animal
+import com.android.build.gradle.internal.transforms.testdata.CarbonForm
+import com.android.build.gradle.internal.transforms.testdata.Cat
+import com.android.build.gradle.internal.transforms.testdata.OuterClass
+import com.android.build.gradle.tasks.testdata.MySdk
+import com.android.testutils.TestInputsGenerator
+import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -36,51 +45,38 @@ internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
         temporaryFolder.newFolder("build")
     }
 
+    @Ignore
     @Test
     fun testStubJarContainsExpectedEntries() {
         testWithTask { dir: File, outputStubJar: File, task: PrivacySandboxSdkGenerateJarStubsTask ->
-            FileUtils.createFile(FileUtils.join(dir,
-                    "com",
-                    "example",
-                    "library",
-                    "MyClassFromLibrary1.class"),
-                    """
-            package com.example.library1;
 
-            class MyClassFromLibrary1 {
-                public MyClassFromLibrary1() {}
-            }
-        """.trimIndent())
-            FileUtils.createFile(FileUtils.join(dir,
-                    "com", "example", "library2", "MyClassFromLibrary2.class"),
-                    """
-            package com.example.library2;
-
-            class MyClassFromLibrary2 {
-                public MyClassFromLibrary2() {}
-            }
-        """.trimIndent())
-            FileUtils.createFile(FileUtils.join(dir,
-                    "com", "example", "library2", "MyClassFromLibrary2\$InnerClass.class"),
-                    "")
+            TestInputsGenerator.pathWithClasses(
+                    dir.toPath(),
+                    listOf(
+                            MySdk::class.java,
+                            Cat::class.java,
+                            Animal::class.java,
+                            CarbonForm::class.java,
+                            OuterClass::class.java,
+                            OuterClass.InnerClass::class.java
+                    ),
+            )
             FileUtils.createFile(
                     FileUtils.join(dir, "META-INF", "MANIFEST.mf"),
                     "Manifest-Version: 1.0")
 
             task.doTaskAction()
 
-            JarFile(outputStubJar).use {
-                val entries = it.entries().toList().map { it.name }
+            JarFile(outputStubJar).use { outputJar ->
+                val entries = outputJar.entries().toList().map { it.name.replace(File.separatorChar, '/') }
                 assertThat(entries).containsExactlyElementsIn(
                         listOf(
-                                "com/example/library/MyClassFromLibrary1.class",
-                                "com/example/library2/MyClassFromLibrary2.class",
-                                "com/example/library2/MyClassFromLibrary2\$InnerClass.class"
+                                "com/android/build/gradle/tasks/testdata/MySdk.class",
                         )
                 )
             }
+            //TODO(lukeedgar) Add test case for ensuring bytecode stripping once supported by apipackager.
         }
-
     }
 
     private fun testWithTask(action: (File, File, PrivacySandboxSdkGenerateJarStubsTask) -> Unit) {
@@ -94,7 +90,14 @@ internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
                 FileUtils.join(build,
                         PrivacySandboxSdkGenerateJarStubsTask.privacySandboxSdkStubJarFilename)
                         .also { FileUtils.createFile(it, "") }
-        task.outputStubJar.set(outJar)
+
+        val apipackagerDependencyJars = listOf(
+                "androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT/tools-1.0.0-SNAPSHOT.jar",
+                "androidx/privacysandbox/tools/tools-apipackager/1.0.0-SNAPSHOT/tools-apipackager-1.0.0-SNAPSHOT.jar",
+        ).map { TestUtils.getLocalMavenRepoFile(it).toFile() }
+
+        task.apiPackager.setFrom(FakeConfigurableFileCollection(apipackagerDependencyJars))
+        task.outputJar.set(outJar)
         action(classesDir, outJar, task)
     }
 }

@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject.Companio
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.StringOption
 import com.android.testutils.apk.Apk
 import com.google.common.truth.Truth
 import org.junit.Rule
@@ -89,6 +90,10 @@ class MinimalPrivacySandboxSdkTest {
         }
     }
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
+            .addGradleProperties(
+                    "${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName}=" +
+                            "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT," +
+                            "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT")
             .create()
 
     @Test

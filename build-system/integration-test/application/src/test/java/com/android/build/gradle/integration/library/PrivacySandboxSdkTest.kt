@@ -169,6 +169,10 @@ class PrivacySandboxSdkTest {
     }
             .withAdditionalMavenRepo(mavenRepo)
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
+            .addGradleProperties(
+                    "${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName}=" +
+                            "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT," +
+                            "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT")
             .create()
 
     private fun executor() = project.executor()

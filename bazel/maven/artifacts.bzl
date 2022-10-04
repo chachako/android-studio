@@ -174,6 +174,8 @@ DATA = [
     "androidx.appcompat:appcompat:1.3.0",
     "androidx.appcompat:appcompat:1.3.0-beta01",
     "androidx.appcompat:appcompat:1.4.1",
+    "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT",
+    "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT",
     "androidx.benchmark:benchmark-gradle-plugin:1.1.0-beta04",
     "androidx.compose.animation:animation:1.2.0-alpha05",
     "androidx.compose.animation:animation:1.3.0",

@@ -16028,6 +16028,32 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.privacysandbox.tools.tools-apipackager_1.0.0-SNAPSHOT",
+    pom = "repository/androidx/privacysandbox/tools/tools-apipackager/1.0.0-SNAPSHOT/tools-apipackager-1.0.0-SNAPSHOT.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/tools/tools-apipackager/1.0.0-SNAPSHOT",
+    deps = [
+        "androidx.privacysandbox.tools.tools_1.0.0-SNAPSHOT",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.20",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.20",
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-commons_9.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.privacysandbox.tools.tools_1.0.0-SNAPSHOT",
+    pom = "repository/androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT/tools-1.0.0-SNAPSHOT.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.20",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.profileinstaller.profileinstaller_1.0.0",
     pom = "repository/androidx/profileinstaller/profileinstaller/1.0.0/profileinstaller-1.0.0.pom",
     repo_root_path = "repository",
@@ -37816,6 +37842,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.ow2.asm.asm-analysis_9.3",
+    pom = "repository/org/ow2/asm/asm-analysis/9.3/asm-analysis-9.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/ow2/asm/asm-analysis/9.3",
+    parent = "org.ow2.ow2_1.5",
+    deps = [
+        "org.ow2.asm.asm-tree_9.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.ow2.asm.asm-commons_5.0.4",
     pom = "repository/org/ow2/asm/asm-commons/5.0.4/asm-commons-5.0.4.pom",
     repo_root_path = "repository",
@@ -37889,6 +37927,20 @@ maven_artifact(
         "org.ow2.asm.asm_9.1",
         "org.ow2.asm.asm-tree_9.1",
         "org.ow2.asm.asm-analysis_9.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.ow2.asm.asm-commons_9.3",
+    pom = "repository/org/ow2/asm/asm-commons/9.3/asm-commons-9.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/ow2/asm/asm-commons/9.3",
+    parent = "org.ow2.ow2_1.5",
+    deps = [
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-tree_9.3",
+        "org.ow2.asm.asm-analysis_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -37994,6 +38046,18 @@ maven_artifact(
     parent = "org.ow2.ow2_1.5",
     deps = [
         "org.ow2.asm.asm_9.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.ow2.asm.asm-tree_9.3",
+    pom = "repository/org/ow2/asm/asm-tree/9.3/asm-tree-9.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/ow2/asm/asm-tree/9.3",
+    parent = "org.ow2.ow2_1.5",
+    deps = [
+        "org.ow2.asm.asm_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -38141,6 +38205,15 @@ maven_artifact(
     pom = "repository/org/ow2/asm/asm/9.1/asm-9.1.pom",
     repo_root_path = "repository",
     repo_path = "org/ow2/asm/asm/9.1",
+    parent = "org.ow2.ow2_1.5",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.ow2.asm.asm_9.3",
+    pom = "repository/org/ow2/asm/asm/9.3/asm-9.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/ow2/asm/asm/9.3",
     parent = "org.ow2.ow2_1.5",
     visibility = ["//visibility:public"],
 )
