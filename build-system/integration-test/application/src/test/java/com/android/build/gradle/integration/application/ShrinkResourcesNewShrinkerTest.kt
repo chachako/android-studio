@@ -438,6 +438,32 @@ class ShrinkResourcesNewShrinkerTest {
     }
 
     @Test
+    fun `shrink resources in APK with dynamic feature module`() {
+        projectWithDynamicFeatureModules.executor().run("assembleRelease")
+
+        // Check that unused resources are replaced in shrunk bundle.
+        // Check that zip entities have proper methods.
+        val shrunkResources =
+            projectWithDynamicFeatureModules.getSubproject("base").getShrunkBinaryResources()
+        assertThat(getZipEntriesWithContent(shrunkResources, TINY_PROTO_CONVERTED_TO_BINARY_XML))
+            .containsExactly(
+                "res/drawable/discard_from_feature_2.xml",
+                "res/drawable/force_remove.xml",
+                "res/drawable/from_raw_feat.xml",
+                "res/drawable/unused10.xml",
+                "res/drawable/unused11.xml",
+                "res/drawable/unused9.xml",
+                "res/layout/unused1.xml",
+                "res/layout/unused13.xml",
+                "res/layout/unused14.xml",
+                "res/layout/unused2.xml",
+                "res/layout/used_from_feature_1.xml",
+                "res/layout/used_from_feature_2.xml",
+                "res/menu/unused12.xml",
+            )
+    }
+
+    @Test
     fun `shrink resources with splits`() {
         val abiSplitsSubproject = project.getSubproject("abisplits")
         FileUtils.createFile(
