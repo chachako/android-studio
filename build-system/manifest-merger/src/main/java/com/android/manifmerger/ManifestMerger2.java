@@ -181,6 +181,8 @@ public class ManifestMerger2 {
                         mergingReportBuilder,
                         mNamespace);
 
+        mProcessCancellationChecker.check();
+
         // perform all top-level verifications.
         if (!loadedMainManifestInfo
                         .getXmlDocument()
@@ -231,6 +233,8 @@ public class ManifestMerger2 {
             }
         }
 
+        mProcessCancellationChecker.check();
+
         // load all the libraries xml files early to have a list of all possible node:selector
         // values.
         List<LoadedManifestInfo> loadedLibraryDocuments =
@@ -257,6 +261,7 @@ public class ManifestMerger2 {
         // merge in lower priority documents.
         @Nullable XmlDocument xmlDocumentOptional = null;
         for (File inputFile : mFlavorsAndBuildTypeFiles) {
+            mProcessCancellationChecker.check();
             mLogger.verbose("Merging flavors and build manifest %s \n", inputFile.getPath());
             LoadedManifestInfo overlayDocument =
                     load(
@@ -332,6 +337,8 @@ public class ManifestMerger2 {
             }
         }
 
+        mProcessCancellationChecker.check();
+
         mLogger.verbose("Merging main manifest %s\n", mManifestFile.getPath());
         Optional<XmlDocument> newMergedDocument =
                 merge(xmlDocumentOptional, loadedMainManifestInfo, mergingReportBuilder);
@@ -363,6 +370,8 @@ public class ManifestMerger2 {
                 return mergingReportBuilder.build();
             }
             xmlDocumentOptional = newMergedDocument.get();
+
+            mProcessCancellationChecker.check();
         }
 
         // done with proper merging phase, now we need to expand <nav-graph> elements, trim unwanted
@@ -406,6 +415,8 @@ public class ManifestMerger2 {
             }
         }
 
+        mProcessCancellationChecker.check();
+
         // perform system property injection again.
         performSystemPropertiesInjection(mergingReportBuilder, xmlDocumentOptional);
 
@@ -445,6 +456,8 @@ public class ManifestMerger2 {
             PostValidator.enforceToolsNamespaceDeclaration(finalMergedDocument);
         }
 
+        mProcessCancellationChecker.check();
+
         // reset the node operations to their original ones if they get changed
         finalMergedDocument.originalNodeOperation.forEach(
                 (k, v) -> {
@@ -475,6 +488,8 @@ public class ManifestMerger2 {
             extractFqcns(namespace, finalMergedDocument.getRootNode());
         }
 
+        mProcessCancellationChecker.check();
+
         // handle optional features which don't need access to XmlDocument layer.
         processOptionalFeatures(finalMergedDocument.getXml(), mergingReportBuilder);
 
@@ -489,6 +504,8 @@ public class ManifestMerger2 {
 
         mergingReportBuilder.setMergedDocument(
                 MergingReport.MergedManifestKind.MERGED, prettyPrint(finalMergedDocument.getXml()));
+
+        mProcessCancellationChecker.check();
 
         // call blame after other optional features handled.
         if (!mOptionalFeatures.contains(Invoker.Feature.SKIP_BLAME)) {
@@ -1119,6 +1136,8 @@ public class ManifestMerger2 {
 
         builder.getActionRecorder().recordAddedNodeAction(xmlDocument.getRootNode(), false);
 
+        mProcessCancellationChecker.check();
+
         return new LoadedManifestInfo(manifestInfo, xmlDocument);
     }
 
@@ -1269,6 +1288,8 @@ public class ManifestMerger2 {
             LoadedManifestInfo info = new LoadedManifestInfo(manifestInfo, libraryDocument);
 
             loadedLibraryDocuments.add(info);
+
+            mProcessCancellationChecker.check();
         }
 
         return loadedLibraryDocuments.build();
