@@ -455,7 +455,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
 
                     public static void testMissingWithDefault(@Duration int duration) {
-                        switch (duration) {
+                        switch (duration) { // OK
                             case LENGTH_SHORT:
                             case LENGTH_LONG:
                             default:
@@ -465,7 +465,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
 
                     @SuppressLint("SwitchIntDef")
                     public static void testSuppressAnnotation(@Duration int duration) {
-                        switch (duration) {
+                        switch (duration) { // OK
                             case LENGTH_SHORT:
                             case LENGTH_INDEFINITE:
                                 break;
@@ -474,7 +474,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
 
                     public static void testSuppressComment(@Duration int duration) {
                         //noinspection AndroidLintSwitchIntDef
-                        switch (duration) {
+                        switch (duration) { // OK
                             case LENGTH_SHORT:
                             case LENGTH_INDEFINITE:
                                 break;
@@ -507,10 +507,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             src/test/pkg/X.java:95: Warning: Switch statement on an int with known associated constant missing case X.LENGTH_SHORT [SwitchIntDef]
                         switch (X.getDuration()) {
                         ~~~~~~
-            src/test/pkg/X.java:104: Warning: Switch statement on an int with known associated constant missing case LENGTH_INDEFINITE [SwitchIntDef]
-                    switch (duration) {
-                    ~~~~~~
-            0 errors, 8 warnings
+            0 errors, 7 warnings
             """
         )
     }
@@ -1613,6 +1610,91 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             4 errors, 0 warnings
             """
         )
+    }
+
+    fun testMissingElse() {
+        // Regression test for b/232115816
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import androidx.annotation.IntDef;
+
+                import java.lang.annotation.Retention;
+                import java.lang.annotation.RetentionPolicy;
+
+                @Retention(RetentionPolicy.SOURCE)
+                @IntDef(
+                        flag = true,
+                        value = {
+                                SwipeDirections.NONE,
+                                SwipeDirections.PRIMARY,
+                                SwipeDirections.SECONDARY,
+                                SwipeDirections.BOTH
+                        })
+                public @interface SwipeDirections {
+                    int NONE = 0;
+                    int PRIMARY = 1 << 0;
+                    int SECONDARY = 1 << 1;
+                    int BOTH = PRIMARY | SECONDARY;
+                }
+                """
+            ).indented(),
+            java(
+                """
+                package test.pkg;
+
+                import androidx.annotation.DrawableRes;
+                import androidx.annotation.Nullable;
+
+                public class MissingWhen {
+                    @Nullable
+                    @DrawableRes
+                    public Integer getSwipeIcon(@SwipeDirections int direction) {
+                        switch (direction) {
+                            case SwipeDirections.PRIMARY:
+                                return getPrimarySwipeIcon();
+                            case SwipeDirections.SECONDARY:
+                                return getSecondarySwipeIcon();
+                            default:
+                                return 0;
+                        }
+                    }
+
+                    private Integer getSecondarySwipeIcon() {
+                        return null;
+                    }
+
+                    private Integer getPrimarySwipeIcon() {
+                        return null;
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg
+
+                import androidx.annotation.DrawableRes
+
+                class MissingWhenKotlin {
+                    @DrawableRes
+                    fun getSwipeIcon(@SwipeDirections direction: Int): Int? {
+                        return when (direction) {
+                            SwipeDirections.PRIMARY -> primarySwipeIcon
+                            SwipeDirections.SECONDARY -> secondarySwipeIcon
+                            else -> 0
+                        }
+                    }
+
+                    private val secondarySwipeIcon: Int? = null
+                    private val primarySwipeIcon: Int? = null
+                }
+                """
+            ).indented(),
+            SUPPORT_ANNOTATIONS_JAR
+        ).run().expectClean()
     }
 
     override fun getDetector(): Detector {

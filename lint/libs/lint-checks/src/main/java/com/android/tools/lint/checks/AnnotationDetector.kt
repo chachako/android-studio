@@ -75,6 +75,7 @@ import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiReferenceExpression
+import com.intellij.psi.PsiSwitchLabelStatement
 import com.intellij.psi.PsiType
 import org.jetbrains.kotlin.asJava.elements.KtLightField
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
@@ -961,6 +962,12 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                                 val location = context.getNameLocation(caseValue)
                                 context.report(SWITCH_TYPE_DEF, caseValue, location, message, fix)
                             }
+                        }
+                    } else {
+                        val sourcePsi = caseValue.sourcePsi
+                        if (sourcePsi is PsiSwitchLabelStatement && sourcePsi.isDefaultCase) {
+                            fields.clear()
+                            return true
                         }
                     }
                 }
