@@ -119,6 +119,7 @@ ARTIFACTS = [
     "org.eclipse.aether:aether-connector-basic:1.0.2.v20150114",
     "org.eclipse.aether:aether-transport-file:1.0.2.v20150114",
     "org.eclipse.aether:aether-transport-http:1.0.2.v20150114",
+    "com.github.rising3:semver:0.3.1",
     "org.glassfish.jaxb:jaxb-runtime:2.3.2",
     "org.glassfish.jaxb:jaxb-xjc:2.3.2",
     "org.gradle:gradle-tooling-api:8.0-rc-1",
@@ -150,6 +151,7 @@ ARTIFACTS = [
     "org.tensorflow:tensorflow-lite-metadata:0.1.0-rc2",
     "org.xerial:sqlite-jdbc:3.21.0.1",
     "xerces:xercesImpl:2.12.0",
+    "org.tomlj:tomlj:1.1.0",
 ]
 
 DATA = [

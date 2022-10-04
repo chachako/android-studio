@@ -612,6 +612,35 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.github.rising3.semver_0.3.1",
+    pom = "repository/com/github/rising3/semver/0.3.1/semver-0.3.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/github/rising3/semver/0.3.1",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.4.31",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.github.rising3.semver",
+    classifiers = [],
+    jars = [
+        "repository/com/github/rising3/semver/0.3.1/semver-0.3.1.jar"
+    ],
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib",
+    ],
+    original_deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.4.31",
+    ],
+    pom = "repository/com/github/rising3/semver/0.3.1/semver-0.3.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/github/rising3/semver/0.3.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.annotations_4.1.1.4",
     pom = "repository/com/google/android/annotations/4.1.1.4/annotations-4.1.1.4.pom",
     repo_root_path = "repository",
@@ -5382,6 +5411,29 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.antlr.antlr4-runtime_4.11.1",
+    pom = "repository/org/antlr/antlr4-runtime/4.11.1/antlr4-runtime-4.11.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/antlr/antlr4-runtime/4.11.1",
+    parent = "org.antlr.antlr4-master_4.11.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.antlr.antlr4-runtime",
+    classifiers = [],
+    parent = "org.antlr.antlr4-master_4.11.1",
+    jars = [
+        "repository/org/antlr/antlr4-runtime/4.11.1/antlr4-runtime-4.11.1.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/antlr/antlr4-runtime/4.11.1/antlr4-runtime-4.11.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/antlr/antlr4-runtime/4.11.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.apache.ant.ant-antlr_1.10.12",
     pom = "repository/org/apache/ant/ant-antlr/1.10.12/ant-antlr-1.10.12.pom",
     repo_root_path = "repository",
@@ -6021,10 +6073,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.checkerframework.checker-qual_3.12.0",
-    pom = "repository/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.pom",
+    name = "org.checkerframework.checker-qual_3.21.2",
+    pom = "repository/org/checkerframework/checker-qual/3.21.2/checker-qual-3.21.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/checkerframework/checker-qual/3.12.0",
+    repo_path = "org/checkerframework/checker-qual/3.21.2",
     visibility = ["//visibility:public"],
 )
 
@@ -6032,12 +6084,12 @@ maven_import(
     name = "org.checkerframework.checker-qual",
     classifiers = [],
     jars = [
-        "repository/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar"
+        "repository/org/checkerframework/checker-qual/3.21.2/checker-qual-3.21.2.jar"
     ],
     original_deps = [],
-    pom = "repository/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.pom",
+    pom = "repository/org/checkerframework/checker-qual/3.21.2/checker-qual-3.21.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/checkerframework/checker-qual/3.12.0",
+    repo_path = "org/checkerframework/checker-qual/3.21.2",
     visibility = ["//visibility:public"],
 )
 
@@ -9636,6 +9688,40 @@ maven_import(
     pom = "repository/org/testng/testng/7.5/testng-7.5.pom",
     repo_root_path = "repository",
     repo_path = "org/testng/testng/7.5",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.tomlj.tomlj_1.1.0",
+    pom = "repository/org/tomlj/tomlj/1.1.0/tomlj-1.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/tomlj/tomlj/1.1.0",
+    deps = [
+        "org.antlr.antlr4-runtime_4.11.1",
+        "org.checkerframework.checker-qual_3.21.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.tomlj.tomlj",
+    classifiers = [],
+    jars = [
+        "repository/org/tomlj/tomlj/1.1.0/tomlj-1.1.0.jar"
+    ],
+    exports = [
+        "org.checkerframework.checker-qual",
+    ],
+    deps = [
+        "org.antlr.antlr4-runtime",
+    ],
+    original_deps = [
+        "org.antlr.antlr4-runtime_4.11.1",
+        "org.checkerframework.checker-qual_3.21.2",
+    ],
+    pom = "repository/org/tomlj/tomlj/1.1.0/tomlj-1.1.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/tomlj/tomlj/1.1.0",
     visibility = ["//visibility:public"],
 )
 
@@ -32792,6 +32878,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.checkerframework.checker-qual_3.12.0",
+    pom = "repository/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/checkerframework/checker-qual/3.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.checkerframework.checker-qual_3.5.0",
     pom = "repository/org/checkerframework/checker-qual/3.5.0/checker-qual-3.5.0.pom",
     repo_root_path = "repository",
@@ -40925,6 +41019,14 @@ maven_artifact(
     pom = "repository/org/antlr/antlr-master/3.5.2/antlr-master-3.5.2.pom",
     repo_root_path = "repository",
     repo_path = "org/antlr/antlr-master/3.5.2",
+    parent = "org.sonatype.oss.oss-parent_9",
+)
+
+maven_artifact(
+    name = "org.antlr.antlr4-master_4.11.1",
+    pom = "repository/org/antlr/antlr4-master/4.11.1/antlr4-master-4.11.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/antlr/antlr4-master/4.11.1",
     parent = "org.sonatype.oss.oss-parent_9",
 )
 
