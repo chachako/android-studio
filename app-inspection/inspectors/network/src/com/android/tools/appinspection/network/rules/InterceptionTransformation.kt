@@ -128,7 +128,7 @@ class HeaderReplacedTransformation(
         }
         val newHeaders = mutableMapOf<String?, MutableSet<String>>()
         val headers = response.responseHeaders.mapValues { (headerKey, headerValues) ->
-            if (headerReplaced.targetName.matches(headerKey)) {
+            if (headerReplaced.targetName.matches(headerKey, true)) {
                 headerValues.filter { headerValue ->
                     val matched = headerReplaced.targetValue.matches(headerValue)
                     if (matched) {

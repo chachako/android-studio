@@ -30,9 +30,14 @@ const val FIELD_RESPONSE_STATUS_CODE = "response-status-code"
 /**
  * Return true if this pattern matches the [text]. An undefined [MatchingText] matches all texts.
  */
-fun MatchingText.matches(text: String?): Boolean = when (type) {
-    PLAIN -> this.text == text
-    REGEX -> text?.let { Regex(this.text).matches(text) } == true
+fun MatchingText.matches(text: String?, ignoreCase: Boolean = false): Boolean = when (type) {
+    PLAIN -> this.text.equals(text, ignoreCase = ignoreCase)
+    REGEX -> text?.let {
+        if (ignoreCase) {
+            Regex(this.text, RegexOption.IGNORE_CASE)
+        } else {
+            Regex(this.text)
+        }.matches(text) } == true
     else -> true
 }
 

@@ -65,7 +65,9 @@ class InterceptionRuleTest {
             text = "myText"
         }.build()
         assertThat(plainMatchingText.matches("myText")).isTrue()
+        assertThat(plainMatchingText.matches("MYTEXT", true)).isTrue()
         assertThat(plainMatchingText.matches("notMyText")).isFalse()
+        assertThat(plainMatchingText.matches("notMyText", true)).isFalse()
 
         val wildcardMatchingPattern = "one?two*three."
         assertThat(wildCardMatches(wildcardMatchingPattern, "oneotwowdwthree.")).isTrue()
@@ -78,7 +80,9 @@ class InterceptionRuleTest {
         }.build()
         assertThat(regexMatchingText.matches("oneBtwobthreeX")).isTrue()
         assertThat(regexMatchingText.matches("oneBtwoBthreeX")).isFalse()
+        assertThat(regexMatchingText.matches("oneBtwoBthreeX", true)).isTrue()
         assertThat(regexMatchingText.matches("one[A-Z]two[a-z]three.")).isFalse()
+        assertThat(regexMatchingText.matches("one[A-Z]two[a-z]three.", true)).isFalse()
     }
 
     @Test
