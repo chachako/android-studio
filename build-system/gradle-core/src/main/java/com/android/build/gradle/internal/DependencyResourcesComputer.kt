@@ -158,7 +158,6 @@ abstract class DependencyResourcesComputer {
         // add the folder based next
         resourceSetList.addAll(sourceFolderSets)
 
-        // We add the generated folders to the main set
         val generatedResFolders = mutableListOf<File>()
 
         if (renderscriptResOutputDir.isPresent) {
@@ -169,15 +168,13 @@ abstract class DependencyResourcesComputer {
         generatedResFolders.addAll(extraGeneratedResFolders.files)
         generatedResFolders.addAll(microApkResDirectory.files)
 
-        // add the generated files to the main set.
-        if (sourceFolderSets.isNotEmpty()) {
-            val mainResourceSet = sourceFolderSets[0]
-            assert(
-                mainResourceSet.configName == BuilderConstants.MAIN ||
-                        // The main source set will not be included when building app android test
-                        mainResourceSet.configName == BuilderConstants.ANDROID_TEST
-            )
-            mainResourceSet.addSources(generatedResFolders)
+        // if generated res files exist, add them to the generated source set.
+        if (generatedResFolders.isNotEmpty() && sourceFolderSets.isNotEmpty()) {
+            val generatedResourceSet = sourceFolderSets.find {
+                it.configName.equals(BuilderConstants.GENERATED)
+            } ?: throw RuntimeException("Generated resource set does not exist")
+
+            generatedResourceSet.addSources(generatedResFolders)
         }
 
         return resourceSetList

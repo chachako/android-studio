@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -126,17 +127,18 @@ public class DependencyResourcesComputerTest {
         File file = temporaryFolder.newFolder("src", "main");
         ResourceSet mainSet =
                 createResourceSet(folderSets, BuilderConstants.MAIN, file);
+        ResourceSet generatedSet = createResourceSet(folderSets, BuilderConstants.GENERATED);
 
         File rsFile = temporaryFolder.newFolder("rs");
         Directory rsFileDirectory = Mockito.mock(Directory.class);
         Mockito.when(rsFileDirectory.getAsFile()).thenReturn(rsFile);
         Provider<Directory> provider = new FakeGradleProvider<>(rsFileDirectory);
 
-        mainSet.addSource(rsFile);
+        generatedSet.addSource(rsFile);
 
-        assertThat(computer.compute(null, provider)).containsExactly(mainSet);
+        assertThat(computer.compute(null, provider)).containsExactly(mainSet, generatedSet);
         // rs file should have been added to the main resource sets.
-        assertThat(mainSet.getSourceFiles()).containsExactly(file, rsFile);
+        assertThat(generatedSet.getSourceFiles()).containsExactly(rsFile);
     }
 
     @Test
@@ -144,14 +146,15 @@ public class DependencyResourcesComputerTest {
         File file = temporaryFolder.newFolder("src", "main");
         ResourceSet mainSet =
                 createResourceSet(folderSets, BuilderConstants.MAIN, file);
+        ResourceSet generatedSet = createResourceSet(folderSets, BuilderConstants.GENERATED);
 
         File genFile = temporaryFolder.newFolder("generated");
         computer.getGeneratedResOutputDir().from(genFile);
-        mainSet.addSource(genFile);
+        generatedSet.addSource(genFile);
 
-        assertThat(computer.compute(null,defaultEmptyProvider)).containsExactly(mainSet);
-        // generated file should have been added to the main resource sets.
-        assertThat(mainSet.getSourceFiles()).containsExactly(file, genFile);
+        assertThat(computer.compute(null, defaultEmptyProvider))
+                .containsExactly(mainSet, generatedSet);
+        assertThat(generatedSet.getSourceFiles()).containsExactly(genFile);
     }
 
     @Test
@@ -159,14 +162,15 @@ public class DependencyResourcesComputerTest {
         File file = temporaryFolder.newFolder("src", "main");
         ResourceSet mainSet =
                 createResourceSet(folderSets, BuilderConstants.MAIN, file);
+        ResourceSet generatedSet = createResourceSet(folderSets, BuilderConstants.GENERATED);
 
         File microFile = temporaryFolder.newFolder("micro");
         computer.getMicroApkResDirectory().from(microFile);
-        mainSet.addSource(microFile);
+        generatedSet.addSource(microFile);
 
-        assertThat(computer.compute(null, defaultEmptyProvider)).containsExactly(mainSet);
-        // micro file should have been added to the main resource sets.
-        assertThat(mainSet.getSourceFiles()).containsExactly(file, microFile);
+        assertThat(computer.compute(null, defaultEmptyProvider))
+                .containsExactly(mainSet, generatedSet);
+        assertThat(generatedSet.getSourceFiles()).containsExactly(microFile);
     }
 
     @Test
@@ -174,14 +178,30 @@ public class DependencyResourcesComputerTest {
         File file = temporaryFolder.newFolder("src", "main");
         ResourceSet mainSet =
                 createResourceSet(folderSets, BuilderConstants.MAIN, file);
+        ResourceSet generatedSet = createResourceSet(folderSets, BuilderConstants.GENERATED);
 
         File extraFile = temporaryFolder.newFolder("extra");
         computer.getExtraGeneratedResFolders().from(extraFile);
-        mainSet.addSource(extraFile);
+        generatedSet.addSource(extraFile);
 
-        assertThat(computer.compute(null, defaultEmptyProvider)).containsExactly(mainSet);
-        // rs file should have been added to the main resource sets.
-        assertThat(mainSet.getSourceFiles()).containsExactly(file, extraFile);
+        assertThat(computer.compute(null, defaultEmptyProvider))
+                .containsExactly(mainSet, generatedSet);
+        assertThat(generatedSet.getSourceFiles()).containsExactly(extraFile);
+    }
+
+    @Test
+    public void generatedResourceSetMissing() throws Exception {
+        File file = temporaryFolder.newFolder("src", "main");
+        ResourceSet mainSet = createResourceSet(folderSets, BuilderConstants.MAIN, file);
+
+        File extraFile = temporaryFolder.newFolder("extra");
+        computer.getExtraGeneratedResFolders().from(extraFile);
+
+        RuntimeException ex =
+                assertThrows(
+                        RuntimeException.class, () -> computer.compute(null, defaultEmptyProvider));
+
+        assertThat(ex).hasMessageThat().contains("Generated resource set does not exist");
     }
 
     @Test
@@ -206,33 +226,35 @@ public class DependencyResourcesComputerTest {
         ResourceSet librarySet = librarySets.get(0);
         ResourceSet librarySet2 = librarySets.get(1);
 
+        ResourceSet generatedSet = createResourceSet(folderSets, BuilderConstants.GENERATED);
         // Note: the order of files are added to mainSet matters.
         File rsFile = temporaryFolder.newFolder("rs");
         Directory rsFileDirectory = Mockito.mock(Directory.class);
         Mockito.when(rsFileDirectory.getAsFile()).thenReturn(rsFile);
         Provider<Directory> renderscriptResProvider = new FakeGradleProvider<>(rsFileDirectory);
-        mainSet.addSource(rsFile);
+        generatedSet.addSource(rsFile);
 
         File genFile = temporaryFolder.newFolder("generated");
         computer.getGeneratedResOutputDir().from(genFile);
-        mainSet.addSource(genFile);
+        generatedSet.addSource(genFile);
 
         File extraFile = temporaryFolder.newFolder("extra");
         computer.getExtraGeneratedResFolders().from(extraFile);
-        mainSet.addSource(extraFile);
+        generatedSet.addSource(extraFile);
 
         File microFile = temporaryFolder.newFolder("micro");
         computer.getMicroApkResDirectory().from(microFile);
-        mainSet.addSource(microFile);
+        generatedSet.addSource(microFile);
 
-        assertThat(computer.getLibraries().get().getArtifactFiles()).containsExactly(libFile, libFile2);
+        assertThat(computer.getLibraries().get().getArtifactFiles())
+                .containsExactly(libFile, libFile2);
         assertThat(computer.compute(null, renderscriptResProvider))
-                .containsExactly(librarySet2, librarySet, mainSet, debugSet)
+                .containsExactly(librarySet2, librarySet, mainSet, debugSet, generatedSet)
                 .inOrder();
-        // generated files should have been added to the main resource sets.
-        assertThat(mainSet.getSourceFiles())
-                .containsExactly(file, file2, rsFile, genFile, extraFile, microFile);
-        assertThat(computer.getLibraries().get().getArtifactFiles()).containsExactly(libFile, libFile2);
+        assertThat(generatedSet.getSourceFiles())
+                .containsExactly(rsFile, genFile, extraFile, microFile);
+        assertThat(computer.getLibraries().get().getArtifactFiles())
+                .containsExactly(libFile, libFile2);
     }
 
     @NonNull
