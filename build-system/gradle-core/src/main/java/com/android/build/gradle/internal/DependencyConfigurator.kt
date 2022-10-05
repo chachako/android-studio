@@ -75,6 +75,9 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AsarToApksTransform
 import com.android.build.gradle.internal.tasks.AsarTransform
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
+import com.android.build.gradle.internal.utils.ATTR_ENABLE_CORE_LIBRARY_DESUGARING
+import com.android.build.gradle.internal.utils.D8BackportedMethodsGenerator
+import com.android.build.gradle.internal.utils.D8_DESUGAR_METHODS
 import com.android.build.gradle.internal.utils.getDesugarLibConfig
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.internal.variant.ComponentInfo
@@ -83,6 +86,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.build.gradle.options.SyncOptions
 import com.android.repository.Revision
+import com.android.tools.r8.Version
 import com.google.common.collect.Maps
 import org.gradle.api.ActionConfiguration
 import org.gradle.api.Project
@@ -91,9 +95,12 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
+import java.lang.Boolean.FALSE
+import java.lang.Boolean.TRUE
 
 /**
  * configures the dependencies for a set of variant inputs.
@@ -249,6 +256,7 @@ class DependencyConfigurator(
                 false
             )
         }
+
         // transform to extract attr info from android.jar
         registerTransform(
             PlatformAttrTransform::class.java,
@@ -779,24 +787,52 @@ class DependencyConfigurator(
         }
         if (allComponents.isNotEmpty()) {
             val bootClasspath = project.files(bootClasspathConfig.bootClasspath)
+            val services = allComponents.first().services
             if (projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]) {
-                if (allComponents.isNotEmpty()) {
-                    val services = allComponents.first().services
-
-                    for (artifactConfiguration in getDexingArtifactConfigurations(
-                        allComponents
-                    )) {
-                        artifactConfiguration.registerTransform(
-                            project.name,
-                            dependencies,
-                            bootClasspath,
-                            getDesugarLibConfig(services),
-                            SyncOptions.getErrorFormatMode(projectOptions),
-                        )
-                    }
+                for (artifactConfiguration in getDexingArtifactConfigurations(
+                    allComponents
+                )) {
+                    artifactConfiguration.registerTransform(
+                        project.name,
+                        dependencies,
+                        bootClasspath,
+                        getDesugarLibConfig(services),
+                        SyncOptions.getErrorFormatMode(projectOptions),
+                    )
                 }
             }
+
+            val d8Version = Version.getVersionString()
+
+            // register d8 backported methods generatore when desugaring enabled
+            project.dependencies.registerTransform(
+                D8BackportedMethodsGenerator::class.java
+            ) { spec ->
+                spec.parameters { parameters ->
+                    parameters.d8Version.set(d8Version)
+                    parameters.coreLibDesugarConfig.set(getDesugarLibConfig(services))
+                    parameters.bootclasspath.from(bootClasspath)
+                }
+                spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
+                spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
+                spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, D8_DESUGAR_METHODS)
+                spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
+            }
+
+            // register d8 backported methods generator when desugaring disabled
+            project.dependencies.registerTransform(
+                D8BackportedMethodsGenerator::class.java
+            ) { spec ->
+                spec.parameters { parameters ->
+                    parameters.d8Version.set(d8Version)
+                }
+                spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
+                spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
+                spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, D8_DESUGAR_METHODS)
+                spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
+            }
         }
+
         if (projectOptions[BooleanOption.ENABLE_PROGUARD_RULES_EXTRACTION]
                 && allComponents.any {
                     it is ConsumableCreationConfig && it.optimizationCreationConfig.minifiedEnabled

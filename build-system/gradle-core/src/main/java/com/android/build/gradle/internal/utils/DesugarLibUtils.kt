@@ -70,11 +70,11 @@ const val DESUGAR_LIB_DEX = "_internal-desugar-lib-dex"
 // desugar lib configuration jar
 const val DESUGAR_LIB_CONFIG = "_internal-desugar-lib-config"
 private const val DESUGAR_LIB_LINT = "_internal-desugar-lib-lint"
-private const val D8_DESUGAR_METHODS = "_internal-d8-desugar-methods"
+const val D8_DESUGAR_METHODS = "_internal-d8-desugar-methods"
 private val ATTR_LINT_MIN_SDK: Attribute<String> = Attribute.of("lint-min-sdk", String::class.java)
 private val ATTR_LINT_COMPILE_SDK: Attribute<String> =
     Attribute.of("lint-compile-sdk", String::class.java)
-private val ATTR_ENABLE_CORE_LIBRARY_DESUGARING: Attribute<String> =
+val ATTR_ENABLE_CORE_LIBRARY_DESUGARING: Attribute<String> =
     Attribute.of("enable-core-library-desugaring", String::class.java)
 
 /**
@@ -153,19 +153,12 @@ fun getDesugaredMethods(
 
     val fakeJar = fakeJarService.lazyCachedFakeJar
     val fakeDependency = services.dependencies.create(services.files(fakeJar))
-    val adhocConfiguration =services.configurations.detachedConfiguration(fakeDependency)
+    val adhocConfiguration = services.configurations.detachedConfiguration(fakeDependency)
 
-    registerD8BackportedMethodsTransform(
-        services,
-        coreLibDesugar,
-        services.files(bootclasspath),
-        Version.getVersionString()
-    )
     desugaredMethodsFiles.fromDisallowChanges(
         getD8DesugarMethodFileFromTransform(adhocConfiguration, coreLibDesugar)
     )
     return desugaredMethodsFiles
-
 }
 
 /**
@@ -230,28 +223,6 @@ private fun registerDesugarLibLintTransform(
         spec.to.attribute(ATTR_LINT_MIN_SDK, minSdkVersion.toString())
         spec.from.attribute(ATTR_LINT_COMPILE_SDK, compileSdkVersion.toString())
         spec.to.attribute(ATTR_LINT_COMPILE_SDK, compileSdkVersion.toString())
-    }
-}
-
-private fun registerD8BackportedMethodsTransform(
-    services: TaskCreationServices,
-    coreLibDesugar: Boolean,
-    bootclasspath: FileCollection,
-    d8Version: String
-) {
-    services.dependencies.registerTransform(D8BackportedMethodsGenerator::class.java) { spec ->
-        spec.parameters { parameters ->
-            parameters.d8Version.set(d8Version)
-
-            if (coreLibDesugar) {
-                parameters.coreLibDesugarConfig.set(getDesugarLibConfig(services))
-                parameters.bootclasspath.from(bootclasspath)
-            }
-        }
-        spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
-        spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, coreLibDesugar.toString())
-        spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, D8_DESUGAR_METHODS)
-        spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, coreLibDesugar.toString())
     }
 }
 
