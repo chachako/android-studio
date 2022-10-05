@@ -195,7 +195,7 @@ class UnitTestTaskManager(
     }
 
     override val javaResMergingScopes = setOf(
-        InternalScopedArtifacts.InternalScope.SUB_PROJECT,
+        InternalScopedArtifacts.InternalScope.SUB_PROJECTS,
         InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS,
         InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
     )

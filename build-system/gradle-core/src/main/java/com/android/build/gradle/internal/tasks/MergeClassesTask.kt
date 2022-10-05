@@ -94,12 +94,10 @@ abstract class MergeClassesTask : NonIncrementalTask() {
     ) {
         override val type = MergeClassesTask::class.java
         override val name: String = computeTaskName("merge", "Classes")
-        private val inputFiles = creationConfig.services.fileCollection().run {
-            from(
-                creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES)
-            )
-        }
+        private val inputFiles = creationConfig
+            .artifacts
+            .forScope(ScopedArtifacts.Scope.ALL)
+            .getFinalArtifacts(ScopedArtifact.CLASSES)
 
         override fun handleProvider(
             taskProvider: TaskProvider<MergeClassesTask>

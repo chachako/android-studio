@@ -211,7 +211,7 @@ abstract class TaskManager(
         if (!component.buildFeatures.androidResources) {
             return
         }
-        component.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
+        component.artifacts.forScope(InternalScopedArtifacts.InternalScope.COMPILE_ONLY)
             .setInitialContent(
                 ScopedArtifact.CLASSES,
                 component.artifacts,
@@ -304,7 +304,7 @@ abstract class TaskManager(
         }
 
         // for the sub modules, new intermediary classes artifact has its own stream
-        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
             .setInitialContent(
                 ScopedArtifact.CLASSES,
                 getFinalRuntimeClassesJarsFromComponent(
@@ -314,8 +314,8 @@ abstract class TaskManager(
             )
 
         // same for the java resources, if SUB_PROJECTS isn't in the set of java res merging scopes.
-        if (!javaResMergingScopes.contains(InternalScopedArtifacts.InternalScope.SUB_PROJECT)) {
-            creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+        if (!javaResMergingScopes.contains(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)) {
+            creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
                 .setInitialContent(
                     ScopedArtifact.JAVA_RES,
                     creationConfig
@@ -345,7 +345,7 @@ abstract class TaskManager(
         }
 
         // provided only scopes.
-        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.PROVIDED)
+        creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.COMPILE_ONLY)
             .setInitialContent(
                 ScopedArtifact.CLASSES,
                 creationConfig.providedOnlyClasspath
@@ -1063,7 +1063,7 @@ abstract class TaskManager(
                         .getFinalArtifacts(ScopedArtifact.CLASSES)
                 )
                 from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
                         .getFinalArtifacts(ScopedArtifact.CLASSES)
                 )
                 from(
@@ -1081,7 +1081,7 @@ abstract class TaskManager(
             .initialScopedContent
             .run {
                 from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECT)
+                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
                         .getFinalArtifacts(ScopedArtifact.JAVA_RES)
                 )
                 from(

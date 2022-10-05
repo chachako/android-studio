@@ -285,7 +285,7 @@ abstract class ProguardConfigurableTask(
                 }
                 if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
                     it.from(creationConfig.artifacts.forScope(
-                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECTS
                     ).getFinalArtifacts(ScopedArtifact.CLASSES))
                 }
                 if (inputScopes.contains(InternalScope.FEATURES)) {
@@ -314,7 +314,7 @@ abstract class ProguardConfigurableTask(
                 }
                 if (inputScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
                     it.from(creationConfig.artifacts.forScope(
-                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECTS
                     ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
                 }
             }
@@ -322,7 +322,7 @@ abstract class ProguardConfigurableTask(
             referencedClasses = creationConfig.services.fileCollection().also {
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
                     it.from(creationConfig.artifacts.forScope(
-                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECTS
                     ).getFinalArtifacts(ScopedArtifact.CLASSES))
                 }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.TESTED_CODE)) {
@@ -332,7 +332,7 @@ abstract class ProguardConfigurableTask(
                 }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROVIDED_ONLY)) {
                     it.from(creationConfig.artifacts.forScope(
-                        InternalScopedArtifacts.InternalScope.PROVIDED
+                        InternalScopedArtifacts.InternalScope.COMPILE_ONLY
                     ).getFinalArtifacts(ScopedArtifact.CLASSES))
                 }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {
@@ -344,7 +344,7 @@ abstract class ProguardConfigurableTask(
             referencedResources = creationConfig.services.fileCollection().also {
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.SUB_PROJECTS)) {
                     it.from(creationConfig.artifacts.forScope(
-                        InternalScopedArtifacts.InternalScope.SUB_PROJECT
+                        InternalScopedArtifacts.InternalScope.SUB_PROJECTS
                     ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
                 }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.TESTED_CODE)) {
@@ -354,7 +354,7 @@ abstract class ProguardConfigurableTask(
                 }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.PROVIDED_ONLY)) {
                     it.from(creationConfig.artifacts.forScope(
-                        InternalScopedArtifacts.InternalScope.PROVIDED
+                        InternalScopedArtifacts.InternalScope.COMPILE_ONLY
                     ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
                 }
                 if (referencedScopes.contains(com.android.build.api.transform.QualifiedContent.Scope.EXTERNAL_LIBRARIES)) {

@@ -239,7 +239,7 @@ abstract class MergeJavaResourceTask
             task.projectJavaRes.disallowChanges()
 
             run {
-                if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.SUB_PROJECT)) {
+                if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)) {
                     task.subProjectJavaRes.fromDisallowChanges(
                         creationConfig.variantDependencies.getArtifactFileCollection(
                             AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,

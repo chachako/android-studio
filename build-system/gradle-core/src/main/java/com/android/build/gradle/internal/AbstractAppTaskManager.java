@@ -40,7 +40,6 @@ import com.android.build.gradle.internal.tasks.ExtractNativeDebugMetadataTask;
 import com.android.build.gradle.internal.tasks.ExtractProfilerNativeDependenciesTask;
 import com.android.build.gradle.internal.tasks.ModuleMetadataWriterTask;
 import com.android.build.gradle.internal.tasks.StripDebugSymbolsTask;
-import com.android.build.gradle.internal.tasks.TestPreBuildTask;
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig;
 import com.android.build.gradle.internal.tasks.factory.TaskFactoryUtils;
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig;
@@ -221,9 +220,8 @@ public abstract class AbstractAppTaskManager<
     @Override
     protected Set<InternalScopedArtifacts.InternalScope> getJavaResMergingScopes() {
         return Set.of(
-                InternalScopedArtifacts.InternalScope.SUB_PROJECT,
-                InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
-        );
+                InternalScopedArtifacts.InternalScope.SUB_PROJECTS,
+                InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS);
     }
 
     private void createApplicationIdWriterTask(@NonNull ApkCreationConfig creationConfig) {
