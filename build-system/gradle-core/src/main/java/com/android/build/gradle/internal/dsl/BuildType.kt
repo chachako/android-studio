@@ -276,10 +276,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
                 "BuildType(%s): buildConfigField '%s' value is being replaced.",
                 getName(), name
             )
-            dslServices.issueReporter.reportWarning(
-                IssueReporter.Type.GENERIC,
-                message
-            )
+            dslServices.logger.debug(message)
         }
         addBuildConfigField(ClassFieldImpl(type, name, value))
     }

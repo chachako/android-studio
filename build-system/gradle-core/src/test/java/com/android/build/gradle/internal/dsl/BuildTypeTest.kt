@@ -73,13 +73,12 @@ class BuildTypeTest {
             "someBuildType",
             dslServices,
             ComponentTypeImpl.BASE_APK)
+        val sensitiveValueOverride = "sensitiveValueOverride"
 
         Truth.assertThat(debugBuildType).isNotNull()
         debugBuildType.buildConfigField("String", "name", "sensitiveValue")
-        debugBuildType.buildConfigField("String", "name", "sensitiveValue")
-        val messages = (dslServices.issueReporter as FakeSyncIssueReporter).messages
-        Truth.assertThat(messages).hasSize(1)
-        Truth.assertThat(messages[0]).doesNotContain("sensitiveValue")
+        debugBuildType.buildConfigField("String", "name", sensitiveValueOverride)
+        Truth.assertThat(debugBuildType.buildConfigFields["name"]?.equals(sensitiveValueOverride))
     }
 
     @Test
