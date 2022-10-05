@@ -70,8 +70,10 @@ class OkHttp2Interceptor(
         return response
     }
 
-    private fun trackRequest(request: Request): HttpConnectionTracker {
+    private fun trackRequest(request: Request): HttpConnectionTracker? {
         val callstack = getOkHttpCallStack(request.javaClass.getPackage().name)
+        // Do not track request if it was from this package
+        if (shouldIgnoreRequest(callstack, this.javaClass.name)) return null
         val tracker = trackerFactory.trackConnection(request.urlString(), callstack)
         tracker.trackRequest(request.method(), request.headers().toMultimap())
         if (request.body() != null) {

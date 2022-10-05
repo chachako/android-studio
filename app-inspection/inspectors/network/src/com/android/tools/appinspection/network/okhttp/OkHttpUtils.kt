@@ -61,3 +61,8 @@ fun createNullOutputStream(): OutputStream {
         override fun write(b: ByteArray, off: Int, len: Int) {}
     }
 }
+
+/**
+ *
+ */
+fun shouldIgnoreRequest(callstack: String, className: String): Boolean = callstack.contains(className)
