@@ -91,19 +91,6 @@ class ArtifactsImpl(
         }
 
         publicScopedArtifacts[ScopedArtifacts.Scope.PROJECT]?.let {
-            // provide the initial content of the CLASSES Scoped artifact using the deprecated
-            // public artifact type in case some third-party is appending/transforming using those
-            // types.
-            it.setInitialContent(
-                ScopedArtifact.CLASSES,
-                project.files().also { configurableFileCollection ->
-                    @Suppress("DEPRECATION")
-                    configurableFileCollection.from(
-                        getAll(MultipleArtifact.ALL_CLASSES_DIRS),
-                        getAll(MultipleArtifact.ALL_CLASSES_JARS),
-                    )
-                }
-            )
             it.setInitialContent(
                 ScopedArtifact.JAVA_RES,
                 project.files().also { configurableFileCollection ->

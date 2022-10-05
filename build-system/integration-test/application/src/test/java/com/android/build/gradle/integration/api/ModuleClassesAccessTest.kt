@@ -31,7 +31,6 @@ class ModuleClassesAccessTest {
             .fromTestApp(KotlinHelloWorldApp.forPlugin("com.android.application"))
             .create()
 
-
     @Test
     fun `ensure merging task not invoked when moduleClasses are not requested`() {
         val result = project.executor().run("assembleDebug")
@@ -40,7 +39,8 @@ class ModuleClassesAccessTest {
 
     @Test
     fun `ensure merging task is invoked when moduleClasses are transformed`() {
-        project.buildFile.appendText("""
+        project.buildFile.appendText(
+            """
 buildscript {
     dependencies {
         classpath("org.javassist:javassist:3.26.0-GA")
@@ -123,7 +123,8 @@ androidComponents {
             )
     })
 }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val result = project.executor().run("assembleDebug")
         Truth.assertThat(result.didWorkTasks).contains(":debugModifyClasses")
@@ -134,74 +135,5 @@ androidComponents {
             .containsClass("Lcom/android/api/tests/SomeInterface;");
         TruthHelper.assertThatApk(apk)
             .containsClass("Lcom/example/helloworld/HelloWorld;");
-    }
-
-    @Test
-    fun `ensure deprecated artifact types are still functional`() {
-        project.file("src/main/java/com/android/api/tests/SomeSource.java").also {
-            it.parentFile.mkdirs()
-            it.writeText(
-                """
-            package com.android.api.tests;
-
-            class SomeSource {
-                public String toString() {
-                    return "Something !";
-                }
-            }
-            """.trimIndent()
-            )
-        }
-        project.buildFile.appendText("""
-buildscript {
-    dependencies {
-        classpath("org.javassist:javassist:3.26.0-GA")
-    }
-}
-
-import javassist.ClassPool
-import javassist.CtClass
-import java.util.jar.*;
-import com.android.build.api.artifact.MultipleArtifact;
-
-import org.gradle.api.DefaultTask;
- import org.gradle.api.tasks.TaskAction;
-import javassist.ClassPool;
-import javassist.CtClass;
-
-abstract class AddClassesTask extends DefaultTask {
-
-    @OutputFiles
-    abstract DirectoryProperty getOutput();
-
-    @TaskAction
-    void taskAction() {
-
-        ClassPool pool = new ClassPool(ClassPool.getDefault());
-        CtClass interfaceClass = pool.makeInterface("com.android.api.tests.SomeInterface");
-        System.out.println("Adding ${'$'}interfaceClass");
-        interfaceClass.writeFile(output.get().asFile.absolutePath);
-    }
-}
-
-androidComponents {
-    onVariants(selector().all(), { variant ->
-        TaskProvider<AddClassesTask> taskProvider = project.tasks.register(variant.getName() + "AddAllClasses", AddClassesTask.class)
-        variant.artifacts.use(taskProvider)
-            .wiredWith( { it.getOutput() })
-            .toAppendTo(MultipleArtifact.ALL_CLASSES_DIRS.INSTANCE)
-    })
-}
-""".trimIndent())
-
-        val result = project.executor().run("assembleDebug")
-        Truth.assertThat(result.didWorkTasks).contains(":debugAddAllClasses")
-        // check resulting APK that new classes is present in the dex.
-
-        val apk = project.getApk(GradleTestProject.ApkType.DEBUG)
-        TruthHelper.assertThatApk(apk)
-            .containsClass("Lcom/android/api/tests/SomeInterface;");
-        TruthHelper.assertThatApk(apk)
-            .containsClass("Lcom/android/api/tests/SomeSource;");
     }
 }

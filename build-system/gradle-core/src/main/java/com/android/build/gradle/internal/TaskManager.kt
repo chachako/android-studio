@@ -1179,8 +1179,13 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                     rFiles
                 )
             creationConfig
-                    .artifacts
-                    .appendTo(MultipleArtifact.ALL_CLASSES_DIRS, RUNTIME_R_CLASS_CLASSES)
+                .artifacts
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    creationConfig.artifacts,
+                    RUNTIME_R_CLASS_CLASSES
+                )
             return
         }
         createNonNamespacedResourceTasks(
@@ -1250,9 +1255,14 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                             LinkAndroidResForBundleTask.CreationAction(
                                     creationConfig))
                 }
-                artifacts.appendTo(
-                        MultipleArtifact.ALL_CLASSES_JARS,
-                        COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR)
+
+                artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .setInitialContent(
+                        ScopedArtifact.CLASSES,
+                        artifacts,
+                        COMPILE_AND_RUNTIME_NOT_NAMESPACED_R_CLASS_JAR
+                    )
 
                 if (!creationConfig.debuggable &&
                         !creationConfig.componentType.isForTesting) {
@@ -1329,47 +1339,32 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         // Once the deprecated types can be removed, all the methods below should use the
         // [ScopedArtifacts.setInitialContent] methods to initialize directly the scoped container.
         creationConfig.oldVariantApiLegacySupport?.variantData?.let { variantData ->
+
             creationConfig
                 .artifacts
-                .appendAll(
-                    MultipleArtifact.ALL_CLASSES_JARS,
-                    variantData.allPreJavacGeneratedBytecode.getRegularFiles(
-                        project.layout.projectDirectory
-                    )
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    variantData.allPreJavacGeneratedBytecode
                 )
 
             creationConfig
                 .artifacts
-                .appendAll(
-                    MultipleArtifact.ALL_CLASSES_DIRS,
-                    variantData.allPreJavacGeneratedBytecode.getDirectories(
-                        project.layout.projectDirectory
-                    )
-                )
-
-            creationConfig
-                .artifacts
-                .appendAll(
-                    MultipleArtifact.ALL_CLASSES_JARS,
-                    variantData.allPostJavacGeneratedBytecode.getRegularFiles(
-                        project.layout.projectDirectory
-                    )
-                )
-
-            creationConfig
-                .artifacts
-                .appendAll(
-                    MultipleArtifact.ALL_CLASSES_DIRS,
-                    variantData.allPostJavacGeneratedBytecode.getDirectories(
-                        project.layout.projectDirectory
-                    )
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .setInitialContent(
+                    ScopedArtifact.CLASSES,
+                    variantData.allPostJavacGeneratedBytecode
                 )
         }
-        creationConfig
-                .artifacts
-                .appendTo(
-                        MultipleArtifact.ALL_CLASSES_DIRS,
-                        JAVAC)
+
+       creationConfig
+           .artifacts
+           .forScope(ScopedArtifacts.Scope.PROJECT)
+           .setInitialContent(
+               ScopedArtifact.CLASSES,
+               creationConfig.artifacts,
+               JAVAC
+           )
     }
 
     /**

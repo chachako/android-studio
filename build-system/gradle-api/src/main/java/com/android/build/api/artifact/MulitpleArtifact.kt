@@ -47,28 +47,5 @@ sealed class MultipleArtifact<FileTypeT : FileSystemLocation>(
             MultipleArtifact<RegularFile>(FILE, Category.SOURCES),
             Replaceable,
             Transformable
-
-    /**
-     * This artifact type is deprecated, use [Artifacts.forScope] API instead.
-     */
-    @Deprecated(
-        message = "Use Artifacts.forScope APIs.",
-    )
-    object ALL_CLASSES_DIRS:
-        MultipleArtifact<Directory>(DIRECTORY),
-        Appendable,
-        Replaceable,
-        Transformable
-
-    /**
-     * This artifact type is deprecated, use [Artifacts.forScope] API instead.
-     */
-    @Deprecated(
-        message = "Use Artifacts.forScope APIs.",
-    )
-    object ALL_CLASSES_JARS:
-        MultipleArtifact<RegularFile>(FILE),
-        Appendable,
-        Replaceable,
-        Transformable
+    
 }

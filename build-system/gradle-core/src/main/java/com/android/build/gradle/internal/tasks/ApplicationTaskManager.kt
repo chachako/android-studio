@@ -17,8 +17,10 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.MultipleArtifact
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.variant.ApplicationVariantBuilder
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.AbstractAppTaskManager
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
@@ -273,9 +275,14 @@ class ApplicationTaskManager(
             if (variant.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
                 taskFactory.register(
                         GeneratePrivacySandboxSdkRuntimeConfigFile.CreationAction(variant))
-                variant.artifacts.appendTo(
-                        MultipleArtifact.ALL_CLASSES_JARS,
-                        InternalArtifactType.PRIVACY_SANDBOX_SDK_R_PACKAGE_JAR)
+                variant
+                    .artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .setInitialContent(
+                        ScopedArtifact.CLASSES,
+                        variant.artifacts,
+                        InternalArtifactType.PRIVACY_SANDBOX_SDK_R_PACKAGE_JAR
+                    )
             }
 
             taskFactory.register(BundleIdeModelProducerTask.CreationAction(variant))

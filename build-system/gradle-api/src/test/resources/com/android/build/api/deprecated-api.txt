@@ -3,22 +3,6 @@ Deprecated Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 are announced on go/as-release-notes.
 -------------------------------------------------------------------------
-Deprecated from AGP 7.4.0
-  * com.android.build.api.artifact.MultipleArtifact$ALL_CLASSES_DIRS extends com.android.build.api.artifact.MultipleArtifact implements com.android.build.api.artifact.Artifact$Appendable, com.android.build.api.artifact.Artifact$Replaceable, com.android.build.api.artifact.Artifact$Transformable
-  * com.android.build.api.artifact.MultipleArtifact$ALL_CLASSES_JARS extends com.android.build.api.artifact.MultipleArtifact implements com.android.build.api.artifact.Artifact$Appendable, com.android.build.api.artifact.Artifact$Replaceable, com.android.build.api.artifact.Artifact$Transformable
-  * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
-  * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()
-  * com.android.build.api.dsl.LibraryBaseFlavor.setTargetSdk: void (java.lang.Integer)
-  * com.android.build.api.dsl.LibraryBaseFlavor.setTargetSdkPreview: void (java.lang.String)
-  * com.android.build.api.dsl.PrivacySandboxSdkBundle.getPackageName: java.lang.String ()
-  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setPackageName: void (java.lang.String)
-  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getNamespace: java.lang.String ()
-  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setNamespace: void (java.lang.String)
-  * com.android.build.api.variant.Variant.getTargetSdkVersion: com.android.build.api.variant.AndroidVersion ()
-  * com.android.build.api.variant.VariantBuilder.getTargetSdk: java.lang.Integer ()
-  * com.android.build.api.variant.VariantBuilder.getTargetSdkPreview: java.lang.String ()
-  * com.android.build.api.variant.VariantBuilder.setTargetSdk: void (java.lang.Integer)
-  * com.android.build.api.variant.VariantBuilder.setTargetSdkPreview: void (java.lang.String)
 Deprecated from AGP UNKNOWN_VERSION
   * com.android.build.api.dsl.AaptOptions implements com.android.build.api.dsl.AndroidResources
   * com.android.build.api.dsl.AdbOptions implements com.android.build.api.dsl.Installation
@@ -278,3 +262,17 @@ Deprecated from AGP 7.3.0
   * com.android.build.api.variant.VariantFilter.getIgnore: boolean ()
   * com.android.build.api.variant.VariantFilter.getName: java.lang.String ()
   * com.android.build.api.variant.VariantFilter.setIgnore: void (boolean)
+Deprecated from AGP 7.4.0
+  * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()
+  * com.android.build.api.dsl.LibraryBaseFlavor.setTargetSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.LibraryBaseFlavor.setTargetSdkPreview: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.getPackageName: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setPackageName: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getNamespace: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setNamespace: void (java.lang.String)
+  * com.android.build.api.variant.Variant.getTargetSdkVersion: com.android.build.api.variant.AndroidVersion ()
+  * com.android.build.api.variant.VariantBuilder.getTargetSdk: java.lang.Integer ()
+  * com.android.build.api.variant.VariantBuilder.getTargetSdkPreview: java.lang.String ()
+  * com.android.build.api.variant.VariantBuilder.setTargetSdk: void (java.lang.Integer)
+  * com.android.build.api.variant.VariantBuilder.setTargetSdkPreview: void (java.lang.String)

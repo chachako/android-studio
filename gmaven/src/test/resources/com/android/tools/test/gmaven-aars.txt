@@ -35,8 +35,6 @@ androidx/databinding/databinding-runtime
   R.txt
   classes.jar
   classes.jar:META-INF/androidx.databinding_library.version
-  classes.jar:androidx/
-  classes.jar:androidx/databinding/
   proguard.txt
   res/
   res/values/
@@ -80,8 +78,6 @@ com/android/databinding/library
   R.txt
   classes.jar
   classes.jar:META-INF/com.android.databinding_library.version
-  classes.jar:android/
-  classes.jar:android/databinding/
   proguard.txt
   res/
   res/values/

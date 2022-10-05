@@ -284,7 +284,7 @@ is using javassist to show how this can be done using a different bytecode enhan
 The [onVariants] block will wire the [ModifyClassesTask] input properties (allClasses]
 to the [output] folder
 `wiredWith(ModifyClassesTask::allClasses, ModifyClassesTask::output)`
-to transform [MultipleArtifact.ALL_CLASSES_DIRS]
+to transform [ScopedArtifact.CLASSES]
 
 ## To Run
 ./gradlew :app:assembleDebug
@@ -550,7 +550,7 @@ In this example, we only add classes the [ListProperty] of [Directory].
 
 The [onVariants] block will wire the [AddClassesTask] [output] folder using
 `wiredWith(AddClassesTask::output)`
-to add classes to [MultipleArtifact.ALL_CLASSES_DIRS]
+to add classes to [ScopedArtifact.CLASSES]
 
 ## To Run
 ./gradlew :app:assembleDebug
