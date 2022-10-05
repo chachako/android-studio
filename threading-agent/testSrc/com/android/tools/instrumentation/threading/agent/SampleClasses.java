@@ -125,4 +125,13 @@ public class SampleClasses {
             public void method2() {}
         }
     }
+
+    @UiThread
+    public static class AnnotatedClassWithStaticBlock {
+        public static int a = 0;
+
+        static {
+            a = 5;
+        }
+    }
 }

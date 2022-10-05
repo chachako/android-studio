@@ -292,6 +292,19 @@ public class AgentTest {
         verifyNoInteractions(mockThreadingCheckerHook);
     }
 
+    @Test
+    public void testClassAnnotationDoesNotApplyToStaticBlocks()
+            throws IOException, IllegalAccessException, NoSuchFieldException {
+
+        Class<?> transformedClass =
+                loadAndTransform(SampleClasses.AnnotatedClassWithStaticBlock.class);
+
+        int value = transformedClass.getField("a").getInt(null);
+        assertThat(value).isEqualTo(5);
+
+        verifyNoInteractions(mockThreadingCheckerHook);
+    }
+
     private static Class<?> loadAndTransform(Class<?> clazz) throws IOException {
         return loadAndTransformMultiple(clazz).get(0);
     }

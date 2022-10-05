@@ -62,6 +62,13 @@ public class InstrumentClassVisitor extends ClassVisitor {
             int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
+        if (name.equals("<clinit>")) {
+            // Static initializers cannot be explicitly annotated with threading annotations,
+            // and so we shouldn't be using class-level threading annotations either. Therefore,
+            // transforming these methods can be skipped altogether.
+            return methodVisitor;
+        }
+
         return new InstrumentMethodVisitor(
                 methodVisitor,
                 annotationMappings,
