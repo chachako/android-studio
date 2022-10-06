@@ -448,10 +448,14 @@ open class XmlWriter constructor(
         // If we have path variables, use those (but if there's no match, don't use
         // an absolute path; try to make it project relative
         if (path == null && type.relativePaths() && type.variables() && pathVariables.any()) {
-            // For baselines, if we have a project, try to make it project relative first
-            if (type == XmlFileType.BASELINE && !client.flags.isFullPath) {
+            // For baselines, if we have a project, try to make it project relative first.
+            // We ignore the absolutePaths flag for baselines.
+            if (type == XmlFileType.BASELINE) {
                 path = client.getDisplayPath(project, file, false)
-                if (path.isParentDirectoryPath()) {
+                // We normally prefer path variables over ../ relative paths, but in a checkDependencies
+                // scenario it's normal for the baselines to point into sibling projects; keep the
+                // paths relocatable.
+                if (path.isParentDirectoryPath() && !client.flags.isCheckDependencies) {
                     path = null
                 }
             }
