@@ -56,6 +56,7 @@ import com.android.SdkConstants.VIEW_INCLUDE
 import com.android.SdkConstants.VIEW_TAG
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.resources.resourceNameToFieldName
 import com.android.resources.ResourceFolderType
@@ -468,7 +469,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val folderType = context.resourceFolderType
         if (folderType != ResourceFolderType.LAYOUT) {
             if (folderType == ResourceFolderType.DRAWABLE) {
-                checkElement(context, element, TAG_VECTOR, 21, "1.4", UNSUPPORTED)
+                checkElement(context, element, TAG_VECTOR, 21, "1.4.0", UNSUPPORTED)
                 checkElement(context, element, TAG_RIPPLE, 21, null, UNSUPPORTED)
                 checkElement(context, element, TAG_ANIMATED_SELECTOR, 21, null, UNSUPPORTED)
                 checkElement(context, element, TAG_ANIMATED_VECTOR, 21, null, UNSUPPORTED)
@@ -2846,7 +2847,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
             val gradleModelVersion = context.project.gradleModelVersion
             if (gradleModelVersion != null) {
-                val minVersion = GradleVersion.tryParse(minGradleVersionString)
+                val minVersion = AgpVersion.tryParse(minGradleVersionString)
                 if (minVersion != null && gradleModelVersion.compareIgnoringQualifiers(minVersion) >= 0) {
                     return true
                 }

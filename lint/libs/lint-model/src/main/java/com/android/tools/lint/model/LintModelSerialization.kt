@@ -22,6 +22,7 @@ import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FD_PLATFORMS
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.repository.impl.manager.LocalRepoLoaderImpl.PACKAGE_XML_FN
 import com.android.sdklib.AndroidTargetHash.PLATFORM_HASH_PREFIX
 import com.android.sdklib.AndroidVersion
@@ -636,7 +637,7 @@ private class LintModelModuleWriter(
         createdBy?.let { printer.printAttribute("createdBy", it, indent) }
 
         module.mavenName?.let { printer.printAttribute("maven", it.toString(), indent) }
-        module.gradleVersion?.let { printer.printAttribute("gradle", it.toString(), indent) }
+        module.agpVersion?.let { printer.printAttribute("agpVersion", it.toString(), indent) }
         printer.printFile("buildFolder", module.buildFolder, indent)
         module.resourcePrefix?.let { printer.printAttribute("resourcePrefix", it, indent) }
         printer.printStrings("dynamicFeatures", module.dynamicFeatures, indent)
@@ -1438,7 +1439,11 @@ private class LintModelModuleReader(
             val mavenString = getOptionalAttribute("maven")?.let {
                 LintModelMavenName.parse(it)
             }
-            val gradleVersion = getOptionalAttribute("gradle")?.let { (GradleVersion.tryParse(it)) }
+            val agpVersion =
+                getOptionalAttribute("agpVersion")?.let { (AgpVersion.tryParse(it)) } ?:
+                // Delete this backward-compatibility alternative when there's not much chance of
+                // finding pre-8.0.0 serialized lint models in the wild.
+                getOptionalAttribute("gradle")?.let { (AgpVersion.tryParse(it)) }
 
             val buildFolder = getRequiredFile("buildFolder")
             val resourcePrefix = getOptionalAttribute("resourcePrefix")
@@ -1468,24 +1473,24 @@ private class LintModelModuleReader(
             }
 
             val module = DefaultLintModelModule(
-                loader = LintModelSerialization,
-                dir = dir,
-                modulePath = name,
-                type = type,
-                mavenName = mavenString,
-                gradleVersion = gradleVersion,
-                buildFolder = buildFolder,
-                lintOptions = lintOptions!!,
-                lintRuleJars = lintRuleJars,
-                resourcePrefix = resourcePrefix,
-                dynamicFeatures = dynamicFeatures,
-                bootClassPath = bootClassPath,
-                javaSourceLevel = javaSourceLevel,
-                compileTarget = compileTarget,
-                neverShrinking = neverShrinking,
+              loader = LintModelSerialization,
+              dir = dir,
+              modulePath = name,
+              type = type,
+              mavenName = mavenString,
+              agpVersion = agpVersion,
+              buildFolder = buildFolder,
+              lintOptions = lintOptions!!,
+              lintRuleJars = lintRuleJars,
+              resourcePrefix = resourcePrefix,
+              dynamicFeatures = dynamicFeatures,
+              bootClassPath = bootClassPath,
+              javaSourceLevel = javaSourceLevel,
+              compileTarget = compileTarget,
+              neverShrinking = neverShrinking,
 
                 // still empty list; will construct it below
-                variants = variants
+              variants = variants
             )
 
             // Always last; requires separate handling since we need to pass in the

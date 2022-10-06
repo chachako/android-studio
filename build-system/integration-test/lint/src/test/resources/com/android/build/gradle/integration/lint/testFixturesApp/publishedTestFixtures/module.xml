@@ -4,7 +4,7 @@
     name=":app"
     type="APP"
     maven="testFixturesApp:app:"
-    gradle="$androidGradlePluginVersion"
+    agpVersion="$androidGradlePluginVersion"
     buildFolder="build"
     bootClassPath="${androidSdkDir}/platforms/android-${androidHighestKnownStableApi}/android.jar:${androidSdkDir}/build-tools/30.0.3/core-lambda-stubs.jar"
     javaSourceLevel="1.8"

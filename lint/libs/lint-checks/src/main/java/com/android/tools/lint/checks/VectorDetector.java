@@ -25,7 +25,7 @@ import static com.android.SdkConstants.UNIT_DP;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.ide.common.repository.GradleVersion;
+import com.android.ide.common.repository.GradleVersion.AgpVersion;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceUrl;
 import com.android.tools.lint.detector.api.Category;
@@ -95,7 +95,7 @@ public class VectorDetector extends ResourceXmlDetector {
      * @return true if the plugin supports raster image generation
      */
     public static boolean isVectorGenerationSupported(@NonNull Project project) {
-        GradleVersion modelVersion = project.getGradleModelVersion();
+        AgpVersion modelVersion = project.getGradleModelVersion();
         // Requires 1.4.x or higher.
         return modelVersion != null && modelVersion.isAtLeastIncludingPreviews(1, 4, 0);
     }
@@ -108,7 +108,7 @@ public class VectorDetector extends ResourceXmlDetector {
      * @return true if the plugin supports raster image generation
      */
     public static boolean isVectorGenerationSupportedForGradient(@NonNull Project project) {
-        GradleVersion modelVersion = project.getGradleModelVersion();
+        AgpVersion modelVersion = project.getGradleModelVersion();
         // Requires 3.1.x or higher.
         return modelVersion != null && modelVersion.isAtLeastIncludingPreviews(3, 1, 0);
     }
@@ -121,7 +121,7 @@ public class VectorDetector extends ResourceXmlDetector {
      * @return true if the plugin supports raster image generation
      */
     public static boolean isVectorGenerationSupportedForFillType(@NonNull Project project) {
-        GradleVersion modelVersion = project.getGradleModelVersion();
+        AgpVersion modelVersion = project.getGradleModelVersion();
         // Requires 3.2.x or higher.
         return modelVersion != null && modelVersion.isAtLeastIncludingPreviews(3, 2, 0);
     }
@@ -305,7 +305,7 @@ public class VectorDetector extends ResourceXmlDetector {
     }
 
     static boolean usingSupportLibVectors(@NonNull Project project) {
-        GradleVersion version = project.getGradleModelVersion();
+        AgpVersion version = project.getGradleModelVersion();
         if (version == null || version.getMajor() < 2) {
             return false;
         }

@@ -18,6 +18,7 @@ package com.android.tools.lint.checks.infrastructure
 import com.android.SdkConstants
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.SdkVersionInfo
@@ -98,7 +99,7 @@ class GradleModelMocker @JvmOverloads constructor(
     private var moduleModel: TestLintModelModule = TestLintModelModule(
         dir = projectDir,
         compileTarget = "android-" + SdkVersionInfo.HIGHEST_KNOWN_API,
-        gradleVersion = GradleVersion.parse("2.2.2"),
+        agpVersion = AgpVersion.parse("2.2.2"),
         javaSourceLevel = "1.7",
         modulePath = "test_project-${projectDir.name}"
     )
@@ -1443,7 +1444,7 @@ class GradleModelMocker @JvmOverloads constructor(
 
     private fun updateModelVersion(modelVersion: String) {
         updateModule {
-            it.copy(gradleVersion = GradleVersion.parse(modelVersion))
+            it.copy(agpVersion = AgpVersion.tryParse(modelVersion))
         }
     }
 
@@ -2201,7 +2202,7 @@ private data class TestLintModelModule(
     override val modulePath: String = "",
     override val type: LintModelModuleType = LintModelModuleType.APP,
     override val mavenName: TestLintModelMavenName? = null,
-    override val gradleVersion: GradleVersion? = null,
+    override val agpVersion: AgpVersion? = null,
     override val buildFolder: File = File(""),
     override val lintOptions: TestLintModelLintOptions = TestLintModelLintOptions(),
     override val lintRuleJars: List<File> = emptyList(),

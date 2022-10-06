@@ -59,7 +59,6 @@ import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.ApiVersion
-import com.android.ide.common.repository.GradleVersion
 import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.android.sdklib.AndroidVersion
 import com.android.tools.lint.model.DefaultLintModelAndroidArtifact
@@ -408,7 +407,7 @@ abstract class ProjectInputs {
                 mavenGroupId.get(),
                 mavenArtifactId.get()
             ),
-            gradleVersion = GradleVersion.tryParse(Version.ANDROID_GRADLE_PLUGIN_VERSION),
+            agpVersion = AgpVersion.tryParse(Version.ANDROID_GRADLE_PLUGIN_VERSION),
             buildFolder = File(buildDirectoryPath.get()),
             lintOptions = lintOptions.toLintModel(),
             lintRuleJars = listOf(),

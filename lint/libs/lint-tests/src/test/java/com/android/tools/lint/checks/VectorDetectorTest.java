@@ -265,7 +265,7 @@ public class VectorDetectorTest extends AbstractCheckTest {
                                         ""
                                                 + "buildscript {\n"
                                                 + "    dependencies {\n"
-                                                + "        classpath 'com.android.tools.build:gradle:3.1.0-alpha7'\n"
+                                                + "        classpath 'com.android.tools.build:gradle:3.1.0-alpha07'\n"
                                                 + "    }\n"
                                                 + "}\n"))
                         .name("App")
@@ -283,7 +283,7 @@ public class VectorDetectorTest extends AbstractCheckTest {
                                 ""
                                         + "buildscript {\n"
                                         + "    dependencies {\n"
-                                        + "        classpath 'com.android.tools.build:gradle:3.1.0-alpha7'\n"
+                                        + "        classpath 'com.android.tools.build:gradle:3.1.0-alpha07'\n"
                                         + "    }\n"
                                         + "}\n"))
                 .run()
@@ -318,7 +318,7 @@ public class VectorDetectorTest extends AbstractCheckTest {
                                         ""
                                                 + "buildscript {\n"
                                                 + "    dependencies {\n"
-                                                + "        classpath 'com.android.tools.build:gradle:3.2.0-alpha1'\n"
+                                                + "        classpath 'com.android.tools.build:gradle:3.2.0-alpha01'\n"
                                                 + "    }\n"
                                                 + "}\n"))
                         .name("App")
@@ -336,7 +336,7 @@ public class VectorDetectorTest extends AbstractCheckTest {
                                 ""
                                         + "buildscript {\n"
                                         + "    dependencies {\n"
-                                        + "        classpath 'com.android.tools.build:gradle:3.2.0-alpha1'\n"
+                                        + "        classpath 'com.android.tools.build:gradle:3.2.0-alpha01'\n"
                                         + "    }\n"
                                         + "}\n"))
                 .run()
@@ -352,7 +352,7 @@ public class VectorDetectorTest extends AbstractCheckTest {
                                 ""
                                         + "buildscript {\n"
                                         + "    dependencies {\n"
-                                        + "        classpath 'com.android.tools.build:gradle:3.2.0-alpha1'\n"
+                                        + "        classpath 'com.android.tools.build:gradle:3.2.0-alpha01'\n"
                                         + "    }\n"
                                         + "}\n"
                                         + "android.defaultConfig.vectorDrawables.useSupportLibrary = true\n"))

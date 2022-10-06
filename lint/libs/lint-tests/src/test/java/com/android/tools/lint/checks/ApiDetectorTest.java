@@ -3514,7 +3514,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
         //noinspection all // Sample code
         String expected =
                 ""
-                        + "res/drawable/vector.xml:1: Error: <vector> requires API level 21 (current min is 4) or building with Android Gradle plugin 1.4 or higher [NewApi]\n"
+                        + "res/drawable/vector.xml:1: Error: <vector> requires API level 21 (current min is 4) or building with Android Gradle plugin 1.4.0 or higher [NewApi]\n"
                         + "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\" >\n"
                         + " ~~~~~~\n"
                         + "1 errors, 0 warnings";
@@ -6707,7 +6707,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "res/drawable/ic_drawable.xml:4: Error: <vector> requires API level 21 (current min is 1) or building with Android Gradle plugin 1.4 or higher [NewApi]\n"
+                                + "res/drawable/ic_drawable.xml:4: Error: <vector> requires API level 21 (current min is 1) or building with Android Gradle plugin 1.4.0 or higher [NewApi]\n"
                                 + "<vector android:width=\"24dp\" android:height=\"24dp\" android:viewportHeight=\"24.0\" android:viewportWidth=\"24.0\">\n"
                                 + " ~~~~~~\n"
                                 + "1 errors, 0 warnings");

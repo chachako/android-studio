@@ -46,7 +46,7 @@ import static java.io.File.separator;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
-import com.android.ide.common.repository.GradleVersion;
+import com.android.ide.common.repository.GradleVersion.AgpVersion;
 import com.android.ide.common.repository.ResourceVisibilityLookup;
 import com.android.resources.Density;
 import com.android.resources.ResourceFolderType;
@@ -294,10 +294,10 @@ public class Project {
      * @return the Gradle plugin version, or null if invalid or not a Gradle project
      */
     @Nullable
-    public GradleVersion getGradleModelVersion() {
+    public AgpVersion getGradleModelVersion() {
         LintModelModule gradleProjectModel = getBuildModule();
         if (gradleProjectModel != null) {
-            return gradleProjectModel.getGradleVersion();
+            return gradleProjectModel.getAgpVersion();
         } else {
             return null;
         }

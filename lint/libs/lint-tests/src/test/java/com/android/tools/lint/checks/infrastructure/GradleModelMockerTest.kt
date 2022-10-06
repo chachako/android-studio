@@ -324,7 +324,7 @@ dependencies {
         )
         val module = mocker.getLintModule()
 
-        Truth.assertThat(module.gradleVersion.toString()).isEqualTo("1.5.1")
+        Truth.assertThat(module.agpVersion.toString()).isEqualTo("1.5.1")
     }
 
     @Test
@@ -532,7 +532,7 @@ dependencies {
                 })
             .withModelVersion("1.5.0")
             .allowUnrecognizedConstructs()
-        Truth.assertThat(mocker.getLintModule().gradleVersion.toString()).isEqualTo("1.5.0")
+        Truth.assertThat(mocker.getLintModule().agpVersion.toString()).isEqualTo("1.5.0")
         Truth.assertThat(hasWarning.get()).isTrue()
         Truth.assertThat(hasError.get()).isFalse()
     }

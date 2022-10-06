@@ -32,7 +32,7 @@ class ParseAndroidGradlePluginVersionTest {
     fun parseVersion() {
         expect.that(parseAndroidGradlePluginVersion("4.0.0-alpha04")).isEqualTo(AndroidPluginVersion(4, 0).alpha(4))
         expect.that(parseAndroidGradlePluginVersion("4.0.0-beta02")).isEqualTo(AndroidPluginVersion(4, 0).beta(2))
-        expect.that(parseAndroidGradlePluginVersion("4.0.0-rc1")).isEqualTo(AndroidPluginVersion(4, 0).rc(1))
+        expect.that(parseAndroidGradlePluginVersion("4.0.0-rc01")).isEqualTo(AndroidPluginVersion(4, 0).rc(1))
         expect.that(parseAndroidGradlePluginVersion("4.0.0-dev")).isEqualTo(AndroidPluginVersion(4, 0).dev())
         expect.that(parseAndroidGradlePluginVersion("4.0.0")).isEqualTo(AndroidPluginVersion(4, 0))
         expect.that(parseAndroidGradlePluginVersion("4.0.1")).isEqualTo(AndroidPluginVersion(4, 0, 1))

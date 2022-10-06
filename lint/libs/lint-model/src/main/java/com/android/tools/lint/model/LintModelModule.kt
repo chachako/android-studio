@@ -16,7 +16,7 @@
 
 package com.android.tools.lint.model
 
-import com.android.ide.common.repository.GradleVersion
+import com.android.ide.common.repository.GradleVersion.AgpVersion
 import java.io.File
 
 /**
@@ -48,8 +48,8 @@ interface LintModelModule {
     /** The Maven coordinate of this project, if known. */
     val mavenName: LintModelMavenName?
 
-    /** If the build model is Gradle, the Gradle version. */
-    val gradleVersion: GradleVersion?
+    /** If the build model is Gradle, the version of the Android Gradle Plugin. */
+    val agpVersion: AgpVersion?
 
     /** Returns the build folder of this project. */
     val buildFolder: File
@@ -147,7 +147,7 @@ class DefaultLintModelModule(
     override val modulePath: String,
     override val type: LintModelModuleType,
     override val mavenName: LintModelMavenName?,
-    override val gradleVersion: GradleVersion?,
+    override val agpVersion: AgpVersion?,
     override val buildFolder: File,
     override val lintOptions: LintModelLintOptions,
     override val lintRuleJars: List<File>,
