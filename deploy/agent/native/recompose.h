@@ -41,7 +41,7 @@ class Recompose {
   // Load state for Jetpack Compose after activity restart.
   void LoadStateAndCompose(jobject reloader, jobject state) const;
 
-  // Load state for Jetpack Compose after activity restart.
+  // Invalidates a specific Compose group and trigger a recomposition.
   // Reference to the error string is changed to the error message or
   // empty string should there be no error messages.
   bool InvalidateGroupsWithKey(jobject reloader, jint groupId,

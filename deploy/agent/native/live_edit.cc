@@ -226,9 +226,11 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
         bool result =
             recompose.InvalidateGroupsWithKey(reloader, req.group_id(), error);
         Log::V("InvalidateGroupsWithKey %d", req.group_id());
+      } else {
+        // Perform a full reset.
+        jobject state = recompose.SaveStateAndDispose(reloader);
+        recompose.LoadStateAndCompose(reloader, state);
       }
-      jobject state = recompose.SaveStateAndDispose(reloader);
-      recompose.LoadStateAndCompose(reloader, state);
       resp.set_recompose_type(proto::AgentLiveEditResponse::NORMAL);
     }
   }
