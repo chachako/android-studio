@@ -210,13 +210,16 @@ void EnqueueAppInspectionGetLibraryCompatibilityInfoResponse(
       case 1:  // INCOMPATIBLE
         response->set_status(LibraryCompatibilityInfo::INCOMPATIBLE);
         break;
-      case 2:  // Missing library
+      case 2:  // VERSION_MISSING
+        response->set_status(LibraryCompatibilityInfo::VERSION_MISSING);
+        break;
+      case 3:  // LIBRARY_NOT_FOUND
         response->set_status(LibraryCompatibilityInfo::LIBRARY_MISSING);
         break;
-      case 3:  // PROGUARDED
+      case 4:  // PROGUARDED
         response->set_status(LibraryCompatibilityInfo::APP_PROGUARDED);
         break;
-      case 4:  // Error
+      case 5:  // Error
         response->set_status(LibraryCompatibilityInfo::SERVICE_ERROR);
         break;
     }
@@ -377,6 +380,14 @@ Java_com_android_tools_agent_app_inspection_NativeTransport_sendCreateInspectorR
   app_inspection::EnqueueAppInspectionCreateInspectorResponse(
       env, command_id, AppInspectionResponse::ERROR, error_message,
       CreateInspectorResponse::VERSION_INCOMPATIBLE);
+}
+
+JNIEXPORT void JNICALL
+Java_com_android_tools_agent_app_inspection_NativeTransport_sendCreateInspectorResponseVersionMissing(
+    JNIEnv *env, jobject obj, jint command_id, jstring error_message) {
+  app_inspection::EnqueueAppInspectionCreateInspectorResponse(
+      env, command_id, AppInspectionResponse::ERROR, error_message,
+      CreateInspectorResponse::VERSION_MISSING);
 }
 
 JNIEXPORT void JNICALL

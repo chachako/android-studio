@@ -57,6 +57,13 @@ message ArtifactCoordinate {
   string version = 3;
 }
 
+// Represent data needed for testing library compatibility.
+message LibraryCompatibility {
+  ArtifactCoordinate coordinate = 1;
+  // The library is considered present in the app if any of these classes are present.
+  repeated string expected_library_class_names = 2;
+}
+
 // Metadata about the launch of an inspector.
 message LaunchMetadata {
   // Name of the entity that sent this launch command. Ex: Name of the Android
@@ -64,8 +71,8 @@ message LaunchMetadata {
   string launched_by_name = 1;
   // If true, force launching the inspector, even if one is already running.
   bool force = 2;
-  // Represents the coordinates of minimum supported library.
-  ArtifactCoordinate min_library = 3;
+  // Represents the library compatibility with the minimum supported library version.
+  LibraryCompatibility min_library = 3;
 }
 
 // A command to dispose the inspector.
@@ -103,7 +110,7 @@ message GetLibraryCompatibilityInfoCommand {
   // A list of target libraries to verify version information.
   // These represent the minimum version of the libraries their
   // inspectors are compatible with.
-  repeated ArtifactCoordinate target_libraries = 1;
+  repeated LibraryCompatibility target_libraries = 1;
 }
 
 // A response is sent from the device to answer a command.
@@ -147,10 +154,12 @@ message CreateInspectorResponse {
     // The targeted library does not meet the version requirements of this
     // inspector.
     VERSION_INCOMPATIBLE = 2;
+    // The targeted library version is not found in the app.
+    VERSION_MISSING = 3;
     // The targeted library is not found in the app.
-    LIBRARY_MISSING = 3;
+    LIBRARY_MISSING = 4;
     // The target app is proguarded, library inspectors can't safely run.
-    APP_PROGUARDED = 4;
+    APP_PROGUARDED = 5;
   }
   Status status = 1;
 }
@@ -163,9 +172,10 @@ message LibraryCompatibilityInfo {
   enum Status {
     COMPATIBLE = 0;
     INCOMPATIBLE = 1;
-    LIBRARY_MISSING = 2;
-    APP_PROGUARDED = 3;
-    SERVICE_ERROR = 4;
+    VERSION_MISSING = 2;
+    LIBRARY_MISSING = 3;
+    APP_PROGUARDED = 4;
+    SERVICE_ERROR = 5;
   }
   Status status = 1;
   ArtifactCoordinate target_library = 2;

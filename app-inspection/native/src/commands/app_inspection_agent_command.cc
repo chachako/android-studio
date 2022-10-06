@@ -21,10 +21,15 @@
 #include "jvmti/jvmti_helper.h"
 
 using app_inspection::AppInspectionCommand;
+using app_inspection::ArtifactCoordinate;
 using app_inspection::CreateInspectorCommand;
 using app_inspection::DisposeInspectorCommand;
+using app_inspection::LibraryCompatibility;
 using profiler::Agent;
 using profiler::proto::Command;
+
+jobject createLibraryCompatibility(JNIEnv* jni_env,
+                                   LibraryCompatibility compatibility);
 
 void AppInspectionAgentCommand::RegisterAppInspectionCommandHandler(
     JavaVM* vm) {
@@ -61,28 +66,13 @@ void AppInspectionAgentCommand::RegisterAppInspectionCommandHandler(
 
           jobject target = nullptr;
           if (create_inspector.launch_metadata().has_min_library()) {
-            jstring group_id =
-                jni_env->NewStringUTF(create_inspector.launch_metadata()
-                                          .min_library()
-                                          .group_id()
-                                          .c_str());
-            jstring artifact_id =
-                jni_env->NewStringUTF(create_inspector.launch_metadata()
-                                          .min_library()
-                                          .artifact_id()
-                                          .c_str());
-            jstring version =
-                jni_env->NewStringUTF(create_inspector.launch_metadata()
-                                          .min_library()
-                                          .version()
-                                          .c_str());
-            target = app_inspection::CreateArtifactCoordinate(
-                jni_env, group_id, artifact_id, version);
+            target = createLibraryCompatibility(
+                jni_env, create_inspector.launch_metadata().min_library());
           }
           jmethodID create_inspector_method =
               jni_env->GetMethodID(service_class, "createInspector",
                                    ("(Ljava/lang/String;Ljava/lang/String;" +
-                                    app_inspection::ARTIFACT_COORDINATE_TYPE +
+                                    app_inspection::LIBRARY_COMPATIBILITY_TYPE +
                                     "Ljava/lang/String;ZI)V")
                                        .c_str());
           jni_env->CallVoidMethod(service, create_inspector_method,
@@ -120,27 +110,46 @@ void AppInspectionAgentCommand::RegisterAppInspectionCommandHandler(
               get_library_compatibility_info_command.target_libraries_size();
           jobjectArray targets = jni_env->NewObjectArray(
               request_size,
-              jni_env->FindClass(app_inspection::ARTIFACT_COORDINATE_CLASS),
+              jni_env->FindClass(app_inspection::LIBRARY_COMPATIBILITY_CLASS),
               NULL);
 
           for (int i = 0; i < request_size; ++i) {
-            auto& target =
-                get_library_compatibility_info_command.target_libraries(i);
-            jstring group_id = jni_env->NewStringUTF(target.group_id().c_str());
-            jstring artifact_id =
-                jni_env->NewStringUTF(target.artifact_id().c_str());
-            jstring version = jni_env->NewStringUTF(target.version().c_str());
-            jni_env->SetObjectArrayElement(
-                targets, i,
-                app_inspection::CreateArtifactCoordinate(jni_env, group_id,
-                                                         artifact_id, version));
+            jobject target = createLibraryCompatibility(
+                jni_env,
+                get_library_compatibility_info_command.target_libraries(i));
+            jni_env->SetObjectArrayElement(targets, i, target);
           }
           jmethodID get_library_versions_method = jni_env->GetMethodID(
               service_class, "getLibraryCompatibilityInfoCommand",
-              ("(I[" + app_inspection::ARTIFACT_COORDINATE_TYPE + ")V")
+              ("(I[" + app_inspection::LIBRARY_COMPATIBILITY_TYPE + ")V")
                   .c_str());
           jni_env->CallVoidMethod(service, get_library_versions_method,
                                   command_id, targets);
         }
       });
+}
+
+jobject createLibraryCompatibility(JNIEnv* jni_env,
+                                   LibraryCompatibility compatibility) {
+  ArtifactCoordinate coordinate = compatibility.coordinate();
+  jstring group_id = jni_env->NewStringUTF(coordinate.group_id().c_str());
+  jstring artifact_id = jni_env->NewStringUTF(coordinate.artifact_id().c_str());
+  jstring version = jni_env->NewStringUTF(coordinate.version().c_str());
+  jobject target = app_inspection::CreateArtifactCoordinate(
+      jni_env, group_id, artifact_id, version);
+
+  jobjectArray class_names = nullptr;
+  int class_count = compatibility.expected_library_class_names_size();
+  if (class_count > 0) {
+    class_names = jni_env->NewObjectArray(
+        class_count, jni_env->FindClass("java/lang/String"), NULL);
+    for (int i = 0; i < class_count; i++) {
+      jni_env->SetObjectArrayElement(
+          class_names, i,
+          jni_env->NewStringUTF(
+              compatibility.expected_library_class_names(i).c_str()));
+    }
+  }
+  return app_inspection::CreateLibraryCompatibility(jni_env, target,
+                                                    class_names);
 }

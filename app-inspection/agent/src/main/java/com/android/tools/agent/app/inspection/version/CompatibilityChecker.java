@@ -37,25 +37,34 @@ public final class CompatibilityChecker {
      *
      * <p>The version of the library is found inside a version file in the APK's META-INF directory.
      *
-     * @param artifactCoordinate represents the minimum supported library artifact.
+     * @param coordinate represents the minimum supported library artifact.
+     * @param expectedLibraryClassNames names of classes expected in the targeted library artifact
      * @return a VersionChecker.Result object containing the result of the check and any errors.
      */
-    public CompatibilityCheckerResult checkCompatibility(ArtifactCoordinate artifactCoordinate) {
-        String versionFile = artifactCoordinate.toVersionFileName();
-        String minVersionString = artifactCoordinate.version;
+    public CompatibilityCheckerResult checkCompatibility(LibraryCompatibility coordinate) {
+        String versionFile = coordinate.toVersionFileName();
+        String minVersionString = coordinate.artifact.version;
         VersionFileReader.Result readResult = reader.readVersionFile(versionFile);
         switch (readResult.status) {
             case NOT_FOUND:
-                return new CompatibilityCheckerResult(
-                        CompatibilityCheckerResult.Status.NOT_FOUND,
-                        "Failed to find version file " + versionFile,
-                        artifactCoordinate,
-                        null);
+                if (anyExpectedClassesExists(coordinate.expectedClassNames)) {
+                    return new CompatibilityCheckerResult(
+                            CompatibilityCheckerResult.Status.NOT_FOUND,
+                            "Failed to find version file " + versionFile,
+                            coordinate.artifact,
+                            null);
+                } else {
+                    return new CompatibilityCheckerResult(
+                            CompatibilityCheckerResult.Status.LIBRARY_NOT_FOUND,
+                            "Failed to find library " + versionFile,
+                            coordinate.artifact,
+                            null);
+                }
             case READ_ERROR:
                 return new CompatibilityCheckerResult(
                         CompatibilityCheckerResult.Status.INCOMPATIBLE,
                         "Failed to read version file " + versionFile,
-                        artifactCoordinate,
+                        coordinate.artifact,
                         null);
         }
         Version version = Version.parseOrNull(readResult.versionString);
@@ -66,7 +75,7 @@ public final class CompatibilityChecker {
                             + readResult.versionString
                             + " which is in "
                             + versionFile,
-                    artifactCoordinate,
+                    coordinate.artifact,
                     readResult.versionString);
         }
         Version minVersion = Version.parseOrNull(minVersionString);
@@ -74,7 +83,7 @@ public final class CompatibilityChecker {
             return new CompatibilityCheckerResult(
                     CompatibilityCheckerResult.Status.ERROR,
                     "Failed to parse provided min version " + minVersionString,
-                    artifactCoordinate,
+                    coordinate.artifact,
                     readResult.versionString);
         }
         if (minVersion.compareTo(version) > 0) {
@@ -84,22 +93,22 @@ public final class CompatibilityChecker {
                             + readResult.versionString
                             + " does not satisfy the inspector's min version requirement "
                             + minVersionString,
-                    artifactCoordinate,
+                    coordinate.artifact,
                     readResult.versionString);
         }
 
-        if (isProguarded(artifactCoordinate)) {
+        if (isProguarded(coordinate.artifact)) {
             return new CompatibilityCheckerResult(
                     CompatibilityCheckerResult.Status.PROGUARDED,
                     "Proguard run was detected on the inspected app",
-                    artifactCoordinate,
+                    coordinate.artifact,
                     readResult.versionString);
         }
 
         return new CompatibilityCheckerResult(
                 CompatibilityCheckerResult.Status.COMPATIBLE,
                 null,
-                artifactCoordinate,
+                coordinate.artifact,
                 readResult.versionString);
     }
 
@@ -142,5 +151,31 @@ public final class CompatibilityChecker {
         } catch (ClassNotFoundException e) {
             return true;
         }
+    }
+
+    /**
+     * Check if any of the specified classes exist in the app.
+     *
+     * <p>If a library changes a class name, a client could specify both the old and the new class
+     * name. If any of those classes are present we assume the library is included in the app.
+     *
+     * @param expectedLibraryClassNames classes expected to be in a certain library.
+     * @return true of any of the classes are present or no classes were specified.
+     */
+    private static boolean anyExpectedClassesExists(String[] expectedLibraryClassNames) {
+        if (expectedLibraryClassNames == null || expectedLibraryClassNames.length == 0) {
+            // If no expected class names are specified, we would not know if the library is missing
+            return true;
+        }
+        ClassLoader classLoader = ClassLoaderUtils.mainThreadClassLoader();
+        for (String className : expectedLibraryClassNames) {
+            try {
+                classLoader.loadClass(className);
+                return true;
+            } catch (ClassNotFoundException e) {
+                // ignore...
+            }
+        }
+        return false;
     }
 }

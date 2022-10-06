@@ -22,9 +22,9 @@ import static com.android.tools.agent.app.inspection.NativeTransport.*;
 import androidx.inspection.ArtTooling;
 import androidx.inspection.ArtTooling.EntryHook;
 import androidx.inspection.ArtTooling.ExitHook;
-import com.android.tools.agent.app.inspection.version.ArtifactCoordinate;
 import com.android.tools.agent.app.inspection.version.CompatibilityChecker;
 import com.android.tools.agent.app.inspection.version.CompatibilityCheckerResult;
+import com.android.tools.agent.app.inspection.version.LibraryCompatibility;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,13 +89,14 @@ public class AppInspectionService {
      * @param dexPath the path to the .dex file of the inspector
      * @param projectName the name of the studio project that is trying to launch the inspector
      * @param libraryCoordinate represents the targeted library artifact.
+     * @param expectedLibraryClassNames names of classes expected in the targeted library artifact.
      * @param force if true, create the inspector even if one is already running
      * @param commandId unique id of this command in the context of app inspection service
      */
     public void createInspector(
             String inspectorId,
             String dexPath,
-            ArtifactCoordinate libraryCoordinate,
+            LibraryCompatibility libraryCompatibility,
             String projectName,
             boolean force,
             int commandId) {
@@ -119,7 +120,7 @@ public class AppInspectionService {
             doDispose(inspectorId);
         }
 
-        if (!doCheckVersion(commandId, libraryCoordinate)) {
+        if (!doCheckVersion(commandId, libraryCompatibility)) {
             return;
         }
 
@@ -187,9 +188,9 @@ public class AppInspectionService {
      * @param coordinates the libraries Studio wants version information for
      */
     public void getLibraryCompatibilityInfoCommand(
-            int commandId, ArtifactCoordinate[] coordinates) {
+            int commandId, LibraryCompatibility[] coordinates) {
         List<CompatibilityCheckerResult> results = new ArrayList<>();
-        for (ArtifactCoordinate coordinate : coordinates) {
+        for (LibraryCompatibility coordinate : coordinates) {
             CompatibilityCheckerResult result =
                     mCompatibilityChecker.checkCompatibility(coordinate);
             results.add(result);
@@ -227,9 +228,13 @@ public class AppInspectionService {
      * @param commandId the id of the command
      * @param libraryCoordinate represents the minimum supported library artifact. Null if the
      *     inspector is not targeting any particular library.
+     * @param expectedLibraryClassNames names of classes expected in the targeted library artifact.
+     *     If the library version cannot be found, but one of the classes is found a version missing
+     *     error is sent. If the library version cannot be found, and non of the classes are found a
+     *     library missing error is sent.
      * @return true if check passed. false if check failed for any reason.
      */
-    private boolean doCheckVersion(int commandId, ArtifactCoordinate libraryCoordinate) {
+    private boolean doCheckVersion(int commandId, LibraryCompatibility libraryCoordinate) {
         if (libraryCoordinate == null) {
             return true;
         }
@@ -239,6 +244,9 @@ public class AppInspectionService {
             sendCreateInspectorResponseVersionIncompatible(commandId, versionResult.message);
             return false;
         } else if (versionResult.status == CompatibilityCheckerResult.Status.NOT_FOUND) {
+            sendCreateInspectorResponseVersionMissing(commandId, versionResult.message);
+            return false;
+        } else if (versionResult.status == CompatibilityCheckerResult.Status.LIBRARY_NOT_FOUND) {
             sendCreateInspectorResponseLibraryMissing(commandId, versionResult.message);
             return false;
         } else if (versionResult.status == CompatibilityCheckerResult.Status.ERROR) {

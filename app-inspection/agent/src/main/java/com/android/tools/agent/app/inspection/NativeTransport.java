@@ -37,6 +37,9 @@ class NativeTransport {
     public static native void sendCreateInspectorResponseVersionIncompatible(
             int commandId, String errorMessage);
 
+    public static native void sendCreateInspectorResponseVersionMissing(
+            int commandId, String errorMessage);
+
     public static native void sendCreateInspectorResponseLibraryMissing(
             int commandId, String errorMessage);
 

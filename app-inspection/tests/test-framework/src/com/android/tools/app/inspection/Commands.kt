@@ -23,6 +23,7 @@ import com.android.tools.app.inspection.AppInspection.ArtifactCoordinate
 import com.android.tools.app.inspection.AppInspection.CreateInspectorCommand
 import com.android.tools.app.inspection.AppInspection.DisposeInspectorCommand
 import com.android.tools.app.inspection.AppInspection.LaunchMetadata
+import com.android.tools.app.inspection.AppInspection.LibraryCompatibility
 import com.android.tools.app.inspection.AppInspection.RawCommand
 import com.android.tools.idea.protobuf.ByteString
 
@@ -30,8 +31,22 @@ fun createLibraryInspector(
     inspectorId: String,
     dexPath: String,
     minLibrary: ArtifactCoordinate
+): AppInspectionCommand = createLibraryInspector(inspectorId, dexPath, minLibrary, emptyList())
+
+
+@JvmOverloads
+fun createLibraryInspector(
+    inspectorId: String,
+    dexPath: String,
+    minLibrary: ArtifactCoordinate,
+    expectedLibraryClassNames: List<String>
 ): AppInspectionCommand {
-    val metadata = LaunchMetadata.newBuilder().setMinLibrary(minLibrary).build()
+    val metadata = LaunchMetadata.newBuilder()
+        .setMinLibrary(LibraryCompatibility.newBuilder()
+            .setCoordinate(minLibrary)
+            .addAllExpectedLibraryClassNames(expectedLibraryClassNames)
+            .build())
+        .build()
     return createInspector(inspectorId, dexPath, metadata)
 }
 
