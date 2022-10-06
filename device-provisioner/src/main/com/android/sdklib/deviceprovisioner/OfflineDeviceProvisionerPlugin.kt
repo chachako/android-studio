@@ -16,12 +16,16 @@
 package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.DeviceInfo
 import com.android.adblib.DeviceState.ONLINE
 import com.android.adblib.deviceInfo
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -36,10 +40,11 @@ class OfflineDeviceProvisionerPlugin : DeviceProvisionerPlugin {
   override val priority = 1000
 
   override suspend fun claim(device: ConnectedDevice): DeviceHandle? {
-    when (device.deviceInfo.deviceState) {
+    val deviceInfo = device.deviceInfo
+    when (deviceInfo.deviceState) {
       ONLINE -> return null
       else -> {
-        val handle = OfflineDeviceHandle(device)
+        val handle = OfflineDeviceHandle(OfflineConnectedDevice(device, deviceInfo))
         devices.update { it + handle }
 
         // When the device goes online, remove this handle; it should be claimed by another plugin.
@@ -57,7 +62,22 @@ class OfflineDeviceProvisionerPlugin : DeviceProvisionerPlugin {
   override val devices = MutableStateFlow(emptyList<DeviceHandle>())
 }
 
-private class OfflineDeviceHandle(device: ConnectedDevice) : DeviceHandle {
+/**
+ * A [ConnectedDevice] that never exposes the ONLINE device state. When an offline device becomes
+ * online, we delete the OfflineDeviceHandle and create a new one, managed by one of the plugins.
+ * However, it's possible for clients to observe the state change on the ConnectedDevice and use the
+ * OfflineDeviceHandle as an online device before it is cleaned up; this filtering avoids that.
+ */
+internal class OfflineConnectedDevice(delegate: ConnectedDevice, initialDeviceInfo: DeviceInfo) :
+  ConnectedDevice by delegate {
+  override val deviceInfoFlow =
+    delegate
+      .deviceInfoFlow
+      .filter { it.deviceState != ONLINE }
+      .stateIn(delegate.scope, SharingStarted.Eagerly, initialDeviceInfo)
+}
+
+private class OfflineDeviceHandle(device: OfflineConnectedDevice) : DeviceHandle {
   override val stateFlow: MutableStateFlow<DeviceState> =
     MutableStateFlow(Connected(OfflineDeviceProperties(device.serialNumber), device))
 }

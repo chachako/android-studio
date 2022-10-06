@@ -30,6 +30,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import org.junit.Test
 
@@ -166,7 +171,7 @@ class DeviceProvisionerTest {
           emptyList()
         )
 
-      val originalHandle =
+      val offlineHandle =
         channel.receiveUntilPassing { handles ->
           assertThat(handles).hasSize(1)
 
@@ -181,11 +186,27 @@ class DeviceProvisionerTest {
       // Now show the device as online
       setDevices(SerialNumbers.physicalUsb)
 
+      // Verify that we never see the offline handle as online
+      val states = async {
+        offlineHandle
+          .stateFlow
+          .flatMapLatest {
+            when (val device = it.connectedDevice) {
+              null -> flowOf(null)
+              else -> device.deviceInfoFlow.map { info -> info.deviceState }
+            }
+          }
+          .takeWhile { it != null }
+          .toList()
+      }
+
+      assertThat(states.await()).doesNotContain(DeviceState.ONLINE)
+
       channel.receiveUntilPassing { handles ->
         assertThat(handles).hasSize(1)
 
         val handle = handles[0]
-        assertThat(handle).isNotSameAs(originalHandle)
+        assertThat(handle).isNotSameAs(offlineHandle)
         assertThat(handle.state).isInstanceOf(Connected::class.java)
         assertThat(handle.state.properties).isInstanceOf(PhysicalDeviceProperties::class.java)
       }
