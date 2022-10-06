@@ -956,7 +956,7 @@ coverage_report(
         "//tools/adt/idea/layoutlib:intellij.android.layoutlib.tests_tests",
         "//tools/adt/idea/logcat:intellij.android.logcat.tests_tests",
         "//tools/adt/idea/mlkit:intellij.android.mlkit.tests_tests",
-        "//tools/adt/idea/native-symbolizer:native-symbolizer_tests",
+        "//tools/adt/idea/native-symbolizer:native-symbolizer.tests_tests",
         "//tools/adt/idea/nav/editor:intellij.android.nav.editor.tests_tests",
         "//tools/adt/idea/nav/safeargs:intellij.android.nav.safeargs.tests_tests",
         "//tools/adt/idea/observable:intellij.android.observable_tests",
