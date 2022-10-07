@@ -68,7 +68,7 @@ public class ComposeSupport {
     public static LiveEditRecomposeError[] fetchPendingErrors(Object reloader) {
         Method getCurrentErrors = null;
         try {
-            getCurrentErrors = reloader.getClass().getMethod("getCurrentErrors", int.class);
+            getCurrentErrors = reloader.getClass().getMethod("getCurrentErrors");
         } catch (NoSuchMethodException ignored) {
             // The most recent builds of compose started to mangle '$runtime_release' into
             // certain API calls.
@@ -98,6 +98,7 @@ public class ComposeSupport {
 
                 Method getCause = errorObject.getClass().getDeclaredMethod("getCause");
                 Exception cause = (Exception) getCause.invoke(errorObject);
+                cause.printStackTrace();
 
                 result[index] = new LiveEditRecomposeError(recoverable, cause);
             }
@@ -105,6 +106,27 @@ public class ComposeSupport {
             e.printStackTrace();
             return null;
         }
+
+        Method clearErrors = null;
+        try {
+            clearErrors = reloader.getClass().getMethod("clearErrors");
+        } catch (NoSuchMethodException ignored) {
+            // The most recent builds of compose started to mangle '$runtime_release' into
+            // certain API calls.
+            try {
+                clearErrors = reloader.getClass().getMethod("clearErrors$runtime_release");
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        try {
+            clearErrors.invoke(reloader);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
         return result;
     }
 }

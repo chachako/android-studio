@@ -192,28 +192,26 @@ jint HandleAgentRequest(jvmtiEnv* jvmti, JNIEnv* jni, char* socket_name) {
 
     *response.mutable_swap_response() =
         Swapper::Instance().Swap(jvmti, jni, swap_request);
-    SendResponse(socket, response);
   } else if (request.has_live_literal_request()) {
     proto::LiveLiteralUpdateRequest live_literal_request =
         request.live_literal_request();
     LiveLiteral updater(jvmti, jni, live_literal_request.package_name());
     *response.mutable_live_literal_response() =
         updater.Update(live_literal_request);
-    SendResponse(socket, response);
   } else if (request.has_le_request()) {
     *response.mutable_le_response() =
         LiveEdit(jvmti, jni, request.le_request());
-    SendResponse(socket, response);
   } else if (request.has_compose_status_request()) {
     *response.mutable_compose_status_response() =
         ComposeStatus(jvmti, jni, request.compose_status_request());
   } else if (request.has_recompose_request()) {
     *response.mutable_recompose_response() =
         TriggerRecompose(jvmti, jni, request.recompose_request());
-    SendResponse(socket, response);
   } else {
     Log::E("Unknown / Empty Agent Request");
   }
+
+  SendResponse(socket, response);
 
   // We return JNI_OK even if anything failed, since returning JNI_ERR just
   // causes ART to attempt to re-attach the agent with a null classloader.
