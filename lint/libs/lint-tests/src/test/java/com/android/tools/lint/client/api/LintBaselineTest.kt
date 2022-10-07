@@ -36,6 +36,7 @@ import com.android.tools.lint.checks.TypoDetector
 import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.image
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestFiles.source
 import com.android.tools.lint.checks.infrastructure.TestFiles.xml
 import com.android.tools.lint.checks.infrastructure.TestLintClient
@@ -105,12 +106,12 @@ class LintBaselineTest {
             <issues format="5" by="lint unittest">
 
                 <issue
-                    id="UsesMinSdkAttributes"
+                    id="MultipleUsesSdk"
                     severity="Warning"
-                    message="&lt;uses-sdk> tag should specify a target API level (the highest verified version; when running on later versions, compatibility behaviors may be enabled) with android:targetSdkVersion=&quot;?&quot;"
+                    message="There should only be a single `<uses-sdk>` element in the manifest: merge these together"
                     category="Correctness"
                     priority="9"
-                    summary="Minimum SDK and target SDK attributes not defined"
+                    summary="Multiple `&lt;uses-sdk&gt;` elements in the manifest"
                     explanation="The manifest should contain a `&lt;uses-sdk>` element which defines the minimum API Level required for the application to run, as well as the target version (the highest API level you have tested the version for)."
                     url="http://developer.android.com/guide/topics/manifest/uses-sdk-element.html"
                     urls="http://developer.android.com/guide/topics/manifest/uses-sdk-element.html"
@@ -163,7 +164,7 @@ class LintBaselineTest {
         val baseline = LintBaseline(ToolsBaseTestLintClient(), baselineFile)
 
         var found: Boolean = baseline.findAndMark(
-            ManifestDetector.USES_SDK,
+            ManifestDetector.MULTIPLE_USES_SDK,
             Location.create(File("bogus")), "Unrelated", Severity.WARNING, null
         )
         assertThat(found).isFalse()
@@ -175,7 +176,7 @@ class LintBaselineTest {
 
         // Wrong issue
         found = baseline.findAndMark(
-            ManifestDetector.USES_SDK,
+            ManifestDetector.MULTIPLE_USES_SDK,
             Location.create(File("bogus")),
             "Hardcoded string \"Fooo\", should use @string resource", Severity.WARNING, null
         )
@@ -487,14 +488,12 @@ class LintBaselineTest {
             Severity.WARNING, project2
         )
         baseline.findAndMark(
-            ManifestDetector.USES_SDK,
+            ManifestDetector.MULTIPLE_USES_SDK,
             Location.create(
                 File("/foo/bar/Foo/AndroidManifest.xml"),
                 DefaultPosition(6, 4, 198), DefaultPosition(6, 42, 236)
             ),
-            "<uses-sdk> tag should specify a target API level (the highest verified \n" +
-                "version; when running on later versions, compatibility behaviors may \n" +
-                "be enabled) with android:targetSdkVersion=\"?\"",
+            "There should only be a single `<uses-sdk>` element in the manifest: merge these together",
             Severity.WARNING, null
         )
         baseline.close()
@@ -507,8 +506,8 @@ class LintBaselineTest {
 <issues format="5" by="lint unittest">
 
     <issue
-        id="UsesMinSdkAttributes"
-        message="&lt;uses-sdk> tag should specify a target API level (the highest verified &#xA;version; when running on later versions, compatibility behaviors may &#xA;be enabled) with android:targetSdkVersion=&quot;?&quot;">
+        id="MultipleUsesSdk"
+        message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together">
         <location
             file="/foo/bar/Foo/AndroidManifest.xml"
             line="7"/>
@@ -539,14 +538,12 @@ class LintBaselineTest {
         )
         assertThat(found).isTrue()
         found = baseline.findAndMark(
-            ManifestDetector.USES_SDK,
+            ManifestDetector.MULTIPLE_USES_SDK,
             Location.create(
                 File("/foo/bar/Foo/AndroidManifest.xml"),
                 DefaultPosition(6, 4, 198), DefaultPosition(6, 42, 236)
             ),
-            "<uses-sdk> tag should specify a target API level (the highest verified \n" +
-                "version; when running on later versions, compatibility behaviors may \n" +
-                "be enabled) with android:targetSdkVersion=\"?\"",
+            "There should only be a single `<uses-sdk>` element in the manifest: merge these together",
             Severity.WARNING, null
         )
         assertThat(found).isTrue()
@@ -1126,6 +1123,15 @@ class LintBaselineTest {
             gradleUserFile.writeText("Some file in gradle user home")
             val root = temporaryFolder.root
             val projects = lint().files(
+                manifest(
+                    """
+                    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg" android:versionName="1.0">
+                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                    </manifest>
+                    """
+                ).indented(),
                 // lint check just looks for a file named *.txt and takes its *contents* a path where it reports the file
                 source("src/foo/foo.txt", gradleUserFile.path),
                 source("src/foo/bar.txt", sdkFile.path),
@@ -1292,7 +1298,7 @@ class LintBaselineTest {
                 arrayOf(
                     "--exit-code",
                     "--ignore",
-                    "LintBaseline",
+                    "LintBaseline,MissingVersion,OldTargetApi",
                     "--baseline",
                     baseline.path,
                     "--update-baseline",
@@ -1328,10 +1334,19 @@ class LintBaselineTest {
                     </issue>
 
                     <issue
-                        id="UsesMinSdkAttributes"
-                        message="Manifest should specify a minimum API level with `&lt;uses-sdk android:minSdkVersion=&quot;?&quot; />`; if it really supports all versions of Android set it to 1">
+                        id="MultipleUsesSdk"
+                        message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together"
+                        errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; android:targetSdkVersion=&quot;31&quot; />"
+                        errorLine2="     ~~~~~~~~">
                         <location
-                            file="AndroidManifest.xml"/>
+                            file="AndroidManifest.xml"
+                            line="4"
+                            column="6"/>
+                        <location
+                            file="AndroidManifest.xml"
+                            line="3"
+                            column="6"
+                            message="Also appears here"/>
                     </issue>
 
                 </issues>

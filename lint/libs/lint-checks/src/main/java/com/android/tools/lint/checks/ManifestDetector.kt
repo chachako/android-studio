@@ -112,23 +112,6 @@ class ManifestDetector :
             implementation = IMPLEMENTATION
         )
 
-        /** Missing a `<uses-sdk>` element */
-        @JvmField
-        val USES_SDK = Issue.create(
-            id = "UsesMinSdkAttributes",
-            briefDescription = "Minimum SDK and target SDK attributes not defined",
-            explanation = """
-                The manifest should contain a `<uses-sdk>` element which defines the minimum API Level \
-                required for the application to run, as well as the target version (the highest API level \
-                you have tested the version for).
-                """,
-            category = Category.CORRECTNESS,
-            priority = 9,
-            severity = Severity.WARNING,
-            moreInfo = "https://developer.android.com/guide/topics/manifest/uses-sdk-element.html",
-            implementation = IMPLEMENTATION
-        )
-
         /** Using a targetSdkVersion that isn't recent */
         @JvmField
         val TARGET_NEWER = Issue.create(
@@ -508,22 +491,8 @@ class ManifestDetector :
 
     override fun afterCheckFile(context: Context) {
         val xmlContext = context as XmlContext
-        val element = xmlContext.document.documentElement
-        element?.let { checkDocumentElement(xmlContext, it) }
-        if (seenUsesSdk == 0 && context.isEnabled(USES_SDK) &&
-            // Not required in Gradle projects; typically defined in build.gradle instead
-            // and inserted at build time
-            !context.project.isGradleProject
-        ) {
-            xmlContext.report(
-                USES_SDK,
-                element,
-                Location.create(context.file),
-                "Manifest should specify a minimum API level with " +
-                    "`<uses-sdk android:minSdkVersion=\"?\" />`; if it really supports " +
-                    "all versions of Android set it to 1"
-            )
-        }
+        val element = xmlContext.document.documentElement ?: return
+        checkDocumentElement(xmlContext, element)
     }
 
     /**
@@ -1176,17 +1145,7 @@ class ManifestDetector :
                 }
                 return
             }
-            if (!element.hasAttributeNS(ANDROID_URI, ATTR_MIN_SDK_VERSION)) {
-                if (context.isEnabled(USES_SDK) && !context.project.isGradleProject) {
-                    context.report(
-                        USES_SDK,
-                        element,
-                        context.getNameLocation(element),
-                        "`<uses-sdk>` tag should specify a minimum API level with " +
-                            "`android:minSdkVersion=\"?\"`"
-                    )
-                }
-            } else {
+            if (element.hasAttributeNS(ANDROID_URI, ATTR_MIN_SDK_VERSION)) {
                 val codeNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_MIN_SDK_VERSION)
                 if (codeNode != null && codeNode.value.startsWith(PREFIX_RESOURCE_REF) &&
                     context.isEnabled(ILLEGAL_REFERENCE)
@@ -1201,22 +1160,7 @@ class ManifestDetector :
                 }
                 checkOverride(context, element, ATTR_MIN_SDK_VERSION)
             }
-            if (!element.hasAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)) {
-                // Warn if not setting target SDK -- but only if the min SDK is somewhat
-                // old so there's some compatibility stuff kicking in (such as the menu
-                // button etc)
-                if (context.isEnabled(USES_SDK) && !context.project.isGradleProject) {
-                    context.report(
-                        USES_SDK,
-                        element,
-                        context.getNameLocation(element),
-                        "`<uses-sdk>` tag should specify a target API level (the " +
-                            "highest verified version; when running on later versions, " +
-                            "compatibility behaviors may be enabled) with " +
-                            "`android:targetSdkVersion=\"?\"`"
-                    )
-                }
-            } else {
+            if (element.hasAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)) {
                 checkOverride(context, element, ATTR_TARGET_SDK_VERSION)
                 if (context.isEnabled(TARGET_NEWER)) {
                     val targetSdkVersionNode =

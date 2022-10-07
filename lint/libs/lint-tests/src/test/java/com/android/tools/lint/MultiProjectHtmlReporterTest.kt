@@ -44,7 +44,7 @@ class MultiProjectHtmlReporterTest : AbstractCheckTest() {
                                 // Not reported, but for the disabled-list
                                 override val issues: List<Issue>
                                     get() = listOf(
-                                        ManifestDetector.USES_SDK,
+                                        ManifestDetector.MULTIPLE_USES_SDK,
                                         HardcodedValuesDetector.ISSUE,
                                         // Not reported, but for the disabled-list
                                         ManifestDetector.MOCK_LOCATION
@@ -74,10 +74,8 @@ class MultiProjectHtmlReporterTest : AbstractCheckTest() {
                     DefaultPosition(6, 42, 236)
                 )
             val incident1 = Incident(
-                ManifestDetector.USES_SDK,
-                "<uses-sdk> tag should specify a target API level (the highest verified " +
-                    "version; when running on later versions, compatibility behaviors may " +
-                    "be enabled) with android:targetSdkVersion=\"?\"",
+                ManifestDetector.MULTIPLE_USES_SDK,
+                "There should only be a single `<uses-sdk>` element in the manifest: merge these together",
                 location1,
                 null
             ).apply {

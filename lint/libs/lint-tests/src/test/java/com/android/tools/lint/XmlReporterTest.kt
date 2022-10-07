@@ -42,7 +42,8 @@ class XmlReporterTest {
         """
             <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                 package="test.pkg" android:versionName="1.0">
-                <uses-sdk android:minSdkVersion="10" />
+                <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
             </manifest>
             """
     ).indented()
@@ -64,21 +65,26 @@ class XmlReporterTest {
                 <issues format="6" by="lint unittest">
 
                     <issue
-                        id="UsesMinSdkAttributes"
-                        severity="Warning"
-                        message="`&lt;uses-sdk>` tag should specify a target API level (the highest verified version; when running on later versions, compatibility behaviors may be enabled) with `android:targetSdkVersion=&quot;?&quot;`"
+                        id="MultipleUsesSdk"
+                        severity="Error"
+                        message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together"
                         category="Correctness"
-                        priority="9"
-                        summary="Minimum SDK and target SDK attributes not defined"
-                        explanation="The manifest should contain a `&lt;uses-sdk>` element which defines the minimum API Level required for the application to run, as well as the target version (the highest API level you have tested the version for)."
+                        priority="6"
+                        summary="Multiple `&lt;uses-sdk>` elements in the manifest"
+                        explanation="The `&lt;uses-sdk>` element should appear just once; the tools will **not** merge the contents of all the elements so if you split up the attributes across multiple elements, only one of them will take effect. To fix this, just merge all the attributes from the various elements into a single &lt;uses-sdk> element."
                         url="https://developer.android.com/guide/topics/manifest/uses-sdk-element.html"
                         urls="https://developer.android.com/guide/topics/manifest/uses-sdk-element.html"
-                        errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; />"
+                        errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; android:targetSdkVersion=&quot;31&quot; />"
                         errorLine2="     ~~~~~~~~">
                         <location
                             file="AndroidManifest.xml"
-                            line="3"
+                            line="4"
                             column="6"/>
+                        <location
+                            file="AndroidManifest.xml"
+                            line="3"
+                            column="6"
+                            message="Also appears here"/>
                     </issue>
 
                     <issue
@@ -101,7 +107,7 @@ class XmlReporterTest {
                 """
 
         lint().files(sampleManifest, sampleLayout)
-            .issues(ManifestDetector.USES_SDK, HardcodedValuesDetector.ISSUE)
+            .issues(ManifestDetector.MULTIPLE_USES_SDK, HardcodedValuesDetector.ISSUE)
             .run()
             .expectXml(xmlPrologue + expected.trimIndent())
     }
@@ -300,14 +306,19 @@ class XmlReporterTest {
             <issues format="6" by="lint unittest" type="baseline">
 
                 <issue
-                    id="UsesMinSdkAttributes"
-                    message="`&lt;uses-sdk>` tag should specify a target API level (the highest verified version; when running on later versions, compatibility behaviors may be enabled) with `android:targetSdkVersion=&quot;?&quot;`"
-                    errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; />"
+                    id="MultipleUsesSdk"
+                    message="There should only be a single `&lt;uses-sdk>` element in the manifest: merge these together"
+                    errorLine1="    &lt;uses-sdk android:minSdkVersion=&quot;10&quot; android:targetSdkVersion=&quot;31&quot; />"
                     errorLine2="     ~~~~~~~~">
                     <location
                         file="AndroidManifest.xml"
-                        line="3"
+                        line="4"
                         column="6"/>
+                    <location
+                        file="AndroidManifest.xml"
+                        line="3"
+                        column="6"
+                        message="Also appears here"/>
                 </issue>
 
                 <issue
@@ -325,7 +336,7 @@ class XmlReporterTest {
             """
 
         lint().files(sampleManifest, sampleLayout)
-            .issues(ManifestDetector.USES_SDK, HardcodedValuesDetector.ISSUE)
+            .issues(ManifestDetector.MULTIPLE_USES_SDK, HardcodedValuesDetector.ISSUE)
             .run()
             .expectXml(
                 xmlPrologue + expected.trimIndent() + "\n",

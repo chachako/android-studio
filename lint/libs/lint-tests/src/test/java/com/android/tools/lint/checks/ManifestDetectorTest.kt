@@ -77,104 +77,11 @@ class ManifestDetectorTest : AbstractCheckTest() {
         ).issues(ManifestDetector.ORDER).run().expect(expected)
     }
 
-    fun testMissingUsesSdk() {
-        val expected =
-            """
-            AndroidManifest.xml: Warning: Manifest should specify a minimum API level with <uses-sdk android:minSdkVersion="?" />; if it really supports all versions of Android set it to 1 [UsesMinSdkAttributes]
-            0 errors, 1 warnings
-            """
-        lint().files(missingUsesSdk, strings)
-            .issues(ManifestDetector.USES_SDK)
-            .run()
-            .expect(expected)
-    }
-
     fun testMissingUsesSdkInGradle() {
         lint().files(missingUsesSdk, library) // placeholder; only name counts
             .issues(ManifestDetector.SET_VERSION)
             .run()
             .expectClean()
-    }
-
-    fun testMissingMinSdk() {
-        val expected =
-            """
-            AndroidManifest.xml:6: Warning: <uses-sdk> tag should specify a minimum API level with android:minSdkVersion="?" [UsesMinSdkAttributes]
-                <uses-sdk android:targetSdkVersion="10" />
-                 ~~~~~~~~
-            0 errors, 1 warnings
-            """
-        lint().files(
-            manifest(
-                """
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    package="test.bytecode"
-                    android:versionCode="1"
-                    android:versionName="1.0" >
-
-                    <uses-sdk android:targetSdkVersion="10" />
-
-                    <application
-                        android:icon="@drawable/ic_launcher"
-                        android:label="@string/app_name" >
-                        <activity
-                            android:name=".BytecodeTestsActivity"
-                            android:label="@string/app_name" >
-                            <intent-filter>
-                                <action android:name="android.intent.action.MAIN" />
-
-                                <category android:name="android.intent.category.LAUNCHER" />
-                            </intent-filter>
-                        </activity>
-                    </application>
-
-                </manifest>
-                """
-            ).indented(),
-            strings
-        )
-            .issues(ManifestDetector.USES_SDK)
-            .run()
-            .expect(expected)
-    }
-
-    fun testMissingTargetSdk() {
-        val expected =
-            """
-            AndroidManifest.xml:6: Warning: <uses-sdk> tag should specify a target API level (the highest verified version; when running on later versions, compatibility behaviors may be enabled) with android:targetSdkVersion="?" [UsesMinSdkAttributes]
-                <uses-sdk android:minSdkVersion="10" />
-                 ~~~~~~~~
-            0 errors, 1 warnings
-            """
-        lint().files(
-            manifest(
-                """
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    package="test.bytecode"
-                    android:versionCode="1"
-                    android:versionName="1.0" >
-
-                    <uses-sdk android:minSdkVersion="10" />
-
-                    <application
-                        android:icon="@drawable/ic_launcher"
-                        android:label="@string/app_name" >
-                        <activity
-                            android:name=".BytecodeTestsActivity"
-                            android:label="@string/app_name" >
-                            <intent-filter>
-                                <action android:name="android.intent.action.MAIN" />
-
-                                <category android:name="android.intent.category.LAUNCHER" />
-                            </intent-filter>
-                        </activity>
-                    </application>
-
-                </manifest>
-                """
-            ).indented(),
-            strings
-        ).issues(ManifestDetector.USES_SDK).run().expect(expected)
     }
 
     fun testOldTargetSdk() {

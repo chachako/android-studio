@@ -397,8 +397,8 @@ class ConstantEvaluator {
         is PsiLiteral ->
             node.value
                 ?: (node as? KtLightPsiLiteral)?.kotlinOrigin?.let { origin ->
-                (convertElement(origin, null, UExpression::class.java) as? UExpression)?.evaluate()
-            }
+                    (convertElement(origin, null, UExpression::class.java) as? UExpression)?.evaluate()
+                }
         is PsiPrefixExpression -> evaluate(node.operand)?.let { operand ->
             when (node.operationTokenType) {
                 JavaTokenType.EXCL -> operand.tryOn(Boolean::not)
@@ -881,11 +881,11 @@ private fun Any?.tryToNum(type: PsiType) = (this as? Number)?.let { n ->
 private fun ArgList<Any?>.plus(allowUnknown: Boolean) =
     reduceAsNumbers(Double::plus, Float::plus, Long::plus, Int::plus)
         ?: ifAny { it is String }?.let { args ->
-        when {
-            allowUnknown -> args.join { it.asSequence().filterNotNull().joinToString(separator = "") }
-            else -> args.ifAll { it is String || it is Char }?.join { it.joinToString(separator = "") }
+            when {
+                allowUnknown -> args.join { it.asSequence().filterNotNull().joinToString(separator = "") }
+                else -> args.ifAll { it is String || it is Char }?.join { it.joinToString(separator = "") }
+            }
         }
-    }
 private fun ArgList<Any?>.times() = reduceAsNumbers(Double::times, Float::times, Long::times, Int::times)
 private fun ArgList<Any?>.minus() = reduceAsNumbers(Double::minus, Float::minus, Long::minus, Int::minus)
 private fun ArgList<Any?>.bitwiseOr() = logicalOr() ?: reduceAsInts(Long::or, Int::or)

@@ -111,9 +111,6 @@ public class MainTest extends AbstractCheckTest {
             if (cleanup != null) {
                 stderr = cleanup.cleanup(stderr);
             }
-            if (expectedError != null && !expectedError.trim().equals(stderr.trim())) {
-                assertEquals(expectedError, stderr); // instead of fail: get difference in output
-            }
             if (expectedOutput != null) {
                 String stdout = new String(output.toByteArray(), Charsets.UTF_8);
                 expectedOutput = StringsKt.trimIndent(expectedOutput);
@@ -125,6 +122,9 @@ public class MainTest extends AbstractCheckTest {
                 if (!dos2unix(expectedOutput.trim()).equals(dos2unix(stdout.trim()))) {
                     assertEquals(expectedOutput.trim(), stdout.trim());
                 }
+            }
+            if (expectedError != null && !expectedError.trim().equals(stderr.trim())) {
+                assertEquals(expectedError, stderr); // instead of fail: get difference in output
             }
             assertEquals("Unexpected exit code", expectedExitCode, exitCode);
         } finally {
@@ -736,7 +736,7 @@ public class MainTest extends AbstractCheckTest {
                     "--warning",
                     "FontValidationWarning",
                     "--disable",
-                    "UsesMinSdkAttributes,UnusedResources",
+                    "UnusedResources",
                     project.getPath()
                 });
 
@@ -754,9 +754,7 @@ public class MainTest extends AbstractCheckTest {
                 expected,
                 "",
                 ERRNO_SUCCESS,
-                new String[] {
-                    "--disable", "UsesMinSdkAttributes,UnusedResources", project.getPath()
-                });
+                new String[] {"--disable", "UnusedResources", project.getPath()});
     }
 
     public void testWall() throws Exception {
@@ -773,9 +771,7 @@ public class MainTest extends AbstractCheckTest {
                 ERRNO_SUCCESS,
 
                 // Args
-                new String[] {
-                    "-Wall", "--disable", "LintError,UsesMinSdkAttributes", project.getPath()
-                });
+                new String[] {"-Wall", "--disable", "LintError", project.getPath()});
     }
 
     public void testWerror() throws Exception {
@@ -793,9 +789,7 @@ public class MainTest extends AbstractCheckTest {
                 ERRNO_SUCCESS,
 
                 // Args
-                new String[] {
-                    "-Werror", "--disable", "LintError,UsesMinSdkAttributes", project.getPath()
-                });
+                new String[] {"-Werror", "--disable", "LintError", project.getPath()});
     }
 
     public void testNoWarn() throws Exception {
@@ -829,7 +823,7 @@ public class MainTest extends AbstractCheckTest {
                     "ContentDescription",
                     "-w",
                     "--disable",
-                    "LintError,UsesMinSdkAttributes",
+                    "LintError",
                     project.getPath()
                 });
     }
@@ -873,10 +867,7 @@ public class MainTest extends AbstractCheckTest {
 
                 // Args
                 new String[] {
-                    "-Werror",
-                    "--disable",
-                    "LintError,UsesMinSdkAttributes,UnusedResources",
-                    project.getPath()
+                    "-Werror", "--disable", "LintError,UnusedResources", project.getPath()
                 });
     }
 
@@ -903,10 +894,7 @@ public class MainTest extends AbstractCheckTest {
 
                 // Args
                 new String[] {
-                    "-Werror",
-                    "--disable",
-                    "LintError,UsesMinSdkAttributes,UnusedResources",
-                    project.getPath()
+                    "-Werror", "--disable", "LintError,UnusedResources", project.getPath()
                 });
     }
 
@@ -956,9 +944,7 @@ public class MainTest extends AbstractCheckTest {
                 ERRNO_SUCCESS,
 
                 // Args
-                new String[] {
-                    "-Wall", "--disable", "LintError,UsesMinSdkAttributes", project.getPath()
-                });
+                new String[] {"-Wall", "--disable", "LintError", project.getPath()});
     }
 
     public void testInvalidLintXmlId() throws Exception {
@@ -1143,9 +1129,7 @@ public class MainTest extends AbstractCheckTest {
                 ERRNO_SUCCESS,
 
                 // Args
-                new String[] {
-                    "--disable", "LintError,UsesMinSdkAttributes,ButtonStyle", project.getPath()
-                });
+                new String[] {"--disable", "LintError,ButtonStyle", project.getPath()});
 
         // WITH --fatalOnly: Only the DuplicateDefinition issue is flagged, since it is fatal.
         checkDriver(
@@ -1166,13 +1150,7 @@ public class MainTest extends AbstractCheckTest {
 
                 // Args
                 new String[] {
-                    "--disable",
-                    "LintError",
-                    "--disable",
-                    "UsesMinSdkAttributes",
-                    "--fatalOnly",
-                    "--exitcode",
-                    project.getPath()
+                    "--disable", "LintError", "--fatalOnly", "--exitcode", project.getPath()
                 });
     }
 
@@ -1224,8 +1202,6 @@ public class MainTest extends AbstractCheckTest {
                     "LintError",
                     "--html",
                     html.getPath(),
-                    "--disable",
-                    "UsesMinSdkAttributes",
                     "--exitcode",
                     "--disable", // Regression test for b/182321297
                     "UnknownIssueId",

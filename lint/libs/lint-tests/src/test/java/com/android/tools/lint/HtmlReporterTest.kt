@@ -114,7 +114,8 @@ class HtmlReporterTest {
                     """
                     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                         package="test.pkg">
-                        <uses-sdk android:minSdkVersion="10" />
+                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                        <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
                     </manifest>
                     """
                 ).indented(),
@@ -164,7 +165,7 @@ class HtmlReporterTest {
                 ).indented(),
             )
             .issues(
-                ManifestDetector.USES_SDK,
+                ManifestDetector.MULTIPLE_USES_SDK,
                 HardcodedValuesDetector.ISSUE,
                 SdCardDetector.ISSUE,
                 IconDetector.DUPLICATES_NAMES,
@@ -225,7 +226,7 @@ document.getElementById(id).style.display = 'none';
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
-      <span class="mdl-layout-title">Lint Report: 1 error and 5 warnings</span>
+      <span class="mdl-layout-title">Lint Report: 2 errors and 4 warnings</span>
       <div class="mdl-layout-spacer"></div>
       <nav class="mdl-navigation mdl-layout--large-screen-only">Check performed at ＄DATE by Lint Unit Tests</nav>
     </div>
@@ -234,8 +235,8 @@ document.getElementById(id).style.display = 'none';
     <span class="mdl-layout-title">Issue Types</span>
     <nav class="mdl-navigation">
       <a class="mdl-navigation__link" href="#overview"><i class="material-icons">dashboard</i>Overview</a>
-      <a class="mdl-navigation__link" href="#UsesMinSdkAttributes"><i class="material-icons warning-icon">warning</i>Minimum SDK and target SDK attributes not defined (1)</a>
       <a class="mdl-navigation__link" href="#DuplicateDefinition"><i class="material-icons error-icon">error</i>Duplicate definitions of resources (1)</a>
+      <a class="mdl-navigation__link" href="#MultipleUsesSdk"><i class="material-icons error-icon">error</i>Multiple <code>&lt;uses-sdk></code> elements in the manifest (1)</a>
       <a class="mdl-navigation__link" href="#IconDuplicates"><i class="material-icons warning-icon">warning</i>Duplicated icons under different names (1)</a>
       <a class="mdl-navigation__link" href="#HardcodedText"><i class="material-icons warning-icon">warning</i>Hardcoded text (2)</a>
       <a class="mdl-navigation__link" href="#UnknownNullness"><i class="material-icons warning-icon">warning</i>Unknown nullness (1)</a>
@@ -254,11 +255,11 @@ document.getElementById(id).style.display = 'none';
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
 </td></tr>
 <tr>
-<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
-<a href="#UsesMinSdkAttributes">UsesMinSdkAttributes</a>: Minimum SDK and target SDK attributes not defined</td></tr>
-<tr>
 <td class="countColumn">1</td><td class="issueColumn"><i class="material-icons error-icon">error</i>
 <a href="#DuplicateDefinition">DuplicateDefinition</a>: Duplicate definitions of resources</td></tr>
+<tr>
+<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons error-icon">error</i>
+<a href="#MultipleUsesSdk">MultipleUsesSdk</a>: Multiple <code>&lt;uses-sdk></code> elements in the manifest</td></tr>
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Usability:Icons">Usability:Icons</a>
 </td></tr>
 <tr>
@@ -286,49 +287,7 @@ Dismiss</button>            </div>
             </div>
           </section>
 <a name="Correctness"></a>
-<a name="UsesMinSdkAttributes"></a>
-<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="UsesMinSdkAttributesCard" style="display: block;">
-            <div class="mdl-card mdl-cell mdl-cell--12-col">
-  <div class="mdl-card__title">
-    <h2 class="mdl-card__title-text">Minimum SDK and target SDK attributes not defined</h2>
-  </div>
-              <div class="mdl-card__supporting-text">
-<div class="issue">
-<div class="warningslist">
-<span class="location"><a href="app/AndroidManifest.xml">AndroidManifest.xml</a>:3</span>: <span class="message"><code>&lt;uses-sdk></code> tag should specify a target API level (the highest verified version; when running on later versions, compatibility behaviors may be enabled) with <code>android:targetSdkVersion="?"</code></span><br /><pre class="errorlines">
-<span class="lineno"> 1 </span><span class="tag">&lt;manifest</span><span class="attribute"> </span><span class="prefix">xmlns:</span><span class="attribute">android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
-<span class="lineno"> 2 </span>    <span class="attribute">package</span>=<span class="value">"test.pkg"</span>>
-<span class="caretline"><span class="lineno"> 3 </span>    <span class="tag">&lt;</span><span class="warning"><span class="tag">uses-sdk</span></span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 4 </span><span class="tag">&lt;/manifest></span></pre>
-
-</div>
-<div class="metadata"><div class="explanation" id="explanationUsesMinSdkAttributes" style="display: none;">
-The manifest should contain a <code>&lt;uses-sdk></code> element which defines the minimum API Level required for the application to run, as well as the target version (the highest API level you have tested the version for).<br/><div class="moreinfo">More info: <a href="https://developer.android.com/guide/topics/manifest/uses-sdk-element.html">https://developer.android.com/guide/topics/manifest/uses-sdk-element.html</a>
-</div>To suppress this error, use the issue id "UsesMinSdkAttributes" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
-<br/></div>
-</div>
-</div>
-<div class="chips">
-<span class="mdl-chip">
-    <span class="mdl-chip__text">UsesMinSdkAttributes</span>
-</span>
-<span class="mdl-chip">
-    <span class="mdl-chip__text">Correctness</span>
-</span>
-<span class="mdl-chip">
-    <span class="mdl-chip__text">Warning</span>
-</span>
-<span class="mdl-chip">
-    <span class="mdl-chip__text">Priority 9/10</span>
-</span>
-</div>
-              </div>
-              <div class="mdl-card__actions mdl-card--border">
-<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationUsesMinSdkAttributesLink" onclick="reveal('explanationUsesMinSdkAttributes');">
-Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="UsesMinSdkAttributesCardLink" onclick="hideid('UsesMinSdkAttributesCard');">
-Dismiss</button>            </div>
-            </div>
-          </section><a name="DuplicateDefinition"></a>
+<a name="DuplicateDefinition"></a>
 <section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="DuplicateDefinitionCard" style="display: block;">
             <div class="mdl-card mdl-cell mdl-cell--12-col">
   <div class="mdl-card__title">
@@ -370,6 +329,55 @@ You can define a resource multiple times in different resource folders; that's h
               <div class="mdl-card__actions mdl-card--border">
 <button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationDuplicateDefinitionLink" onclick="reveal('explanationDuplicateDefinition');">
 Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="DuplicateDefinitionCardLink" onclick="hideid('DuplicateDefinitionCard');">
+Dismiss</button>            </div>
+            </div>
+          </section><a name="MultipleUsesSdk"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="MultipleUsesSdkCard" style="display: block;">
+            <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Multiple &lt;uses-sdk> elements in the manifest</h2>
+  </div>
+              <div class="mdl-card__supporting-text">
+<div class="issue">
+<div class="warningslist">
+<span class="location"><a href="app/AndroidManifest.xml">AndroidManifest.xml</a>:4</span>: <span class="message">There should only be a single <code>&lt;uses-sdk></code> element in the manifest: merge these together</span><br /><pre class="errorlines">
+<span class="lineno"> 1 </span><span class="tag">&lt;manifest</span><span class="attribute"> </span><span class="prefix">xmlns:</span><span class="attribute">android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="lineno"> 2 </span>    <span class="attribute">package</span>=<span class="value">"test.pkg"</span>>
+<span class="lineno"> 3 </span>    <span class="tag">&lt;uses-sdk</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />
+<span class="caretline"><span class="lineno"> 4 </span>    <span class="tag">&lt;</span><span class="error"><span class="tag">uses-sdk</span></span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 5 </span><span class="tag">&lt;/manifest></span></pre>
+
+<ul><span class="location"><a href="app/AndroidManifest.xml">AndroidManifest.xml</a>:3</span>: <span class="message">Also appears here</span><br /><pre class="errorlines">
+<span class="lineno"> 1 </span><span class="tag">&lt;manifest</span><span class="attribute"> </span><span class="prefix">xmlns:</span><span class="attribute">android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span>
+<span class="lineno"> 2 </span>    <span class="attribute">package</span>=<span class="value">"test.pkg"</span>>
+<span class="caretline"><span class="lineno"> 3 </span>    <span class="tag">&lt;</span><span class="error"><span class="tag">uses-sdk</span></span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 4 </span>    <span class="tag">&lt;uses-sdk</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />
+<span class="lineno"> 5 </span><span class="tag">&lt;/manifest></span></pre>
+</ul></div>
+<div class="metadata"><div class="explanation" id="explanationMultipleUsesSdk" style="display: none;">
+The <code>&lt;uses-sdk></code> element should appear just once; the tools will <b>not</b> merge the contents of all the elements so if you split up the attributes across multiple elements, only one of them will take effect. To fix this, just merge all the attributes from the various elements into a single &lt;uses-sdk> element.<br/><div class="moreinfo">More info: <a href="https://developer.android.com/guide/topics/manifest/uses-sdk-element.html">https://developer.android.com/guide/topics/manifest/uses-sdk-element.html</a>
+</div>To suppress this error, use the issue id "MultipleUsesSdk" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<br/></div>
+</div>
+</div>
+<div class="chips">
+<span class="mdl-chip">
+    <span class="mdl-chip__text">MultipleUsesSdk</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Correctness</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Error</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Priority 6/10</span>
+</span>
+</div>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationMultipleUsesSdkLink" onclick="reveal('explanationMultipleUsesSdk');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="MultipleUsesSdkCardLink" onclick="hideid('MultipleUsesSdkCard');">
 Dismiss</button>            </div>
             </div>
           </section>
@@ -671,7 +679,7 @@ The format of the <code>lint.xml</code> file is something like the following:<br
 &lt;lint>
     &lt;!-- Ignore everything in the test source set -->
     &lt;issue id="all">
-        &lt;ignore path="\*/test/\*" />
+        &lt;ignore path="/*/test//*" />
     &lt;/issue>
 
     &lt;!-- Disable this given check in this project -->
@@ -681,7 +689,7 @@ The format of the <code>lint.xml</code> file is something like the following:<br
     &lt;issue id="ObsoleteLayoutParam">
         &lt;ignore path="res/layout/activation.xml" />
         &lt;ignore path="res/layout-xlarge/activation.xml" />
-        &lt;ignore regexp="(foo|bar)\.java" />
+        &lt;ignore regexp="(foo|bar)/.java" />
     &lt;/issue>
 
     &lt;!-- Ignore the UselessLeaf issue in the given file -->
@@ -755,7 +763,7 @@ document.getElementById(id).style.display = 'none';
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
-      <span class="mdl-layout-title">Lint Report: 1 error and 5 warnings</span>
+      <span class="mdl-layout-title">Lint Report: 2 errors and 4 warnings</span>
       <div class="mdl-layout-spacer"></div>
       <nav class="mdl-navigation mdl-layout--large-screen-only">Check performed at ＄DATE by Lint Unit Tests</nav>
     </div>
@@ -764,8 +772,8 @@ document.getElementById(id).style.display = 'none';
     <span class="mdl-layout-title">Issue Types</span>
     <nav class="mdl-navigation">
       <a class="mdl-navigation__link" href="#overview"><i class="material-icons">dashboard</i>Overview</a>
-      <a class="mdl-navigation__link" href="#UsesMinSdkAttributes"><i class="material-icons warning-icon">warning</i>Minimum SDK and target SDK attributes not defined (1)</a>
       <a class="mdl-navigation__link" href="#DuplicateDefinition"><i class="material-icons error-icon">error</i>Duplicate definitions of resources (1)</a>
+      <a class="mdl-navigation__link" href="#MultipleUsesSdk"><i class="material-icons error-icon">error</i>Multiple <code>&lt;uses-sdk></code> elements in the manifest (1)</a>
       <a class="mdl-navigation__link" href="#IconDuplicates"><i class="material-icons warning-icon">warning</i>Duplicated icons under different names (1)</a>
       <a class="mdl-navigation__link" href="#HardcodedText"><i class="material-icons warning-icon">warning</i>Hardcoded text (2)</a>
       <a class="mdl-navigation__link" href="#UnknownNullness"><i class="material-icons warning-icon">warning</i>Unknown nullness (1)</a>
@@ -784,11 +792,11 @@ document.getElementById(id).style.display = 'none';
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
 </td></tr>
 <tr>
-<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
-<a href="#UsesMinSdkAttributes">UsesMinSdkAttributes</a>: Minimum SDK and target SDK attributes not defined</td></tr>
-<tr>
 <td class="countColumn">1</td><td class="issueColumn"><i class="material-icons error-icon">error</i>
 <a href="#DuplicateDefinition">DuplicateDefinition</a>: Duplicate definitions of resources</td></tr>
+<tr>
+<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons error-icon">error</i>
+<a href="#MultipleUsesSdk">MultipleUsesSdk</a>: Multiple <code>&lt;uses-sdk></code> elements in the manifest</td></tr>
 <tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Usability:Icons">Usability:Icons</a>
 </td></tr>
 <tr>
@@ -816,48 +824,7 @@ Dismiss</button>            </div>
             </div>
           </section>
 <a name="Correctness"></a>
-<a name="UsesMinSdkAttributes"></a>
-<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="UsesMinSdkAttributesCard" style="display: block;">
-            <div class="mdl-card mdl-cell mdl-cell--12-col">
-  <div class="mdl-card__title">
-    <h2 class="mdl-card__title-text">Minimum SDK and target SDK attributes not defined</h2>
-  </div>
-              <div class="mdl-card__supporting-text">
-<div class="issue">
-<div class="warningslist">
-<span class="location"><a href="app/AndroidManifest.xml">AndroidManifest.xml</a>:3</span>: <span class="message"><code>&lt;uses-sdk></code> tag should specify a target API level (the highest verified version; when running on later versions, compatibility behaviors may be enabled) with <code>android:targetSdkVersion="?"</code></span><br /><pre class="errorlines">
-<span class="lineno"> 2 </span>    <span class="attribute">package</span>=<span class="value">"test.pkg"</span>>
-<span class="caretline"><span class="lineno"> 3 </span>    <span class="tag">&lt;</span><span class="warning"><span class="tag">uses-sdk</span></span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno"> 4 </span><span class="tag">&lt;/manifest></span></pre>
-
-</div>
-<div class="metadata"><div class="explanation" id="explanationUsesMinSdkAttributes" style="display: none;">
-The manifest should contain a <code>&lt;uses-sdk></code> element which defines the minimum API Level required for the application to run, as well as the target version (the highest API level you have tested the version for).<br/><div class="moreinfo">More info: <a href="https://developer.android.com/guide/topics/manifest/uses-sdk-element.html">https://developer.android.com/guide/topics/manifest/uses-sdk-element.html</a>
-</div>To suppress this error, use the issue id "UsesMinSdkAttributes" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
-<br/></div>
-</div>
-</div>
-<div class="chips">
-<span class="mdl-chip">
-    <span class="mdl-chip__text">UsesMinSdkAttributes</span>
-</span>
-<span class="mdl-chip">
-    <span class="mdl-chip__text">Correctness</span>
-</span>
-<span class="mdl-chip">
-    <span class="mdl-chip__text">Warning</span>
-</span>
-<span class="mdl-chip">
-    <span class="mdl-chip__text">Priority 9/10</span>
-</span>
-</div>
-              </div>
-              <div class="mdl-card__actions mdl-card--border">
-<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationUsesMinSdkAttributesLink" onclick="reveal('explanationUsesMinSdkAttributes');">
-Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="UsesMinSdkAttributesCardLink" onclick="hideid('UsesMinSdkAttributesCard');">
-Dismiss</button>            </div>
-            </div>
-          </section><a name="DuplicateDefinition"></a>
+<a name="DuplicateDefinition"></a>
 <section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="DuplicateDefinitionCard" style="display: block;">
             <div class="mdl-card mdl-cell mdl-cell--12-col">
   <div class="mdl-card__title">
@@ -899,6 +866,52 @@ You can define a resource multiple times in different resource folders; that's h
               <div class="mdl-card__actions mdl-card--border">
 <button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationDuplicateDefinitionLink" onclick="reveal('explanationDuplicateDefinition');">
 Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="DuplicateDefinitionCardLink" onclick="hideid('DuplicateDefinitionCard');">
+Dismiss</button>            </div>
+            </div>
+          </section><a name="MultipleUsesSdk"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="MultipleUsesSdkCard" style="display: block;">
+            <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Multiple &lt;uses-sdk> elements in the manifest</h2>
+  </div>
+              <div class="mdl-card__supporting-text">
+<div class="issue">
+<div class="warningslist">
+<span class="location"><a href="app/AndroidManifest.xml">AndroidManifest.xml</a>:4</span>: <span class="message">There should only be a single <code>&lt;uses-sdk></code> element in the manifest: merge these together</span><br /><pre class="errorlines">
+<span class="lineno"> 3 </span>    <span class="tag">&lt;uses-sdk</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />
+<span class="caretline"><span class="lineno"> 4 </span>    <span class="tag">&lt;</span><span class="error"><span class="tag">uses-sdk</span></span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 5 </span><span class="tag">&lt;/manifest></span></pre>
+
+<ul><span class="location"><a href="app/AndroidManifest.xml">AndroidManifest.xml</a>:3</span>: <span class="message">Also appears here</span><br /><pre class="errorlines">
+<span class="lineno"> 2 </span>    <span class="attribute">package</span>=<span class="value">"test.pkg"</span>>
+<span class="caretline"><span class="lineno"> 3 </span>    <span class="tag">&lt;</span><span class="error"><span class="tag">uses-sdk</span></span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 4 </span>    <span class="tag">&lt;uses-sdk</span><span class="attribute"> </span><span class="prefix">android:</span><span class="attribute">minSdkVersion</span>=<span class="value">"10"</span> <span class="prefix">android:</span><span class="attribute">targetSdkVersion</span>=<span class="value">"31"</span> />
+</pre>
+</ul></div>
+<div class="metadata"><div class="explanation" id="explanationMultipleUsesSdk" style="display: none;">
+The <code>&lt;uses-sdk></code> element should appear just once; the tools will <b>not</b> merge the contents of all the elements so if you split up the attributes across multiple elements, only one of them will take effect. To fix this, just merge all the attributes from the various elements into a single &lt;uses-sdk> element.<br/><div class="moreinfo">More info: <a href="https://developer.android.com/guide/topics/manifest/uses-sdk-element.html">https://developer.android.com/guide/topics/manifest/uses-sdk-element.html</a>
+</div>To suppress this error, use the issue id "MultipleUsesSdk" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<br/></div>
+</div>
+</div>
+<div class="chips">
+<span class="mdl-chip">
+    <span class="mdl-chip__text">MultipleUsesSdk</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Correctness</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Error</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Priority 6/10</span>
+</span>
+</div>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationMultipleUsesSdkLink" onclick="reveal('explanationMultipleUsesSdk');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="MultipleUsesSdkCardLink" onclick="hideid('MultipleUsesSdkCard');">
 Dismiss</button>            </div>
             </div>
           </section>
@@ -1190,7 +1203,7 @@ The format of the <code>lint.xml</code> file is something like the following:<br
 &lt;lint>
     &lt;!-- Ignore everything in the test source set -->
     &lt;issue id="all">
-        &lt;ignore path="\*/test/\*" />
+        &lt;ignore path="/*/test//*" />
     &lt;/issue>
 
     &lt;!-- Disable this given check in this project -->
@@ -1200,7 +1213,7 @@ The format of the <code>lint.xml</code> file is something like the following:<br
     &lt;issue id="ObsoleteLayoutParam">
         &lt;ignore path="res/layout/activation.xml" />
         &lt;ignore path="res/layout-xlarge/activation.xml" />
-        &lt;ignore regexp="(foo|bar)\.java" />
+        &lt;ignore regexp="(foo|bar)/.java" />
     &lt;/issue>
 
     &lt;!-- Ignore the UselessLeaf issue in the given file -->

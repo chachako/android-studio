@@ -275,7 +275,6 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 ManifestDetector.SET_VERSION,
                 ManifestDetector.TARGET_NEWER,
                 ManifestDetector.UNIQUE_PERMISSION,
-                ManifestDetector.USES_SDK,
                 ManifestDetector.WEARABLE_BIND_LISTENER,
                 ManifestDetector.WRONG_PARENT,
                 ManifestPermissionAttributeDetector.ISSUE,
@@ -541,7 +540,13 @@ open class BuiltinIssueRegistry : IssueRegistry() {
         "UnpackedNativeCode",
 
         // Deleted; no longer needed thanks to d8
-        "Assert"
+        "Assert",
+
+        // No longer relevant with manifest merging, and has been
+        // a no-op forever for Gradle where these attributes are
+        // specified in build files rather than the manifest and
+        // injected at build time.
+        "UsesMinSdkAttributes"
     )
 
     override fun getIssueCapacity(scope: EnumSet<Scope>): Int {

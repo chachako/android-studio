@@ -1654,6 +1654,8 @@ class ProjectInitializerTest {
                     package="com.android.tools.lint.test"
                     android:versionCode="1"
                     android:versionName="1.0" >
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
                 </manifest>
                 """
             ).indented(),
@@ -1684,10 +1686,13 @@ class ProjectInitializerTest {
 
         MainTest.checkDriver(
             """
-            layout/SomethingNamedAndroidManifest.xml: Warning: Manifest should specify a minimum API level with <uses-sdk android:minSdkVersion="?" />; if it really supports all versions of Android set it to 1 [UsesMinSdkAttributes]
-            0 errors, 1 warnings
+            layout/SomethingNamedAndroidManifest.xml:6: Error: There should only be a single <uses-sdk> element in the manifest: merge these together [MultipleUsesSdk]
+                <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                 ~~~~~~~~
+                layout/SomethingNamedAndroidManifest.xml:5: Also appears here
+            1 errors, 0 warnings
             """,
-            "",
+            "Manifest merger failed with multiple errors, see logs",
 
             // Expected exit code
             ERRNO_SUCCESS,
@@ -1695,7 +1700,7 @@ class ProjectInitializerTest {
             // Args
             arrayOf(
                 "--check",
-                "RequiredSize,ManifestOrder,ContentDescription,UsesMinSdkAttributes",
+                "RequiredSize,ManifestOrder,ContentDescription,MultipleUsesSdk",
                 "--project",
                 descriptorFile.path
             ),

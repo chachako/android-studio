@@ -113,7 +113,11 @@ class LintDriverCrashTest : AbstractCheckTest() {
         val projects = lint().files(
             manifest(
                 """
-                <manifest package="test.pkg"/>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="test.pkg" android:versionName="1.0">
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                </manifest>
                 """
             ).indented(),
             source(
@@ -287,7 +291,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
                 arrayOf(
                     "--analyze-only",
                     "--check",
-                    "UsesMinSdkAttributes",
+                    "MultipleUsesSdk",
                     "--check",
                     "MyIssueId",
                     "--lint-rule-jars",
@@ -304,10 +308,13 @@ class LintDriverCrashTest : AbstractCheckTest() {
             MainTest.checkDriver(
                 """
                 app: Error: No .class files were found in project "app", so none of the classfile based checks could be run. Does the project need to be built first? [LintError]
-                AndroidManifest.xml: Warning: Manifest should specify a minimum API level with <uses-sdk android:minSdkVersion="?" />; if it really supports all versions of Android set it to 1 [UsesMinSdkAttributes]
-                1 errors, 1 warnings
+                AndroidManifest.xml:4: Error: There should only be a single <uses-sdk> element in the manifest: merge these together [MultipleUsesSdk]
+                    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
+                     ~~~~~~~~
+                    AndroidManifest.xml:3: Also appears here
+                2 errors, 0 warnings
                 """.trimIndent(),
-                "",
+                "Manifest merger failed with multiple errors, see logs\n",
 
                 // Expected exit code
                 LintCliFlags.ERRNO_SUCCESS,
@@ -316,7 +323,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
                 arrayOf(
                     "--report-only",
                     "--check",
-                    "UsesMinSdkAttributes",
+                    "MultipleUsesSdk",
                     "--check",
                     "MyIssueId",
                     "--lint-rule-jars",
