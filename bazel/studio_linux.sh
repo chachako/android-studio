@@ -50,6 +50,9 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/adt/idea/studio/updater_deploy.jar ${artifacts_dir}/android-studio-updater.jar
   cp -a ${bin_dir}/tools/adt/idea/updater-ui/sdk-patcher.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/adt/idea/native/installer/android-studio-bundle-data.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/adrt/android-studio-cros-skeleton.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/adrt/android-studio-nsis-prebuilt.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/intel/android-studio-intel-haxm.zip ${artifacts_dir}
 
   cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/sdklib/commandlinetools_*.zip ${artifacts_dir}
@@ -166,6 +169,9 @@ function run_bazel_test() {
     //tools/base/lint/libs/lint-tests:lint-tests \
     //tools/base/bazel:local_maven_repository_generator_deploy.jar \
     //tools/base/build-system:documentation.zip \
+    //tools/vendor/google/adrt:android-studio-cros-skeleton.zip \
+    //tools/vendor/google/adrt:android-studio-nsis-prebuilt.zip \
+    //tools/vendor/intel:android-studio-intel-haxm.zip \
     $(< "${SCRIPT_DIR}/targets")
 }
 
