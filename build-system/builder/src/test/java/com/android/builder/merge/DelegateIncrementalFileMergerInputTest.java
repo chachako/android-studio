@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class DelegateIncrementalFileMergerInputTest {
@@ -73,12 +73,12 @@ public class DelegateIncrementalFileMergerInputTest {
     @Test
     public void fileStatus() {
         delegate.getFileStatus("foo");
-        Mockito.verify(mockInput).getFileStatus(Matchers.eq("foo"));
+        Mockito.verify(mockInput).getFileStatus(ArgumentMatchers.eq("foo"));
     }
 
     @Test
     public void openPath() {
         delegate.openPath("foo");
-        Mockito.verify(mockInput).openPath(Matchers.eq("foo"));
+        Mockito.verify(mockInput).openPath(ArgumentMatchers.eq("foo"));
     }
 }

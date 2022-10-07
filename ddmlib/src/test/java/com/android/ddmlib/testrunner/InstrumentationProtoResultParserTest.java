@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.android.commands.am.InstrumentationData;
 import com.google.common.base.Strings;
@@ -424,7 +424,7 @@ public class InstrumentationProtoResultParserTest {
         assertThat(parser.isCancelled()).isTrue();
 
         readSession("instrumentation-data-session.textproto");
-        verifyZeroInteractions(mockListener);
+        verifyNoMoreInteractions(mockListener);
     }
 
     @Test

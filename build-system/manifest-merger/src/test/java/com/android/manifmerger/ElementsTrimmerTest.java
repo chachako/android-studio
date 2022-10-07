@@ -16,8 +16,8 @@
 
 package com.android.manifmerger;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -74,7 +74,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
         assertEquals(0, mergingReport.getActionRecorder().build().getNodeKeys().size());
     }
 
@@ -100,7 +100,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
         assertEquals(0, mergingReport.getActionRecorder().build().getNodeKeys().size());
     }
 
@@ -134,7 +134,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
 
         // check action recording.
         checkActionsRecording(mergingReport, 2);
@@ -164,7 +164,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
 
         // check action recording.
         checkActionsRecording(mergingReport, 2);
@@ -199,7 +199,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
 
         // check action recording.
         checkActionsRecording(mergingReport, 1);
@@ -229,7 +229,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
 
         // check action recording.
         checkActionsRecording(mergingReport, 2);
@@ -277,7 +277,7 @@ public class ElementsTrimmerTest extends TestCase {
         MergingReport.Builder mergingReport = new MergingReport.Builder(mILogger);
         ElementsTrimmer.trim(xmlDocument, mergingReport);
         assertFalse(mergingReport.hasErrors());
-        Mockito.verifyZeroInteractions(mILogger);
+        Mockito.verifyNoMoreInteractions(mILogger);
 
         // check action recording.
         checkActionsRecording(mergingReport, 3);

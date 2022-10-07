@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class DelegateIncrementalFileMergerOutputTest {
@@ -55,7 +55,7 @@ public class DelegateIncrementalFileMergerOutputTest {
     @Test
     public void remove() {
         delegate.remove("foo");
-        Mockito.verify(mockOutput).remove(Matchers.eq("foo"));
+        Mockito.verify(mockOutput).remove(ArgumentMatchers.eq("foo"));
     }
 
     @Test
@@ -64,7 +64,10 @@ public class DelegateIncrementalFileMergerOutputTest {
 
         delegate.create("foo", inputs, true);
         Mockito.verify(mockOutput)
-                .create(Matchers.eq("foo"), Matchers.same(inputs), Matchers.eq(true));
+                .create(
+                        ArgumentMatchers.eq("foo"),
+                        ArgumentMatchers.same(inputs),
+                        ArgumentMatchers.eq(true));
     }
 
     @Test
@@ -75,9 +78,9 @@ public class DelegateIncrementalFileMergerOutputTest {
         delegate.update("foo", prevNames, inputs, true);
         Mockito.verify(mockOutput)
                 .update(
-                        Matchers.eq("foo"),
-                        Matchers.same(prevNames),
-                        Matchers.same(inputs),
-                        Matchers.eq(true));
+                        ArgumentMatchers.eq("foo"),
+                        ArgumentMatchers.same(prevNames),
+                        ArgumentMatchers.same(inputs),
+                        ArgumentMatchers.eq(true));
     }
 }

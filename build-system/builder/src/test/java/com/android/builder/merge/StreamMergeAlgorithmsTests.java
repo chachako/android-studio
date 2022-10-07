@@ -30,7 +30,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.function.Function;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class StreamMergeAlgorithmsTests {
@@ -135,13 +135,19 @@ public class StreamMergeAlgorithmsTests {
             select.merge("foo", inputs, closer);
 
             Mockito.verify(alg1)
-                    .merge(Matchers.eq("foo"), Matchers.same(inputs), Matchers.same(closer));
-            Mockito.verifyZeroInteractions(alg2);
+                    .merge(
+                            ArgumentMatchers.eq("foo"),
+                            ArgumentMatchers.same(inputs),
+                            ArgumentMatchers.same(closer));
+            Mockito.verifyNoMoreInteractions(alg2);
 
             select.merge("bar", inputs, closer);
-            Mockito.verifyZeroInteractions(alg1);
+            Mockito.verifyNoMoreInteractions(alg1);
             Mockito.verify(alg2)
-                    .merge(Matchers.eq("bar"), Matchers.same(inputs), Matchers.same(closer));
+                    .merge(
+                            ArgumentMatchers.eq("bar"),
+                            ArgumentMatchers.same(inputs),
+                            ArgumentMatchers.same(closer));
         }
     }
 }

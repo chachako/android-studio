@@ -61,7 +61,7 @@ public class AttributeModelTest extends TestCase {
         assertFalse(attributeModel.isPackageDependent());
         assertEquals(null, attributeModel.getDefaultValue());
 
-        Mockito.verifyZeroInteractions(mValidator);
+        Mockito.verifyNoMoreInteractions(mValidator);
     }
 
     public void testBooleanValidator() {

@@ -17,7 +17,7 @@
 package com.android.manifmerger;
 
 import static com.android.manifmerger.Actions.NodeRecord;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import com.android.SdkConstants;
