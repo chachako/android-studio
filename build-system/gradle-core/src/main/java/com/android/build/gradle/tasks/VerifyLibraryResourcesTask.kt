@@ -34,14 +34,13 @@ import com.android.build.gradle.internal.tasks.factory.features.AndroidResources
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.build.gradle.options.BooleanOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.files.SerializableInputChanges
 import com.android.builder.internal.aapt.AaptException
 import com.android.builder.internal.aapt.AaptOptions
 import com.android.builder.internal.aapt.AaptPackageConfig
 import com.android.builder.internal.aapt.v2.Aapt2RenamingConventions
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.ide.common.resources.CompileResourceRequest
 import com.android.ide.common.resources.FileStatus
 import com.android.ide.common.resources.ResourceCompilationService

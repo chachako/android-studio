@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.component.ConsumableCreationConfig;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction;
 import com.android.build.gradle.internal.utils.HasConfigurableValuesKt;
+import com.android.buildanalyzer.common.TaskCategory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;

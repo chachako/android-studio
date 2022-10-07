@@ -20,12 +20,12 @@ import com.android.build.gradle.internal.attribution.BuildAttributionService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.configureVariantProperties
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.ide.common.attribution.BuildAnalyzerTaskCategoryIssue
+import com.android.buildanalyzer.common.TaskCategory
+import com.android.buildanalyzer.common.TaskCategoryIssue
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -37,7 +37,7 @@ import org.gradle.work.DisableCachingByDefault
 abstract class BuildAnalyzerTask: NonIncrementalTask() {
 
     @get:Input
-    abstract val issuesToReport: ListProperty<BuildAnalyzerTaskCategoryIssue>
+    abstract val issuesToReport: ListProperty<TaskCategoryIssue>
 
     @get:Internal
     abstract val buildAnalyzerService: Property<BuildAttributionService>

@@ -23,11 +23,10 @@ import com.android.build.gradle.internal.TaskManager;
 import com.android.build.gradle.internal.api.DefaultAndroidSourceDirectorySet;
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet;
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction;
+import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.core.ComponentType;
 import java.io.IOException;
 import java.util.stream.Collectors;
-
-import com.android.build.gradle.internal.tasks.TaskCategory;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.diagnostics.ProjectBasedReportTask;
 import org.gradle.api.tasks.diagnostics.internal.ReportRenderer;

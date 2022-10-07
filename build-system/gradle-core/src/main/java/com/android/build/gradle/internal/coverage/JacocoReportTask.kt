@@ -16,7 +16,6 @@
 package com.android.build.gradle.internal.coverage
 
 import com.android.Version
-import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
@@ -24,10 +23,10 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
-import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.builder.core.BuilderConstants
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
+import com.android.builder.core.BuilderConstants
 import com.android.utils.usLocaleCapitalize
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.ImmutableList

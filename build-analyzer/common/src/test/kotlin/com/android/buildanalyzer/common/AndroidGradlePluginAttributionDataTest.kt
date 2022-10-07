@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.ide.common.attribution
+package com.android.buildanalyzer.common
 
 import com.android.SdkConstants
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.BuildInfo
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.JavaInfo
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.TaskInfo
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.TaskCategoryInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.BuildInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.JavaInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskCategoryInfo
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -64,7 +64,10 @@ class AndroidGradlePluginAttributionDataTest {
                 ))),
             "c" to TaskInfo(className = "d", taskCategoryInfo = TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN))
         ),
-        buildAnalyzerTaskCategoryIssues = listOf(BuildAnalyzerTaskCategoryIssue.TEST_SHARDING_DISABLED, BuildAnalyzerTaskCategoryIssue.NON_TRANSITIVE_R_CLASS_DISABLED)
+        taskCategoryIssues = listOf(
+            TaskCategoryIssue.TEST_SHARDING_DISABLED,
+            TaskCategoryIssue.NON_TRANSITIVE_R_CLASS_DISABLED
+        )
     )
 
     private fun save(outputDir: File, attributionData: AndroidGradlePluginAttributionData) {
@@ -111,7 +114,7 @@ class AndroidGradlePluginAttributionDataTest {
                 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
                 |{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
 |],
-|"buildAnalyzerTaskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
+|"taskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
 """.trimMargin().replace("\n", "")
 
@@ -200,7 +203,7 @@ class AndroidGradlePluginAttributionDataTest {
 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
 |{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
 |],
-|"buildAnalyzerTaskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
+|"taskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
 """.trimMargin().replace("\n", "")
         )

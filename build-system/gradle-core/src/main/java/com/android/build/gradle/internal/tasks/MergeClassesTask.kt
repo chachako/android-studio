@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.ClassFileInput.CLASS_MATCHER
 import com.android.builder.packaging.JarFlinger
 import org.gradle.api.file.ConfigurableFileCollection

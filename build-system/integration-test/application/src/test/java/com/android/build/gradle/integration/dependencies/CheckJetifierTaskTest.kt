@@ -24,7 +24,7 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
-import com.android.ide.common.attribution.CheckJetifierResult
+import com.android.buildanalyzer.common.CheckJetifierResult
 import com.android.testutils.MavenRepoGenerator
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat

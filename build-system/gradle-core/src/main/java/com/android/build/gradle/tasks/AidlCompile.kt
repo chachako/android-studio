@@ -31,12 +31,12 @@ import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.compiling.DependencyFileProcessor
 import com.android.builder.internal.compiler.AidlProcessor
 import com.android.builder.internal.compiler.DirectoryWalker
 import com.android.builder.internal.compiler.DirectoryWalker.FileAction
 import com.android.builder.internal.incremental.DependencyData
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.ide.common.process.LoggedProcessOutputHandler
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting

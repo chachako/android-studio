@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input

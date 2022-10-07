@@ -21,7 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.StringOption
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData
 import com.android.testutils.TestUtils
 import com.google.common.truth.Truth
 import org.junit.Rule

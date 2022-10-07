@@ -19,7 +19,7 @@ package com.android.build.gradle.tasks;
 import com.android.build.api.variant.impl.VariantOutputImpl;
 import com.android.build.gradle.internal.tasks.BuildAnalyzer;
 import com.android.build.gradle.internal.tasks.NewIncrementalTask;
-import com.android.build.gradle.internal.tasks.TaskCategory;
+import com.android.buildanalyzer.common.TaskCategory;
 import java.io.File;
 import org.gradle.api.tasks.Internal;
 import org.gradle.work.DisableCachingByDefault;

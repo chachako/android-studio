@@ -22,6 +22,7 @@ import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.tools.build.libraries.metadata.AppDependencies
 import com.google.protobuf.ByteString
 import org.gradle.api.artifacts.ArtifactCollection

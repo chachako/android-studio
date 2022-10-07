@@ -177,6 +177,8 @@ dependencies {
     compileOnly libs.dokka_core
     // already packaged in (':base:builder')
     compileOnly project(':base:profile')
+    // already packaged later
+    compileOnly project(':base:build-analyzer:common')
 
     testImplementation libs.junit
     testImplementation libs.truth

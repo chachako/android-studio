@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.ide.dependencies.getIdString
 import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT_MIN_COMPILE_SDK_EXTENSION
 import com.android.build.gradle.internal.utils.parseTargetHash
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.ide.common.repository.AgpVersion
 import com.android.repository.Revision

@@ -57,9 +57,9 @@ import com.android.builder.dexing.getSortedFilesInDir
 import com.android.builder.dexing.getSortedRelativePathsInJar
 import com.android.builder.dexing.isJarFile
 import com.android.builder.files.SerializableFileChanges
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Throwables
@@ -90,7 +90,6 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import org.gradle.workers.WorkerExecutor
-import org.jetbrains.kotlin.gradle.utils.`is`
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.ForkJoinPool

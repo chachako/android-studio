@@ -8,6 +8,7 @@ TEST_DEPS = [
     "//tools/apkzlib",
     "//tools/base/annotations",
     "//tools/base/apkparser/analyzer:tools.analyzer",
+    "//tools/base/build-analyzer/common",
     "//tools/base/build-system:gradle-api",
     "//tools/base/build-system/builder",
     "//tools/base/build-system/builder-model",

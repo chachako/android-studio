@@ -34,6 +34,7 @@ import com.android.build.gradle.options.SyncOptions
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
 import com.android.build.gradle.options.BooleanOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
 import org.gradle.api.artifacts.transform.CacheableTransform

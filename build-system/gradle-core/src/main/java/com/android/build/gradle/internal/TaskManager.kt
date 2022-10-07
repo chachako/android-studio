@@ -36,7 +36,6 @@ import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.api.AndroidSourceSet
-import com.android.build.gradle.internal.attribution.BuildAttributionService
 import com.android.build.gradle.internal.attribution.CheckJetifierBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig

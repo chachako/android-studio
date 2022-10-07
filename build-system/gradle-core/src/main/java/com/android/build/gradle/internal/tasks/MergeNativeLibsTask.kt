@@ -35,6 +35,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.RENDERSCRIPT
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.merge.DuplicateRelativeFileException
 import com.android.utils.FileUtils
 import org.gradle.api.GradleException

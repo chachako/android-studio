@@ -27,8 +27,8 @@ import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.SyncOptions
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
-import com.android.build.gradle.internal.tasks.TaskCategory
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.CacheableTask

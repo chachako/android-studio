@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.test.BuiltArtifactsSplitOutputMatcher;
 import com.android.build.gradle.internal.testing.ConnectedDeviceProvider;
 import com.android.build.gradle.options.BooleanOption;
+import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.internal.InstallUtils;
 import com.android.builder.testing.api.DeviceConfigProviderImpl;
 import com.android.builder.testing.api.DeviceConnector;

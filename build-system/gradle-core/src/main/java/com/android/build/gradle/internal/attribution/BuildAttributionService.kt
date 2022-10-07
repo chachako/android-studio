@@ -23,14 +23,14 @@ import com.android.build.gradle.internal.services.ServiceRegistrationAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.utils.getBuildSrcPlugins
 import com.android.build.gradle.internal.utils.getBuildscriptDependencies
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.BuildInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.JavaInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskInfo
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskCategoryInfo
+import com.android.buildanalyzer.common.TaskCategory
+import com.android.buildanalyzer.common.TaskCategoryIssue
 import com.android.builder.utils.SynchronizedFile
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.BuildInfo
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.JavaInfo
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.TaskInfo
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData.TaskCategoryInfo
-import com.android.ide.common.attribution.TaskCategory
-import com.android.ide.common.attribution.BuildAnalyzerTaskCategoryIssue
 import com.android.utils.HelpfulEnumConverter
 import com.android.tools.analytics.HostData
 import com.android.utils.FileUtils
@@ -169,12 +169,10 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
     private val initialGarbageCollectionData: Map<String, Long> =
         ManagementFactory.getGarbageCollectorMXBeans().associate { it.name to it.collectionTime }
 
-    private val buildAnalyzerTaskCategoryIssues = Collections.synchronizedSet(
-        mutableSetOf<BuildAnalyzerTaskCategoryIssue>()
-    )
+    private val taskCategoryIssues = Collections.synchronizedSet(mutableSetOf<TaskCategoryIssue>())
 
-    fun reportBuildAnalyzerIssue(issue: BuildAnalyzerTaskCategoryIssue) {
-        buildAnalyzerTaskCategoryIssues.add(issue)
+    fun reportBuildAnalyzerIssue(issue: TaskCategoryIssue) {
+        taskCategoryIssues.add(issue)
     }
 
     override fun close() {
@@ -196,7 +194,7 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         saveAttributionData(
             File(parameters.attributionFileLocation.get()),
         ) {
-            val partialResults = BuildAnalyzerPartialResult(buildAnalyzerTaskCategoryIssues)
+            val partialResults = BuildAnalyzerPartialResult(taskCategoryIssues)
 
             val partialResultsOutputDir = FileUtils.join(
                 File(parameters.attributionFileLocation.get()),
@@ -220,7 +218,7 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
                 buildscriptDependenciesInfo = parameters.buildscriptDependenciesInfo.get(),
                 buildInfo = parameters.buildInfo.get(),
                 taskNameToTaskInfoMap = parameters.taskNameToTaskInfoMap.get(),
-                buildAnalyzerTaskCategoryIssues = partialResults.issues.toList()
+                taskCategoryIssues = partialResults.issues.toList()
             )
         }
     }

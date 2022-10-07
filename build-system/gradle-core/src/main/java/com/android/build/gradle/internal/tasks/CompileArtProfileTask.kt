@@ -25,9 +25,9 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.tasks.PackageAndroidArtifact
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.packaging.DexFileComparator
 import com.android.builder.packaging.DexFileNameSupplier
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.ArtProfileSerializer
 import com.android.tools.profgen.DexFile

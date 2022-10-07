@@ -26,7 +26,6 @@ import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVaria
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.res.Aapt2FromMaven.Companion.create
 import com.android.build.gradle.internal.res.namespaced.Aapt2LinkRunnable
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.Aapt2Input
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLeasingAapt2
@@ -35,11 +34,10 @@ import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.configureVariantProperties
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.internal.aapt.AaptOptions
 import com.android.builder.internal.aapt.AaptPackageConfig
-import com.android.build.gradle.internal.tasks.TaskCategory
-import com.android.ide.common.symbols.SymbolIo
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
@@ -52,14 +50,12 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
-import java.nio.file.Files
 
 /**
  * Invokes AAPT2 link on the merged resources of all library dependencies into the .ap_ format.

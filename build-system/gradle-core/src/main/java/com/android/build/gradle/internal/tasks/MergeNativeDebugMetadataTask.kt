@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.packaging.JarFlinger
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting

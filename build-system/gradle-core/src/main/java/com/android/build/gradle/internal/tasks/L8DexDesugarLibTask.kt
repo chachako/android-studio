@@ -30,9 +30,9 @@ import com.android.build.gradle.internal.utils.getDesugarLibConfig
 import com.android.build.gradle.internal.utils.getDesugarLibJarFromMaven
 import com.android.builder.dexing.KeepRulesConfig
 import com.android.builder.dexing.runL8
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
+import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty

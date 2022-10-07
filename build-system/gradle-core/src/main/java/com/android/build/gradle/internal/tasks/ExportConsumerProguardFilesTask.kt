@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.builder.errors.EvalIssueException
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationActionImpl
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.utils.FileUtils
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection

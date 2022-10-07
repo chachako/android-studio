@@ -23,7 +23,7 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.services.LintParallelBuildService
 import com.android.build.gradle.options.StringOption
-import com.android.ide.common.attribution.AndroidGradlePluginAttributionData
+import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule

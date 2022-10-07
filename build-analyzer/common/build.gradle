@@ -3,4 +3,12 @@ apply plugin: 'com.android.tools.kotlin'
 
 dependencies {
     implementation libs.kotlin_stdlib
+    implementation libs.gson
+    implementation libs.com.android.tools.sdkCommon
+    implementation libs.com.android.tools.common
+
+    testImplementation libs.kotlin_test
+    testImplementation libs.truth
+    testImplementation libs.junit
+    testImplementation libs.com.android.tools.testutils
 }

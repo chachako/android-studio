@@ -33,6 +33,7 @@ import com.android.builder.dexing.DexArchiveBuilder
 import com.android.builder.dexing.DexParameters
 import com.android.builder.dexing.r8.ClassFileProviderFactory
 import com.android.build.gradle.options.BooleanOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.sdklib.AndroidVersion
 import com.google.common.io.Closer
 import org.gradle.api.file.ConfigurableFileCollection

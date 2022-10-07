@@ -41,6 +41,7 @@ import com.android.builder.core.ComponentType
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.google.common.base.Preconditions
 import com.google.common.collect.Sets
 import org.gradle.api.artifacts.ArtifactCollection

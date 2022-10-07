@@ -27,8 +27,7 @@ import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
 import com.android.build.gradle.tasks.sync.AppIdListTask
-import com.android.build.gradle.internal.tasks.TaskCategory
-import com.android.utils.HelpfulEnumConverter
+import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.Task
 import com.google.common.reflect.ClassPath
 import com.google.common.reflect.TypeToken
@@ -89,12 +88,10 @@ class BuildAnalyzerTest {
     @Test
     fun `primaryTaskCategory field only has primary task categories`() {
         val allTasks = getAllTasks()
-        val converter = HelpfulEnumConverter(com.android.ide.common.attribution.TaskCategory::class.java)
         val tasksWithIncorrectPrimaryTaskCategories = allTasks.filter {
             it.isAnnotationPresent(BuildAnalyzer::class.java)
         }.filter {
-            val primaryCategory = it.getAnnotation(BuildAnalyzer::class.java).primaryTaskCategory
-            !converter.convert(primaryCategory.toString())!!.isPrimary
+            !it.getAnnotation(BuildAnalyzer::class.java).primaryTaskCategory.isPrimary
         }
         assertWithMessage(
             "These tasks should only have the allowed primary task categories" +

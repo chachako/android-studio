@@ -49,6 +49,7 @@ import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.model.TestOptions
 import com.android.repository.Revision
 import com.android.utils.FileUtils

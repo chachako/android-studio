@@ -67,6 +67,7 @@ import com.android.build.gradle.internal.testing.utp.UtpTestRunner;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.options.IntegerOption;
 import com.android.build.gradle.options.ProjectOptions;
+import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.core.ComponentType;
 import com.android.builder.model.TestOptions.Execution;
 import com.android.builder.testing.api.DeviceConnector;

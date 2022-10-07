@@ -17,7 +17,7 @@
 package com.android.build.gradle.internal.attribution
 
 import com.android.SdkConstants
-import com.android.ide.common.attribution.BuildAnalyzerTaskCategoryIssue
+import com.android.buildanalyzer.common.TaskCategoryIssue
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
@@ -28,8 +28,8 @@ import java.util.UUID
  * Contains the partial results of a [BuildAttributionService]. Each service should combine all
  * partial results into a single result which is used to generate the build analyzer report file.
  */
-class BuildAnalyzerPartialResult(issues: Iterable<BuildAnalyzerTaskCategoryIssue>) {
-    val issues = mutableSetOf<BuildAnalyzerTaskCategoryIssue>()
+class BuildAnalyzerPartialResult(issues: Iterable<TaskCategoryIssue>) {
+    val issues = mutableSetOf<TaskCategoryIssue>()
 
     init {
         this.issues.addAll(issues)
@@ -80,7 +80,7 @@ class BuildAnalyzerPartialResult(issues: Iterable<BuildAnalyzerTaskCategoryIssue
             }
 
             override fun read(reader: JsonReader): BuildAnalyzerPartialResult {
-                val issues = mutableListOf<BuildAnalyzerTaskCategoryIssue>()
+                val issues = mutableListOf<TaskCategoryIssue>()
                 reader.beginObject()
 
                 while (reader.hasNext()) {
@@ -89,7 +89,7 @@ class BuildAnalyzerPartialResult(issues: Iterable<BuildAnalyzerTaskCategoryIssue
                             reader.beginArray()
                             while (reader.hasNext()) {
                                 issues.add(
-                                    BuildAnalyzerTaskCategoryIssue.valueOf(reader.nextString())
+                                    TaskCategoryIssue.valueOf(reader.nextString())
                                 )
                             }
                             reader.endArray()

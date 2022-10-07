@@ -37,6 +37,7 @@ import com.android.build.gradle.internal.utils.getFilteredConfigurationFiles
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.SyncOptions
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
 import com.android.builder.dexing.MainDexListConfig
 import com.android.builder.dexing.ProguardConfig

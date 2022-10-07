@@ -40,6 +40,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
 import com.android.builder.files.NativeLibraryAbiPredicate
 import com.android.builder.packaging.JarCreator

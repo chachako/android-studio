@@ -137,12 +137,14 @@ coverage_report(
 )
 
 coverage_report(
-    name = "build-attribution",
+    name = "build-analyzer",
     srcpath_include = [
         "tools/adt/idea/build-attribution/src",
+        "tools/base/build-analyzer/common/src",
     ],
     tests = [
         "//tools/adt/idea/build-attribution:intellij.android.build-attribution.tests_tests",
+        "//tools/base/build-analyzer/common:tests.test",
     ],
 )
 
@@ -859,7 +861,7 @@ combine_report_definitions(
         "app-inspection",
         "aqi",
         "background-task-inspector",
-        "build-attribution",
+        "build-analyzer",
         "cmake-vnext",
         "compose-ide-plugin",
         "custom-views-preview",
@@ -1003,6 +1005,7 @@ coverage_report(
         "//tools/base/aspects_agent:agent_tests",
         "//tools/base/bazel:bin2c_tests",
         "//tools/base/bazel:iml_to_build_tests",
+        "//tools/base/build-analyzer/common:tests.test",
         "//tools/base/build-system:studio.android.sdktools.manifest-merger_tests",
         "//tools/base/build-system:tools.manifest-merger_tests.test",
         "//tools/base/build-system/builder:tests.test",

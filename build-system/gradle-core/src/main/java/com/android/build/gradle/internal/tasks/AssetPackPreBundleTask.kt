@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.packaging.JarCreator
 import com.android.builder.packaging.JarFlinger
 import com.android.utils.FileUtils

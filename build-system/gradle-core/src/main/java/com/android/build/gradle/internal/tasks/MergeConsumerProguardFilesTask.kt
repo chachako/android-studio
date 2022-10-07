@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.errors.EvalIssueException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty

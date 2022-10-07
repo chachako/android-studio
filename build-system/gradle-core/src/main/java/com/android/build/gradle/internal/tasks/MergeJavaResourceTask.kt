@@ -35,6 +35,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.tasks.getChangesInSerializableForm
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.files.SerializableInputChanges
 import org.gradle.api.attributes.Usage
 import org.gradle.api.file.ConfigurableFileCollection

@@ -356,6 +356,7 @@ com/android/tools/build/builder-test-api
 com/android/tools/build/gradle
   META-INF/
   META-INF/MANIFEST.MF
+  META-INF/common.kotlin_module
   META-INF/gradle-core.kotlin_module
   META-INF/gradle-plugins/
   META-INF/gradle-plugins/android-library.properties
@@ -520,6 +521,8 @@ com/android/tools/build/gradle
   com/android/build/shrinker/graph/
   com/android/build/shrinker/obfuscation/
   com/android/build/shrinker/usages/
+  com/android/buildanalyzer/
+  com/android/buildanalyzer/common/
   com/android/builder/
   com/android/builder/core/
   com/android/tools/
@@ -2558,7 +2561,6 @@ com/android/tools/sdk-common
   com/android/
   com/android/ide/
   com/android/ide/common/
-  com/android/ide/common/attribution/
   com/android/ide/common/blame/
   com/android/ide/common/blame/parser/
   com/android/ide/common/blame/parser/aapt/

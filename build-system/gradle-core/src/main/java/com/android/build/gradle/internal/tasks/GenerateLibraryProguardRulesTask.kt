@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.tasks.getChangesInSerializableForm
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.files.SerializableChange
 import com.android.ide.common.resources.FileStatus
 import com.android.ide.common.symbols.generateKeepRulesFromLayoutXmlFile

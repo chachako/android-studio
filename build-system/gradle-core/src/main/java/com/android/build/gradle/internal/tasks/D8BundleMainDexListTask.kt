@@ -30,9 +30,9 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.SyncOptions
 import com.android.builder.multidex.D8MainDexList
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.DexingTaskCreationActionImpl
+import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile

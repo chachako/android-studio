@@ -39,8 +39,8 @@ import com.android.build.gradle.internal.tasks.manifest.mergeManifests
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.manifmerger.ManifestMerger2
 import com.android.manifmerger.ManifestMerger2.Invoker
 import com.android.manifmerger.ManifestMerger2.WEAR_APP_SUB_MANIFEST

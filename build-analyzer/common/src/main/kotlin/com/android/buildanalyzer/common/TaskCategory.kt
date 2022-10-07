@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.ide.common.attribution
+package com.android.buildanalyzer.common
 
 /**
  * Enum class for Category-Based Task Analyzer for Build Analyzer.

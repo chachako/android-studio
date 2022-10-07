@@ -49,7 +49,6 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getErrorFormatMode
 import com.android.build.gradle.internal.services.getLeasingAapt2
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationActionImpl
@@ -60,6 +59,7 @@ import com.android.build.gradle.internal.utils.toImmutableList
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.build.gradle.tasks.ProcessAndroidResources
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
 import com.android.builder.internal.aapt.AaptOptions
 import com.android.builder.internal.aapt.AaptPackageConfig

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.ide.common.attribution
+package com.android.buildanalyzer.common
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
@@ -161,7 +161,7 @@ class CheckJetifierResultTest {
             CheckJetifierResult.load(resultFile)
             fail("Expected RequiredFieldMissingException")
         } catch (e: RequiredFieldMissingException) {
-            assertThat(e.message).isEqualTo("Required field 'dependencyPath' was missing when deserializing object of type 'com.android.ide.common.attribution.DeserializedFullDependencyPath'")
+            assertThat(e.message).isEqualTo("Required field 'dependencyPath' was missing when deserializing object of type 'com.android.buildanalyzer.common.DeserializedFullDependencyPath'")
         }
     }
 }

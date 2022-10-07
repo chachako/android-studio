@@ -51,6 +51,7 @@ kotlin_library(
         ":proto",
         "//tools/analytics-library/crash:tools.analytics-crash",
         "//tools/analytics-library/shared:tools.analytics-shared",
+        "//tools/base/build-analyzer/common",
         "//tools/base/build-system:gradle-api_neverlink",
         "//tools/base/build-system/aapt2-proto",
         "//tools/base/build-system/aaptcompiler",

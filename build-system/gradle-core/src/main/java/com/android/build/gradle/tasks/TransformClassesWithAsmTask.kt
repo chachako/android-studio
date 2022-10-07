@@ -44,9 +44,9 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.InstrumentationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.InstrumentationTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.files.SerializableFileChanges
 import com.android.builder.utils.isValidZipEntryName
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.ide.common.resources.FileStatus
 import com.android.utils.FileUtils
 import com.google.common.io.ByteStreams

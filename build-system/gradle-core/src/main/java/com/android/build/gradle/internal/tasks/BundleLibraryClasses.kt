@@ -35,6 +35,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.toSerializable
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.isJarFile
 import com.android.builder.files.SerializableFileChanges
 import com.android.builder.packaging.JarFlinger

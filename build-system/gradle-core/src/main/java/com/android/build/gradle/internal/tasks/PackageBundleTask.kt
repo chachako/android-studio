@@ -32,6 +32,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.internal.packaging.IncrementalPackager.APP_METADATA_FILE_NAME
 import com.android.builder.packaging.PackagingUtils
 import com.android.bundle.Config

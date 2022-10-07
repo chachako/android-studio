@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.ide.common.attribution
+package com.android.buildanalyzer.common
 
 import com.android.SdkConstants
 import com.android.utils.FileUtils
@@ -72,10 +72,9 @@ data class AndroidGradlePluginAttributionData(
     val taskNameToTaskInfoMap: Map<String, TaskInfo> = emptyMap(),
 
     /**
-     * List of warnings / information in Build Analyzer.
+     * List of detected issues that are related to a specific task category.
      */
-    val buildAnalyzerTaskCategoryIssues: List<BuildAnalyzerTaskCategoryIssue> = emptyList()
-
+    val taskCategoryIssues: List<TaskCategoryIssue> = emptyList()
 ) : Serializable {
 
     /**
@@ -307,22 +306,24 @@ data class AndroidGradlePluginAttributionData(
             return taskName!! to TaskInfo(className!!, taskCategoryInfo)
         }
 
-        private fun JsonWriter.writeBuildAnalyzerTaskCategoryIssues(buildAnalyzerTaskCategoryIssues: List<BuildAnalyzerTaskCategoryIssue>) {
-            name("buildAnalyzerTaskCategoryIssues").beginArray()
-            buildAnalyzerTaskCategoryIssues.forEach {
+        private fun JsonWriter.writeTaskCategoryIssues(
+            taskCategoryIssues: List<TaskCategoryIssue>
+        ) {
+            name("taskCategoryIssues").beginArray()
+            taskCategoryIssues.forEach {
                 value(it.toString())
             }
             endArray()
         }
 
-        private fun JsonReader.readBuildAnalyzerTaskCategoryIssues(): List<BuildAnalyzerTaskCategoryIssue> {
-            val buildAnalyzerTaskCategoryIssues = ArrayList<BuildAnalyzerTaskCategoryIssue>()
+        private fun JsonReader.readTaskCategoryIssues(): List<TaskCategoryIssue> {
+            val taskCategoryIssues = ArrayList<TaskCategoryIssue>()
             beginArray()
             while (hasNext()) {
-                buildAnalyzerTaskCategoryIssues.add(BuildAnalyzerTaskCategoryIssue.valueOf(nextString()))
+                taskCategoryIssues.add(TaskCategoryIssue.valueOf(nextString()))
             }
             endArray()
-            return buildAnalyzerTaskCategoryIssues
+            return taskCategoryIssues
         }
 
         override fun write(writer: JsonWriter, data: AndroidGradlePluginAttributionData) {
@@ -352,7 +353,7 @@ data class AndroidGradlePluginAttributionData(
                 writer.writeTaskToTaskInfoEntry(it.key, it.value)
             }
 
-            writer.writeBuildAnalyzerTaskCategoryIssues(data.buildAnalyzerTaskCategoryIssues)
+            writer.writeTaskCategoryIssues(data.taskCategoryIssues)
 
             writer.endObject()
         }
@@ -366,7 +367,7 @@ data class AndroidGradlePluginAttributionData(
             val buildscriptDependenciesInfo = HashSet<String>()
             var buildInfo: BuildInfo? = null
             val taskNameToTaskInfoMap = HashMap<String, TaskInfo>()
-            val buildAnalyzerTaskCategoryIssues = ArrayList<BuildAnalyzerTaskCategoryIssue>()
+            val taskCategoryIssues = ArrayList<TaskCategoryIssue>()
 
             reader.beginObject()
 
@@ -398,7 +399,7 @@ data class AndroidGradlePluginAttributionData(
                             reader.readList { reader.readTaskToTaskInfoEntry() }
                     )
 
-                    "buildAnalyzerTaskCategoryIssues" -> buildAnalyzerTaskCategoryIssues.addAll(reader.readBuildAnalyzerTaskCategoryIssues())
+                    "taskCategoryIssues" -> taskCategoryIssues.addAll(reader.readTaskCategoryIssues())
 
                     else -> {
                         reader.skipValue()
@@ -426,7 +427,7 @@ data class AndroidGradlePluginAttributionData(
                 buildscriptDependenciesInfo = buildscriptDependenciesInfo,
                 buildInfo = buildInfo,
                 taskNameToTaskInfoMap = taskNameToTaskInfoMap,
-                buildAnalyzerTaskCategoryIssues = buildAnalyzerTaskCategoryIssues
+                taskCategoryIssues = taskCategoryIssues
             )
         }
     }

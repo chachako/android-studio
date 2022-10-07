@@ -20,9 +20,9 @@ import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifa
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkInternalArtifactType
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.ClassFileInput.CLASS_MATCHER
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection

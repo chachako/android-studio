@@ -28,8 +28,8 @@ import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.VariantAwareTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.testFixtures.testFixturesClassifier
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.BuilderConstants
-import com.android.build.gradle.internal.tasks.TaskCategory
 import org.gradle.api.Action
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.CopySpec

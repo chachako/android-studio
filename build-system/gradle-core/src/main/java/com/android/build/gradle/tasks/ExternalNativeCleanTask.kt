@@ -32,8 +32,8 @@ import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.errors.DefaultIssueReporter
-import com.android.build.gradle.internal.tasks.TaskCategory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 import org.gradle.process.ExecOperations

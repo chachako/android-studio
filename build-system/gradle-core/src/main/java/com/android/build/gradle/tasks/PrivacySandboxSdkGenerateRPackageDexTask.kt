@@ -21,10 +21,10 @@ import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVaria
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.configureVariantProperties
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.symbols.generateRPackageClass
 import com.android.tools.r8.CompilationMode
 import com.android.tools.r8.D8
@@ -37,7 +37,6 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.LocalState
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.workers.WorkerExecutor
