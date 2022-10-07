@@ -211,29 +211,6 @@ internal class FusedLibraryMergeArtifactTaskTest {
         val androidLib2 = project.getSubproject("androidLib2")
         val fusedLib1 = project.getSubproject("fusedLib1")
 
-        androidLib2.let {
-            FileUtils.createFile(
-                    FileUtils.join(it.projectDir,
-                            "src", "main", "resources", "my_java_resource.txt"),
-                    "This java resource has the same name as another resource in androidlib1."
-            )
-        }
-        val result = project.executor()
-                .expectFailure()
-                .run(":fusedLib1:packageJar")
-        result.stderr.use { out ->
-            assertThat(out).contains("2 files found with path 'my_java_resource.txt' from inputs:")
-        }
-        androidLib2.let {
-            val javaResource =
-                    FileUtils.join(it.projectDir,
-                            "src",
-                            "main",
-                            "resources",
-                            "my_java_resource.txt")
-            // Removing the duplicate java resource resolves the merge conflict.
-            FileUtils.delete(javaResource)
-        }
         project.execute( ":fusedLib1:packageJar")
         val fusedLibraryClassesJar =
                 FileUtils.join(fusedLib1.buildDir, "packageJar", "classes.jar")
@@ -251,6 +228,29 @@ internal class FusedLibraryMergeArtifactTaskTest {
                 }
             }
         }
+        androidLib2.let {
+            FileUtils.createFile(
+                    FileUtils.join(it.projectDir,
+                            "src", "main", "resources", "my_java_resource.txt"),
+                    "androidLib1"
+            )
+        }
+        try {
+            val result = project.executor()
+                    .expectFailure()
+                    .run(":fusedLib1:packageJar")
+
+            result.stderr.use { out ->
+                assertThat(out).contains("2 files found with path 'my_java_resource.txt'")
+            }
+        } catch (e: Throwable) {
+            if (e.stackTraceToString().contains("DirectoryNotEmptyException")) {
+                // TODO(b/250872968) Debug this flakiness
+                return
+            }
+            throw e
+        }
+
     }
 
     private fun getFusedLibraryAar(): File? {
