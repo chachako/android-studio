@@ -19,6 +19,7 @@ import com.android.adblib.tools.debugging.impl.JdwpSessionProxy
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsReaqChunk
+import java.net.InetSocketAddress
 
 /**
  * List of known properties corresponding to a [JdwpProcess] instance.
@@ -109,4 +110,29 @@ data class JdwpProcessProperties(
      * from the Android VM if there is already a JDWP session active for that process.
      */
     val exception: Throwable? = null,
+)
+
+/**
+ * Status of JDWP Session proxy external Java debuggers can use to connect to a
+ * [JdwpProcess].
+ *
+ * @see JdwpProcess
+ * @see JdwpProcessProperties.jdwpSessionProxyStatus
+ */
+data class JdwpSessionProxyStatus(
+    /**
+     * The [InetSocketAddress] (typically on `localhost`) a Java debugger can use to open a
+     * JDWP debugging session with the Android process. If the value is `null`, the debugger
+     * connection is not ready yet.
+     *
+     * @see JdwpSessionProxy
+     */
+    val socketAddress: InetSocketAddress? = null,
+
+    /**
+     * `true` if there is an active JDWP debugging session on [socketAddress].
+     *
+     * @see JdwpSessionProxy
+     */
+    val isExternalDebuggerAttached: Boolean = false,
 )

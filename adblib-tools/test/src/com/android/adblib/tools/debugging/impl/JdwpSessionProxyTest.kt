@@ -16,8 +16,6 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.ByteBufferAdbOutputChannel
-import com.android.adblib.DeviceSelector
-import com.android.adblib.createDeviceScope
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProvider
@@ -59,13 +57,12 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createHostServices(fakeAdb).session
+        val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val deviceScope = session.createDeviceScope(deviceSelector)
 
         // Act
-        val process = registerCloseable(JdwpProcessImpl(session, deviceSelector, deviceScope, 10))
+        val process = registerCloseable(JdwpProcessImpl(session, connectedDevice,  10))
         process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null
@@ -89,14 +86,12 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createHostServices(fakeAdb).session
+        val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val deviceScope = session.createDeviceScope(deviceSelector)
 
         // Act
-        val process =
-            registerCloseable(JdwpProcessImpl(session, deviceSelector, deviceScope, 10))
+        val process = registerCloseable(JdwpProcessImpl(session, connectedDevice, 10))
         process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null &&

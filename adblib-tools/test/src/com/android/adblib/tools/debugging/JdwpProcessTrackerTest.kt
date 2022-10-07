@@ -15,11 +15,10 @@
  */
 package com.android.adblib.tools.debugging
 
-import com.android.adblib.DeviceSelector
-import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
+import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -51,8 +50,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val hostServices = createHostServices(fakeAdb)
+        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
         val pid11 = 11
 
@@ -79,12 +78,12 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
             Assert.assertNull(fakeDevice.getClient(pid11))
         }
 
-        val jdwpTracker = JdwpProcessTracker(hostServices.session, deviceSelector)
+        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
         // Collecting the flow deterministically is a little tricky, as the list of events
         // in the flow depend on how fast FakeAdbServer emits events from the "track-jdwp"
         // event and how fast adblib collects and emits these events in the jdwp tracker
         // flow.
-        jdwpTracker.createFlow().takeWhile { processList ->
+        jdwpTracker.processesFlow.takeWhile { processList ->
             // The goal here is to collect 3 list of processes in `listOfProcessList`
             // * One with a single process
             // * One with 2 processes
@@ -150,7 +149,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                           listOfProcessList[1].first { it.pid == pid10 })
 
         val process10 = listOfProcessList[0].first { it.pid == pid10 }
-        Assert.assertEquals(deviceSelector, process10.device)
+        Assert.assertEquals(connectedDevice, process10.device)
         Assert.assertEquals(pid10, process10.pid)
         Assert.assertFalse(process10.scope.isActive)
     }
@@ -171,16 +170,16 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val hostServices = createHostServices(fakeAdb)
+        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
         val pid11 = 11
         fakeDevice.startClient(pid10, 100, "a.b.c", false)
         fakeDevice.startClient(pid11, 101, "a.b.c.e", true)
-        val jdwpTracker = JdwpProcessTracker(hostServices.session, deviceSelector)
+        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
 
         // Act
-        val processListFlow = jdwpTracker.createFlow()
+        val processListFlow = jdwpTracker.processesFlow
         val (process10, process11) = processListFlow
             .mapNotNull { list ->
                 if (list.size == 2) {
@@ -222,14 +221,14 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val hostServices = createHostServices(fakeAdb)
+        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
         val pid11 = 11
 
         // Act
         val listOfProcessList = CopyOnWriteArrayList<List<JdwpProcess>>()
-        val jdwpTracker = JdwpProcessTracker(hostServices.session, deviceSelector)
+        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
         launch {
             fakeDevice.startClient(pid10, 0, "a.b.c", false)
             fakeDevice.startClient(pid11, 0, "a.b.c.e", false)
@@ -238,9 +237,11 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
             fakeAdb.disconnectDevice(fakeDevice.deviceId)
         }
 
-        jdwpTracker.createFlow().collect {
-            listOfProcessList.add(it)
-        }
+        jdwpTracker.scope.launch {
+            jdwpTracker.processesFlow.collect {
+                listOfProcessList.add(it)
+            }
+        }.join()
 
         // Assert
         // We don't assert anything, the fact we reached this point means the
@@ -263,8 +264,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val hostServices = createHostServices(fakeAdb)
+        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
 
         // Act
@@ -272,8 +273,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
         exceptionRule.expectMessage("My Test Exception")
         fakeDevice.startClient(pid10, 0, "a.b.c", false)
 
-        val jdwpTracker = JdwpProcessTracker(hostServices.session, deviceSelector)
-        jdwpTracker.createFlow().collect {
+        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        jdwpTracker.processesFlow.collect {
             throw Exception("My Test Exception")
         }
 
@@ -297,9 +298,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val hostServices = createHostServices(fakeAdb)
-        //hostServices.session.host.setTestLoggerMinLevel(AdbLogger.Level.VERBOSE)
+        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
 
         // Act
@@ -307,8 +307,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
         exceptionRule.expectMessage("My Test Exception")
         fakeDevice.startClient(pid10, 0, "a.b.c", false)
 
-        val jdwpTracker = JdwpProcessTracker(hostServices.session, deviceSelector)
-        jdwpTracker.createFlow().collect {
+        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        jdwpTracker.processesFlow.collect {
             cancel("My Test Exception")
         }
 

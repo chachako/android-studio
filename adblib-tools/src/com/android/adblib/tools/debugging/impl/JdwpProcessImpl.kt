@@ -16,7 +16,9 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
-import com.android.adblib.DeviceSelector
+import com.android.adblib.ConnectedDevice
+import com.android.adblib.scope
+import com.android.adblib.selector
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcess
@@ -29,7 +31,6 @@ import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.retained
 import com.android.adblib.utils.closeOnException
 import com.android.adblib.utils.createChildScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -57,8 +58,7 @@ private val PROCESS_PROPERTIES_RETRY_DURATION = Duration.ofSeconds(2)
  */
 internal class JdwpProcessImpl(
   session: AdbSession,
-  override val device: DeviceSelector,
-  deviceScope: CoroutineScope,
+  override val device: ConnectedDevice,
   override val pid: Int
 ) : JdwpProcess, AutoCloseable {
 
@@ -66,7 +66,7 @@ internal class JdwpProcessImpl(
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))
 
-    override val scope = deviceScope.createChildScope()
+    override val scope = device.scope.createChildScope(isSupervisor = true)
 
     override val propertiesFlow = stateFlow.asStateFlow()
 
@@ -91,14 +91,15 @@ internal class JdwpProcessImpl(
      */
     private val jdwpSessionRef = ReferenceCountedResource(session, session.host.ioDispatcher) {
         /**
-         * This value is from DDMLIB, using it should help avoid potential back compat issues
-         * if someone depends on this somehow
+         * This value is from DDMLIB, using it should help avoid potential backward compatibility
+         * issues if someone depends on this somehow.
          */
         val JDWP_SESSION_FIRST_PACKET_ID = 0x40000000
 
-        JdwpSession.openJdwpSession(session, device, pid, JDWP_SESSION_FIRST_PACKET_ID).closeOnException { jdwpSession ->
-            SharedJdwpSession.create(session, pid, jdwpSession)
-        }
+        JdwpSession.openJdwpSession(session, device.selector, pid, JDWP_SESSION_FIRST_PACKET_ID)
+            .closeOnException { jdwpSession ->
+                SharedJdwpSession.create(session, pid, jdwpSession)
+            }
     }
 
     private val collector = JdwpProcessPropertiesCollector(session, pid, jdwpSessionRef)

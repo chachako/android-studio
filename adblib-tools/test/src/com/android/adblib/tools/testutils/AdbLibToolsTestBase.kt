@@ -20,11 +20,17 @@ import com.android.adblib.AdbChannelProvider
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbHostServices
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.SOCKET_CONNECT_TIMEOUT_MS
+import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.isOnline
+import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.testingutils.TestingAdbSessionHost
 import com.android.fakeadbserver.DeviceState
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
 import org.hamcrest.CoreMatchers
 import org.junit.Assert
 import org.junit.Rule
@@ -90,6 +96,19 @@ open class AdbLibToolsTestBase {
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
         return fakeDevice
+    }
+
+
+    protected suspend fun waitForOnlineConnectedDevice(
+        session: AdbSession,
+        serialNumber: String
+    ): ConnectedDevice {
+        return session.connectedDevicesTracker.connectedDevices
+            .mapNotNull { connectedDevices ->
+                connectedDevices.firstOrNull { device ->
+                    device.isOnline && device.serialNumber == serialNumber
+                }
+            }.first()
     }
 
     protected inline fun <reified T> assertThrows(block: () -> Unit) {
