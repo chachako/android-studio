@@ -24,6 +24,7 @@ import com.android.build.gradle.options.Version.VERSION_4_1
 import com.android.build.gradle.options.Version.VERSION_4_2
 import com.android.build.gradle.options.Version.VERSION_7_0
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_0
+import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_1
 import com.android.build.gradle.options.Version.VERSION_7_2
 import com.android.build.gradle.options.Version.VERSION_7_3
 import com.android.build.gradle.options.Version.VERSION_BEFORE_4_0
@@ -134,7 +135,6 @@ enum class BooleanOption(
     ENABLE_LOCAL_TESTING("android.bundletool.enableLocalTesting", false, FeatureStage.Experimental),
     DISABLE_MINSDKLIBRARY_CHECK("android.unsafe.disable.minSdkLibraryCheck", false, FeatureStage.Experimental),
     ENABLE_INSTRUMENTATION_TEST_DESUGARING("android.experimental.library.desugarAndroidTest", false, FeatureStage.Experimental),
-    ENABLE_GLOBAL_SYNTHETICS("android.enableGlobalSyntheticsGeneration", false, FeatureStage.Experimental),
 
     /**
      * When enabled, incompatible APKs installed on a testing device will be uninstalled automatically
@@ -236,6 +236,7 @@ enum class BooleanOption(
     ENABLE_DEXING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
     ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform.desugaring", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
     ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS("android.enableDexingArtifactTransformForExternalLibs", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
+    ENABLE_GLOBAL_SYNTHETICS("android.enableGlobalSyntheticsGeneration", true, FeatureStage.SoftlyEnforced(VERSION_8_1)),
 
     /* -------------------
      * DEPRECATED FEATURES

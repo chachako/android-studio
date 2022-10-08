@@ -112,7 +112,8 @@ private const val GLOBAL_SYNTHETICS_DIR_NAME = "global-synthetics"
 // Gradle identifies ResolvedArtifactResult by ComponentIdentifier and the file name of output file
 // or output directory. When test fixtures feature is enabled, there could be two
 // ResolvedArtifactResult with same ComponentIdentifier, so we need to make the file name different
-// (e.g. prefix dexOutput name) to avoid collision of identification.
+// (e.g. prefix dexOutput name) to avoid collision of identification. We should consider moving away
+// from this approach when https://github.com/gradle/gradle/issues/18458 is addressed.
 fun computeDexDirName(dexOutput: File): String = dexOutput.name + "_" + DEX_DIR_NAME
 fun computeKeepRulesFileName(dexOutput: File): String = dexOutput.name + "_" + KEEP_RULES_FILE_NAME
 fun computeGlobalSyntheticsDirName(dexOutput: File): String = dexOutput.name + "_" + GLOBAL_SYNTHETICS_DIR_NAME

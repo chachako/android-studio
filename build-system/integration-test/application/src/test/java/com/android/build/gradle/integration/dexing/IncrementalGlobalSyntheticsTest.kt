@@ -179,5 +179,5 @@ class IncrementalGlobalSyntheticsTest {
         Truth.assertThat(oldTimeStamp != Files.getLastModifiedTime(file.toPath()))
     }
 
-    private fun executor() = app.executor().with(BooleanOption.ENABLE_GLOBAL_SYNTHETICS, true)
+    private fun executor() = app.executor()
 }

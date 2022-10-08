@@ -69,9 +69,7 @@ class GlobalSyntheticsFeatureTest {
 
     @Test
     fun basicTest() {
-        project.executor()
-            .with(BooleanOption.ENABLE_GLOBAL_SYNTHETICS, true)
-            .run("assembleDebug")
+        project.executor().run("assembleDebug")
 
         checkPackagedGlobal("Landroid/icu/util/IllformedLocaleException;")
     }

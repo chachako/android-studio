@@ -100,7 +100,7 @@ class BooleanOptionTest {
                 BooleanOption.ENABLE_DUPLICATE_CLASSES_CHECK,
                 BooleanOption.MINIMAL_KEEP_RULES,
                 BooleanOption.EXCLUDE_RES_SOURCES_FOR_RELEASE_BUNDLES,
-                BooleanOption.RUN_LINT_IN_PROCESS
+                BooleanOption.RUN_LINT_IN_PROCESS,
         )
 
         val violatingOptions = BooleanOption.values().filter {

@@ -273,7 +273,7 @@ dependencies {
         project.executor().run("mergeExtDexDebug")
         val transformCacheDir = project.location.testLocation.gradleCacheDir
         assertThat(transformCacheDir.walk()
-                .filter { it.invariantSeparatorsPath.endsWith("lib-1.0/classes.dex") }
+                .filter { it.invariantSeparatorsPath.endsWith("lib-1.0/lib-1.0_dex/classes.dex") }
                 .single()).exists()
 
         project.buildFile.appendText(
@@ -286,7 +286,7 @@ dependencies {
         )
         project.executor().run("mergeExtDexDebug")
         assertThat(transformCacheDir.walk()
-                .filter { it.invariantSeparatorsPath.endsWith("lib-2.0/classes.dex") }
+                .filter { it.invariantSeparatorsPath.endsWith("lib-2.0/lib-2.0_dex/classes.dex") }
                 .single()).exists()
     }
 

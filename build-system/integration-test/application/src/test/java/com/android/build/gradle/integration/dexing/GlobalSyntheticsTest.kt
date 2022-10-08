@@ -193,6 +193,22 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         checkPackagedGlobal(exceptionGlobalDex)
     }
 
+
+    // basic check for disabling global synthetics generation
+    @Test
+    fun testDisableGlobalSynthetics() {
+        createExceptionGlobalSourceFile(
+            app.mainSrcDir.resolve("com/example/app/$exceptionGlobalTriggerClass.java"),
+            "com.example.app",
+            exceptionGlobalTriggerClass
+        )
+        executor()
+            .with(BooleanOption.ENABLE_GLOBAL_SYNTHETICS, false)
+            .run("assembleDebug")
+
+        checkPackagedGlobal(exceptionGlobalDex, 0)
+    }
+
     private fun createExceptionGlobalSourceFile(source: File, pkg: String, name: String) {
         source.let {
             it.parentFile.mkdirs()
@@ -229,7 +245,7 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         )
     }
 
-    private fun checkPackagedGlobal(global: String) {
+    private fun checkPackagedGlobal(global: String, expectedCount: Int = 1) {
         val apk = app.getApk(GradleTestProject.ApkType.DEBUG)
 
         // there should only be a single global synthetics of specific type in the apk
@@ -237,8 +253,8 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
             AndroidArchive.checkValidClassName(global)
             it.classes.keys.contains(global)
         }
-        Truth.assertThat(dexes.size).isEqualTo(1)
+        Truth.assertThat(dexes.size).isEqualTo(expectedCount)
     }
 
-    private fun executor() = project.executor().with(BooleanOption.ENABLE_GLOBAL_SYNTHETICS, true)
+    private fun executor() = project.executor()
 }

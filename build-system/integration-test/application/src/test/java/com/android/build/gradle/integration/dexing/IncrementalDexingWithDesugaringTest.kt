@@ -320,19 +320,19 @@ class IncrementalDexingWithDesugaringTest(
                 }
                 ANDROID_LIB -> { classFullName ->
                     if (withMinSdk24Plus) {
-                        findDexTransformDir(androidLib).resolve("transformed/debug/$classFullName.dex")
+                        findDexTransformDir(androidLib).resolve("transformed/debug/debug_dex/$classFullName.dex")
                     } else {
-                        findDexTransformDir(androidLib).resolve("transformed/classes/classes.dex")
+                        findDexTransformDir(androidLib).resolve("transformed/classes/classes_dex/classes.dex")
                     }
                 }
                 ANDROID_LIB_WITH_POST_JAVAC_CLASSES -> { _ ->
-                    findDexTransformDir(androidLib).resolve("transformed/classes/classes.dex")
+                    findDexTransformDir(androidLib).resolve("transformed/classes/classes_dex/classes.dex")
                 }
                 JAVA_LIB -> { classFullName ->
                     if (withMinSdk24Plus) {
-                        findDexTransformDir(javaLib).resolve("transformed/main/$classFullName.dex")
+                        findDexTransformDir(javaLib).resolve("transformed/main/main_dex/$classFullName.dex")
                     } else {
-                        findDexTransformDir(javaLib).resolve("transformed/jetified-javalib/classes.dex")
+                        findDexTransformDir(javaLib).resolve("transformed/jetified-javalib/jetified-javalib_dex/classes.dex")
                     }
                 }
             }
