@@ -17,17 +17,9 @@ package com.android.adblib.tools
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbDeviceServices
-import com.android.adblib.AdbFailResponseException
-import com.android.adblib.AdbFeatures
-import com.android.adblib.AdbProtocolErrorException
 import com.android.adblib.DeviceSelector
-import com.android.adblib.ShellCollector
-import com.android.adblib.utils.TextShellCollector
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import com.android.adblib.TextShellCollector
 import kotlinx.coroutines.flow.first
-import java.io.IOException
-import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 

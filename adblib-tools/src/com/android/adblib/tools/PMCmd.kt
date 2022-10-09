@@ -18,7 +18,7 @@ package com.android.adblib.tools
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.DeviceSelector
-import com.android.adblib.utils.TextShellCollector
+import com.android.adblib.TextShellCollector
 import kotlinx.coroutines.flow.Flow
 
 internal class PMCmd(deviceServices: AdbDeviceServices) : PM(deviceServices) {

@@ -19,7 +19,7 @@ import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.DeviceSelector
 import com.android.adblib.RemoteFileMode
-import com.android.adblib.utils.TextShellCollector
+import com.android.adblib.TextShellCollector
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
