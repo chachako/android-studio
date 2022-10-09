@@ -111,7 +111,7 @@ message CpuStartResponse {
 
 message StartupProfilingRequest {
   int64 device_id = 1;
-  CpuTraceConfiguration configuration = 2;
+  TraceConfiguration configuration = 2;
 }
 
 message StartupProfilingResponse {
@@ -143,7 +143,7 @@ message CpuStopResponse {
 // INSTRUMENTED is support only when ART is the profiler.
 message CpuProfilingAppStartRequest {
   Session session = 1;
-  CpuTraceConfiguration configuration = 2;
+  TraceConfiguration configuration = 2;
 }
 
 // Returns the status and absolute path location (on device) where the trace
@@ -157,8 +157,8 @@ message CpuProfilingAppStartResponse {
 // Request profiling of app (identified by its |session|) to stop.
 message CpuProfilingAppStopRequest {
   Session session = 1;
-  CpuTraceType trace_type = 2;
-  CpuTraceMode trace_mode = 3;
+  TraceType trace_type = 2;
+  TraceMode trace_mode = 3;
   // This is needed to stop any ongoing trace, since traces
   // are mapped via the process's name in the daemon as part
   // of the new pipeline change.

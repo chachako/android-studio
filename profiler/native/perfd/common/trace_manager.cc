@@ -26,8 +26,7 @@ static const int64_t kTraceRecordBufferSize = 10;
 
 CaptureInfo* TraceManager::StartCapture(
     int64_t request_timestamp_ns,
-    const proto::CpuTraceConfiguration& configuration,
-    TraceStartStatus* status) {
+    const proto::TraceConfiguration& configuration, TraceStartStatus* status) {
   std::lock_guard<std::recursive_mutex> lock(capture_mutex_);
 
   const auto& app_name = configuration.app_name();
@@ -57,17 +56,17 @@ CaptureInfo* TraceManager::StartCapture(
     // ART tracing for pre-O which is not handled by the daemon.
     bool startup_profiling =
         configuration.initiation_type() == proto::INITIATED_BY_STARTUP;
-    if (user_options.trace_type() == proto::CpuTraceType::SIMPLEPERF) {
+    if (user_options.trace_type() == proto::TraceType::SIMPLEPERF) {
       success = simpleperf_manager_->StartProfiling(
           app_name, configuration.abi_cpu_arch(),
           user_options.sampling_interval_us(), configuration.temp_path(),
           &error_message, startup_profiling);
-    } else if (user_options.trace_type() == proto::CpuTraceType::ATRACE) {
+    } else if (user_options.trace_type() == proto::TraceType::ATRACE) {
       int acquired_buffer_size_kb = 0;
       success = atrace_manager_->StartProfiling(
           app_name, kAtraceBufferSizeInMb, &acquired_buffer_size_kb,
           configuration.temp_path(), &error_message);
-    } else if (user_options.trace_type() == proto::CpuTraceType::PERFETTO) {
+    } else if (user_options.trace_type() == proto::TraceType::PERFETTO) {
       // Perfetto always acquires the proper buffer size.
       int acquired_buffer_size_kb = kPerfettoBufferSizeInMb * 1024;
       // TODO: We may want to pass this in from studio for a more flexible
@@ -78,7 +77,7 @@ CaptureInfo* TraceManager::StartCapture(
           app_name, configuration.abi_cpu_arch(), config,
           configuration.temp_path(), &error_message);
     } else {
-      auto mode = user_options.trace_mode() == proto::CpuTraceMode::INSTRUMENTED
+      auto mode = user_options.trace_mode() == proto::TraceMode::INSTRUMENTED
                       ? ActivityManager::INSTRUMENTED
                       : ActivityManager::SAMPLING;
       success = activity_manager_->StartProfiling(
@@ -129,13 +128,13 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
     Stopwatch stopwatch;
     auto trace_type =
         ongoing_capture->configuration.user_options().trace_type();
-    if (trace_type == proto::CpuTraceType::SIMPLEPERF) {
+    if (trace_type == proto::TraceType::SIMPLEPERF) {
       stop_status = simpleperf_manager_->StopProfiling(app_name, need_trace,
                                                        &error_message);
-    } else if (trace_type == proto::CpuTraceType::ATRACE) {
+    } else if (trace_type == proto::TraceType::ATRACE) {
       stop_status =
           atrace_manager_->StopProfiling(app_name, need_trace, &error_message);
-    } else if (trace_type == proto::CpuTraceType::PERFETTO) {
+    } else if (trace_type == proto::TraceType::PERFETTO) {
       stop_status = perfetto_manager_->StopProfiling(&error_message);
     } else {  // Profiler is ART
       stop_status = activity_manager_->StopProfiling(

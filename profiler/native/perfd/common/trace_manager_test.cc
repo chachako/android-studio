@@ -27,11 +27,11 @@
 #include "utils/termination_service.h"
 
 using google::protobuf::util::MessageDifferencer;
-using profiler::proto::CpuTraceConfiguration;
-using profiler::proto::CpuTraceMode;
-using profiler::proto::CpuTraceType;
+using profiler::proto::TraceConfiguration;
+using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
+using profiler::proto::TraceType;
 
 using std::string;
 using testing::HasSubstr;
@@ -123,10 +123,10 @@ struct TraceManagerTest : testing::Test {
     std::unique_ptr<TraceManager> trace_manager =
         ConfigureDefaultTraceManager(config);
     // Start an atrace recording.
-    CpuTraceConfiguration configuration;
+    TraceConfiguration configuration;
     configuration.set_app_name("fake_app");
     auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(CpuTraceType::ATRACE);
+    user_options->set_trace_type(TraceType::ATRACE);
     user_options->set_buffer_size_in_mb(8);
 
     TraceStartStatus start_status;
@@ -166,10 +166,10 @@ struct TraceManagerTest : testing::Test {
     std::unique_ptr<TraceManager> trace_manager =
         ConfigureDefaultTraceManager(config);
     // Start a perfetto recording.
-    CpuTraceConfiguration configuration;
+    TraceConfiguration configuration;
     configuration.set_app_name("fake_app");
     auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(CpuTraceType::PERFETTO);
+    user_options->set_trace_type(TraceType::PERFETTO);
     user_options->set_buffer_size_in_mb(8);
 
     TraceStartStatus start_status;
@@ -212,10 +212,10 @@ TEST_F(TraceManagerTest, StopSimpleperfTraceWhenDaemonTerminated) {
       ConfigureDefaultTraceManager(config);
 
   // Start a Simpleperf recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(CpuTraceType::SIMPLEPERF);
+  user_options->set_trace_type(TraceType::SIMPLEPERF);
 
   TraceStartStatus start_status;
   auto* capture = trace_manager->StartCapture(0, configuration, &start_status);
@@ -264,11 +264,11 @@ TEST_F(TraceManagerTest, StopArtTraceWhenDaemonTerminated) {
           new PerfettoManager(std::unique_ptr<Perfetto>(new FakePerfetto())))};
 
   // Start an ART recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_mode(CpuTraceMode::SAMPLED);
-  user_options->set_trace_type(CpuTraceType::ART);
+  user_options->set_trace_mode(TraceMode::SAMPLED);
+  user_options->set_trace_type(TraceType::ART);
 
   TraceStartStatus start_status;
   auto* capture = trace_manager.StartCapture(0, configuration, &start_status);
@@ -313,11 +313,11 @@ TEST_F(TraceManagerTest, AlwaysUseFixedSizeForAtrace) {
           new PerfettoManager(std::unique_ptr<Perfetto>(new FakePerfetto())))};
 
   // Start a System Trace recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_mode(CpuTraceMode::INSTRUMENTED);
-  user_options->set_trace_type(CpuTraceType::ATRACE);
+  user_options->set_trace_mode(TraceMode::INSTRUMENTED);
+  user_options->set_trace_type(TraceType::ATRACE);
 
   user_options->set_buffer_size_in_mb(21);  // set an unexpected number.
 
@@ -362,11 +362,11 @@ TEST_F(TraceManagerTest, AlwaysUseFixedSizeForPerfetto) {
       std::move(perfetto_manager)};
 
   // Start a System Trace recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_mode(CpuTraceMode::SAMPLED);
-  user_options->set_trace_type(CpuTraceType::PERFETTO);
+  user_options->set_trace_mode(TraceMode::SAMPLED);
+  user_options->set_trace_type(TraceType::PERFETTO);
 
   user_options->set_buffer_size_in_mb(21);  // set an unexpected number.
 
@@ -397,10 +397,10 @@ TEST_F(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
       ConfigureDefaultTraceManager(config);
 
   // Start a recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(CpuTraceType::SIMPLEPERF);
+  user_options->set_trace_type(TraceType::SIMPLEPERF);
 
   TraceStartStatus start_status1;
   auto* capture =
@@ -460,10 +460,10 @@ TEST_F(TraceManagerTest, StartStopSequence) {
       ConfigureDefaultTraceManager(config);
 
   // Start a recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(CpuTraceType::ATRACE);
+  user_options->set_trace_type(TraceType::ATRACE);
   user_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
@@ -499,10 +499,10 @@ TEST_F(TraceManagerTest, GetOngoingCapture) {
       ConfigureDefaultTraceManager(config);
 
   // Start a recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(CpuTraceType::ATRACE);
+  user_options->set_trace_type(TraceType::ATRACE);
   user_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
@@ -537,10 +537,10 @@ TEST_F(TraceManagerTest, GetCaptures) {
       ConfigureDefaultTraceManager(config);
 
   // Start a recording.
-  CpuTraceConfiguration configuration;
+  TraceConfiguration configuration;
   configuration.set_app_name("fake_app1");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(CpuTraceType::ATRACE);
+  user_options->set_trace_type(TraceType::ATRACE);
   user_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;

@@ -24,14 +24,14 @@
 
 using grpc::ServerContext;
 using grpc::Status;
-using profiler::proto::CpuTraceConfiguration;
-using profiler::proto::CpuTraceMode;
 using profiler::proto::CpuTraceOperationRequest;
 using profiler::proto::CpuTraceOperationResponse;
-using profiler::proto::CpuTraceType;
+using profiler::proto::TraceConfiguration;
 using profiler::proto::TraceInitiationType;
+using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
+using profiler::proto::TraceType;
 
 namespace profiler {
 Status InternalCpuServiceImpl::SendTraceEvent(
@@ -44,12 +44,12 @@ Status InternalCpuServiceImpl::SendTraceEvent(
   ProcessManager process_manager;
   std::string app_name(process_manager.GetCmdlineForPid(pid));
   if (request->has_start()) {
-    CpuTraceConfiguration configuration;
+    TraceConfiguration configuration;
     configuration.set_app_name(app_name);
     configuration.set_initiation_type(TraceInitiationType::INITIATED_BY_API);
     auto* user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(CpuTraceType::ART);
-    user_options->set_trace_mode(CpuTraceMode::INSTRUMENTED);
+    user_options->set_trace_type(TraceType::ART);
+    user_options->set_trace_mode(TraceMode::INSTRUMENTED);
 
     TraceStartStatus start_status;
     auto* capture = trace_manager_->StartCapture(request->timestamp(),

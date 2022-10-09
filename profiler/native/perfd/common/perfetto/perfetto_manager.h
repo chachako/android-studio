@@ -18,7 +18,7 @@
 #define PERFD_COMMON_PERFETTO_PERFETTO_MANAGER_H_
 
 #include "perfd/common/perfetto/perfetto.h"
-#include "proto/cpu.grpc.pb.h"
+#include "proto/trace.grpc.pb.h"
 #include "protos/perfetto/config/perfetto_config.grpc.pb.h"
 #include "utils/fs/file_system.h"
 

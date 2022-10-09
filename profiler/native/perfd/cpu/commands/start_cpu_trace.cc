@@ -17,7 +17,7 @@
 
 #include "perfd/cpu/commands/trace_command_utils.h"
 #include "perfd/sessions/sessions_manager.h"
-#include "proto/cpu.pb.h"
+#include "proto/trace.pb.h"
 
 #include <vector>
 

@@ -25,7 +25,7 @@
 #include <thread>
 
 #include "perfd/common/atrace/atrace.h"
-#include "proto/cpu.grpc.pb.h"
+#include "proto/trace.grpc.pb.h"
 #include "utils/clock.h"
 #include "utils/fs/file_system.h"
 

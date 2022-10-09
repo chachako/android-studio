@@ -23,7 +23,7 @@
 #include <string>
 
 #include "perfd/common/simpleperf/simpleperf.h"
-#include "proto/cpu.grpc.pb.h"
+#include "proto/trace.grpc.pb.h"
 #include "utils/fs/disk_file_system.h"
 #include "utils/fs/file_system.h"
 #include "utils/fs/memory_file_system.h"

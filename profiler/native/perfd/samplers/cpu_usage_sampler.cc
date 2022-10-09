@@ -18,7 +18,6 @@
 #include "daemon/event_buffer.h"
 #include "perfd/cpu/cpu_usage_sampler.h"
 #include "proto/common.pb.h"
-#include "proto/cpu.pb.h"
 
 namespace profiler {
 

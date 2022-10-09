@@ -16,7 +16,7 @@
 #ifndef PERFD_COMMON_CAPTURE_INFO_H_
 #define PERFD_COMMON_CAPTURE_INFO_H_
 
-#include "proto/cpu.grpc.pb.h"
+#include "proto/trace.grpc.pb.h"
 
 namespace profiler {
 
@@ -31,7 +31,7 @@ struct CaptureInfo {
   // |end_timestamp| being -1 means the capture is in progress.
   int64_t end_timestamp;
   // The last start capture request processed successfully.
-  profiler::proto::CpuTraceConfiguration configuration;
+  profiler::proto::TraceConfiguration configuration;
   // The status associated with starting the capture.
   profiler::proto::TraceStartStatus start_status;
   // The status associated with stopping the capture.

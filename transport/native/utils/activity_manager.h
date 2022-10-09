@@ -23,7 +23,7 @@
 #include <string>
 
 #include "bash_command.h"
-#include "proto/cpu.grpc.pb.h"
+#include "proto/trace.grpc.pb.h"
 
 namespace profiler {
 

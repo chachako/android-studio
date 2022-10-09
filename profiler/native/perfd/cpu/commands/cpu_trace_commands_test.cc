@@ -37,8 +37,8 @@
 using google::protobuf::util::MessageDifferencer;
 using std::string;
 
-using profiler::proto::CpuTraceConfiguration;
-using profiler::proto::CpuTraceType;
+using profiler::proto::TraceConfiguration;
+using profiler::proto::TraceType;
 
 namespace profiler {
 
@@ -85,7 +85,7 @@ class CpuTraceCommandsTest : public testing::Test {
     // Execute the start command
     trace_config_.set_app_name("fake_app");
     auto* user_options = trace_config_.mutable_user_options();
-    user_options->set_trace_type(CpuTraceType::PERFETTO);
+    user_options->set_trace_type(TraceType::PERFETTO);
 
     // Start the event writer to listen for incoming events on a separate
     // thread.
@@ -121,7 +121,7 @@ class CpuTraceCommandsTest : public testing::Test {
   FakeClock clock_;
   std::shared_ptr<FakePerfetto> perfetto_;
   EventBuffer event_buffer_;
-  CpuTraceConfiguration trace_config_;
+  TraceConfiguration trace_config_;
   std::unique_ptr<TraceManager> trace_manager_;
   std::unique_ptr<Daemon> daemon_;
   std::vector<proto::Event> events_;

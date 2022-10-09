@@ -27,7 +27,7 @@
 #include "perfd/common/perfetto/perfetto_manager.h"
 #include "perfd/common/simpleperf/simpleperf.h"
 #include "perfd/common/simpleperf/simpleperf_manager.h"
-#include "proto/cpu.grpc.pb.h"
+#include "proto/trace.grpc.pb.h"
 #include "proto/transport.grpc.pb.h"
 #include "utils/activity_manager.h"
 #include "utils/clock.h"
@@ -93,7 +93,7 @@ class TraceManager final {
   // logic is handled via the app, so this method will only log and generate
   // the |CaptureInfo| record without calling any trace commands.
   CaptureInfo* StartCapture(int64_t request_timestamp_ns,
-                            const proto::CpuTraceConfiguration& configuration,
+                            const proto::TraceConfiguration& configuration,
                             proto::TraceStartStatus* status);
 
   // Request to stop an ongoing trace. Returns the cached CaptureInfo with
@@ -107,7 +107,7 @@ class TraceManager final {
   // simpleperf while doing atrace, so users can correlate callstacks.
   // TODO: this current does not validate whether we are stopping a specific
   // trace (e.g. it stops any ongoing trace), the more correct logic would be
-  // to pass in a |CpuTraceConfiguration| and validate we are stopping the
+  // to pass in a |TraceConfiguration| and validate we are stopping the
   // correct one.
   CaptureInfo* StopCapture(int64_t request_timestamp_ns,
                            const std::string& app_name, bool need_trace,

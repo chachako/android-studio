@@ -35,14 +35,14 @@ using profiler::Log;
 using profiler::SteadyClock;
 using profiler::proto::AgentService;
 using profiler::proto::Command;
-using profiler::proto::CpuTraceMode;
 using profiler::proto::CpuTraceOperationRequest;
 using profiler::proto::CpuTraceOperationResponse;
-using profiler::proto::CpuTraceType;
 using profiler::proto::EmptyResponse;
 using profiler::proto::InternalCpuService;
 using profiler::proto::SendCommandRequest;
 using profiler::proto::TraceInitiationType;
+using profiler::proto::TraceMode;
+using profiler::proto::TraceType;
 using std::string;
 
 namespace {
@@ -171,8 +171,8 @@ void TraceMonitor::SubmitStartEvent(int32_t tid, const string& fixed_path) {
           config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
 
           auto* user_option = config->mutable_user_options();
-          user_option->set_trace_type(CpuTraceType::ART);
-          user_option->set_trace_mode(CpuTraceMode::INSTRUMENTED);
+          user_option->set_trace_type(TraceType::ART);
+          user_option->set_trace_mode(TraceMode::INSTRUMENTED);
 
           EmptyResponse response;
           return stub.SendCommand(&ctx, request, &response);
@@ -255,8 +255,8 @@ void TraceMonitor::SubmitStopEvent(int tid) {
           config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
 
           auto* user_option = config->mutable_user_options();
-          user_option->set_trace_type(CpuTraceType::ART);
-          user_option->set_trace_mode(CpuTraceMode::INSTRUMENTED);
+          user_option->set_trace_type(TraceType::ART);
+          user_option->set_trace_mode(TraceMode::INSTRUMENTED);
 
           EmptyResponse response;
           return stub.SendCommand(&ctx, request, &response);
