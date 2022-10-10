@@ -157,7 +157,7 @@ message CpuProfilingAppStartResponse {
 // Request profiling of app (identified by its |session|) to stop.
 message CpuProfilingAppStopRequest {
   Session session = 1;
-  TraceType trace_type = 2;
+  UserOptions.TraceType trace_type = 2;
   TraceMode trace_mode = 3;
   // This is needed to stop any ongoing trace, since traces
   // are mapped via the process's name in the daemon as part

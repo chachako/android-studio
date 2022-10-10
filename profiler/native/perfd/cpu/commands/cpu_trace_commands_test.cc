@@ -38,7 +38,7 @@ using google::protobuf::util::MessageDifferencer;
 using std::string;
 
 using profiler::proto::TraceConfiguration;
-using profiler::proto::TraceType;
+using profiler::proto::UserOptions;
 
 namespace profiler {
 
@@ -85,7 +85,7 @@ class CpuTraceCommandsTest : public testing::Test {
     // Execute the start command
     trace_config_.set_app_name("fake_app");
     auto* user_options = trace_config_.mutable_user_options();
-    user_options->set_trace_type(TraceType::PERFETTO);
+    user_options->set_trace_type(UserOptions::PERFETTO);
 
     // Start the event writer to listen for incoming events on a separate
     // thread.

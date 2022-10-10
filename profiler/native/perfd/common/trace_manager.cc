@@ -19,6 +19,7 @@
 
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
+using profiler::proto::UserOptions;
 
 namespace profiler {
 
@@ -56,17 +57,17 @@ CaptureInfo* TraceManager::StartCapture(
     // ART tracing for pre-O which is not handled by the daemon.
     bool startup_profiling =
         configuration.initiation_type() == proto::INITIATED_BY_STARTUP;
-    if (user_options.trace_type() == proto::TraceType::SIMPLEPERF) {
+    if (user_options.trace_type() == UserOptions::SIMPLEPERF) {
       success = simpleperf_manager_->StartProfiling(
           app_name, configuration.abi_cpu_arch(),
           user_options.sampling_interval_us(), configuration.temp_path(),
           &error_message, startup_profiling);
-    } else if (user_options.trace_type() == proto::TraceType::ATRACE) {
+    } else if (user_options.trace_type() == UserOptions::ATRACE) {
       int acquired_buffer_size_kb = 0;
       success = atrace_manager_->StartProfiling(
           app_name, kAtraceBufferSizeInMb, &acquired_buffer_size_kb,
           configuration.temp_path(), &error_message);
-    } else if (user_options.trace_type() == proto::TraceType::PERFETTO) {
+    } else if (user_options.trace_type() == UserOptions::PERFETTO) {
       // Perfetto always acquires the proper buffer size.
       int acquired_buffer_size_kb = kPerfettoBufferSizeInMb * 1024;
       // TODO: We may want to pass this in from studio for a more flexible
@@ -128,13 +129,13 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
     Stopwatch stopwatch;
     auto trace_type =
         ongoing_capture->configuration.user_options().trace_type();
-    if (trace_type == proto::TraceType::SIMPLEPERF) {
+    if (trace_type == UserOptions::SIMPLEPERF) {
       stop_status = simpleperf_manager_->StopProfiling(app_name, need_trace,
                                                        &error_message);
-    } else if (trace_type == proto::TraceType::ATRACE) {
+    } else if (trace_type == UserOptions::ATRACE) {
       stop_status =
           atrace_manager_->StopProfiling(app_name, need_trace, &error_message);
-    } else if (trace_type == proto::TraceType::PERFETTO) {
+    } else if (trace_type == UserOptions::PERFETTO) {
       stop_status = perfetto_manager_->StopProfiling(&error_message);
     } else {  // Profiler is ART
       stop_status = activity_manager_->StopProfiling(

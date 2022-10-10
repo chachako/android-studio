@@ -67,14 +67,6 @@ message TraceStatusData {
   }
 }
 
-enum TraceType {
-  UNSPECIFIED_TYPE = 0;
-  ART = 1;
-  SIMPLEPERF = 2;
-  ATRACE = 3;
-  PERFETTO = 4;
-}
-
 enum TraceMode {
   UNSPECIFIED_MODE = 0;
   SAMPLED = 1;
@@ -89,6 +81,14 @@ enum TraceInitiationType {
 }
 
 message UserOptions {
+  enum TraceType {
+    UNSPECIFIED_TYPE = 0;
+    ART = 1;
+    SIMPLEPERF = 2;
+    ATRACE = 3;
+    PERFETTO = 4;
+  }
+
   // Name of the configuration. For Studio-side display only.
   string name = 1;
 

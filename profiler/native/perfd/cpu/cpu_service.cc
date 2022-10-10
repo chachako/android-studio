@@ -52,7 +52,6 @@ using profiler::proto::TraceConfiguration;
 using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
-using profiler::proto::TraceType;
 using std::map;
 using std::string;
 using std::vector;

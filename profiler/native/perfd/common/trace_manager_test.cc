@@ -31,7 +31,7 @@ using profiler::proto::TraceConfiguration;
 using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
-using profiler::proto::TraceType;
+using profiler::proto::UserOptions;
 
 using std::string;
 using testing::HasSubstr;
@@ -126,7 +126,7 @@ struct TraceManagerTest : testing::Test {
     TraceConfiguration configuration;
     configuration.set_app_name("fake_app");
     auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(TraceType::ATRACE);
+    user_options->set_trace_type(UserOptions::ATRACE);
     user_options->set_buffer_size_in_mb(8);
 
     TraceStartStatus start_status;
@@ -169,7 +169,7 @@ struct TraceManagerTest : testing::Test {
     TraceConfiguration configuration;
     configuration.set_app_name("fake_app");
     auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(TraceType::PERFETTO);
+    user_options->set_trace_type(UserOptions::PERFETTO);
     user_options->set_buffer_size_in_mb(8);
 
     TraceStartStatus start_status;
@@ -215,7 +215,7 @@ TEST_F(TraceManagerTest, StopSimpleperfTraceWhenDaemonTerminated) {
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(TraceType::SIMPLEPERF);
+  user_options->set_trace_type(UserOptions::SIMPLEPERF);
 
   TraceStartStatus start_status;
   auto* capture = trace_manager->StartCapture(0, configuration, &start_status);
@@ -268,7 +268,7 @@ TEST_F(TraceManagerTest, StopArtTraceWhenDaemonTerminated) {
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
   user_options->set_trace_mode(TraceMode::SAMPLED);
-  user_options->set_trace_type(TraceType::ART);
+  user_options->set_trace_type(UserOptions::ART);
 
   TraceStartStatus start_status;
   auto* capture = trace_manager.StartCapture(0, configuration, &start_status);
@@ -317,7 +317,7 @@ TEST_F(TraceManagerTest, AlwaysUseFixedSizeForAtrace) {
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
   user_options->set_trace_mode(TraceMode::INSTRUMENTED);
-  user_options->set_trace_type(TraceType::ATRACE);
+  user_options->set_trace_type(UserOptions::ATRACE);
 
   user_options->set_buffer_size_in_mb(21);  // set an unexpected number.
 
@@ -366,7 +366,7 @@ TEST_F(TraceManagerTest, AlwaysUseFixedSizeForPerfetto) {
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
   user_options->set_trace_mode(TraceMode::SAMPLED);
-  user_options->set_trace_type(TraceType::PERFETTO);
+  user_options->set_trace_type(UserOptions::PERFETTO);
 
   user_options->set_buffer_size_in_mb(21);  // set an unexpected number.
 
@@ -400,7 +400,7 @@ TEST_F(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(TraceType::SIMPLEPERF);
+  user_options->set_trace_type(UserOptions::SIMPLEPERF);
 
   TraceStartStatus start_status1;
   auto* capture =
@@ -463,7 +463,7 @@ TEST_F(TraceManagerTest, StartStopSequence) {
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(TraceType::ATRACE);
+  user_options->set_trace_type(UserOptions::ATRACE);
   user_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
@@ -502,7 +502,7 @@ TEST_F(TraceManagerTest, GetOngoingCapture) {
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(TraceType::ATRACE);
+  user_options->set_trace_type(UserOptions::ATRACE);
   user_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
@@ -540,7 +540,7 @@ TEST_F(TraceManagerTest, GetCaptures) {
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app1");
   auto user_options = configuration.mutable_user_options();
-  user_options->set_trace_type(TraceType::ATRACE);
+  user_options->set_trace_type(UserOptions::ATRACE);
   user_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
