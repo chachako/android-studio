@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -25,9 +26,30 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
+    override fun createUastHandler(context: JavaContext) =
+        object : UElementHandler() {
+            override fun visitMethod(node: UMethod) {
+                if (node.name == "onConfigurationChanged") {
+                    node.uastBody?.accept(object : AbstractUastVisitor() {
+                        override fun visitCallExpression(node: UCallExpression): Boolean {
+                            if (node.methodName == "finish" &&
+                                node.valueArgumentCount == 0
+                            ) {
+                                reportFinishInOnConfigurationChanged(node, context)
+                            }
+                            return super.visitCallExpression(node)
+                        }
+                    })
+                }
+            }
+        }
+
+    override fun getApplicableUastTypes() = listOf(UMethod::class.java)
 
     override fun getApplicableMethodNames(): List<String> {
         return listOf(
@@ -97,6 +119,20 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
         }
     }
 
+    private fun reportFinishInOnConfigurationChanged(
+        node: UCallExpression,
+        context: JavaContext
+    ) {
+        val message =
+            "Calling `finish()` within `onConfigurationChanged()` can lead to redraws"
+        context.report(
+            CHROMEOS_ON_CONFIGURATION_CHANGED,
+            node,
+            context.getLocation(node),
+            message
+        )
+    }
+
     private fun determinePropertyString(node: UCallExpression): String? {
         val firstArgument = node.valueArguments.firstOrNull()
         val reference = firstArgument as? UReferenceExpression ?: return null
@@ -106,6 +142,24 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
     companion object {
         private val IMPLEMENTATION =
             Implementation(ChromeOsSourceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+
+        @JvmField
+        val CHROMEOS_ON_CONFIGURATION_CHANGED = Issue.create(
+            id = "ChromeOsOnConfigurationChanged",
+            briefDescription = "Poor performance with APIs inside `onConfigurationChanged()`",
+            explanation = """
+                When users resize the Android emulator in Android 13 and Chrome OS, an \
+                `onConfigurationChanged()` API call occurs. If your `onConfigurationChanged()` \
+                method contains any code that can cause a redraw, your app might take a performance \
+                hit on large screens. To fix the issue, ensure your `onConfigurationChanged()` method \
+                does not contain any calls to UI redraw logic for specific elements.
+            """,
+            category = Category.CHROME_OS,
+            priority = 4,
+            severity = Severity.WARNING,
+            androidSpecific = true,
+            implementation = IMPLEMENTATION
+        ).setEnabledByDefault(true)
 
         @JvmField
         val UNSUPPORTED_LOCKED_ORIENTATION = Issue.create(

@@ -200,4 +200,76 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
             .run()
             .expect(expected)
     }
+
+    fun testFinishFoundInsideOnConfigurationChanged() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+                import android.app.Activity;
+                import android.content.pm.PackageManager;
+                import android.os.Bundle;
+
+
+                public class MainActivity extends Activity {
+
+                    @Override
+                    protected void onCreate(Bundle savedInstanceState) {
+                        super.onCreate(savedInstanceState);
+
+                        getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+                    }
+
+                    @Override
+                    protected void onConfigurationChanged(Configuration newConfig) {
+                        super.onConfigurationChanged(newConfig);
+                        finish(); // ERROR 1
+                    }
+                }
+                """
+            ).indented()
+        )
+            .issues(ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED)
+            .run()
+            .expect(
+                """
+                    src/test/pkg/MainActivity.java:19: Warning: Calling finish() within onConfigurationChanged() can lead to redraws [ChromeOsOnConfigurationChanged]
+                            finish(); // ERROR 1
+                            ~~~~~~~~
+                    0 errors, 1 warnings
+                """
+            )
+    }
+
+    fun testFinishNotFoundInsideOnConfigurationChanged() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+                import android.app.Activity;
+                import android.content.pm.PackageManager;
+                import android.os.Bundle;
+
+
+                public class MainActivity extends Activity {
+
+                    @Override
+                    protected void onCreate(Bundle savedInstanceState) {
+                        super.onCreate(savedInstanceState);
+
+                        getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+                    }
+
+                    @Override
+                    protected void onConfigurationChanged(Configuration newConfig) {
+                        super.onConfigurationChanged(newConfig);
+                    }
+                }
+                """
+            ).indented()
+        )
+            .issues(ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED)
+            .run()
+            .expectClean()
+    }
 }

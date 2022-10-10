@@ -108,6 +108,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 ChromeOsDetector.PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE,
                 ChromeOsDetector.SETTING_ORIENTATION_ON_ACTIVITY,
                 ChromeOsDetector.UNSUPPORTED_CHROME_OS_HARDWARE,
+                ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED,
                 ChromeOsSourceDetector.UNSUPPORTED_CAMERA_FEATURE,
                 ChromeOsSourceDetector.UNSUPPORTED_LOCKED_ORIENTATION,
                 CipherGetInstanceDetector.DEPRECATED_PROVIDER,
