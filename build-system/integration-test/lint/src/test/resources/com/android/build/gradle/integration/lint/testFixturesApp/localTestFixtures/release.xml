@@ -12,28 +12,28 @@
   <sourceProviders>
     <sourceProvider
         manifests="src/main/AndroidManifest.xml"
-        javaDirectories="src/main/java:src/release/java:build/generated/source/buildConfig/release:src/main/kotlin:src/release/kotlin"
-        resDirectories="build/generated/res/resValues/release:src/release/res:src/main/res"
-        assetsDirectories="src/release/assets:src/main/assets"/>
+        javaDirectories="src/main/java:src/release/java:src/main/kotlin:src/release/kotlin"
+        resDirectories="src/main/res:src/release/res"
+        assetsDirectories="src/main/assets:src/release/assets"/>
   </sourceProviders>
   <testSourceProviders>
     <sourceProvider
         manifests="src/test/AndroidManifest.xml"
         javaDirectories="src/test/java:src/testRelease/java:src/test/kotlin:src/testRelease/kotlin"
-        assetsDirectories="src/testRelease/assets:src/test/assets"
+        assetsDirectories="src/test/assets:src/testRelease/assets"
         unitTest="true"/>
     <sourceProvider
         manifests="src/androidTest/AndroidManifest.xml"
-        javaDirectories="src/androidTest/java:src/androidTestRelease/java:build/generated/source/buildConfig/androidTest/release:src/androidTest/kotlin:src/androidTestRelease/kotlin"
-        resDirectories="build/generated/res/resValues/androidTest/release:src/androidTestRelease/res:src/androidTest/res"
-        assetsDirectories="src/androidTestRelease/assets:src/androidTest/assets"
+        javaDirectories="src/androidTest/java:src/androidTestRelease/java:src/androidTest/kotlin:src/androidTestRelease/kotlin"
+        resDirectories="src/androidTest/res:src/androidTestRelease/res"
+        assetsDirectories="src/androidTest/assets:src/androidTestRelease/assets"
         androidTest="true"/>
   </testSourceProviders>
   <testFixturesSourceProviders>
     <sourceProvider
         manifests="src/testFixtures/AndroidManifest.xml"
         javaDirectories="src/testFixtures/java:src/testFixturesRelease/java:src/testFixtures/kotlin:src/testFixturesRelease/kotlin"
-        assetsDirectories="src/testFixturesRelease/assets:src/testFixtures/assets"/>
+        assetsDirectories="src/testFixtures/assets:src/testFixturesRelease/assets"/>
   </testFixturesSourceProviders>
   <mainArtifact
       classOutputs="build/intermediates/javac/release/classes:build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/R.jar"

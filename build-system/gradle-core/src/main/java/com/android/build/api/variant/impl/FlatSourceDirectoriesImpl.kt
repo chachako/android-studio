@@ -72,6 +72,8 @@ class FlatSourceDirectoriesImpl(
                 }
             }
 
+    internal fun getVariantSources(): Provider<List<DirectoryEntry>> = variantSources
+
     internal fun addSources(sourceDirectories: Iterable<DirectoryEntry>) {
         sourceDirectories.forEach(::addSource)
     }

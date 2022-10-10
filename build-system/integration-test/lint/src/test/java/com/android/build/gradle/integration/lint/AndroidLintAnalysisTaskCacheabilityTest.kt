@@ -214,6 +214,9 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                 } else {
                     "lint-partial-debug.xml"
                 }
+
+            // First check that the contents of partialResultsDir1 and partialResultsDir2 are
+            // identical
             listOf(partialResultsDir1, partialResultsDir2).forEach {
                 assertThat(it.listFiles()?.asList())
                     .containsExactlyElementsIn(
@@ -224,9 +227,9 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                 .isEqualTo(File(partialResultsDir2, lintDefiniteFileName).readText())
             assertThat(File(partialResultsDir1, lintPartialFileName).readText())
                 .isEqualTo(File(partialResultsDir2, lintPartialFileName).readText())
+
+            // Then for all subsequent checks, we only need to check partialResultsDir1
             assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                .contains("{$moduleName*projectDir}")
-            assertThat(File(partialResultsDir2, lintDefiniteFileName).readText())
                 .contains("{$moduleName*projectDir}")
             if (moduleName == ":java-lib") {
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
@@ -241,9 +244,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                 // There are no lint issues in the java library's build directory, so only check for
                 // the build directory encoding in the android modules.
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*sourceProvider*0*javaDir*2}")
-                assertThat(File(partialResultsDir2, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*sourceProvider*0*javaDir*2}")
+                    .contains("{$moduleName*buildDir}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
                     .contains("{$moduleName*debug*sourceProvider*0*manifest*1}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
@@ -266,14 +267,6 @@ class AndroidLintAnalysisTaskCacheabilityTest {
             assertThat(File(partialResultsDir1, lintPartialFileName).readText())
                 .doesNotContain(extraSourceDirMap[moduleName]!!.name)
             assertThat(File(partialResultsDir1, lintPartialFileName).readText())
-                .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir2, lintDefiniteFileName).readText())
-                .doesNotContain(extraSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir2, lintDefiniteFileName).readText())
-                .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir2, lintPartialFileName).readText())
-                .doesNotContain(extraSourceDirMap[moduleName]!!.name)
-            assertThat(File(partialResultsDir2, lintPartialFileName).readText())
                 .doesNotContain(extraTestSourceDirMap[moduleName]!!.name)
         }
     }
