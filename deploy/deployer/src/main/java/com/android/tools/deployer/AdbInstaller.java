@@ -273,6 +273,9 @@ public class AdbInstaller extends Installer {
                     "mkdir", "-p", Deployer.INSTALLER_DIRECTORY, Deployer.INSTALLER_TMP_DIRECTORY
                 },
                 Timeouts.SHELL_MKDIR);
+
+        // We use 775 instead of 770 so the app user is able to copy the agent when we invoke the
+        // cp command with run-as. 0005 allows for rx by others.
         runShell(
                 new String[] {"chmod", "-R", "775", Deployer.BASE_DIRECTORY}, Timeouts.SHELL_CHMOD);
 
