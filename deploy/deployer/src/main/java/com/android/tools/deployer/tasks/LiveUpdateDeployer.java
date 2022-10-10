@@ -20,8 +20,10 @@ import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.AdbClient;
 import com.android.tools.deployer.Installer;
 import com.android.tools.idea.protobuf.ByteString;
+import com.android.utils.ILogger;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -40,6 +42,12 @@ import java.util.Map;
  * effort on respond time instead.
  */
 public class LiveUpdateDeployer {
+
+    private final ILogger logger;
+
+    public LiveUpdateDeployer(ILogger logger) {
+        this.logger = logger;
+    }
 
     /** Inputs for updating Live Literal. */
     public static class UpdateLiveLiteralParam {
@@ -281,7 +289,7 @@ public class LiveUpdateDeployer {
                 errors.add(new UpdateLiveEditError(failure.getLiveLiteralResponse().getExtra()));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e, Arrays.toString(errors.toArray()));
         }
         return errors;
     }
@@ -397,8 +405,7 @@ public class LiveUpdateDeployer {
         try {
             installer.recompose(builder.build());
         } catch (IOException e) {
-            // TODO: All the printStackTrace in this class should be logged to a logger.
-            e.printStackTrace();
+            logger.error(e, "Recompose error");
         }
     }
 
@@ -429,7 +436,7 @@ public class LiveUpdateDeployer {
                 return false;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e, "Cannot retrieve Compose Status");
         }
         return true;
     }
