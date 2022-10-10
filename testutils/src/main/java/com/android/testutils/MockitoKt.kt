@@ -18,6 +18,7 @@ package com.android.testutils
 import org.junit.rules.ExternalResource
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
+import org.mockito.InOrder
 import org.mockito.MockSettings
 import org.mockito.MockedStatic
 import org.mockito.MockedStatic.Verification
@@ -132,6 +133,11 @@ object MockitoKt {
     * @See MockedStatic.when
     */
     fun <T> MockedStatic<*>.whenever(verification: Verification): OngoingStubbing<T> = `when`(verification)
+
+    /** Wrapper around [Mockito.inOrder] that can take a block. */
+    inline fun inOrder(vararg mocks: Any, block: InOrder.() -> Unit) {
+        with(Mockito.inOrder(*mocks), block)
+    }
 }
 
 /**
