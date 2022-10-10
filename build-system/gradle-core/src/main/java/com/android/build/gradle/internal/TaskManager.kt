@@ -226,6 +226,7 @@ import com.android.build.gradle.tasks.VerifyLibraryResourcesTask
 import com.android.build.gradle.tasks.ZipMergingTask
 import com.android.build.gradle.tasks.factory.AndroidUnitTest
 import com.android.build.gradle.tasks.registerDataBindingOutputs
+import com.android.buildanalyzer.common.TaskCategoryIssue
 import com.android.builder.core.BuilderConstants
 import com.android.builder.core.ComponentType
 import com.android.builder.dexing.DexingType
@@ -2756,6 +2757,12 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                     InternalArtifactType.FEATURE_SHRUNK_JAVA_RES,
                     AndroidArtifacts.ArtifactType.FEATURE_SHRUNK_JAVA_RES,
                     DOT_JAR)
+        }
+
+        if (creationConfig.debuggable) {
+            globalConfig.buildAnalyzerIssueReporter?.issues?.add(
+                TaskCategoryIssue.MINIFICATION_ENABLED_IN_DEBUG_BUILD
+            )
         }
 
         R8ParallelBuildService.RegistrationAction(

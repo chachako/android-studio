@@ -61,7 +61,12 @@ enum class TaskCategoryIssue(val taskCategory: TaskCategory, val severity: Sever
     /**
      * Non-incremental Java annotation processor warning.
      */
-    JAVA_NON_INCREMENTAL_ANNOTATION_PROCESSOR(TaskCategory.JAVA, Severity.WARNING);
+    JAVA_NON_INCREMENTAL_ANNOTATION_PROCESSOR(TaskCategory.JAVA, Severity.WARNING),
+
+    /**
+     * Performance warning for enabling minification in debug builds.
+     */
+    MINIFICATION_ENABLED_IN_DEBUG_BUILD(TaskCategory.OPTIMIZATION, Severity.WARNING);
 
     enum class Severity {
         WARNING,
