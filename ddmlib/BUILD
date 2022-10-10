@@ -54,6 +54,7 @@ kotlin_library(
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:net.sf.kxml.kxml2",
+        "@maven//:org.jetbrains.annotations",
     ],
 )
 
@@ -114,7 +115,6 @@ java_library(
 maven_library(
     name = "tools.ddmlib",
     srcs = glob([
-        "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
     bundled_deps = [

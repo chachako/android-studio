@@ -641,7 +641,6 @@ com/android/tools/common
 com/android/tools/ddms/ddmlib
   META-INF/
   META-INF/MANIFEST.MF
-  META-INF/ddmlib.kotlin_module
   NOTICE
   app_processes.proto
   com/

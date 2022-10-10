@@ -13,9 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ddmlib.internal.commands
+package com.android.ddmlib.internal.commands;
 
-data class CommandResult(val success:Boolean, val message:String) {
-    constructor() : this(true, "")
-    constructor(message: String) : this(false, message)
+public final class CommandResult {
+    private boolean success;
+    private String message;
+
+    public CommandResult() {
+        this(true, "");
+    }
+
+    public CommandResult(String message) {
+        this(false, message);
+    }
+
+    public CommandResult(boolean success, String message) {
+        this.success = success;
+        this.message = message;
+    }
+
+    public boolean getSuccess() {
+        return this.success;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
 }
