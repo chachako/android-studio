@@ -1,0 +1,10 @@
+apply plugin: 'com.android.tools.dackka'
+
+
+dependencies {
+    api project(':base:gradle-api')
+    api project(':base:build-system:gradle-settings-api')
+    provided gradleApi()
+    provided project(':base:builder-model')
+    provided libs.guava
+}
