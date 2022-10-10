@@ -88,22 +88,23 @@ enum TraceInitiationType {
   INITIATED_BY_STARTUP = 3;
 }
 
+message UserOptions {
+  // Name of the configuration. For Studio-side display only.
+  string name = 1;
+
+  TraceMode trace_mode = 2;
+
+  TraceType trace_type = 3;
+
+  // When using ATrace/Perfetto, the size of the buffer that holds tracing
+  // data.
+  int32 buffer_size_in_mb = 4;
+
+  // When using sampling, the sampling interval in microseconds.
+  int32 sampling_interval_us = 5;
+}
+
 message TraceConfiguration {
-  message UserOptions {
-    // Name of the configuration. For Studio-side display only.
-    string name = 1;
-
-    TraceMode trace_mode = 2;
-
-    TraceType trace_type = 3;
-
-    // When using ATrace/Perfetto, the size of the buffer that holds tracing
-    // data.
-    int32 buffer_size_in_mb = 4;
-
-    // When using sampling, the sampling interval in microseconds.
-    int32 sampling_interval_us = 5;
-  }
 
   UserOptions user_options = 1;
 
