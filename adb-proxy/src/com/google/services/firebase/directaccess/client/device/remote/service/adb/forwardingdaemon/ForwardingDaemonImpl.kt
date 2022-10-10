@@ -198,7 +198,7 @@ internal class ForwardingDaemonImpl(
 
     suspend fun onState(newState: DeviceState) {
       if (newState in onlineStates) {
-        lock.withLock { waiters.forEach { it.unlock() } }
+        lock.withLock { waiters.forEach { if (it.isLocked) it.unlock() } }
       }
     }
   }
