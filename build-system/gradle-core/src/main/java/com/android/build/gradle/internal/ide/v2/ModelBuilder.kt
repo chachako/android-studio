@@ -610,8 +610,7 @@ class ModelBuilder<
                 variant.services,
                 variant.isCoreLibraryDesugaringEnabledLintCheck,
                 variant.minSdkVersion,
-                variant.global.compileSdkHashString,
-                variant.global.bootClasspath
+                variant.global
             ).files.toList(),
         )
     }
@@ -739,8 +738,7 @@ class ModelBuilder<
                 component.services,
                 coreLibDesugaring,
                 component.minSdkVersion,
-                component.global.compileSdkHashString,
-                component.global.bootClasspath
+                component.global
             ).files.toList()
         )
     }

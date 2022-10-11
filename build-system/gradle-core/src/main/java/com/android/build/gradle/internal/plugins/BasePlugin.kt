@@ -211,6 +211,7 @@ abstract class BasePlugin<
                 createCustomLintPublishConfig(project),
                 createCustomLintChecksConfig(project),
                 createAndroidJarConfig(project),
+                createFakeDependencyConfig(project),
                 createSettingsOptions()
             )
         }
@@ -462,6 +463,15 @@ abstract class BasePlugin<
             androidJarConfig.description = "Configuration providing various types of Android JAR file"
             androidJarConfig.isCanBeConsumed = false
             return androidJarConfig
+        }
+        private fun createFakeDependencyConfig(project: Project): Configuration {
+            val fakeJarService = getBuildService(
+                project.gradle.sharedServices,
+                FakeDependencyJarBuildService::class.java,
+            ).get()
+
+            val fakeDependency = project.dependencies.create(project.files(fakeJarService.lazyCachedFakeJar))
+            return project.configurations.detachedConfiguration(fakeDependency)
         }
     }
 

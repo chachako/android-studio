@@ -57,6 +57,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 
 class GlobalTaskCreationConfigImpl(
@@ -69,6 +70,7 @@ class GlobalTaskCreationConfigImpl(
     override val lintPublish: Configuration,
     override val lintChecks: Configuration,
     private val androidJar: Configuration,
+    override val fakeDependency: Configuration,
     override val settingsOptions: SettingsOptions
 ) : GlobalTaskCreationConfig, BootClasspathConfig by bootClasspathConfig {
 

@@ -128,6 +128,9 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
     // configurations that may need to be accessible
     val lintPublish: Configuration
     val lintChecks: Configuration
+    //  configuration with an empty jar as input, to allow deriving of things depending
+    //  on AGP itself in a cacheable way by custom Gradle artifact transforms
+    val fakeDependency: Configuration
 
     // Options from the settings plugin
     val settingsOptions: SettingsOptions

@@ -22,14 +22,10 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.dependency.GenericTransformParameters
 import com.android.build.gradle.internal.dependency.VariantDependencies.Companion.CONFIG_NAME_CORE_LIBRARY_DESUGARING
-import com.android.build.gradle.internal.services.FakeDependencyJarBuildService
 import com.android.build.gradle.internal.services.TaskCreationServices
-import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.builder.dexing.D8DesugaredMethodsGenerator
-import com.android.builder.packaging.JarFlinger
-import com.android.builder.utils.SynchronizedFile
 import com.android.sdklib.AndroidTargetHash
-import com.android.tools.r8.Version
 import com.google.common.io.ByteStreams
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.transform.CacheableTransform
@@ -48,7 +44,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
-import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
@@ -61,7 +56,6 @@ import java.util.zip.ZipInputStream
 // The name of desugar config json file
 private const val DESUGAR_LIB_CONFIG_FILE = "desugar.json"
 private const val ANDROID_SUBDIR = "android"
-private const val FAKE_DEPENDENCY_JAR = "FakeDependency.jar"
 
 // The output of L8 invocation, which is the dex output of desugar lib jar
 const val DESUGAR_LIB_DEX = "_internal-desugar-lib-dex"
@@ -130,33 +124,24 @@ fun getDesugaredMethods(
     services: TaskCreationServices,
     coreLibDesugar: Boolean,
     minSdkVersion: AndroidVersion,
-    compileSdkVersion: String?,
-    bootclasspath: Provider<List<RegularFile>>
+    global: GlobalTaskCreationConfig
 ): FileCollection {
-
-    val fakeJarService = getBuildService(
-        services.buildServiceRegistry, FakeDependencyJarBuildService::class.java
-    ).get()
 
     val desugaredMethodsFiles = services.fileCollection()
 
     val coreLibDesugarConfig =
         services.configurations.findByName(CONFIG_NAME_CORE_LIBRARY_DESUGARING)!!
-    if (coreLibDesugar && compileSdkVersion != null) {
+    if (coreLibDesugar && global.compileSdkHashString != null) {
         val minSdk = minSdkVersion.getFeatureLevel()
-        val compileSdk = AndroidTargetHash.getPlatformVersion(compileSdkVersion)!!.featureLevel
+        val compileSdk = AndroidTargetHash.getPlatformVersion(global.compileSdkHashString)!!.featureLevel
         registerDesugarLibLintTransform(services, minSdk, compileSdk)
         desugaredMethodsFiles.from(
             getDesugarLibLintFromTransform(coreLibDesugarConfig, minSdk, compileSdk)
         )
     }
 
-    val fakeJar = fakeJarService.lazyCachedFakeJar
-    val fakeDependency = services.dependencies.create(services.files(fakeJar))
-    val adhocConfiguration = services.configurations.detachedConfiguration(fakeDependency)
-
     desugaredMethodsFiles.fromDisallowChanges(
-        getD8DesugarMethodFileFromTransform(adhocConfiguration, coreLibDesugar)
+        getD8DesugarMethodFileFromTransform(global.fakeDependency, coreLibDesugar)
     )
     return desugaredMethodsFiles
 }

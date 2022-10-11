@@ -1513,8 +1513,7 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                         creationConfig.services,
                         coreLibDesugaring,
                         creationConfig.minSdkVersion,
-                        creationConfig.global.compileSdkHashString,
-                        creationConfig.global.bootClasspath
+                        creationConfig.global
                 )
         ).disallowChanges()
 
