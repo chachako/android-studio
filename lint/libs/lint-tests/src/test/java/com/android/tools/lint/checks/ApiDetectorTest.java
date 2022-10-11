@@ -8134,6 +8134,37 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void testChecksSdkIntAtLeast() {
+        // Regression test for https://issuetracker.google.com/251722662
+        lint().files(
+                        kotlin(
+                                ""
+                                        + "import androidx.annotation.ChecksSdkIntAtLeast;\n"
+                                        + "class MyClassOk(\n"
+                                        + "    myPropertyParam: Boolean\n"
+                                        + ") {\n"
+                                        + "   @ChecksSdkIntAtLeast(api = 32)\n"
+                                        + "   private val myProperty: Boolean = myPropertyParam\n"
+                                        + "   init {\n"
+                                        + "       if (myProperty) {\n"
+                                        + "           android.R.color.system_accent1_800\n"
+                                        + "       }\n"
+                                        + "   }\n"
+                                        + "}\n"
+                                        + "class MyClassBroken(\n"
+                                        + "    @ChecksSdkIntAtLeast(api = 32) private val myProperty: Boolean\n"
+                                        + ") {\n"
+                                        + "   init {\n"
+                                        + "       if (myProperty) {\n"
+                                        + "           android.R.color.system_accent1_800\n"
+                                        + "       }\n"
+                                        + "   }\n"
+                                        + "}"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expectClean();
+    }
+
     @Override
     protected void checkReportedError(
             @NonNull Context context,

@@ -1023,6 +1023,11 @@ class VersionChecks(
                         }
                     }
                 }
+            } else if (resolved is PsiParameter) {
+                val validFromAnnotation = getValidFromAnnotation(resolved)
+                if (validFromAnnotation != null) {
+                    return validFromAnnotation
+                }
             } else if (resolved is PsiMethod &&
                 element is UQualifiedReferenceExpression &&
                 element.selector is UCallExpression
