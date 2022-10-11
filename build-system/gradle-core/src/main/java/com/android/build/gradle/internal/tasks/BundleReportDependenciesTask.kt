@@ -68,8 +68,10 @@ abstract class BundleReportDependenciesTask : NonIncrementalTask() {
 
         val featureAppDeps = LinkedList<AppDependencies>()
 
-        featureDeps.files.forEach {
-            featureAppDeps.add(AppDependencies.parseFrom(FileInputStream(it)))
+        featureDeps.files.forEach { file ->
+            file.inputStream().buffered().use {
+                featureAppDeps.add(AppDependencies.parseFrom(it))
+            }
         }
 
         val repoToIndexMap = mutableMapOf<Repository, Int>()
