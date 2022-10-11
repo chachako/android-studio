@@ -55,6 +55,8 @@ enum class TaskCategory(val isPrimary: Boolean = false, val description: String 
     COMPILED_CLASSES(isPrimary = true, description = "Tasks that process the output of compilation tasks."),
     GRADLE(isPrimary = true, description = "Core tasks created by Gradle."),
     MISC(isPrimary = true, description = "Miscellaneous Android Gradle Plugin tasks."),
+    BUILD_SCRIPT(isPrimary = true, description = "Tasks defined in the build script."),
+    BUILD_SOURCE(isPrimary = true, description = "Tasks created by plugins defined in the buildSrc."),
     UNKNOWN(isPrimary = true, description = "Third-Party plugin tasks."),
 
     // ---------------------------------------------------------------------------------------------
