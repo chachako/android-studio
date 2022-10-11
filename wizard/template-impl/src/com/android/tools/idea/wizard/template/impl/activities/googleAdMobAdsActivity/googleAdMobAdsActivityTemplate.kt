@@ -54,7 +54,7 @@ val googleAdMobAdsActivityTemplate
 
     category = Category.Google
     formFactor = FormFactor.Mobile
-    screens = listOf(WizardUiContext.ActivityGallery, WizardUiContext.MenuEntry, WizardUiContext.NewProject, WizardUiContext.NewModule)
+    screens = listOf(WizardUiContext.ActivityGallery, WizardUiContext.MenuEntry, WizardUiContext.NewModule)
 
     lateinit var layoutName: StringParameter
     val activityClass = stringParameter {
