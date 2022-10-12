@@ -254,7 +254,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
                 // Intent(Context packageContext, Class<?> cls)
                 2 -> 1
                 // Intent(String action, Uri uri, Context packageContext, Class<?> cls)
-                3 -> 2
+                4 -> 3
                 else -> return null
             }
         val classParameterType = constructorParameters[classParameterIndex]
