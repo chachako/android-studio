@@ -27,6 +27,7 @@ import org.gradle.api.provider.Provider
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import kotlin.test.assertTrue
 
 class DexingOutputSplitTransformTest {
 
@@ -46,7 +47,7 @@ class DexingOutputSplitTransformTest {
 
         val output = FakeTransformOutputs(tmp)
         transform.transform(output)
-        assert(output.outputFile.isFile)
+        assertTrue(output.outputFile.isFile)
     }
 }
 

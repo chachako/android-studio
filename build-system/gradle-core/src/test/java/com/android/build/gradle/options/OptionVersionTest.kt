@@ -18,6 +18,7 @@ package com.android.build.gradle.options
 
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 /** Tests the validity of the Android Gradle plugin versions associated with the [Option]s. */
@@ -113,23 +114,23 @@ fun checkViolatingProjectOptions(
         requirement: String,
         suggestion: String? = null) {
     val newViolations = violatingOptions - ignoreList
-    assert(newViolations.isEmpty()) {
+    assertWithMessage(
         "$requirement\n" +
                 "The following options do not meet that requirement:\n" +
                 "```\n" +
                 newViolations.joinToString(",\n") { "${it.javaClass.simpleName}.$it" } + "\n" +
                 "```\n" +
                 (suggestion
-                        ?: "If this is intended, copy the above code snippet to the ignore list of this test.")
-    }
+                    ?: "If this is intended, copy the above code snippet to the ignore list of this test.")
+    ).that(newViolations).isEmpty()
 
     val fixedViolations = ignoreList - violatingOptions
-    assert(fixedViolations.isEmpty()) {
+    assertWithMessage(
         "$requirement\n" +
                 "The following options have met that requirement:\n" +
                 "```\n" +
                 fixedViolations.joinToString(",\n") { "${it.javaClass.simpleName}.$it" } + "\n" +
                 "```\n" +
                 "Remove them from the ignore list of this test."
-    }
+    ).that(fixedViolations).isEmpty()
 }

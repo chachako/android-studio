@@ -37,6 +37,7 @@ import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -211,9 +212,9 @@ class IncrementalDexMergingTest {
                     }
                     val packageName = fullClassName.substringAfter('L').substringBeforeLast('/')
                     val previousDexFile = packageToDexFileMap.put(packageName, dexFile)
-                    assert(previousDexFile == null || previousDexFile == dexFile) {
+                    assertWithMessage(
                         "Package $packageName is found in both $previousDexFile and $dexFile"
-                    }
+                    ).that(previousDexFile == null || previousDexFile == dexFile).isTrue()
                 }
             }
         }

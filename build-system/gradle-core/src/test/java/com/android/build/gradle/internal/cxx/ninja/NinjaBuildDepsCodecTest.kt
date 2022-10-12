@@ -207,7 +207,7 @@ class NinjaBuildDepsCodecTest {
         streamNinjaDepsFile(file) { record ->
             when(record) {
                 is Version -> {
-                    assert(record.version == 3 || record.version == 4)
+                    assertThat(record.version == 3 || record.version == 4).isTrue()
                 }
                 is Dependencies -> {
                     if (!stringTable.containsId(record.targetPath)) {

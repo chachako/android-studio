@@ -58,6 +58,7 @@ import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceRegistration
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.workers.WorkerExecutor
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -265,15 +266,14 @@ class ManagedDeviceInstrumentationTestTaskTest {
         // If Utp is not enabled, then the factory should fail
         `when`(factory.unifiedTestPlatform).thenReturn(FakeGradleProperty(false))
 
-        try {
+        val e = assertThrows(
+            IllegalArgumentException::class.java
+        ) {
             factory.createTestRunner(workerExecutor, null)
-
-            assert(false)
-        } catch (e: IllegalArgumentException) {
-            assertThat(e.message)
-                .isEqualTo(
-                    "android.experimental.androidTest.useUnifiedTestPlatform must be enabled.")
         }
+        assertThat(e.message)
+            .isEqualTo(
+                "android.experimental.androidTest.useUnifiedTestPlatform must be enabled.")
     }
 
     @Test

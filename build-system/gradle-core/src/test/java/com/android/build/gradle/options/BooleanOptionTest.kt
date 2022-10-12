@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.options
 
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 /** Tests for [BooleanOption]. */
@@ -41,11 +42,12 @@ class BooleanOptionTest {
         for (index in 1 until options.size) {
             val currentOption = options[index]
             val previousOption = options[index - 1]
-            assert(order.indexOf(currentOption.stage.javaClass) >= order.indexOf(previousOption.stage.javaClass)) {
+            assertWithMessage(
                 "Boolean option `${previousOption.name}` with stage `${previousOption.stage.javaClass.name}`" +
                         " should be positioned after Boolean option `${currentOption.name}` with stage `${currentOption.stage.javaClass.name}`." +
                         " Rearrange their positions to put them in the correct groups."
-            }
+            ).that(order.indexOf(currentOption.stage.javaClass) >= order.indexOf(previousOption.stage.javaClass))
+                .isTrue()
         }
     }
 

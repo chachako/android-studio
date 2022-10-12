@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.common.utils
 
 import com.android.build.gradle.integration.common.truth.TaskStateList
+import com.google.common.truth.Truth.assertWithMessage
 
 /** Utility to assert actual task states against expected task states. */
 class TaskStateAssertionHelper(
@@ -52,17 +53,18 @@ class TaskStateAssertionHelper(
                             " but its actual state is `$actualState`")
             }
         }
-        assert(failedAssertions.isEmpty()) { failedAssertions.joinToString("\n") }
+        assertWithMessage(failedAssertions.joinToString("\n"))
+            .that(failedAssertions).isEmpty()
 
         if (exhaustive) {
-            assert(expectedTaskStates.size == actualTaskStates.size) {
+            assertWithMessage(
                 "The list of expected tasks is not exhaustive, the following tasks are missing:\n" +
                         actualTaskStates
                             .filter { it.key !in expectedTaskStates.keys}
                             .toSortedMap()
                             .map { "\"${it.key}\" to ${it.value}" }
                             .joinToString(",\n")
-            }
+            ).that(expectedTaskStates.size == actualTaskStates.size).isTrue()
         }
 
         return this

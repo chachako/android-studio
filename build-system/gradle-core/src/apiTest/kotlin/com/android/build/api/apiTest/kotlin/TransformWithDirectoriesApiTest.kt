@@ -18,7 +18,7 @@ package com.android.build.api.apiTest.kotlin
 
 import com.android.build.api.apiTest.VariantApiBaseTest
 import com.android.build.gradle.options.BooleanOption
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.File
 import kotlin.test.assertNotNull
@@ -94,17 +94,17 @@ class TransformWithDirectoriesApiTest: VariantApiBaseTest(TestType.Script) {
             withOptions(mapOf(BooleanOption.ENABLE_PROFILE_JSON to true))
             check {
                 assertNotNull(this)
-                Truth.assertThat(output).containsMatch(
+                assertThat(output).containsMatch(
                     "inputDir = .+?/app/build/intermediates/apk/debug/packageDebug"
                 )
-                Truth.assertThat(output).containsMatch(
+                assertThat(output).containsMatch(
                     "outputDir = .+?/app/build/outputs/apk/debug"
                 )
                 val outputDirLine = output.split("\n").find { it.startsWith("outputDir =") }
                 val outputDir = outputDirLine!!.substringAfter(" = ")
-                assert(File(outputDir).isDirectory)
-                assert(File(outputDir).list()!!.isNotEmpty())
-                Truth.assertThat(output).contains("BUILD SUCCESSFUL")
+                assertThat(File(outputDir).isDirectory).isTrue()
+                assertThat(File(outputDir).list()).isNotEmpty()
+                assertThat(output).contains("BUILD SUCCESSFUL")
             }
         }
     }

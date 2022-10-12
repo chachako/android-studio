@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.common.utils
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.TaskStateList
+import com.google.common.truth.Truth.assertWithMessage
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.FileTime
@@ -191,7 +192,9 @@ class IncrementalTestHelper(
                     )
                 }
             }
-            assert(assertionFailures.isEmpty()) { assertionFailures.joinToString("\n") }
+            assertWithMessage(
+                assertionFailures.joinToString("\n")
+            ).that(assertionFailures).isEmpty()
             return this
         }
     }

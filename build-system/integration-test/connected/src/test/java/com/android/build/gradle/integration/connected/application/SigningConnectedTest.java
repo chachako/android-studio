@@ -34,6 +34,7 @@ import com.android.build.gradle.options.StringOption;
 import com.android.ddmlib.IDevice;
 import com.android.tools.build.apkzlib.sign.DigestAlgorithm;
 import com.google.common.io.Resources;
+import com.google.common.truth.Truth;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -222,7 +223,7 @@ public class SigningConnectedTest {
                         error -> {
                             throw new AssumptionViolatedException(error);
                         });
-        assert device17 != null;
+        Truth.assertThat(device17).isNotNull();
         checkOnDevice(device17);
     }
 
