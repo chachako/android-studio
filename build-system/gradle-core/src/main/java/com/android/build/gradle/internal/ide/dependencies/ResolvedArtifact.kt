@@ -103,7 +103,7 @@ data class ResolvedArtifact internal constructor(
                     val pattern = "^$module-$version-(.+)\\.$extension$"
 
                     val p = Pattern.compile(pattern)
-                    val m = p.matcher(artifactFile!!.name)
+                    val m = p.matcher(artifactFile.name)
                     if (m.matches()) {
                         classifier = m.group(1)
                     }
@@ -129,20 +129,10 @@ data class ResolvedArtifact internal constructor(
             }
 
             is OpaqueComponentArtifactIdentifier -> {
-                // We have a file based dependency
-                if (dependencyType == DependencyType.JAVA) {
-                    MavenCoordinatesCacheBuildService.getMavenCoordForLocalFile(
-                        artifactFile!!,
-                        stringCachingService
-                    )
-                } else {
-                    // local aar?
-                    assert(artifactFile!!.isDirectory)
-                    MavenCoordinatesCacheBuildService.getMavenCoordForLocalFile(
-                        artifactFile!!,
-                        stringCachingService
-                    )
-                }
+                MavenCoordinatesCacheBuildService.getMavenCoordForLocalFile(
+                    artifactFile!!,
+                    stringCachingService
+                )
             }
 
             else -> {

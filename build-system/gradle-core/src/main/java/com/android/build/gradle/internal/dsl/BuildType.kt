@@ -33,6 +33,7 @@ import com.android.builder.core.ComponentType
 import com.android.builder.errors.IssueReporter
 import com.android.builder.internal.ClassFieldImpl
 import com.android.builder.model.BaseConfig
+import com.google.common.base.Preconditions
 import com.google.common.collect.Iterables
 import org.gradle.api.Action
 import org.gradle.api.Incubating
@@ -172,7 +173,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
     fun init(debugSigningConfig: SigningConfig?) {
         init()
         if (BuilderConstants.DEBUG == name) {
-            assert(debugSigningConfig != null)
+            Preconditions.checkNotNull(debugSigningConfig)
             setSigningConfig(debugSigningConfig)
         }
     }
@@ -573,9 +574,8 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
             _postProcessingConfiguration = used
             postProcessingDslMethodUsed = methodName
         } else if (_postProcessingConfiguration != used) {
-            assert(postProcessingDslMethodUsed != null)
-            val message: String
-            message = when (used) {
+            Preconditions.checkNotNull(postProcessingDslMethodUsed)
+            val message: String = when (used) {
                 PostProcessingConfiguration.POSTPROCESSING_BLOCK -> // TODO: URL with more details.
                     String.format(
                         "The `postProcessing` block cannot be used with together with the `%s` method.",
@@ -586,7 +586,6 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
                         "The `%s` method cannot be used with together with the `postProcessing` block.",
                         methodName
                     )
-                else -> throw AssertionError("Unknown value $used")
             }
             dslServices.issueReporter.reportError(
                 IssueReporter.Type.GENERIC,

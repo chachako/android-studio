@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.tasks.factory.features.BuildConfigTaskC
 import com.android.build.gradle.internal.tasks.factory.features.BuildConfigTaskCreationActionImpl
 import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.utils.FileUtils
+import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -196,7 +197,7 @@ abstract class GenerateBuildConfig : NonIncrementalTask() {
     }
 
     private fun sanitizeFlavorDimension(name: String): String {
-        assert(name.isNotEmpty())
+        Preconditions.checkArgument(name.isNotEmpty())
         // Replace invalid characters
         return name.replace("[^a-zA-Z0-9_\$]".toRegex(), "_")
     }
