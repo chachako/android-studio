@@ -281,7 +281,9 @@ abstract class MergeSourceSetFolders : NewIncrementalTask() {
     internal fun computeAssetSetList(): List<AssetSet> {
         val assetSetList: List<AssetSet>
 
-        val assetSets = assetSets.get()
+        val assetSets = mutableListOf<AssetSet>().also {
+            it.addAll(assetSets.get())
+        }
         val ignoreAssetsPatternsList = ignoreAssetsPatterns.orNull
         if (!shadersOutputDir.isPresent
             && !mlModelsOutputDir.isPresent
@@ -324,10 +326,16 @@ abstract class MergeSourceSetFolders : NewIncrementalTask() {
                 generatedAssetFolders.add(mlModelsOutputDir.get().asFile)
             }
 
-            // add the generated files to the main set.
-            val mainAssetSet = assetSets[0]
-            assert(mainAssetSet.configName == BuilderConstants.MAIN)
-            mainAssetSet.addSources(generatedAssetFolders)
+            // if generated files exist, add them to the generated source set.
+            if (generatedAssetFolders.isNotEmpty()) {
+                val generatedAssetSet = assetSets.find {
+                    it.configName.equals(BuilderConstants.GENERATED)
+                } ?: AssetSet(BuilderConstants.GENERATED, aaptEnv.orNull).also {
+                    assetSets.add(it)
+                }
+
+                generatedAssetSet.addSources(generatedAssetFolders)
+            }
 
             assetSetList.addAll(assetSets)
         }

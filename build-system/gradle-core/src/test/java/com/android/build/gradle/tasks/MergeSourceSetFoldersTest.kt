@@ -23,7 +23,6 @@ import com.android.builder.core.BuilderConstants
 import com.android.ide.common.resources.AssetSet
 import com.google.common.collect.Lists
 import java.io.File
-import java.io.IOException
 import java.util.Arrays
 import java.util.HashSet
 import java.util.LinkedHashSet
@@ -33,7 +32,6 @@ import org.gradle.api.artifacts.component.ComponentArtifactIdentifier
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
-import org.gradle.api.file.FileCollection
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
@@ -101,12 +99,14 @@ class MergeSourceSetFoldersTest {
         val file = File("src/main")
         val mainSet = createAssetSet(BuilderConstants.MAIN, file)
 
+        val generatedSet = createAssetSet(BuilderConstants.GENERATED)
+
         val shaderFile = temporaryFolder.newFile("shader")
         task.shadersOutputDir.set(shaderFile)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet)
-        // shader file should have been added to the main resource sets.
-        assertThat(mainSet.sourceFiles).containsExactly(file, shaderFile)
+        assertThat(task.computeAssetSetList()).containsExactly(mainSet, generatedSet)
+        assertThat(mainSet.sourceFiles).containsExactly(file)
+        assertThat(generatedSet.sourceFiles).containsExactly(shaderFile)
     }
 
     @Test
@@ -114,11 +114,14 @@ class MergeSourceSetFoldersTest {
         val file = File("src/main")
         val mainSet = createAssetSet(BuilderConstants.MAIN, file)
 
+        val generatedSet = createAssetSet(BuilderConstants.GENERATED)
+
         val mlModelsDir = temporaryFolder.newFile("ml")
         task.mlModelsOutputDir.set(mlModelsDir)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet)
-        assertThat(mainSet.sourceFiles).containsExactly(file, mlModelsDir)
+        assertThat(task.computeAssetSetList()).containsExactly(mainSet, generatedSet)
+        assertThat(mainSet.sourceFiles).containsExactly(file)
+        assertThat(generatedSet.sourceFiles).containsExactly(mlModelsDir)
     }
 
     @Test
@@ -132,6 +135,8 @@ class MergeSourceSetFoldersTest {
 
         val libFile = File("foo/bar/1.0").absoluteFile
         val libFile2 = File("foo/bar/2.0").absoluteFile
+
+        val generatedSet = createAssetSet(BuilderConstants.GENERATED)
 
         // the order returned by the dependency is meant to be in the wrong order (consumer first,
         // when we want dependent first for the merger), so the order in the asset set should be
@@ -148,7 +153,7 @@ class MergeSourceSetFoldersTest {
 
         assertThat(task.libraries.files).containsExactly(libFile, libFile2)
         assertThat(task.computeAssetSetList())
-            .containsExactly(librarySet2, librarySet, mainSet, debugSet)
+            .containsExactly(librarySet2, librarySet, mainSet, debugSet, generatedSet)
             .inOrder()
     }
 
