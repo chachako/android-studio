@@ -244,9 +244,14 @@ public class MockableJarGenerator {
             instructions.add(new InsnNode(Opcodes.DUP));
 
             String className = classNode.name.replace('/', '.');
-            instructions.add(new LdcInsnNode("Method " + methodNode.name + " in " + className
-                    + " not mocked. "
-                    + "See http://g.co/androidstudio/not-mocked for details."));
+            instructions.add(
+                    new LdcInsnNode(
+                            "Method "
+                                    + methodNode.name
+                                    + " in "
+                                    + className
+                                    + " not mocked. "
+                                    + "See https://developer.android.com/training/testing/local-tests#mocking-dependencies for details."));
             instructions.add(new MethodInsnNode(
                     Opcodes.INVOKESPECIAL,
                     runtimeException,

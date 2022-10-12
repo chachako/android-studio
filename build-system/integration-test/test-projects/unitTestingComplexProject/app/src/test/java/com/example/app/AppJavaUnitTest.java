@@ -113,7 +113,7 @@ public class AppJavaUnitTest {
             assertEquals(RuntimeException.class, e.getClass());
             assertTrue(e.getMessage().contains("isEmpty"));
             assertTrue(e.getMessage().contains("not mocked"));
-            assertTrue(e.getMessage().contains("androidstudio/not-mocked"));
+            assertTrue(e.getMessage().contains("local-tests#mocking-dependencies"));
         }
 
         try {
@@ -123,7 +123,7 @@ public class AppJavaUnitTest {
             assertEquals(RuntimeException.class, e.getClass());
             assertTrue(e.getMessage().contains("getThreadAllocCount"));
             assertTrue(e.getMessage().contains("not mocked"));
-            assertTrue(e.getMessage().contains("androidstudio/not-mocked"));
+            assertTrue(e.getMessage().contains("local-tests#mocking-dependencies"));
         }
 
     }
