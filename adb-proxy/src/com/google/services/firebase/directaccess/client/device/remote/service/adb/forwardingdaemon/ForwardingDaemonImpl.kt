@@ -75,6 +75,7 @@ internal class ForwardingDaemonImpl(
             deviceStateLatch.waitForOnline()
             logger.info("Device is online at port: $devicePort!")
             adbdSocket = serverSocket.accept()
+            adbdSocket.tcpNoDelay = true
             reverseService =
               ReverseService(
                 "localhost:$devicePort",
