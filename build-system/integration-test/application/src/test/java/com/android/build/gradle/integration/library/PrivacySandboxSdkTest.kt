@@ -275,13 +275,13 @@ class PrivacySandboxSdkTest {
         val extractedApks = project.getSubproject(":example-app")
                 .getIntermediateFile("extracted_apks", "debug")
                 .toPath()
-        val baseMasterApk = extractedApks.resolve("base-master.apk")
         val baseMaster2Apk = extractedApks.resolve("base-master_2.apk")
+        val baseMaster3Apk = extractedApks.resolve("base-master_3.apk")
 
-        Apk(baseMasterApk).use {
+        Apk(baseMaster2Apk).use {
             assertThat(it).doesNotExist()
         }
-        Apk(baseMaster2Apk).use {
+        Apk(baseMaster3Apk).use {
             assertThat(it).exists()
             assertThat(it).containsClass("Lcom/example/privacysandboxsdk/consumer/R;")
             assertThat(it).doesNotContainClass(ANDROID_LIB1_CLASS)
@@ -298,7 +298,7 @@ class PrivacySandboxSdkTest {
                 .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
                 .run(":example-app:extractApksFromBundleForDebug")
 
-        Apk(baseMasterApk).use {
+        Apk(baseMaster2Apk).use {
             assertThat(it).exists()
             assertThat(it).containsClass("Lcom/example/privacysandboxsdk/consumer/R;")
             assertThat(it).hasClass("Lcom/example/privacysandboxsdk/RPackage;")
@@ -311,7 +311,7 @@ class PrivacySandboxSdkTest {
             assertThat(manifestContent).doesNotContain(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
             assertThat(manifestContent).doesNotContain(MY_PRIVACY_SANDBOX_SDK_MANIFEST_REFERENCE)
         }
-        Apk(baseMaster2Apk).use {
+        Apk(baseMaster3Apk).use {
             assertThat(it).doesNotExist()
         }
 
