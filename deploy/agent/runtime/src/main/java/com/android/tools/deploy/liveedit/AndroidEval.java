@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -523,22 +525,13 @@ class AndroidEval implements Eval {
     protected Method methodLookup(
             String className, String methodName, Type[] parameterType, Type returnType)
             throws ClassNotFoundException {
-
-        Class<?>[] parameterClass = new Class[parameterType.length];
-        for (int i = 0; i < parameterClass.length; i++) {
-            parameterClass[i] = typeToClass(parameterType[i]);
-        }
-
-        Class curClass = forName(className.replace('/', '.'));
-        while (curClass != null) {
-            for (Method method : curClass.getDeclaredMethods()) {
-                if (method.getName().equals(methodName)
-                        && Type.getReturnType(method).equals(returnType)
-                        && Arrays.equals(Type.getArgumentTypes(method), parameterType)) {
-                    return method;
-                }
+        List<Method> methods = getAllDeclaredMethods(className);
+        for (Method method : methods) {
+            if (method.getName().equals(methodName)
+                    && Type.getReturnType(method).equals(returnType)
+                    && Arrays.equals(Type.getArgumentTypes(method), parameterType)) {
+                return method;
             }
-            curClass = curClass.getSuperclass();
         }
         return null;
     }
@@ -551,11 +544,12 @@ class AndroidEval implements Eval {
             return "Cannot find class '" + className + "'";
         }
         String methodName = method + desc;
-        StringBuilder msg = new StringBuilder("Cannot find '" + methodName + "' in " + className);
+        StringBuilder msg =
+                new StringBuilder("Cannot find '" + methodName + "' in " + className + "\n");
         msg.append("Found:\n");
         for (Method m : foundMethods) {
             msg.append("    '");
-            msg.append(m.getClass());
+            msg.append(m.getDeclaringClass());
             msg.append(".");
             msg.append(m.getName());
             msg.append(Arrays.toString(m.getParameterTypes()));
@@ -566,10 +560,27 @@ class AndroidEval implements Eval {
 
     private List<Method> getAllDeclaredMethods(String className) throws ClassNotFoundException {
         List<Method> methods = new ArrayList<>();
-        Class curClass = forName(className.replace('/', '.'));
-        while (curClass != null) {
-            Collections.addAll(methods, curClass.getDeclaredMethods());
-            curClass = curClass.getSuperclass();
+
+        Class<?> clazz = forName(className.replace('/', '.'));
+        LinkedList<Class<?>> queue = new LinkedList<>();
+        queue.add(clazz);
+
+        HashSet<Class<?>> visitedInterfaces = new HashSet<>();
+        while (queue.size() > 0) {
+            Class<?> clz = queue.remove();
+            Collections.addAll(methods, clz.getDeclaredMethods());
+
+            Class<?> superclass = clz.getSuperclass();
+            if (superclass != null) {
+                queue.add(superclass);
+            }
+            Class<?>[] interfaces = clz.getInterfaces();
+            for (Class<?> inter : interfaces) {
+                if (!visitedInterfaces.contains(inter)) {
+                    queue.add(inter);
+                    visitedInterfaces.add(inter);
+                }
+            }
         }
         return methods;
     }
