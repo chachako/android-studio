@@ -698,11 +698,10 @@ public class ModelBuilder<Extension extends BaseExtension>
         artifacts.addAll(variant.getExtraJavaArtifacts());
 
         Set<String> sourceGenerationTasks =
-                artifacts
-                        .stream()
+                artifacts.stream()
                         .map(BaseArtifact::getIdeSetupTaskNames)
                         .flatMap(Collection::stream)
-                        .map(taskName -> project.getPath() + ":" + taskName)
+                        .map(taskName -> TaskManager.getTaskPath(project, taskName))
                         .collect(Collectors.toSet());
 
         try {

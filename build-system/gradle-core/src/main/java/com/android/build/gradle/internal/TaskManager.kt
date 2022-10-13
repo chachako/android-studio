@@ -1657,11 +1657,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         createConnectedTestForVariant(androidTestProperties)
     }
 
-    /** Returns the full path of a task given its name.  */
-    private fun getTaskPath(taskName: String): String {
-        return if (project.rootProject === project) ":$taskName" else project.path + ':' + taskName
-    }
-
     private fun createRunUnitTestTask(unitTestCreationConfig: UnitTestCreationConfig) {
         if (unitTestCreationConfig.isUnitTestCoverageEnabled) {
            project.pluginManager.apply(JacocoPlugin::class.java)
@@ -1759,7 +1754,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                     .taskGraph
                     .whenReady { taskGraph: TaskExecutionGraph ->
                         for (reportTask in reportTasks) {
-                            if (taskGraph.hasTask(getTaskPath(reportTask))) {
+                            if (taskGraph.hasTask(getTaskPath(project, reportTask))) {
                                 taskFactory.configure(
                                         reportTask
                                 ) { task: Task -> (task as AndroidReportTask).setWillRun() }
@@ -3526,5 +3521,10 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
             // Prepend "feature-" to fileName in case a non-base module has module path ":base".
             return "feature-" + sanitizedFeatureName + Strings.nullToEmpty(fileExtension)
         }
+
+        /** Returns the full path of a task given its name.  */
+        @JvmStatic
+        fun getTaskPath(project: Project, taskName: String) =
+            if (project.rootProject === project) ":$taskName" else "${project.path}:$taskName"
     }
 }
