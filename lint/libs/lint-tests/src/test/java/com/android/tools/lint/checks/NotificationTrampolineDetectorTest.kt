@@ -117,6 +117,78 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
         )
     }
 
+    fun test4ArgIntentBroadcastTrampolineJava() {
+        lint().files(
+            broadcastReceiver,
+            java(
+                """
+                package test.pkg;
+
+                import android.app.Notification;
+                import android.app.NotificationManager;
+                import android.app.PendingIntent;
+                import android.content.Context;
+                import android.content.Intent;
+                import android.os.Build;
+
+                import androidx.core.app.NotificationCompat;
+
+                import static android.app.Notification.EXTRA_NOTIFICATION_ID;
+
+                public class NotificationTest {
+                    public static final String ACTION_LAUNCH =
+                            "test.pkg.action.LAUNCH";
+
+                    public void test(Context context, String channelId, int id, int requestCode, int flags) {
+                        Intent notificationIntent = new Intent("ACTION", Uri.parse("uri"), context, test.pkg.BroadcastTrampoline.class);
+                        PendingIntent notificationPendingIntent = PendingIntent.getBroadcast(context, requestCode, notificationIntent, flags);
+
+                        Intent broadcastIntent = new Intent(context, BroadcastTrampoline.class);
+                        broadcastIntent.setAction(ACTION_LAUNCH);
+                        broadcastIntent.putExtra(EXTRA_NOTIFICATION_ID, id);
+                        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+                        PendingIntent broadcastPendingIntent =
+                                PendingIntent.getBroadcast(context, 0, broadcastIntent, 0);
+
+                        NotificationCompat.Builder builder =
+                                new NotificationCompat.Builder(context, channelId)
+                                        .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
+                                        .setContentTitle("Notification Trampoline Test")
+                                        .setContentText("Tap this notification to launch a new receiver")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setContentIntent(notificationPendingIntent)
+                                        .setAutoCancel(true)
+                                        .addAction(android.R.drawable.ic_dialog_email, "Launch Receiver From Action",
+                                                broadcastPendingIntent);
+                        Notification notification = builder.build();
+                        NotificationManager notificationManager =
+                                context.getSystemService(NotificationManager.class);
+                        notificationManager.notify(id, notification);
+                    }
+                }
+                """
+            ).indented(),
+            *notificationStubs
+        ).run().expect(
+            """
+            src/test/pkg/NotificationTest.java:36: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
+                                    .setContentIntent(notificationPendingIntent)
+                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/BroadcastTrampoline.java:14: <No location-specific message>
+                    context.startActivity(i);
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/NotificationTest.java:38: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
+                                    .addAction(android.R.drawable.ic_dialog_email, "Launch Receiver From Action",
+                                     ^
+                src/test/pkg/BroadcastTrampoline.java:14: <No location-specific message>
+                    context.startActivity(i);
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+            2 errors, 0 warnings
+            """
+        )
+    }
+
     fun testBroadcastTrampolineKotlin() {
         lint().files(
             broadcastReceiver,
@@ -136,6 +208,72 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 class NotificationTest {
                     fun test(context: Context, channelId: String?, id: Int, requestCode: Int, flags: Int) {
                         val notificationIntent = Intent(context, BroadcastTrampoline::class.java)
+                        val notificationPendingIntent =
+                            PendingIntent.getBroadcast(context, requestCode, notificationIntent, flags)
+                        val broadcastIntent = Intent(context, BroadcastTrampoline::class.java)
+                        broadcastIntent.action = ACTION_LAUNCH
+                        broadcastIntent.putExtra(Notification.EXTRA_NOTIFICATION_ID, id)
+                        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        val broadcastPendingIntent = PendingIntent.getBroadcast(context, 0, broadcastIntent, 0)
+                        val builder = NotificationCompat.Builder(context, channelId!!)
+                            .setSmallIcon(R.drawable.ic_menu_my_calendar)
+                            .setContentTitle("Notification Trampoline Test")
+                            .setContentText("Tap this notification to launch a new receiver")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setContentIntent(notificationPendingIntent)
+                            .setAutoCancel(true)
+                            .addAction(
+                                R.drawable.ic_dialog_email, "Launch Receiver From Action",
+                                broadcastPendingIntent
+                            )
+                        val notification = builder.build()
+                        val notificationManager = context.getSystemService(
+                            NotificationManager::class.java
+                        )
+                        notificationManager.notify(id, notification)
+                    }
+                }
+                """
+            ).indented(),
+            *notificationStubs
+        ).run().expect(
+            """
+            src/test/pkg/NotificationTest.kt:27: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
+                        .setContentIntent(notificationPendingIntent)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/BroadcastTrampoline.java:14: <No location-specific message>
+                    context.startActivity(i);
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/NotificationTest.kt:29: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
+                        .addAction(
+                         ^
+                src/test/pkg/BroadcastTrampoline.java:14: <No location-specific message>
+                    context.startActivity(i);
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+            2 errors, 0 warnings
+            """
+        )
+    }
+
+    fun test4ArgIntentBroadcastTrampolineKotlin() {
+        lint().files(
+            broadcastReceiver,
+            kotlin(
+                """
+                package test.pkg
+
+                import android.R
+                import android.app.Notification
+                import android.app.NotificationManager
+                import android.app.PendingIntent
+                import android.content.Context
+                import android.content.Intent
+                import android.os.Build
+                import androidx.core.app.NotificationCompat
+
+                class NotificationTest {
+                    fun test(context: Context, channelId: String?, id: Int, requestCode: Int, flags: Int) {
+                        val notificationIntent = Intent("action", Uri.parse("uri"), context, BroadcastTrampoline::class.java)
                         val notificationPendingIntent =
                             PendingIntent.getBroadcast(context, requestCode, notificationIntent, flags)
                         val broadcastIntent = Intent(context, BroadcastTrampoline::class.java)
