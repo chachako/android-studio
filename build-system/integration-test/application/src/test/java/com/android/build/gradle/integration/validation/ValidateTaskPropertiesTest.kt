@@ -63,9 +63,13 @@ class ValidateTaskPropertiesTest {
                     paths.contains(it.replace("/prebuilts/tools/common/m2/repository/", "/../maven/repo/"))
         }
 
-        val classpath = filteredPaths
-                .joinToString {
-                    "'" + File(it).invariantSeparatorsPath + "'"
+        val classpathLists =
+            filteredPaths
+            .chunked(250) // groovy typed array setter doesn't allow more than 250 objects
+                .map { chunk ->
+                    chunk.joinToString {
+                        "'" + File(it).invariantSeparatorsPath + "'"
+                    }
                 }
 
         project.buildFile.appendText("\n" +
@@ -77,7 +81,7 @@ class ValidateTaskPropertiesTest {
                     failOnWarning.set(true)
                     enableStricterValidation.set(true)
                     classes.setFrom('${classes.invariantSeparatorsPath}')
-                    classpath.setFrom($classpath)
+                    ${classpathLists.map { "classpath.from($it)\n" }}
                 }
              }
 
