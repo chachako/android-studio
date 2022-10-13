@@ -362,7 +362,7 @@ maven_repository(
         "@maven//:com.google.guava.guava_23.0",
         "@maven//:com.google.jimfs.jimfs",
         "@maven//:com.google.protobuf.protobuf-gradle-plugin",
-        "@maven//:com.google.protobuf.protoc_3.19.2",
+        "@maven//:com.google.protobuf.protoc_3.19.3",
         "@maven//:com.google.testing.platform.core-proto",
         "@maven//:com.google.truth.extensions.truth-java8-extension",
         "@maven//:com.googlecode.jarjar.jarjar",
