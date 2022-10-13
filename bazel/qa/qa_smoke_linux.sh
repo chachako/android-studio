@@ -17,10 +17,10 @@ readonly crostini_timestamp_file="/buildbot/lastrun.out"
 
 #Have crostini tests run locally and one at a time
 if [[ $lsb_release == "crostini" ]]; then
+  # The BAZEL_* variable (credentials) is configured on the ChromeBot Host.
+  export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
   # don't use any remote cached items, some items built on Linux may not be compatible. b/172365127
   config_options="--config=_remote_base --config=sponge"
-  # Crostini will continue to use checked in credentials, refer b/196437640
-  bazel_flags="--google_credentials=tools/vendor/adt_infra_internal/rbe/data/studio-alphasource-credentials.json"
   target_filters=qa_smoke,ui_test,-qa_unreliable,-no_linux,-no_test_linux,-requires_emulator,-no_crostini
 
   current_time=$(date +"%s")
