@@ -387,7 +387,7 @@ class CheckAarMetadataTaskTest {
         task.aarFormatVersion.set(AarMetadataTask.AAR_FORMAT_VERSION)
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-28")
-        task.agpVersion.set("3.0.0-beta01")
+        task.agpVersion.set("3.0.0-beta1")
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -399,7 +399,7 @@ class CheckAarMetadataTaskTest {
 
                       1.  Dependency 'displayName' requires Android Gradle plugin 3.0.0 or higher.
 
-                          This build currently uses Android Gradle plugin 3.0.0-beta01.
+                          This build currently uses Android Gradle plugin 3.0.0-beta1.
                 """.trimIndent())
         }
     }
@@ -582,7 +582,7 @@ class CheckAarMetadataTaskTest {
     }
 
     @Test
-    fun tesMultipleFailures() {
+    fun testMultipleFailures() {
         val aarMetadataFile = temporaryFolder.newFile().also {
             writeAarMetadataFile(
                 file = it,
@@ -605,7 +605,7 @@ class CheckAarMetadataTaskTest {
         task.aarFormatVersion.set(AarMetadataTask.AAR_FORMAT_VERSION)
         task.aarMetadataVersion.set(AarMetadataTask.AAR_METADATA_VERSION)
         task.compileSdkVersion.set("android-27")
-        task.agpVersion.set("3.0.0-beta01")
+        task.agpVersion.set("3.0.0-beta1")
         task.projectPath.set(":app")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
         try {
@@ -644,7 +644,7 @@ class CheckAarMetadataTaskTest {
 
                   4.  Dependency 'displayName' requires Android Gradle plugin 3.0.0 or higher.
 
-                      This build currently uses Android Gradle plugin 3.0.0-beta01.
+                      This build currently uses Android Gradle plugin 3.0.0-beta1.
             """.trimIndent())
         }
     }
