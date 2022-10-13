@@ -33,6 +33,8 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtModifierListOwner
+import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
@@ -1468,6 +1470,93 @@ class UastTest : TestCase() {
                 //   Currently it appears on data class and its synthetic members; will fail when an upstream fix is bundled
                 assertEquals(5, uElementSet.size)
             }
+        }
+    }
+
+    fun testTextOfModifierListOfFunction() {
+        val source = kotlin(
+            """
+            annotation class MyComposable
+            class Test {
+                @MyComposable
+                fun foo() {
+                }
+            }
+            """
+        ).indented()
+
+        check(
+            source
+        ) { file ->
+            file.accept(object : AbstractUastVisitor() {
+                override fun visitMethod(node: UMethod): Boolean {
+                    if (node.isConstructor) return super.visitMethod(node)
+
+                    val javaPsiModifierList = node.modifierList
+                    assertTrue(javaPsiModifierList.textOffset > 0)
+                    assertFalse(javaPsiModifierList.textRange.isEmpty)
+                    assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
+
+                    val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
+                    assertNotNull(sourceModifierList)
+                    sourceModifierList!!
+                    assertTrue(sourceModifierList.textOffset > 0)
+                    assertFalse(sourceModifierList.textRange.isEmpty)
+                    assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
+
+                    assertEquals(sourceModifierList.text, javaPsiModifierList.text)
+                    assertEquals("@MyComposable", sourceModifierList.text)
+                    return super.visitMethod(node)
+                }
+            })
+        }
+    }
+
+    fun testTextOfModifierListOfPropertyAccessor() {
+        val source = kotlin(
+            """
+            annotation class MyComposable
+            object Test {
+                var foo3: Boolean
+                    @MyComposable
+                    get() = LocalFoo.current
+
+                class LocalFoo {
+                  companion object {
+                      const val current: Boolean = true
+                  }
+                }
+            }
+            """
+        ).indented()
+
+        check(
+            source
+        ) { file ->
+            file.accept(object : AbstractUastVisitor() {
+                override fun visitMethod(node: UMethod): Boolean {
+                    if (node.sourcePsi !is KtPropertyAccessor) return super.visitMethod(node)
+
+                    val javaPsiModifierList = node.modifierList
+                    // TODO(b/242182822): will be inverted when an upstream fix is landed
+                    assertFalse(javaPsiModifierList.textOffset > 0)
+                    // TODO(b/242182822): will be inverted when an upstream fix is landed
+                    assertTrue(javaPsiModifierList.textRange.isEmpty)
+                    assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
+
+                    val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
+                    assertNotNull(sourceModifierList)
+                    sourceModifierList!!
+                    assertTrue(sourceModifierList.textOffset > 0)
+                    assertFalse(sourceModifierList.textRange.isEmpty)
+                    assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
+
+                    // TODO(b/242182822): will be equal when an upstream fix is landed
+                    assertNotSame(sourceModifierList.text, javaPsiModifierList.text)
+                    assertEquals("@MyComposable", sourceModifierList.text)
+                    return super.visitMethod(node)
+                }
+            })
         }
     }
 }
