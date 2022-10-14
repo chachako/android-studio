@@ -19,6 +19,7 @@ package com.android.manifmerger;
 import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.SdkConstants.ATTR_NAME;
 import static com.android.SdkConstants.ATTR_PACKAGE;
+import static com.android.SdkConstants.ATTR_TAG;
 import static com.android.manifmerger.AttributeModel.Hexadecimal32BitsWithMinimumValue;
 import static com.android.manifmerger.AttributeModel.OR_MERGING_POLICY;
 import static com.android.manifmerger.AttributeModel.STRICT_MERGING_POLICY;
@@ -696,7 +697,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
         ),
 
         /** attribution (contained in manifest) */
-        ATTRIBUTION(MergeType.MERGE, DEFAULT_NO_KEY_NODE_RESOLVER),
+        ATTRIBUTION(MergeType.MERGE, new AttributeBasedNodeKeyResolver(ANDROID_URI, ATTR_TAG)),
 
         /**
          * Custom tag for any application specific element

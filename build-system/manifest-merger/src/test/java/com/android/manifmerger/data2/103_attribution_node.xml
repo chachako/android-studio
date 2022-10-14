@@ -20,6 +20,7 @@
     </application>
 
     <attribution android:tag="transcription.voice_recognition" android:label="example_1"/>
+    <attribution android:tag="another_tag" android:label="example_3"/>
 
 </manifest>
 
@@ -39,7 +40,7 @@
     </application>
 
     <attribution android:tag="transcription.voice_recognition" android:label="example_2" />
-
+    <attribution android:tag="yet_another_tag" android:label="example_3" />
 </manifest>
 
 
@@ -52,6 +53,12 @@
     <attribution
             android:label="example_2"
             android:tag="transcription.voice_recognition" />
+    <attribution
+            android:label="example_3"
+            android:tag="yet_another_tag" />
+    <attribution
+            android:label="example_3"
+            android:tag="another_tag" />
 
     <application
             android:name="com.example.TheApp"
@@ -64,6 +71,5 @@
 
 
 @errors
-
-ERROR:Attribute attribution@label value=\(example_2\) from ManifestMerger2Test0_main.xml:15:64-89
+ERROR:Attribute attribution#transcription.voice_recognition@label value=\(example_2\) from ManifestMerger2Test0_main.xml:15:64-89
     is also present at ManifestMerger2Test0_main.xml:15:64-89 value=\(example_1\).
