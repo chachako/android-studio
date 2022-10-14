@@ -16,6 +16,7 @@
 package com.android.tools.instrumentation.threading.agent;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -88,6 +89,80 @@ public class AgentTest {
         callMethod(transformedClass, instance, "uiMethod1", false);
 
         verify(mockThreadingCheckerHook).verifyOnUiThread();
+    }
+
+    @Test
+    public void testCanDisableThreadingChecksForCodeBlocks()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException {
+
+        Class<?> transformedClass =
+                loadAndTransform(SampleClasses.ClassWithDisabledViolationsCodeBlocks.class);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        int result =
+                (Integer)
+                        callMethod(
+                                transformedClass,
+                                instance,
+                                "methodWithDisabledThreadingChecks",
+                                false);
+
+        assertThat(result).isEqualTo(505);
+        verify(mockThreadingCheckerHook).verifyOnUiThread();
+        verify(mockThreadingCheckerHook, never()).verifyOnWorkerThread();
+    }
+
+    @Test
+    public void testCanDisableThreadingChecksForCodeBlocksThrowingCheckedExceptions()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException {
+
+        Class<?> transformedClass =
+                loadAndTransform(SampleClasses.ClassWithDisabledViolationsCodeBlocks.class);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        int result =
+                (Integer)
+                        callMethod(
+                                transformedClass,
+                                instance,
+                                "methodWithDisabledThreadingChecksThatThrowsCheckedExceptions",
+                                false);
+
+        assertThat(result).isEqualTo(1001);
+        verify(mockThreadingCheckerHook, never()).verifyOnUiThread();
+        verify(mockThreadingCheckerHook).verifyOnWorkerThread();
+    }
+
+    @Test
+    public void testCanNestDisabledThreadingChecksForCodeBlocks()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException {
+
+        Class<?> transformedClass =
+                loadAndTransform(SampleClasses.ClassWithDisabledViolationsCodeBlocks.class);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        callMethod(transformedClass, instance, "methodWithNestedDisabledThreadingChecks", false);
+
+        verify(mockThreadingCheckerHook).verifyOnWorkerThread();
+        verify(mockThreadingCheckerHook, never()).verifyOnUiThread();
+    }
+
+    @Test
+    public void testDisableThreadingChecksForCodeBlocks_doNotAffectOtherThreads()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException {
+
+        Class<?> transformedClass =
+                loadAndTransform(SampleClasses.ClassWithDisabledViolationsCodeBlocks.class);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        callMethod(
+                transformedClass,
+                instance,
+                "methodWithDisabledThreadingCheckSpawningAnotherThread",
+                false);
+
+        verify(mockThreadingCheckerHook).verifyOnUiThread();
+        verify(mockThreadingCheckerHook, never()).verifyOnWorkerThread();
     }
 
     @Test
@@ -358,7 +433,7 @@ public class AgentTest {
         }
     }
 
-    static void callMethod(
+    static Object callMethod(
             Class<?> clazz, Object instance, String methodName, boolean isPrivateMethod)
             throws NoSuchMethodException, IllegalAccessException {
         Method method = clazz.getDeclaredMethod(methodName);
@@ -366,7 +441,7 @@ public class AgentTest {
             method.setAccessible(true);
         }
         try {
-            method.invoke(instance);
+            return method.invoke(instance);
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
             if (!(t instanceof RuntimeException)) {

@@ -18,8 +18,10 @@ package com.android.tools.instrumentation.threading.agent.callback;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
@@ -36,6 +38,9 @@ public final class ThreadingCheckerTrampoline {
             new CopyOnWriteArrayList<>();
 
     static final AtomicLong skippedChecksCounter = new AtomicLong();
+
+    private static final ThreadLocal<Integer> insideIgnoredCounter =
+            ThreadLocal.withInitial(() -> 0);
 
     static class BaselineViolationsHolder {
         static BaselineViolations baselineViolations = BaselineViolations.fromResource();
@@ -59,10 +64,33 @@ public final class ThreadingCheckerTrampoline {
         hooks.clear();
     }
 
+    /** Disables threading violation checks. */
+    static <T> T withChecksDisabledForCallable(Callable<T> callable) throws Exception {
+        try {
+            insideIgnoredCounter.set(insideIgnoredCounter.get() + 1);
+            return callable.call();
+        } finally {
+            insideIgnoredCounter.set(insideIgnoredCounter.get() - 1);
+        }
+    }
+
+    /** Disables threading violation checks. */
+    static <T> T withChecksDisabledForSupplier(Supplier<T> supplier) {
+        try {
+            insideIgnoredCounter.set(insideIgnoredCounter.get() + 1);
+            return supplier.get();
+        } finally {
+            insideIgnoredCounter.set(insideIgnoredCounter.get() - 1);
+        }
+    }
+
     // This method is called from instrumented bytecode.
     public static void verifyOnUiThread() {
         if (hooks.isEmpty()) {
             skippedChecksCounter.incrementAndGet();
+            return;
+        }
+        if (insideIgnoredCounter.get() > 0) {
             return;
         }
         if (getBaselineViolations().isIgnored(getInstrumentedMethodStackTrace())) {
@@ -77,6 +105,9 @@ public final class ThreadingCheckerTrampoline {
     public static void verifyOnWorkerThread() {
         if (hooks.isEmpty()) {
             skippedChecksCounter.incrementAndGet();
+            return;
+        }
+        if (insideIgnoredCounter.get() > 0) {
             return;
         }
         if (getBaselineViolations().isIgnored(getInstrumentedMethodStackTrace())) {
