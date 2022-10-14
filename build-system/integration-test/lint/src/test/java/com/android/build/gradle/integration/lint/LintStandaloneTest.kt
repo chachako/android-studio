@@ -119,6 +119,35 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
         assertThat(lintVitalModelDir).exists()
     }
 
+    /**
+     * Regression test for b/253219347
+     */
+    @Test
+    fun checkAddedSrcDirFromBuildDirectory() {
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            // language=groovy
+            """
+
+                def fooTask = tasks.register("foo", com.example.FooTask.class) {
+                    getOutputDir().set(project.layout.buildDirectory.dir("fooOut"))
+                }
+
+                java {
+                    sourceSets {
+                        main {
+                            resources.srcDir(fooTask.map { it.getOutputDir().get().getAsFile() })
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        val result = getExecutor().run(":foo", ":lint")
+        ScannerSubject.assertThat(result.stdout).doesNotContain("Gradle detected a problem")
+        ScannerSubject.assertThat(result.stderr).doesNotContain("Gradle detected a problem")
+    }
+
     private fun getExecutor(): GradleTaskExecutor =
         project.executor().with(BooleanOption.RUN_LINT_IN_PROCESS, runLintInProcess)
 }

@@ -1334,11 +1334,11 @@ abstract class SourceProviderInput {
             project.layout.buildDirectory.file("fakeAndroidManifest/${sourceSet.name}/AndroidManifest.xml")
         this.manifestFiles.add(fakeManifestFile.map { it.asFile })
         this.manifestFiles.disallowChanges()
-        this.javaDirectories.fromDisallowChanges(project.provider { sourceSet.allSource.srcDirs })
+        this.javaDirectories.fromDisallowChanges(sourceSet.allSource.sourceDirectories)
         this.resDirectories.disallowChanges()
         this.assetsDirectories.disallowChanges()
         if (lintMode == LintMode.ANALYSIS) {
-            this.javaDirectoriesClasspath.from(project.provider { sourceSet.allSource.srcDirs })
+            this.javaDirectoriesClasspath.from(sourceSet.allSource.sourceDirectories)
         }
         this.javaDirectoriesClasspath.disallowChanges()
         this.resDirectoriesClasspath.disallowChanges()
