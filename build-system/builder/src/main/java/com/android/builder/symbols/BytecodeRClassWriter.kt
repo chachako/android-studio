@@ -287,7 +287,7 @@ fun generateRPackageClass(packageName: String, packageId: Int): Pair<String, Byt
             ACC_PUBLIC + ACC_FINAL + ACC_SUPER,
             internalName, null,
             "java/lang/Object", null)
-    cw.visitField(ACC_PUBLIC + ACC_STATIC + ACC_FINAL, "packageId", "I", null, packageId)
+    cw.visitField(ACC_PUBLIC + ACC_STATIC, "packageId", "I", null, packageId)
     cw.visitEnd()
     return Pair(internalName, cw.toByteArray())
 }
