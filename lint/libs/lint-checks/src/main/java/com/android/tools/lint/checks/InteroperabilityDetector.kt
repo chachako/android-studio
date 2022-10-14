@@ -44,8 +44,8 @@ import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
 import kotlin.reflect.full.declaredMemberProperties
-import org.jetbrains.kotlin.analysis.api.KtStarProjectionTypeArgument
-import org.jetbrains.kotlin.analysis.api.KtTypeArgument
+import org.jetbrains.kotlin.analysis.api.KtStarTypeProjection
+import org.jetbrains.kotlin.analysis.api.KtTypeProjection
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
 import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
@@ -331,8 +331,8 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
       val arguments = (this as? KtNonErrorClassType)?.ownTypeArguments ?: return false
       return arguments.any {
         // TODO: we won't need this typecast once studio-sdk moves to kotlinc 1.8.20-Beta or stable.
-        it is KtTypeArgument &&
-          it !is KtStarProjectionTypeArgument &&
+        it is KtTypeProjection &&
+          it !is KtStarTypeProjection &&
           it.type?.isFlexibleRecursive() == true
       }
     }
@@ -353,7 +353,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           ?.let {
             return it.get(this) as? List<*>
           }
-        return emptyList<KtTypeArgument>()
+        return emptyList<KtTypeProjection>()
       }
 
     override fun visitField(node: UField) {}
