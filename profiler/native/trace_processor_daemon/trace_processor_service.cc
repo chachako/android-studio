@@ -207,6 +207,12 @@ grpc::Status TraceProcessorServiceImpl::QueryBatch(
             request.cpu_core_counters_request(),
             query_result->mutable_cpu_core_counters_result());
       } break;
+      case QueryParameters::kPowerCounterTracksRequest: {
+        CountersRequestHandler handler(tp_.get());
+        handler.PopulatePowerCounterTracks(
+            request.power_counter_tracks_request(),
+            query_result->mutable_power_counter_tracks_result());
+      } break;
       case QueryParameters::kAndroidFrameEventsRequest: {
         AndroidFrameEventsRequestHandler handler(tp_.get());
         handler.PopulateFrameEvents(

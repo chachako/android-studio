@@ -166,6 +166,7 @@ cc_test(
         "-Itools/base/profiler/native/trace_processor_daemon",
     ],
     data = [
+        "testdata/power.trace",
         "testdata/tank.trace",
     ],
     linkstatic = 1,

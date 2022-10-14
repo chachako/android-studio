@@ -85,6 +85,7 @@ message QueryParameters {
     AndroidFrameEventsParameters android_frame_events_request = 107;
     TraceMetadataParameters trace_metadata_request = 108;
     AndroidFrameTimelineParameters android_frame_timeline_request = 109;
+    PowerCounterTracksParameters power_counter_tracks_request = 110;
   }
 
   // Returns metadata information for a process of the provided id.
@@ -135,6 +136,10 @@ message QueryParameters {
   // See https://perfetto.dev/docs/analysis/sql-tables#cpu_counter_track.
   message CpuCoreCountersParameters {}
 
+  // Returns data from all counter tracks, mostly utilized for battery counters and rails.
+  // See https://perfetto.dev/docs/data-sources/battery-counters.
+  message PowerCounterTracksParameters {}
+
   // Returns data from the Perfetto data source: android.surfaceflinger.frame.
   // See https://perfetto.dev/docs/analysis/sql-tables#frame_slice.
   // Only available from Android R.
@@ -183,6 +188,7 @@ message QueryResult {
     AndroidFrameEventsResult android_frame_events_result = 107;
     TraceMetadataResult trace_metadata_result = 108;
     AndroidFrameTimelineResult android_frame_timeline_result = 109;
+    PowerCounterTracksResult power_counter_tracks_result = 110;
   }
 
   enum QueryFailureReason {
@@ -329,6 +335,10 @@ message CpuCoreCountersResult {
     // List of counters.
     repeated Counter counter = 2;
   }
+}
+
+message PowerCounterTracksResult {
+  repeated Counter counter = 1;
 }
 
 message Counter {

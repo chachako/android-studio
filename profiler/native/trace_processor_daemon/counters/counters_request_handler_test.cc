@@ -38,8 +38,12 @@ typedef proto::ProcessCountersResult ProcessCountersResult;
 typedef ::perfetto::trace_processor::TraceProcessor TraceProcessor;
 typedef ::perfetto::trace_processor::Config Config;
 
-const std::string TESTDATA_PATH(
+// Test data file utilized for generalized counter tests.
+const std::string BASE_TESTDATA_PATH(
     "tools/base/profiler/native/trace_processor_daemon/testdata/tank.trace");
+// Test data file specific to power data (battery drain and power rails).
+const std::string POWER_TESTDATA_PATH(
+    "tools/base/profiler/native/trace_processor_daemon/testdata/power.trace");
 
 const long TANK_PROCESS_PID = 9796;
 
@@ -61,7 +65,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
 }
 
 TEST(CountersRequestHandlerTest, PopulateCounters) {
-  auto tp = LoadTrace(TESTDATA_PATH);
+  auto tp = LoadTrace(BASE_TESTDATA_PATH);
   auto handler = CountersRequestHandler(tp.get());
 
   ProcessCountersParameters params_proto;
@@ -119,8 +123,121 @@ TEST(CountersRequestHandlerTest, PopulateCounters) {
   EXPECT_EQ(counter_map[player_activity].max_value, 1.0);
 }
 
+TEST(CountersRequestHandlerTest, PopulatePowerCounterTracks) {
+  auto tp = LoadTrace(POWER_TESTDATA_PATH);
+  auto handler = CountersRequestHandler(tp.get());
+
+  proto::QueryParameters::PowerCounterTracksParameters params_proto;
+  proto::PowerCounterTracksResult result;
+  handler.PopulatePowerCounterTracks(params_proto, &result);
+
+  // With power.trace, there are 66 unique names,
+  // but only 16 power rail and 3 battery counters.
+  EXPECT_EQ(result.counter_size(), 19);
+
+  std::unordered_map<std::string, counter_accumulator> counter_map;
+
+  for (auto counter : result.counter()) {
+    counter_accumulator acc;
+    for (auto entry : counter.value()) {
+      acc.occurrences++;
+
+      acc.first_entry_ts =
+          std::min(acc.first_entry_ts, entry.timestamp_nanoseconds());
+      acc.last_entry_ts =
+          std::max(acc.last_entry_ts, entry.timestamp_nanoseconds());
+
+      acc.min_value = std::min(acc.min_value, entry.value());
+      acc.max_value = std::max(acc.max_value, entry.value());
+    }
+    counter_map[counter.name()] = acc;
+  }
+
+  std::pair<std::string, counter_accumulator> track_expected_data[] = {
+      // sql string value: power.rails.tpu
+      std::make_pair("power.S10M_VDD_TPU_uws",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         45010544.000000, 45050919.000000}),
+      std::make_pair("power.rails.modem",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         706394215.000000, 706802171.000000}),
+      // sql string value: power.rails.radio.fr
+      std::make_pair("power.rails.radio.frontend",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         329485043.000000, 329658344.000000}),
+      std::make_pair("power.rails.cpu.big",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         315816544.000000, 315851107.000000}),
+      std::make_pair("power.rails.cpu.mid",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         201472568.000000, 201538891.000000}),
+      // sql string value: power.rails.cpu.litt
+      std::make_pair("power.rails.cpu.little",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         914570290.000000, 915041009.000000}),
+      // sql string value: power.rails.system.f
+      std::make_pair("power.rails.system.fabric",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         170596149.000000, 170741769.000000}),
+      // sql string value: power.rails.memory.i
+      std::make_pair("power.rails.memory.interface",
+                     counter_accumulator{6, 8920933000000, 8925528000000,
+                                         276383853.000000, 276582588.000000}),
+      // sql string value: power.VSYS_PWR_MMWAV
+      std::make_pair("power.VSYS_PWR_MMWAVE_uws",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         29615531.000000, 29638919.000000}),
+      // sql string value: power.rails.aoc.memo
+      std::make_pair("power.rails.aoc.memory",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         101084540.000000, 101194992.000000}),
+      // sql string value: power.rails.aoc.logi
+      std::make_pair("power.rails.aoc.logic",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         59499148.000000, 59714693.000000}),
+      std::make_pair("power.rails.ddr.a",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         49491308.000000, 49530909.000000}),
+      std::make_pair("power.rails.ddr.b",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         98630257.000000, 98686276.000000}),
+      std::make_pair("power.rails.ddr.c",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         216253421.000000, 216410943.000000}),
+      std::make_pair("power.rails.gpu",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         20970895.000000, 20988306.000000}),
+      // sql string value: power.rails.display
+      std::make_pair("power.VSYS_PWR_DISPLAY_uws",
+                     counter_accumulator{6, 8920934000000, 8925530000000,
+                                         59750307.000000, 61007557.000000}),
+      std::make_pair("batt.charge_uah",
+                     counter_accumulator{6, 8920929625859, 8925520871060,
+                                         4968000.000000, 4968000.000000}),
+      std::make_pair("batt.capacity_pct",
+                     counter_accumulator{6, 8920929625859, 8925520871060,
+                                         100.000000, 100.000000}),
+      std::make_pair("batt.current_ua",
+                     counter_accumulator{6, 8920929625859, 8925520871060,
+                                         421250.000000, 448750.000000})};
+
+  for (auto track_and_acc : track_expected_data) {
+    std::string track_name = track_and_acc.first;
+    auto expected_accumulator = track_and_acc.second;
+    auto actual_accumulator = counter_map[track_name];
+
+    EXPECT_EQ(actual_accumulator.occurrences, expected_accumulator.occurrences);
+    EXPECT_EQ(actual_accumulator.first_entry_ts,
+              expected_accumulator.first_entry_ts);
+    EXPECT_EQ(actual_accumulator.last_entry_ts,
+              expected_accumulator.last_entry_ts);
+    EXPECT_EQ(actual_accumulator.min_value, expected_accumulator.min_value);
+    EXPECT_EQ(actual_accumulator.max_value, expected_accumulator.max_value);
+  }
+}
+
 TEST(CountersRequestHandlerTest, PopulateCountersNoProcessId) {
-  auto tp = LoadTrace(TESTDATA_PATH);
+  auto tp = LoadTrace(BASE_TESTDATA_PATH);
   auto handler = CountersRequestHandler(tp.get());
 
   ProcessCountersParameters params_proto;
@@ -133,7 +250,7 @@ TEST(CountersRequestHandlerTest, PopulateCountersNoProcessId) {
 }
 
 TEST(CountersRequestHandlerTest, PopulateCpuCoreCounters) {
-  auto tp = LoadTrace(TESTDATA_PATH);
+  auto tp = LoadTrace(BASE_TESTDATA_PATH);
   auto handler = CountersRequestHandler(tp.get());
 
   proto::QueryParameters::CpuCoreCountersParameters params_proto;

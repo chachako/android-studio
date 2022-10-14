@@ -19,11 +19,14 @@
 using namespace profiler::perfetto;
 using profiler::perfetto::proto::Counter;
 using profiler::perfetto::proto::CpuCoreCountersResult;
+using profiler::perfetto::proto::PowerCounterTracksResult;
 using profiler::perfetto::proto::ProcessCountersResult;
 using profiler::perfetto::proto::QueryParameters;
 
 typedef QueryParameters::CpuCoreCountersParameters CpuCoreCountersParameters;
 typedef QueryParameters::ProcessCountersParameters ProcessCountersParameters;
+typedef QueryParameters::PowerCounterTracksParameters
+    PowerCounterTracksParameters;
 
 void CountersRequestHandler::PopulateCounters(ProcessCountersParameters params,
                                               ProcessCountersResult* result) {
@@ -133,5 +136,50 @@ void CountersRequestHandler::PopulateCpuCoreCounters(
 
     auto value = it_counters.Get(3).double_value;
     counter_value_proto->set_value(value);
+  }
+}
+
+void CountersRequestHandler::PopulatePowerCounterTracks(
+    PowerCounterTracksParameters params, PowerCounterTracksResult* result) {
+  if (result == nullptr) {
+    return;
+  }
+
+  std::string query_string =
+      "SELECT t.name, c.ts, c.value "
+      "FROM counter c INNER JOIN counter_track t "
+      "     ON c.track_id = t.id "
+      "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
+      "ORDER BY c.track_id ASC, c.ts ASC;";
+
+  std::unordered_map<std::string, Counter*> counters_map;
+
+  auto it_power_count = tp_->ExecuteQuery(query_string);
+  // Query result:
+  // | name   | ts | value    |
+  // | rail.1 |  1 | 10000.00 |
+  // | rail.1 |  2 | 20000.00 |
+  // | batt.1 |  3 | 20000.00 |
+  while (it_power_count.Next()) {
+    auto counter_track_name_sql_value = it_power_count.Get(0);
+    if (counter_track_name_sql_value.is_null()) {
+      continue;
+    }
+
+    auto counter_track_name = counter_track_name_sql_value.string_value;
+
+    if (counters_map.find(counter_track_name) == counters_map.end()) {
+      counters_map[counter_track_name] = result->add_counter();
+      counters_map[counter_track_name]->set_name(counter_track_name);
+    }
+
+    auto counter_track_value_proto =
+        counters_map[counter_track_name]->add_value();
+
+    auto ts_nanos = it_power_count.Get(1).long_value;
+    counter_track_value_proto->set_timestamp_nanoseconds(ts_nanos);
+
+    auto value = it_power_count.Get(2).double_value;
+    counter_track_value_proto->set_value(value);
   }
 }
