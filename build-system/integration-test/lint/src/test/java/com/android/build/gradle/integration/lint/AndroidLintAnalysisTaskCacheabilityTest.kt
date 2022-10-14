@@ -233,13 +233,13 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                 .contains("{$moduleName*projectDir}")
             if (moduleName == ":java-lib") {
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
+                    .contains("{$moduleName*main*sourceProvider*0*javaDir*0}")
+                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
                     .contains("{$moduleName*main*sourceProvider*0*javaDir*1}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*sourceProvider*0*javaDir*2}")
+                    .contains("{$moduleName*main*testSourceProvider*0*javaDir*0}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
                     .contains("{$moduleName*main*testSourceProvider*0*javaDir*1}")
-                assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*testSourceProvider*0*javaDir*2}")
             } else {
                 // There are no lint issues in the java library's build directory, so only check for
                 // the build directory encoding in the android modules.
