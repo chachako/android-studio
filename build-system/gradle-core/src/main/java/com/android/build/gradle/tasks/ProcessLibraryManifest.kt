@@ -36,6 +36,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.manifmerger.ManifestMerger2
 import com.android.manifmerger.MergingReport
+import com.android.manifmerger.MergingReport.MergedManifestKind.AAPT_SAFE
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
@@ -192,8 +193,6 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
                 parameters.reportFile.asFile.get(),
                 LoggerWrapper.getLogger(ProcessLibraryManifest::class.java)
             )
-            val mergedXmlDocument =
-                mergingReport.getMergedXmlDocument(MergingReport.MergedManifestKind.MERGED)
             try {
                 outputMergeBlameContents(
                     mergingReport,
@@ -294,9 +293,9 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
             ).on(InternalArtifactType.PACKAGED_MANIFESTS)
 
             artifacts.setInitialProvider(
-                taskProvider
-            ) { task: ProcessLibraryManifest -> task.manifestOutputFile }
-                .on(SingleArtifact.MERGED_MANIFEST)
+                taskProvider,
+                ProcessLibraryManifest::manifestOutputFile
+            ).on(SingleArtifact.MERGED_MANIFEST)
 
             artifacts.setInitialProvider(
                 taskProvider,

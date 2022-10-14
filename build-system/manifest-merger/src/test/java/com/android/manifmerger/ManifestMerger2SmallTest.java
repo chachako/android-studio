@@ -22,6 +22,7 @@ import static com.android.SdkConstants.MANIFEST_ATTR_TITLE;
 import static com.android.SdkConstants.TAG_MODULE;
 import static com.android.manifmerger.ManifestMerger2.Invoker.Feature;
 import static com.google.common.truth.Truth.assertThat;
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -33,8 +34,12 @@ import static org.junit.Assert.fail;
 import com.android.AndroidXConstants;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.ide.common.xml.XmlFormatPreferences;
+import com.android.ide.common.xml.XmlFormatStyle;
+import com.android.ide.common.xml.XmlPrettyPrinter;
 import com.android.manifmerger.MergingReport.MergedManifestKind;
 import com.android.testutils.MockLog;
+import com.android.utils.Pair;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
@@ -2082,6 +2087,32 @@ public class ManifestMerger2SmallTest {
         }
     }
 
+    @Test
+    public void testAAPTWillNotBeGeneratedIfNoChanges() throws Exception {
+        MockLog mockLog = new MockLog();
+        String libInput =
+                "<manifest\n"
+                        + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"com.example.lib1\">\n"
+                        + "    <application android:name=\"lib1\">\n"
+                        + "        <activity android:name=\".MainActivity\"/>\n"
+                        + "    </application>\n"
+                        + "</manifest>";
+        File libFile = TestUtils.inputAsFile("testRemoveNavGraphs", libInput);
+
+        try {
+            MergingReport mergingReport =
+                    ManifestMerger2.newMerger(libFile, mockLog, ManifestMerger2.MergeType.LIBRARY)
+                            .withFeatures(Feature.MAKE_AAPT_SAFE)
+                            .merge();
+            assertThat(mergingReport.getResult()).isEqualTo(MergingReport.Result.SUCCESS);
+            assertNull(mergingReport.getMergedDocument(MergedManifestKind.AAPT_SAFE));
+            assertTrue(mergingReport.isAaptSafeManifestUnchanged());
+        } finally {
+            assertThat(libFile.delete()).named("libFile file was deleted").isTrue();
+        }
+    }
+
     /**
      * Tests related to provider tag which can have different behaviors depending on its location in
      * the xml tree.
@@ -2392,6 +2423,71 @@ public class ManifestMerger2SmallTest {
         } finally {
             assertThat(appFile.delete()).named("appFile was deleted").isTrue();
         }
+    }
+
+    @Test
+    public void testCloneAndTransformUpdate() throws Exception {
+        String appInput =
+                ""
+                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"com.example.myapplication\">\n"
+                        + "    <uses-sdk\n"
+                        + "        android:minSdkVersion=\"31\"\n"
+                        + "        android:targetSdkVersion=\"31\" />"
+                        + "    <application\n"
+                        + "        android:label=\"@string/app_name\">\n"
+                        + "         <service android:description=\"string resource\"\n"
+                        + "                  android:name=\".MainActivity\">\n"
+                        + "                  <intent-filter>\n"
+                        + "                        <action android:name=\"android.intent.action.MAIN\" />\n"
+                        + "                        <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+                        + "                  </intent-filter>\n"
+                        + "         </service>\n"
+                        + "    </application>\n"
+                        + "</manifest>";
+        Pair<Document, Boolean> output =
+                ManifestMerger2.cloneAndTransform(
+                        parse(appInput),
+                        nodeToTransform -> {
+                            if (nodeToTransform.getNodeName().equals("service")) {
+                                ((Element) nodeToTransform).setAttribute("foo", "bar");
+                                return true;
+                            }
+                            return false;
+                        },
+                        nodeToRemove -> nodeToRemove.getNodeName().equals("action"));
+        assertTrue(output.getSecond()); // document updated
+        String docString =
+                XmlPrettyPrinter.prettyPrint(
+                        output.getFirst(),
+                        XmlFormatPreferences.defaults(),
+                        XmlFormatStyle.get(output.getFirst().getDocumentElement()),
+                        null,
+                        false);
+        assertThat(docString).contains("foo=\"bar\"");
+        assertThat(docString).doesNotContain("<action");
+    }
+
+    @Test
+    public void testCloneAndTransformUnchanged() throws Exception {
+        String appInput =
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"com.example.myapplication\" >\n"
+                        + "\n"
+                        + "</manifest>";
+        Pair<Document, Boolean> output =
+                ManifestMerger2.cloneAndTransform(
+                        parse(appInput), nodeToTransform -> false, nodeToRemove -> false);
+        assertFalse(output.getSecond()); // document unchanged
+        String docString =
+                XmlPrettyPrinter.prettyPrint(
+                        output.getFirst(),
+                        XmlFormatPreferences.defaults(),
+                        XmlFormatStyle.get(output.getFirst().getDocumentElement()),
+                        "\n",
+                        false);
+        assertThat(appInput).isEqualTo(docString);
     }
 
     @Test

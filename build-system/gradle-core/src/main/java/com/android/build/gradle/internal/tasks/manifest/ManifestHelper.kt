@@ -24,6 +24,8 @@ import com.android.manifmerger.ManifestMerger2
 import com.android.manifmerger.ManifestProvider
 import com.android.manifmerger.ManifestSystemProperty
 import com.android.manifmerger.MergingReport
+import com.android.manifmerger.MergingReport.MergedManifestKind.AAPT_SAFE
+import com.android.manifmerger.MergingReport.MergedManifestKind.MERGED
 import com.android.utils.ILogger
 import com.google.common.base.Charsets
 import com.google.common.io.Files
@@ -123,10 +125,10 @@ fun mergeManifests(
 
         if (outAaptSafeManifestLocation != null) {
             save(
-                mergingReport.getMergedDocument(MergingReport.MergedManifestKind.AAPT_SAFE),
-                File(
-                    outAaptSafeManifestLocation
-                )
+                mergingReport.getMergedDocument(
+                    if (mergingReport.isAaptSafeManifestUnchanged) MERGED else AAPT_SAFE
+                ),
+                File(outAaptSafeManifestLocation)
             )
         }
         return mergingReport

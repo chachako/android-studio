@@ -18,11 +18,13 @@ package com.android.manifmerger;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.android.annotations.NonNull;
 import com.android.utils.PositionXmlParser;
 import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -57,11 +59,22 @@ public class PlaceHolderEncoderTest {
                         + "</manifest>";
         Document document = PositionXmlParser.parse(xml);
 
-        PlaceholderEncoder.visit(document);
+        visit(document.getDocumentElement());
         NodeList providers = document.getElementsByTagName("provider");
         assertThat(providers.getLength()).isEqualTo(1);
         Node provider = providers.item(0);
         Node authorities = provider.getAttributes().getNamedItem("android:authorities");
         assertThat(authorities.getNodeValue()).isEqualTo(expectedValue);
+    }
+
+    private static void visit(@NonNull Element element) {
+        PlaceholderEncoder.encode(element);
+        for (Node childNode = element.getFirstChild();
+                childNode != null;
+                childNode = childNode.getNextSibling()) {
+            if (childNode instanceof Element) {
+                visit((Element) childNode);
+            }
+        }
     }
 }

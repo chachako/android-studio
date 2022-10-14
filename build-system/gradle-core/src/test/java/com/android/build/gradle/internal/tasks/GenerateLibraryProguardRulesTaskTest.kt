@@ -90,7 +90,7 @@ class GenerateLibraryProguardRulesTaskTest {
             : GenerateLibraryProguardRulesTask.GenerateProguardRulesWorkAction.Params()
         {
             override val manifestFile = FakeObjectFactory.factory.fileProperty().fileValue(
-                File(parentFolder, "AndroidManifiest.xml"))
+                File(parentFolder, "AndroidManifest.xml"))
             override val proguardOutputFile =
                 FakeObjectFactory.factory.fileProperty().fileValue(previousProguardOutput)
             override val inputResourcesDir =
