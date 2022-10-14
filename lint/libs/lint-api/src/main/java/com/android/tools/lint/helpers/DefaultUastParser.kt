@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UDeclarationsExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UastFacade
@@ -280,6 +281,14 @@ open class DefaultUastParser(
             val psiElement = element.sourcePsi
             if (psiElement != null) {
                 return getLocation(context, psiElement).withSource(element)
+            }
+            // UDeclarationsExpression has a null sourcePsi.
+            // Handle it explicitly here, as returning the parent can produce strange results
+            // if that parent is, for example, a UBlockExpression.
+            if (element is UDeclarationsExpression) {
+                element.declarations.firstOrNull()?.sourcePsi?.let { firstDeclarationPsi ->
+                    return getLocation(context, firstDeclarationPsi).withSource(element)
+                }
             }
             val parent = element.uastParent
             if (parent != null) {
