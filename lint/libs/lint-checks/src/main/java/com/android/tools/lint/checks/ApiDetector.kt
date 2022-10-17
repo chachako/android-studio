@@ -55,8 +55,7 @@ import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.VIEW_INCLUDE
 import com.android.SdkConstants.VIEW_TAG
 import com.android.ide.common.rendering.api.ResourceNamespace
-import com.android.ide.common.repository.GradleVersion
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.resources.resourceNameToFieldName
 import com.android.resources.ResourceFolderType

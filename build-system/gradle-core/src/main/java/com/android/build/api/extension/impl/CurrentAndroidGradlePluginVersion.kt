@@ -18,7 +18,7 @@ package com.android.build.api.extension.impl
 
 import com.android.Version
 import com.android.build.api.AndroidPluginVersion
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.google.common.annotations.VisibleForTesting
 
 @VisibleForTesting

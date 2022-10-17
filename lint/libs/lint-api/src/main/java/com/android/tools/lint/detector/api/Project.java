@@ -46,7 +46,7 @@ import static java.io.File.separator;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
-import com.android.ide.common.repository.GradleVersion.AgpVersion;
+import com.android.ide.common.repository.AgpVersion;
 import com.android.ide.common.repository.ResourceVisibilityLookup;
 import com.android.resources.Density;
 import com.android.resources.ResourceFolderType;

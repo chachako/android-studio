@@ -59,7 +59,7 @@ import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.ApiVersion
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.android.sdklib.AndroidVersion
 import com.android.tools.lint.model.DefaultLintModelAndroidArtifact
 import com.android.tools.lint.model.DefaultLintModelBuildFeatures

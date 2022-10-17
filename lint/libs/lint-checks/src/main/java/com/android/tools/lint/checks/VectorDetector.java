@@ -25,7 +25,7 @@ import static com.android.SdkConstants.UNIT_DP;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.ide.common.repository.GradleVersion.AgpVersion;
+import com.android.ide.common.repository.AgpVersion;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceUrl;
 import com.android.tools.lint.detector.api.Category;

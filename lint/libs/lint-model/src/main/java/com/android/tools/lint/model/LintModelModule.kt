@@ -16,7 +16,7 @@
 
 package com.android.tools.lint.model
 
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import java.io.File
 
 /**
@@ -142,22 +142,22 @@ interface LintModelModuleLoader {
 }
 
 class DefaultLintModelModule(
-    override val loader: LintModelModuleLoader?,
-    override val dir: File,
-    override val modulePath: String,
-    override val type: LintModelModuleType,
-    override val mavenName: LintModelMavenName?,
-    override val agpVersion: AgpVersion?,
-    override val buildFolder: File,
-    override val lintOptions: LintModelLintOptions,
-    override val lintRuleJars: List<File>,
-    override val resourcePrefix: String?,
-    override val dynamicFeatures: Collection<String>,
-    override val bootClassPath: List<File>,
-    override val javaSourceLevel: String,
-    override val compileTarget: String,
-    override val variants: List<LintModelVariant>,
-    private val neverShrinking: Boolean
+  override val loader: LintModelModuleLoader?,
+  override val dir: File,
+  override val modulePath: String,
+  override val type: LintModelModuleType,
+  override val mavenName: LintModelMavenName?,
+  override val agpVersion: AgpVersion?,
+  override val buildFolder: File,
+  override val lintOptions: LintModelLintOptions,
+  override val lintRuleJars: List<File>,
+  override val resourcePrefix: String?,
+  override val dynamicFeatures: Collection<String>,
+  override val bootClassPath: List<File>,
+  override val javaSourceLevel: String,
+  override val compileTarget: String,
+  override val variants: List<LintModelVariant>,
+  private val neverShrinking: Boolean
 ) : LintModelModule {
     override fun neverShrinking(): Boolean {
         return neverShrinking

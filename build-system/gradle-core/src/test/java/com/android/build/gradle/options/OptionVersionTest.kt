@@ -17,7 +17,7 @@
 package com.android.build.gradle.options
 
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 

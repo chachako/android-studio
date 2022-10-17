@@ -16,7 +16,6 @@
 package com.android.ide.common.repository
 
 import com.android.SdkConstants
-import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.google.common.collect.Maps
 import org.kxml2.io.KXmlParser
 import org.xmlpull.v1.XmlPullParser

@@ -31,7 +31,7 @@ import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT
 import com.android.build.gradle.internal.utils.parseTargetHash
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.builder.core.ToolsRevisionUtils
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.android.repository.Revision
 import com.android.sdklib.SdkVersionInfo
 import com.google.common.annotations.VisibleForTesting

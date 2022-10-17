@@ -19,7 +19,7 @@ package com.android.tools.lint.detector.api
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_ID
 import com.android.SdkConstants.ATTR_NAME
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.android.resources.ResourceFolderType
 import com.android.testutils.MockitoKt.whenever
 import com.android.testutils.TestUtils

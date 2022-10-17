@@ -33,7 +33,7 @@ import com.android.SdkConstants.RES_FOLDER
 import com.android.SdkConstants.SRC_FOLDER
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.GradleVersion
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
 import com.android.ide.common.util.PathString
@@ -2128,9 +2128,9 @@ abstract class LintClient {
          */
         @JvmStatic
         fun getGradleDesugaring(
-            version: AgpVersion,
-            languageLevel: LanguageLevel?,
-            coreLibraryDesugaringEnabled: Boolean
+          version: AgpVersion,
+          languageLevel: LanguageLevel?,
+          coreLibraryDesugaringEnabled: Boolean
         ): Set<Desugaring> {
             // Desugar runs if the Gradle plugin is 2.4.0 alpha 8 or higher...
             if (!version.isAtLeast(2, 4, 0, "alpha", 8, true)) {

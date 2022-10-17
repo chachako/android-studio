@@ -15,7 +15,6 @@
  */
 package com.android.ide.common.repository
 
-import com.android.ide.common.repository.GradleVersion.AgpVersion
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert
 import org.junit.Test

@@ -25,7 +25,7 @@ import com.android.SdkConstants.MIN_COMPILE_SDK_PROPERTY
 import com.android.Version
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
-import com.android.ide.common.repository.GradleVersion.AgpVersion
+import com.android.ide.common.repository.AgpVersion
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
