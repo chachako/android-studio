@@ -28,8 +28,6 @@ import org.junit.Test
 class EmptyExtractAnnotationTest {
 
     private val emptylib = MinimalSubProject.lib("com.example.lib")
-        // Disable BuildConfig generation to make the library truly empty.
-        .appendToBuild("android.libraryVariants.all { it.generateBuildConfig.enabled = false }")
 
     @get:Rule
     var project = GradleTestProject.builder().fromTestApp(emptylib).create()

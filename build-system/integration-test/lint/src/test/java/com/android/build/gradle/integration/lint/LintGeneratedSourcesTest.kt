@@ -37,6 +37,9 @@ class LintGeneratedSourcesTest {
                     .appendToBuild(
                         """
                             android {
+                                buildFeatures {
+                                    buildConfig true
+                                }
                                 lint {
                                     abortOnError = false
                                     textOutput = file("lint-results.txt")

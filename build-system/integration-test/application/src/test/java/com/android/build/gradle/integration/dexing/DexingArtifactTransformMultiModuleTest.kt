@@ -52,17 +52,8 @@ class DexingArtifactTransformMultiModuleTest {
         executor().run(":app:assembleDebug")
 
         project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG).use {
-            if (project.getSubproject("app").getIntermediateFile(
-                            InternalArtifactType.COMPILE_BUILD_CONFIG_JAR.getFolderName(),
-                            "debug",
-                            "BuildConfig.jar").exists()) {
-                assertThatApk(it).containsClass("Lcom/example/app/R;")
-                assertThatApk(it).containsClass("Lcom/example/lib/R;")
-            } else {
-                assertThatApk(it).containsClass("Lcom/example/app/BuildConfig;")
-                assertThatApk(it).containsClass("Lcom/example/app/R;")
-                assertThatApk(it).containsClass("Lcom/example/lib/R;")
-            }
+            assertThatApk(it).containsClass("Lcom/example/app/R;")
+            assertThatApk(it).containsClass("Lcom/example/lib/R;")
         }
     }
 

@@ -75,11 +75,7 @@ class CompoundSyncModelBuilderTest {
 
         assertThat(latch.await(TimeUnit.SECONDS.toNanos(10))).isTrue()
         generateSourcesTasks.forEach {
-            if (it == ":createMockableJar") {
-                assertThat(gradleBuildResult.getTask(it)).wasUpToDate()
-            } else {
-                assertThat(gradleBuildResult.getTask(it)).wasSkipped()
-            }
+            assertThat(gradleBuildResult.getTask(it)).wasUpToDate()
         }
         assertThat(gradleBuildResult.exception).isNull()
     }

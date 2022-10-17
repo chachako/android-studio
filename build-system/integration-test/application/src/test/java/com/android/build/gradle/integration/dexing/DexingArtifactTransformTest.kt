@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.dependency.DexingNoClasspathTransform
 import com.android.build.gradle.internal.dependency.DexingWithClasspathTransform
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -31,6 +32,7 @@ import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -43,6 +45,21 @@ class DexingArtifactTransformTest {
         GradleTestProject.builder().fromTestApp(
             MinimalSubProject.app("com.example.test")
         ).create()
+
+    @Before
+    fun before() {
+        // Enable buildConfig, so we can test for the presence of the BuildConfig class.
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                android {
+                    buildFeatures {
+                        buildConfig true
+                    }
+                }
+            """.trimIndent()
+        )
+    }
 
     @Test
     fun testMonoDex() {

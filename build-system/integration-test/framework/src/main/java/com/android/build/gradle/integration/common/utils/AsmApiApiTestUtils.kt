@@ -34,7 +34,6 @@ object AsmApiApiTestUtils {
     const val featureClassesDescriptorPrefix = "Lcom/example/feature/"
 
     val projectClasses = listOf(
-            "BuildConfig",
             "R",
             "ClassImplementsI",
             "ClassWithNoInterfacesOrSuperclasses",
@@ -43,14 +42,12 @@ object AsmApiApiTestUtils {
     )
 
     val libClasses = listOf(
-            "BuildConfig",
             "R",
             "I",
             "InterfaceExtendsI"
     )
 
     val featureClasses = listOf(
-            "BuildConfig",
             "R",
             "ClassExtendsAnAppClass"
     )

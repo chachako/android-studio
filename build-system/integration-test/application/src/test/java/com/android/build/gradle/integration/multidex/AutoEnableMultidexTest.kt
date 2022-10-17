@@ -100,7 +100,6 @@ class AutoEnableMultidexTest {
                             "Lcom/example/helloworld/A0;",
                             "Lcom/example/helloworld/A1;",
                             "Lcom/example/helloworld/A2;",
-                            "Lcom/example/helloworld/BuildConfig;",
                             "Lcom/example/helloworld/R;"
                     )
         }

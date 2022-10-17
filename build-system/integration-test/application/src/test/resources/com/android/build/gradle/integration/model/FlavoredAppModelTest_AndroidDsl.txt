@@ -6,7 +6,7 @@
       - name                               = "main"
       - applicationIdSuffix                = (null)
       - versionNameSuffix                  = (null)
-      - buildConfigFields                  = []
+      - buildConfigFields                  = (null)
       - resValues                          = []
       - proguardFiles                      = []
       - consumerProguardFiles              = []
@@ -44,7 +44,7 @@
          - name                     = "debug"
          - applicationIdSuffix      = (null)
          - versionNameSuffix        = (null)
-         - buildConfigFields        = []
+         - buildConfigFields        = (null)
          - resValues                = []
          - proguardFiles            = []
          - consumerProguardFiles    = []
@@ -69,7 +69,7 @@
          - name                     = "release"
          - applicationIdSuffix      = (null)
          - versionNameSuffix        = (null)
-         - buildConfigFields        = []
+         - buildConfigFields        = (null)
          - resValues                = []
          - proguardFiles            = []
          - consumerProguardFiles    = []
@@ -97,7 +97,7 @@
          - name                               = "basic"
          - applicationIdSuffix                = (null)
          - versionNameSuffix                  = (null)
-         - buildConfigFields                  = []
+         - buildConfigFields                  = (null)
          - resValues                          = []
          - proguardFiles                      = []
          - consumerProguardFiles              = []
@@ -134,7 +134,7 @@
          - name                               = "pro"
          - applicationIdSuffix                = (null)
          - versionNameSuffix                  = (null)
-         - buildConfigFields                  = []
+         - buildConfigFields                  = (null)
          - resValues                          = []
          - proguardFiles                      = []
          - consumerProguardFiles              = []

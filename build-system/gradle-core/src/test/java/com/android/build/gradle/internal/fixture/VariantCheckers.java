@@ -223,9 +223,6 @@ public class VariantCheckers {
             assertThat(variant.getMergeAssetsProvider())
                     .named("variant.getMergeAssetsProvider()")
                     .isNotNull();
-            assertThat(variant.getGenerateBuildConfigProvider())
-                    .named("variant.getGenerateBuildConfigProvider()")
-                    .isNotNull();
             assertThat(variant.getJavaCompileProvider())
                     .named("variant.getJavaCompileProvider()")
                     .isNotNull();
@@ -313,9 +310,6 @@ public class VariantCheckers {
             assertThat(variant.getMergeAssetsProvider())
                     .named("variant.getMergeAssetsProvider()")
                     .isNotNull();
-            assertThat(variant.getGenerateBuildConfigProvider())
-                    .named("variant.getGenerateBuildConfigProvider()")
-                    .isNotNull();
             assertThat(variant.getJavaCompileProvider())
                     .named("variant.getJavaCompileProvider()")
                     .isNotNull();
@@ -354,9 +348,6 @@ public class VariantCheckers {
                     .isNotNull();
             assertThat(variant.getMergeResourcesProvider())
                     .named("variant.getMergeResourcesProvider()")
-                    .isNotNull();
-            assertThat(variant.getGenerateBuildConfigProvider())
-                    .named("variant.getGenerateBuildConfigProvider()")
                     .isNotNull();
             assertThat(variant.getJavaCompileProvider())
                     .named("variant.getJavaCompileProvider()")

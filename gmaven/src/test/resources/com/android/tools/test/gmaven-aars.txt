@@ -28,7 +28,6 @@ androidx/databinding/databinding-ktx
   classes.jar:META-INF/databindingKtx_release.kotlin_module
   classes.jar:androidx/
   classes.jar:androidx/databinding/
-  classes.jar:androidx/databinding/ktx/
 
 androidx/databinding/databinding-runtime
   AndroidManifest.xml
@@ -38,7 +37,6 @@ androidx/databinding/databinding-runtime
   classes.jar:META-INF/androidx.databinding_library.version
   classes.jar:androidx/
   classes.jar:androidx/databinding/
-  classes.jar:androidx/databinding/library/
   proguard.txt
   res/
   res/values/
@@ -84,10 +82,6 @@ com/android/databinding/library
   classes.jar:META-INF/com.android.databinding_library.version
   classes.jar:android/
   classes.jar:android/databinding/
-  classes.jar:com/
-  classes.jar:com/android/
-  classes.jar:com/android/databinding/
-  classes.jar:com/android/databinding/library/
   proguard.txt
   res/
   res/values/

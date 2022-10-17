@@ -48,7 +48,6 @@ class CleanBuildTaskStatesTest {
                 ":app:desugarDebugFileDependencies",
                 ":app:dexBuilderDebug",
                 ":app:extractDeepLinksDebug",
-                ":app:generateDebugBuildConfig",
                 ":app:generateDebugResValues",
                 ":app:javaPreCompileDebug",
                 ":app:javaPreCompileDebugUnitTest",

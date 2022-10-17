@@ -53,6 +53,16 @@ class IncrementalDexingArtifactTransformTest {
 
     @Test
     fun testIncrementalBuildWithFileDeletion() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("lib").buildFile,
+            """
+                android {
+                    buildFeatures {
+                        buildConfig true
+                    }
+                }
+            """.trimIndent()
+        )
         val result = project.executor().run("assembleDebug")
         TestFileUtils.searchAndReplace(
             project.getSubproject("lib").buildFile,

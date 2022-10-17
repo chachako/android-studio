@@ -47,7 +47,12 @@ class L8DexDesugarTest {
     fun setUp() {
         project.buildFile.appendText("\n" +
             """
-            android.compileOptions.coreLibraryDesugaringEnabled = true
+            android {
+                compileOptions.coreLibraryDesugaringEnabled = true
+                buildFeatures {
+                    buildConfig true
+                }
+            }
             dependencies {
                 coreLibraryDesugaring "$DESUGAR_DEPENDENCY"
             }

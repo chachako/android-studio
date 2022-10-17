@@ -87,6 +87,10 @@ class LibraryBuildConfigTest {
                                 }
                               }
 
+                              buildFeatures {
+                                buildConfig true
+                              }
+
                               libraryVariants.all { variant ->
                                 if (variant.buildType.name == "debug") {
                                   variant.buildConfigField "int", "VALUE_VARIANT", "1000"

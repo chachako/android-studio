@@ -29,7 +29,6 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.scope.ArtifactTypeUtil;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
-import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.options.IntegerOption;
 import com.android.testutils.TestUtils;
 import com.android.testutils.apk.Dex;
@@ -47,6 +46,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -60,6 +60,12 @@ public class DexArchivesTest {
                     .fromTestApp(HelloWorldApp.forPlugin("com.android.application"))
                     .withGradleBuildCacheDirectory(new File("local-build-cache"))
                     .create();
+
+    @Before
+    public void before() throws IOException {
+        TestFileUtils.appendToFile(
+                project.getBuildFile(), "android.buildFeatures.buildConfig true");
+    }
 
     @Test
     public void testInitialBuild() throws Exception {

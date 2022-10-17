@@ -18,7 +18,6 @@
             - ideSetupTaskNames             = ["generateProDebugSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/proDebug/out{!}
-               * {PROJECT}/build/generated/source/buildConfig/pro/debug{!}
             - minSdkVersion:
                - apiLevel = 1
                - codename = (null)
@@ -51,7 +50,6 @@
             - ideSetupTaskNames             = ["generateProDebugAndroidTestSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/proDebugAndroidTest/out{!}
-               * {PROJECT}/build/generated/source/buildConfig/androidTest/pro/debug{!}
             - minSdkVersion:
                - apiLevel = 1
                - codename = (null)

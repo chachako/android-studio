@@ -37,6 +37,15 @@ import org.junit.Test
 class NamespaceAndApplicationIdTest {
 
     private val app = MinimalSubProject.app("com.example.app")
+            .appendToBuild(
+                """
+                    android {
+                        buildFeatures {
+                            buildConfig true
+                        }
+                    }
+                """.trimIndent()
+            )
             .withFile(
                     "src/main/res/values/values.xml",
                     """
@@ -79,7 +88,16 @@ class NamespaceAndApplicationIdTest {
             """.trimMargin())
 
     private val test = MinimalSubProject.test("com.example.test")
-        .appendToBuild("\n\nandroid.targetProjectPath ':app'\n\n")
+        .appendToBuild(
+            """
+                android {
+                    targetProjectPath ':app'
+                    buildFeatures {
+                        buildConfig true
+                    }
+                }
+            """.trimIndent()
+        )
         .withFile(
             "src/main/res/values/values.xml",
             """

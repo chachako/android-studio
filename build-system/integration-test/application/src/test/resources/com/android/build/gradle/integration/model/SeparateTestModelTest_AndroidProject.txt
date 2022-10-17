@@ -18,7 +18,6 @@
             - ideSetupTaskNames             = ["generateDebugSources"]
             - generatedSourceFolders:
                * {PROJECT}/test/build/generated/ap_generated_sources/debug/out{!}
-               * {PROJECT}/test/build/generated/source/buildConfig/debug{!}
             - minSdkVersion:
                - apiLevel = 1
                - codename = (null)

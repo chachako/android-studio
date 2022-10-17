@@ -120,6 +120,10 @@ android {
         checkGeneratedSources true
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     // Override the versionCode of the release version
     applicationVariants.all { variant ->
         print variant

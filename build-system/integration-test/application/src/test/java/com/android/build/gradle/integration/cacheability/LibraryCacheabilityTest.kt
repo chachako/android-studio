@@ -58,7 +58,6 @@ class LibraryCacheabilityTest {
                     ":lib:compileReleaseJavaWithJavac",
                     ":lib:extractDeepLinksForAarRelease",
                     ":lib:extractReleaseAnnotations",
-                    ":lib:generateReleaseBuildConfig",
                     ":lib:generateReleaseResValues",
                     ":lib:generateReleaseRFile",
                     ":lib:javaPreCompileRelease",

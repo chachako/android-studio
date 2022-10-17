@@ -29,6 +29,10 @@ android {
             dimension   "group2"
         }
     }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {

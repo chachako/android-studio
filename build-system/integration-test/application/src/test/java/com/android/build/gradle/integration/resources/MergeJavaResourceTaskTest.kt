@@ -27,6 +27,7 @@ import com.android.testutils.TestInputsGenerator.jarWithTextEntries
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -56,6 +57,21 @@ class MergeJavaResourceTaskTest {
     )
         .withAdditionalMavenRepo(mavenRepo)
         .create()
+
+    @Before
+    fun before() {
+        // Enable buildConfig, otherwise Javac task will be skipped.
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                android {
+                    buildFeatures {
+                        buildConfig true
+                    }
+                }
+            """.trimIndent()
+        )
+    }
 
     @Test
     fun ensureHelpfulErrorMessageOnConflict() {

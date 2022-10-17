@@ -40,6 +40,10 @@ android {
             initWith proguard
         }
     }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {

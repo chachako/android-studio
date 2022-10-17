@@ -34,6 +34,10 @@ android {
       compatibleScreens 'small', 'normal', 'large', 'xlarge'
     }
   }
+
+  buildFeatures {
+    buildConfig true
+  }
 }
 
 dependencies {

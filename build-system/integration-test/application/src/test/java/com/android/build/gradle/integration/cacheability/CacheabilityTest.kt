@@ -51,7 +51,6 @@ class CacheabilityTest {
             TaskInfo(FROM_CACHE, "desugar", "FileDependencies", listOf("Debug", "Release")),
             TaskInfo(FROM_CACHE, "dexBuilder", "", listOf("Debug", "Release")),
             TaskInfo(FROM_CACHE, "extractDeepLinks", "", listOf("Debug", "Release")),
-            TaskInfo(FROM_CACHE, "generate", "BuildConfig", listOf("Debug", "Release")),
             TaskInfo(FROM_CACHE, "generate", "ResValues", listOf("Debug", "Release")),
             TaskInfo(FROM_CACHE, "jacoco", "", listOf("Debug")),
             TaskInfo(FROM_CACHE, "javaPreCompile", "",

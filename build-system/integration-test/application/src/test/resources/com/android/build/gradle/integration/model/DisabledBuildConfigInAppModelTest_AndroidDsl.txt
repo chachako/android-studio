@@ -1,8 +1,0 @@
-- AndroidDsl:
-   - defaultConfig:
-      - buildConfigFields = (null)
-   - buildTypes:
-      - debug:
-         - buildConfigFields = (null)
-      - release:
-         - buildConfigFields = (null)

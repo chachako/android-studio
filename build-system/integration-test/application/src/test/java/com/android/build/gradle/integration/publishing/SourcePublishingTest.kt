@@ -69,6 +69,12 @@ class SourcePublishingTest {
                 apply plugin: 'maven-publish'
                 apply plugin: 'kotlin-kapt'
 
+                android {
+                    buildFeatures {
+                        buildConfig true
+                    }
+                }
+
                 dependencies {
                     kapt 'com.google.dagger:dagger-compiler:2.28.3'
                     api 'com.google.dagger:dagger:2.28.3'

@@ -43,6 +43,10 @@ android {
             dimension "pricing"
         }
     }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {

@@ -412,7 +412,6 @@ class TestFixturesTest {
                 listOf(
                     "Lcom/example/javalib/JavaLibInterface;",
                     "Lcom/example/lib/LibInterface;",
-                    "Lcom/example/lib/BuildConfig;",
                 ).forEach { clazz ->
                     if (expectLibAndJavaLibClassesToBeIncluded) {
                         Truth.assertThat(classes).contains(clazz)

@@ -55,7 +55,6 @@ class MinifyCacheabilityTest {
             ":compileMinifiedJavaWithJavac",
             ":compressMinifiedAssets",
             ":extractDeepLinksMinified",
-            ":generateMinifiedBuildConfig",
             ":generateMinifiedResValues",
             ":jacocoMinified",
             ":javaPreCompileMinified",

@@ -58,6 +58,9 @@ public class SwitchMultidexTest {
                         + "        multiDexEnabled Boolean.valueOf(property('inject.multidex'))\n"
                         + "        multiDexKeepFile = project.file('keep.txt')\n"
                         + "    }\n"
+                        + "    buildFeatures {\n"
+                        + "        buildConfig true\n"
+                        + "    }\n"
                         + "}\n"
                         + "\n");
         Files.write(

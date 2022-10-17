@@ -55,7 +55,6 @@ class GenFolderKotlinOnlyApiTest {
             """
             def emptyTask = tasks.create("emptyTask")
             android.libraryVariants.all {
-              it.getGenerateBuildConfigProvider().configure { it.enabled = false }
               it.registerJavaGeneratingTask(emptyTask, new File("gen_src"))
             }
         """.trimIndent()

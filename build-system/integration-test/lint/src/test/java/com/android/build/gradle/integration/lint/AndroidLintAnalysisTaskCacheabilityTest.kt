@@ -389,6 +389,9 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
 
                     android {
                         dynamicFeatures =  [':feature']
+                        buildFeatures {
+                            buildConfig true
+                        }
                         buildTypes {
                             debug {
                                 // this triggers ByteOrderMarkDetector in build directory
@@ -413,6 +416,9 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
                 """
 
                     android {
+                        buildFeatures {
+                            buildConfig true
+                        }
                         buildTypes {
                             debug {
                                 // this triggers ByteOrderMarkDetector in build directory
@@ -435,6 +441,9 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
                 """
 
                     android {
+                        buildFeatures {
+                            buildConfig true
+                        }
                         buildTypes {
                             debug {
                                 // this triggers ByteOrderMarkDetector in build directory

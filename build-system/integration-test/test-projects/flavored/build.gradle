@@ -42,6 +42,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     // This is not part of the test per se, it tests that adding dynamic properties on the
     // flavor declaration can be retrieved later.
     applicationVariants.all { variant ->

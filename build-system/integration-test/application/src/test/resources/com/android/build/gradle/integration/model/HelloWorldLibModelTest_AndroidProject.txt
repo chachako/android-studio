@@ -18,7 +18,6 @@
             - ideSetupTaskNames             = ["generateDebugSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/debug/out{!}
-               * {PROJECT}/build/generated/source/buildConfig/debug{!}
             - minSdkVersion:
                - apiLevel = 14
                - codename = (null)
@@ -47,7 +46,6 @@
             - ideSetupTaskNames             = ["generateDebugAndroidTestSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/debugAndroidTest/out{!}
-               * {PROJECT}/build/generated/source/buildConfig/androidTest/debug{!}
             - minSdkVersion:
                - apiLevel = 14
                - codename = (null)
@@ -100,7 +98,6 @@
             - ideSetupTaskNames             = ["generateReleaseSources"]
             - generatedSourceFolders:
                * {PROJECT}/build/generated/ap_generated_sources/release/out{!}
-               * {PROJECT}/build/generated/source/buildConfig/release{!}
             - minSdkVersion:
                - apiLevel = 14
                - codename = (null)

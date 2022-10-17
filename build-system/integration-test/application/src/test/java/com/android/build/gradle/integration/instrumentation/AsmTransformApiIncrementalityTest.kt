@@ -102,7 +102,6 @@ class AsmTransformApiIncrementalityTest {
                         "ClassWithNoInterfacesOrSuperclasses.class",
                         "ClassExtendsOneClassAndImplementsTwoInterfaces.class",
                         "ClassExtendsAClassThatExtendsAnotherClassAndImplementsTwoInterfaces.class",
-                        "BuildConfig.class"
                 )
         )
 
@@ -112,7 +111,6 @@ class AsmTransformApiIncrementalityTest {
                         "ClassWithNoInterfacesOrSuperclasses.class",
                         "ClassExtendsOneClassAndImplementsTwoInterfaces.class",
                         "ANewClassImplementsI.class",
-                        "BuildConfig.class"
                 )
         )
 
@@ -261,9 +259,7 @@ class AsmTransformApiIncrementalityTest {
         assertThat(modifiedFiles).hasSize(1)
         assertThat(modifiedFiles.keys).containsExactly("ClassImplementsI.class")
 
-        originalFiles = getClassFilesModifiedTimeMap(taskOutputDir).filterNot {
-            it.key == "BuildConfig.class"
-        }
+        originalFiles = getClassFilesModifiedTimeMap(taskOutputDir)
 
         // change ClassImplementsI in a way that will change the class data, and so we should run
         // non incrementally
@@ -279,7 +275,7 @@ class AsmTransformApiIncrementalityTest {
         assertThat(result.didWorkTasks).contains(":app:transformDebugClassesWithAsm")
 
         modifiedFiles = getClassFilesModifiedTimeMap(taskOutputDir).filter {
-            it.key != "BuildConfig.class" && originalFiles[it.key] != it.value
+            originalFiles[it.key] != it.value
         }
 
         // all classes should be modified

@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
 import com.android.utils.FileUtils
 import com.google.wireless.android.sdk.stats.GradleBuildProject
@@ -66,6 +67,16 @@ class AarPublishTest {
     @Test
     fun canPublishLibraryAarWithCoverageEnabled() {
         val librarySubproject = project.getSubproject(":library")
+        TestFileUtils.appendToFile(
+            librarySubproject.buildFile,
+            """
+                android {
+                    buildFeatures {
+                        buildConfig true
+                    }
+                }
+            """.trimIndent()
+        )
         project.execute("library:assembleDebug")
 
         val libraryPublishedAar =

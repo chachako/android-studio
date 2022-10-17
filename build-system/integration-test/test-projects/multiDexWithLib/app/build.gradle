@@ -30,6 +30,10 @@ android {
       resValue "string", "foo", "foo2"
     }
   }
+
+  buildFeatures {
+    buildConfig true
+  }
 }
 
 dependencies {

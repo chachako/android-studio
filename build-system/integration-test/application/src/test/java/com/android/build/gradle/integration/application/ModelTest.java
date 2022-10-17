@@ -26,7 +26,6 @@ import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.common.utils.VariantUtils;
 import com.android.build.gradle.internal.scope.ArtifactTypeUtil;
-import com.android.build.gradle.internal.scope.InternalArtifactType;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.AndroidArtifact;
 import com.android.builder.model.AndroidGradlePluginProjectFlags.BooleanFlag;
@@ -34,7 +33,6 @@ import com.android.builder.model.AndroidProject;
 import com.android.builder.model.JavaArtifact;
 import com.android.builder.model.SyncIssue;
 import com.android.builder.model.Variant;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth;
 import java.io.File;
@@ -108,38 +106,17 @@ public class ModelTest {
         final Variant debugVariant = AndroidProjectUtils.getVariantByName(model, "debug");
         AndroidArtifact debugArtifact = debugVariant.getMainArtifact();
 
-        ImmutableList.Builder<File> expectedGeneratedSourceFolders = ImmutableList.builder();
-        expectedGeneratedSourceFolders.add(
-                project.file("build/generated/ap_generated_sources/debug/out"));
-
-        if (!project.getIntermediateFile(
-                        InternalArtifactType.COMPILE_BUILD_CONFIG_JAR.INSTANCE.getFolderName())
-                .exists()) {
-            expectedGeneratedSourceFolders.add(
-                    project.file("build/generated/source/buildConfig/debug"));
-        }
-
         assertThat(debugArtifact.getGeneratedSourceFolders())
-                .containsExactlyElementsIn(expectedGeneratedSourceFolders.build());
+                .containsExactly(project.file("build/generated/ap_generated_sources/debug/out"));
 
         assertThat(debugArtifact.getGeneratedResourceFolders())
                 .containsExactly(project.file("build/generated/res/resValues/debug"));
 
         AndroidArtifact androidTestArtifact = VariantUtils.getAndroidTestArtifact(debugVariant);
 
-        ImmutableList.Builder<File> expectedGeneratedTestSourceFolders = ImmutableList.builder();
-        expectedGeneratedTestSourceFolders.add(
-                project.file("build/generated/ap_generated_sources/debugAndroidTest/out"));
-
-        if (!project.getIntermediateFile(
-                        InternalArtifactType.COMPILE_BUILD_CONFIG_JAR.INSTANCE.getFolderName())
-                .exists()) {
-            expectedGeneratedTestSourceFolders.add(
-                    project.file("build/generated/source/buildConfig/androidTest/debug"));
-        }
-
         assertThat(androidTestArtifact.getGeneratedSourceFolders())
-                .containsExactlyElementsIn(expectedGeneratedTestSourceFolders.build());
+                .containsExactly(
+                        project.file("build/generated/ap_generated_sources/debugAndroidTest/out"));
 
         assertThat(androidTestArtifact.getGeneratedResourceFolders())
                 .containsExactly(project.file("build/generated/res/resValues/androidTest/debug"));

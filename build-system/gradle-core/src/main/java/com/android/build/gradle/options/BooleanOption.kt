@@ -70,7 +70,7 @@ enum class BooleanOption(
 
     // Features' default values
     BUILD_FEATURE_AIDL("android.defaults.buildfeatures.aidl", false, ApiStage.Stable),
-    BUILD_FEATURE_BUILDCONFIG("android.defaults.buildfeatures.buildconfig", true, ApiStage.Stable),
+    BUILD_FEATURE_BUILDCONFIG("android.defaults.buildfeatures.buildconfig", false, ApiStage.Stable),
     BUILD_FEATURE_DATABINDING("android.defaults.buildfeatures.databinding", false, ApiStage.Stable),
     BUILD_FEATURE_RENDERSCRIPT("android.defaults.buildfeatures.renderscript", false, ApiStage.Stable),
     BUILD_FEATURE_RESVALUES("android.defaults.buildfeatures.resvalues", true, ApiStage.Stable),
