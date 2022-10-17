@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import kotlin.text.MatchResult;
 import kotlin.text.Regex;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * This class is deliberately non-comparable with {@link GradleVersion}, for two reasons: firstly,
@@ -362,7 +361,7 @@ public class AgpVersion implements Comparable<AgpVersion> {
     }
 
     @Override
-    public int compareTo(@NotNull AgpVersion that) {
+    public int compareTo(@NonNull AgpVersion that) {
         if (major != that.major) return major - that.major;
         if (minor != that.minor) return minor - that.minor;
         if (micro != that.micro) return micro - that.micro;
@@ -375,7 +374,7 @@ public class AgpVersion implements Comparable<AgpVersion> {
         return 0; // if either is null, both must be null (both DEV or NONE versions).
     }
 
-    public int compareTo(@NotNull String value) {
+    public int compareTo(@NonNull String value) {
         return compareTo(AgpVersion.parse(value));
     }
 
