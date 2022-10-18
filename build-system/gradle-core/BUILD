@@ -154,7 +154,6 @@ kotlin_test(
         "-Dtest.suite.jar=tests.jar",
         # TODO: Make it easier to configure AndroidLocation per project.
         "-DANDROID_PREFS_ROOT=/tmp/android_prefs_root",
-        "-XX:CompileCommand=exclude,com/android/build/gradle/internal/cxx/ninja/StreamUnescapedNinjaKt,streamUnescapedNinja",  # work around b/249750798
     ],
     resources = glob(["src/test/resources/**"]),
     tags = [
