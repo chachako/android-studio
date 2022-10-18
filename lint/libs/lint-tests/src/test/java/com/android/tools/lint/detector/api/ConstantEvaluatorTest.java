@@ -315,10 +315,10 @@ public class ConstantEvaluatorTest extends TestCase {
     }
 
     public void testLargeArrays() {
-        checkExpression(ConstantEvaluator.ArrayReference.of(Byte.TYPE, 100, 2), "new byte[100][]");
-        checkExpression(ConstantEvaluator.ArrayReference.of(Byte.TYPE, 100, 1), "new byte[100]");
+        checkExpression(ArrayReference.of(Byte.TYPE, 100, 2), "new byte[100][]");
+        checkExpression(ArrayReference.of(Byte.TYPE, 100, 1), "new byte[100]");
         checkExpression(
-                ConstantEvaluator.ArrayReference.of("java.lang.Integer", 100, 1),
+                ArrayReference.of("java.lang.Integer", 100, 1),
                 "new Integer[100]");
         checkExpression(100, "(new byte[100]).length");
         checkExpression(100, "(new Integer[100]).length");
@@ -326,19 +326,19 @@ public class ConstantEvaluatorTest extends TestCase {
 
     public void testKotlin() {
         checkKotlinExpression(
-                ConstantEvaluator.ArrayReference.of(Integer.TYPE, 100, 1), "IntArray(100)");
+                ArrayReference.of(Integer.TYPE, 100, 1), "IntArray(100)");
         checkKotlinExpression(100, "IntArray(100).size");
         checkKotlinExpression(1000, "kotlin.Array<String>(1000).size");
         checkKotlinExpression(
-                ConstantEvaluator.ArrayReference.of(String.class, 1000, 1), "Array<String>(1000)");
+                ArrayReference.of(String.class, 1000, 1), "Array<String>(1000)");
         checkKotlinExpression(
-                ConstantEvaluator.ArrayReference.of(String.class, 1000, 1),
+                ArrayReference.of(String.class, 1000, 1),
                 "kotlin.Array<String>(1000)");
         checkKotlinExpression(new Integer[] {1, 2, 3, 4}, "arrayOf(1,2,3,4)");
         checkKotlinExpression(3, "arrayOf(1,2,3,4)[2]");
         checkKotlinExpression(4, "arrayOf(1,2,3,4).size");
         checkKotlinExpression(
-                ConstantEvaluator.ArrayReference.of(String.class, 1000, 1),
+                ArrayReference.of(String.class, 1000, 1),
                 "arrayOfNulls<String>(1000)");
         checkKotlinExpression(1000, "arrayOfNulls<String>(1000).size");
         checkKotlinExpression("hello", "   \"\"\"    hello\"\"\".trimIndent()");

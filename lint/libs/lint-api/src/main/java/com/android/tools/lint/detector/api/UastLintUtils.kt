@@ -20,7 +20,7 @@ import com.android.SdkConstants.ATTR_VALUE
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.fromPlatformAnnotation
 import com.android.tools.lint.client.api.ResourceReference
-import com.android.tools.lint.detector.api.ConstantEvaluator.LastAssignmentFinder.LastAssignmentValueUnknown
+import com.android.tools.lint.detector.api.ConstantEvaluatorImpl.LastAssignmentFinder.LastAssignmentValueUnknown
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -165,7 +165,7 @@ class UastLintUtils {
             if (!currVariable.hasModifierProperty(PsiModifier.FINAL) && (currVariable is PsiLocalVariable || currVariable is PsiParameter)) {
                 val containingFunction = call.getContainingUMethod()
                 if (containingFunction != null) {
-                    val finder = ConstantEvaluator.LastAssignmentFinder(
+                    val finder = ConstantEvaluatorImpl.LastAssignmentFinder(
                         currVariable, call, null, -1
                     )
                     containingFunction.accept(finder)
@@ -206,7 +206,7 @@ class UastLintUtils {
                 if (containingFunction != null) {
                     val body = containingFunction.uastBody
                     if (body != null) {
-                        val finder = ConstantEvaluator.LastAssignmentFinder(
+                        val finder = ConstantEvaluatorImpl.LastAssignmentFinder(
                             variable, call, evaluator, 1
                         )
                         body.accept(finder)
