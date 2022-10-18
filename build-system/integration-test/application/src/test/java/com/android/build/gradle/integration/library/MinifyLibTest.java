@@ -176,4 +176,18 @@ public class MinifyLibTest {
                         + "    }\n"
                         + "}\n");
     }
+
+    /** Regression test for b/254278181 */
+    @Test
+    public void checkManifestChangesTriggersLibraryProguardRules() throws Exception {
+        enableLibShrinking();
+        GradleBuildResult result = project.executor().run(":lib:assembleDebug");
+        assertThat(result.getTask(":lib:generateDebugLibraryProguardRules")).didWork();
+        TestFileUtils.searchAndReplace(
+                project.getSubproject(":lib").file("./src/main/AndroidManifest.xml"),
+                "</manifest>",
+                "<application /></manifest>");
+        result = project.executor().run(":lib:assembleDebug");
+        assertThat(result.getTask(":lib:generateDebugLibraryProguardRules")).didWork();
+    }
 }

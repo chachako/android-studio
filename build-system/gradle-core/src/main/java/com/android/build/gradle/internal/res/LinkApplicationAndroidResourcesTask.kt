@@ -26,12 +26,13 @@ import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.api.variant.impl.VariantOutputImpl
+import com.android.build.api.variant.impl.dirName
 import com.android.build.api.variant.impl.getFilter
 import com.android.build.gradle.internal.AndroidJarInput
 import com.android.build.gradle.internal.TaskManager
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.initialize
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
@@ -48,6 +49,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getErrorFormatMode
 import com.android.build.gradle.internal.services.getLeasingAapt2
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
+import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationActionImpl
@@ -62,7 +64,6 @@ import com.android.builder.core.ComponentType
 import com.android.builder.internal.aapt.AaptOptions
 import com.android.builder.internal.aapt.AaptPackageConfig
 import com.android.builder.internal.aapt.v2.Aapt2
-import com.android.build.gradle.internal.tasks.TaskCategory
 import com.android.ide.common.process.ProcessException
 import com.android.ide.common.resources.mergeIdentifiedSourceSetFiles
 import com.android.ide.common.symbols.SymbolIo
@@ -108,6 +109,27 @@ import javax.inject.Inject
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ANDROID_RESOURCES, secondaryTaskCategories = [TaskCategory.LINKING])
 abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: ObjectFactory) :
     ProcessAndroidResources() {
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Incremental
+    abstract val manifestFiles: DirectoryProperty
+
+    @get:InputFiles
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Incremental
+    abstract val aaptFriendlyManifestFiles: DirectoryProperty
+
+    // This input in not required for the task to function properly.
+    // However, the implementation of getManifestFile() requires it to stay compatible with past
+    // plugin and crashlitics related plugins are using it.
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Optional
+    @get:Deprecated("Deprecated and will be removed")
+    @get:Incremental
+    abstract val mergedManifestFiles: DirectoryProperty
 
     @get:OutputDirectory
     @get:Optional
@@ -264,6 +286,25 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
 
     @get:Internal
     abstract val incrementalDirectory: DirectoryProperty
+
+    @Internal
+    override fun getManifestFile(): File? {
+        val manifestDirectory = if (aaptFriendlyManifestFiles.isPresent) {
+            aaptFriendlyManifestFiles.get().asFile
+        } else if (mergedManifestFiles.isPresent) {
+            mergedManifestFiles.get().asFile
+        } else {
+            manifestFiles.get().asFile
+        }
+        Preconditions.checkNotNull(manifestDirectory)
+
+        Preconditions.checkNotNull(mainSplit)
+        return FileUtils.join(
+            manifestDirectory,
+            mainSplit.dirName(),
+            SdkConstants.ANDROID_MANIFEST_XML
+        )
+    }
 
     override fun doTaskAction(inputChanges: InputChanges) {
         val stableIdsFile = stableIdsOutputFileProperty.orNull?.asFile
@@ -461,6 +502,16 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
             get() = LinkApplicationAndroidResourcesTask::class.java
 
         protected open fun preconditionsCheck(creationConfig: ComponentCreationConfig) {}
+
+        private fun generatesProguardOutputFile(
+            creationConfig: ComponentCreationConfig
+        ): Boolean {
+            return ((creationConfig is ConsumableCreationConfig
+                    && creationConfig
+                .optimizationCreationConfig
+                .minifiedEnabled)
+                    || creationConfig.componentType.isDynamicFeature)
+        }
 
         override fun handleProvider(
             taskProvider: TaskProvider<LinkApplicationAndroidResourcesTask>
