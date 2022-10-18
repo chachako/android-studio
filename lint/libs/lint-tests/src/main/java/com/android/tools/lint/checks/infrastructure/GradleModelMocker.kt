@@ -97,11 +97,11 @@ class GradleModelMocker @JvmOverloads constructor(
     }
 
     private var moduleModel: TestLintModelModule = TestLintModelModule(
-      dir = projectDir,
-      compileTarget = "android-" + SdkVersionInfo.HIGHEST_KNOWN_API,
-      agpVersion = AgpVersion.parse("2.2.2"),
-      javaSourceLevel = "1.7",
-      modulePath = "test_project-${projectDir.name}"
+        dir = projectDir,
+        compileTarget = "android-" + SdkVersionInfo.HIGHEST_KNOWN_API,
+        agpVersion = AgpVersion.parse("2.2.2"),
+        javaSourceLevel = "1.7",
+        modulePath = "test_project-${projectDir.name}"
     )
     private var buildFeatures: TestLintModelBuildFeatures = TestLintModelBuildFeatures()
     private var defaultConfig: TestProductFlavor = TestProductFlavor(
@@ -2198,21 +2198,21 @@ private val wellKnownLibraries = listOf(
 )
 
 private data class TestLintModelModule(
-  override val dir: File = File(""),
-  override val modulePath: String = "",
-  override val type: LintModelModuleType = LintModelModuleType.APP,
-  override val mavenName: TestLintModelMavenName? = null,
-  override val agpVersion: AgpVersion? = null,
-  override val buildFolder: File = File(""),
-  override val lintOptions: TestLintModelLintOptions = TestLintModelLintOptions(),
-  override val lintRuleJars: List<File> = emptyList(),
-  override val resourcePrefix: String? = null,
-  override val dynamicFeatures: Collection<String> = emptySet(),
-  override val bootClassPath: List<File> = emptyList(),
-  override val javaSourceLevel: String = "",
-  override val compileTarget: String = "",
-  override val variants: List<LintModelVariant> = emptyList(),
-  val neverShrinking: Boolean = false
+    override val dir: File = File(""),
+    override val modulePath: String = "",
+    override val type: LintModelModuleType = LintModelModuleType.APP,
+    override val mavenName: TestLintModelMavenName? = null,
+    override val agpVersion: AgpVersion? = null,
+    override val buildFolder: File = File(""),
+    override val lintOptions: TestLintModelLintOptions = TestLintModelLintOptions(),
+    override val lintRuleJars: List<File> = emptyList(),
+    override val resourcePrefix: String? = null,
+    override val dynamicFeatures: Collection<String> = emptySet(),
+    override val bootClassPath: List<File> = emptyList(),
+    override val javaSourceLevel: String = "",
+    override val compileTarget: String = "",
+    override val variants: List<LintModelVariant> = emptyList(),
+    val neverShrinking: Boolean = false
 ) : LintModelModule {
     override val loader: LintModelModuleLoader get() = TestLintModelModuleLoader
     override fun neverShrinking(): Boolean = neverShrinking

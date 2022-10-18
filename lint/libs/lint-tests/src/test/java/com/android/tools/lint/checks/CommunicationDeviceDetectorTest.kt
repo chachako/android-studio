@@ -276,5 +276,3 @@ private val audioDeviceInfoStub: TestFile = java(
 private val mediaModuleStub: ProjectDescription = project().files(
     audioManagerStub, audioDeviceInfoStub
 )
-
-
