@@ -54,14 +54,13 @@ internal class UastSourceTransformationTestModeGroup(vararg modes: TestMode) : U
     override val modifiesSources: Boolean = true
 
     override fun applies(context: TestModeContext): Boolean {
-        val applies = validModes.filter { it.applies(context) }
-        return if (applies.isEmpty()) {
-            false
-        } else {
-            validModes.clear()
-            validModes.addAll(applies)
-            true
+        validModes.clear()
+        modes.filterIsInstance<UastSourceTransformationTestMode>().forEach {
+            if (it.applies(context)) {
+                validModes.add(it)
+            }
         }
+        return validModes.isNotEmpty()
     }
 
     override fun partition(context: TestModeContext): List<TestMode> {

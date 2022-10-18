@@ -407,6 +407,22 @@ class LintBaselineTest {
         assertTrue(
             baseline.sameMessage(
                 ApiDetector.UNSUPPORTED,
+                "Call requires version 4 of the R SDK (current min is 0): `requiresExtRv4`",
+                "Call requires version 4 of the R SDK (current min is 10): `requiresExtRv4`"
+            )
+        )
+
+        assertTrue(
+            baseline.sameMessage(
+                ApiDetector.UNSUPPORTED,
+                "Call requires API level 10000 (current min is 1): `android.app.GameManager#getGameMode`",
+                "Call requires API level CUR_DEVELOPMENT/10000 (current min is 1): `android.app.GameManager#getGameMode`"
+            )
+        )
+
+        assertTrue(
+            baseline.sameMessage(
+                ApiDetector.UNSUPPORTED,
                 "Call requires API level R (current min is 1): `setZOrderedOnTop`",
                 "Call requires API level 30 (current min is 29): `setZOrderedOnTop`"
             )

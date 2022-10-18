@@ -18,8 +18,12 @@
 
 package com.android.tools.lint.detector.api
 
-fun minSdkAtLeast(minSdkVersion: Int): Constraint = MinSdkAtLeast(minSdkVersion)
-fun minSdkLessThan(minSdkVersion: Int): Constraint = MinSdkLessThan(minSdkVersion)
+import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
+
+fun minSdkAtLeast(minSdkVersion: Int): Constraint = MinSdkAtLeast(ApiConstraint.atLeast(minSdkVersion, ANDROID_SDK_ID))
+fun minSdkLessThan(minSdkVersion: Int): Constraint = MinSdkLessThan(ApiConstraint.atLeast(minSdkVersion, ANDROID_SDK_ID))
+fun minSdkAtLeast(minSdkVersion: ApiConstraint): Constraint = MinSdkAtLeast(minSdkVersion)
+fun minSdkLessThan(minSdkVersion: ApiConstraint): Constraint = MinSdkLessThan(minSdkVersion)
 fun targetSdkAtLeast(targetSdkVersion: Int): Constraint = TargetSdkAtLeast(targetSdkVersion)
 fun targetSdkLessThan(targetSdkVersion: Int): Constraint = TargetSdkLessThan(targetSdkVersion)
 fun isLibraryProject(): Constraint = IsLibraryProject()
@@ -78,9 +82,9 @@ sealed class Constraint {
  *
  * Don't use this method directly; use [minSdkAtLeast] instead.
  */
-class MinSdkAtLeast internal constructor(val minSdkVersion: Int) : Constraint() {
+class MinSdkAtLeast internal constructor(val minSdkVersion: ApiConstraint) : Constraint() {
     override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.minSdk >= minSdkVersion
+        return context.mainProject.minSdkVersions.isAtLeast(minSdkVersion)
     }
 }
 
@@ -89,9 +93,9 @@ class MinSdkAtLeast internal constructor(val minSdkVersion: Int) : Constraint() 
  *
  * Don't use this method directly; use [minSdkLessThan] instead.
  */
-class MinSdkLessThan internal constructor(val minSdkVersion: Int) : Constraint() {
+class MinSdkLessThan internal constructor(val minSdkVersion: ApiConstraint) : Constraint() {
     override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.minSdk < minSdkVersion
+        return !context.mainProject.minSdkVersions.isAtLeast(minSdkVersion)
     }
 }
 

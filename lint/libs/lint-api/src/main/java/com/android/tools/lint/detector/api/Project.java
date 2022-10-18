@@ -107,6 +107,7 @@ public class Project {
     protected String buildTargetHash;
     protected IAndroidTarget target;
 
+    protected ApiConstraint manifestMinSdks = ApiConstraint.ALL;
     protected AndroidVersion manifestMinSdk = AndroidVersion.DEFAULT;
     protected AndroidVersion manifestTargetSdk = AndroidVersion.DEFAULT;
     protected LanguageLevel javaLanguageLevel;
@@ -788,13 +789,26 @@ public class Project {
     }
 
     /**
-     * Returns the minimum API level for the project
+     * Returns the minimum API level for the project. This does not include any SDK extensions the
+     * user has declared; for that, use {@link #getMinSdkVersions()}} instead.
      *
      * @return the minimum API level or {@link AndroidVersion#DEFAULT} if unknown
+     * @see #getMinSdkVersions() to get a vector including SDK extensions
      */
     @NonNull
     public AndroidVersion getMinSdkVersion() {
         return manifestMinSdk == null ? AndroidVersion.DEFAULT : manifestMinSdk;
+    }
+
+    /**
+     * Returns the minimum API levels for the project (the `minSdkVersion`, along with any SDK
+     * extensions required to be present.)
+     *
+     * @return the minimum API level or {@link ApiConstraint#NONE} if unknown
+     */
+    @NonNull
+    public ApiConstraint getMinSdkVersions() {
+        return manifestMinSdks;
     }
 
     /**
@@ -967,11 +981,16 @@ public class Project {
 
             if (element.hasAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION)) {
                 String targetSdk = element.getAttributeNS(ANDROID_URI, ATTR_TARGET_SDK_VERSION);
-                if (targetSdk != null && !targetSdk.isEmpty()) {
+                if (!targetSdk.isEmpty()) {
                     manifestTargetSdk = SdkVersionInfo.getVersion(targetSdk, null);
                 }
             } else {
                 manifestTargetSdk = manifestMinSdk;
+            }
+
+            manifestMinSdks = ApiConstraint.Companion.getFromUsesSdk(element);
+            if (manifestMinSdks == null) {
+                manifestMinSdks = ApiConstraint.ALL;
             }
         }
     }

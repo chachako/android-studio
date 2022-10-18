@@ -16,9 +16,12 @@
 
 package com.android.tools.lint.checks;
 
+import static com.android.tools.lint.detector.api.ExtensionSdk.ANDROID_SDK_ID;
+
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.lint.client.api.JavaEvaluator;
+import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Implementation;
@@ -31,6 +34,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import org.jetbrains.uast.UClass;
 import org.jetbrains.uast.UastUtils;
 
@@ -91,8 +95,13 @@ public class OverrideConcreteDetector extends Detector implements SourceCodeScan
             return;
         }
 
-        int minSdk = Math.max(context.getProject().getMinSdk(), getTargetApi(declaration));
-        if (minSdk >= CONCRETE_IN) {
+        ApiConstraint minSdk =
+                ApiConstraint.Companion.max(
+                        context.getProject().getMinSdkVersions(),
+                        getTargetApi(context.getEvaluator(), declaration),
+                        false);
+        ApiConstraint platformConstraint = minSdk.findSdk(ANDROID_SDK_ID, true);
+        if (platformConstraint == null || platformConstraint.min() >= CONCRETE_IN) {
             return;
         }
 
@@ -129,28 +138,31 @@ public class OverrideConcreteDetector extends Detector implements SourceCodeScan
             if (!found) {
                 String message =
                         String.format(
+                                Locale.US,
                                 "Must override `%1$s.%2$s(%3$s)`: Method was abstract until %4$d, and your `minSdkVersion` is %5$d",
                                 NOTIFICATION_LISTENER_SERVICE_FQN,
                                 methodName,
                                 STATUS_BAR_NOTIFICATION_FQN,
                                 CONCRETE_IN,
-                                minSdk);
+                                minSdk.min());
                 context.report(ISSUE, declaration, context.getNameLocation(declaration), message);
                 break;
             }
         }
     }
 
-    private static int getTargetApi(@NonNull UClass node) {
+    @Nullable
+    private static ApiConstraint getTargetApi(
+            @NonNull JavaEvaluator evaluator, @NonNull UClass node) {
         while (node != null) {
-            int targetApi = ApiDetector.getTargetApi(node);
-            if (targetApi != -1) {
+            ApiConstraint targetApi = ApiDetector.getTargetApi(evaluator, node);
+            if (targetApi != null) {
                 return targetApi;
             }
 
             node = UastUtils.getParentOfType(node, UClass.class, true);
         }
 
-        return -1;
+        return null;
     }
 }

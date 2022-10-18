@@ -22,7 +22,6 @@ import com.android.tools.lint.checks.infrastructure.TestLintClient
 import com.android.tools.lint.checks.infrastructure.checkTransitiveComparator
 import org.junit.Test
 import java.io.File
-import java.lang.RuntimeException
 import java.util.Collections
 import java.util.Random
 

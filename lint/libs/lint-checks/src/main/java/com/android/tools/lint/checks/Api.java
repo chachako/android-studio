@@ -16,6 +16,8 @@
 package com.android.tools.lint.checks;
 
 import com.android.annotations.NonNull;
+import com.android.sdklib.SdkVersionInfo;
+import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.android.utils.XmlUtils;
 import gnu.trove.THashMap;
 import gnu.trove.TObjectHashingStrategy;
@@ -24,7 +26,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -47,13 +52,31 @@ class Api<C extends ApiClassBase> {
     @NonNull
     public static Api<ApiClass> parseApi(File apiFile) {
         try (InputStream inputStream = new FileInputStream(apiFile)) {
+            return parseApi(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Parses simplified API input stream. Caller should close stream after use.
+     *
+     * @param inputStream the API database input stream
+     * @return a new ApiInfo
+     * @throws RuntimeException in case of an error
+     */
+    @NonNull
+    public static Api<ApiClass> parseApi(InputStream inputStream) {
+        try {
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
             XmlUtils.configureSaxFactory(parserFactory, false, false);
             SAXParser parser = XmlUtils.createSaxParser(parserFactory);
             ApiParser apiParser = new ApiParser();
             parser.parse(inputStream, apiParser);
-            inputStream.close();
-            return new Api<>(apiParser.getClasses(), apiParser.getContainers());
+            return new Api<>(
+                    apiParser.getClasses(),
+                    apiParser.getContainers(),
+                    apiParser.getExtensionSdks());
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,7 +94,10 @@ class Api<C extends ApiClassBase> {
         try (InputStream inputStream = input.openStream()) {
             PrivateApiParser privateApiParser = new PrivateApiParser();
             privateApiParser.parse(inputStream);
-            return new Api<>(privateApiParser.getClasses(), privateApiParser.getContainers());
+            return new Api<>(
+                    privateApiParser.getClasses(),
+                    privateApiParser.getContainers(),
+                    Collections.emptyList());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,11 +105,38 @@ class Api<C extends ApiClassBase> {
 
     private final Map<String, C> mClasses;
     private final Map<String, ApiClassOwner<C>> mContainers;
+    private final List<ExtensionSdk> mSdks;
+    private final Map<Object, Integer> mSdkIndex = new LinkedHashMap<>();
+
+    // Inserts some extra bulk data into the repository to force some
+    // API levels to require two bytes to make sure our encoding/decoding
+    // handles that as well.
+    public static boolean TEST_TWO_BYTE_APIS = false;
+
+    {
+        int next = mSdkIndex.size();
+        if (TEST_TWO_BYTE_APIS) {
+            for (int i = 300; i < 500; i++) {
+                mSdkIndex.put(i + ":1", next++);
+            }
+        }
+
+        // Reserve spots for the base API levels
+        for (int i = 0; i <= SdkVersionInfo.HIGHEST_KNOWN_API + 1; i++) {
+            mSdkIndex.put(i, next++);
+        }
+
+        // Special API level used in platform development to mean next API level
+        mSdkIndex.put(SdkVersionInfo.CUR_DEVELOPMENT, next);
+    }
 
     private Api(
-            @NonNull Map<String, C> classes, @NonNull Map<String, ApiClassOwner<C>> containers) {
+            @NonNull Map<String, C> classes,
+            @NonNull Map<String, ApiClassOwner<C>> containers,
+            List<ExtensionSdk> sdks) {
         mClasses = Collections.unmodifiableMap(new MyHashMap<>(classes));
         mContainers = Collections.unmodifiableMap(new MyHashMap<>(containers));
+        mSdks = Collections.unmodifiableList(sdks);
     }
 
     C getClass(String fqcn) {
@@ -96,6 +149,40 @@ class Api<C extends ApiClassBase> {
 
     Map<String, ApiClassOwner<C>> getContainers() {
         return mContainers;
+    }
+
+    public short getSdkIndex(@NonNull Object sdks) {
+        // Key is Integer api levels or String sdk-keys
+        Integer sdkIndex = mSdkIndex.get(sdks);
+        if (sdkIndex != null) {
+            return sdkIndex.shortValue();
+        }
+        int index = mSdkIndex.size();
+        mSdkIndex.put(sdks, index);
+        return (short) index;
+    }
+
+    /**
+     * Returns all the sdks= strings in the database, in the exact order matching the sdk-indices in
+     * the various API objects.
+     */
+    @NonNull
+    public List<String> getSdks() {
+        List<String> list = new ArrayList<>();
+        // Note: iteration order is significant; should match results from getSdkIndex()
+        for (Object key : mSdkIndex.keySet()) {
+            if (key instanceof String || key instanceof Integer) {
+                list.add(key.toString());
+            } else {
+                throw new RuntimeException(key.toString());
+            }
+        }
+        return list;
+    }
+
+    @NonNull
+    public List<ExtensionSdk> getExtensionSdks() {
+        return mSdks;
     }
 
     /** The hash map that doesn't distinguish between '.', '/', and '$' in the key string. */

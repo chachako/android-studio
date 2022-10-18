@@ -31,6 +31,7 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.util.PathString
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.detector.api.ApiConstraint
 import com.android.tools.lint.detector.api.Constraint
 import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
@@ -54,9 +55,7 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.File
 import java.io.IOException
 import java.util.ArrayDeque
-import java.util.ArrayList
 import java.util.Base64
-import java.util.HashMap
 
 /** The [XmlReader] can restore the state saved by [XmlWriter] */
 class XmlReader(
@@ -590,8 +589,8 @@ class XmlReader(
         val name = parser.getAttributeName(index)
         val value = parser.getAttributeValue(index)
         return when (name) {
-            ATTR_MIN_GE -> minSdkAtLeast(value.toInt())
-            ATTR_MIN_LT -> minSdkLessThan(value.toInt())
+            ATTR_MIN_GE -> minSdkAtLeast(ApiConstraint.deserialize(value))
+            ATTR_MIN_LT -> minSdkLessThan(ApiConstraint.deserialize(value))
             ATTR_TARGET_GE -> targetSdkAtLeast(value.toInt())
             ATTR_TARGET_LT -> targetSdkLessThan(value.toInt())
             ATTR_LIBRARY -> if (value == VALUE_TRUE) isLibraryProject() else notLibraryProject()
@@ -633,7 +632,7 @@ class XmlReader(
             val eventType = parser.eventType
             if (eventType == XmlPullParser.END_TAG) {
                 when (val tag = parser.name) {
-                    TAG_ENTRY, TAG_LOCATION, TAG_CONDITION -> {
+                    TAG_ENTRY, TAG_LOCATION, TAG_CONDITION, TAG_API_LEVELS -> {
                     }
                     TAG_MAP -> return lintMap
                     else -> {
@@ -679,6 +678,12 @@ class XmlReader(
                         val id = parser.getAttributeValue(null, ATTR_ID) ?: LintDriver.KEY_CONDITION
                         val condition = readCondition()
                         map[id] = condition
+                    }
+                    TAG_API_LEVELS -> {
+                        val id = parser.getAttributeValue(null, ATTR_ID) ?: LintDriver.KEY_CONDITION
+                        val value = parser.getAttributeValue(null, ATTR_VALUE)
+                        val apiLevels = ApiConstraint.deserialize(value)
+                        map[id] = apiLevels
                     }
                     else -> {
                         error("Unexpected tag $tag")

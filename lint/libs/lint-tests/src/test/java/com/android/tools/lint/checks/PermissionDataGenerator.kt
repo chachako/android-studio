@@ -25,6 +25,7 @@ import com.android.testutils.TestUtils
 import com.android.tools.apk.analyzer.BinaryXmlParser
 import com.android.tools.lint.checks.ApiLookup.get
 import com.android.tools.lint.checks.infrastructure.TestLintClient
+import com.android.tools.lint.detector.api.ApiConstraint
 import com.android.utils.XmlUtils
 import com.android.utils.XmlUtils.getFirstSubTagByName
 import com.android.utils.XmlUtils.getNextTagByName
@@ -411,11 +412,11 @@ class PermissionDataGenerator {
 
         if (dangerousPermission || signaturePermission) {
             val permission = nameToPermission[name] ?: run {
-                val fieldVersion = if (field != null) apiLookup.getFieldVersion(
+                val fieldVersion = if (field != null) apiLookup.getFieldVersions(
                     "android/Manifest\$permission", field
-                ) else -1
+                ) else ApiConstraint.NONE
 
-                val new = Permission(name, field, fieldVersion)
+                val new = Permission(name, field, fieldVersion.min())
                 nameToPermission.put(name, new)
                 new
             }

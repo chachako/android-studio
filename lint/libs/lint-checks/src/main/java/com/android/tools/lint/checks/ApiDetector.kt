@@ -72,11 +72,15 @@ import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.ApiConstraint
+import com.android.tools.lint.detector.api.ApiConstraint.Companion.NONE
+import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ClassContext.Companion.getFqcn
 import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Desugaring
+import com.android.tools.lint.detector.api.ExtensionSdk
+import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
@@ -93,6 +97,7 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getLongAttribute
 import com.android.tools.lint.detector.api.VersionChecks
 import com.android.tools.lint.detector.api.VersionChecks.Companion.REQUIRES_API_ANNOTATION
+import com.android.tools.lint.detector.api.VersionChecks.Companion.REQUIRES_EXTENSION_ANNOTATION
 import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getTargetApiAnnotation
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getTargetApiForAnnotation
@@ -160,6 +165,7 @@ import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.UUnaryExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.UastCallKind
+import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.expressions.UInjectionHost
 import org.jetbrains.uast.getContainingUClass
 import org.jetbrains.uast.getContainingUMethod
@@ -180,7 +186,6 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.util.EnumSet
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Looks for usages of APIs that are not supported in all the versions
@@ -213,7 +218,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     override fun visitAttribute(context: XmlContext, attribute: Attr) {
         val apiDatabase = apiDatabase ?: return
 
-        var attributeApiLevel = -1
+        var attributeApiLevel: ApiConstraint = ApiConstraint.ALL
         val namespace = attribute.namespaceURI
         if (ANDROID_URI == namespace) {
             val name = attribute.localName
@@ -223,13 +228,15 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 (!isAttributeOfGradientOrGradientItem(attribute) && name != "fillType" || !context.project.dependsOnAppCompat())
             ) {
                 val owner = "android/R\$attr"
-                attributeApiLevel = apiDatabase.getFieldVersion(owner, name)
-                val minSdk = getMinSdk(context)
-                if (attributeApiLevel > minSdk &&
-                    attributeApiLevel > context.folderVersion &&
-                    attributeApiLevel > getLocalMinSdk(attribute.ownerElement) &&
-                    !isBenignUnusedAttribute(name) &&
-                    !isAlreadyWarnedDrawableFile(context, attribute, attributeApiLevel)
+                attributeApiLevel = apiDatabase.getFieldVersions(owner, name)
+                val minSdk = getMinSdk(context) ?: return
+                if (attributeApiLevel != ApiConstraint.NONE && !(
+                    minSdk.isAtLeast(attributeApiLevel) ||
+                        context.folderVersion.isAtLeast(attributeApiLevel) ||
+                        getLocalMinSdk(attribute.ownerElement).isAtLeast(attributeApiLevel) ||
+                        isBenignUnusedAttribute(name) ||
+                        isAlreadyWarnedDrawableFile(context, attribute, attributeApiLevel)
+                    )
                 ) {
                     if (RtlDetector.isRtlAttributeName(name) || ATTR_SUPPORTS_RTL == name) {
                         // No need to warn for example that
@@ -249,7 +256,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         val location = context.getLocation(attribute)
                         val localName = attribute.localName
                         var message =
-                            "Attribute `$localName` is only used in API level $attributeApiLevel and higher (current min is %1\$d)"
+                            "Attribute `$localName` is only used in API level ${attributeApiLevel.minString()} and higher (current min is %1\$s)"
 
                         // Supported by appcompat
                         if ("fontFamily" == localName) {
@@ -275,12 +282,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
             if (name == ATTR_THEME && VIEW_INCLUDE == attribute.ownerElement.tagName) {
                 // Requires API 23
-                val minSdk = getMinSdk(context)
-                if (max(minSdk, context.folderVersion) < 23) {
+                val minSdk = getMinSdk(context) ?: return
+                if (!(minSdk.isAtLeast(API_23) || context.folderVersion.isAtLeast(API_23))) {
                     val location = context.getLocation(attribute)
                     val message =
-                        "Attribute `android:theme` is only used by `<include>` tags in API level 23 and higher (current min is %1\$d)"
-                    report(context, UNUSED, attribute, location, message, 23, minSdk)
+                        "Attribute `android:theme` is only used by `<include>` tags in API level 23 and higher (current min is %1\$s)"
+                    report(context, UNUSED, attribute, location, message, API_23, minSdk)
                 }
             }
 
@@ -289,12 +296,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 !isFrameLayout(context, attribute.ownerElement.tagName, true)
             ) {
                 // Requires API 23, unless it's a FrameLayout
-                val minSdk = getMinSdk(context)
-                if (max(minSdk, context.folderVersion) < 23) {
+                val minSdk = getMinSdk(context) ?: return
+                if (!(minSdk.isAtLeast(API_23) || context.folderVersion.isAtLeast(API_23))) {
                     val location = context.getLocation(attribute)
                     val message =
-                        "Attribute `android:foreground` has no effect on API levels lower than 23 (current min is %1\$d)"
-                    report(context, UNUSED, attribute, location, message, 23, minSdk)
+                        "Attribute `android:foreground` has no effect on API levels lower than 23 (current min is %1\$s)"
+                    report(context, UNUSED, attribute, location, message, API_23, minSdk)
                 }
             }
         } else if (TOOLS_URI == namespace) {
@@ -341,15 +348,17 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         } else if (value.startsWith(ANDROID_THEME_PREFIX)) {
             prefix = ANDROID_THEME_PREFIX
             if (context.resourceFolderType == ResourceFolderType.DRAWABLE) {
-                val api = 21
-                val minSdk = getMinSdk(context)
-                if (api > minSdk &&
-                    api > context.folderVersion &&
-                    api > getLocalMinSdk(attribute.ownerElement)
+                val api = API_21
+                val minSdk = getMinSdk(context) ?: return
+                if (!(
+                    minSdk.isAtLeast(api) ||
+                        context.folderVersion.isAtLeast(api) ||
+                        getLocalMinSdk(attribute.ownerElement).isAtLeast(api)
+                    )
                 ) {
                     val location = context.getLocation(attribute)
                     val message =
-                        "Using theme references in XML drawables requires API level $api (current min is %1\$d)"
+                        "Using theme references in XML drawables requires API level ${api.minString()} (current min is %1\$s)"
                     report(context, UNSUPPORTED, attribute, location, message, api, minSdk)
                     // Don't flag individual theme attribute requirements here, e.g. once
                     // we've told you that you need at least v21 to reference themes, we don't
@@ -394,11 +403,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
         }
         name ?: return
-        val api = apiDatabase.getFieldVersion(owner, name)
-        val minSdk = getMinSdk(context)
-        if (api > minSdk &&
-            api > context.folderVersion &&
-            api > getLocalMinSdk(attribute.ownerElement)
+        val api = apiDatabase.getFieldVersions(owner, name)
+        val minSdk = getMinSdk(context) ?: return
+        if (api != NONE && !(
+            minSdk.isAtLeast(api) ||
+                context.folderVersion.isAtLeast(api) ||
+                getLocalMinSdk(attribute.ownerElement).isAtLeast(api)
+            )
         ) {
             // Don't complain about resource references in the tools namespace,
             // such as for example "tools:layout="@android:layout/list_content",
@@ -408,22 +419,22 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
 
             when {
-                attributeApiLevel >= api -> {
+                attributeApiLevel.isAtLeast(api) -> {
                     // The attribute will only be *read* on platforms >= attributeApiLevel.
                     // If this isn't lower than the attribute reference's API level, it
                     // won't be a problem
                 }
-                attributeApiLevel > minSdk -> {
+                !minSdk.isAtLeast(attributeApiLevel) -> {
                     val attributeName = attribute.localName
                     val location = context.getLocation(attribute)
                     val message =
-                        "`$name` requires API level $api (current min is %1\$d), but note " +
+                        "`$name` requires API level ${api.minString()} (current min is %1\$s), but note " +
                             "that attribute `$attributeName` is only used in API level " +
-                            "$attributeApiLevel and higher"
+                            "${attributeApiLevel.minString()} and higher"
                     report(context, UNSUPPORTED, attribute, location, message, api, minSdk)
                 }
                 else -> {
-                    if (api == 17 && RtlDetector.isRtlAttributeName(name)) {
+                    if (api.min() == 17 && RtlDetector.isRtlAttributeName(name)) {
                         val old = RtlDetector.convertNewToOld(name)
                         if (name != old) {
                             val parent = attribute.ownerElement
@@ -442,8 +453,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     }
 
                     val location = context.getLocation(attribute)
-                    val message =
-                        "`$value` requires API level $api (current min is %1\$d)"
+                    val minString = api.minString()
+                    val message = "`$value` requires API level $minString (current min is %1\$s)"
                     report(context, UNSUPPORTED, attribute, location, message, api, minSdk)
                 }
             }
@@ -468,15 +479,15 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val folderType = context.resourceFolderType
         if (folderType != ResourceFolderType.LAYOUT) {
             if (folderType == ResourceFolderType.DRAWABLE) {
-                checkElement(context, element, TAG_VECTOR, 21, "1.4.0", UNSUPPORTED)
-                checkElement(context, element, TAG_RIPPLE, 21, null, UNSUPPORTED)
-                checkElement(context, element, TAG_ANIMATED_SELECTOR, 21, null, UNSUPPORTED)
-                checkElement(context, element, TAG_ANIMATED_VECTOR, 21, null, UNSUPPORTED)
-                checkElement(context, element, "drawable", 24, null, UNSUPPORTED)
+                checkElement(context, element, TAG_VECTOR, API_21, "1.4.0", UNSUPPORTED)
+                checkElement(context, element, TAG_RIPPLE, API_21, null, UNSUPPORTED)
+                checkElement(context, element, TAG_ANIMATED_SELECTOR, API_21, null, UNSUPPORTED)
+                checkElement(context, element, TAG_ANIMATED_VECTOR, API_21, null, UNSUPPORTED)
+                checkElement(context, element, "drawable", API_24, null, UNSUPPORTED)
                 if ("layer-list" == tag) {
                     checkLevelList(context, element)
                 } else if (tag.contains(".")) {
-                    checkElement(context, element, tag, 24, null, UNSUPPORTED)
+                    checkElement(context, element, tag, API_24, null, UNSUPPORTED)
                 }
             }
             if (element.parentNode.nodeType != Node.ELEMENT_NODE) {
@@ -499,15 +510,17 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                             if (ResourceType.fromXmlValue(typeString) != null) {
                                 val owner = "android/R$$typeString"
                                 val name = resourceNameToFieldName(text.substring(index + 1))
-                                val api = apiDatabase.getFieldVersion(owner, name)
-                                val minSdk = getMinSdk(context)
-                                if (api > minSdk &&
-                                    api > context.folderVersion &&
-                                    api > getLocalMinSdk(element)
+                                val api = apiDatabase.getFieldVersions(owner, name)
+                                val minSdk = getMinSdk(context) ?: return
+                                if (!(
+                                    minSdk.isAtLeast(api) ||
+                                        context.folderVersion.isAtLeast(api) ||
+                                        getLocalMinSdk(element).isAtLeast(api)
+                                    )
                                 ) {
                                     val location = context.getLocation(textNode)
                                     val message =
-                                        "`$text` requires API level $api (current min is %1\$d)"
+                                        "`$text` requires API level ${api.minString()} (current min is %1\$s)"
                                     report(context, UNSUPPORTED, element, location, message, api, minSdk)
                                 }
                             }
@@ -524,7 +537,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 }
             } else {
                 // TODO: Complain if <tag> is used at the root level!
-                checkElement(context, element, TAG, 21, null, UNUSED)
+                checkElement(context, element, TAG, API_21, null, UNUSED)
             }
 
             // Check widgets to make sure they're available in this version of the SDK.
@@ -537,14 +550,17 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 fqn = "android/view/TextureView"
             }
             // TODO: Consider other widgets outside of android.widget.*
-            val api = apiDatabase.getClassVersion(fqn)
-            val minSdk = getMinSdk(context)
-            if (api > minSdk && api > context.folderVersion) {
+            val api = apiDatabase.getClassVersions(fqn)
+            if (api == NONE) {
+                return
+            }
+            val minSdk = getMinSdk(context) ?: return
+            if (!(minSdk.isAtLeast(api) || context.folderVersion.isAtLeast(api))) {
                 val localMinSdk = getLocalMinSdk(element)
-                if (api > localMinSdk) {
+                if (!localMinSdk.isAtLeast(api)) {
                     val location = context.getNameLocation(element)
                     val message =
-                        "View requires API level $api (current min is %1\$d): `<$tag>`"
+                        "View requires API level ${api.minString()} (current min is %1\$s): `<$tag>`"
                     report(context, UNSUPPORTED, element, location, message, api, localMinSdk)
                 }
             }
@@ -566,19 +582,20 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         ATTR_HEIGHT
                     )
                 ) {
-                    val attributeApiLevel =
-                        23 // Using width and height on layer-list children requires M
-                    val minSdk = getMinSdk(context)
-                    if (attributeApiLevel > minSdk &&
-                        attributeApiLevel > context.folderVersion &&
-                        attributeApiLevel > getLocalMinSdk(element)
+                    val attributeApiLevel = API_23 // Using width and height on layer-list children requires M
+                    val minSdk = getMinSdk(context) ?: return
+                    if (!(
+                        minSdk.isAtLeast(attributeApiLevel) ||
+                            context.folderVersion.isAtLeast(attributeApiLevel) ||
+                            getLocalMinSdk(element).isAtLeast(attributeApiLevel)
+                        )
                     ) {
                         for (attributeName in arrayOf(ATTR_WIDTH, ATTR_HEIGHT)) {
                             val attribute =
                                 e.getAttributeNodeNS(ANDROID_URI, attributeName) ?: continue
                             val location = context.getLocation(attribute)
                             val message =
-                                "Attribute `${attribute.localName}` is only used in API level $attributeApiLevel and higher (current min is %1\$d)"
+                                "Attribute `${attribute.localName}` is only used in API level ${attributeApiLevel.minString()} and higher (current min is %1\$s)"
                             report(context, UNUSED, attribute, location, message, attributeApiLevel, minSdk)
                         }
                     }
@@ -597,17 +614,19 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         context: XmlContext,
         element: Element,
         tag: String,
-        api: Int,
+        api: ApiConstraint,
         gradleVersion: String?,
         issue: Issue
     ) {
         var realTag = tag
         if (realTag == element.tagName) {
-            val minSdk = getMinSdk(context)
-            if (api > minSdk &&
-                api > context.folderVersion &&
-                api > getLocalMinSdk(element) &&
-                !featureProvidedByGradle(context, gradleVersion)
+            val minSdk = getMinSdk(context) ?: return
+            if (!(
+                minSdk.isAtLeast(api) ||
+                    context.folderVersion.isAtLeast(api) ||
+                    getLocalMinSdk(element).isAtLeast(api) ||
+                    featureProvidedByGradle(context, gradleVersion)
+                )
             ) {
                 var location = context.getNameLocation(element)
 
@@ -621,32 +640,32 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 var message: String
                 if (issue === UNSUPPORTED) {
                     message =
-                        "`<$realTag>` requires API level $api (current min is %1\$d)"
+                        "`<$realTag>` requires API level ${api.minString()} (current min is %1\$s)"
                     if (gradleVersion != null) {
                         message +=
                             " or building with Android Gradle plugin $gradleVersion or higher"
                     } else if (realTag.contains(".")) {
                         message =
-                            "Custom drawables requires API level $api (current min is %1\$d)"
+                            "Custom drawables requires API level ${api.minString()} (current min is %1\$s)"
                     }
                 } else {
                     assert(issue === UNUSED) { issue }
                     message =
-                        "`<$realTag>` is only used in API level $api and higher (current min is %1\$d)"
+                        "`<$realTag>` is only used in API level ${api.minString()} and higher (current min is %1\$s)"
                 }
                 report(context, issue, element, location, message, api, minSdk)
             }
         }
     }
 
-    private fun getMinSdk(context: Context): Int {
+    private fun getMinSdk(context: Context): ApiConstraint? {
         val project = if (context.isGlobalAnalysis())
             context.mainProject else context.project
         return if (!project.isAndroidProject) {
             // Don't flag API checks in non-Android projects
-            Integer.MAX_VALUE
+            null
         } else {
-            project.minSdkVersion.featureLevel
+            project.minSdkVersions
         }
     }
 
@@ -654,8 +673,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
     override fun applicableAnnotations(): List<String> {
         return listOf(
-            REQUIRES_API_ANNOTATION.oldName(), REQUIRES_API_ANNOTATION.newName(),
-            ANDROIDX_SDK_SUPPRESS_ANNOTATION, FQCN_TARGET_API, ROBO_ELECTRIC_CONFIG_ANNOTATION
+            REQUIRES_API_ANNOTATION.oldName(),
+            REQUIRES_API_ANNOTATION.newName(),
+            REQUIRES_EXTENSION_ANNOTATION,
+            ANDROIDX_SDK_SUPPRESS_ANNOTATION,
+            FQCN_TARGET_API,
+            ROBO_ELECTRIC_CONFIG_ANNOTATION
         )
     }
 
@@ -684,106 +707,132 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     ) {
         val annotation = annotationInfo.annotation
         val member = usageInfo.referenced as? PsiMember
-        val api = getApiLevel(context, annotation, annotationInfo.qualifiedName)
-        if (api == -1) return
-        var minSdk = getMinSdk(context)
+        val api: ApiConstraint =
+            if (!isRequiresApiAnnotation(annotationInfo.qualifiedName) || usageInfo.annotations.size == 1) {
+                getApiLevel(context, annotation, annotationInfo.qualifiedName) ?: return
+            } else {
+                if (usageInfo.type != AnnotationUsageType.DEFINITION &&
+                    usageInfo.anyCloser { isRequiresApiAnnotation(it.qualifiedName) }
+                ) {
+                    return
+                }
+                var constraint: ApiConstraint? = null
+                val target = annotationInfo.annotated
+                usageInfo.annotations.forEach { info ->
+                    val qualifiedName = info.qualifiedName
+                    if (info.annotated === target && isRequiresApiAnnotation(qualifiedName)) {
+                        val apiLevel = getApiLevel(context, info.annotation, qualifiedName)
+                        if (apiLevel != null) {
+                            if (constraint != null) {
+                                if (constraint?.findSdk(apiLevel.sdkId) == null) {
+                                    // When there are multiple API requirement annotations on the same target,
+                                    // they're *all* required/available!
+                                    constraint = max(constraint, apiLevel, either = !REPEATED_API_ANNOTATION_REQUIRES_ALL)
+                                }
+                            } else {
+                                constraint = apiLevel
+                            }
+                        }
+                    }
+                }
+                constraint ?: return
+            }
+        val qualifiedName = annotation.qualifiedName ?: return
+        var minSdk = getMinSdk(context) ?: return
         val evaluator = context.evaluator
         if (usageInfo.type == AnnotationUsageType.DEFINITION) {
+            // This check applies only to platform SDK_INT checks.
+            // (Later we could extend it to handle nested @RequiresSdkVersion annotations,
+            // and redundant ones based on manifest-declared extensions, but that seems lower priority.)
+            if (api.getSdk() != ANDROID_SDK_ID) {
+                return
+            }
             val fix = fix()
                 .replace().all().with("")
                 .range(context.getLocation(annotation))
-                .name("Delete @RequiresApi")
+                .name("Delete @${qualifiedName.substringAfterLast('.')}")
                 .build()
 
             val (targetAnnotation, target) = getTargetApiAnnotation(evaluator, element.uastParent?.uastParent)
-            if (target > api) {
-                val outerAnnotation = "@${targetAnnotation?.qualifiedName?.substringAfterLast('.')}($target)"
-                val message = "Unnecessary; SDK_INT is always >= $target from outer annotation (`$outerAnnotation`)"
+            if (target != null && !api.isAtLeast(target)) {
+                val outerAnnotation = "@${targetAnnotation?.qualifiedName?.substringAfterLast('.')}(${target.minString()})"
+                val message = "Unnecessary; SDK_INT is always >= ${target.minString()} from outer annotation (`$outerAnnotation`)"
                 context.report(Incident(OBSOLETE_SDK, message, context.getLocation(annotation), annotation, fix))
             } else {
-                val message = "Unnecessary; SDK_INT is always >= $api"
+                val message = "Unnecessary; SDK_INT is always >= ${api.minString()}"
                 context.report(
                     Incident(OBSOLETE_SDK, message, context.getLocation(annotation), annotation, fix),
-                    minSdkAtLeast(api)
+                    minSdkAtLeast(api.min())
                 )
             }
             return
         }
-        if (!REQUIRES_API_ANNOTATION.isEquals(annotation.qualifiedName)) {
+        if (!isRequiresApiAnnotation(qualifiedName)) {
             // These two annotations do not propagate the requirement outwards to callers
             return
         }
-        val (targetAnnotation, target) = getTargetApiAnnotation(evaluator, element)
-        if (target == -1 || api > target) {
-            minSdk = max(minSdk, target)
-            var constraint = VersionChecks.Companion.getOuterVersionCheckConstraint(context, element)
-            if (constraint != null) {
-                val atLeast = ApiConstraint.Companion.atLeast(minSdk)
-                constraint = constraint and atLeast
-                if (constraint.notLowerThan(api)) {
-                    return
-                }
-                val lowest = constraint.fromInclusive()
-                // If the constraint implies a higher SDK_INT, bump up the value here to include in the
-                // error message. This will make it clearer to users that the SDK_INT is being taken into
-                // account, yet still isn't high enough.
-                minSdk = max(minSdk, lowest)
-            }
 
-            if (isPrecededByVersionCheckExit(context, element, api)) {
-                return
-            }
-            if (isSurroundedByHigherTargetAnnotation(evaluator, targetAnnotation, api)) {
-                // Make sure we aren't interpreting a redundant local @RequireApi(x) annotation
-                // as implying the API level can be x here if there is an *outer* annotation
-                // with a higher API level (we flag those above using [OBSOLETE_SDK_LEVEL] but
-                // since that's a warning and this type is an error, make sure we don't have
-                // false positives.
-                return
-            }
-
-            val location: Location
-            val fqcn: String?
-            if (element is UCallExpression &&
-                element.kind != UastCallKind.METHOD_CALL &&
-                element.classReference != null
-            ) {
-                val classReference = element.classReference!!
-                location = context.getRangeLocation(element, 0, classReference, 0)
-                fqcn = classReference.resolvedName ?: member?.name ?: ""
-            } else {
-                location = context.getNameLocation(element)
-                fqcn = member?.name ?: ""
-            }
-            val type = when (usageInfo.type) {
-                AnnotationUsageType.EXTENDS -> "Extending $fqcn"
-                AnnotationUsageType.ANNOTATION_REFERENCE,
-                AnnotationUsageType.CLASS_REFERENCE -> "Class"
-                AnnotationUsageType.METHOD_RETURN,
-                AnnotationUsageType.METHOD_OVERRIDE -> "Method"
-                AnnotationUsageType.VARIABLE_REFERENCE,
-                AnnotationUsageType.FIELD_REFERENCE -> "Field"
-                else -> "Call"
-            }
-            val field = usageInfo.referenced
-            val issue = if (field is PsiField && isInlined(field, context.evaluator)) {
-                if (isBenignConstantUsage(
-                        context.evaluator,
-                        field,
-                        element,
-                        field.name,
-                        field.containingClass?.qualifiedName ?: ""
-                    )
-                ) {
-                    return
-                }
-                INLINED
-            } else {
-                UNSUPPORTED
-            }
-
-            ApiVisitor(context).report(issue, element, location, type, fqcn, api, minSdk, apiLevelFix(api))
+        val (suppressed, localMinSdk) = getSuppressed(context, api, element, minSdk)
+        if (suppressed) {
+            return
         }
+
+        // If the constraint implies a higher SDK_INT, bump up the value here to include in the
+        // error message. This will make it clearer to users that the SDK_INT is being taken into
+        // account, yet still isn't high enough.
+        minSdk = max(minSdk, localMinSdk)
+
+        val (targetAnnotation, target) = getTargetApiAnnotation(evaluator, element)
+        if (targetAnnotation != null && isSurroundedByHigherTargetAnnotation(evaluator, targetAnnotation, api)) {
+            // Make sure we aren't interpreting a redundant local @RequireApi(x) annotation
+            // as implying the API level can be x here if there is an *outer* annotation
+            // with a higher API level (we flag those above using [OBSOLETE_SDK_LEVEL] but
+            // since that's a warning and this type is an error, make sure we don't have
+            // false positives.
+            return
+        }
+
+        val location: Location
+        val fqcn: String?
+        if (element is UCallExpression &&
+            element.kind != UastCallKind.METHOD_CALL &&
+            element.classReference != null
+        ) {
+            val classReference = element.classReference!!
+            location = context.getRangeLocation(element, 0, classReference, 0)
+            fqcn = classReference.resolvedName ?: member?.name ?: ""
+        } else {
+            location = context.getNameLocation(element)
+            fqcn = member?.name ?: ""
+        }
+        val type = when (usageInfo.type) {
+            AnnotationUsageType.EXTENDS -> "Extending $fqcn"
+            AnnotationUsageType.ANNOTATION_REFERENCE,
+            AnnotationUsageType.CLASS_REFERENCE -> "Class"
+            AnnotationUsageType.METHOD_RETURN,
+            AnnotationUsageType.METHOD_OVERRIDE -> "Method"
+            AnnotationUsageType.VARIABLE_REFERENCE,
+            AnnotationUsageType.FIELD_REFERENCE -> "Field"
+            else -> "Call"
+        }
+        val field = usageInfo.referenced
+        val issue = if (field is PsiField && isInlined(field, context.evaluator)) {
+            if (isBenignConstantUsage(
+                    context.evaluator,
+                    field,
+                    element,
+                    field.name,
+                    field.containingClass?.qualifiedName ?: ""
+                )
+            ) {
+                return
+            }
+            INLINED
+        } else {
+            UNSUPPORTED
+        }
+
+        ApiVisitor(context).report(issue, element, location, type, fqcn, api, minSdk)
     }
 
     /**
@@ -793,13 +842,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     private fun isSurroundedByHigherTargetAnnotation(
         evaluator: JavaEvaluator,
         annotation: UAnnotation?,
-        atLeast: Int,
+        atLeast: ApiConstraint,
         isApiLevelAnnotation: (String) -> Boolean = VersionChecks.Companion::isTargetAnnotation
     ): Boolean {
         var curr = annotation ?: return false
         while (true) {
             val (outer, target) = getTargetApiAnnotation(evaluator, curr.uastParent?.uastParent, isApiLevelAnnotation)
-            if (target >= atLeast) {
+            if (target != null && target.isAtLeast(atLeast)) {
                 return true
             }
             curr = outer ?: return false
@@ -842,18 +891,16 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val mainProject = context.mainProject
         val mainMinSdk = if (!mainProject.isAndroidProject) {
             // Don't flag API checks in non-Android projects
-            Integer.MAX_VALUE
+            return false
         } else {
-            mainProject.minSdkVersion.featureLevel
+            mainProject.minSdkVersions
         }
 
-        val requires = map.getInt(KEY_REQUIRES_API) ?: return false
-        if (requires <= mainMinSdk) {
+        val requires = map.getApiConstraint(KEY_REQUIRES_API) ?: return false
+        if (mainMinSdk.isAtLeast(requires)) {
             return false
         }
 
-        val target = map.getInt(KEY_MIN_API) ?: return false
-        val minSdk = max(target, mainMinSdk)
         val desugaring = map.getInt(KEY_DESUGAR, null)?.let {
             Desugaring.fromConstant(it)
         }
@@ -871,6 +918,17 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 return false
             }
         }
+
+        // The known minimum API constraints at the call site (e.g. due to SDK_INT checks etc.)
+        // which can be higher than the minSdkVersion both there and in the consuming module
+        // (but never as high as the requirement), so take the max.
+        val target = map.getApiConstraint(KEY_MIN_API) ?: return false
+        val maxMinSdk = if (!target.isEmpty()) max(target, mainMinSdk) else mainMinSdk
+        // Display the current minimum; there can be multiple minimums when the API
+        // is available in many versions, so pick the first one.
+        // If we don't have any versions of the given SDK, list that as version "0".
+        // (This is different from the Android SDK where you always have at least version 1.)
+        val minSdk = maxMinSdk.findSdk(requires.getConstraints().first().getSdk(), true)?.minString() ?: "0"
 
         // Update the minSdkVersion included in the message
         val formatString = map.getString(KEY_MESSAGE) ?: return false
@@ -896,22 +954,22 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         scope: Node,
         location: Location,
         message: String,
-        api: Int,
-        minSdk: Int
+        api: ApiConstraint,
+        minSdk: ApiConstraint
     ) {
-        assert(message.contains("%1\$d"))
+        assert(message.contains("%1\$s"))
         val incident = Incident(
             issue = issue,
             message = "", // always formatted in accept before reporting
             location = location,
             scope = scope,
-            fix = apiLevelFix(api)
+            fix = apiLevelFix(api, minSdk)
         )
         val map = map().apply {
             put(KEY_REQUIRES_API, api)
             put(KEY_MESSAGE, message)
 
-            val localMinSdk = if (minSdk == -1) {
+            val localMinSdk = if (minSdk == ApiConstraint.NONE || minSdk == ApiConstraint.ALL) {
                 val element = when (scope) {
                     is Attr -> scope.ownerElement
                     is Element -> scope
@@ -934,19 +992,27 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             location: Location,
             type: String,
             sig: String,
-            requires: Int,
-            minSdk: Int,
+            requires: ApiConstraint,
+            minSdk: ApiConstraint,
             fix: LintFix? = null,
             owner: String? = null,
             name: String? = null,
-            @Suppress("UNUSED_PARAMETER")
             desc: String? = null,
             desugaring: Desugaring? = null
         ) {
-            val apiLevel = getApiLevelString(requires, context)
+            val missing = minSdk.firstMissing(requires) ?: requires
+            val apiLevel = getApiLevelString(missing, context)
             val typeString = type.usLocaleCapitalize()
-            val formatString = "$typeString requires API level $apiLevel (current min is %1\$s): `$sig`"
-            report(issue, node, location, formatString, fix, owner, name, desc, requires, minSdk, desugaring)
+            val sdk = missing.getSdk()
+            val formatString =
+                if (sdk == ANDROID_SDK_ID)
+                    "$typeString requires API level $apiLevel (current min is %1\$s): `$sig`"
+                else {
+                    val sdkString = apiDatabase?.getSdkName(sdk) ?: ExtensionSdk.getSdkExtensionField(sdk, false)
+                    "$typeString requires version $apiLevel of ${if (sdkString[0].isDigit()) "SDK $sdkString" else "the $sdkString SDK"} " +
+                        "(current min is %1\$s): `$sig`"
+                }
+            report(issue, node, location, formatString, fix ?: apiLevelFix(missing, minSdk), owner, name, desc, missing, minSdk, desugaring)
         }
 
         private fun report(
@@ -959,8 +1025,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             name: String? = null,
             @Suppress("UNUSED_PARAMETER")
             desc: String? = null,
-            requires: Int,
-            min: Int = 1,
+            requires: ApiConstraint,
+            min: ApiConstraint,
             desugaring: Desugaring? = null
         ) {
             // Java 8 API desugaring?
@@ -1042,11 +1108,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 // failure to resolve parameter types
                 ?: return
 
-            val api = apiDatabase.getMethodVersion(owner, name, desc)
-            if (api == -1) {
+            val api = apiDatabase.getMethodVersions(owner, name, desc)
+            if (api == ApiConstraint.NONE) {
                 return
             }
-            var minSdk = getMinSdk(context)
+            var minSdk = getMinSdk(context) ?: return
             val (suppressed, localMinSdk) = getSuppressed(context, api, expression, minSdk)
             if (suppressed) {
                 return
@@ -1063,7 +1129,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 signature,
                 api,
                 minSdk,
-                apiLevelFix(api),
+                null,
                 owner,
                 name,
                 desc
@@ -1117,11 +1183,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val apiDatabase = apiDatabase ?: return true
             val evaluator = context.evaluator
             val expressionOwner = evaluator.getQualifiedName(classType) ?: return true
-            val api = apiDatabase.getClassVersion(expressionOwner)
-            if (api == -1) {
+            val api = apiDatabase.getClassVersions(expressionOwner)
+            if (api == ApiConstraint.NONE) {
                 return true
             }
-            var minSdk = getMinSdk(context)
+            var minSdk = getMinSdk(context) ?: return true
             val (suppressed, localMinSdk) = getSuppressed(context, api, node, minSdk)
             if (suppressed) {
                 return true
@@ -1137,7 +1203,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 expressionOwner,
                 api,
                 minSdk,
-                apiLevelFix(api),
+                null,
                 expressionOwner
             )
             return false
@@ -1171,13 +1237,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
 
             val apiDatabase = apiDatabase ?: return
-            val api = apiDatabase.getValidCastVersion(classType, interfaceType)
-            if (api == -1) {
+            val api = apiDatabase.getValidCastVersions(classType, interfaceType)
+            if (api == ApiConstraint.NONE) {
                 return
             }
 
-            var minSdk = getMinSdk(context)
-            if (api <= minSdk) {
+            var minSdk = getMinSdk(context) ?: return
+            if (minSdk.isAtLeast(api)) {
                 return
             }
 
@@ -1229,13 +1295,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val to = interfaceType.substringAfterLast('.')
             val from = classType.substringAfterLast('.')
             message = if (interfaceType == classType) {
-                "$castType to `$to` requires API level $api (current min is %1\$d)"
+                "$castType to `$to` requires API level ${api.minString()} (current min is %1\$s)"
             } else {
-                "$castType from `$from` to `$to` requires API level $api (current min is %1\$d)"
+                "$castType from `$from` to `$to` requires API level ${api.minString()} (current min is %1\$s)"
             }
 
             report(
-                UNSUPPORTED, node, location, message, apiLevelFix(api), classType,
+                UNSUPPORTED, node, location, message, apiLevelFix(api, minSdk), classType,
                 requires = api, min = minSdk
             )
         }
@@ -1255,8 +1321,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         PsiModifier.STATIC
                     )
                 ) {
-                    val api = 24 // minSdk for default methods
-                    val minSdk = getMinSdk(context)
+                    val api = API_24 // minSdk for default methods
+                    val minSdk = getMinSdk(context) ?: return
 
                     if (!isSuppressed(context, api, node, minSdk)) {
                         val location = context.getLocation(node)
@@ -1272,7 +1338,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                             containingClass.name + "#" + node.name,
                             api,
                             minSdk,
-                            apiLevelFix(api),
+                            null,
                             containingClass.qualifiedName,
                             desugaring = Desugaring.INTERFACE_METHODS
                         )
@@ -1280,7 +1346,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 }
             }
 
-            val buildSdk = context.project.buildSdk
+            val buildSdk = ApiConstraint.get(context.project.buildSdk)
             val name = node.name
             val evaluator = context.evaluator
             var superMethod = evaluator.getSuperMethod(node)
@@ -1294,8 +1360,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     val desc = evaluator.getMethodDescription(superMethod, false, false)
                     if (desc != null) {
                         val owner = evaluator.getQualifiedName(cls) ?: return
-                        val api = apiDatabase.getMethodVersion(owner, name, desc)
-                        if (api > buildSdk && buildSdk != -1) {
+                        val api = apiDatabase.getMethodVersions(owner, name, desc)
+                        if (api != ApiConstraint.NONE && !buildSdk.isAtLeast(api)) {
                             if (context.driver.isSuppressed(context, OVERRIDE, node as UElement)
                             ) {
                                 return
@@ -1316,8 +1382,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
                             val message =
                                 "This method is not overriding anything with the current " +
-                                    "build target, but will in API level $api (current " +
-                                    "target is $buildSdk): `$fqcn`"
+                                    "build target, but will in API level ${api.minString()} (current " +
+                                    "target is ${buildSdk.minString()}): `$fqcn`"
                             var locationNode: PsiElement? = node.nameIdentifier
                             if (locationNode == null) {
                                 locationNode = node
@@ -1344,8 +1410,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 for (annotation in evaluator.getAnnotations(node, false)) {
                     val name = annotation.qualifiedName
                     if ("java.lang.annotation.Repeatable" == name) {
-                        val api = 24 // minSdk for repeatable annotations
-                        val minSdk = getMinSdk(context)
+                        val api = API_24 // minSdk for repeatable annotations
+                        val minSdk = getMinSdk(context) ?: return
                         if (!isSuppressed(context, api, node, minSdk)) {
                             val location = context.getLocation(annotation)
                             val min = max(minSdk, getTargetApi(node))
@@ -1354,12 +1420,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 message = "", // always formatted in accept() before reporting
                                 location = location,
                                 scope = annotation,
-                                fix = apiLevelFix(api)
+                                fix = apiLevelFix(api, min)
                             )
                             val map = map().apply {
                                 put(KEY_REQUIRES_API, api)
                                 put(KEY_MIN_API, min)
-                                put(KEY_MESSAGE, "Repeatable annotation requires API level $api (current min is %1\$d)")
+                                put(KEY_MESSAGE, "Repeatable annotation requires API level ${api.minString()} (current min is %1\$s)")
                                 put(KEY_DESUGAR, Desugaring.TYPE_ANNOTATIONS.constant)
                             }
                             context.report(incident, map)
@@ -1416,11 +1482,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             fqcn: String
         ) {
             val apiDatabase = apiDatabase ?: return
-            val api = apiDatabase.getClassVersion(owner)
-            if (api == -1) {
+            val api = apiDatabase.getClassVersions(owner)
+            if (api == ApiConstraint.NONE) {
                 return
             }
-            var minSdk = getMinSdk(context)
+            var minSdk = getMinSdk(context) ?: return
             val (suppressed, localMinSdk) = getSuppressed(context, api, element, minSdk)
             if (suppressed) {
                 return
@@ -1434,7 +1500,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
             val location = context.getNameLocation(element)
             val desc = descriptor ?: "Class"
-            report(UNSUPPORTED, element, location, desc, fqcn, api, minSdk, apiLevelFix(api), owner)
+            report(UNSUPPORTED, element, location, desc, fqcn, api, minSdk, null, owner)
         }
 
         override fun visitForEachExpression(node: UForEachExpression) {
@@ -1449,11 +1515,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val type = value.getExpressionType()
             if (type is PsiClassType) {
                 val expressionOwner = evaluator.getQualifiedName(type) ?: return
-                val api = apiDatabase.getClassVersion(expressionOwner)
-                if (api == -1) {
+                val api = apiDatabase.getClassVersions(expressionOwner)
+                if (api == ApiConstraint.NONE) {
                     return
                 }
-                var minSdk = getMinSdk(context)
+                var minSdk = getMinSdk(context) ?: return
                 val (suppressed, localMinSdk) = getSuppressed(context, api, node, minSdk)
                 if (suppressed) {
                     return
@@ -1463,8 +1529,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 val location = context.getLocation(value)
                 var message =
                     "The type of the for loop iterated value is " +
-                        "${type.canonicalText}, which requires API level $api" +
-                        " (current min is %1\$d)"
+                        "${type.canonicalText}, which requires API level ${api.minString()}" +
+                        " (current min is %1\$s)"
 
                 // Add specific check ConcurrentHashMap#keySet and add workaround text.
                 // This was an unfortunate incompatible API change in Open JDK 8, which is
@@ -1484,7 +1550,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     }
                 }
                 report(
-                    UNSUPPORTED, node, location, message, apiLevelFix(api), expressionOwner,
+                    UNSUPPORTED, node, location, message, apiLevelFix(api, minSdk), expressionOwner,
                     requires = api, min = minSdk
                 )
             }
@@ -1578,7 +1644,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 name == CONSTRUCTOR_NAME &&
                 desc != "()V"
             ) {
-                checkSimpleDateFormat(context, call, getMinSdk(context))
+                val minSdk = getMinSdk(context) ?: return
+                checkSimpleDateFormat(context, call, minSdk)
             } else if (name == "loadAnimator" &&
                 owner == "android.animation.AnimatorInflater" &&
                 desc == "(Landroid.content.Context;I)"
@@ -1586,12 +1653,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 checkAnimator(context, call)
             }
 
-            var api = apiDatabase.getMethodVersion(owner, name, desc)
-            if (api == -1) {
+            var api = apiDatabase.getMethodVersions(owner, name, desc)
+            if (api == ApiConstraint.NONE) {
                 return
             }
-            var minSdk = getMinSdk(context)
-            if (api <= minSdk) {
+            var minSdk = getMinSdk(context) ?: return
+            if (minSdk.isAtLeast(api)) {
                 return
             }
 
@@ -1645,26 +1712,23 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                             for (type in inheritanceChain) {
                                 val expressionOwner = evaluator.getQualifiedName(type)
                                 if (expressionOwner != null && expressionOwner != owner) {
-                                    val specificApi = apiDatabase.getMethodVersion(
-                                        expressionOwner, name, desc
-                                    )
-                                    if (specificApi == -1) {
+                                    val specificApi = apiDatabase.getMethodVersions(expressionOwner, name, desc)
+                                    if (specificApi == ApiConstraint.NONE) {
                                         if (apiDatabase.isRelevantOwner(expressionOwner)) {
                                             return
                                         }
-                                    } else if (specificApi <= minSdk) {
+                                    } else if (minSdk.isAtLeast(specificApi)) {
                                         return
                                     } else {
                                         // For example, for Bundle#getString(String,String) the API level
                                         // is 12, whereas for BaseBundle#getString(String,String) the API
                                         // level is 21. If the code specified a Bundle instead of
-                                        // a BaseBundle, reported the Bundle level in the error message
+                                        // a BaseBundle, report the Bundle level in the error message
                                         // instead.
-                                        if (specificApi < api) {
+                                        if (!(specificApi.isAtLeast(api))) {
                                             api = specificApi
                                             fqcn = type.canonicalText
                                         }
-                                        api = min(specificApi, api)
                                     }
                                 }
                             }
@@ -1726,19 +1790,18 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                             break
                         }
                         val specificApi =
-                            apiDatabase.getMethodVersion(expressionOwner, name, desc)
-                        if (specificApi == -1) {
+                            apiDatabase.getMethodVersions(expressionOwner, name, desc)
+                        if (specificApi == ApiConstraint.NONE) {
                             if (apiDatabase.isRelevantOwner(expressionOwner)) {
                                 break
                             }
-                        } else if (specificApi <= minSdk) {
+                        } else if (minSdk.isAtLeast(specificApi)) {
                             return
                         } else {
-                            if (specificApi < api) {
+                            if (!(specificApi.isAtLeast(api))) {
                                 api = specificApi
                                 fqcn = cls.qualifiedName
                             }
-                            api = min(specificApi, api)
                             break
                         }
                         cls = cls.superClass
@@ -1776,10 +1839,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 if (provider != null) {
                                     val methodOwner = evaluator.getQualifiedName(provider)
                                     if (methodOwner != null) {
-                                        val methodApi = apiDatabase.getMethodVersion(
+                                        val methodApi = apiDatabase.getMethodVersions(
                                             methodOwner, name, desc
                                         )
-                                        if (methodApi == -1 || methodApi <= minSdk) {
+                                        if (methodApi == ApiConstraint.NONE || minSdk.isAtLeast(methodApi)) {
                                             // Yes, we found another call that doesn't have an API requirement
                                             return
                                         }
@@ -1818,7 +1881,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             var desugaring: Desugaring? = null
 
             // These methods are not included in the R8 backported list so handle them manually the way R8 seems to
-            if (api == 19 && owner == "java.lang.Throwable" &&
+            if (owner == "java.lang.Throwable" &&
                 (name == "addSuppressed" && desc == "(Ljava.lang.Throwable;)" || name == "getSuppressed" && desc == "()")
             ) {
                 if (context.project.isDesugaring(Desugaring.TRY_WITH_RESOURCES)) {
@@ -1856,7 +1919,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 signature,
                 api,
                 minSdk,
-                apiLevelFix(api),
+                null,
                 owner,
                 name,
                 desc,
@@ -1914,10 +1977,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 return
             }
 
-            val api = 21
-            if (getMinSdk(context) >= api) {
+            val api = API_21
+            val minSdk = getMinSdk(context) ?: return
+            if (minSdk.isAtLeast(api)) {
                 return
             }
+
             if (isWithinVersionCheckConditional(context, call, api) ||
                 isPrecededByVersionCheckExit(context, call, api)
             ) {
@@ -1945,7 +2010,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 path.toFile()?.parentFile?.name?.let { nae ->
                                     FolderConfiguration.getConfigForFolder(nae)?.let { config ->
                                         val versionQualifier = config.versionQualifier
-                                        if (versionQualifier != null && versionQualifier.version >= api) {
+                                        if (versionQualifier != null && versionQualifier.version.isAtLeast(api)) {
                                             return
                                         }
                                     }
@@ -1955,7 +2020,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                     UNSUPPORTED, call, context.getLocation(call),
                                     "The resource `${resource.type}.${resource.name}` includes " +
                                         "the tag `$ATTR_PROPERTY_VALUES_HOLDER` which causes crashes " +
-                                        "on API < $api. Consider switching to " +
+                                        "on API < ${api.minString()}. Consider switching to " +
                                         "`AnimatorInflaterCompat.loadAnimator` to safely load the " +
                                         "animation."
                                 )
@@ -2033,6 +2098,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
         }
 
+        private fun isAtLeast(minSdk: ApiConstraint, node: UElement, api: ApiConstraint): Boolean {
+            return minSdk.isAtLeast(api) || getTargetApi(node)?.isAtLeast(api) ?: false
+        }
+
         override fun visitTryExpression(node: UTryExpression) {
             val resourceList = node.resourceVariables
 
@@ -2041,10 +2110,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 !context.project.isDesugaring(Desugaring.TRY_WITH_RESOURCES)
             ) {
 
-                val api = 19 // minSdk for try with resources
-                var minSdk = getMinSdk(context)
+                val api = API_19 // minSdk for try with resources
+                var minSdk = getMinSdk(context) ?: return
 
-                if (api > minSdk && api > getTargetApi(node)) {
+                if (!isAtLeast(minSdk, node, api)) {
                     val (suppressed, localMinSdk) = getSuppressed(context, api, node, minSdk)
                     if (suppressed) {
                         return
@@ -2057,9 +2126,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     val location = context.getRangeLocation(first, 0, last, 0)
 
                     val message =
-                        "Try-with-resources requires API level $api (current min is %1\$d)"
+                        "Try-with-resources requires API level ${api.minString()} (current min is %1\$s)"
                     report(
-                        UNSUPPORTED, first, location, message, apiLevelFix(api),
+                        UNSUPPORTED, first, location, message,
                         requires = api, min = minSdk, desugaring = Desugaring.TRY_WITH_RESOURCES
                     )
                 }
@@ -2068,18 +2137,19 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             for (catchClause in node.catchClauses) {
                 // Special case reflective operation exception which can be implicitly used
                 // with multi-catches: see issue 153406
-                var minSdk = getMinSdk(context)
+                val required = API_19
+                var minSdk = getMinSdk(context) ?: return
                 val typeReferences = catchClause.typeReferences
-                if (minSdk < 19 && isMultiCatchReflectiveOperationException(catchClause)) {
+                if (!minSdk.isAtLeast(required) && isMultiCatchReflectiveOperationException(catchClause)) {
                     // No -- see 131349148: Dalvik: java.lang.VerifyError
-                    val (suppressed, localMinSdk) = getSuppressed(context, 19, typeReferences[0], minSdk)
+                    val (suppressed, localMinSdk) = getSuppressed(context, API_19, typeReferences[0], minSdk)
                     if (suppressed) {
                         return
                     }
                     minSdk = max(minSdk, localMinSdk)
 
                     val message =
-                        "Multi-catch with these reflection exceptions requires API level 19 (current min is %1\$d) " +
+                        "Multi-catch with these reflection exceptions requires API level 19 (current min is %1\$s) " +
                             "because they get compiled to the common but new super type `ReflectiveOperationException`. " +
                             "As a workaround either create individual catch statements, or catch `Exception`."
 
@@ -2089,14 +2159,14 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         location.source as? UElement ?: node,
                         location,
                         message,
-                        apiLevelFix(19),
+                        apiLevelFix(required, minSdk),
                         min = minSdk,
-                        requires = 19
+                        requires = required
                     )
                     continue
                 }
 
-                for (typeReference in catchClause.typeReferences) {
+                for (typeReference in typeReferences) {
                     checkCatchTypeElement(node, typeReference, typeReference.type)
                 }
             }
@@ -2114,27 +2184,28 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
             if (resolved != null) {
                 val signature = context.evaluator.getQualifiedName(resolved) ?: return
-                val api = apiDatabase.getClassVersion(signature)
-                if (api == -1) {
+                val api = apiDatabase.getClassVersions(signature)
+                if (api == ApiConstraint.NONE) {
                     return
                 }
-                val minSdk = getMinSdk(context)
-                if (api <= minSdk) {
+                val minSdk = getMinSdk(context) ?: return
+                if (minSdk.isAtLeast(api)) {
                     return
                 }
 
                 val containingClass: UClass? = statement.getContainingUClass()
                 if (containingClass != null) {
                     val target =
-                        if (minSdk < 19)
-                        // We only consider @RequiresApi annotations for filtering applicable
-                        // minSdkVersion here, not @TargetApi or @SdkSuppress since we need to
-                        // communicate outwards that this is a problem; class loading alone, not
-                        // just executing the code, is enough to trigger a crash.
-                            getTargetApi(containingClass, ::isRequiresApiAnnotation)
-                        else
+                        if (minSdk.isAtLeast(API_19)) {
                             getTargetApi(statement)
-                    if (target != -1 && api <= target) {
+                        } else {
+                            // We only consider @RequiresApi annotations for filtering applicable
+                            // minSdkVersion here, not @TargetApi or @SdkSuppress since we need to
+                            // communicate outwards that this is a problem; class loading alone, not
+                            // just executing the code, is enough to trigger a crash.
+                            getTargetApi(containingClass, ::isRequiresApiAnnotation)
+                        }
+                    if (target != null && target.isAtLeast(api)) {
                         return
                     }
                 }
@@ -2147,13 +2218,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     // executed will result in a crash, so the only way to prevent the
                     // crash there is to never load the class; e.g. mark the whole class
                     // with @RequiresApi:
-                    if (minSdk < 19) {
+                    if (!minSdk.isAtLeast(API_19)) {
                         // TODO: Look for RequiresApi on the class
                         val location = context.getLocation(typeReference)
                         val fqcn = resolved.qualifiedName
                         val apiLevel = getApiLevelString(api, context)
                         val apiMessage =
-                            "${"Exception".usLocaleCapitalize()} requires API level $apiLevel (current min is %1\$d): `${fqcn ?: ""}`"
+                            "${"Exception".usLocaleCapitalize()} requires API level $apiLevel (current min is %1\$s): `${fqcn ?: ""}`"
                         val message = "$apiMessage, and having a surrounding/preceding version " +
                             "check **does not** help since prior to API level 19, just " +
                             "**loading** the class will cause a crash. Consider marking the " +
@@ -2166,7 +2237,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
                         report(
                             UNSUPPORTED, typeReference, location, message, fix, signature,
-                            requires = 19, min = minSdk
+                            requires = API_19, min = minSdk
                         )
                         return
                     } else {
@@ -2178,10 +2249,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 val location = context.getLocation(typeReference)
                 val fqcn = resolved.qualifiedName
                 val fix =
-                    if (minSdk < 19) {
-                        fix().data(KEY_REQUIRES_API, api, KEY_REQUIRE_CLASS, true)
-                    } else {
+                    if (minSdk.isAtLeast(API_19)) {
                         fix().data(KEY_REQUIRES_API, api)
+                    } else {
+                        fix().data(KEY_REQUIRES_API, api, KEY_REQUIRE_CLASS, true)
                     }
                 report(
                     UNSUPPORTED,
@@ -2195,6 +2266,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     signature
                 )
             }
+        }
+
+        private fun getTargetApi(
+            scope: UElement?,
+            isApiLevelAnnotation: (String) -> Boolean = ::isTargetAnnotation
+        ): ApiConstraint? {
+            return getTargetApi(context.evaluator, scope, isApiLevelAnnotation)
         }
 
         override fun visitSwitchExpression(node: USwitchExpression) {
@@ -2215,7 +2293,6 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         private fun checkField(node: UElement, field: PsiField) {
             val apiDatabase = apiDatabase ?: return
             val name = field.name
-
             val containingClass = field.containingClass ?: return
             val evaluator = context.evaluator
             var owner = evaluator.getQualifiedName(containingClass) ?: return
@@ -2224,10 +2301,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 checkObsoleteSdkVersion(context, node)
             }
 
-            var api = apiDatabase.getFieldVersion(owner, name)
-            if (api != -1) {
-                var minSdk = getMinSdk(context)
-                if (api > minSdk && api > getTargetApi(node)) {
+            var api = apiDatabase.getFieldVersions(owner, name)
+            if (api != ApiConstraint.NONE) {
+                var minSdk = getMinSdk(context) ?: return
+                if (!isAtLeast(minSdk, node, api)) {
                     // Only look for compile time constants. See JLS 15.28 and JLS 13.4.9.
                     val issue = if (isInlined(field, evaluator)) INLINED else UNSUPPORTED
                     if (issue == UNSUPPORTED) {
@@ -2286,18 +2363,18 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         val specificOwner = receiver.getExpressionType()?.canonicalText
                             ?: (receiver as? UReferenceExpression)?.getQualifiedName()
                         val specificApi = if (specificOwner != null)
-                            apiDatabase.getFieldVersion(specificOwner, name)
+                            apiDatabase.getFieldVersions(specificOwner, name)
                         else
-                            -1
-                        if (specificApi != -1 && specificOwner != null) {
-                            if (specificApi < api) {
+                            ApiConstraint.NONE
+                        if (specificApi != ApiConstraint.NONE && specificOwner != null) {
+                            if (!specificApi.isAtLeast(api)) {
                                 // Make sure the error message reflects the correct (lower)
                                 // minSdkVersion if we have a more specific match on the field
                                 // type
                                 api = specificApi
                                 owner = specificOwner
                             }
-                            if (specificApi > minSdk && specificApi > getTargetApi(node)) {
+                            if (!isAtLeast(minSdk, node, specificApi)) {
                                 if (isSuppressed(context, specificApi, node, minSdk)) {
                                     return
                                 }
@@ -2305,7 +2382,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 return
                             }
                         } else {
-                            if ((specificApi == 28 || specificApi == 29) && specificOwner == "android.app.TaskInfo") {
+                            if (specificOwner == "android.app.TaskInfo" && (specificApi.min() == 28 || specificApi.min() == 29)) {
                                 return
                             }
                         }
@@ -2336,7 +2413,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         fqcn,
                         api,
                         minSdk,
-                        apiLevelFix(api),
+                        null,
                         owner,
                         name
                     )
@@ -2345,35 +2422,46 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
     }
 
-    private fun getApiLevelString(requires: Int, context: JavaContext): String {
+    private fun getApiLevelString(requires: ApiConstraint, context: JavaContext): String {
         // For preview releases, don't show the API level as a number; show it using
         // a version code
-        return if (requires <= SdkVersionInfo.HIGHEST_KNOWN_STABLE_API ||
-            requires <= context.project.buildSdk && context.project.buildTarget?.version?.isPreview == false
-        ) {
-            requires.toString()
-        } else {
-            SdkVersionInfo.getCodeName(requires) ?: requires.toString()
+        val level = requires.fromInclusive()
+        if (requires.getSdk() == ANDROID_SDK_ID) {
+            if (level > SdkVersionInfo.HIGHEST_KNOWN_STABLE_API && level > context.project.buildSdk &&
+                context.project.buildTarget?.version?.isPreview == true
+            ) {
+                return SdkVersionInfo.getCodeName(level) ?: requires.toString()
+            } else if (level == SdkVersionInfo.CUR_DEVELOPMENT) {
+                return "CUR_DEVELOPMENT/" + SdkVersionInfo.CUR_DEVELOPMENT.toString()
+            }
         }
+
+        return requires.minString()
     }
 
     private fun checkObsoleteSdkVersion(context: JavaContext, node: UElement) {
         val binary = node.getParentOfType(UBinaryExpression::class.java, true)
         if (binary != null) {
-            val minSdk = getMinSdk(context)
+            // Only applies to SDK 0
+            val minSdk = getMinSdk(context)?.findSdk(ANDROID_SDK_ID) ?: return
             // Note that we do NOT use the app's minSdkVersion here; the library's
-            // minSdkVersion should increased instead since it's possible that
+            // minSdkVersion should be increased instead since it's possible that
             // this library is used elsewhere with a lower minSdkVersion than the
             // main min sdk, and deleting these calls would cause crashes in
             // that usage.
-            val constraint = getVersionCheckConditional(binary)
+            val constraint = getVersionCheckConditional(binary, context.client, context.evaluator, context.project)
             if (constraint != null) {
                 val always = constraint.alwaysAtLeast(minSdk)
                 val never = constraint.neverAtMost(minSdk)
+                val minString = minSdk.minString()
+                val outer = VersionChecks.Companion.getOuterVersionCheckConstraint(context, binary)
+                    ?.findSdk(constraint.getSdk())
+                val both = constraint and outer
                 val message =
                     when {
-                        always -> "Unnecessary; SDK_INT is always >= $minSdk"
-                        never -> "Unnecessary; SDK_INT is never < $minSdk"
+                        both.isEmpty() -> "Unnecessary;` ${binary.sourcePsi?.text ?: binary.asSourceString()}` is never true here"
+                        always -> "Unnecessary; SDK_INT is always >= $minString"
+                        never -> "Unnecessary; SDK_INT is never < $minString"
                         else -> return
                     }
                 context.report(
@@ -2427,8 +2515,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         const val KEY_FOLDER_NAME = "folderName"
         const val KEY_CONDITIONAL = "conditional"
         const val KEY_REQUIRE_CLASS = "requireClass"
+        const val KEY_MIN_API = "minSdk"
         private const val KEY_MESSAGE = "message"
-        private const val KEY_MIN_API = "minSdk"
         private const val KEY_OWNER = "owner"
         private const val KEY_NAME = "name"
         private const val KEY_DESUGAR = "desugar"
@@ -2441,9 +2529,24 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         private const val KOTLIN_CLOSEABLE_EXT = "kotlin.io.CloseableKt"
         private const val KOTLIN_AUTO_CLOSEABLE_EXT = "kotlin.jdk7.AutoCloseableKt"
 
+        /**
+         * Whether repeated @RequiresApi/@RequiresSdkVersion annotation
+         * means that *all* requirements are required instead of *any*.
+         * This is a parameter rather than just deleting it because
+         * we'll probably bring back the ability to also specify or
+         * semantics (with a meta annotation).
+         */
+        const val REPEATED_API_ANNOTATION_REQUIRES_ALL = true
+
         private val JAVA_IMPLEMENTATION = Implementation(ApiDetector::class.java, Scope.JAVA_FILE_SCOPE)
-        private val NOT_SUPPRESSED: Pair<Boolean, Int> = Pair(false, -1) // return value from [getSuppressed]
-        private val SUPPRESSED: Pair<Boolean, Int> = Pair(true, -1) // return value from [getSuppressed]
+        private val NOT_SUPPRESSED: Pair<Boolean, ApiConstraint?> = Pair(false, null) // return value from [getSuppressed]
+        private val SUPPRESSED: Pair<Boolean, ApiConstraint?> = Pair(true, null) // return value from [getSuppressed]
+
+        private val API_9: ApiConstraint.SdkApiConstraint = ApiConstraint.get(9)
+        private val API_19: ApiConstraint.SdkApiConstraint = ApiConstraint.get(19)
+        private val API_21: ApiConstraint.SdkApiConstraint = ApiConstraint.get(21)
+        private val API_23: ApiConstraint.SdkApiConstraint = ApiConstraint.get(23)
+        private val API_24: ApiConstraint.SdkApiConstraint = ApiConstraint.get(24)
 
         /** Accessing an unsupported API. */
         @JvmField
@@ -2628,8 +2731,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             return evaluator.extendsClass(psiClass, FQCN_FRAME_LAYOUT, false)
         }
 
-        private fun apiLevelFix(api: Int): LintFix {
-            return LintFix.create().data(KEY_REQUIRES_API, api)
+        private fun apiLevelFix(api: ApiConstraint, minSdk: ApiConstraint): LintFix {
+            return LintFix.create().data(
+                KEY_REQUIRES_API, api, KEY_MIN_API,
+                if (minSdk != NONE && minSdk != ApiConstraint.ALL) minSdk else null
+            )
         }
 
         /**
@@ -2639,11 +2745,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         private fun isAlreadyWarnedDrawableFile(
             context: XmlContext,
             attribute: Attr,
-            attributeApiLevel: Int
+            attributeApiLevel: ApiConstraint
         ): Boolean {
             // Don't complain if it's in a drawable file where we've already
             // flagged the root drawable type as being unsupported
-            if (context.resourceFolderType == ResourceFolderType.DRAWABLE && attributeApiLevel == 21) {
+            if (context.resourceFolderType == ResourceFolderType.DRAWABLE && attributeApiLevel.min() == 21) {
                 var element: Element? = attribute.ownerElement
                 while (element != null) {
                     // Can't just look at the root document tag: in the middle of the hierarchy
@@ -2705,9 +2811,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         private fun checkSimpleDateFormat(
             context: JavaContext,
             call: UCallExpression,
-            minSdk: Int
+            minSdk: ApiConstraint
         ) {
-            if (minSdk >= 24) {
+            if (minSdk.isAtLeast(API_24)) {
                 // Already OK
                 return
             }
@@ -2737,8 +2843,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         // Nougat
                         'Y', 'X', 'u' -> {
                             if (!isEscaped && c != checked && (warned == null || !warned.contains(c))) {
-                                val api = if (c == 'L' || c == 'c') 9 else 24
-                                if (minSdk >= api) {
+                                val api = if (c == 'L' || c == 'c') API_9 else API_24
+                                if (minSdk.isAtLeast(api)) {
                                     checked = c
                                 } else if (isWithinVersionCheckConditional(context, argument, api) ||
                                     isPrecededByVersionCheckExit(context, argument, api)
@@ -2767,14 +2873,14 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                         scope = call,
                                         location = location,
                                         message = "", // always formatted in accept() before reporting
-                                        fix = apiLevelFix(api)
+                                        fix = apiLevelFix(api, minSdk)
                                     )
                                     val map = LintMap().apply {
                                         put(KEY_REQUIRES_API, api)
                                         put(KEY_MIN_API, minSdk)
                                         put(
                                             KEY_MESSAGE,
-                                            "The pattern character '$c' requires API level $api (current min is %1\$d) : \"`$constant`\""
+                                            "The pattern character '$c' requires API level ${api.minString()} (current min is %1\$s) : \"`$constant`\""
                                         )
                                     }
                                     context.report(incident, map)
@@ -2795,13 +2901,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
          * @param element the element to look at, including parents
          * @return the API level to use for this element, or -1
          */
-        private fun getLocalMinSdk(element: Element): Int {
+        private fun getLocalMinSdk(element: Element): ApiConstraint {
             var current = element
 
             while (true) {
                 val targetApi = current.getAttributeNS(TOOLS_URI, ATTR_TARGET_API)
-                if (targetApi != null && targetApi.isNotEmpty()) {
-                    return if (targetApi[0].isDigit()) {
+                if (targetApi.isNotEmpty()) {
+                    val api = if (targetApi[0].isDigit()) {
                         try {
                             Integer.parseInt(targetApi)
                         } catch (e: NumberFormatException) {
@@ -2810,6 +2916,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     } else {
                         SdkVersionInfo.getApiByBuildCode(targetApi, true)
                     }
+                    return ApiConstraint.get(api)
                 }
 
                 val parent = current.parentNode
@@ -2820,7 +2927,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 }
             }
 
-            return -1
+            return ApiConstraint.ALL
         }
 
         /**
@@ -2872,6 +2979,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             if (equivalentName(owner, "android.os.Build.VERSION_CODES")) {
                 // These constants are required for compilation, not execution
                 // and valid code checks it even on older platforms
+                return true
+            }
+            if (equivalentName(owner, "android.os.Build.VERSION") && name == "SDK_INT") {
                 return true
             }
             if (equivalentName(owner, "android.view.ViewGroup.LayoutParams") && name == "MATCH_PARENT") {
@@ -2978,20 +3088,18 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             return null
         }
 
-        private fun isSuppressed(
+        fun isSuppressed(
             context: JavaContext,
-            api: Int,
+            api: ApiConstraint,
             element: UElement,
-            minSdk: Int
+            minSdk: ApiConstraint
         ): Boolean {
-            if (api <= minSdk) {
+            if (minSdk.isAtLeast(api)) {
                 return true
             }
-            val target = getTargetApi(element)
-            if (target != -1) {
-                if (api <= target) {
-                    return true
-                }
+            val target = getTargetApi(context.evaluator, element)
+            if (target != null && target.isAtLeast(api)) {
+                return true
             }
 
             val driver = context.driver
@@ -3008,20 +3116,18 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
          * error messages include not just the module-wide minSdk, but
          * any locally inferred SDK_INT constraints.
          */
-        private fun getSuppressed(
+        fun getSuppressed(
             context: JavaContext,
-            api: Int,
+            api: ApiConstraint,
             element: UElement,
-            minSdk: Int
-        ): Pair<Boolean, Int> {
-            if (api <= minSdk) {
+            minSdk: ApiConstraint
+        ): Pair<Boolean, ApiConstraint?> {
+            if (minSdk.isAtLeast(api)) {
                 return SUPPRESSED
             }
-            val target = getTargetApi(element)
-            if (target != -1) {
-                if (api <= target) {
-                    return SUPPRESSED
-                }
+            val target = getTargetApi(context.evaluator, element)
+            if (target != null && target.isAtLeast(api)) {
+                return SUPPRESSED
             }
 
             val driver = context.driver
@@ -3031,66 +3137,124 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 return SUPPRESSED
             }
 
+            val min = max(minSdk, target)
+
             var constraint = VersionChecks.Companion.getOuterVersionCheckConstraint(context, element)
             if (constraint != null) {
-                val min = max(target, minSdk)
-                val atLeast = ApiConstraint.Companion.atLeast(min)
-                constraint = constraint and atLeast
-                val lowest = constraint.fromInclusive()
-                val suppressed = constraint.notLowerThan(api)
+                // empty: concluded this will never be any API levels (e.g. inside something like SDK_INT > 5 && SDK_INT <= 5)
+                constraint = if (constraint.isEmpty()) constraint else max(constraint, min)
+                val suppressed = constraint.isAtLeast(api)
                 // Return the new SDK_INT implied by the version checks here
-                return Pair(suppressed, max(min, lowest))
+
+                if (!suppressed && isPrecededByVersionCheckExit(context, element, api)) {
+                    return SUPPRESSED
+                }
+                val known = max(min, constraint)
+                return Pair(suppressed, known)
             }
 
             if (isPrecededByVersionCheckExit(context, element, api)) {
                 return SUPPRESSED
             }
 
+            if (target != null) {
+                return Pair(false, min)
+            }
+
             return NOT_SUPPRESSED
         }
 
+        @Deprecated(
+            "Use getTargetApi(JavaEvaluator, ...) passing in for example context.evaluator",
+            ReplaceWith("getTargetApi(evaluator,scope,isApiLevelAnnotation)")
+        )
         @JvmOverloads
         @JvmStatic
         fun getTargetApi(
             scope: UElement?,
             isApiLevelAnnotation: (String) -> Boolean = ::isTargetAnnotation
-        ): Int {
+        ): ApiConstraint? {
+            return getTargetApi(null, scope, isApiLevelAnnotation)
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun getTargetApi(
+            evaluator: JavaEvaluator?,
+            scope: UElement?,
+            isApiLevelAnnotation: (String) -> Boolean = ::isTargetAnnotation
+        ): ApiConstraint? {
             var current = scope
             while (current != null) {
                 if (current is UAnnotated) {
                     val targetApi = getTargetApiForAnnotated(current, isApiLevelAnnotation)
-                    if (targetApi != -1) {
+                    if (targetApi != null) {
+                        // Note that we don't combine inherited ApiConstraints the way we do for an
+                        // SDK_INT check. Instead, lint will warn if you have redundant inner declarations.
+                        // This is deliberate such that if you for example have @RequiresApi(31) on a class
+                        // and then you put a @RequiresSdkVersion(S) on a particular method, we don't compute
+                        // a combined requirement of [@RequiresApi(31),@RequiresSdkVersion(S)] on the method.
                         return targetApi
                     }
                 }
-                if (current is UFile) {
+                if (current is UFile && evaluator != null) {
+                    // Also consult any package annotations
+                    val pkg = evaluator.getPackage(current.javaPsi ?: current.sourcePsi)
+                    if (pkg != null) {
+                        for (psiAnnotation in pkg.annotations) {
+                            val annotation = UastFacade.convertElement(psiAnnotation, null) as? UAnnotation ?: continue
+                            val target = getTargetApiForAnnotation(annotation, isApiLevelAnnotation)
+                            if (target != null) {
+                                return target
+                            }
+                        }
+                    }
+
                     break
                 }
                 current = current.uastParent
             }
 
-            return -1
+            return null
         }
 
         @JvmStatic
-        fun getApiLevel(context: JavaContext, annotation: UAnnotation, qualifiedName: String): Int {
+        fun getApiLevel(context: JavaContext, annotation: UAnnotation, qualifiedName: String): ApiConstraint.SdkApiConstraint? {
             var api =
                 when (qualifiedName) {
+                    REQUIRES_API_ANNOTATION.oldName(),
+                    REQUIRES_API_ANNOTATION.newName() -> {
+                        val api = getLongAttribute(context, annotation, ATTR_VALUE, -1).toInt()
+                        if (api == -1) {
+                            // @RequiresApi has two aliasing attributes: api and value
+                            getLongAttribute(context, annotation, "api", -1).toInt()
+                        } else {
+                            api
+                        }
+                    }
+
+                    FQCN_TARGET_API -> getLongAttribute(context, annotation, ATTR_VALUE, -1).toInt()
+                    REQUIRES_EXTENSION_ANNOTATION -> {
+                        val sdkId = getLongAttribute(context, annotation, "sdk", -1).toInt()
+                        val version = getLongAttribute(context, annotation, "version", -1).toInt()
+                        if (sdkId != -1 && version != -1) {
+                            return ApiConstraint.get(version, sdkId)
+                        } else {
+                            return null
+                        }
+                    }
                     ROBO_ELECTRIC_CONFIG_ANNOTATION -> getLongAttribute(context, annotation, "minSdk", -1).toInt()
                     SDK_SUPPRESS_ANNOTATION, ANDROIDX_SDK_SUPPRESS_ANNOTATION -> {
                         val fromCodeName = getLongAttribute(context, annotation, "codeName", -1)
                         getLongAttribute(context, annotation, ATTR_MIN_SDK_VERSION, fromCodeName).toInt()
                     }
-                    else -> getLongAttribute(context, annotation, ATTR_VALUE, -1).toInt()
+                    else -> return null
                 }
 
-            if (api <= 1) {
-                // @RequiresApi has two aliasing attributes: api and value
-                api = getLongAttribute(context, annotation, "api", -1).toInt()
-            } else if (api == SdkVersionInfo.CUR_DEVELOPMENT) {
+            if (api == SdkVersionInfo.CUR_DEVELOPMENT) {
                 val version = context.project.buildTarget?.version
                 if (version != null && version.isPreview) {
-                    return version.featureLevel
+                    return ApiConstraint.get(version.featureLevel, ANDROID_SDK_ID)
                 }
                 // Special value defined in the Android framework to indicate current development
                 // version. This is different from the tools where we use current stable + 1 since
@@ -3112,7 +3276,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     }
                 }
             }
-            return api
+            return if (api == -1) {
+                null
+            } else {
+                ApiConstraint.get(api, ANDROID_SDK_ID)
+            }
         }
 
         /**
@@ -3125,20 +3293,30 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         private fun getTargetApiForAnnotated(
             annotated: UAnnotated?,
             isApiLevelAnnotation: (String) -> Boolean
-        ): Int {
+        ): ApiConstraint? {
             if (annotated == null) {
-                return -1
+                return null
             }
 
+            // Combine all target level annotations at the given element since we may have
+            // multiple for different SDKs.
+
+            var constraint: ApiConstraint? = null
             //noinspection AndroidLintExternalAnnotations
             for (annotation in annotated.uAnnotations) {
                 val target = getTargetApiForAnnotation(annotation, isApiLevelAnnotation)
-                if (target != -1) {
-                    return target
+                if (target != null) {
+                    constraint = if (constraint != null) {
+                        // When there are multiple annotations, we deliberately treat them *all* as
+                        // required!
+                        max(target, constraint, either = !REPEATED_API_ANNOTATION_REQUIRES_ALL)
+                    } else {
+                        target
+                    }
                 }
             }
 
-            return -1
+            return constraint
         }
 
         fun getCatchParametersLocation(
@@ -3191,4 +3369,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             return false
         }
     }
+}
+
+private fun Int.isAtLeast(other: ApiConstraint): Boolean {
+    if (this == -1) {
+        return false
+    }
+    return ApiConstraint.get(this).isAtLeast(other)
 }

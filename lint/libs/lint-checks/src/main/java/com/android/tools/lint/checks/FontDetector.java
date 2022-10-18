@@ -42,6 +42,7 @@ import com.android.ide.common.fonts.QueryParser;
 import com.android.ide.common.repository.GradleCoordinate;
 import com.android.resources.ResourceFolderType;
 import com.android.sdklib.AndroidVersion;
+import com.android.sdklib.SdkVersionInfo;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Implementation;
@@ -76,7 +77,7 @@ public class FontDetector extends ResourceXmlDetector {
     // downloadable
     // fonts loading at runtime.
     public static final int FUTURE_API_VERSION_WHERE_DOWNLOADABLE_FONTS_WORK_IN_FRAMEWORK =
-            Integer.MAX_VALUE - 1;
+            SdkVersionInfo.HIGHEST_KNOWN_API + 10;
 
     public static final String KEY_ARTIFACT_ID = "artifact";
     public static final String KEY_UNEXPECTED_NAMESPACE = "unexpected-ns";

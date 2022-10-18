@@ -32,6 +32,7 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.detector.api.AllOfConstraint
 import com.android.tools.lint.detector.api.AnyOfConstraint
+import com.android.tools.lint.detector.api.ApiConstraint
 import com.android.tools.lint.detector.api.Constraint
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.IsAndroidProject
@@ -133,6 +134,16 @@ open class XmlWriter constructor(
         writer.write("</$tag>\n")
     }
 
+    private fun writeApiLevels(apiLevels: ApiConstraint, indent: Int = 1, key: String? = null) {
+        val valueString = ApiConstraint.serialize(apiLevels)
+        indent(indent + 1)
+        writer.write("<")
+        writer.write(TAG_API_LEVELS)
+        key?.let { writeAttribute(writer, -1, ATTR_ID, it) }
+        writeAttribute(writer, indent + 2, ATTR_VALUE, valueString)
+        writer.write("/>\n")
+    }
+
     private fun writeCondition(constraint: Constraint, indent: Int = 1, key: String? = null) {
         indent(indent)
         writer.write("<$TAG_CONDITION")
@@ -142,15 +153,15 @@ open class XmlWriter constructor(
         when (constraint) {
             is MinSdkAtLeast -> writeAttribute(
                 writer, -1, ATTR_MIN_GE,
-                constraint.minSdkVersion.toString()
+                constraint.minSdkVersion.serialize()
+            )
+            is MinSdkLessThan -> writeAttribute(
+                writer, -1, ATTR_MIN_LT,
+                constraint.minSdkVersion.serialize()
             )
             is TargetSdkAtLeast -> writeAttribute(
                 writer, -1, ATTR_TARGET_GE,
                 constraint.targetSdkVersion.toString()
-            )
-            is MinSdkLessThan -> writeAttribute(
-                writer, -1, ATTR_MIN_LT,
-                constraint.minSdkVersion.toString()
             )
             is TargetSdkLessThan -> writeAttribute(
                 writer, -1, ATTR_TARGET_LT,
@@ -351,6 +362,11 @@ open class XmlWriter constructor(
                 is Constraint -> {
                     val id = if (key != LintDriver.Companion.KEY_CONDITION) key else null
                     writeCondition(value, indent + 1, id)
+                    continue@loop
+                }
+                is ApiConstraint -> {
+                    val id = if (key != LintDriver.Companion.KEY_CONDITION) key else null
+                    writeApiLevels(value, indent, id)
                     continue@loop
                 }
                 else -> error("Unexpected map value type ${value.javaClass}")
@@ -715,6 +731,7 @@ open class XmlWriter constructor(
                             is PsiMethod, is Throwable ->
                                 // Not supported for persistence
                                 null
+                            is ApiConstraint -> ApiConstraint.serialize(value)
                             else -> error("Unexpected fix map value type ${value?.javaClass}")
                         } ?: continue
                     writeAttribute(writer, -1, key, valueString)
@@ -833,6 +850,7 @@ const val TAG_ENTRY = "entry"
 const val TAG_SHOW_URL = "show-url"
 const val TAG_ANNOTATE = "annotate"
 const val TAG_CREATE_FILE = "create-file"
+const val TAG_API_LEVELS = "api-levels"
 const val ATTR_SEVERITY = "severity"
 const val ATTR_INT = "int"
 const val ATTR_BOOLEAN = "boolean"

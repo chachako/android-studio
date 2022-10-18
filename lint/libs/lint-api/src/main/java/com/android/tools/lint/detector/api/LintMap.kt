@@ -104,6 +104,12 @@ class LintMap : Iterable<String> {
         return this
     }
 
+    /** Like [put] but for API constraints. */
+    fun put(key: String, value: ApiConstraint): LintMap {
+        map[key] = value
+        return this
+    }
+
     /** Returns the keys of the items in this map. */
     fun keys(): Sequence<String> {
         return map.keys.asSequence()
@@ -173,6 +179,11 @@ class LintMap : Iterable<String> {
     /** Returns a severity previously stored by [put] */
     fun getSeverity(key: String, default: Severity? = null): Severity? {
         return map[key] as? Severity ?: default
+    }
+
+    /** Returns an api constraint previously stored by [put] */
+    fun getApiConstraint(key: String, default: ApiConstraint? = null): ApiConstraint? {
+        return map[key] as? ApiConstraint ?: default
     }
 
     /** Removes the given key's value from the map, if any. */

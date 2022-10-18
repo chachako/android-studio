@@ -204,7 +204,7 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     private boolean isLollipop() { // 8: Should annotate
                         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
                     }
-                    private static final int STASHED_VERSION = Build.VERSION.SDK_INT;
+                    private static final int STASHED_VERSION = Build.VERSION.SDK_INT; // Should annotate
                     public static boolean isIcs() { // 9: Should annotate
                         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
                     }
@@ -285,6 +285,9 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 src/test/pkg/JavaVersionChecks.java:32: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.LOLLIPOP) [AnnotateVersionCheck]
                     private boolean isLollipop() { // 8: Should annotate
                                     ~~~~~~~~~~
+                src/test/pkg/JavaVersionChecks.java:35: Warning: This field should be annotated with ChecksSdkIntAtLeast(sdk=0) [AnnotateVersionCheck]
+                    private static final int STASHED_VERSION = Build.VERSION.SDK_INT; // Should annotate
+                                             ~~~~~~~~~~~~~~~
                 src/test/pkg/JavaVersionChecks.java:36: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.ICE_CREAM_SANDWICH) [AnnotateVersionCheck]
                     public static boolean isIcs() { // 9: Should annotate
                                           ~~~~~
@@ -339,7 +342,7 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 src/test/pkg/Utils.kt:79: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.N_MR1) [AnnotateVersionCheck]
                 fun isAfterNougat(): Boolean { // 14: Should be annotated
                     ~~~~~~~~~~~~~
-                0 errors, 26 warnings
+                0 errors, 27 warnings
                 """
             ).expectFixDiffs(
                 """
@@ -367,6 +370,9 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 Fix for src/test/pkg/JavaVersionChecks.java line 32: Annotate with @ChecksSdkIntAtLeast:
                 @@ -32 +32
                 +     @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.LOLLIPOP)
+                Fix for src/test/pkg/JavaVersionChecks.java line 35: Annotate with @ChecksSdkIntAtLeast:
+                @@ -35 +35
+                +     @ChecksSdkIntAtLeast(sdk=0)
                 Fix for src/test/pkg/JavaVersionChecks.java line 36: Annotate with @ChecksSdkIntAtLeast:
                 @@ -36 +36
                 +     @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -556,6 +562,121 @@ class SdkIntDetectorTest : AbstractCheckTest() {
             Fix for src/test/pkg/test.kt line 9: Annotate with @ChecksSdkIntAtLeast:
             @@ -9 +9
             + @ChecksSdkIntAtLeast(api=VERSION_CODES.N)
+            """
+        )
+    }
+
+    fun testExtensionMethods() {
+        // This test checks that we suggest inserting @ChecksSdkIntAtLeast annotations.
+        // Once annotated, the same example (with annotations applied) is checked in
+        // VersionChecksTest#testExtensionWithChecksSdkIntAtLeast
+        lint().files(
+            manifest().minSdk(1),
+            projectProperties().library(true),
+            java(
+                """
+                package test.pkg;
+
+                import android.os.Build;
+                import android.os.ext.SdkExtensions;
+                import androidx.annotation.RequiresApi;
+                import static android.os.Build.VERSION.SDK_INT;
+                import static android.os.Build.VERSION_CODES.TIRAMISU;
+                import static android.os.ext.SdkExtensions.getExtensionVersion;
+
+                public class SdkExtensionsTest {
+                    //@ChecksSdkIntAtLeast(api = 4, sdk = Build.VERSION_CODES.R)
+                    public static final boolean HAS_R_4 = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 1
+
+                    //@ChecksSdkIntAtLeast(api = 4, sdk = Build.VERSION_CODES.R)
+                    public static final boolean HAS_R_4B = SDK_INT >= TIRAMISU && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 2
+
+                    //@ChecksSdkIntAtLeast(sdk = Build.VERSION_CODES.R)
+                    public static final boolean R_VERSION = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R); // WARN 3
+
+                    //@ChecksSdkIntAtLeast(sdk = Build.VERSION_CODES.R)
+                    public static final boolean R_VERSION2 = getExtensionVersion(Build.VERSION_CODES.R); // WARN 4
+
+                    //@ChecksSdkIntAtLeast(api = 4, sdk = Build.VERSION_CODES.R)
+                    public boolean hasR4() { // WARN 5
+                        return SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4;
+                    }
+
+                    //@ChecksSdkIntAtLeast(parameter=0, sdk = Build.VERSION_CODES.R)
+                    public static boolean hasR(int rev) { // WARN 6
+                        return SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= rev;
+                    }
+
+                    //@ChecksSdkIntAtLeast(parameter=0, sdk = Build.VERSION_CODES.R)
+                    public static boolean hasRB(int rev) {
+                        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                                && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= rev;
+                    }
+
+                    // @ChecksSdkIntAtLeast(api=4, lambda=0, sdk=Build.VERSION_CODES.R)
+                    public static void runOnR4(Runnable runnable) { // WARN 7
+                        if (SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4) {
+                            runnable.run();
+                        }
+                    }
+                }
+                """
+            ).indented(),
+            SUPPORT_ANNOTATIONS_JAR
+        ).run().expect(
+            """
+            src/test/pkg/SdkExtensionsTest.java:12: Warning: This field should be annotated with ChecksSdkIntAtLeast(api=4, sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static final boolean HAS_R_4 = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 1
+                                            ~~~~~~~
+            src/test/pkg/SdkExtensionsTest.java:15: Warning: This field should be annotated with ChecksSdkIntAtLeast(api=4, sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static final boolean HAS_R_4B = SDK_INT >= TIRAMISU && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 2
+                                            ~~~~~~~~
+            src/test/pkg/SdkExtensionsTest.java:18: Warning: This field should be annotated with ChecksSdkIntAtLeast(sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static final boolean R_VERSION = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R); // WARN 3
+                                            ~~~~~~~~~
+            src/test/pkg/SdkExtensionsTest.java:21: Warning: This field should be annotated with ChecksSdkIntAtLeast(sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static final boolean R_VERSION2 = getExtensionVersion(Build.VERSION_CODES.R); // WARN 4
+                                            ~~~~~~~~~~
+            src/test/pkg/SdkExtensionsTest.java:24: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=4, sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public boolean hasR4() { // WARN 5
+                               ~~~~~
+            src/test/pkg/SdkExtensionsTest.java:29: Warning: This method should be annotated with @ChecksSdkIntAtLeast(parameter=0, sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static boolean hasR(int rev) { // WARN 6
+                                      ~~~~
+            src/test/pkg/SdkExtensionsTest.java:34: Warning: This method should be annotated with @ChecksSdkIntAtLeast(parameter=0, sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static boolean hasRB(int rev) {
+                                      ~~~~~
+            src/test/pkg/SdkExtensionsTest.java:40: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=4, lambda=0, sdk=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
+                public static void runOnR4(Runnable runnable) { // WARN 7
+                                   ~~~~~~~
+            0 errors, 8 warnings
+            """
+        ).expectFixDiffs(
+            """
+            Fix for src/test/pkg/SdkExtensionsTest.java line 12: Annotate with @ChecksSdkIntAtLeast:
+            @@ -11 +11
+            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 15: Annotate with @ChecksSdkIntAtLeast:
+            @@ -14 +14
+            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 18: Annotate with @ChecksSdkIntAtLeast:
+            @@ -17 +17
+            +     @androidx.annotation.ChecksSdkIntAtLeast(sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 21: Annotate with @ChecksSdkIntAtLeast:
+            @@ -20 +20
+            +     @androidx.annotation.ChecksSdkIntAtLeast(sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 24: Annotate with @ChecksSdkIntAtLeast:
+            @@ -23 +23
+            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 29: Annotate with @ChecksSdkIntAtLeast:
+            @@ -28 +28
+            +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 34: Annotate with @ChecksSdkIntAtLeast:
+            @@ -33 +33
+            +     @androidx.annotation.ChecksSdkIntAtLeast(parameter=0, sdk=Build.VERSION_CODES.R)
+            Fix for src/test/pkg/SdkExtensionsTest.java line 40: Annotate with @ChecksSdkIntAtLeast:
+            @@ -39 +39
+            +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, lambda=0, sdk=Build.VERSION_CODES.R)
             """
         )
     }

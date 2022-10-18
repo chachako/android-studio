@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.client.api.UElementHandler
+import com.android.tools.lint.detector.api.ApiConstraint
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -37,10 +38,6 @@ import org.jetbrains.uast.UElement
 class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
     companion object {
         private const val WEBVIEW_CLASS_NAME = "android.webkit.WebView"
-
-        // ApiLookup will return -1 if it fails to find the method
-        // or if that method was added in API 1
-        private const val INVALID = -1
 
         // There are some methods that we never intend to bring to AndroidX (ex.
         // getRendererPriorityWaivedWhenNotVisible), and others weren't brought over yet (ex.
@@ -106,7 +103,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
 
             val client = context.client
             val apiLookup = ApiLookup.get(client, context.project.buildTarget) ?: return
-            val api = apiLookup.getMethodVersion(
+            val api = apiLookup.getMethodVersions(
                 WEBVIEW_CLASS_NAME,
                 method.name,
                 evaluator.getMethodDescription(method, includeName = false, includeReturn = false)!!
@@ -114,7 +111,11 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
 
             // Note: we expect to bump the maximum sdk for future releases (but doing so requires
             // updating the deny list).
-            if (api == INVALID || api <= 21 || api > 28) {
+            if (api == ApiConstraint.NONE) {
+                return
+            }
+            val level = api.min()
+            if (level <= 21 || level > 28) {
                 return
             }
             if (!VersionChecks.isWithinVersionCheckConditional(client, evaluator, node, api)) {

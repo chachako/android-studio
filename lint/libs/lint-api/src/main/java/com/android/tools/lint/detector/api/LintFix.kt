@@ -25,6 +25,7 @@ import com.google.common.collect.Lists
 import com.google.common.collect.Maps
 import com.intellij.psi.PsiMethod
 import org.intellij.lang.annotations.RegExp
+import org.jetbrains.annotations.Contract
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import java.io.File
@@ -373,7 +374,7 @@ open class LintFix protected constructor(
          * Provides a map with details for the quickfix implementation,
          * pre-initialized with the given objects
          */
-        private fun map(vararg args: Any): FixMapBuilder {
+        private fun map(vararg args: Any?): FixMapBuilder {
             val builder = map()
             val map = builder.map
             assert(
@@ -383,10 +384,12 @@ open class LintFix protected constructor(
             while (i < args.size) {
                 val key = args[i].toString()
                 val value = args[i + 1]
-                val previous = map.put(key, value)
-                assert(
-                    previous == null // Clashing keys
-                )
+                if (value != null) {
+                    val previous = map.put(key, value)
+                    assert(
+                        previous == null // Clashing keys
+                    )
+                }
                 i += 2
             }
             return builder
@@ -394,12 +397,13 @@ open class LintFix protected constructor(
 
         /**
          * Passes one or more pieces of data; this will be transferred
-         * as a map behind the scenes. This is a convenience
-         * wrapper around [map] and [FixMapBuilder.build].
+         * as a map behind the scenes. This is a convenience wrapper
+         * around [map] and [FixMapBuilder.build]. Pairs with null
+         * values are skipped.
          *
          * @return a fix
          */
-        fun data(vararg args: Any): LintFix {
+        fun data(vararg args: Any?): LintFix {
             return map(*args).build()
         }
 
@@ -1484,6 +1488,7 @@ open class LintFix protected constructor(
             return map.toString()
         }
 
+        @Contract("_, !null -> !null")
         fun getString(key: String, defaultValue: String?): String? {
             val value = map[key]
             return value?.toString() ?: defaultValue
@@ -1501,6 +1506,7 @@ open class LintFix protected constructor(
             return null
         }
 
+        @Contract("_, !null -> !null")
         fun getFile(key: String, defaultValue: File?): File? {
             val value = map[key]
             if (value != null) {
@@ -1553,6 +1559,17 @@ open class LintFix protected constructor(
             return if (value is Throwable) {
                 value
             } else null
+        }
+
+        fun getApiConstraint(key: String): ApiConstraint? {
+            val value = map[key]
+            if (value is ApiConstraint) {
+                return value
+            } else if (value is String) {
+                // from XML persistence
+                return ApiConstraint.deserialize(value)
+            }
+            return null
         }
     }
 
@@ -1886,6 +1903,7 @@ open class LintFix protected constructor(
          * Convenience wrapper which checks whether the given fix is a
          * map, and if so returns the value stored by its key
          */
+        @Contract("_, _, !null -> !null")
         @JvmStatic
         fun getString(
             fix: LintFix?,
@@ -1923,6 +1941,18 @@ open class LintFix protected constructor(
         fun getInt(fix: LintFix?, key: String, defaultValue: Int): Int {
             return if (fix is DataMap) {
                 fix.getInt(key, defaultValue)
+            } else defaultValue
+        }
+
+        /**
+         * Convenience wrapper which checks whether the given fix is a
+         * map, and if so returns the value stored by its key
+         */
+        @JvmStatic
+        @Contract("_, _, !null -> !null")
+        fun getApiConstraint(fix: LintFix?, key: String, defaultValue: ApiConstraint? = ApiConstraint.NONE): ApiConstraint? {
+            return if (fix is DataMap) {
+                fix.getApiConstraint(key) ?: defaultValue
             } else defaultValue
         }
 

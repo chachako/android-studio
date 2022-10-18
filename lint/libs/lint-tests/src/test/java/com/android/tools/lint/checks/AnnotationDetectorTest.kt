@@ -18,6 +18,7 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.requiresSdkVersionStub
 
 class AnnotationDetectorTest : AbstractCheckTest() {
     fun testBasic() {
@@ -957,6 +958,110 @@ class AnnotationDetectorTest : AbstractCheckTest() {
         )
     }
 
+    fun testValidateRequiresSdkVersions() {
+        lint().files(
+            manifest().minSdk(15),
+            java(
+                """
+                package test.pkg;
+                import android.os.Build;
+                import androidx.annotation.RequiresApi;
+                import androidx.annotation.RequiresSdkVersion;
+                import android.os.Build.VERSION_CODES.R;
+                public class WrongUsages {
+                    @RequiresSdkVersion() // ERROR 2: Misses API level
+                    public void testApi1a() { }
+
+                    @RequiresSdkVersion(sdk = 1) // ERROR 3: Misses SDK version
+                    public void testApi1b() { }
+
+                    @RequiresSdkVersion(version = 1) // ERROR 4: Misses API version
+                    public void testApi1c() { }
+
+                    @RequiresApi(30) // OK
+                    @RequiresSdkVersion(sdk = 30, version = 1) // OK
+                    @RequiresSdkVersion(sdk = 29, version = 3) // OK
+                    @RequiresSdkVersion(sdk = 28, version = 3) // OK
+                    public void testApi2() { }
+
+                    @RequiresApi(30)
+                    @RequiresSdkVersion(sdk = 30, version = 1) // ERROR 5: GAP: 29
+                    @RequiresSdkVersion(sdk = 28, version = 3) // GAP: 29
+                    public void testApi3() { }
+
+                    @RequiresApi(30)
+                    @RequiresSdkVersion(sdk = 30, version = 3) // unexpectedly higher than prev
+                    @RequiresSdkVersion(sdk = 29, version = 1) // ERROR 6: unexpectedly lower than next
+                    public void testApi4() { }
+
+                    @RequiresApi(34)
+                    @RequiresSdkVersion(sdk = 1000000, version = 4)
+                    @RequiresSdkVersion(sdk = Build.VERSION_CODES.TIRAMISU, version = 4)
+                    public void testApi5() { }
+
+                    @RequiresApi(34)
+                    //@RequiresSdkVersion(sdk = R, version=4)
+                    @RequiresSdkVersion(sdk = Build.VERSION_CODES.R, version=4)
+                    @RequiresSdkVersion(sdk = 1000000, version=4)
+                    public void testApi6() { }
+                }
+                """
+            ).indented(),
+            SUPPORT_ANNOTATIONS_JAR,
+            requiresSdkVersionStub
+        ).issues(AnnotationDetector.ANNOTATION_USAGE).skipTestModes(TestMode.PARTIAL).run().expect(
+            if (AnnotationDetector.WARN_ABOUT_EXTENSION_LEVEL_GAPS)
+                """
+                src/test/pkg/WrongUsages.java:7: Error: Must specify an extension sdk id attribute [SupportAnnotationUsage]
+                    @RequiresSdkVersion() // ERROR 2: Misses API level
+                    ~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/WrongUsages.java:10: Error: Must specify an extension version level attribute [SupportAnnotationUsage]
+                    @RequiresSdkVersion(sdk = 1) // ERROR 3: Misses SDK version
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/WrongUsages.java:13: Error: Must specify an extension sdk id attribute [SupportAnnotationUsage]
+                    @RequiresSdkVersion(version = 1) // ERROR 4: Misses API version
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/WrongUsages.java:24: Error: There should not be a gap in SDK extension levels; missing 29 [SupportAnnotationUsage]
+                    @RequiresSdkVersion(sdk = 28, version = 3) // GAP: 29
+                                                ~~
+                    src/test/pkg/WrongUsages.java:23: Previous level
+                    @RequiresSdkVersion(sdk = 30, version = 1) // ERROR 5: GAP: 29
+                                                ~~
+                src/test/pkg/WrongUsages.java:29: Error: Suspicious extension level; expect previous extension versions to be at least as high as later SDK extension [SupportAnnotationUsage]
+                    @RequiresSdkVersion(sdk = 29, version = 1) // ERROR 6: unexpectedly lower than next
+                                                              ~
+                    src/test/pkg/WrongUsages.java:28: Previous version
+                    @RequiresSdkVersion(sdk = 30, version = 3) // unexpectedly higher than prev
+                                                              ~
+                src/test/pkg/WrongUsages.java:39: Error: There should not be a gap in SDK extension levels; missing 33 [SupportAnnotationUsage]
+                    @RequiresSdkVersion(sdk = Build.VERSION_CODES.R, version=4)
+                                                ~~~~~~~~~~~~~~~~~~~~~
+                    src/test/pkg/WrongUsages.java:37: Previous level
+                    @RequiresApi(34)
+                    ~~~~~~~~~~~~~~~~
+                6 errors, 0 warnings
+                """
+            else
+                """
+                src/test/pkg/WrongUsages.java:7: Error: Must specify an extension sdk id attribute [SupportAnnotationUsage]
+                    @RequiresSdkVersion() // ERROR 2: Misses API level
+                    ~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/WrongUsages.java:10: Error: Must specify an extension version level attribute [SupportAnnotationUsage]
+                    @RequiresSdkVersion(sdk = 1) // ERROR 3: Misses SDK version
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/WrongUsages.java:13: Error: Must specify an extension sdk id attribute [SupportAnnotationUsage]
+                    @RequiresSdkVersion(version = 1) // ERROR 4: Misses API version
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/WrongUsages.java:29: Error: Suspicious extension level; expect previous extension versions to be at least as high as later SDK extension [SupportAnnotationUsage]
+                    @RequiresSdkVersion(sdk = 29, version = 1) // ERROR 6: unexpectedly lower than next
+                                                            ~
+                    src/test/pkg/WrongUsages.java:28: Previous version
+                    @RequiresSdkVersion(sdk = 30, version = 3) // unexpectedly higher than prev
+                                                            ~
+                4 errors, 0 warnings
+                """
+        )
+    }
     fun testAdditionalFlagScenarios() {
         lint().files(
             java(

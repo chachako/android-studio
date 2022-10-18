@@ -15,12 +15,12 @@
  */
 package com.android.tools.lint.checks
 
-import com.android.SdkConstants.ATTR_VALUE
-import com.android.SdkConstants.FQCN_SUPPRESS_LINT
 import com.android.AndroidXConstants.INT_DEF_ANNOTATION
 import com.android.AndroidXConstants.LONG_DEF_ANNOTATION
 import com.android.AndroidXConstants.STRING_DEF_ANNOTATION
 import com.android.AndroidXConstants.SUPPORT_ANNOTATIONS_PREFIX
+import com.android.SdkConstants.ATTR_VALUE
+import com.android.SdkConstants.FQCN_SUPPRESS_LINT
 import com.android.SdkConstants.TYPE_DEF_FLAG_ATTRIBUTE
 import com.android.support.AndroidxName
 import com.android.tools.lint.checks.EmptySuperDetector.Companion.EMPTY_SUPER_ANNOTATION
@@ -41,6 +41,7 @@ import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.ExtensionSdk.Companion.MAX_PLATFORM_SDK_ID
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue.Companion.create
@@ -54,6 +55,7 @@ import com.android.tools.lint.detector.api.ResourceEvaluator.RES_SUFFIX
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.UastLintUtils
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationBooleanValue
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationStringValue
@@ -61,6 +63,7 @@ import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotation
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getDoubleAttribute
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getLongAttribute
 import com.android.tools.lint.detector.api.VersionChecks.Companion.REQUIRES_API_ANNOTATION
+import com.android.tools.lint.detector.api.VersionChecks.Companion.REQUIRES_EXTENSION_ANNOTATION
 import com.android.tools.lint.detector.api.getAutoBoxedType
 import com.android.tools.lint.detector.api.isKotlin
 import com.google.common.collect.Lists
@@ -366,6 +369,9 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                 REQUIRES_API_ANNOTATION.isEquals(type) -> {
                     checkRequiresApi(annotation)
                 }
+                type == REQUIRES_EXTENSION_ANNOTATION -> {
+                    checkRequiresExtension(annotation)
+                }
                 type == EMPTY_SUPER_ANNOTATION -> {
                     // Pointless on final methods
                     val parent = skipParenthesizedExprUp(annotation.uastParent)
@@ -411,6 +417,96 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
             }
         }
 
+        private fun checkRequiresExtension(annotation: UAnnotation) {
+            val holder = annotation.uastParent as? UAnnotated ?: return
+
+            // Make sure that
+            // (1) you specify both an SDK level and a version, and
+            // (2) that there are no gaps between the highest API level and the lowest API level
+            //     specified on the same element, and that
+            // (3) the version numbers for each API level is >= the previous API level
+            // (4) there's no duplication of API levels, and
+            // (5) possibly ensure that there's a RequiresApi level for the highest number
+            //     (or that there isn't duplication between the two)
+
+            var foundFirst = false
+            val levels = mutableListOf<Triple<UAnnotation, Int, Int>>()
+            //noinspection ExternalAnnotations
+            for (a in holder.uAnnotations) {
+                val qualifiedName = a.qualifiedName
+                if (qualifiedName == REQUIRES_EXTENSION_ANNOTATION) {
+                    if (!foundFirst) {
+                        // Since we're testing interactions here, only report this for the
+                        // *first* requires extension since otherwise we'll duplicate warnings.
+                        if (a != annotation) {
+                            return
+                        }
+                        foundFirst = true
+                    }
+
+                    val sdkVersion = UastLintUtils.getAnnotationLongValue(a, "sdk", -1).toInt()
+                    if (sdkVersion == -1) {
+                        val location = context.getLocation(a)
+                        context.report(ANNOTATION_USAGE, a, location, "Must specify an extension `sdk` id attribute")
+                        return
+                    }
+                    val extensionVersion = UastLintUtils.getAnnotationLongValue(a, "version", -1).toInt()
+                    if (extensionVersion == -1) {
+                        val location = context.getLocation(a)
+                        context.report(ANNOTATION_USAGE, a, location, "Must specify an extension `version` level attribute")
+                        return
+                    }
+                    // Report error if either one is -1 (unspecified)
+                    levels.add(Triple(a, sdkVersion, extensionVersion))
+                } else if (REQUIRES_API_ANNOTATION.isEquals(qualifiedName)) {
+                    val sdkVersion = UastLintUtils.getAnnotationLongValue(a, "api", -1L).let {
+                        if (it != -1L) it else UastLintUtils.getAnnotationLongValue(a, ATTR_VALUE, -1L)
+                    }.toInt()
+                    if (sdkVersion == -1) {
+                        // Already validated elsewhere (in checkRequiresApi)
+                        return
+                    }
+                    levels.add(Triple(a, sdkVersion, 0))
+                }
+            }
+
+            // The contiguous region expectation only applies to platform extension back-ports;
+            // those have id's less than 1000000.
+            levels.removeIf { it.second >= MAX_PLATFORM_SDK_ID }
+            levels.sortedWith(compareBy({ -it.second }, { it.first.qualifiedName }))
+
+            var prev: Triple<UAnnotation, Int, Int>? = null
+            for (triple in levels) {
+                if (prev != null) {
+                    if (prev.second - triple.second > 1 && WARN_ABOUT_EXTENSION_LEVEL_GAPS) {
+                        // Report gap
+                        val location = getAttributeValueLocation(context, triple.first, "sdk") ?: context.getLocation(triple.first)
+                        location.secondary = getAttributeValueLocation(context, prev.first, "sdk") ?: context.getLocation(prev.first)
+                        location.secondary?.setMessage("Previous level", false)
+                        context.report(ANNOTATION_USAGE, triple.first, location, "There should not be a gap in SDK extension levels; missing ${prev.second - 1}")
+                        return
+                    } else if (triple.second == prev.second && triple.first.qualifiedName == prev.first.qualifiedName) {
+                        // Duplicate - only okay if qualified names are different (e.g. specifying
+                        // both @RequiresApi and @RequiresExtension
+                        val location = getAttributeValueLocation(context, triple.first, "sdk") ?: context.getLocation(triple.first)
+                        location.secondary = getAttributeValueLocation(context, prev.first, "sdk") ?: context.getLocation(prev.first)
+                        location.secondary?.setMessage("Previous level", false)
+                        context.report(ANNOTATION_USAGE, triple.first, location, "Repeated SDK extension level ${triple.second}")
+                    } else if (prev.third > triple.third && triple.second != prev.second && triple.first.qualifiedName == REQUIRES_EXTENSION_ANNOTATION) {
+                        val location = getAttributeValueLocation(context, triple.first, "version") ?: context.getLocation(triple.first)
+                        location.secondary = getAttributeValueLocation(context, prev.first, "version") ?: context.getLocation(prev.first)
+                        location.secondary?.setMessage("Previous version", false)
+                        context.report(ANNOTATION_USAGE, triple.first, location, "Suspicious extension level; expect previous extension versions to be at least as high as later SDK extension")
+                    }
+                }
+                prev = triple
+            }
+        }
+
+        private fun getAttributeValueLocation(context: JavaContext, annotation: UAnnotation, name: String): Location? {
+            val attribute = annotation.findDeclaredAttributeValue(name) ?: return null
+            return context.getLocation(attribute)
+        }
         private fun checkRequiresApi(annotation: UAnnotation) {
             if (annotation.attributeValues.isEmpty()) {
                 val name = "Specify API level"
@@ -1150,6 +1246,14 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         const val ATTR_CONDITIONAL = "conditional"
         private const val JAVA_ANNOTATION_TARGET_FQN = "java.lang.annotation.Target"
         private const val KOTLIN_ANNOTATION_TARGET_FQN = "kotlin.annotation.Target"
+
+        /**
+         * Feature temporarily disabled while we settle whether we
+         * expect people to specify all extension levels or whether
+         * specifying the lowest one impliest the other dessert
+         * extensions.
+         */
+        const val WARN_ABOUT_EXTENSION_LEVEL_GAPS = false
 
         val IMPLEMENTATION = Implementation(
             AnnotationDetector::class.java, Scope.JAVA_FILE_SCOPE

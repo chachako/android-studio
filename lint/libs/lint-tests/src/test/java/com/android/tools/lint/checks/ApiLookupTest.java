@@ -16,95 +16,124 @@
 
 package com.android.tools.lint.checks;
 
+import static com.android.tools.lint.checks.ApiLookup.XML_FILE_PATH;
+
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.sdklib.IAndroidTarget;
+import com.android.testutils.TestUtils;
+import com.android.tools.lint.checks.infrastructure.TestLintResult;
+import com.android.tools.lint.checks.infrastructure.TestLintTask;
+import com.android.tools.lint.checks.infrastructure.TestMode;
+import com.android.tools.lint.client.api.PlatformLookup;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.utils.Pair;
+import com.google.common.base.Charsets;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
+import kotlin.io.FilesKt;
+import org.intellij.lang.annotations.Language;
 import org.junit.Assert;
+import org.junit.rules.TemporaryFolder;
 
-@SuppressWarnings({"javadoc", "ConstantConditions"})
+@SuppressWarnings({"ConstantConditions"})
 public class ApiLookupTest extends AbstractCheckTest {
     private final ApiLookup mDb = ApiLookup.get(createClient());
 
+    private int getClassVersion(String owner) {
+        return mDb.getClassVersions(owner).min();
+    }
+
+    private int getMethodVersion(String owner, String name, String desc) {
+        return mDb.getMethodVersions(owner, name, desc).min();
+    }
+
+    private int getFieldVersion(String owner, String name) {
+        return mDb.getFieldVersions(owner, name).min();
+    }
+
+    private int getFieldVersion(ApiLookup lookup, String owner, String name) {
+        return lookup.getFieldVersions(owner, name).min();
+    }
+
+    private int getCastVersion(String source, String destination) {
+        return mDb.getValidCastVersions(source, destination).min();
+    }
+
     public void testBasic() {
-        assertEquals(
-                5, mDb.getFieldVersion("android.Manifest$permission", "AUTHENTICATE_ACCOUNTS"));
-        assertEquals(
-                5, mDb.getFieldVersion("android.Manifest.permission", "AUTHENTICATE_ACCOUNTS"));
-        assertEquals(
-                5, mDb.getFieldVersion("android/Manifest$permission", "AUTHENTICATE_ACCOUNTS"));
-        assertTrue(mDb.getFieldVersion("android/R$attr", "absListViewStyle") <= 1);
-        assertEquals(11, mDb.getFieldVersion("android/R$attr", "actionMenuTextAppearance"));
+        assertEquals(5, getFieldVersion("android.Manifest$permission", "AUTHENTICATE_ACCOUNTS"));
+        assertEquals(5, getFieldVersion("android.Manifest.permission", "AUTHENTICATE_ACCOUNTS"));
+        assertEquals(5, getFieldVersion("android/Manifest$permission", "AUTHENTICATE_ACCOUNTS"));
+        assertTrue(getFieldVersion("android/R$attr", "absListViewStyle") <= 1);
+        assertEquals(11, getFieldVersion("android/R$attr", "actionMenuTextAppearance"));
         assertEquals(
                 5,
-                mDb.getMethodVersion(
+                getMethodVersion(
                         "android.graphics.drawable.BitmapDrawable",
                         "<init>",
                         "(Landroid.content.res.Resources;Ljava.lang.String;)V"));
         assertEquals(
                 5,
-                mDb.getMethodVersion(
+                getMethodVersion(
                         "android/graphics/drawable/BitmapDrawable",
                         "<init>",
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         assertEquals(
                 4,
-                mDb.getMethodVersion(
+                getMethodVersion(
                         "android/graphics/drawable/BitmapDrawable",
                         "setTargetDensity",
                         "(Landroid/util/DisplayMetrics;)V"));
-        assertEquals(7, mDb.getClassVersion("android/app/WallpaperInfo"));
-        assertEquals(11, mDb.getClassVersion("android/widget/StackView"));
-        assertTrue(mDb.getClassVersion("ava/text/ChoiceFormat") <= 1);
+        assertEquals(7, getClassVersion("android/app/WallpaperInfo"));
+        assertEquals(11, getClassVersion("android/widget/StackView"));
+        assertTrue(getClassVersion("ava/text/ChoiceFormat") <= 1);
 
         // Class lookup: Unknown class
-        assertEquals(-1, mDb.getClassVersion("foo/Bar"));
+        assertEquals(-1, getClassVersion("foo/Bar"));
         // Field lookup: Unknown class
-        assertEquals(-1, mDb.getFieldVersion("foo/Bar", "FOOBAR"));
+        assertEquals(-1, getFieldVersion("foo/Bar", "FOOBAR"));
         // Field lookup: Unknown field
-        assertEquals(-1, mDb.getFieldVersion("android/Manifest$permission", "FOOBAR"));
+        assertEquals(-1, getFieldVersion("android/Manifest$permission", "FOOBAR"));
         // Method lookup: Unknown class
         assertEquals(
                 -1,
-                mDb.getMethodVersion(
+                getMethodVersion(
                         "foo/Bar",
                         "<init>",
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         // Method lookup: Unknown name
         assertEquals(
                 -1,
-                mDb.getMethodVersion(
+                getMethodVersion(
                         "android/graphics/drawable/BitmapDrawable",
                         "foo",
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         // Method lookup: Unknown argument list
         assertEquals(
-                -1,
-                mDb.getMethodVersion("android/graphics/drawable/BitmapDrawable", "<init>", "(I)V"));
+                -1, getMethodVersion("android/graphics/drawable/BitmapDrawable", "<init>", "(I)V"));
     }
 
     public void testWildcardSyntax() {
         // Regression test:
         // This used to return 11 because of some wildcard syntax in the signature
-        assertTrue(mDb.getMethodVersion("java/lang/Object", "getClass", "()") <= 1);
+        assertTrue(getMethodVersion("java/lang/Object", "getClass", "()") <= 1);
     }
 
     public void testIssue26467() {
-        assertTrue(mDb.getMethodVersion("java/nio/ByteBuffer", "array", "()") <= 1);
-        assertEquals(9, mDb.getMethodVersion("java/nio/Buffer", "array", "()"));
+        assertTrue(getMethodVersion("java/nio/ByteBuffer", "array", "()") <= 1);
+        assertEquals(9, getMethodVersion("java/nio/Buffer", "array", "()"));
     }
 
     public void testNoInheritedConstructors() {
-        assertTrue(mDb.getMethodVersion("java/util/zip/ZipOutputStream", "<init>", "()") <= 1);
+        assertTrue(getMethodVersion("java/util/zip/ZipOutputStream", "<init>", "()") <= 1);
         assertTrue(
-                mDb.getMethodVersion(
+                getMethodVersion(
                                 "android/app/AliasActivity",
                                 "<init>",
                                 "(Landroid/content/Context;I)")
@@ -113,8 +142,7 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public void testIssue35190() {
         assertEquals(
-                9,
-                mDb.getMethodVersion("java/io/IOException", "<init>", "(Ljava/lang/Throwable;)V"));
+                9, getMethodVersion("java/io/IOException", "<init>", "(Ljava/lang/Throwable;)V"));
     }
 
     public void testDeprecatedFields() {
@@ -122,19 +150,19 @@ public class ApiLookupTest extends AbstractCheckTest {
         assertEquals(
                 -1, mDb.getFieldDeprecatedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
         // Field only has since > 1, no deprecation
-        assertEquals(9, mDb.getFieldVersion("android/Manifest$permission", "NFC"));
+        assertEquals(9, getFieldVersion("android/Manifest$permission", "NFC"));
 
         // Deprecated
         assertEquals(21, mDb.getFieldDeprecatedIn("android/Manifest$permission", "GET_TASKS"));
         // Field both deprecated and since > 1
         assertEquals(
                 21, mDb.getFieldDeprecatedIn("android/Manifest$permission", "READ_SOCIAL_STREAM"));
-        assertEquals(15, mDb.getFieldVersion("android/Manifest$permission", "READ_SOCIAL_STREAM"));
+        assertEquals(15, getFieldVersion("android/Manifest$permission", "READ_SOCIAL_STREAM"));
     }
 
     public void testDeprecatedMethods() {
         // Not deprecated:
-        // assertEquals(12, mDb.getMethodVersion("android/app/Fragment", "onInflate",
+        // assertEquals(12, getMethodVersion("android/app/Fragment", "onInflate",
         //        "(Landroid/app/Activity;Landroid/util/AttributeSet;Landroid/os/Bundle;)V"));
         assertEquals(
                 24,
@@ -170,7 +198,7 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Not removed
         assertEquals(-1, mDb.getFieldRemovedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
         // Field only has since > 1, no removal
-        assertEquals(9, mDb.getFieldVersion("android/Manifest$permission", "NFC"));
+        assertEquals(9, getFieldVersion("android/Manifest$permission", "NFC"));
 
         // Removed
         assertEquals(
@@ -234,37 +262,34 @@ public class ApiLookupTest extends AbstractCheckTest {
         // interface
         assertEquals(
                 11,
-                mDb.getMethodVersion(
+                getMethodVersion(
                         "android/preference/PreferenceActivity",
                         "onPreferenceStartFragment",
                         "(Landroid/preference/PreferenceFragment;Landroid/preference/Preference;)"));
     }
 
     public void testInterfaceApi() {
-        assertEquals(21, mDb.getClassVersion("android/animation/StateListAnimator"));
+        assertEquals(21, getClassVersion("android/animation/StateListAnimator"));
         assertEquals(
                 11,
-                mDb.getValidCastVersion(
+                getCastVersion(
                         "android/animation/AnimatorListenerAdapter",
                         "android/animation/Animator$AnimatorListener"));
         assertEquals(
                 19,
-                mDb.getValidCastVersion(
+                getCastVersion(
                         "android/animation/AnimatorListenerAdapter",
                         "android/animation/Animator$AnimatorPauseListener"));
 
+        assertEquals(11, getCastVersion("android/animation/Animator", "java/lang/Cloneable"));
         assertEquals(
-                11, mDb.getValidCastVersion("android/animation/Animator", "java/lang/Cloneable"));
-        assertEquals(
-                22,
-                mDb.getValidCastVersion(
-                        "android/animation/StateListAnimator", "java/lang/Cloneable"));
+                22, getCastVersion("android/animation/StateListAnimator", "java/lang/Cloneable"));
     }
 
     public void testSuperClassCast() {
         assertEquals(
                 22,
-                mDb.getValidCastVersion(
+                getCastVersion(
                         "android/view/animation/AccelerateDecelerateInterpolator",
                         "android/view/animation/BaseInterpolator"));
     }
@@ -301,11 +326,11 @@ public class ApiLookupTest extends AbstractCheckTest {
         "ResultOfMethodCallIgnored"
     })
     @Override
-    protected TestLintClient createClient() {
+    protected LookupTestClient createClient() {
         mCacheDir = new File(getTempDir(), "lint-test-cache");
         mCacheDir.mkdirs();
 
-        return new LookupTestClient();
+        return new LookupTestClient(mCacheDir, mLogBuffer);
     }
 
     @SuppressWarnings({
@@ -324,9 +349,9 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Real cache:
         mCacheDir = createClient().getCacheDir(null, true);
         mLogBuffer.setLength(0);
-        lookup = ApiLookup.get(new LookupTestClient());
+        lookup = ApiLookup.get(createClient());
         assertNotNull(lookup);
-        assertEquals(11, lookup.getFieldVersion("android/R$attr", "actionMenuTextAppearance"));
+        assertEquals(11, getFieldVersion(lookup, "android/R$attr", "actionMenuTextAppearance"));
         assertEquals("", mLogBuffer.toString()); // No warnings
         ApiLookup.dispose();
 
@@ -334,14 +359,14 @@ public class ApiLookupTest extends AbstractCheckTest {
         mCacheDir = new File(getTempDir(), "testcache");
         mCacheDir.mkdirs();
         mLogBuffer.setLength(0);
-        lookup = ApiLookup.get(new LookupTestClient());
+        lookup = ApiLookup.get(createClient());
         assertNotNull(lookup);
-        assertEquals(11, lookup.getFieldVersion("android/R$attr", "actionMenuTextAppearance"));
+        assertEquals(11, getFieldVersion(lookup, "android/R$attr", "actionMenuTextAppearance"));
         assertEquals("", mLogBuffer.toString()); // No warnings
         ApiLookup.dispose();
 
         // Now truncate cache file
-        IAndroidTarget target = new LookupTestClient().getLatestSdkTarget(1, true);
+        IAndroidTarget target = createClient().getLatestSdkTarget(1, true);
         Assert.assertNotNull(target);
         String key = target.getVersion().getApiString();
         int revision = target.getRevision();
@@ -355,7 +380,7 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Truncate file in half
         raf.setLength(100); // Broken header
         raf.close();
-        ApiLookup.get(new LookupTestClient());
+        ApiLookup.get(createClient());
         String message = mLogBuffer.toString();
         // NOTE: This test is incompatible with the DEBUG_FORCE_REGENERATE_BINARY and WRITE_STATS
         // flags in the ApiLookup class, so if the test fails during development and those are
@@ -370,10 +395,10 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Truncate file in half in the data portion
         raf.setLength(raf.length() / 2);
         raf.close();
-        lookup = ApiLookup.get(new LookupTestClient());
+        lookup = ApiLookup.get(createClient());
         // This data is now truncated: lookup returns the wrong size.
         assertNotNull(lookup);
-        lookup.getFieldVersion("android/R$attr", "actionMenuTextAppearance");
+        getFieldVersion(lookup, "android/R$attr", "actionMenuTextAppearance");
         assertTrue(message.contains("Please delete the file and restart the IDE/lint:"));
         assertTrue(message.contains(mCacheDir.getPath()));
         ApiLookup.dispose();
@@ -384,9 +409,9 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Truncate file to 0 bytes
         raf.setLength(0);
         raf.close();
-        lookup = ApiLookup.get(new LookupTestClient());
+        lookup = ApiLookup.get(createClient());
         assertNotNull(lookup);
-        assertEquals(11, lookup.getFieldVersion("android/R$attr", "actionMenuTextAppearance"));
+        assertEquals(11, getFieldVersion(lookup, "android/R$attr", "actionMenuTextAppearance"));
         assertEquals("", mLogBuffer.toString()); // No warnings
         ApiLookup.dispose();
     }
@@ -409,15 +434,13 @@ public class ApiLookupTest extends AbstractCheckTest {
                 mDb.getMethodDeprecatedIn(
                         "android/view/View", "fitSystemWindows", "(Landroid/graphics/Rect;)"));
         assertEquals(
-                16,
-                mDb.getMethodVersion("android/widget/CalendarView", "getWeekNumberColor", "()"));
+                16, getMethodVersion("android/widget/CalendarView", "getWeekNumberColor", "()"));
         assertEquals(
                 23,
                 mDb.getMethodDeprecatedIn(
                         "android/widget/CalendarView", "getWeekNumberColor", "()"));
         assertEquals(
-                19,
-                mDb.getMethodVersion("android/webkit/WebView", "createPrintDocumentAdapter", "()"));
+                19, getMethodVersion("android/webkit/WebView", "createPrintDocumentAdapter", "()"));
         // Regression test for 65376457: CreatePrintDocumentAdapter() was deprecated in api 21,
         // not api 3 as lint reports.
         // (The root bug was that for deprecation we also lowered it if superclasses were
@@ -430,15 +453,15 @@ public class ApiLookupTest extends AbstractCheckTest {
     }
 
     public void testClassLookupInnerClasses() {
-        assertEquals(24, mDb.getClassVersion("java/util/Locale$Category"));
-        assertEquals(24, mDb.getClassVersion("java.util.Locale.Category"));
-        assertEquals(1, mDb.getClassVersion("android/view/WindowManager$BadTokenException"));
-        assertEquals(1, mDb.getClassVersion("android.view.WindowManager.BadTokenException"));
+        assertEquals(24, getClassVersion("java/util/Locale$Category"));
+        assertEquals(24, getClassVersion("java.util.Locale.Category"));
+        assertEquals(1, getClassVersion("android/view/WindowManager$BadTokenException"));
+        assertEquals(1, getClassVersion("android.view.WindowManager.BadTokenException"));
     }
 
     public void testClassDeprecation() {
         assertEquals(5, mDb.getClassDeprecatedIn("android/webkit/PluginData"));
-        assertEquals(1, mDb.getClassVersion("java/io/LineNumberInputStream"));
+        assertEquals(1, getClassVersion("java/io/LineNumberInputStream"));
         assertEquals(1, mDb.getClassDeprecatedIn("java/io/LineNumberInputStream"));
     }
 
@@ -448,7 +471,7 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Load the API versions file and look up every single method/field/class in there
         // (provided since != 1) and also check the deprecated calls.
 
-        File file = createClient().findResource(ApiLookup.XML_FILE_PATH);
+        File file = createClient().findResource(XML_FILE_PATH);
         if (file == null || !file.exists()) {
             return;
         }
@@ -460,25 +483,24 @@ public class ApiLookupTest extends AbstractCheckTest {
             if (className.startsWith("android/support/")) {
                 continue;
             }
-            assertSameApi(className, classSince, mDb.getClassVersion(className));
+            assertSameApi(className, classSince, getClassVersion(className));
 
             for (String method : cls.getAllMethods(info)) {
                 int since = cls.getMethod(method, info);
                 int index = method.indexOf('(');
                 String name = method.substring(0, index);
                 String desc = method.substring(index);
-                assertSameApi(method, since, mDb.getMethodVersion(className, name, desc));
+                assertSameApi(method, since, getMethodVersion(className, name, desc));
             }
             for (String method : cls.getAllFields(info)) {
                 int since = cls.getField(method, info);
-                assertSameApi(method, since, mDb.getFieldVersion(className, method));
+                assertSameApi(method, since, getFieldVersion(className, method));
             }
 
             for (Pair<String, Integer> pair : cls.getInterfaces()) {
                 String interfaceName = pair.getFirst();
                 int api = pair.getSecond();
-                assertSameApi(
-                        interfaceName, api, mDb.getValidCastVersion(className, interfaceName));
+                assertSameApi(interfaceName, api, getCastVersion(className, interfaceName));
             }
         }
 
@@ -527,16 +549,241 @@ public class ApiLookupTest extends AbstractCheckTest {
         // is how the api-since data is computed. We're manually correcting for this
         // in the XML-to-binary database computation instead (and I plan to fix
         // metalava to also correct for this in the XML generation code.)
-        assertEquals(27, mDb.getFieldVersion("android.R$attr", "navigationBarDividerColor"));
-        assertEquals(27, mDb.getFieldVersion("android.R$attr", "windowLightNavigationBar"));
+        assertEquals(27, getFieldVersion("android.R$attr", "navigationBarDividerColor"));
+        assertEquals(27, getFieldVersion("android.R$attr", "windowLightNavigationBar"));
     }
 
     public void testLookUpContractSettings() {
+        assertEquals(14, getFieldVersion("android/provider/ContactsContract$Settings", "DATA_SET"));
+    }
+
+    public void testFrom() throws IOException {
+        getTempDir();
+        // Note: We're *not* unsing mDb as lookup here (the real API database); we're using a
+        // customized database which contains a handful of APIs using the new API vector
+        // (sdks=) format to test it before it lands in an official SDK.
+        ApiLookup lookup = createMultiSdkLookup(true, false);
+        assertEquals("All API levels", lookup.getClassVersions("android.Manifest").toString());
         assertEquals(
-                14, mDb.getFieldVersion("android/provider/ContactsContract$Settings", "DATA_SET"));
+                "API level ≥ 11",
+                lookup.getClassVersions("android.animation.AnimatorSet").toString());
+        assertEquals(
+                "API level ≥ 34 or SDK 1000000: version ≥ 4 or SDK 33: version ≥ 4",
+                lookup.getClassVersions("android.adservices.adid.AdIdManager").toString());
+        assertEquals(
+                "API level ≥ 33 or SDK 1000000: version ≥ 3 or SDK 33: version ≥ 3",
+                lookup.getClassVersions("android.adservices.AdServicesVersion").toString());
+        assertEquals(
+                "API level ≥ 33 or SDK 30: version ≥ 2 or SDK 31: version ≥ 2 or SDK 33: version ≥ 2",
+                lookup.getFieldVersions(
+                                "android.provider.MediaStore$PickerMediaColumns", "MIME_TYPE")
+                        .toString());
+        assertEquals(
+                "API level ≥ 34 or SDK 1000000: version ≥ 4 or SDK 33: version ≥ 4",
+                lookup.getMethodVersions("android.adservices.adid.AdId", "getAdId", "()")
+                        .toString());
+
+        assertEquals("AD_SERVICES-ext", lookup.getSdkName(1000000));
+        assertEquals("AD_SERVICES", lookup.getSdkExtensionField(1000000, false));
+        assertEquals(
+                "android.os.ext.SdkExtensions.AD_SERVICES",
+                lookup.getSdkExtensionField(1000000, true));
+    }
+
+    @FunctionalInterface
+    public interface CreateLintTask {
+        TestLintTask create();
+    }
+
+    /**
+     * Runs a Lint API check with a custom database using API vectors; see {@link
+     * #createMultiSdkLookup}. Once we have API vectors in the platform, switch tests over to using
+     * the *real* database instead.
+     */
+    public static TestLintResult runApiCheckWithCustomLookup(@NonNull CreateLintTask createTask) {
+        return runApiCheckWithCustomLookup(false, createTask);
+    }
+
+    public static TestLintResult runApiCheckWithCustomLookup(
+            boolean force2ByteFormat, @NonNull CreateLintTask createTask) {
+        // this is here to prevent the SoftReference in ApiLookup's
+        // instance table from getting gc'ed
+        @SuppressWarnings("WriteOnlyObject")
+        AtomicReference<ApiLookup> lookup = new AtomicReference<>();
+        try {
+            TestLintTask lint = createTask.create();
+            return lint.clientFactory(
+                            () -> {
+                                // This method has a side effect (because we pass in
+                                // disposeAfter=false) will
+                                // leave a custom ApiLookup around for when lint.run() loads the
+                                // ApiDetector
+                                // and performs the check.
+                                try {
+                                    lookup.set(
+                                            ApiLookupTest.createMultiSdkLookup(
+                                                    false, force2ByteFormat));
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                return new com.android.tools.lint.checks.infrastructure
+                                        .TestLintClient() {
+                                    @Nullable
+                                    @Override
+                                    public File getSdkHome() {
+                                        return TestUtils.getSdk().toFile();
+                                    }
+                                };
+                            })
+                    .issues(
+                            ApiDetector.UNSUPPORTED,
+                            ApiDetector.INLINED,
+                            ApiDetector.OBSOLETE_SDK,
+                            ApiDetector.OVERRIDE,
+                            ApiDetector.UNUSED)
+                    .testModes(TestMode.DEFAULT)
+                    .run();
+        } finally {
+            ApiLookup.dispose();
+        }
+    }
+
+    @Nullable
+    public static ApiLookup createMultiSdkLookup(boolean disposeAfter, boolean force2ByteFormat)
+            throws IOException {
+        TemporaryFolder temporaryFolder = new TemporaryFolder();
+        temporaryFolder.create();
+        LookupTestClient client =
+                new ApiLookupTest()
+                .new LookupTestClient(temporaryFolder.newFolder(), new StringBuilder());
+        @Language("XML")
+        String apiVersionsOverride =
+                ""
+                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<api version=\"3\">\n"
+                        + "        <sdk id=\"30\" name=\"R-ext\" reference=\"android/os/Build$VERSION_CODES$R\"/>\n"
+                        + "        <sdk id=\"31\" name=\"S-ext\"/>\n"
+                        + "        <sdk id=\"33\" name=\"T-ext\"/>\n"
+                        + "        <sdk id=\"1000000\" name=\"AD_SERVICES-ext\" reference=\"android/os/ext/SdkExtensions$AD_SERVICES\"/>\n"
+                        + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "                <method name=\"clone()Ljava/lang/Object;\"/>\n"
+                        + "                <method name=\"equals(Ljava/lang/Object;)Z\"/>\n"
+                        + "                <method name=\"finalize()V\"/>\n"
+                        + "                <method name=\"getClass()Ljava/lang/Class;\"/>\n"
+                        + "                <method name=\"hashCode()I\"/>\n"
+                        + "                <method name=\"notify()V\"/>\n"
+                        + "                <method name=\"notifyAll()V\"/>\n"
+                        + "                <method name=\"toString()Ljava/lang/String;\"/>\n"
+                        + "                <method name=\"wait()V\"/>\n"
+                        + "                <method name=\"wait(J)V\"/>\n"
+                        + "                <method name=\"wait(JI)V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/Manifest\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/animation/AnimatorSet\" since=\"11\"/>\n"
+                        + "        <class name=\"android/adservices/AdServicesState\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"isAdServicesStateEnabled()Z\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/adservices/AdServicesVersion\" module=\"framework-adservices\" since=\"33\" sdks=\"0:33,1000000:3,33:3\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <field name=\"API_VERSION\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/adservices/adid/AdId\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"&lt;init>(Ljava/lang/String;Z)V\"/>\n"
+                        + "                <method name=\"getAdId()Ljava/lang/String;\"/>\n"
+                        + "                <method name=\"isLimitAdTrackingEnabled()Z\"/>\n"
+                        + "                <field name=\"ZERO_OUT\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/adservices/adid/AdIdManager\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"getAdId(Ljava/util/concurrent/Executor;Landroid/os/OutcomeReceiver;)V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/provider/MediaStore\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "                <method name=\"canManageMedia(Landroid/content/Context;)Z\" since=\"31\"/>\n"
+                        + "                <method name=\"createDeleteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
+                        + "                <method name=\"createFavoriteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;Z)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
+                        + "                <method name=\"createTrashRequest(Landroid/content/ContentResolver;Ljava/util/Collection;Z)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
+                        + "                <method name=\"createWriteRequest(Landroid/content/ContentResolver;Ljava/util/Collection;)Landroid/app/PendingIntent;\" since=\"30\"/>\n"
+                        + "                <method name=\"getDocumentUri(Landroid/content/Context;Landroid/net/Uri;)Landroid/net/Uri;\" since=\"26\"/>\n"
+                        + "                <method name=\"getExternalVolumeNames(Landroid/content/Context;)Ljava/util/Set;\" since=\"29\"/>\n"
+                        + "                <method name=\"getGeneration(Landroid/content/Context;Ljava/lang/String;)J\" since=\"30\"/>\n"
+                        + "                <method name=\"getMediaScannerUri()Landroid/net/Uri;\"/>\n"
+                        + "                <method name=\"getMediaUri(Landroid/content/Context;Landroid/net/Uri;)Landroid/net/Uri;\" since=\"29\"/>\n"
+                        + "                <method name=\"getOriginalMediaFormatFileDescriptor(Landroid/content/Context;Landroid/os/ParcelFileDescriptor;)Landroid/os/ParcelFileDescriptor;\" since=\"31\"/>\n"
+                        + "                <method name=\"getPickImagesMaxLimit()I\" since=\"33\" sdks=\"0:33,30:2,31:2,33:2\"/>\n"
+                        + "                <method name=\"getRecentExternalVolumeNames(Landroid/content/Context;)Ljava/util/Set;\" since=\"30\"/>\n"
+                        + "        </class>\n"
+                        // This is supposed to be 31, but here we're testing codename handling
+                        // (10_000)
+                        + "        <class name=\"android/app/GameManager\" since=\"10000\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"getGameMode()I\"/>\n"
+                        + "        </class>\n"
+                        // Like GameManager, but using cmopat-format with the 10000 payload in sdks=
+                        // and a low version for old-lint compat
+                        + "        <class name=\"android/app/GameState\" since=\"34\" sdks=\"0:10000\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"getLabel()I\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/provider/MediaStore$PickerMediaColumns\" module=\"framework-mediaprovider\" since=\"33\" sdks=\"0:33,30:2,31:2,33:2\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <field name=\"DATA\"/>\n"
+                        + "                <field name=\"DATE_TAKEN\"/>\n"
+                        + "                <field name=\"DISPLAY_NAME\"/>\n"
+                        + "                <field name=\"DURATION_MILLIS\"/>\n"
+                        + "                <field name=\"MIME_TYPE\"/>\n"
+                        + "                <field name=\"SIZE\"/>\n"
+                        + "        </class>\n"
+                        + "</api>\n";
+        File xml = File.createTempFile("api-versions", "xml");
+        FilesKt.writeText(xml, apiVersionsOverride, Charsets.UTF_8);
+        ApiLookup.dispose();
+
+        // Anticipate the same AndroidVersion (used for key lookup) that the lint detector test will
+        // use:
+        PlatformLookup platformLookup = client.getPlatformLookup();
+        IAndroidTarget target = platformLookup.getLatestSdkTarget(1, false, false);
+
+        String key = "LINT_API_DATABASE";
+        String old = System.getProperty(key);
+        System.setProperty(key, xml.getPath());
+        ApiLookup lookup;
+        try {
+            Api.TEST_TWO_BYTE_APIS = force2ByteFormat;
+            lookup = ApiLookup.get(client, target);
+            if (disposeAfter) {
+                ApiLookup.dispose();
+            }
+        } finally {
+            Api.TEST_TWO_BYTE_APIS = false;
+            if (old == null) {
+                System.clearProperty(key);
+            } else {
+                System.setProperty(key, old);
+            }
+        }
+        temporaryFolder.delete();
+        return lookup;
     }
 
     private final class LookupTestClient extends ToolsBaseTestLintClient {
+        private final File mCacheDir;
+
+        @SuppressWarnings("StringBufferField")
+        private final StringBuilder mLogBuffer;
+
+        public LookupTestClient(File cacheDir, StringBuilder logBuffer) {
+            this.mCacheDir = cacheDir;
+            this.mLogBuffer = logBuffer;
+        }
+
         @SuppressWarnings("ResultOfMethodCallIgnored")
         @Nullable
         @Override
@@ -561,7 +808,7 @@ public class ApiLookupTest extends AbstractCheckTest {
             if (exception != null) {
                 StringWriter writer = new StringWriter();
                 exception.printStackTrace(new PrintWriter(writer));
-                mLogBuffer.append(writer.toString());
+                mLogBuffer.append(writer);
                 mLogBuffer.append('\n');
             }
         }

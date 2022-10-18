@@ -23,6 +23,7 @@ import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.AndroidVersion
 import com.android.support.AndroidxNameUtils
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.model.LintModelDependency
 import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelModule
@@ -56,9 +57,26 @@ open class LintModelModuleProject(
         mergeManifests = true
         // Initialized after all projects are available by [resolveDependencies]
         directLibraries = mutableListOf()
+        manifestMinSdks = ApiConstraint.ALL
         mergedManifest?.let { readManifest(it) }
         manifestMinSdk = variant.minSdkVersion
+
+        // TODO: We need a Gradle DSL for SDK extensions. Until we have one, we'll instead use the merged
+        // manifest (which we read above) to specify the API vector. If we have a multi-dimensional constraint,
+        // the user has specified multiple extensions in the manifest and we'll use it; otherwise we'll point
+        // to the Gradle DSL minSdkVersion instead. Once we have a Gradle DSL, we should unconditionally
+        // initialize this from the Gradle model.
+        if (manifestMinSdks.getConstraints().size <= 1) {
+            manifestMinSdks = manifestMinSdk?.let { ApiConstraint.get(it.featureLevel) } ?: ApiConstraint.ALL
+        }
         manifestTargetSdk = variant.targetSdkVersion
+    }
+
+    override fun readManifest(document: Document) {
+        super.readManifest(document)
+
+        // Make sure the minSdkVersion is picked up from the build model, not the manifest
+        manifestMinSdks = max(manifestMinSdks, ApiConstraint.get(minSdkVersion.featureLevel), either = false)
     }
 
     override fun toString(): String {
@@ -348,6 +366,18 @@ open class LintModelModuleProject(
                 ?: super.getMinSdkVersion() // from manifest
             manifestMinSdk = minSdk
             minSdk
+        }
+    }
+
+    override fun getMinSdkVersions(): ApiConstraint {
+        return manifestMinSdks ?: run {
+            // TODO: When Gradle DSL supports extension levels switch to initializing these here.
+            // (Note that we also initialize this in init {} where we consult the merged manifest
+            // for extra tags.
+            val minSdks = variant.minSdkVersion?.let { ApiConstraint.get(it.featureLevel) }
+                ?: super.getMinSdkVersions() // from manifest
+            manifestMinSdks = minSdks
+            minSdks
         }
     }
 

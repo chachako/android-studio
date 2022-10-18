@@ -17,6 +17,7 @@ package com.android.tools.lint.checks;
 
 import com.android.annotations.NonNull;
 import com.android.tools.lint.client.api.LintClient;
+import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
@@ -51,13 +52,15 @@ public class ApiDatabase {
     protected static final boolean WRITE_STATS = false;
 
     public static final int HAS_EXTRA_BYTE_FLAG = 1 << 7;
+    public static final int IS_SHORT_FLAG = 1 << 6;
     public static final int API_MASK = ~HAS_EXTRA_BYTE_FLAG;
 
-    private static final int BINARY_FORMAT_VERSION = 15;
+    private static final int BINARY_FORMAT_VERSION = 16;
 
     protected byte[] mData;
     protected int[] mIndices;
     protected int containerCount;
+    protected int sdkIndexOffset;
 
     @FunctionalInterface
     interface CacheCreator {
@@ -77,7 +80,7 @@ public class ApiDatabase {
      */
     public static int getBinaryFormatVersion(int majorBinaryFormatVersion) {
         assert (majorBinaryFormatVersion & 0x07) == majorBinaryFormatVersion;
-        return majorBinaryFormatVersion << 5 + BINARY_FORMAT_VERSION;
+        return (majorBinaryFormatVersion << 5) + BINARY_FORMAT_VERSION;
     }
 
     /**
@@ -85,7 +88,6 @@ public class ApiDatabase {
      *
      * <pre>
      * (Note: all numbers are big endian; the format uses 1, 2, 3 and 4 byte integers.)
-     *
      *
      * 1. A file header, which is the exact contents of {@link #FILE_HEADER} encoded
      *     as ASCII characters. The purpose of the header is to identify what the file
@@ -177,6 +179,8 @@ public class ApiDatabase {
             offset += 4;
             containerCount = get4ByteInt(b, offset);
             offset += 4;
+            sdkIndexOffset = get4ByteInt(b, offset);
+            offset += 4;
 
             mIndices = new int[indexCount];
             for (int i = 0; i < indexCount; i++) {
@@ -242,6 +246,12 @@ public class ApiDatabase {
             Collections.sort(container.getClasses());
         }
 
+        // 2 integers per simple API level, 2 integers per SDK + 1 per complex API level.
+        // We don't have a count of all the API levels yet so this is an approximation.
+        estimatedSize += 120 * 16;
+        // 120 bytes per SDK for name strings.
+        estimatedSize += 20 * 120;
+
         // Write header
         ByteBuffer buffer = ByteBuffer.allocate(estimatedSize);
         buffer.order(ByteOrder.BIG_ENDIAN);
@@ -255,6 +265,9 @@ public class ApiDatabase {
 
         // Write the number of containers in the containers index.
         buffer.putInt(containers.size());
+
+        int sdkTableOffsetIndex = buffer.position();
+        buffer.putInt(0); // placeholder
 
         // Write container index.
         int newIndex = buffer.position();
@@ -372,6 +385,48 @@ public class ApiDatabase {
                 put3ByteInt(buffer, firstClassIndex);
                 put2ByteInt(buffer, classCount);
             }
+        }
+
+        // Write ApiConstraints table
+        int sdkTableOffset = buffer.position();
+
+        // Fill in the earlier index count.
+        buffer.position(sdkTableOffsetIndex);
+        buffer.putInt(sdkTableOffset);
+        buffer.position(sdkTableOffset);
+
+        // Write SDK table
+        List<String> sdks = info.getSdks();
+        int sdkCount = sdks.size();
+        put2ByteInt(buffer, sdkCount);
+        for (String encoded : sdks) {
+            if (encoded.contains(":")) {
+                // Example 1: "0:33,1000000:3,33:3" - vector of SDKs and API levels
+                for (String segment : encoded.split(",")) {
+                    int colon = segment.indexOf(':');
+                    assert colon != -1 : segment;
+                    int sdk = Integer.parseInt(segment.substring(0, colon));
+                    int version = Integer.parseInt(segment.substring(colon + 1));
+                    buffer.putInt(sdk);
+                    buffer.putInt(version);
+                }
+                buffer.putInt(-1); // terminator
+            } else {
+                // Example 2: "31" - simple API level
+                int api = Integer.parseInt(encoded);
+                buffer.putInt(api);
+                buffer.putInt(-1); // terminator
+            }
+        }
+
+        // Write SDK names
+        List<ExtensionSdk> extensionSdks = info.getExtensionSdks();
+        buffer.putInt(extensionSdks.size());
+        for (ExtensionSdk sdk : extensionSdks) {
+            String s = ExtensionSdk.Companion.serialize(sdk);
+            byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+            buffer.putInt(bytes.length);
+            buffer.put(bytes);
         }
 
         int size = buffer.position();

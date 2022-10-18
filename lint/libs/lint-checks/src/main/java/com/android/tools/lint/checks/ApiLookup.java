@@ -18,15 +18,21 @@ package com.android.tools.lint.checks;
 import static com.android.SdkConstants.DOT_XML;
 import static com.android.SdkConstants.FD_DATA;
 import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
+import static com.android.tools.lint.detector.api.ExtensionSdk.ANDROID_SDK_ID;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.IAndroidTarget;
 import com.android.tools.lint.client.api.LintClient;
+import com.android.tools.lint.detector.api.ApiConstraint;
+import com.android.tools.lint.detector.api.ApiConstraint.MultiSdkApiConstraint;
+import com.android.tools.lint.detector.api.ExtensionSdk;
+import com.android.tools.lint.detector.api.ExtensionSdkRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -68,7 +74,7 @@ public class ApiLookup extends ApiDatabase {
     /** Database moved from platform-tools to SDK in API level 26 */
     public static final int SDK_DATABASE_MIN_VERSION = 26;
 
-    private static final int API_LOOKUP_BINARY_FORMAT_VERSION = 0;
+    private static final int API_LOOKUP_BINARY_FORMAT_VERSION = 1;
     private static final int CLASS_HEADER_MEMBER_OFFSETS = 1;
     private static final int CLASS_HEADER_API = 2;
     private static final int CLASS_HEADER_DEPRECATED = 3;
@@ -198,6 +204,7 @@ public class ApiLookup extends ApiDatabase {
                         // path has to prevent the unlikely scenario of two different
                         // databases having the same timestamp
                         HashFunction hashFunction = Hashing.farmHashFingerprint64();
+                        //noinspection UnstableApiUsage
                         versionKey =
                                 hashFunction
                                         .newHasher()
@@ -282,8 +289,9 @@ public class ApiLookup extends ApiDatabase {
 
             Api<ApiClass> info;
             try {
-                info = Api.parseApi(xmlFile);
-            } catch (RuntimeException e) {
+                byte[] bytes = client.readBytes(xmlFile);
+                info = Api.parseApi(new ByteArrayInputStream(bytes));
+            } catch (RuntimeException | IOException e) {
                 client.log(e, "Can't read API file " + xmlFile.getAbsolutePath());
                 return false;
             }
@@ -310,7 +318,72 @@ public class ApiLookup extends ApiDatabase {
 
         if (binaryFile != null) {
             readData(client, binaryFile, cacheCreator(xmlFile), API_LOOKUP_BINARY_FORMAT_VERSION);
+            initializeApiConstraints();
         }
+    }
+
+    private final List<ApiConstraint> apiConstraints = new ArrayList<>();
+    private ExtensionSdkRegistry registry;
+
+    private void initializeApiConstraints() {
+        if (mData == null) {
+            return;
+        }
+        int offset = sdkIndexOffset;
+        int count = get2ByteInt(mData, offset);
+        offset += 2;
+        for (int i = 0; i < count; i++) {
+            int first = get4ByteInt(mData, offset);
+            offset += 4;
+            int second = get4ByteInt(mData, offset);
+            offset += 4;
+
+            if (second == -1) {
+                // API level only
+                apiConstraints.add(ApiConstraint.get(first, ANDROID_SDK_ID));
+            } else {
+                // Api level vector
+                List<ApiConstraint.SdkApiConstraint> apis = new ArrayList<>();
+                apis.add(ApiConstraint.get(second, first));
+
+                while (true) {
+                    int sdk = get4ByteInt(mData, offset);
+                    offset += 4;
+                    if (sdk == -1) {
+                        break;
+                    }
+
+                    int version = get4ByteInt(mData, offset);
+                    offset += 4;
+                    assert (version != -1);
+                    apis.add(ApiConstraint.get(version, sdk));
+                }
+
+                apiConstraints.add(MultiSdkApiConstraint.Companion.create(apis, true));
+            }
+        }
+
+        // Read ExtensionSdk table
+        int extensionCount = get4ByteInt(mData, offset);
+        offset += 4;
+        List<ExtensionSdk> sdks = new ArrayList<>();
+        for (int i = 0; i < extensionCount; i++) {
+            int length = get4ByteInt(mData, offset);
+            offset += 4;
+            String s = new String(mData, offset, length, Charsets.UTF_8);
+            offset += length;
+            sdks.add(ExtensionSdk.Companion.deserialize(s));
+        }
+        registry = new ExtensionSdkRegistry(sdks);
+    }
+
+    /**
+     * @deprecated Use {@link #getClassVersions} instead to properly handle APIs which can now
+     *     appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getClassVersion(@NonNull String className) {
+        return getClassVersions(className).min();
     }
 
     /**
@@ -323,22 +396,32 @@ public class ApiLookup extends ApiDatabase {
      * @return the minimum API version the method is supported for, or -1 if it's unknown <b>or
      *     version 1</b>
      */
-    public int getClassVersion(@NonNull String className) {
-        //noinspection VariableNotUsedInsideIf
+    public ApiConstraint getClassVersions(@NonNull String className) {
         if (mData != null) {
-            return getClassVersion(findClass(className));
+            return getClassVersions(findClass(className));
         }
 
-        return -1;
+        return ApiConstraint.NONE;
     }
 
-    private int getClassVersion(int classNumber) {
+    private ApiConstraint getClassVersions(int classNumber) {
         if (classNumber >= 0) {
             int offset = seekClassData(classNumber, CLASS_HEADER_API);
-            int api = Byte.toUnsignedInt(mData[offset]) & API_MASK;
-            return api > 0 ? api : -1;
+            int api = getApiLevel(offset, CLASS_HEADER_API);
+            if (api > 0) {
+                return apiConstraints.get(api);
+            }
         }
-        return -1;
+        return ApiConstraint.NONE;
+    }
+
+    /**
+     * @deprecated Use {@link #getClassVersions} instead to properly handle APIs which can now
+     *     appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getValidCastVersion(@NonNull String sourceClass, @NonNull String destinationClass) {
+        return getValidCastVersions(sourceClass, destinationClass).min();
     }
 
     /**
@@ -356,7 +439,8 @@ public class ApiLookup extends ApiDatabase {
      * @param destinationClass the class to cast the sourceClass to
      * @return the minimum API version the method is supported for, or 1 or -1 if it's unknown
      */
-    public int getValidCastVersion(@NonNull String sourceClass, @NonNull String destinationClass) {
+    public ApiConstraint getValidCastVersions(
+            @NonNull String sourceClass, @NonNull String destinationClass) {
         if (mData != null) {
             int classNumber = findClass(sourceClass);
             if (classNumber >= 0) {
@@ -369,15 +453,15 @@ public class ApiLookup extends ApiDatabase {
                         offset += 3;
                         int api = mData[offset++];
                         if (clsNumber == interfaceNumber) {
-                            return api;
+                            return apiConstraints.get(api);
                         }
                     }
-                    return getClassVersion(classNumber);
+                    return getClassVersions(classNumber);
                 }
             }
         }
 
-        return -1;
+        return ApiConstraint.NONE;
     }
 
     /**
@@ -447,6 +531,14 @@ public class ApiLookup extends ApiDatabase {
     }
 
     /**
+     * @deprecated Use {@link #getClassVersions} instead to properly handle APIs which can now
+     *     appear in multiple SDK extensions.
+     */
+    public int getMethodVersion(@NonNull String owner, @NonNull String name, @NonNull String desc) {
+        return getMethodVersions(owner, name, desc).min();
+    }
+
+    /**
      * Returns the API version required by the given method call. The method is referred to by its
      * {@code owner}, {@code name} and {@code desc} fields. If the method is unknown it returns -1.
      * Note that it may return -1 for classes introduced in version 1; internally the database only
@@ -458,20 +550,21 @@ public class ApiLookup extends ApiDatabase {
      * @param desc the method's descriptor - see {@link org.objectweb.asm.Type}
      * @return the minimum API version the method is supported for, or -1 if it's unknown
      */
-    public int getMethodVersion(@NonNull String owner, @NonNull String name, @NonNull String desc) {
+    public ApiConstraint getMethodVersions(
+            @NonNull String owner, @NonNull String name, @NonNull String desc) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int api = findMember(classNumber, name, desc);
                 if (api < 0) {
-                    return -1;
+                    return ApiConstraint.NONE;
                 }
-                return api;
+                return apiConstraints.get(api);
             }
         }
 
-        return -1;
+        return ApiConstraint.NONE;
     }
 
     /**
@@ -628,6 +721,14 @@ public class ApiLookup extends ApiDatabase {
     }
 
     /**
+     * @deprecated Use {@link #getClassVersions} instead to properly handle APIs which can now
+     *     appear in multiple SDK extensions.
+     */
+    public int getFieldVersion(@NonNull String owner, @NonNull String name) {
+        return getFieldVersions(owner, name).min();
+    }
+
+    /**
      * Returns the API version required to access the given field, or -1 if this is not a known API
      * method. Note that it may return -1 for classes introduced in version 1; internally the
      * database only stores version data for version 2 and up.
@@ -637,20 +738,20 @@ public class ApiLookup extends ApiDatabase {
      * @param name the method's name
      * @return the minimum API version the method is supported for, or -1 if it's unknown
      */
-    public int getFieldVersion(@NonNull String owner, @NonNull String name) {
+    public ApiConstraint getFieldVersions(@NonNull String owner, @NonNull String name) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int api = findMember(classNumber, name, null);
                 if (api < 0) {
-                    return -1;
+                    return ApiConstraint.NONE;
                 }
-                return api;
+                return apiConstraints.get(api);
             }
         }
 
-        return -1;
+        return ApiConstraint.NONE;
     }
 
     /**
@@ -797,7 +898,13 @@ public class ApiLookup extends ApiDatabase {
         if (field == CLASS_HEADER_API) {
             return offset;
         }
-        boolean hasDeprecatedIn = (mData[offset] & HAS_EXTRA_BYTE_FLAG) != 0;
+        byte sinceFirst = mData[offset];
+        if ((sinceFirst & IS_SHORT_FLAG) != 0) {
+            // not reassigning sinceFirst; the HAS_EXTRA_BYTE_FLAG for the
+            // whole short is packed in the first byte
+            offset++;
+        }
+        boolean hasDeprecatedIn = (sinceFirst & HAS_EXTRA_BYTE_FLAG) != 0;
         boolean hasRemovedIn = false;
         offset++;
         if (field == CLASS_HEADER_DEPRECATED) {
@@ -896,10 +1003,19 @@ public class ApiLookup extends ApiDatabase {
     private int getApiLevel(int offset, int apiLevelField) {
         int api = Byte.toUnsignedInt(mData[offset]);
         if (apiLevelField == CLASS_HEADER_API) {
+            if ((api & IS_SHORT_FLAG) != 0) {
+                // It's packed into a short
+                int second = Byte.toUnsignedInt(mData[++offset]);
+                return (api & (API_MASK & ~IS_SHORT_FLAG)) << 8 | second;
+            }
+
             return api & API_MASK;
         }
         if ((api & HAS_EXTRA_BYTE_FLAG) == 0) {
             return -1;
+        } else if ((api & IS_SHORT_FLAG) != 0) {
+            // We used two bytes for the API level
+            offset++;
         }
         api = Byte.toUnsignedInt(mData[++offset]);
         if (apiLevelField == CLASS_HEADER_DEPRECATED) {
@@ -912,6 +1028,37 @@ public class ApiLookup extends ApiDatabase {
         }
         api = Byte.toUnsignedInt(mData[++offset]);
         return api == 0 ? -1 : api;
+    }
+
+    public String getSdkName(int sdkId) {
+        ExtensionSdk sdk = registry.find(sdkId);
+        if (sdk != null) {
+            return sdk.getName();
+        }
+
+        return ExtensionSdk.Companion.getSdkExtensionField(sdkId, false);
+    }
+
+    public String getSdkExtensionField(int sdkId, boolean fullyQualified) {
+        ExtensionSdk sdk = registry.find(sdkId);
+        if (sdk != null) {
+            return sdk.getSdkExtensionField(fullyQualified);
+        }
+
+        return ExtensionSdk.Companion.getSdkExtensionField(sdkId, fullyQualified);
+    }
+
+    public static String getSdkExtensionField(
+            @NonNull LintClient client, int sdkId, boolean fullyQualified) {
+        return getSdkExtensionField(ApiLookup.get(client), sdkId, fullyQualified);
+    }
+
+    public static String getSdkExtensionField(
+            @Nullable ApiLookup lookup, int sdkId, boolean fullyQualified) {
+        if (lookup != null) {
+            return lookup.getSdkExtensionField(sdkId, fullyQualified);
+        }
+        return ExtensionSdk.Companion.getSdkExtensionField(sdkId, true);
     }
 
     /** Clears out any existing lookup instances */

@@ -16,8 +16,10 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.ApiDetector.Companion.isSuppressed
 import com.android.tools.lint.client.api.TYPE_OBJECT
 import com.android.tools.lint.client.api.TYPE_STRING
+import com.android.tools.lint.detector.api.ApiConstraint
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -60,6 +62,7 @@ class AddJavascriptInterfaceDetector : Detector(), SourceCodeScanner {
 
         const val WEB_VIEW = "android.webkit.WebView"
         const val ADD_JAVASCRIPT_INTERFACE = "addJavascriptInterface"
+        private val API_17: ApiConstraint.SdkApiConstraint = ApiConstraint.get(17)
     }
 
     // ---- implements SourceCodeScanner ----
@@ -81,7 +84,7 @@ class AddJavascriptInterfaceDetector : Detector(), SourceCodeScanner {
             return
         }
 
-        if (ApiDetector.getTargetApi(node) >= 17) {
+        if (isSuppressed(context, API_17, node, context.project.minSdkVersions)) {
             return
         }
 

@@ -347,7 +347,9 @@ class LintBaseline(
                 // by something from the ApiDetector error messages which indicate that they represent an
                 // API level, such as "current min is " or "API level "
                 stringsEquivalent(old, new) { s, i ->
-                    s.precededBy("min is ", i) || s.precededBy("API level ", i)
+                    s.precededBy("min is ", i) ||
+                        s.precededBy("API level ", i) ||
+                        s.precededBy("version ", i)
                 }
             }
             "RestrictedApi" -> {
@@ -990,8 +992,8 @@ class LintBaseline(
                 }
                 if (s1[i1] != s2[i2]) {
                     if (skipTokenAt(s1, i1)) {
-                        while (i1 < n1 && s1[i1].isLetterOrDigit()) i1++
-                        while (i2 < n2 && s2[i2].isLetterOrDigit()) i2++
+                        while (i1 < n1 && !s1[i1].isWhitespace()) i1++
+                        while (i2 < n2 && !s2[i2].isWhitespace()) i2++
                     } else {
                         return false
                     }

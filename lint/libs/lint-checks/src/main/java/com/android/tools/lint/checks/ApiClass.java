@@ -43,6 +43,7 @@ import java.util.Set;
  * <p>{@link #getField} returns the API level when the field was introduced.
  */
 public final class ApiClass extends ApiClassBase {
+    private final String mSdks;
     private final int mSince;
     private final int mDeprecatedIn;
     private final int mRemovedIn;
@@ -52,6 +53,7 @@ public final class ApiClass extends ApiClassBase {
 
     private final Map<String, Integer> mFields = new HashMap<>();
     private final Map<String, Integer> mMethods = new HashMap<>();
+    private final Map<String, String> mMemberSdks = new HashMap<>();
     /* Deprecated fields and methods and the API levels when they were deprecated. */
     @Nullable private Map<String, Integer> mMembersDeprecatedIn;
     /**
@@ -60,11 +62,30 @@ public final class ApiClass extends ApiClassBase {
      */
     @Nullable private Map<String, Integer> mElementsRemovedIn;
 
-    ApiClass(String name, int since, int deprecatedIn, int removedIn) {
+    ApiClass(
+            @NonNull String name,
+            @Nullable String sdks,
+            int since,
+            int deprecatedIn,
+            int removedIn) {
         super(name);
+
+        // Work around b/206996004 -- wrong API level for SdkExtensions: Should be R, not TIRAMISU
+        if (name.equals("android/os/ext/SdkExtensions")) {
+            since = 30;
+            if (sdks != null && sdks.startsWith("0:33")) {
+                sdks = "0:30" + sdks.substring(4);
+            }
+        }
+
+        mSdks = sdks;
         mSince = since;
         mDeprecatedIn = deprecatedIn;
         mRemovedIn = removedIn;
+    }
+
+    public String getSdks() {
+        return mSdks;
     }
 
     /**
@@ -116,6 +137,11 @@ public final class ApiClass extends ApiClassBase {
         // The answer is 10, which is when C became an interface
         int apiLevel = getValueWithDefault(mFields, name, 0);
 
+        // TODO: We should switch to ApiConstraints here, and make sure we read sdks= attributes for
+        // NODE_IMPLEMENTS and NODE_EXTENDS in ApiParser, and then do this processing on a per-SDK
+        // basis and reconstitute the API vectors as necessary.
+        // (We can use MultiApiConstraint.describe to merge vectors back into Strings.)
+
         // Look at the super classes and interfaces.
         for (Pair<String, Integer> superClassPair : Iterables.concat(mSuperClasses, mInterfaces)) {
             ApiClassBase superClass = info.getClass(superClassPair.getFirst());
@@ -146,6 +172,14 @@ public final class ApiClass extends ApiClassBase {
         return apiLevel == 0
                 ? mDeprecatedIn
                 : mDeprecatedIn == 0 ? apiLevel : Math.min(apiLevel, mDeprecatedIn);
+    }
+
+    String getMemberSdks(@NonNull String name, Api info) {
+        String sdks = mMemberSdks.get(name);
+        if (sdks == null) {
+            sdks = mSdks;
+        }
+        return sdks;
     }
 
     /**
@@ -249,13 +283,14 @@ public final class ApiClass extends ApiClassBase {
         return apiLevel;
     }
 
-    void addField(String name, int since, int deprecatedIn, int removedIn) {
+    void addField(String name, String sdks, int since, int deprecatedIn, int removedIn) {
         mFields.put(name, since);
+        mMemberSdks.put(name, sdks);
         addToDeprecated(name, deprecatedIn);
         addToRemoved(name, removedIn);
     }
 
-    void addMethod(String name, int since, int deprecatedIn, int removedIn) {
+    void addMethod(String name, String sdks, int since, int deprecatedIn, int removedIn) {
         // Strip off the method type at the end to ensure that the code which
         // produces inherited methods doesn't get confused and end up multiple entries.
         // For example, java/nio/Buffer has the method "array()Ljava/lang/Object;",
@@ -267,6 +302,7 @@ public final class ApiClass extends ApiClassBase {
             name = name.substring(0, index + 1);
         }
         mMethods.put(name, since);
+        mMemberSdks.put(name, sdks);
         addToDeprecated(name, deprecatedIn);
         addToRemoved(name, removedIn);
     }
@@ -279,6 +315,16 @@ public final class ApiClass extends ApiClassBase {
     void addInterface(String interfaceClass, int since, int removedIn) {
         addToArray(mInterfaces, interfaceClass, since);
         addToRemoved(interfaceClass, removedIn);
+    }
+
+    @NonNull
+    public Collection<String> getMethods() {
+        return mMethods.keySet();
+    }
+
+    @NonNull
+    public Collection<String> getFields() {
+        return mFields.keySet();
     }
 
     static void addToArray(List<Pair<String, Integer>> list, String name, int value) {
@@ -452,7 +498,8 @@ public final class ApiClass extends ApiClassBase {
         int since = getSince();
         int deprecatedIn = getDeprecatedIn();
         int removedIn = getRemovedIn();
-        writeSinceDeprecatedInRemovedIn(buffer, since, deprecatedIn, removedIn);
+        String sdks = getSdks();
+        writeSinceDeprecatedInRemovedIn(info, buffer, since, deprecatedIn, removedIn, sdks);
 
         List<Pair<String, Integer>> interfaces = getInterfaces();
         int count = 0;
@@ -542,6 +589,7 @@ public final class ApiClass extends ApiClassBase {
         assert deprecatedIn >= 0 : "Invalid deprecatedIn " + deprecatedIn + " for " + member;
         int removedIn = getMemberRemovedIn(member, info);
         assert removedIn >= 0 : "Invalid removedIn " + removedIn + " for " + member;
+        String sdks = getMemberSdks(member, info);
 
         byte[] signature = member.getBytes(StandardCharsets.UTF_8);
         for (byte b : signature) {
@@ -554,22 +602,47 @@ public final class ApiClass extends ApiClassBase {
             }
         }
         buffer.put((byte) 0);
-        writeSinceDeprecatedInRemovedIn(buffer, since, deprecatedIn, removedIn);
+        writeSinceDeprecatedInRemovedIn(info, buffer, since, deprecatedIn, removedIn, sdks);
     }
 
     private static void writeSinceDeprecatedInRemovedIn(
-            ByteBuffer buffer, int since, int deprecatedIn, int removedIn) {
-        assert since != 0 && since == (since & ApiDatabase.API_MASK); // Must fit in 7 bits.
+            Api<? extends ApiClassBase> info,
+            ByteBuffer buffer,
+            int since,
+            int deprecatedIn,
+            int removedIn,
+            String sdks) {
         assert deprecatedIn == (deprecatedIn & ApiDatabase.API_MASK); // Must fit in 7 bits.
         assert removedIn == (removedIn & ApiDatabase.API_MASK); // Must fit in 7 bits.
 
         boolean isDeprecated = deprecatedIn > 0;
         boolean isRemoved = removedIn > 0;
         // Writing "since" and, optionally, "deprecatedIn" and "removedIn".
-        if (isDeprecated || isRemoved) {
-            since |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
+
+        short sdkIndex;
+        if (sdks != null) {
+            sdkIndex = info.getSdkIndex(sdks);
+        } else {
+            // Convert since API level into sdkIndex
+            sdkIndex = info.getSdkIndex(since);
         }
-        buffer.put((byte) since);
+        // Top two bits in from field is (1) is short, and (2) continues with deprecated/removedIn
+        boolean sinceShort = sdkIndex >= (1 << 6);
+        if (sinceShort) {
+            int left = sdkIndex >> 8 | ApiDatabase.IS_SHORT_FLAG;
+            if (isDeprecated || isRemoved) {
+                left |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
+            }
+            buffer.put((byte) left);
+            buffer.put((byte) (sdkIndex & 0xFF));
+        } else {
+            // We can fit in one byte
+            if (isDeprecated || isRemoved) {
+                sdkIndex |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
+            }
+            buffer.put((byte) sdkIndex);
+        }
+
         if (isDeprecated || isRemoved) {
             if (isRemoved) {
                 deprecatedIn |= ApiDatabase.HAS_EXTRA_BYTE_FLAG;
