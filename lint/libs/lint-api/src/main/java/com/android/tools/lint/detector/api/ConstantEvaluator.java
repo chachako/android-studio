@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.tools.lint.detector.api
+package com.android.tools.lint.detector.api;
 
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiExpression
-import com.intellij.psi.PsiVariable
-import org.jetbrains.uast.UElement
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiVariable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UElement;
 
-/** Evaluates constant expressions  */
-class ConstantEvaluator {
-    internal var allowUnknown = false
-    internal var allowFieldInitializers = false
-    private val impl = ConstantEvaluatorImpl(this)
+/** Evaluates constant expressions */
+public class ConstantEvaluator {
+    boolean allowUnknown = false;
+    boolean allowFieldInitializers = false;
+    private final ConstantEvaluatorImpl impl = new ConstantEvaluatorImpl(this);
 
     /**
      * Whether we allow computing values where some terms are unknown. For example, the expression
@@ -32,8 +34,15 @@ class ConstantEvaluator {
      *
      * @return this for constructor chaining
      */
-    fun allowUnknowns(): ConstantEvaluator = this.also { allowUnknown = true }
-    fun allowFieldInitializers(): ConstantEvaluator = this.also { allowFieldInitializers = true }
+    public ConstantEvaluator allowUnknowns() {
+        allowUnknown = true;
+        return this;
+    }
+
+    public ConstantEvaluator allowFieldInitializers() {
+        allowFieldInitializers = true;
+        return this;
+    }
 
     /**
      * Evaluates the given node and returns the constant value it resolves to, if any
@@ -41,7 +50,10 @@ class ConstantEvaluator {
      * @param node the node to compute the constant value for
      * @return the corresponding constant value - a String, an Integer, a Float, and so on
      */
-    fun evaluate(node: UElement?): Any? = impl.evaluate(node)
+    @Nullable
+    public Object evaluate(@Nullable UElement node) {
+        return impl.evaluate(node);
+    }
 
     /**
      * Evaluates the given node and returns the constant value it resolves to, if any
@@ -49,86 +61,107 @@ class ConstantEvaluator {
      * @param node the node to compute the constant value for
      * @return the corresponding constant value - a String, an Integer, a Float, and so on
      */
-    fun evaluate(node: PsiElement?): Any? = impl.evaluate(node)
+    @Nullable
+    public Object evaluate(@Nullable PsiElement node) {
+        return impl.evaluate(node);
+    }
 
-    companion object {
-        fun getArraySize(array: Any?): Int = ConstantEvaluatorImpl.getArraySize(array)
+    public static int getArraySize(@Nullable Object array) {
+        return ConstantEvaluatorImpl.Companion.getArraySize(array);
+    }
 
-        /**
-         * Evaluates the given node and returns the constant value it resolves to, if any. Convenience
-         * wrapper which creates a new [ConstantEvaluator], evaluates the node and returns
-         * the result.
-         *
-         * @param context the context to use to resolve field references, if any
-         * @param node the node to compute the constant value for
-         * @return the corresponding constant value - a String, an Integer, a Float, and so on
-         */
-        @JvmStatic
-        fun evaluate(context: JavaContext?, node: PsiElement): Any? = ConstantEvaluatorImpl.evaluate(context, node)
+    /**
+     * Evaluates the given node and returns the constant value it resolves to, if any. Convenience
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
+     * the result.
+     *
+     * @param context the context to use to resolve field references, if any
+     * @param node the node to compute the constant value for
+     * @return the corresponding constant value - a String, an Integer, a Float, and so on
+     */
+    @Nullable
+    public static Object evaluate(
+            @Nullable JavaContext context,
+            @NotNull PsiElement node) {
+        return ConstantEvaluatorImpl.Companion.evaluate(context, node);
+    }
 
-        /**
-         * Evaluates the given node and returns the constant value it resolves to, if any. Convenience
-         * wrapper which creates a new [ConstantEvaluator], evaluates the node and returns
-         * the result.
-         *
-         * @param context the context to use to resolve field references, if any
-         * @param element the node to compute the constant value for
-         * @return the corresponding constant value - a String, an Integer, a Float, and so on
-         */
-        @JvmStatic
-        fun evaluate(context: JavaContext?, element: UElement): Any? = ConstantEvaluatorImpl.evaluate(context, element)
+    /**
+     * Evaluates the given node and returns the constant value it resolves to, if any. Convenience
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
+     * the result.
+     *
+     * @param context the context to use to resolve field references, if any
+     * @param element the node to compute the constant value for
+     * @return the corresponding constant value - a String, an Integer, a Float, and so on
+     */
+    @Nullable
+    public static Object evaluate(
+            @Nullable JavaContext context,
+            @NotNull UElement element) {
+        return ConstantEvaluatorImpl.Companion.evaluate(context, element);
+    }
 
-        /**
-         * Evaluates the given node and returns the constant string it resolves to, if any. Convenience
-         * wrapper which creates a new [ConstantEvaluator], evaluates the node and returns
-         * the result if the result is a string.
-         *
-         * @param context the context to use to resolve field references, if any
-         * @param node the node to compute the constant value for
-         * @param allowUnknown whether we should construct the string even if some parts of it are
-         * unknown
-         * @return the corresponding string, if any
-         */
-        @JvmStatic
-        fun evaluateString(context: JavaContext?, node: PsiElement, allowUnknown: Boolean): String? =
-            ConstantEvaluatorImpl.evaluateString(context, node, allowUnknown)
+    /**
+     * Evaluates the given node and returns the constant string it resolves to, if any. Convenience
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
+     * the result if the result is a string.
+     *
+     * @param context the context to use to resolve field references, if any
+     * @param node the node to compute the constant value for
+     * @param allowUnknown whether we should construct the string even if some parts of it are
+     * unknown
+     * @return the corresponding string, if any
+     */
+    @Nullable
+    public static String evaluateString(
+            @Nullable JavaContext context,
+            @NotNull PsiElement node,
+            boolean allowUnknown) {
+        return ConstantEvaluatorImpl.Companion.evaluateString(context, node, allowUnknown);
+    }
 
-        /**
-         * Computes the last assignment to a given variable counting backwards from the given context
-         * element
-         *
-         * @param usage the usage site to search backwards from
-         * @param variable the variable
-         * @param allowNonConst If set to true and the returned assignment is non-null, this means that
-         * the last assignment is inside an if/else block, whose execution may not be statically
-         * determinable.
-         * @return the last assignment or null
-         */
-        @JvmStatic
-        fun findLastAssignment(usage: PsiElement, variable: PsiVariable): PsiExpression? =
-            ConstantEvaluatorImpl.findLastAssignment(usage, variable)
+    /**
+     * Computes the last assignment to a given variable counting backwards from the given context
+     * element
+     *
+     * @param usage the usage site to search backwards from
+     * @param variable the variable
+     * @return the last assignment or null
+     */
+    @Nullable
+    public static PsiExpression findLastAssignment(
+            @NotNull PsiElement usage,
+            @NotNull PsiVariable variable) {
+        return ConstantEvaluatorImpl.Companion.findLastAssignment(usage, variable, false);
+    }
 
-        /**
-         * Evaluates the given node and returns the constant string it resolves to, if any. Convenience
-         * wrapper which creates a new [ConstantEvaluator], evaluates the node and returns
-         * the result if the result is a string.
-         *
-         * @param context the context to use to resolve field references, if any
-         * @param element the node to compute the constant value for
-         * @param allowUnknown whether we should construct the string even if some parts of it are
-         * unknown
-         * @return the corresponding string, if any
-         */
-        @JvmStatic
-        fun evaluateString(context: JavaContext?, element: UElement, allowUnknown: Boolean): String? =
-            ConstantEvaluatorImpl.evaluateString(context, element, allowUnknown)
+    /**
+     * Evaluates the given node and returns the constant string it resolves to, if any. Convenience
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
+     * the result if the result is a string.
+     *
+     * @param context the context to use to resolve field references, if any
+     * @param element the node to compute the constant value for
+     * @param allowUnknown whether we should construct the string even if some parts of it are
+     * unknown
+     * @return the corresponding string, if any
+     */
+    @Nullable
+    public static String evaluateString(
+            @Nullable JavaContext context,
+            @NotNull UElement element,
+            boolean allowUnknown) {
+        return ConstantEvaluatorImpl.Companion.evaluateString(context, element, allowUnknown);
+    }
 
-        /** Returns true if the node is pointing to an array literal  */
-        @JvmStatic
-        fun isArrayLiteral(node: PsiElement?): Boolean = ConstantEvaluatorImpl.isArrayLiteral(node)
+    /** Returns true if the node is pointing to an array literal  */
+    public static boolean isArrayLiteral(@Nullable PsiElement node) {
+        return ConstantEvaluatorImpl.Companion.isArrayLiteral(node);
+    }
 
-        /** Returns true if the node is pointing to an array literal  */
-        @JvmStatic
-        fun isArrayLiteral(node: UElement?): Boolean = ConstantEvaluatorImpl.isArrayLiteral(node)
+    /** Returns true if the node is pointing to an array literal  */
+    public static boolean isArrayLiteral(@Nullable UElement node) {
+        return ConstantEvaluatorImpl.Companion.isArrayLiteral(node);
     }
 }
