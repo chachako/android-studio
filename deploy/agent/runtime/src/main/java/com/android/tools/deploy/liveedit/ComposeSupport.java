@@ -76,7 +76,10 @@ public class ComposeSupport {
                 getCurrentErrors =
                         reloader.getClass().getMethod("getCurrentErrors$runtime_release");
             } catch (NoSuchMethodException e) {
-                e.printStackTrace();
+                // This is most likely due to the fact that the current runtime does not
+                // support error retrieval. All public release of Compose runtime
+                // will show a white screen should unhandled exceptions occurred during
+                // recomposition.
                 return null;
             }
         }
