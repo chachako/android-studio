@@ -23,7 +23,7 @@ def _gen_proto_impl(ctx):
     needs_label_path = False
     for src_target in ctx.attr.srcs:
         if ProtoPackageInfo in src_target:
-            args += ["--proto_path=" + workspace_path(src_target[ProtoPackageInfo].proto_path)]
+            args.append("--proto_path=" + workspace_path(src_target[ProtoPackageInfo].proto_path))
         else:
             # if src_target doesn't have ProtoPackageInfo provider that should be used to look up proto files
             # then we're going to path where BUILD is placed.
@@ -32,14 +32,14 @@ def _gen_proto_impl(ctx):
 
     label_dir = label_workspace_path(ctx.label)
     if needs_label_path:
-        args += ["--proto_path=" + label_dir]
+        args.append("--proto_path=" + label_dir)
 
-    args += [
+    args.append(
         "--proto_path=" + workspace_path("prebuilts/tools/common/m2/repository/com/google/protobuf/protobuf-java/" + ctx.attr.proto_include_version + "/include"),
-    ]
+    )
 
     for dep in ctx.attr.deps:
-        args += ["--proto_path=" + workspace_path(dep[ProtoPackageInfo].proto_path)]
+        args.append("--proto_path=" + workspace_path(dep[ProtoPackageInfo].proto_path))
         inputs += dep[ProtoPackageInfo].proto_src
 
     args += [s.path for s in ctx.files.srcs]
@@ -47,9 +47,9 @@ def _gen_proto_impl(ctx):
     # Try to generate cc protos first.
     if ctx.attr.target_language == proto_languages.CPP:
         out_path = ctx.var["GENDIR"] + "/" + label_dir
-        args += [
+        args.append(
             "--cpp_out=" + out_path,
-        ]
+        )
         if ctx.executable.grpc_plugin != None and ctx.executable.grpc_plugin.path != None:
             args += [
                 "--grpc_out=" + out_path,
@@ -63,9 +63,9 @@ def _gen_proto_impl(ctx):
         outs = [ctx.actions.declare_file(srcjar.basename + ".jar")]
 
         out_path = outs[0].path
-        args += [
+        args.append(
             "--java_out=" + out_path,
-        ]
+        )
         if ctx.executable.grpc_plugin != None:
             args += [
                 "--java_rpc_out=" + out_path,
@@ -74,7 +74,7 @@ def _gen_proto_impl(ctx):
 
     tools = []
     if ctx.executable.grpc_plugin != None:
-        tools += [ctx.executable.grpc_plugin]
+        tools.append(ctx.executable.grpc_plugin)
 
     ctx.actions.run(
         mnemonic = "GenProto",
@@ -255,11 +255,11 @@ def cc_grpc_proto_library(
     for src in srcs:
         # .proto suffix should not be present in the output files
         p_name = src[:-len(".proto")]
-        outs += [p_name + ".pb.cc"]
-        hdrs += [p_name + ".pb.h"]
+        outs.append(p_name + ".pb.cc")
+        hdrs.append(p_name + ".pb.h")
         if grpc_support:
-            outs += [p_name + ".grpc.pb.cc"]
-            hdrs += [p_name + ".grpc.pb.h"]
+            outs.append(p_name + ".grpc.pb.cc")
+            hdrs.append(p_name + ".grpc.pb.h")
 
     _gen_proto_rule(
         name = name + "_srcs",
