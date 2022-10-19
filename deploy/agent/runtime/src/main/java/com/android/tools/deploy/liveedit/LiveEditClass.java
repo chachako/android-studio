@@ -21,9 +21,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 class LiveEditClass {
     // The context this class is defined in.
@@ -61,12 +63,12 @@ class LiveEditClass {
     }
 
     public void updateBytecode(Interpretable bytecode, boolean isProxyClass) {
-        this.bytecode = bytecode;
         if (isProxyClass) {
             try {
                 // Initializes proxyClass, castableTypes, superReflectedFields, and
                 // superReflectedMethods.
-                setUpProxyClass();
+                warnOnRiskyProxyUpdate(bytecode);
+                setUpProxyClass(bytecode);
             } catch (Exception e) {
                 throw new LiveEditException("Could not set up proxy class", e);
             }
@@ -74,6 +76,7 @@ class LiveEditClass {
             isInitialized = false;
             staticFields.clear();
         }
+        this.bytecode = bytecode;
     }
 
     public void addLiveEditedMethod(String methodName, String methodDesc) {
@@ -155,7 +158,52 @@ class LiveEditClass {
         }
     }
 
-    private void setUpProxyClass() throws ClassNotFoundException, SecurityException {
+    private void warnOnRiskyProxyUpdate(Interpretable bytecode) {
+        if (this.bytecode == null) {
+            return;
+        }
+
+        if (!this.bytecode.getSuperName().equals(bytecode.getSuperName())) {
+            Log.v(
+                    "live.deploy",
+                    String.format(
+                            "Super of %s has changed; proxy objects may need to be recreated.\n\t%s -> %s",
+                            this.bytecode.getInternalName(),
+                            this.bytecode.getSuperName(),
+                            bytecode.getSuperName()));
+        }
+
+        if (!Arrays.equals(this.bytecode.getInterfaces(), bytecode.getInterfaces())) {
+            Log.v(
+                    "live.deploy",
+                    String.format(
+                            "Interfaces of %s have changed; proxy objects may need to be recreated.\n\told: %s\n\tnew: %s",
+                            this.bytecode.getInternalName(),
+                            Arrays.stream(this.bytecode.getInterfaces())
+                                    .sorted()
+                                    .collect(Collectors.joining(", ")),
+                            Arrays.stream(bytecode.getInterfaces())
+                                    .sorted()
+                                    .collect(Collectors.joining(", "))));
+        }
+
+        if (!this.bytecode.getFieldNames().equals(bytecode.getFieldNames())) {
+            Log.v(
+                    "live.deploy",
+                    String.format(
+                            "Fields of %s have changed; proxy objects may need to be recreated.\n\told: %s\n\tnew: %s",
+                            this.bytecode.getInternalName(),
+                            this.bytecode.getFieldNames().stream()
+                                    .sorted()
+                                    .collect(Collectors.joining(", ")),
+                            bytecode.getFieldNames().stream()
+                                    .sorted()
+                                    .collect(Collectors.joining(", "))));
+        }
+    }
+
+    private void setUpProxyClass(Interpretable bytecode)
+            throws ClassNotFoundException, SecurityException {
         castableTypes.clear();
         superReflectedFields.clear();
         superReflectedMethods.clear();

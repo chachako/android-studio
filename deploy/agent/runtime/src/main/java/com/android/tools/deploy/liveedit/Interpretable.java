@@ -26,6 +26,7 @@ import com.android.deploy.asm.tree.MethodNode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 // A class parsed from JVM bytecode. Contains a map of method descriptor to method nodes that is
 // used by LiveEditClass to
@@ -120,6 +121,10 @@ class Interpretable extends ClassVisitor {
 
     public Collection<FieldNode> getFields() {
         return declaredFields.values();
+    }
+
+    public Set<String> getFieldNames() {
+        return declaredFields.keySet();
     }
 
     public Map<String, Object> getDefaultFieldValues() {
