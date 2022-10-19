@@ -1,0 +1,6 @@
+apply plugin: 'com.android.tools.java-library'
+apply plugin: 'com.android.tools.kotlin'
+
+dependencies {
+    implementation libs.kotlin_stdlib
+}

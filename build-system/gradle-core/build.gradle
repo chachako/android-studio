@@ -221,6 +221,12 @@ dependencies {
     includeInJarSources(project(':base:profgen')) {
         transitive = false
     }
+    includeInJar(project(':base:build-analyzer:common')) {
+        transitive = false
+    }
+    includeInJarSources(project(':base:build-analyzer:common')) {
+        transitive = false
+    }
     implementation libs.flatbuffers
     implementation libs.tensorflow_lite_metadata
     provided(project(':base:build-system:shrinker')) {
