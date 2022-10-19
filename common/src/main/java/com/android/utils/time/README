@@ -1,0 +1,10 @@
+This library exists because the official Kotlin standard library version of this
+is marked EXPERIMENTAL and the implementation may change at any point. Because
+of the size of our project and the fact that our compile-time Kotlin and our
+run-time Kotlin may be different, we cannot use that library until it stabilizes.
+
+This is intended as a drop-in replacement, with the idea being that once the
+standard library version stabilizes, we can replace this with that library.
+
+Note that while this library uses the opt-in annotation for ExperimentalTime, it
+is only for the Duration class which is not experimental any more as of Kotlin 1.6.
