@@ -1110,6 +1110,75 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
         )
     }
 
+    fun testParseUri() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.content.Intent;
+                import android.app.Activity;
+                import android.os.Bundle;
+
+                public class TestActivity extends Activity {
+                    @Override
+                    protected void onCreate(Bundle savedInstanceState) {
+                        String intentUri = getIntent().getStringExtra(Intent.EXTRA_INTENT);
+                        Intent intent = Intent.parseUri(intentUri, 0);
+                        startActivity(intent);
+
+                        intent = Intent.parseUri(getIntent().getStringExtra(Intent.EXTRA_INTENT));
+                        startActivity(intent);
+
+                        startActivity(Intent.parseUri(getIntent().getStringExtra(Intent.EXTRA_INTENT)));
+
+                        startActivity(Intent.parseUri(getIntent().getExtras(Intent.EXTRA_INTENT).getString(Intent.Extra_INTENT)));
+                    }
+                }
+            """
+            ).indented(),
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                    <application>
+                        <activity android:name=".TestActivity" android:exported="true" />
+                    </application>
+                </manifest>
+                """
+            ).indented(),
+            *stubs
+        ).issues(UnsafeIntentLaunchDetector.ISSUE).run().expect(
+            """
+            src/test/pkg/TestActivity.java:11: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestActivity. You could either make the component test.pkg.TestActivity protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                    Intent intent = Intent.parseUri(intentUri, 0);
+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/TestActivity.java:12: The unsafe intent is launched here.
+                    startActivity(intent);
+                    ~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestActivity.java:14: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestActivity. You could either make the component test.pkg.TestActivity protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                    intent = Intent.parseUri(getIntent().getStringExtra(Intent.EXTRA_INTENT));
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/TestActivity.java:15: The unsafe intent is launched here.
+                    startActivity(intent);
+                    ~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestActivity.java:17: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestActivity. You could either make the component test.pkg.TestActivity protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                    startActivity(Intent.parseUri(getIntent().getStringExtra(Intent.EXTRA_INTENT)));
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/TestActivity.java:17: The unsafe intent is launched here.
+                    startActivity(Intent.parseUri(getIntent().getStringExtra(Intent.EXTRA_INTENT)));
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestActivity.java:19: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestActivity. You could either make the component test.pkg.TestActivity protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                    startActivity(Intent.parseUri(getIntent().getExtras(Intent.EXTRA_INTENT).getString(Intent.Extra_INTENT)));
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/TestActivity.java:19: The unsafe intent is launched here.
+                    startActivity(Intent.parseUri(getIntent().getExtras(Intent.EXTRA_INTENT).getString(Intent.Extra_INTENT)));
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            0 errors, 4 warnings
+            """
+        )
+    }
+
     private val intentStub: TestFile = java(
         """
         package android.content;
@@ -1121,9 +1190,11 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
             public static final String ACTION_BATTERY_CHANGED = "android.intent.action.BATTERY_CHANGED";
             public static final String ACTION_BATTERY_LOW = "android.intent.action.BATTERY_LOW";
             public static final String ACTION_BATTERY_OKAY = "android.intent.action.BATTERY_OKAY";
-            public Intent getParcelableExtra(String key) { return this;}
+            public Intent getParcelableExtra(String key) { return null; }
+            public String getStringExtra(String key) { return null; }
             public Bundle getExtras() { return new Bundle(); }
             public Intent setAction(String action) { return this; }
+            public static Intent parseUri(String uri, int flags) { return null; }
         }
         """
     ).indented()
@@ -1194,6 +1265,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
 
         public class Bundle {
             public Intent getParcelable(String key) { return null; }
+            public String getString(String key) { return null; }
         }
         """
     ).indented()

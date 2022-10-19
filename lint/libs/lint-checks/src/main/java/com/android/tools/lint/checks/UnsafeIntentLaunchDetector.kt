@@ -52,6 +52,7 @@ import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UReturnExpression
+import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UThisExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedName
@@ -69,13 +70,14 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     private val registerReceiverMethods = listOf(
         "registerReceiver",
         "registerReceiverAsUser",
-        "registerReceiverForAllUsers"
+        "registerReceiverForAllUsers",
     )
 
     override fun getApplicableMethodNames() = listOf(
         "getParcelableExtra",
         "getParcelable",
         "getIntent",
+        "parseUri",
     ) + registerReceiverMethods
 
     override fun applicableSuperClasses() = listOf(
@@ -143,7 +145,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         if (method.name in registerReceiverMethods && evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)) {
             // register receiver at runtime methods, figure out if it is registered as unprotected.
             processRuntimeReceiver(context, node, method)
-        } else if (isUnParcellingIntentMethods(evaluator, method)) {
+        } else if (isUnParcellingIntentMethods(evaluator, method) or isParseUnsafeUri(evaluator, node, method)) {
             // methods that launch Intent. Figure out if the Intent is launched.
             val visitor = IntentLaunchChecker(
                 initial = setOf(node),
@@ -169,10 +171,28 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         }
     }
 
+    private fun isParseUnsafeUri(evaluator: JavaEvaluator, call: UCallExpression, method: PsiMethod): Boolean {
+        if (method.name == "parseUri" && evaluator.isMemberInClass(method, INTENT_CLASS)) {
+            val intentArg = call.getArgumentForParameter(0)?.skipParenthesizedExprDown()
+            val getUriStringCall = if (intentArg is USimpleNameReferenceExpression) {
+                findLastAssignment(intentArg.resolve() as? PsiVariable ?: return false, call)
+            } else intentArg
+
+            val getUriStringMethod = (getUriStringCall?.findSelector() as? UCallExpression)?.resolve() ?: return false
+            return isUnParcellingStringMethods(evaluator, getUriStringMethod)
+        } else return false
+
+    }
+
     private fun isUnParcellingIntentMethods(evaluator: JavaEvaluator, method: PsiMethod): Boolean {
-        return evaluator.isMemberInSubClassOf(method, INTENT_CLASS) && (method.name == "getParcelableExtra") ||
-            evaluator.isMemberInSubClassOf(method, "android.os.Bundle") && method.name == "getParcelable" ||
-            evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS) && method.name == "getIntent"
+        return (method.name == "getParcelableExtra") && evaluator.isMemberInSubClassOf(method, INTENT_CLASS)
+                || method.name == "getParcelable" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle")
+                || method.name == "getIntent" && evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)
+    }
+
+    private fun isUnParcellingStringMethods(evaluator: JavaEvaluator, method: PsiMethod): Boolean {
+        return (method.name == "getStringExtra") && evaluator.isMemberInSubClassOf(method, INTENT_CLASS)
+                || method.name == "getString" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle")
     }
 
     private fun processRuntimeReceiver(context: JavaContext, node: UCallExpression, method: PsiMethod) {
