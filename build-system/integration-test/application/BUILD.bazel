@@ -300,7 +300,7 @@ gradle_integration_test(
         ],
     ),
     data = TEST_DATA + [
-        "//prebuilts/studio/jdk",
+        "//prebuilts/studio/jdk:jdk_1_8",
         "//prebuilts/studio/jdk/jdk11",
     ],
     maven_repo_zips = [
