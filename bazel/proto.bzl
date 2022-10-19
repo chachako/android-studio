@@ -39,7 +39,10 @@ def _gen_proto_impl(ctx):
     )
 
     for dep in ctx.attr.deps:
-        args.append("--proto_path=" + workspace_path(dep[ProtoPackageInfo].proto_path))
+        if dep[ProtoPackageInfo].proto_path:
+            args.append("--proto_path=" + workspace_path(dep[ProtoPackageInfo].proto_path))
+        else:
+            args.append("--proto_path=" + label_workspace_path(dep.label))
         inputs += dep[ProtoPackageInfo].proto_src
 
     args += [s.path for s in ctx.files.srcs]
@@ -252,6 +255,7 @@ def cc_grpc_proto_library(
         include_prefix = None):
     outs = []
     hdrs = []
+    proto_deps = []  # Assumes c++ deps point to *_grpc_proto_library packages
     for src in srcs:
         # .proto suffix should not be present in the output files
         p_name = src[:-len(".proto")]
@@ -260,11 +264,13 @@ def cc_grpc_proto_library(
         if grpc_support:
             outs.append(p_name + ".grpc.pb.cc")
             hdrs.append(p_name + ".grpc.pb.h")
+    for dep in deps:
+        proto_deps.append(dep + "_srcs")
 
     _gen_proto_rule(
         name = name + "_srcs",
         srcs = srcs,
-        deps = deps,
+        deps = proto_deps,
         outs = outs + hdrs,
         include = "@//prebuilts/tools/common/m2:com.google.protobuf.protobuf-java." + protoc_version + ".include_include",
         proto_include_version = protoc_version,
