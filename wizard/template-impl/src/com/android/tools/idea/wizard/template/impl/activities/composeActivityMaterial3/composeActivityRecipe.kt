@@ -47,6 +47,7 @@ fun RecipeExecutor.composeActivityRecipe(
   addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
   // Note: Compose versioning is per group. "androidx.compose.ui:ui" group has its own variable
   addDependency(mavenCoordinate = "androidx.compose.ui:ui:\${$composeUiVersionVarName}")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-graphics:\${$composeUiVersionVarName}")
   addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling:\${$composeUiVersionVarName}",
                 configuration = "debugImplementation")
   addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview:\${$composeUiVersionVarName}")
