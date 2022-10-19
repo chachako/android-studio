@@ -21,13 +21,13 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
+import com.google.common.base.Verify;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -571,6 +571,66 @@ public class GradleVersion implements Comparable<GradleVersion> {
         @Override
         public String toString() {
             return mText;
+        }
+    }
+
+    /**
+     * Parses the given string into a {@link GradleVersion} instance if it represents a valid
+     * Android Gradle plugin version, or returns {@code null} otherwise.
+     *
+     * <p>This method is similar to {@link #tryParse(String)} but has stricter constraints on what
+     * will be accepted as a valid Android Gradle plugin version. For example, this method does not
+     * accept "3.1.0.0" as a valid plugin version, but the other method does.
+     *
+     * @param value the string to parse
+     * @return the created {@link GradleVersion} instance, or {@code null} if the given string does
+     *     not represent a valid Android Gradle plugin version.
+     * @see #tryParse(String)
+     */
+    @Nullable
+    public static GradleVersion tryParseAndroidGradlePluginVersion(@NonNull String value) {
+        if (value.matches("\\d+\\.\\d+\\.\\d+(-(((alpha|beta|rc)\\d+)|(dev\\d*)))?")) {
+            // Any string that matches the above pattern is a valid Android Gradle plugin version
+            // and should be parsable by tryParse()
+            return Verify.verifyNotNull(tryParse(value));
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Parses the given string into a {@link GradleVersion} instance if it represents a valid stable
+     * Android Gradle plugin version, or returns {@code null} otherwise.
+     *
+     * <p>This method is similar to {@link #tryParseAndroidGradlePluginVersion(String)} but has
+     * stricter constraints on what will be accepted as a valid version. Specifically, this method
+     * does not accept any alpha, beta, rc, or dev versions as valid plugin versions, but the other
+     * method does.
+     *
+     * @param value the string to parse
+     * @return the created {@link GradleVersion} instance, or {@code null} if the given string does
+     *     not represent a valid stable Android Gradle plugin version.
+     * @see #tryParseAndroidGradlePluginVersion(String)
+     */
+    @Nullable
+    public static GradleVersion tryParseStableAndroidGradlePluginVersion(@NonNull String value) {
+        if (value.matches("\\d+\\.\\d+\\.\\d+")) {
+            // Any string that matches the above pattern is a valid Android Gradle plugin version
+            // and should be parsable by tryParse()
+            return Verify.verifyNotNull(tryParse(value));
+        } else {
+            return null;
+        }
+    }
+
+    @NonNull
+    public static GradleVersion parseAndroidGradlePluginVersion(@NonNull String value) {
+        GradleVersion version = tryParseAndroidGradlePluginVersion(value);
+        if (version == null) {
+            throw new IllegalArgumentException(
+                    value + " is not a valid Android Gradle plugin version");
+        } else {
+            return version;
         }
     }
 }
