@@ -748,6 +748,8 @@ class R8Test(val r8OutputType: R8OutputType) {
             featureJavaResourceOutputDir = featureJavaResourceOutputDir,
             libConfiguration = libConfiguration,
             outputKeepRulesDir = outputKeepRulesDir,
+            inputArtProfile = null,
+            outputArtProfile = null,
         )
     }
 

@@ -23,7 +23,9 @@ import com.android.build.gradle.internal.PostprocessingFeatures
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.ToolExecutionOptions
+import com.android.build.gradle.internal.dsl.ModulePropertyKeys
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -217,6 +219,18 @@ abstract class R8Task @Inject constructor(
     @get:OutputFile
     abstract val mainDexListOutput: RegularFileProperty
 
+    @get:Input
+    abstract val artProfileRewriting: Property<Boolean>
+
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:InputFiles
+    abstract val inputArtProfile: RegularFileProperty
+
+    @get:Optional
+    @get:OutputFile
+    abstract val outputArtProfile: RegularFileProperty
+
     @get:Inject
     abstract val providerFactory: ProviderFactory
 
@@ -306,6 +320,12 @@ abstract class R8Task @Inject constructor(
                     }
                 }
             }
+            if (creationConfig is VariantCreationConfig) {
+                creationConfig.artifacts
+                    .use(taskProvider)
+                    .wiredWithFiles(R8Task::inputArtProfile, R8Task::outputArtProfile)
+                    .toTransform(InternalArtifactType.MERGED_ART_PROFILE)
+            }
         }
 
         override fun configure(
@@ -314,6 +334,16 @@ abstract class R8Task @Inject constructor(
             super.configure(task)
 
             val artifacts = creationConfig.artifacts
+
+            if (creationConfig is VariantCreationConfig) {
+                task.artProfileRewriting.set(
+                    creationConfig.experimentalProperties.map {
+                        ModulePropertyKeys.ART_PROFILE_R8_REWRITING.getValueAsBoolean(it)
+                    }
+                )
+            } else {
+                task.artProfileRewriting.set(false)
+            }
 
             task.usesService(
                 getBuildService(
@@ -546,6 +576,10 @@ abstract class R8Task @Inject constructor(
             it.libConfiguration.set(coreLibDesugarConfig.orNull)
             it.outputKeepRulesDir.set(projectOutputKeepRules.asFile.orNull)
             it.errorFormatMode.set(errorFormatMode.get())
+            if (artProfileRewriting.get()) {
+                it.inputArtProfile.set(inputArtProfile)
+                it.outputArtProfile.set(outputArtProfile)
+            }
         }
         if (executionOptions.get().runInSeparateProcess) {
             workerExecutor.processIsolation { spec ->
@@ -592,6 +626,8 @@ abstract class R8Task @Inject constructor(
             libConfiguration: String?,
             outputKeepRulesDir: File?,
             errorFormatMode: SyncOptions.ErrorFormatMode,
+            inputArtProfile: File?,
+            outputArtProfile: File?
         ) {
             val logger = LoggerWrapper.getLogger(R8Task::class.java)
 
@@ -673,6 +709,8 @@ abstract class R8Task @Inject constructor(
                 featureJavaResourceOutputDir?.toPath(),
                 libConfiguration,
                 outputKeepRulesFile?.toPath(),
+                inputArtProfile?.toPath(),
+                outputArtProfile?.toPath(),
             )
         }
 
@@ -722,6 +760,8 @@ abstract class R8Task @Inject constructor(
             abstract val libConfiguration: Property<String>
             abstract val outputKeepRulesDir: DirectoryProperty
             abstract val errorFormatMode: Property<SyncOptions.ErrorFormatMode>
+            abstract val inputArtProfile: RegularFileProperty
+            abstract val outputArtProfile: RegularFileProperty
         }
 
         override fun execute() {
@@ -758,6 +798,8 @@ abstract class R8Task @Inject constructor(
                 parameters.libConfiguration.orNull,
                 parameters.outputKeepRulesDir.orNull?.asFile,
                 parameters.errorFormatMode.get(),
+                parameters.inputArtProfile.orNull?.asFile,
+                parameters.outputArtProfile.orNull?.asFile,
             )
         }
     }

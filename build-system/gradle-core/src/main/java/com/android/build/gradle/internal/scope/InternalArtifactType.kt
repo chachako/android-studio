@@ -573,11 +573,11 @@ InternalArtifactType<T : FileSystemLocation>(
     // Micro APK res directory
     object MICRO_APK_RES: InternalArtifactType<Directory>(DIRECTORY)
 
-    // Human readable Art profile artifacts
+    // Human-readable Art profile artifacts
     object MERGED_ART_PROFILE: InternalArtifactType<RegularFile>(
         FILE,
         fileName = SdkConstants.FN_ART_PROFILE
-    )
+    ), Transformable
     object LIBRARY_ART_PROFILE: InternalArtifactType<RegularFile>(
         FILE,
         fileName = SdkConstants.FN_ART_PROFILE
