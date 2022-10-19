@@ -373,8 +373,8 @@ class TypoLookup private constructor(
             }
 
             try {
-                val buffer = Files.map(binaryFile, MapMode.READ_ONLY)
-                assert(buffer.order() == ByteOrder.BIG_ENDIAN)
+                val b = Files.toByteArray(binaryFile)
+                val buffer = ByteBuffer.wrap(b)
 
                 // First skip the header
                 val expectedHeader = FILE_HEADER.toByteArray(Charsets.US_ASCII)
@@ -406,22 +406,12 @@ class TypoLookup private constructor(
 
                 // Another idea: I can just store the DELTAS in the file (and add them up
                 // when reading back in) such that it takes just ONE byte instead of four!
-
                 for (i in 0 until wordCount) {
                     offsets[i] = buffer.int
                 }
 
-                // No need to read in the rest -- we'll just keep the whole byte array in memory
-                // TODO: Make this code smarter/more efficient.
-                val size = buffer.limit()
-                val b = ByteArray(size)
-                buffer.rewind()
-                buffer.get(b)
-
                 // TODO: We only need to keep the data portion here since we've initialized
                 // the offset array separately.
-                // TODO: Investigate (profile) accessing the byte buffer directly instead of
-                // accessing a byte array.
                 return TypoLookup(b, offsets, wordCount)
             } catch (e: IOException) {
                 client.log(e, null)
