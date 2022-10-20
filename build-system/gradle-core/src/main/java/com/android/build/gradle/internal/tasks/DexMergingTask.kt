@@ -410,9 +410,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
                                     LibraryElements.CLASSES
                                 )
                             check(attributes.libraryElementsAttribute == null)
-                            val updatedAttributes = AndroidAttributes(
-                                attributes.stringAttributes, classesLibraryElements
-                            )
+                            val updatedAttributes = attributes.copy(classesLibraryElements)
                             creationConfig.variantDependencies.getArtifactFileCollection(
                                 AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                                 AndroidArtifacts.ArtifactScope.PROJECT,
