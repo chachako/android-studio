@@ -94,6 +94,11 @@ interface RecipeExecutor {
   fun addModuleDependency(configuration: String, moduleName: String, toModule: File)
 
   /**
+   * Adds a platform artifact dependency, for using Maven BOMs to set the versions of other dependencies.
+   */
+  fun addPlatformDependency(mavenCoordinate: String, configuration: String = "implementation", enforced: Boolean = false)
+
+  /**
    * Adds a new entry to 'sourceSets' block of Gradle build file.
    *
    * @param type type of the source set.

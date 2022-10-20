@@ -13046,6 +13046,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.compose.compose-bom_2022.10.00",
+    pom = "repository/androidx/compose/compose-bom/2022.10.00/compose-bom-2022.10.00.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/compose-bom/2022.10.00",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.concurrent.concurrent-futures-ktx_1.1.0",
     pom = "repository/androidx/concurrent/concurrent-futures-ktx/1.1.0/concurrent-futures-ktx-1.1.0.pom",
     repo_root_path = "repository",

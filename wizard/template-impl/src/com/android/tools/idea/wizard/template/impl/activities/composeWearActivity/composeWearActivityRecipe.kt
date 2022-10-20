@@ -18,10 +18,10 @@ package com.android.tools.idea.wizard.template.impl.activities.composeWearActivi
 
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_BOM_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_UI_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.complication.complicationServiceKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.complicationStringsXml
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.stringsXml
@@ -45,31 +45,25 @@ private fun RecipeExecutor.commonComposeRecipe(
 ) {
     addAllKotlinDependencies(moduleData)
 
-    val composeVersionVarName = getDependencyVarName("androidx.compose.ui:ui", "compose_version")
+    // Add Compose dependencies, using the BOM to set versions
+    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION")
+    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION", "androidTestImplementation")
+
+    addDependency(mavenCoordinate = "androidx.compose.ui:ui")
+    addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
+    addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling", configuration = "debugImplementation")
+    addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest", configuration = "debugImplementation")
+    addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4", configuration = "androidTestImplementation")
+
+    // Add Compose Wear dependencies; the Compose BOM doesn't include Wear.
     val wearComposeVersionVarName =
         getDependencyVarName("androidx.wear.compose:compose-material", "wear_compose_version")
-    setExtVar(composeVersionVarName, COMPOSE_UI_VERSION)
     setExtVar(wearComposeVersionVarName, "1.0.0")
-
-    // Note: Compose versioning is per group. "androidx.compose.ui:ui" group has its own variable
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui:\${$composeVersionVarName}")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:\${$wearComposeVersionVarName}")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:\${$wearComposeVersionVarName}")
-    addDependency(
-        mavenCoordinate = "androidx.compose.ui:ui-tooling:\${$composeVersionVarName}",
-        configuration = "debugImplementation"
-    )
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview:\${$composeVersionVarName}")
+
     addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
     addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
-    addDependency(
-        mavenCoordinate = "androidx.compose.ui:ui-test-manifest:\${$composeVersionVarName}",
-        configuration = "debugImplementation"
-    )
-    addDependency(
-        mavenCoordinate = "androidx.compose.ui:ui-test-junit4:\${$composeVersionVarName}",
-        configuration = "androidTestImplementation"
-    )
     generateManifest(
         moduleData = moduleData,
         activityClass = "presentation.${activityClass}",

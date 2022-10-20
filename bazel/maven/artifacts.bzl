@@ -184,6 +184,7 @@ DATA = [
     "androidx.compose.foundation:foundation:1.3.0",
     "androidx.compose.compiler:compiler:1.2.0",
     "androidx.compose.compiler:compiler:1.3.2",
+    "androidx.compose:compose-bom:pom:2022.10.00",
     "androidx.compose.material:material:1.3.0",
     "androidx.compose.material3:material3:1.0.0-alpha02",
     "androidx.compose.material3:material3:1.0.0",

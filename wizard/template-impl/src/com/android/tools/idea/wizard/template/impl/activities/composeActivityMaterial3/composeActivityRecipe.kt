@@ -18,11 +18,10 @@ package com.android.tools.idea.wizard.template.impl.activities.composeActivityMa
 
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_BOM_VERSION
+import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_MATERIAL3_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_UI_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.res.values.themesXml
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.mainActivityKt
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.ui.colorKt
@@ -40,20 +39,21 @@ fun RecipeExecutor.composeActivityRecipe(
   val (_, srcOut, resOut, _) = moduleData
   addAllKotlinDependencies(moduleData)
 
-  val composeUiVersionVarName = getDependencyVarName("androidx.compose.ui:ui", "compose_version")
-  setExtVar(composeUiVersionVarName, COMPOSE_UI_VERSION)
-
   addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
   addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
-  // Note: Compose versioning is per group. "androidx.compose.ui:ui" group has its own variable
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui:\${$composeUiVersionVarName}")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-graphics:\${$composeUiVersionVarName}")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling:\${$composeUiVersionVarName}",
-                configuration = "debugImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview:\${$composeUiVersionVarName}")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest:\${$composeUiVersionVarName}", configuration="debugImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4:\${$composeUiVersionVarName}", configuration="androidTestImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.material3:material3:$COMPOSE_MATERIAL3_VERSION")
+
+  // Add Compose dependencies, using the BOM to set versions
+  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION")
+  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION", "androidTestImplementation")
+
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-graphics")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling", configuration = "debugImplementation")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest", configuration="debugImplementation")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4", configuration="androidTestImplementation")
+  addDependency(mavenCoordinate = "androidx.compose.material3:material3")
+
   generateManifest(
     moduleData = moduleData,
     activityClass = activityClass,
