@@ -30,7 +30,6 @@ import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.DeviceGroup
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.ManagedDeviceTestRunnerFactory
-import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
@@ -3147,10 +3146,10 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                 .add(
                         "kapt",
                         SdkConstants.DATA_BINDING_ANNOTATION_PROCESSOR_ARTIFACT + ":" + version)
-        var kaptTaskClass: Class<out Task?>? = null
+        var kaptTaskClass: Class<out Task>? = null
         try {
             kaptTaskClass =
-                    Class.forName("org.jetbrains.kotlin.gradle.internal.KaptTask") as Class<out Task?>
+                    Class.forName("org.jetbrains.kotlin.gradle.internal.KaptTask") as Class<out Task>
         } catch (e: ClassNotFoundException) {
             logger.error(
                     "Kotlin plugin is applied to the project "
@@ -3162,21 +3161,21 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         if (kaptTaskClass == null) {
             return
         }
-        // create a map from kapt task name to variant scope
-        val kaptTaskLookup= allPropertiesList
-                .map{ it.computeTaskName("kapt", "kotlin") to it }
-                .toMap()
-        project.tasks
-                .withType(
-                        kaptTaskClass,
-                        Action { kaptTask: Task ->
-                            // find matching scope.
-                            val matchingComponent = kaptTaskLookup[kaptTask.name]
-                            matchingComponent?.let {
-                                configureKaptTaskInScopeForDataBinding(it,
-                                        kaptTask)
-                            }
-                        } as Action<Task>)
+
+        // Find a matching variant and configure each Kapt task. Note: The task's name could be
+        // kapt${variant}Kotlin, or kapt${variant}KotlinAndroid in KMP projects.
+        val kaptTaskNameOrPrefixToVariant =
+            allPropertiesList.associateBy { it.computeTaskName("kapt", "Kotlin") }
+        project.tasks.withType(kaptTaskClass) { kaptTask: Task ->
+            val variant = kaptTaskNameOrPrefixToVariant
+                .keys.firstOrNull { kaptTask.name.startsWith(it) }
+                ?.let { kaptTaskNameOrPrefixToVariant[it]!! }
+            // If we can't find a matching variant, it could be that this is a Kapt task for JVM in
+            // a KMP project (its name is "kaptKotlinJvm"), which we don't need to handle.
+            variant?.let {
+                configureKaptTaskInScopeForDataBinding(variant, kaptTask)
+            }
+        }
     }
 
     private fun configureKaptTaskInScopeForDataBinding(
