@@ -233,19 +233,18 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
     <supports-screens
         android:largeScreens="true"
-        android:smallScreens="true"
         android:normalScreens="true"
         android:resizeable="true"
-        android:xlargeScreens="true"
-        />
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
     <!-- Typical analytics permissions. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -257,122 +256,119 @@
         android:required="false" />
 
     <application
-        android:label="@string/app_name"
-        android:icon="@drawable/app_icon"
-        android:backupAgent="com.example.app.BackupAgentClass"
-        android:restoreAnyVersion="true"
+        android:name="com.example.TheApp"
         android:allowBackup="true"
+        android:backupAgent="com.example.app.BackupAgentClass"
+        android:icon="@drawable/app_icon"
         android:killAfterRestore="true"
-        android:name="com.example.TheApp" >
-
+        android:label="@string/app_name"
+        android:restoreAnyVersion="true" >
         <activity
             android:name="com.example.MainActivity"
-            android:label="@string/activity_name"
             android:icon="@drawable/activity_icon"
-            android:theme="@style/Some.Theme">
+            android:label="@string/activity_name"
+            android:theme="@style/Some.Theme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--
+ The first comment just before the element
+             is carried over as-is.
+        -->
+        <!-- Formatting is preserved. -->
+        <!-- All consecutive comments are taken together. -->
+        <activity-alias
+            android:name="com.example.alias.MyActivity"
+            android:icon="@drawable/alias_icon"
+            android:label="@string/alias_name"
+            android:targetActivity="com.example.MainActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <!-- Receiver -->
         <receiver
             android:name="com.example.AppReceiver"
-            android:icon="@drawable/app_icon">
+            android:icon="@drawable/app_icon" >
             <intent-filter>
                 <action android:name="com.example.action.ACTION_CUSTOM" />
             </intent-filter>
         </receiver>
 
-
         <!-- Conflict with lib1 -->
         <activity
+            android:name="com.example.WidgetConfigurationUI"
             android:icon="@drawable/widget_icon"
             android:label="Configure Widget"
-            android:name="com.example.WidgetConfigurationUI"
             android:theme="@style/Theme.WidgetConfigurationUI" >
+
             <!-- intent-filter child should be merged. -->
-            <intent-filter >
+            <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
 
-
         <!-- Conflict with lib2, no conflict, should be merged -->
         <activity
             android:name="com.example.LibActivity"
-            android:label="@string/lib_activity_name"
             android:icon="@drawable/lib_activity_icon"
-            android:theme="@style/Lib.Theme">
+            android:label="@string/lib_activity_name"
+            android:theme="@style/Lib.Theme" >
 
+            <!-- missing attribute android:theme="@style/Lib.Theme" -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-# from @lib1_widget
-        <service
-            android:icon="@drawable/app_icon"
-            android:name="com.example.AppService" />
 
         <!-- Broadcast Receiver for a widget. -->
         <receiver
-            android:label="@string/widget_name"
+            android:name="com.example.WidgetReceiver"
             android:icon="@drawable/widget_icon"
-            android:name="com.example.WidgetReceiver" >
+            android:label="@string/widget_name" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_provider"
-                />
+                android:resource="@xml/widget_provider" />
         </receiver>
 
-# from @lib2_activity
-        <!-- This one does not conflict with the main -->
-        <activity android:icon="@drawable/lib_activity_icon" android:label="@string/lib_activity_name" android:name="com.example.LibActivity2" android:theme="@style/Lib.Theme">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-                <category android:name="android.intent.category.MOARCATZPLZ"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-
-        <!-- Provider extracted from ApiDemos -->
-        <provider android:name="com.example.lib2.app.LoaderThrottle$SimpleProvider"
+        <service
+            android:name="com.example.AppService"
+            android:icon="@drawable/app_icon" /> <!-- Provider extracted from ApiDemos -->
+        <provider
+            android:name="com.example.lib2.app.LoaderThrottle$SimpleProvider"
             android:authorities="com.example.android.apis.app.LoaderThrottle"
-            android:enabled="@bool/atLeastHoneycomb" />
-
-# from @lib3_alias
-        <!-- The first comment just before the element
-             is carried over as-is.
-        -->
-        <!-- Formatting is preserved. -->
-        <!-- All consecutive comments are taken together. -->
-
-        <activity-alias
-            android:name="com.example.alias.MyActivity"
-            android:targetActivity="com.example.MainActivity"
-            android:label="@string/alias_name"
-            android:icon="@drawable/alias_icon"
-            >
+            android:enabled="@bool/atLeastHoneycomb" /> <!-- This one does not conflict with the main -->
+        <activity
+            android:name="com.example.LibActivity2"
+            android:icon="@drawable/lib_activity_icon"
+            android:label="@string/lib_activity_name"
+            android:theme="@style/Lib.Theme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity-alias>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.MOARCATZPLZ" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
-
 
 @errors

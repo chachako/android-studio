@@ -54,11 +54,11 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
     <uses-sdk android:minSdkVersion="14" />
 
@@ -66,6 +66,4 @@
 
 </manifest>
 
-
 @errors
-

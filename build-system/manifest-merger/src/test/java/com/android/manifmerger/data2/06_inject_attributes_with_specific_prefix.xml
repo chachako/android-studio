@@ -31,27 +31,26 @@ targetSdkVersion=14
 
 @result
 
-<manifest
-    xmlns:t="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:t="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     t:versionCode="101"
-    t:versionName="1.0.1">
+    t:versionName="1.0.1" >
+
     <uses-sdk
         t:minSdkVersion="10"
-        t:targetSdkVersion="14">
-    </uses-sdk>
+        t:targetSdkVersion="14" />
 
     <application
-        t:label="@string/app_name"
-        t:icon="@drawable/app_icon"
-        t:backupAgent="com.example.app.BackupAgentClass"
-        t:restoreAnyVersion="true"
+        t:name="com.example.TheApp"
         t:allowBackup="true"
+        t:backupAgent="com.example.app.BackupAgentClass"
+        t:icon="@drawable/app_icon"
         t:killAfterRestore="true"
-        t:name="com.example.TheApp" >
+        t:label="@string/app_name"
+        t:restoreAnyVersion="true" >
     </application>
 
 </manifest>
 
 @errors
-

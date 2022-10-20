@@ -91,44 +91,46 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
     <application
-            android:name="com.example.app1.TheApp"
-            android:backupAgent="com.example.app1.MyBackupAgent" >
+        android:name="com.example.app1.TheApp"
+        android:backupAgent="com.example.app1.MyBackupAgent" >
         <activity
-                android:name="com.example.app1.MainActivity"
-                android:parentActivityName="com.example.app1.MainParentActivity" />
+            android:name="com.example.app1.MainActivity"
+            android:parentActivityName="com.example.app1.MainParentActivity" />
+
+        <activity-alias
+            android:name="com.example.lib3.MyActivity"
+            android:targetActivity="com.example.app1.MainActivity" />
+
         <receiver android:name="com.example.app1.AppReceiver" />
+
         <activity android:name="com.example.lib2.LibActivity" />
-# from @lib1_widget
         <activity
-                android:name="com.example.lib1.WidgetLibrary"
-                android:parentActivityName="com.example.lib1.WidgetParentLibrary"/>
-        <activity android:name="com.example.lib1.WidgetConfigurationUI" />
-        <service  android:name="com.example.lib1.AppService" />
+            android:name="com.example.lib1.WidgetLibrary"
+            android:parentActivityName="com.example.lib1.WidgetParentLibrary" />
+
         <receiver android:name="com.example.lib1.WidgetReceiver" />
 
-# from @lib2_activity
-        <!-- This one does not conflict with the main -->
-        <activity android:name="com.example.lib2.LibActivity2" />
+        <service android:name="com.example.lib1.AppService" />
 
-        <!-- Provider extracted from ApiDemos -->
-        <provider android:name="com.example.lib2.app.LoaderThrottle$SimpleProvider" />
-
-# from @lib3_alias
-        <!-- These class name should be expanded. -->
+        <activity android:name="com.example.lib1.WidgetConfigurationUI" /> <!-- Provider extracted from ApiDemos -->
+        <provider android:name="com.example.lib2.app.LoaderThrottle$SimpleProvider" /> <!-- This one does not conflict with the main -->
+        <activity android:name="com.example.lib2.LibActivity2" /> <!-- These class name should be expanded. -->
         <activity android:name="com.example.lib3.LibActivity3" />
-        <activity-alias android:name="com.example.lib3.MyActivity"
-            android:targetActivity="com.example.app1.MainActivity" />
-        <service  android:name="com.example.lib3.LibService3" />
+
+        <service android:name="com.example.lib3.LibService3" />
+
         <receiver android:name="com.example.lib3.LibReceiver3" />
+
         <provider android:name="com.example.lib3.LibProvider3" />
     </application>
+
 </manifest>
 
 @errors

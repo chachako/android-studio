@@ -155,7 +155,9 @@ public class ManifestMergerTestUtil {
      */
     @NonNull
     static TestFiles loadTestData(
-            @NonNull String testDataDirectory, @NonNull String filename, @NonNull String className)
+            @NonNull String testDataDirectory,
+            @NonNull final String filename,
+            @NonNull String className)
             throws Exception {
 
         String resName = testDataDirectory + "/" + filename;
@@ -169,17 +171,17 @@ public class ManifestMergerTestUtil {
                 String resName2 = resName + ".xml";
                 is = ManifestMergerTestUtil.class.getResourceAsStream(resName2);
                 if (is != null) {
-                    filename = resName2;
+                    resName = resName2;
                 }
             }
             if (is == null && !filename.endsWith(".txt")) {
                 String resName3 = resName + ".txt";
                 is = ManifestMergerTestUtil.class.getResourceAsStream(resName3);
                 if (is != null) {
-                    filename = resName3;
+                    resName = resName3;
                 }
             }
-            assertNotNull("Test data file not found for " + resName, is);
+            assertNotNull("Test data file not found for " + testDataDirectory + "/" + filename, is);
 
             reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
@@ -216,7 +218,7 @@ public class ManifestMergerTestUtil {
                     delimiter = line.substring(1);
 
                     assertTrue(
-                            "Unknown delimiter @" + delimiter + " in " + filename,
+                            "Unknown delimiter @" + delimiter + " in " + resName,
                             delimiter.startsWith(DELIM_OVERLAY)
                                     || delimiter.startsWith(DELIM_LIB)
                                     || delimiter.startsWith(DELIM_NAVIGATION)
@@ -285,8 +287,7 @@ public class ManifestMergerTestUtil {
                             actualResultFile = tempFile;
 
                         } else {
-                            fail("Unexpected data file delimiter @" + delimiter +
-                                    " in " + filename);
+                            fail("Unexpected data file delimiter @" + delimiter + " in " + resName);
                         }
 
                         if (!delimiter.equals(DELIM_RESULT)) {
@@ -347,7 +348,7 @@ public class ManifestMergerTestUtil {
             }
 
             assertThat(mainFile).isNotNull();
-            assertNotNull("Missing @" + DELIM_MAIN + " in " + filename, mainFile);
+            assertNotNull("Missing @" + DELIM_MAIN + " in " + resName, mainFile);
             assertWithMessage(
                             "There should always be an expected result included in the test case.")
                     .that(expectedResult.toString())
@@ -356,6 +357,7 @@ public class ManifestMergerTestUtil {
             Collections.sort(libFiles);
 
             return new ManifestMergerTestUtil.TestFiles(
+                    resName,
                     shouldFail,
                     overlayFiles.toArray(new File[0]),
                     mainFile,
@@ -381,6 +383,7 @@ public class ManifestMergerTestUtil {
 
 
     static class TestFiles {
+        private final String mTestDataRelativePath;
         private final File[] mOverlayFiles;
         private final File mMain;
         private final File[] mLibs;
@@ -397,6 +400,7 @@ public class ManifestMergerTestUtil {
 
         /** Files used by a given test case. */
         public TestFiles(
+                @NonNull String testDataRelativePath,
                 boolean shouldFail,
                 @NonNull File[] overlayFiles,
                 @NonNull File main,
@@ -410,6 +414,7 @@ public class ManifestMergerTestUtil {
                 @Nullable File actualResult,
                 @NonNull String expectedResult,
                 @NonNull String expectedErrors) {
+            mTestDataRelativePath = testDataRelativePath;
             mShouldFail = shouldFail;
             mMain = main;
             mLibs = libs;
@@ -423,6 +428,10 @@ public class ManifestMergerTestUtil {
             mExpectedResult = expectedResult;
             mExpectedErrors = expectedErrors;
             mOverlayFiles = overlayFiles;
+        }
+
+        public String getTestDataRelativePath() {
+            return mTestDataRelativePath;
         }
 
         public boolean getShouldFail() {

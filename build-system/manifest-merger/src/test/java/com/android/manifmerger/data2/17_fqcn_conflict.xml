@@ -89,28 +89,32 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
     <application
-            android:name="com.example.app1.TheApp"
-            android:backupAgent="com.example.app1.MyBackupAgent" >
+        android:name="com.example.app1.TheApp"
+        android:backupAgent="com.example.app1.MyBackupAgent" >
         <activity android:name="com.example.app1.MainActivity" />
+
         <receiver android:name="com.example.app1.AppReceiver" />
+
         <activity android:name="com.example.lib2.LibActivity" />
         <activity android:name="com.example.lib1.WidgetLibrary1" />
         <activity android:name="com.example.lib2.WidgetLibrary2" />
-        <activity android:name="com.example.lib3.WidgetLibrary3" />
-# from @lib4_alias
-        <!-- These class name can't be expanded due to the lack of 'package' attribute. -->
-        <activity android:name=".LibActivity4" />
-        <service  android:name=".LibService4" />
-        <receiver android:name=".LibReceiver4" />
-        <provider android:name=".LibProvider4" />
+        <activity android:name="com.example.lib3.WidgetLibrary3" /> <!-- These class name can't be expanded due to the lack of 'package' attribute. -->
+        <activity android:name="com.example.app1.LibActivity4" />
+
+        <service android:name="com.example.app1.LibService4" />
+
+        <receiver android:name="com.example.app1.LibReceiver4" />
+
+        <provider android:name="com.example.app1.LibProvider4" />
     </application>
+
 </manifest>
 
 @errors

@@ -228,42 +228,44 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.app1">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app1" >
 
     <application
-        android:label="@string/app_name"
-        android:icon="@drawable/app_icon"
-        android:backupAgent="com.example.app.BackupAgentClass"
-        android:restoreAnyVersion="true"
+        android:name="com.example.TheApp"
         android:allowBackup="true"
+        android:backupAgent="com.example.app.BackupAgentClass"
+        android:icon="@drawable/app_icon"
         android:killAfterRestore="true"
-        android:name="com.example.TheApp" >
-
+        android:label="@string/app_name"
+        android:restoreAnyVersion="true" >
         <activity
             android:name="com.example.Activity1"
-            android:label="@string/activity_name"
             android:icon="@drawable/activity_icon"
-            android:theme="@style/Some.Theme">
+            android:label="@string/activity_name"
+            android:theme="@style/Some.Theme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <meta-data
                 android:name="metaName"
-                android:value="metaValue"
-                android:resource="@color/someColor" />
+                android:resource="@color/someColor"
+                android:value="metaValue" />
         </activity>
 
         <!-- Receiver -->
         <receiver
             android:name="com.example.AppReceiver"
-            android:icon="@drawable/app_icon">
+            android:icon="@drawable/app_icon" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -278,15 +280,15 @@
                 <action android:name="android.intent.action.TIME_SET" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE"/>
+                <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
         </receiver>
 
         <activity
             android:name="com.example.LibActivity"
-            android:label="@string/lib_activity_name"
             android:icon="@drawable/lib_activity_icon"
-            android:theme="@style/Lib.Theme">
+            android:label="@string/lib_activity_name"
+            android:theme="@style/Lib.Theme" >
 
             <!-- When comparing duplicate elements, whitespace and comments are ignored. -->
 
@@ -297,16 +299,17 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <meta-data
                 android:name="metaName2"
-                android:value="metaValue2"
                 android:resource="@color/someColor2"
-            />
+                android:value="metaValue2" />
         </activity>
     </application>
+
 </manifest>
 
 @errors
-

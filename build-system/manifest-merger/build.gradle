@@ -28,6 +28,9 @@ sourceSets {
 
 test {
     maxParallelForks = Runtime.runtime.availableProcessors() / 2
+    if (System.getProperty("UPDATE_TEST_SNAPSHOTS") != null) {
+        systemProperty("UPDATE_TEST_SNAPSHOTS", System.getProperty("UPDATE_TEST_SNAPSHOTS"))
+    }
 }
 
 project.ext.pomName = 'Android Tools Manifest Merger library'

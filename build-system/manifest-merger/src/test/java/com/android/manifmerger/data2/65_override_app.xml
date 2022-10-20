@@ -107,54 +107,53 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
     <supports-screens
         android:largeScreens="true"
-        android:smallScreens="true"
         android:normalScreens="true"
         android:resizeable="true"
-        android:xlargeScreens="true"
-        />
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <application
-            android:name="com.example.app1.TheApp"
-            android:backupAgent="com.example.app1.MyBackupAgent" >
-        <activity android:name="com.example.app1.MainActivity" />
-        <receiver android:name="com.example.app1.AppReceiver" />
-        <activity android:name="com.example.lib2.LibActivity" />
-    </application>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <permission
         android:name="com.example.WhatWereYouThinking"
         android:permissionGroup="com.example.MasterControlPermission"
         android:protectionLevel="signatureOrSystem" />
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <permission
-        android:description="Insert boring description here"
-        android:icon="@drawable/robot"
-        android:label="Danger, Will Robinson!"
-        android:name="com.example.DangerWillRobinson"
-        android:permissionGroup="com.example.MasterControlPermission"
-        android:protectionLevel="dangerous" />
-
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <permission
+        android:name="com.example.DangerWillRobinson"
+        android:description="Insert boring description here"
+        android:icon="@drawable/robot"
+        android:label="Danger, Will Robinson!"
+        android:permissionGroup="com.example.MasterControlPermission"
+        android:protectionLevel="dangerous" />
+
     <permission-group
+        android:name="com.example.MasterControlPermission"
         android:description="Nobody expects..."
         android:icon="@drawable/ignored_icon"
-        android:label="the Spanish Inquisition"
-        android:name="com.example.MasterControlPermission" />
+        android:label="the Spanish Inquisition" />
+
+    <application
+        android:name="com.example.app1.TheApp"
+        android:backupAgent="com.example.app1.MyBackupAgent" >
+        <activity android:name="com.example.app1.MainActivity" />
+
+        <receiver android:name="com.example.app1.AppReceiver" />
+
+        <activity android:name="com.example.lib2.LibActivity" />
+    </application>
 
 </manifest>
-

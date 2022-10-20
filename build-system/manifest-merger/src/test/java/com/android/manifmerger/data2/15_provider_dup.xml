@@ -96,27 +96,24 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
-
+    android:versionName="1.0.0" >
 
     <application
-        android:label="@string/app_name"
-        android:icon="@drawable/app_icon"
-        android:backupAgent="com.example.app.BackupAgentClass"
-        android:restoreAnyVersion="true"
+        android:name="com.example.TheApp"
         android:allowBackup="true"
+        android:backupAgent="com.example.app.BackupAgentClass"
+        android:icon="@drawable/app_icon"
         android:killAfterRestore="true"
-        android:name="com.example.TheApp" >
-
+        android:label="@string/app_name"
+        android:restoreAnyVersion="true" >
         <provider
             android:name="com.example.Provider1"
             android:authorities="com.example.android.apis.app.thingy1"
             android:enabled="@bool/someConditionalValue" />
-
         <provider
             android:name="com.example.Provider2"
             android:authorities="com.example.android.apis.app.thingy2"
@@ -127,10 +124,8 @@
             android:name="com.example.Provider3"
             android:authorities="com.example.android.apis.app.thingy3"
             android:enabled="@bool/someConditionalValue" />
-
     </application>
 
 </manifest>
 
 @errors
-

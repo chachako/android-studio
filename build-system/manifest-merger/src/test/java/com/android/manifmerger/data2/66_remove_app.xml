@@ -40,16 +40,14 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
-    <!-- The "remove" tag will eradicate this element from the output. -->
-    <!-- but is re-added without children to satisfy R+ package manager -->
-    <application/>
+    <application />
+
 </manifest>
 
 @errors
-

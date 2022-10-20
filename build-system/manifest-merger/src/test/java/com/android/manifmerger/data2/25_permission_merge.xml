@@ -155,19 +155,18 @@
 
 @result
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.app1"
     android:versionCode="100"
-    android:versionName="1.0.0">
+    android:versionName="1.0.0" >
 
     <supports-screens
         android:largeScreens="true"
-        android:smallScreens="true"
         android:normalScreens="true"
         android:resizeable="true"
-        android:xlargeScreens="true"
-        />
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -177,51 +176,27 @@
         android:required="false" />
 
     <permission
+        android:name="com.example.DangerWillRobinson"
         android:description="Insert boring description here"
         android:icon="@drawable/robot"
         android:label="Danger, Will Robinson!"
-        android:name="com.example.DangerWillRobinson"
         android:permissionGroup="com.example.MasterControlPermission"
         android:protectionLevel="dangerous" />
-
     <permission
         android:name="com.example.WhatWereYouThinking"
         android:permissionGroup="com.example.MasterControlPermission"
         android:protectionLevel="signatureOrSystem" />
 
     <permission-group
+        android:name="com.example.MasterControlPermission"
         android:description="Nobody expects..."
         android:icon="@drawable/ignored_icon"
-        android:label="the Spanish Inquisition"
-        android:name="com.example.MasterControlPermission" />
+        android:label="the Spanish Inquisition" />
 
     <permission-tree
-        android:label="This is not a label"
-        android:name="com.example.PermTree" />
+        android:name="com.example.PermTree"
+        android:label="This is not a label" />
 
-    <application
-        android:label="@string/app_name"
-        android:icon="@drawable/app_icon"
-        android:backupAgent="com.example.app.BackupAgentClass"
-        android:restoreAnyVersion="true"
-        android:allowBackup="true"
-        android:killAfterRestore="true"
-        android:name="com.example.TheApp" >
-
-        <activity
-            android:name="com.example.MainActivity"
-            android:label="@string/activity_name"
-            android:icon="@drawable/activity_icon"
-            android:theme="@style/Some.Theme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-    </application>
-
-# Added by lib1
     <!-- Added by lib1. -->
     <permission
         android:name="com.example.Permission1"
@@ -229,27 +204,41 @@
         android:protectionLevel="normal" />
 
     <permission-group
+        android:name="com.example.EnoughWithTheQuotes"
         android:description="This is getting"
-        android:label="too silly"
-        android:name="com.example.EnoughWithTheQuotes" />
+        android:label="too silly" />
 
-    <permission-tree
-        android:name="com.example.PermTree1" />
-
-# Added by lib2
-    <!-- Added by lib2. -->
+    <permission-tree android:name="com.example.PermTree1" /> <!-- Added by lib2. -->
     <permission
         android:name="com.example.SensiblePermission2"
         android:permissionGroup="com.example.SensibleGroup2"
         android:protectionLevel="normal" />
 
-    <permission-group
-        android:name="com.example.SensibleGroup2" />
+    <permission-group android:name="com.example.SensibleGroup2" />
 
-    <permission-tree
-        android:name="com.example.PermTree2" />
+    <permission-tree android:name="com.example.PermTree2" />
+
+    <application
+        android:name="com.example.TheApp"
+        android:allowBackup="true"
+        android:backupAgent="com.example.app.BackupAgentClass"
+        android:icon="@drawable/app_icon"
+        android:killAfterRestore="true"
+        android:label="@string/app_name"
+        android:restoreAnyVersion="true" >
+        <activity
+            android:name="com.example.MainActivity"
+            android:icon="@drawable/activity_icon"
+            android:label="@string/activity_name"
+            android:theme="@style/Some.Theme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
 
 </manifest>
-
 
 @errors

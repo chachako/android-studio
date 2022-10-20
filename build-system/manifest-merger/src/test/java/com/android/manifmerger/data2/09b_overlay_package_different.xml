@@ -141,104 +141,93 @@ android:versionName="1.0.0">
 
 <!-- Manifest is merged where it makes sense, but the application label is replaced. -->
 @result
-<manifest
-xmlns:android="http://schemas.android.com/apk/res/android"
-package="com.example.app1"
-android:versionCode="100"
-android:versionName="1.0.0">
 
-<supports-screens
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app1"
+    android:versionCode="100"
+    android:versionName="1.0.0" >
+
+    <supports-screens
         android:largeScreens="true"
-        android:smallScreens="true"
         android:normalScreens="true"
         android:resizeable="true"
-        android:xlargeScreens="true"
-/>
-
-<!-- Typical analytics permissions. -->
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-<!-- Touchscreen feature, optional to make sure we can run on devices with no touch screen. -->
-<uses-feature
+        android:smallScreens="true"
+        android:xlargeScreens="true" /> <!-- Typical analytics permissions. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- Touchscreen feature, optional to make sure we can run on devices with no touch screen. -->
+    <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
-<application
-        android:label="appLabel"
-        android:icon="@drawable/app_icon"
-        android:backupAgent="com.example.app.BackupAgentClass"
-        android:restoreAnyVersion="true"
+    <application
+        android:name="com.example.TheApp"
         android:allowBackup="true"
+        android:backupAgent="com.example.app.BackupAgentClass"
+        android:icon="@drawable/app_icon"
         android:killAfterRestore="true"
-        android:name="com.example.TheApp" >
-
-    <activity
+        android:label="appLabel"
+        android:restoreAnyVersion="true" >
+        <activity
             android:name="com.example.MainActivity"
-            android:label="@string/activity_name"
             android:icon="@drawable/activity_icon"
-            android:theme="@style/Some.Theme">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-    </activity>
+            android:label="@string/activity_name"
+            android:theme="@style/Some.Theme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-    <!-- Receiver -->
-    <receiver
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- Receiver -->
+        <receiver
             android:name="com.example.AppReceiver"
-            android:icon="@drawable/app_icon">
-        <intent-filter>
-            <action android:name="com.example.action.ACTION_CUSTOM" />
-        </intent-filter>
-    </receiver>
-
-    <!-- Broadcast Receiver for a widget. -->
-    <receiver
-            android:label="@string/widget_name"
+            android:icon="@drawable/app_icon" >
+            <intent-filter>
+                <action android:name="com.example.action.ACTION_CUSTOM" />
+            </intent-filter>
+        </receiver> <!-- Broadcast Receiver for a widget. -->
+        <receiver
+            android:name="com.example.WidgetReceiver"
             android:icon="@drawable/widget_icon"
-            android:name="com.example.WidgetReceiver" >
-        <intent-filter>
-            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-        </intent-filter>
-        <meta-data
+            android:label="@string/widget_name" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_provider"
-        />
-    </receiver>
+                android:resource="@xml/widget_provider" />
+        </receiver>
 
-    <service
-            android:icon="@drawable/app_icon"
-            android:name="com.example.AppService" />
-
-    <!-- Activity to configure widget -->
-    <activity
-            android:icon="@drawable/widget_icon"
-            android:label="Configure Widget"
+        <service
+            android:name="com.example.AppService"
+            android:icon="@drawable/app_icon" /> <!-- Activity to configure widget -->
+        <activity
             android:name="com.example.WidgetConfigurationUI"
-            android:theme="@style/Theme.WidgetConfigurationUI" >
-        <intent-filter >
-            <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-        </intent-filter>
-    </activity>
-
-    <!-- Provider extracted from ApiDemos -->
-    <provider android:name=".app.LoaderThrottle$SimpleProvider"
-              android:authorities="com.example.android.apis.app.LoaderThrottle"
-              android:enabled="@bool/atLeastHoneycomb" />
-    <activity
             android:icon="@drawable/widget_icon"
             android:label="Configure Widget"
-            android:name="com.example.lib1.Lib1Activity"
             android:theme="@style/Theme.WidgetConfigurationUI" >
-        <intent-filter >
-            <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-        </intent-filter>
-    </activity>
-</application>
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity> <!-- Provider extracted from ApiDemos -->
+        <provider
+            android:name="com.example.app1.app.LoaderThrottle$SimpleProvider"
+            android:authorities="com.example.android.apis.app.LoaderThrottle"
+            android:enabled="@bool/atLeastHoneycomb" />
+
+        <activity
+            android:name="com.example.lib1.Lib1Activity"
+            android:icon="@drawable/widget_icon"
+            android:label="Configure Widget"
+            android:theme="@style/Theme.WidgetConfigurationUI" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+    </application>
 
 </manifest>
-
 
 @errors
 

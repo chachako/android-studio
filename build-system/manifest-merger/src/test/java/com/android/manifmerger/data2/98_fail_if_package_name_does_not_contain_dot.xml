@@ -5,19 +5,21 @@
 
 @main
 
-<manifest
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        package="example">
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="example" >
 
     <uses-sdk
-            android:minSdkVersion="21"
-            android:targetSdkVersion="24" />
+        android:minSdkVersion="21"
+        android:targetSdkVersion="24" />
+
     <application android:name="com.example.test.TheApp" >
         <activity android:name="com.example.test.ActivityOne" />
     </application>
+
 </manifest>
 
 @result-same-as-main
 
 @errors
-ERROR:Package name 'example' at position ManifestMerger2Test0_main.xml:3:9-26 should contain at least one '.' \(dot\) character
+ERROR:Package name 'example' at position ManifestMerger2Test0_main.xml:3:5-22 should contain at least one '.' \(dot\) character

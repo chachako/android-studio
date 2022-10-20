@@ -19,27 +19,31 @@ package com.android.manifmerger;
 import static com.android.manifmerger.ManifestMergerTestUtil.loadTestData;
 import static com.android.manifmerger.ManifestMergerTestUtil.transformParameters;
 import static com.android.manifmerger.MergingReport.Record;
-import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.android.annotations.Nullable;
+import com.android.testutils.TestUtils;
 import com.android.utils.StdLogger;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -115,7 +119,6 @@ public class ManifestMerger2Test {
                 "68_override_uses",
                 "69_remove_uses",
                 "70_expand_fqcns",
-                "71_extract_package_prefix",
                 "75_app_metadata_merge",
                 "76_app_metadata_ignore",
                 "77_app_metadata_conflict",
@@ -183,11 +186,14 @@ public class ManifestMerger2Test {
     public void processTestFiles() throws Exception {
         ManifestMergerTestUtil.TestFiles testFiles =
                 loadTestData(TEST_DATA_DIRECTORY, fileName, getClass().getSimpleName());
-        ManifestModel model = new ManifestModel();
 
         // Make list of optional features
         List<ManifestMerger2.Invoker.Feature> optionalFeatures = getFeaturesForTestCase();
 
+        if (!testFiles.getFeatures().isEmpty()) {
+            throw new RuntimeException(
+                    "Unexpected features " + ImmutableMap.copyOf(testFiles.getFeatures()));
+        }
         StdLogger stdLogger = new StdLogger(StdLogger.Level.VERBOSE);
         ManifestMerger2.Invoker invoker =
                 ManifestMerger2.newMerger(
@@ -237,28 +243,42 @@ public class ManifestMerger2Test {
             fail("Did not get expected error : " + testFiles.getExpectedErrors());
         }
 
-        XmlDocument expectedResult =
-                TestUtils.xmlDocumentFromString(
-                        TestUtils.sourceFile(getClass(), testFiles.getMain().getName()),
-                        testFiles.getExpectedResult(),
-                        model);
-
-        XmlDocument actualResult =
-                TestUtils.xmlDocumentFromString(
-                        TestUtils.sourceFile(getClass(), testFiles.getMain().getName()),
-                        xmlDocument,
-                        model);
-
-        Optional<String> comparingMessage = expectedResult.compareTo(actualResult);
-
         for (Record record : mergeReport.getLoggingRecords()) {
             Logger.getAnonymousLogger().info("Returned log: " + record);
         }
 
-        if (comparingMessage.isPresent()) {
-            Logger.getAnonymousLogger().severe(comparingMessage.get());
-            assertThat(actualResult.prettyPrint()).isEqualTo(expectedResult.prettyPrint());
+        if (System.getProperty("UPDATE_TEST_SNAPSHOTS") != null) {
+            if (!testFiles.getExpectedResult().equals(xmlDocument)) {
+                Path fileToUpdate =
+                        TestUtils.resolveWorkspacePath(
+                                "tools/base/build-system/manifest-merger/src/test/java/com/android/manifmerger/"
+                                        + testFiles.getTestDataRelativePath());
+                String contents = Files.readString(fileToUpdate, StandardCharsets.UTF_8);
+                int resultLocation;
+                int resultTagIndex = contents.indexOf("\n@result\n");
+                if (resultTagIndex > 0) {
+                    resultLocation = resultTagIndex + "\n@result\n".length();
+                } else if (contents.contains("\n@result-same-as-main\n")) {
+                    int mainTagIndex = contents.indexOf("\n@main\n");
+                    resultLocation = mainTagIndex + "\n@main\n".length();
+                } else {
+                    throw new RuntimeException("No result found");
+                }
+                int nextBlockLocation = contents.indexOf("\n@", resultLocation + 1);
+                if (nextBlockLocation < 0) {
+                    nextBlockLocation = contents.length();
+                }
+                String newContents =
+                        contents.substring(0, resultLocation)
+                                + "\n"
+                                + xmlDocument
+                                + "\n"
+                                + contents.substring(nextBlockLocation);
+                Files.writeString(fileToUpdate, newContents, StandardCharsets.UTF_8);
+            }
         }
+        String xml = testFiles.getExpectedResult();
+        assertEquals(xml.trim(), xmlDocument.trim().replace("\r\n", "\n"));
 
         // process any warnings.
         compareExpectedAndActualErrors(mergeReport, testFiles.getExpectedErrors());
