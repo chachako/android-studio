@@ -400,20 +400,20 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
 
     private fun valueFromProperty(origin: KtDeclaration?): Any? = when {
         (origin is KtProperty) &&
-                (
-                        evaluator.allowFieldInitializers ||
-                                // Property with no custom getter or setter? If it has an initializer
-                                // it might be
-                                // No setter: might be a constant not declared as such
-                                (!origin.isVar && origin.getter == null && origin.setter == null)
-                        ) ->
+            (
+                evaluator.allowFieldInitializers ||
+                    // Property with no custom getter or setter? If it has an initializer
+                    // it might be
+                    // No setter: might be a constant not declared as such
+                    (!origin.isVar && origin.getter == null && origin.setter == null)
+                ) ->
             origin.initializer?.let(::evaluate)
         else -> null
     }
 
     private fun PsiVariable.getAllowedInitializer() = initializer?.takeIf {
         evaluator.allowFieldInitializers ||
-                (hasModifierProperty(PsiModifier.STATIC) && hasModifierProperty(PsiModifier.FINAL))
+            (hasModifierProperty(PsiModifier.STATIC) && hasModifierProperty(PsiModifier.FINAL))
     }
 
     private data class PrimArrayType(val constructorName: String, val varargConstructorName: String, val type: PsiPrimitiveType)
@@ -431,7 +431,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
     private val kotlinPrimArrayVarargConstructors = kotlinPrimArrayTypes.map(PrimArrayType::varargConstructorName)
     private val kotlinPrimArrayTypeByConstructor =
         kotlinPrimArrayTypes.associate { (k, _, t) -> k to t } +
-                kotlinPrimArrayTypes.associate { (_, k, t) -> k to t }
+            kotlinPrimArrayTypes.associate { (_, k, t) -> k to t }
 
     private fun surroundedByVariableCheck(node: UElement?, variable: PsiVariable): Boolean {
         // See if it looks like the value has been clamped locally, e.g.

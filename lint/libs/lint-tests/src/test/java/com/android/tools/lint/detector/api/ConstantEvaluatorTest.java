@@ -317,29 +317,23 @@ public class ConstantEvaluatorTest extends TestCase {
     public void testLargeArrays() {
         checkExpression(ArrayReference.of(Byte.TYPE, 100, 2), "new byte[100][]");
         checkExpression(ArrayReference.of(Byte.TYPE, 100, 1), "new byte[100]");
-        checkExpression(
-                ArrayReference.of("java.lang.Integer", 100, 1),
-                "new Integer[100]");
+        checkExpression(ArrayReference.of("java.lang.Integer", 100, 1), "new Integer[100]");
         checkExpression(100, "(new byte[100]).length");
         checkExpression(100, "(new Integer[100]).length");
     }
 
     public void testKotlin() {
-        checkKotlinExpression(
-                ArrayReference.of(Integer.TYPE, 100, 1), "IntArray(100)");
+        checkKotlinExpression(ArrayReference.of(Integer.TYPE, 100, 1), "IntArray(100)");
         checkKotlinExpression(100, "IntArray(100).size");
         checkKotlinExpression(1000, "kotlin.Array<String>(1000).size");
+        checkKotlinExpression(ArrayReference.of(String.class, 1000, 1), "Array<String>(1000)");
         checkKotlinExpression(
-                ArrayReference.of(String.class, 1000, 1), "Array<String>(1000)");
-        checkKotlinExpression(
-                ArrayReference.of(String.class, 1000, 1),
-                "kotlin.Array<String>(1000)");
+                ArrayReference.of(String.class, 1000, 1), "kotlin.Array<String>(1000)");
         checkKotlinExpression(new Integer[] {1, 2, 3, 4}, "arrayOf(1,2,3,4)");
         checkKotlinExpression(3, "arrayOf(1,2,3,4)[2]");
         checkKotlinExpression(4, "arrayOf(1,2,3,4).size");
         checkKotlinExpression(
-                ArrayReference.of(String.class, 1000, 1),
-                "arrayOfNulls<String>(1000)");
+                ArrayReference.of(String.class, 1000, 1), "arrayOfNulls<String>(1000)");
         checkKotlinExpression(1000, "arrayOfNulls<String>(1000).size");
         checkKotlinExpression("hello", "   \"\"\"    hello\"\"\".trimIndent()");
     }

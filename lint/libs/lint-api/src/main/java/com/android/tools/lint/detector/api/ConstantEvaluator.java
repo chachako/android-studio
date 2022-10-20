@@ -72,52 +72,46 @@ public class ConstantEvaluator {
 
     /**
      * Evaluates the given node and returns the constant value it resolves to, if any. Convenience
-     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
-     * the result.
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns the
+     * result.
      *
      * @param context the context to use to resolve field references, if any
      * @param node the node to compute the constant value for
      * @return the corresponding constant value - a String, an Integer, a Float, and so on
      */
     @Nullable
-    public static Object evaluate(
-            @Nullable JavaContext context,
-            @NotNull PsiElement node) {
+    public static Object evaluate(@Nullable JavaContext context, @NotNull PsiElement node) {
         return ConstantEvaluatorImpl.Companion.evaluate(context, node);
     }
 
     /**
      * Evaluates the given node and returns the constant value it resolves to, if any. Convenience
-     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
-     * the result.
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns the
+     * result.
      *
      * @param context the context to use to resolve field references, if any
      * @param element the node to compute the constant value for
      * @return the corresponding constant value - a String, an Integer, a Float, and so on
      */
     @Nullable
-    public static Object evaluate(
-            @Nullable JavaContext context,
-            @NotNull UElement element) {
+    public static Object evaluate(@Nullable JavaContext context, @NotNull UElement element) {
         return ConstantEvaluatorImpl.Companion.evaluate(context, element);
     }
 
     /**
      * Evaluates the given node and returns the constant string it resolves to, if any. Convenience
-     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
-     * the result if the result is a string.
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns the
+     * result if the result is a string.
      *
      * @param context the context to use to resolve field references, if any
      * @param node the node to compute the constant value for
      * @param allowUnknown whether we should construct the string even if some parts of it are
-     * unknown
+     *     unknown
      * @return the corresponding string, if any
      */
     @Nullable
     public static String evaluateString(
-            @Nullable JavaContext context,
-            @NotNull PsiElement node,
-            boolean allowUnknown) {
+            @Nullable JavaContext context, @NotNull PsiElement node, boolean allowUnknown) {
         return ConstantEvaluatorImpl.Companion.evaluateString(context, node, allowUnknown);
     }
 
@@ -131,36 +125,33 @@ public class ConstantEvaluator {
      */
     @Nullable
     public static PsiExpression findLastAssignment(
-            @NotNull PsiElement usage,
-            @NotNull PsiVariable variable) {
+            @NotNull PsiElement usage, @NotNull PsiVariable variable) {
         return ConstantEvaluatorImpl.Companion.findLastAssignment(usage, variable, false);
     }
 
     /**
      * Evaluates the given node and returns the constant string it resolves to, if any. Convenience
-     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns
-     * the result if the result is a string.
+     * wrapper which creates a new {@link ConstantEvaluator}, evaluates the node and returns the
+     * result if the result is a string.
      *
      * @param context the context to use to resolve field references, if any
      * @param element the node to compute the constant value for
      * @param allowUnknown whether we should construct the string even if some parts of it are
-     * unknown
+     *     unknown
      * @return the corresponding string, if any
      */
     @Nullable
     public static String evaluateString(
-            @Nullable JavaContext context,
-            @NotNull UElement element,
-            boolean allowUnknown) {
+            @Nullable JavaContext context, @NotNull UElement element, boolean allowUnknown) {
         return ConstantEvaluatorImpl.Companion.evaluateString(context, element, allowUnknown);
     }
 
-    /** Returns true if the node is pointing to an array literal  */
+    /** Returns true if the node is pointing to an array literal */
     public static boolean isArrayLiteral(@Nullable PsiElement node) {
         return ConstantEvaluatorImpl.Companion.isArrayLiteral(node);
     }
 
-    /** Returns true if the node is pointing to an array literal  */
+    /** Returns true if the node is pointing to an array literal */
     public static boolean isArrayLiteral(@Nullable UElement node) {
         return ConstantEvaluatorImpl.Companion.isArrayLiteral(node);
     }
