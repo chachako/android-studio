@@ -22,6 +22,7 @@ import com.android.repository.impl.meta.TypeDetails;
 import com.android.repository.testframework.FakePackage;
 import com.android.repository.testframework.FakeProgressIndicator;
 import com.android.resources.Navigation;
+import com.android.resources.ScreenRound;
 import com.android.sdklib.TempSdkManager;
 import com.android.sdklib.devices.Device.Builder;
 import com.android.sdklib.devices.DeviceManager.DeviceFilter;
@@ -718,16 +719,25 @@ public class DeviceManagerTest {
         String squareName = squareDevice.getDisplayName();
         assertThat(squareName).isEqualTo("Wear OS Square");
         assertThat(squareDevice.isScreenRound()).isFalse();
+        assertThat(squareDevice.getBootProps().get(DeviceParser.ROUND_BOOT_PROP)).isNull();
 
-        Device.Builder devBuilder = new Device.Builder(squareDevice);
-        devBuilder.setId("test_round_dev");
-        devBuilder.setName("Test Round User Wear Device");
-        devBuilder.setManufacturer("User");
-        devBuilder.addBootProp(DeviceParser.ROUND_BOOT_PROP, "true");
-        Device roundDevice = devBuilder.build();
-        assertThat(roundDevice).isNotNull();
+        {
+            Device.Builder devBuilder = new Device.Builder(squareDevice);
+            devBuilder.setId("test_round_dev");
+            devBuilder.setName("Test Round User Wear Device");
+            devBuilder.setManufacturer("User");
 
-        dm.addUserDevice(roundDevice);
+            State defaultState = squareDevice.getDefaultState().deepCopy();
+            defaultState.getHardware().getScreen().setScreenRound(ScreenRound.ROUND);
+            devBuilder.addState(defaultState);
+
+            Device roundDevice = devBuilder.build();
+            assertThat(roundDevice).isNotNull();
+            assertThat(roundDevice.getBootProps().get(DeviceParser.ROUND_BOOT_PROP))
+                    .isEqualTo("true");
+
+            dm.addUserDevice(roundDevice);
+        }
 
         Device testDeviceMid = dm.getDevice("test_round_dev", "User");
         assertThat(testDeviceMid).isNotNull();
@@ -745,5 +755,7 @@ public class DeviceManagerTest {
         String afterName = testDeviceAfter.getDisplayName();
         assertThat(afterName).isEqualTo("Test Round User Wear Device");
         assertThat(testDeviceAfter.isScreenRound()).isTrue();
+        assertThat(testDeviceAfter.getBootProps().get(DeviceParser.ROUND_BOOT_PROP))
+                .isEqualTo("true");
     }
 }
