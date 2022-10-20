@@ -1069,23 +1069,29 @@ open class LintCliClient : LintClient {
             ?: run {
                 val partialResults = LinkedHashMap<Issue, PartialResult>()
                     .also { this.partialResults = it }
-                for (dep in project.allLibraries.filter { !it.isExternalLibrary }) {
-                    val file = getSerializationFile(dep, XmlFileType.PARTIAL_RESULTS)
-                    if (!file.isFile) {
-                        continue
-                    }
-                    val reader = XmlReader(this, driver.registry, project, file)
-                    val results = reader.getPartialResults()
-                    for ((loadedIssue: Issue, map) in results) {
-                        val target: PartialResult = partialResults[loadedIssue]
-                            ?: run {
-                                val newMap = LinkedHashMap<Project, LintMap>()
-                                newMap[dep] = LintMap()
-                                PartialResult(loadedIssue, newMap)
-                                    .also { partialResults[loadedIssue] = it }
-                            }
-                        val targetMap = target.mapFor(dep)
-                        targetMap.putAll(map)
+                // Command-line invocations of Lint can opt for a global
+                // analysis (and note that the partial results map can still be
+                // used by Detectors). In this case, we must not load any
+                // partial results from disk.
+                if (!driver.isGlobalAnalysis()) {
+                    for (dep in project.allLibraries.filter { !it.isExternalLibrary }) {
+                        val file = getSerializationFile(dep, XmlFileType.PARTIAL_RESULTS)
+                        if (!file.isFile) {
+                            continue
+                        }
+                        val reader = XmlReader(this, driver.registry, project, file)
+                        val results = reader.getPartialResults()
+                        for ((loadedIssue: Issue, map) in results) {
+                            val target: PartialResult = partialResults[loadedIssue]
+                                ?: run {
+                                    val newMap = LinkedHashMap<Project, LintMap>()
+                                    newMap[dep] = LintMap()
+                                    PartialResult(loadedIssue, newMap)
+                                        .also { partialResults[loadedIssue] = it }
+                                }
+                            val targetMap = target.mapFor(dep)
+                            targetMap.putAll(map)
+                        }
                     }
                 }
                 partialResults

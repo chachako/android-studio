@@ -237,8 +237,8 @@ abstract class LintClient {
      * [LintMap] for [project].
      */
     open fun getPartialResults(project: Project, issue: Issue): PartialResult {
-        // the default client does not support partial analysis so just return an empty result
-        return PartialResult(issue, mutableMapOf())
+        // the default client does not support partial analysis
+        error("Partial analysis is not supported by $this; must override LintClient.getPartialResults")
     }
 
     /**

@@ -89,6 +89,7 @@ class PartialResult private constructor(
          * This is **only** intended for use by lint to be able to create a
          * clone with the [requestedProject] field set.
          */
+        @JvmStatic
         fun withRequestedProject(
             partialResult: PartialResult,
             requestedProject: Project
