@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 
 import com.android.annotations.Nullable;
 import com.android.testutils.TestUtils;
+import com.android.utils.PositionXmlParser;
 import com.android.utils.StdLogger;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -145,7 +146,9 @@ public class ManifestMerger2Test {
                 "100_enforce_unique_package_name_warning.xml",
                 "101_enforce_unique_package_name_same_as_app_warning.xml",
                 "102_tools_node_opeartion_ordering.xml",
-                "103_attribution_node.xml"
+                "103_attribution_node.xml",
+                "104_merging_privacy_sandbox_tagged_permissions.xml",
+                "104b_merging_privacy_sandbox_tagged_permissions_all_untagged.xml",
             };
 
     private static final Multimap<Predicate<String>, ManifestMerger2.Invoker.Feature>
@@ -279,6 +282,7 @@ public class ManifestMerger2Test {
         }
         String xml = testFiles.getExpectedResult();
         assertEquals(xml.trim(), xmlDocument.trim().replace("\r\n", "\n"));
+        assertNotNull(PositionXmlParser.parse(xml));
 
         // process any warnings.
         compareExpectedAndActualErrors(mergeReport, testFiles.getExpectedErrors());

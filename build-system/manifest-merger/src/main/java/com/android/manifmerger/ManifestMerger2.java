@@ -1392,9 +1392,11 @@ public class ManifestMerger2 {
          *
          * @param localName the XML no namespace local name
          */
-        public boolean isKeepToolsAttributeRequired(String localName) {
+        public boolean isKeepToolsAttributeRequired(String localName, String value) {
             return isKeepToolsAttributeRequired
-                    && !NodeOperationType.LIST_OF_ALLOWED_RUNTIME_ATTRIBUTES.contains(localName);
+                    && !(NodeOperationType.REQUIRED_BY_PRIVACY_SANDBOX_SDK_ATTRIBUTE_NAME.equals(
+                                    localName)
+                            && value.equals(SdkConstants.VALUE_TRUE));
         }
 
         public boolean isFullPlaceholderSubstitutionRequired() {
