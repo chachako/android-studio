@@ -208,7 +208,7 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
         complicationStringsXml(), resOut.resolve("values/strings.xml")
     )
     mergeXml(
-        complicationServiceManifestXml(tileServiceClass, packageName),
+        complicationServiceManifestXml(complicationServiceClass, packageName),
         manifestOut.resolve("AndroidManifest.xml")
     )
 }
