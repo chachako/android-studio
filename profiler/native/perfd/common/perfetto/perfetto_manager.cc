@@ -242,6 +242,21 @@ perfetto::protos::TraceConfig PerfettoManager::BuildFtraceConfig(
   // Perfetto SDK TrackEvent API
   config.add_data_sources()->mutable_config()->set_name("track_event");
 
+  // Add config to get power rail and battery drain data.
+  source = config.add_data_sources();
+  data_config = source->mutable_config();
+  data_config->set_name("android.power");
+  data_config->set_target_buffer(0);
+  auto* power_config = data_config->mutable_android_power_config();
+  power_config->set_collect_power_rails(true);
+  power_config->set_battery_poll_ms(1000);
+  power_config->add_battery_counters(
+      perfetto::protos::AndroidPowerConfig::BATTERY_COUNTER_CAPACITY_PERCENT);
+  power_config->add_battery_counters(
+      perfetto::protos::AndroidPowerConfig::BATTERY_COUNTER_CHARGE);
+  power_config->add_battery_counters(
+      perfetto::protos::AndroidPowerConfig::BATTERY_COUNTER_CURRENT);
+
   return config;
 }
 
