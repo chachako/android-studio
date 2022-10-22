@@ -54,7 +54,8 @@ class InputStreamTracker(
 
     override fun read(): Int {
         val b = myWrapped.read()
-        reporter.addOneByte(b)
+        // b is -1 if we've read to stream end
+        if (b > 0) reporter.addOneByte(b)
         reporter.reportCurrentThread()
         return b
     }
