@@ -138,6 +138,10 @@ internal class SharedJdwpSessionImpl(
         replayPackets.add(clone)
     }
 
+    override suspend fun shutdown() {
+        jdwpSession.shutdown()
+    }
+
     override fun close() {
         logger.debug { "pid=$pid: Closing" }
         val exception = CancellationException("Shared JDWP session closed")

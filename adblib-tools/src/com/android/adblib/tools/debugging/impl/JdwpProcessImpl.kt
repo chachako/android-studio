@@ -28,7 +28,7 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
-import com.android.adblib.tools.debugging.utils.retained
+import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.closeOnException
 import com.android.adblib.utils.createChildScope
 import kotlinx.coroutines.TimeoutCancellationException
@@ -116,8 +116,8 @@ internal class JdwpProcessImpl(
     }
 
     override suspend fun <T> withJdwpSession(block: suspend SharedJdwpSession.() -> T): T {
-        return jdwpSessionRef.retained().use {
-            it.value.block()
+        return jdwpSessionRef.withResource {
+            it.block()
         }
     }
 

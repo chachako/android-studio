@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbSession
+import com.android.adblib.AutoShutdown
 import com.android.adblib.DeviceSelector
 import com.android.adblib.tools.debugging.impl.JdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
@@ -34,7 +35,7 @@ import java.io.IOException
  *
  * @see [AdbDeviceServices.jdwp]
  */
-internal interface JdwpSession : AutoCloseable {
+internal interface JdwpSession : AutoShutdown {
 
     /**
      * Sends a [JdwpPacketView] to the process VM.

@@ -16,7 +16,9 @@
 package com.android.adblib.tools.debugging.utils
 
 import com.android.adblib.AdbSession
+import com.android.adblib.AutoShutdown
 import com.android.adblib.thisLogger
+import com.android.adblib.useShutdown
 import com.android.adblib.utils.createChildScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -27,27 +29,22 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Provides serialized access to a resource that should be active only when there is
- * one or more active consumer. This is essentially a "pool" where each consumer ends
- * up sharing access to a single underlying resource.
+ * Provides access to an [AutoShutdown] resource using a "reference counting" mechanism.
  *
- * This is useful when there is a need to coordinate multiple consumers of a single shared
- * resource that is expensive to acquire.
+ * * The [retain] method increments the reference count, after creating an instance of
+ * the resource using [factory] if current reference count value was 0.
+ * * The [release] method decrements the reference count, invoking [AutoShutdown.shutdown]
+ * if the reference count reaches 0.
+ * * The [close] method cancels all async operations and calls [AutoShutdown.close] on
+ * the resource if it is active.
  *
- * For example, consumers may need to access a resource concurrently at times and durations
- * that are not known ahead of time.
+ * This class is useful when there is a need to coordinate multiple consumers of a single shared
+ * resource that is expensive to acquire. For example, consumers may need to access a resource
+ * concurrently at times and durations that are not known ahead of time.
  *
- * * The resource is acquired through an arbitrary [factory] coroutine
- * * Subscribing to the resource is done through a coroutine, creating the resource
- *   lazily as soon as the first subscriber arrives.
- * * Unsubscribing from the resource is done through a regular method (as opposed to
- *   a coroutine) so that the method can be called from any [AutoCloseable.close]
- *   method
- * * [Closing][close] an instance of this class ensures the underlying resource
- *   is also [closed][close] synchronously, cancelling any pending subscribers.
- * * Instances of this class are safe to use concurrently from multiple threads.
+ * Instances of this class are thread-safe.
  */
-internal class ReferenceCountedResource<T : AutoCloseable>(
+internal class ReferenceCountedResource<T : AutoShutdown>(
     session: AdbSession,
     /**
      * The [CoroutineContext] used to run [factory] when a new resource instance is needed
@@ -64,7 +61,7 @@ internal class ReferenceCountedResource<T : AutoCloseable>(
      * responsible for cleaning up in that case.
      */
     private val factory: suspend () -> T,
-) : AutoCloseable {
+) {
 
     private val logger = thisLogger(session)
 
@@ -85,7 +82,8 @@ internal class ReferenceCountedResource<T : AutoCloseable>(
     private var closed: Boolean = false
 
     /**
-     * Acquire the resource if needed and increment the reference count
+     * Increment the reference count, after creating an new instance of the resource if
+     * this was the first reference.
      */
     suspend fun retain(): T {
         return synchronized(lock) {
@@ -97,19 +95,22 @@ internal class ReferenceCountedResource<T : AutoCloseable>(
     }
 
     /**
-     * Decrement the reference count and [AutoCloseable.close] the resource if this was
+     * Decrement the reference count and [AutoShutdown.shutdown] the resource if this was
      * the last reference.
      */
-    fun release() {
-        synchronized(lock) {
-            if (--referenceCount == 0) {
-                cancelFactoryJob()
+    suspend fun release() {
+        val newRefCount = synchronized(lock) {
+            (--referenceCount).also {
+                logger.verbose { "release: ref. count after=$referenceCount" }
             }
-            logger.verbose { "release: ref. count after=$referenceCount" }
+        }
+        if (newRefCount == 0) {
+            logger.debug { "Shutting down resource" }
+            shutdownResource()
         }
     }
 
-    override fun close() {
+    fun close() {
         val closing = synchronized(lock) {
             if (!closed) {
                 closed = true
@@ -120,9 +121,9 @@ internal class ReferenceCountedResource<T : AutoCloseable>(
         }
 
         if (closing) {
-            logger.debug { "Closing" }
+            logger.debug { "Closing resource" }
             factoryScope.cancel("ReferenceCountedResource closed")
-            cancelFactoryJob()
+            closeResource()
         }
     }
 
@@ -147,25 +148,52 @@ internal class ReferenceCountedResource<T : AutoCloseable>(
         }
     }
 
-    private fun cancelFactoryJob() {
-        var toClose: T? = null
+    private fun cancelFactoryJob(): T? {
+        var resourceValue: T? = null
         synchronized(lock) {
             logger.debug { "Cancelling current job: $currentFactoryJob" }
             currentFactoryJob?.let { deferred ->
                 deferred.invokeOnCompletion { throwable ->
                     if (throwable == null) {
                         @OptIn(ExperimentalCoroutinesApi::class)
-                        toClose = deferred.getCompleted()
+                        resourceValue = deferred.getCompleted()
                     }
                 }
                 deferred.cancel()
             }
             currentFactoryJob = null
         }
+        return resourceValue
+    }
+
+    private suspend fun shutdownResource() {
         // We need to close the value if we completed
-        toClose?.let {
-            logger.debug { "Calling close() on value: $it" }
-            it.close()
+        cancelFactoryJob()?.let { resource ->
+            logger.debug { "Calling shutdown() and close() on resource: $resource" }
+            resource.useShutdown { }
         }
+    }
+
+    private fun closeResource() {
+        // We need to close the value if we completed
+        cancelFactoryJob()?.let { resource ->
+            logger.debug { "Calling close() on resource: $resource" }
+            resource.close()
+        }
+    }
+}
+
+/**
+ * Invoke [block] after [retaining][ReferenceCountedResource.retain] the value of the given
+ * [ReferenceCountedResource].
+ */
+internal suspend inline fun <T : AutoShutdown, R> ReferenceCountedResource<T>.withResource(
+    block: (T) -> R
+): R {
+    val resourceValue = retain()
+    return try {
+        block(resourceValue)
+    } finally {
+        release()
     }
 }

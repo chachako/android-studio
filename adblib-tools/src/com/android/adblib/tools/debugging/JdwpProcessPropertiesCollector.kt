@@ -37,7 +37,7 @@ import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
-import com.android.adblib.tools.debugging.utils.retained
+import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.utils.launchCancellable
 import kotlinx.coroutines.coroutineScope
@@ -73,8 +73,8 @@ internal class JdwpProcessPropertiesCollector(
      * if there is already another JDWP session open for the process.
      */
     suspend fun collect(stateFlow: AtomicStateFlow<JdwpProcessProperties>) {
-        jdwpSessionRef.retained().use {
-            collectProcessPropertiesImpl(it.value, stateFlow)
+        jdwpSessionRef.withResource {
+            collectProcessPropertiesImpl(it, stateFlow)
         }
     }
 

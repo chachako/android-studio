@@ -27,7 +27,7 @@ import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
-import com.android.adblib.tools.debugging.utils.retained
+import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.launchCancellable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -104,7 +104,7 @@ internal class JdwpSessionProxy(
 
     private suspend fun proxyJdwpSession(debuggerSocket: AdbChannel) {
         logger.debug { "pid=$pid: Start proxying socket between external debugger and process on device" }
-        jdwpSessionRef.retained().use { deviceSessionRef ->
+        jdwpSessionRef.withResource { deviceSession ->
             // The JDWP Session proxy does not need to send custom JDWP packets,
             // so we pass a `null` value for `nextPacketIdBase`.
             JdwpSession.wrapSocketChannel(session, debuggerSocket, pid, null).use { debuggerSession ->
@@ -126,7 +126,7 @@ internal class JdwpSessionProxy(
                     launchCancellable(session.host.ioDispatcher) {
                         forwardDebuggerJdwpSession(
                             debuggerSession,
-                            deviceSessionRef.value,
+                            deviceSession,
                             startStateFlow.asStateFlow()
                         )
                     }
@@ -134,7 +134,7 @@ internal class JdwpSessionProxy(
                     // Forward packets from jdwp process on device to external debugger
                     launchCancellable(session.host.ioDispatcher) {
                         forwardDeviceJdwpSession(
-                            deviceSessionRef.value,
+                            deviceSession,
                             debuggerSession,
                             startStateFlow
                         )

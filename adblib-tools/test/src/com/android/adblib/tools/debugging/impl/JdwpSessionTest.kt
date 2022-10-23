@@ -181,7 +181,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     @Test
-    fun sendPacketThrowExceptionAfterClose() = runBlockingWithTimeout {
+    fun sendPacketThrowExceptionAfterShutdown() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
@@ -192,7 +192,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         jdwpSession.sendPacket(packet)
 
         // Act
-        jdwpSession.close()
+        jdwpSession.shutdown()
         exceptionRule.expect(IOException::class.java)
         jdwpSession.sendPacket(packet)
 
@@ -201,7 +201,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
     }
 
     @Test
-    fun receivePacketThrowExceptionAfterClose() = runBlockingWithTimeout {
+    fun receivePacketThrowExceptionAfterShutdown() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
@@ -212,7 +212,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         jdwpSession.sendPacket(packet)
 
         // Act
-        jdwpSession.close()
+        jdwpSession.shutdown()
 
         exceptionRule.expect(IOException::class.java)
         waitForReplyPacket(jdwpSession, packet)

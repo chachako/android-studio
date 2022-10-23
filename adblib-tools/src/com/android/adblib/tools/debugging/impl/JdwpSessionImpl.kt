@@ -45,11 +45,9 @@ internal class JdwpSessionImpl(
 
     private val logger = thisLogger(session)
 
-    private val inputChannel: AdbInputChannel
-        get() = channel
+    private val inputChannel = session.channelFactory.createReadAheadChannel(channel)
 
-    private val outputChannel: AdbOutputChannel
-        get() = channel
+    private val outputChannel = session.channelFactory.createWriteBackChannel(channel)
 
     private val handshakeHandler = HandshakeHandler(session, pid, inputChannel, outputChannel)
 
@@ -62,6 +60,12 @@ internal class JdwpSessionImpl(
     private val receiveMutex = Mutex()
 
     private val atomicPacketId: AtomicInteger? = nextPacketIdBase?.let { AtomicInteger(it) }
+
+    override suspend fun shutdown() {
+        outputChannel.shutdown()
+        inputChannel.close()
+        channel.close()
+    }
 
     override fun close() {
         logger.debug { "pid=$pid: Closing JDWP session handler (and underlying channel)" }

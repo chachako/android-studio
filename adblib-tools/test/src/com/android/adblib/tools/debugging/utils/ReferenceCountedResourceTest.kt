@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.utils
 
+import com.android.adblib.AutoShutdown
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
@@ -42,7 +43,8 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(0, res.creationCount.get())
-        Assert.assertFalse(res.closed.get())
+        Assert.assertFalse(res.shutdownCalled.get())
+        Assert.assertFalse(res.closeCalled.get())
     }
 
     @Test
@@ -61,11 +63,12 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(1, res.creationCount.get())
-        Assert.assertFalse(res.closed.get())
+        Assert.assertFalse(res.shutdownCalled.get())
+        Assert.assertFalse(res.closeCalled.get())
     }
 
     @Test
-    fun testUnderlyingResourceIsClosedOnRelease() = runBlockingWithTimeout {
+    fun testUnderlyingResourceIsShutDownOnRelease() = runBlockingWithTimeout {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val session = createSession(fakeAdb)
@@ -81,7 +84,8 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(1, res.creationCount.get())
-        Assert.assertTrue(res.closed.get())
+        Assert.assertTrue(res.shutdownCalled.get())
+        Assert.assertTrue(res.closeCalled.get())
     }
 
     @Test
@@ -101,7 +105,8 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(1, res.creationCount.get())
-        Assert.assertTrue(res.closed.get())
+        Assert.assertFalse(res.shutdownCalled.get())
+        Assert.assertTrue(res.closeCalled.get())
     }
 
     @Test
@@ -116,12 +121,13 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
         }
 
         // Act
-        ref.retained()
-        ref.retained()
+        ref.retain()
+        ref.retain()
 
         // Assert
         Assert.assertEquals(1, res.creationCount.get())
-        Assert.assertFalse(res.closed.get())
+        Assert.assertFalse(res.shutdownCalled.get())
+        Assert.assertFalse(res.closeCalled.get())
     }
 
     @Test
@@ -152,7 +158,8 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(1, res.creationCount.get())
-        Assert.assertFalse(res.closed.get())
+        Assert.assertFalse(res.shutdownCalled.get())
+        Assert.assertFalse(res.closeCalled.get())
     }
 
     @Test
@@ -163,7 +170,7 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
-            res.closed.set(false)
+            res.closeCalled.set(false)
             res
         }
 
@@ -172,7 +179,7 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
         for(i in 1..100) {
             jobs.add(launch {
                 for (j in 1..100) {
-                    ref.retained().use { }
+                    ref.withResource { }
                 }
             })
         }
@@ -180,7 +187,8 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertTrue(res.creationCount.get() >= 1)
-        Assert.assertTrue(res.closed.get())
+        Assert.assertTrue(res.shutdownCalled.get())
+        Assert.assertTrue(res.closeCalled.get())
     }
 
     @Test
@@ -200,7 +208,8 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(1, res.creationCount.get())
-        Assert.assertFalse(res.closed.get())
+        Assert.assertFalse(res.shutdownCalled.get())
+        Assert.assertFalse(res.closeCalled.get())
     }
 
     @Test
@@ -225,16 +234,22 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(0, res.creationCount.get())
-        Assert.assertFalse(res.closed.get())
+        Assert.assertFalse(res.closeCalled.get())
+        Assert.assertFalse(res.shutdownCalled.get())
         Assert.assertTrue(job.isCancelled)
     }
 
-    class MyTestResource : AutoCloseable {
+    class MyTestResource : AutoShutdown {
         val creationCount = AtomicInteger()
-        val closed = AtomicBoolean(false)
+        val closeCalled = AtomicBoolean(false)
+        val shutdownCalled = AtomicBoolean(false)
+
+        override suspend fun shutdown() {
+            shutdownCalled.set(true)
+        }
 
         override fun close() {
-            closed.set(true)
+            closeCalled.set(true)
         }
     }
 }
