@@ -36,7 +36,7 @@ import com.android.tools.idea.wizard.template.impl.activities.common.generateMat
 import com.android.tools.idea.wizard.template.impl.activities.common.generateSimpleMenu
 import com.android.tools.idea.wizard.template.layoutToFragment
 
-fun RecipeExecutor.generateBasicActivity(
+fun RecipeExecutor.generateBasicM3Activity(
   moduleData: ModuleTemplateData,
   activityClass: String,
   layoutName: String,
