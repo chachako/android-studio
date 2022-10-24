@@ -37,6 +37,7 @@ test --jvmopt='--add-opens=java.desktop/sun.font=ALL-UNNAMED'
 test --jvmopt='--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED'
 test --jvmopt='--add-opens=java.base/java.time=ALL-UNNAMED'
 test --jvmopt='--add-opens=java.base/java.lang.ref=ALL-UNNAMED'
+test --jvmopt='--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED'
 
 build --jvmopt='--add-exports java.base/jdk.internal.vm=ALL-UNNAMED'
 build --jvmopt='--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED'
