@@ -22,7 +22,7 @@ import com.android.build.gradle.internal.cxx.caching.CachingEnvironment
 import com.android.build.gradle.internal.cxx.configure.SdkSourceProperties.Companion.SdkSourceProperty.SDK_PKG_REVISION
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage.LoggingLevel
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.ThreadLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.text
 import com.android.builder.sdk.InstallFailedException
@@ -1256,7 +1256,7 @@ class NdkLocatorKtTest {
     @Test
     fun `fuzz test`() {
         RandomInstanceGenerator().apply {
-            PassThroughDeduplicatingLoggingEnvironment().use {
+            PassThroughRecordingLoggingEnvironment().use {
                 for (i in 0..10000) {
                     val veryOldVersion = "10.1.2"
                     val properVersion = "18.1.23456"

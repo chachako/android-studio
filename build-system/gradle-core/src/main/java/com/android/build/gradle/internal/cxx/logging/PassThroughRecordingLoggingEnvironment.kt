@@ -27,17 +27,24 @@ import com.google.protobuf.GeneratedMessageV3
 import java.io.File
 
 /**
- * [ThreadLoggingEnvironment] that will deduplicate messages and then forward to a parent
- * logger.
+ * Cap the number of log records to keep in order to limit memory consumption.
  */
-open class PassThroughDeduplicatingLoggingEnvironment : ThreadLoggingEnvironment() {
-    private val messages : MutableSet<LoggingMessage> = linkedSetOf() // Linked set to preserve order
-    private val parent : LoggingEnvironment = parentLogger()
+private const val MAX_LOG_RECORDS_TO_KEEP = 200
+
+/**
+ * [ThreadLoggingEnvironment] that will record messages and then forward to a parent
+ * logger. A maximum of [MAX_LOG_RECORDS_TO_KEEP] messages are kept.
+ */
+open class PassThroughRecordingLoggingEnvironment : ThreadLoggingEnvironment() {
+    private val messages = ArrayDeque<LoggingMessage>(MAX_LOG_RECORDS_TO_KEEP + 1)
+    private val parent = parentLogger()
 
     override fun log(message: LoggingMessage) {
-        if (messages.contains(message)) return
         parent.log(message)
         messages.add(message)
+        if (messages.size > MAX_LOG_RECORDS_TO_KEEP) {
+            messages.removeFirst();
+        }
     }
 
     override fun logStructured(message: (StringEncoder) -> GeneratedMessageV3) {

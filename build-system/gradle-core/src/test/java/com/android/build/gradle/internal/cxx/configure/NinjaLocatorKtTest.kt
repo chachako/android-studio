@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.utils.cxx.CxxDiagnosticCode
 import com.android.utils.cxx.CxxDiagnosticCode.NINJA_IS_MISSING
 import com.google.common.truth.Truth.assertThat
@@ -140,7 +140,7 @@ class NinjaLocatorKtTest {
         doesNinjaPathExist: (String) -> Boolean = { _ -> true },
     ): FindNinjaEncounter {
         val encounter = FindNinjaEncounter()
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             val fileResult = findNinjaPathLogic(
                 cmakePath = cmakePath,
                 getSdkCmakeFolders = {

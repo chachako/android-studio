@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.configure
 
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.errorln
 import com.android.utils.cxx.CxxDiagnosticCode.NINJA_IS_MISSING
 import com.android.utils.cxx.os.exe
@@ -77,7 +77,7 @@ class NinjaLocator {
         cmakePath : File?,
         sdkFolder: File?
     ): File? {
-        PassThroughDeduplicatingLoggingEnvironment().use {
+        PassThroughRecordingLoggingEnvironment().use {
             return findNinjaPathLogic(
                 cmakePath,
                 { getSdkCmakeFolders(sdkFolder) },

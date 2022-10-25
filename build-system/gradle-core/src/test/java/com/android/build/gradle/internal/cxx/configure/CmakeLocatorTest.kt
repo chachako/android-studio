@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.cxx.configure
 
 import com.android.build.gradle.external.cmake.CmakeUtils
 import com.android.build.gradle.internal.cxx.codeText
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.repository.Revision
 import com.android.repository.api.LocalPackage
 import com.android.repository.testframework.FakePackage
@@ -70,7 +70,7 @@ class CmakeLocatorTest {
             downloader: () -> Unit = {}
     ): FindCmakeEncounter {
         val encounter = FindCmakeEncounter()
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             val fileResult = findCmakePathLogic(
                 cmakeVersionFromDsl = cmakeVersionFromDsl,
                 cmakePathFromLocalProperties = cmakePathFromLocalProperties,

@@ -18,7 +18,7 @@ package com.android.build.gradle.integration.ndk
 
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.json.jsonStringOf
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.text
 import com.android.build.gradle.internal.cxx.prefab.AndroidAbiMetadata
 import com.android.build.gradle.internal.cxx.prefab.ModuleMetadataV1
@@ -76,7 +76,7 @@ class PrefabErrorReportingTest {
     fun `Ensure reasonable error message even when relevantLibrary not found`() {
         val stderr = tempFolder.newFile("stderr.txt")
         stderr.writeText("User has minSdkVersion 10 but library was built for 11")
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             reportErrors(stderr)
             assertThat(logger.errors)
                 .containsExactly("[CXX1214] User has minSdkVersion 10 but library was built for 11")
@@ -230,7 +230,7 @@ class PrefabErrorReportingTest {
     fun `STDERR with only blank lines is not an error`() {
         val stderr = tempFolder.newFile("stderr.txt")
         stderr.writeText(" \n  \n")
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             reportErrors(stderr)
             assertThat(logger.errors).isEmpty()
         }
@@ -244,7 +244,7 @@ class PrefabErrorReportingTest {
 
             Line above is intentionally blank
             """.trimIndent())
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             reportErrors(stderr)
             assertThat(logger.errors)
                 .containsExactly("[CXX1214] User has minSdkVersion 10 but library was built for 11")
@@ -278,7 +278,7 @@ class PrefabErrorReportingTest {
                 if (it.prefabVersion == "1.1.3" && runningFromBazel()) return@forEach
                 it.writePrefabPackage()
                 it.runPrefab()
-                PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+                PassThroughRecordingLoggingEnvironment().use { logger ->
                     try {
                         reportErrors(it.stderr)
                     } catch (e: Exception) {
@@ -553,7 +553,7 @@ class PrefabErrorReportingTest {
     private fun Permutation.assertNoError() {
         writePrefabPackage()
         runPrefab()
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             reportErrors(stderr)
             assertThat(logger.errorMessages.map { it.diagnosticCode})
                 .isEmpty()
@@ -563,7 +563,7 @@ class PrefabErrorReportingTest {
     private fun Permutation.assertHasError(vararg errors : String) {
         writePrefabPackage()
         runPrefab()
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             reportErrors(stderr)
             assertThat(logger.errorMessages.map { it.text() })
                 .containsExactlyElementsIn(errors)
@@ -573,7 +573,7 @@ class PrefabErrorReportingTest {
     private fun Permutation.assertHasError(vararg errors : Regex) {
         writePrefabPackage()
         runPrefab()
-        PassThroughDeduplicatingLoggingEnvironment().use { logger ->
+        PassThroughRecordingLoggingEnvironment().use { logger ->
             reportErrors(stderr)
             val seen = mutableSetOf<Regex>()
             for(message in logger.errors) {

@@ -17,7 +17,7 @@
 package com.android.build.gradle.internal.cxx.configure
 
 import com.android.build.gradle.internal.cxx.codeText
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.sdklib.AndroidVersion
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_IS_INVALID
 import com.android.utils.cxx.CxxDiagnosticCode.NDK_DOES_NOT_SUPPORT_API_LEVEL
@@ -55,7 +55,7 @@ class PlatformConfiguratorTest {
             "    \"P\": 28\n" +
             "  }\n" +
             "}"
-    private val logger = PassThroughDeduplicatingLoggingEnvironment()
+    private val logger = PassThroughRecordingLoggingEnvironment()
     private lateinit var ndk17: File
 
     @Before

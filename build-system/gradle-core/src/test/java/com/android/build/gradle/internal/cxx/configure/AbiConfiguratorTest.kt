@@ -19,10 +19,8 @@ package com.android.build.gradle.internal.cxx.configure
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.caching.CachingEnvironment
 import com.android.build.gradle.internal.cxx.codeText
-import com.android.build.gradle.internal.cxx.logging.PassThroughDeduplicatingLoggingEnvironment
-import com.android.utils.cxx.CxxDiagnosticCode
+import com.android.build.gradle.internal.cxx.logging.PassThroughRecordingLoggingEnvironment
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_IS_UNSUPPORTED
-import com.android.utils.cxx.CxxDiagnosticCode.RESERVED_FOR_TESTS
 import com.google.common.collect.Sets
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
@@ -41,7 +39,7 @@ class AbiConfiguratorTest {
         val ALL_ABI_COMMA_STRING = ALL_ABI_AS_STRING.sorted().joinToString(", ")
     }
 
-    private val logger = PassThroughDeduplicatingLoggingEnvironment()
+    private val logger = PassThroughRecordingLoggingEnvironment()
 
     fun configure(
         ndkHandlerSupportedAbis: Collection<Abi> = ALL_ABI,

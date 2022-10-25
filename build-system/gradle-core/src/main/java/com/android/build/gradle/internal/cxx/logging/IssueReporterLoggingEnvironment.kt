@@ -40,7 +40,7 @@ class IssueReporterLoggingEnvironment private constructor(
     rootBuildGradleFolder: File,
     private val cxxFolder: File?,
     private val internals: CxxDiagnosticCodesTrackingInternals?
-) : PassThroughDeduplicatingLoggingEnvironment() {
+) : PassThroughRecordingLoggingEnvironment() {
     private val structuredLogEncoder : CxxStructuredLogEncoder?
     init {
         // Structured log is only written if user has manually created a folder
