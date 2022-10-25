@@ -25,6 +25,7 @@ import com.android.annotations.concurrency.UiThread;
 import com.android.annotations.concurrency.WorkerThread;
 import java.io.IOException;
 
+@SuppressWarnings("unused") // This class is loaded dynamically
 public class SampleClasses {
 
     /** Sample annotated class with a few method-level annotations. */
@@ -133,7 +134,7 @@ public class SampleClasses {
 
     @UiThread
     public static class AnnotatedClassWithStaticBlock {
-        public static int a = 0;
+        public static int a;
 
         static {
             a = 5;
