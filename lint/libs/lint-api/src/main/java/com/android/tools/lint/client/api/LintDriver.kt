@@ -74,7 +74,6 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.SourceSetType
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getContainingFile
-import com.android.tools.lint.detector.api.UastLintUtils.Companion.getDefaultUseSiteAnnotations
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.assertionsEnabled
@@ -128,7 +127,6 @@ import org.jetbrains.uast.UImportStatement
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParenthesizedExpression
-import org.jetbrains.uast.UTypeReferenceExpression
 import org.jetbrains.uast.expressions.UInjectionHost
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.toUElement
@@ -3358,13 +3356,7 @@ class LintDriver(
                     continue
                 }
             }
-            var parent = currentScope.uastParent
-            if (parent is UCatchClause && currentScope is UTypeReferenceExpression) {
-                // we need to check annotations on the catch parameters, which aren't modeled as parents.
-                val parameters = parent.parameters
-                parent = parameters.firstOrNull() ?: parent
-            }
-            currentScope = parent
+            currentScope = currentScope.uastParent
         }
 
         return false
@@ -3590,14 +3582,6 @@ class LintDriver(
         var currentNode = node
         if (currentNode is Attr) {
             currentNode = currentNode.ownerElement
-        } else if (currentNode != null && currentNode.nodeType != Node.ELEMENT_NODE &&
-            currentNode.parentNode?.nodeType == Node.DOCUMENT_NODE
-        ) {
-            // If the error is reported on a node outside of the document element (such as in the
-            // header comment), look for suppress nodes on the root element. This is similar to how
-            // we for Java files look for imports on the main class even from elements like
-            // import and package statements since Java doesn't have file-level suppress annotations.
-            currentNode = currentNode.ownerDocument.documentElement
         }
         val checkComments = client.checkForSuppressComments() &&
             context != null && context.containsCommentSuppress()
@@ -4131,19 +4115,7 @@ class LintDriver(
                 return false
             }
 
-            val annotations = getAnnotations(context, modifierListOwner)
-            if (isAnnotatedWithSuppress(issue, annotations)) {
-                return true
-            }
-            val defaultAnnotations = getDefaultUseSiteAnnotations(modifierListOwner) ?: return false
-            return isAnnotatedWithSuppress(issue, defaultAnnotations)
-        }
-
-        private fun isAnnotatedWithSuppress(
-            issue: Issue,
-            annotations: List<UAnnotation>
-        ): Boolean {
-            for (annotation in annotations) {
+            for (annotation in getAnnotations(context, modifierListOwner)) {
                 val fqcn = annotation.qualifiedName
                 if (fqcn != null && (
                     fqcn == FQCN_SUPPRESS_LINT ||

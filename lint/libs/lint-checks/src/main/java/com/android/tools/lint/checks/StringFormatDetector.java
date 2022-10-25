@@ -562,27 +562,6 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
         }
     }
 
-    private static boolean isSuppressed(Context context, Issue issue, Object source) {
-        if (source instanceof Node) {
-            return context.getDriver().isSuppressed(null, issue, (Node) source);
-        }
-
-        return false;
-    }
-
-    private static boolean isSuppressed(Context context, Issue issue, Location location) {
-        Object source = location.getSource();
-        return isSuppressed(context, issue, source);
-    }
-
-    private static boolean isSuppressed(Context context, Issue issue, Handle handle) {
-        Object source = handle.getClientData();
-        if (isSuppressed(context, issue, source)) {
-            return true;
-        }
-        return isSuppressed(context, issue, handle.resolve());
-    }
-
     private static void checkTypes(
             Context context,
             boolean checkValid,
@@ -636,8 +615,12 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
                             // formats (d, o, x, X). If that's not the case, make a
                             // dedicated error message
                             if (last != 'd' && last != 'o' && last != 'x' && last != 'X') {
-                                if (isSuppressed(context, INVALID, handle)) {
-                                    return;
+                                Object clientData = handle.getClientData();
+                                if (clientData instanceof Node) {
+                                    if (context.getDriver()
+                                            .isSuppressed(null, INVALID, (Node) clientData)) {
+                                        return;
+                                    }
                                 }
 
                                 Location location = handle.resolve();
@@ -677,14 +660,15 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
                     } else if (!currentFormat.equals(format)
                             && isIncompatible(currentFormat.charAt(0), format.charAt(0))) {
 
-                        if (isSuppressed(context, ARG_TYPES, handle)) {
-                            return;
-                        }
-                        Location location = handle.resolve();
-                        if (isSuppressed(context, ARG_TYPES, location)) {
-                            return;
+                        Object clientData = handle.getClientData();
+                        if (clientData instanceof Node) {
+                            if (context.getDriver()
+                                    .isSuppressed(null, ARG_TYPES, (Node) clientData)) {
+                                return;
+                            }
                         }
 
+                        Location location = handle.resolve();
                         // Attempt to limit the location range to just the formatting
                         // string in question
                         location =
@@ -854,18 +838,14 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
             int count = getFormatArgumentCount(pair.getSecond(), indices);
             Handle handle = pair.getFirst();
             if (prevCount != -1 && prevCount != count) {
-                if (isSuppressed(context, ARG_COUNT, handle)) {
-                    return;
+                Object clientData = handle.getClientData();
+                if (clientData instanceof Node) {
+                    if (context.getDriver().isSuppressed(null, ARG_COUNT, (Node) clientData)) {
+                        return;
+                    }
                 }
-
                 Location location = handle.resolve();
-                if (isSuppressed(context, ARG_COUNT, location)) {
-                    return;
-                }
                 Location secondary = list.get(0).getFirst().resolve();
-                if (isSuppressed(context, ARG_COUNT, secondary)) {
-                    return;
-                }
                 secondary.setMessage("Conflicting number of arguments (" + prevCount + ") here");
                 location.setSecondary(secondary);
                 String path = Lint.getFileNameWithParent(context.getClient(), secondary.getFile());
@@ -884,8 +864,11 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
 
             for (int i = 1; i <= count; i++) {
                 if (!indices.contains(i)) {
-                    if (isSuppressed(context, ARG_COUNT, handle)) {
-                        return;
+                    Object clientData = handle.getClientData();
+                    if (clientData instanceof Node) {
+                        if (context.getDriver().isSuppressed(null, ARG_COUNT, (Node) clientData)) {
+                            return;
+                        }
                     }
 
                     Set<Integer> all = new HashSet<>();
@@ -1241,8 +1224,11 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
      */
     private static void checkNotFormattedHandle(
             JavaContext context, UCallExpression call, String name, Handle handle) {
-        if (isSuppressed(context, INVALID, handle)) {
-            return;
+        Object clientData = handle.getClientData();
+        if (clientData instanceof Node) {
+            if (context.getDriver().isSuppressed(null, INVALID, (Node) clientData)) {
+                return;
+            }
         }
         Location location = context.getLocation(call);
         Location secondary = handle.resolve();
@@ -1582,10 +1568,6 @@ public class StringFormatDetector extends ResourceXmlDetector implements SourceC
                                 Location secondary = handle.resolve();
                                 secondary.setMessage("Conflicting argument declaration here");
                                 location.setSecondary(secondary);
-                                if (isSuppressed(context, ARG_TYPES, secondary)) {
-                                    continue;
-                                }
-
                                 String suggestion = null;
                                 if (isBooleanType(type)) {
                                     suggestion = "`b`";

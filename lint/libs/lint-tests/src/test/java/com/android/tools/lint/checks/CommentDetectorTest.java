@@ -216,24 +216,6 @@ public class CommentDetectorTest extends AbstractCheckTest {
                                 + "+ <!-- implement this first -->");
     }
 
-    public void testXmlSuppress() {
-        // Tests that we can suppress elements outside of the root element too.
-        lint().files(
-                        xml(
-                                "res/layout/foo.xml",
-                                ""
-                                        + "<!-- STOPSHIP implement this first -->\n"
-                                        + "<FrameLayout\n"
-                                        + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
-                                        + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
-                                        + "    tools:ignore=\"StopShip\"\n"
-                                        + "    android:layout_width=\"0dip\"\n"
-                                        + "    android:layout_height=\"0dip\"\n"
-                                        + "    android:visibility=\"gone\" />"))
-                .run()
-                .expectClean();
-    }
-
     public void testNoStopShipInDebugVariant() {
         //noinspection all // Sample code
         lint().files(

@@ -104,7 +104,7 @@ public class Utf8Detector extends ResourceXmlDetector {
                 LintFix fix = fix().replace().all().with("utf-8").build();
                 context.report(
                         ISSUE,
-                        document.getDocumentElement(),
+                        null,
                         location,
                         String.format(
                                 "%1$s: Not using UTF-8 as the file encoding. This can lead to subtle "

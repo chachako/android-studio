@@ -60,24 +60,24 @@ class StringEscapeDetector : ResourceXmlDetector() {
     override fun visitElement(context: XmlContext, element: Element) {
         when (element.tagName) {
             TAG_STRING -> {
-                findTextNode(context, element)
+                findTextNode(context, element, element)
             }
             TAG_PLURALS, TAG_STRING_ARRAY -> {
                 for (index in 0 until element.childNodes.length) {
                     val child = element.childNodes.item(index)
                     if (child.nodeType == Node.ELEMENT_NODE) {
-                        findTextNode(context, child as Element)
+                        findTextNode(context, element, child)
                     }
                 }
             }
         }
     }
 
-    private fun findTextNode(context: XmlContext, parent: Element) {
+    private fun findTextNode(context: XmlContext, element: Element, parent: Node) {
         for (index in 0 until parent.childNodes.length) {
             val child = parent.childNodes.item(index)
             if (child.nodeType == Node.TEXT_NODE || child.nodeType == Node.CDATA_SECTION_NODE) {
-                checkXmlEscapes(context, child, parent, child.nodeValue)
+                checkXmlEscapes(context, child, element, child.nodeValue)
                 return
             }
         }

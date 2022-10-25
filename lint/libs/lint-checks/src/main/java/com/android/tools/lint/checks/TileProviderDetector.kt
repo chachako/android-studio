@@ -42,7 +42,6 @@ import com.android.tools.lint.detector.api.XmlScanner
 import com.android.utils.XmlUtils.getFirstSubTagByName
 import com.android.utils.XmlUtils.getNextTagByName
 import org.w3c.dom.Element
-import org.w3c.dom.Node
 import java.util.EnumSet
 
 class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
@@ -109,7 +108,7 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
     }
 
     data class IconInfo(
-        val issueScope: Node,
+        val issueScope: Location,
         val issueLocation: Location,
         var foundRoundPreview: Boolean = false,
         var foundSquarePreview: Boolean = false
@@ -171,7 +170,7 @@ class TileProviderDetector : Detector(), XmlScanner, BinaryResourceScanner {
                 if (!iconUrl.startsWith(DRAWABLE_PREFIX)) continue
                 val iconName = iconUrl.substring(DRAWABLE_PREFIX.length)
                 this.foundIcons[iconName] =
-                    IconInfo(issueScope = foundMetaData, issueLocation = context.getValueLocation(iconAttr))
+                    IconInfo(issueScope = context.getLocation(foundMetaData), issueLocation = context.getValueLocation(iconAttr))
             }
         }
         if (foundMetaData == null) {

@@ -70,7 +70,7 @@ class GestureBackNavDetector : ResourceXmlDetector(), SourceCodeScanner {
                         "the registration of callbacks on the window level; " +
                         "Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture"
                 val fix = fix().url("https://developer.android.com/about/versions/13/features/predictive-back-gesture").build()
-                context.report(Incident(ISSUE, reference, context.getLocation(keycodeBack), message, fix), map())
+                context.report(Incident(ISSUE, referenced, context.getLocation(keycodeBack), message, fix), map())
             }
         }
     }

@@ -83,7 +83,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
                     if (context.driver.isIsolated()) {
                         location.secondary = context.getLocation(declaration)
                     }
-                    val incident = Incident(ISSUE, element, location, message)
+                    val incident = Incident(ISSUE, declaration, location, message)
                     context.report(
                         incident,
                         map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS)

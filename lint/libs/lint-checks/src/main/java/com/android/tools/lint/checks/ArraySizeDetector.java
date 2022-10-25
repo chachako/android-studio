@@ -179,7 +179,6 @@ public class ArraySizeDetector extends ResourceXmlDetector {
             if (mLocations != null) {
                 List<String> names = new ArrayList<>(mLocations.keySet());
                 Collections.sort(names);
-                nameLoop:
                 for (String name : names) {
                     Location location = mLocations.get(name);
                     if (location == null) {
@@ -200,7 +199,7 @@ public class ArraySizeDetector extends ResourceXmlDetector {
                         if (clientData instanceof Node) {
                             Node node = (Node) clientData;
                             if (driver.isSuppressed(null, INCONSISTENT, node)) {
-                                continue nameLoop;
+                                continue;
                             }
                             int newCount = Lint.getChildCount(node);
                             if (newCount != count) {
@@ -264,6 +263,9 @@ public class ArraySizeDetector extends ResourceXmlDetector {
             } else {
                 assert phase == 2;
                 if (mLocations.containsKey(name)) {
+                    if (context.getDriver().isSuppressed(context, INCONSISTENT, element)) {
+                        return;
+                    }
                     Location location = context.getLocation(element);
                     location.setData(element);
                     location.setMessage(

@@ -91,9 +91,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             val length = dataTag!!.attributes.length
             val attributes = mutableListOf<Node>()
             for (attributeIndex in 0 until length) {
-                val attribute = dataTag.attributes.item(attributeIndex)
-                if (attribute.namespaceURI == TOOLS_URI) continue
-                attributes += attribute
+                attributes += dataTag.attributes.item(attributeIndex)
             }
 
             val hasNonPath = attributes.any {
@@ -116,7 +114,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             // If there's only 1 attribute, it's already correctly formatted. But this is checked
             // here so that the above logic to ignore path-only tags is accounted for, even
             // if that means a tag with only a path attribute.
-            if (attributes.size <= 1) continue
+            if (length <= 1) continue
 
             attributes.sortBy {
                 INTENT_FILTER_DATA_SORT_REFERENCE.indexOf(it.localName)

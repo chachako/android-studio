@@ -101,7 +101,7 @@ internal class UastSourceTransformationTestModeGroup(vararg modes: TestMode) : U
                 val source = file.sourcePsi.text
                 val relativePath = fileContext.file.relativeTo(rootDir)
                 contents[relativePath] = source
-                val edits = mode.transform(source, fileContext, file, clientData, testContext)
+                val edits = mode.transform(source, fileContext, file, clientData)
                 if (edits.isNotEmpty()) {
                     edits.sort()
 

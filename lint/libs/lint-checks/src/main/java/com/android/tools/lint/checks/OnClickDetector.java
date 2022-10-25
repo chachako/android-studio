@@ -314,7 +314,7 @@ public class OnClickDetector extends LayoutDetector implements SourceCodeScanner
 
                 // Make sure the method is public
                 if (!evaluator.isPublic(method)) {
-                    Location location = context.getNameLocation(method);
+                    Location location = context.getLocation(method);
                     String message =
                             String.format(
                                     "`onClick` handler `%1$s(View)` must be public", methodName);

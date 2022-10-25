@@ -666,6 +666,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
                     "    android:orientation=\"vertical\" >\n" +
                     "    <foo.bar.Baz\n" +
                     "        xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                    "        xmlns:tools=\"http://something/else\"\n" +
                     "        xmlns:unrelated=\"http://un/related\"\n" +
                     "        android:id=\"@+id/button1\"\n" +
                     "        android:layout_width=\"wrap_content\"\n" +

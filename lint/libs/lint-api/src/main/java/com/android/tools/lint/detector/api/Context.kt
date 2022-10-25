@@ -166,9 +166,7 @@ open class Context(
                     val file = node.sourcePsi?.containingFile?.virtualFile?.let {
                         VfsUtilCore.virtualToIoFile(it)
                     } ?: file
-                    JavaContext(driver, project, main, file).apply {
-                        uastParser = client.getUastParser(project)
-                    }
+                    JavaContext(driver, project, main, file)
                 }
                 return when (type) {
                     LocationType.DEFAULT -> context.getLocation(node)
@@ -203,9 +201,7 @@ open class Context(
                     val file = node.containingFile?.virtualFile?.let {
                         VfsUtilCore.virtualToIoFile(it)
                     } ?: file
-                    JavaContext(driver, project, main, file).apply {
-                        uastParser = client.getUastParser(project)
-                    }
+                    JavaContext(driver, project, main, file)
                 }
                 return when (type) {
                     LocationType.DEFAULT -> context.getLocation(node)
@@ -559,8 +555,29 @@ open class Context(
      */
     fun isSuppressedWithComment(startOffset: Int, issue: Issue): Boolean {
         val prefix = suppressCommentPrefix ?: return false
-        val line = getSuppressionDirective(prefix, getContents() ?: "", startOffset) ?: return false
-        return isSuppressedWithComment(line, issue)
+
+        if (startOffset <= 0) {
+            return false
+        }
+
+        // Check whether there is a comment marker
+        val contents: CharSequence = getContents() ?: ""
+        if (startOffset >= contents.length) {
+            return false
+        }
+
+        // Scan backwards to the previous line and see if it contains the marker
+        val lineStart = contents.lastIndexOf('\n', startOffset) + 1
+        if (lineStart <= 1) {
+            return false
+        }
+        val index = findPrefixOnPreviousLine(contents, lineStart, prefix)
+        if (index != -1 && index + prefix.length < lineStart) {
+            val line = contents.subSequence(index + prefix.length, lineStart).toString()
+            return isSuppressedWithComment(line, issue)
+        }
+
+        return false
     }
 
     /**
@@ -579,34 +596,6 @@ open class Context(
          * * / in a javadoc, so just use the basename as the prefix
          */
         const val SUPPRESS_JAVA_COMMENT_PREFIX = "noinspection "
-
-        /**
-         * For a given [source] code contents and a [startOffset],
-         * returns the previous line if it is a comment line suppress
-         * directive.
-         */
-        fun getSuppressionDirective(prefix: String, source: CharSequence, startOffset: Int): String? {
-            if (startOffset <= 0) {
-                return null
-            }
-
-            // Check whether there is a comment marker
-            if (startOffset >= source.length) {
-                return null
-            }
-
-            // Scan backwards to the previous line and see if it contains the marker
-            val lineStart = source.lastIndexOf('\n', startOffset) + 1
-            if (lineStart <= 1) {
-                return null
-            }
-            val index = findPrefixOnPreviousLine(source, lineStart, prefix)
-            if (index != -1 && index + prefix.length < lineStart) {
-                return source.subSequence(index + prefix.length, lineStart).toString()
-            }
-
-            return null
-        }
 
         @VisibleForTesting
         fun isSuppressedWithComment(line: String, issue: Issue): Boolean {

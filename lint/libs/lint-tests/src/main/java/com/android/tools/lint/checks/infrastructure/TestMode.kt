@@ -337,9 +337,6 @@ open class TestMode(
         val PARTIAL: TestMode = PartialTestMode()
 
         @JvmField
-        val SUPPRESSIBLE: TestMode = SuppressibleTestMode()
-
-        @JvmField
         val PARENTHESIZED: TestMode = ParenthesisTestMode()
 
         @JvmField
@@ -388,8 +385,7 @@ open class TestMode(
             BYTECODE_ONLY,
             SOURCE_ONLY,
             CDATA,
-            SOURCE_TRANSFORMATION_GROUP,
-            SUPPRESSIBLE
+            SOURCE_TRANSFORMATION_GROUP
         )
     }
 
@@ -408,7 +404,6 @@ open class TestMode(
         val projectFolders: List<File>,
         val clientState: Any?,
         val driver: LintDriver? = null,
-        val lintContext: Context? = null,
-        val results: Map<TestMode, TestResultState>? = null
+        val lintContext: Context? = null
     )
 }
