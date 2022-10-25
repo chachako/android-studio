@@ -18,6 +18,7 @@ package com.android.fakeadbserver;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.annotations.concurrency.GuardedBy;
 import com.android.fakeadbserver.devicecommandhandlers.AbbCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.AbbExecCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler;
@@ -133,6 +134,9 @@ public final class FakeAdbServer implements AutoCloseable {
 
     private volatile boolean mServerKeepAccepting = false;
 
+    @GuardedBy("this")
+    private volatile Future<?> mStopRequestTask = null;
+
     private Set<String> mFeatures;
     private static final Set<String> DEFAULT_FEATURES =
             Collections.unmodifiableSet(
@@ -207,34 +211,44 @@ public final class FakeAdbServer implements AutoCloseable {
     }
 
     /**
-     * Stops the server.
+     * Stops the server. This method records the first stop request and all subsequent ones will get
+     * that value. This ensures no task submissions are attempted after {@link
+     * #mMainServerThreadExecutor} is shut down.
      *
      * @return a {@link Future} if the caller needs to wait until the server is stopped.
      */
-    public Future<?> stop() {
-        return mMainServerThreadExecutor.submit(
-                () -> {
-                    if (!mServerKeepAccepting) {
-                        return;
-                    }
-                    mServerKeepAccepting = false;
+    public synchronized Future<?> stop() {
+        if (mStopRequestTask == null) {
+            mStopRequestTask =
+                    mMainServerThreadExecutor.submit(
+                            () -> {
+                                if (!mServerKeepAccepting) {
+                                    return;
+                                }
+                                mServerKeepAccepting = false;
 
-                    mDeviceChangeHub.stop();
-                    mDevices.forEach((id, device) -> device.stop());
+                                mDeviceChangeHub.stop();
+                                mDevices.forEach((id, device) -> device.stop());
 
-                    mConnectionHandlerTask.cancel(true);
-                    try {
-                        mServerSocket.close();
-                    } catch (IOException ignored) {
-                    }
+                                mConnectionHandlerTask.cancel(true);
+                                try {
+                                    mServerSocket.close();
+                                } catch (IOException ignored) {
+                                }
 
-                    // Note: Use "shutdownNow()" to ensure threads of long running tasks are interrupted, as opposed
-                    // to merely waiting for the tasks to finish. This is because mThreadPoolExecutor is used to
-                    // run CommandHandler implementations, and some of them (e.g. TrackJdwpCommandHandler) wait
-                    // indefinitely on queues and expect to be interrupted as a signal to terminate.
-                    mThreadPoolExecutor.shutdownNow();
-                    mMainServerThreadExecutor.shutdown();
-                });
+                                // Note: Use "shutdownNow()" to ensure threads of long running tasks
+                                // are interrupted, as opposed
+                                // to merely waiting for the tasks to finish. This is because
+                                // mThreadPoolExecutor is used to
+                                // run CommandHandler implementations, and some of them (e.g.
+                                // TrackJdwpCommandHandler) wait
+                                // indefinitely on queues and expect to be interrupted as a signal
+                                // to terminate.
+                                mThreadPoolExecutor.shutdownNow();
+                                mMainServerThreadExecutor.shutdown();
+                            });
+        }
+        return mStopRequestTask;
     }
 
     @Override
