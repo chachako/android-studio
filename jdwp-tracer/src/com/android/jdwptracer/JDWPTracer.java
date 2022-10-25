@@ -39,6 +39,7 @@ public class JDWPTracer {
     public JDWPTracer(boolean enabled, @NonNull Path folder) {
         this.enabled = enabled;
         this.outputFolder = folder;
+        session = new Session();
     }
 
     /**
