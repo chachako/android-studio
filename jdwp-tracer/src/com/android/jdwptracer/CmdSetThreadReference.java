@@ -15,6 +15,8 @@
  */
 package com.android.jdwptracer;
 
+import java.nio.ByteBuffer;
+
 class CmdSetThreadReference extends CmdSet {
 
     protected CmdSetThreadReference() {
@@ -25,7 +27,11 @@ class CmdSetThreadReference extends CmdSet {
         add(3, "Resume");
         add(4, "Status");
         add(5, "ThreadGroup");
-        add(6, "Frames");
+        add(
+                6,
+                "Frames",
+                CmdSetThreadReference::parseFramesCmd,
+                CmdSetThreadReference::parseFramesReply);
         add(7, "FrameCount");
         add(8, "OwnerMonitors");
         add(9, "CurrentContendedMonitor");
@@ -34,5 +40,38 @@ class CmdSetThreadReference extends CmdSet {
         add(12, "SuspendCount");
         add(13, "OwnerMonitorStackDepthInfo");
         add(14, "ForceEarlyReturn");
+    }
+
+    private static Message parseFramesCmd(ByteBuffer byteBuffer, MessageReader reader) {
+        Message message = Message.cmdMessage(byteBuffer);
+
+        long threadID = reader.getThreadID(byteBuffer);
+        int startFrame = reader.getInt(byteBuffer);
+        int length = reader.getInt(byteBuffer);
+
+        message.addCmdArg("threadID", Long.toUnsignedString(threadID));
+        message.addCmdArg("startFrame", Integer.toString(startFrame));
+        message.addCmdArg("length", Integer.toString(length));
+
+        return message;
+    }
+
+    private static Message parseFramesReply(ByteBuffer byteBuffer, MessageReader reader) {
+        Message message = Message.replyMessage(byteBuffer);
+
+        int frames = reader.getInt(byteBuffer);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < frames; i++) {
+            long frameId = reader.getFrameID(byteBuffer);
+            reader.getLocation(byteBuffer);
+
+            if (i != 0) sb.append(",");
+            sb.append(Long.toUnsignedString(frameId));
+        }
+
+        message.addReplyArg("frames", sb.toString());
+
+        return message;
     }
 }

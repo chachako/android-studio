@@ -77,7 +77,7 @@ class MessageReader {
     void getLocation(@NonNull ByteBuffer buffer) {
         getByte(buffer); // tag
         getObjectID(buffer); // classID
-        getObjectID(buffer); // methodID
+        getMethodID(buffer); // methodID
         getLong(buffer); // index
     }
 
@@ -136,20 +136,20 @@ class MessageReader {
         }
     }
 
-    void getFieldID(@NonNull ByteBuffer buffer) {
-        buffer.position(buffer.position() + fieldIDSize);
+    long getFieldID(@NonNull ByteBuffer buffer) {
+        return getID(buffer, fieldIDSize);
     }
 
-    void getMethodID(@NonNull ByteBuffer buffer) {
-        buffer.position(buffer.position() + methodIDSize);
+    long getMethodID(@NonNull ByteBuffer buffer) {
+        return getID(buffer, methodIDSize);
     }
 
-    void getObjectID(@NonNull ByteBuffer buffer) {
-        buffer.position(buffer.position() + objectIDSize);
+    long getObjectID(@NonNull ByteBuffer buffer) {
+        return getID(buffer, objectIDSize);
     }
 
-    void getThreadID(@NonNull ByteBuffer byteBuffer) {
-        getObjectID(byteBuffer);
+    long getThreadID(@NonNull ByteBuffer byteBuffer) {
+        return getObjectID(byteBuffer);
     }
 
     void getTaggedObjectID(@NonNull ByteBuffer buffer) {
@@ -161,13 +161,27 @@ class MessageReader {
         buffer.position(buffer.position() + referenceTypeIDSize);
     }
 
-    void getFrameID(@NonNull ByteBuffer buffer) {
-        // Just skip for now
-        buffer.position(buffer.position() + frameIDSize);
+    long getFrameID(@NonNull ByteBuffer buffer) {
+        return getID(buffer, frameIDSize);
     }
 
     public void getString(@NonNull ByteBuffer buffer) {
         int size = getInt(buffer);
         buffer.position(buffer.position() + size);
+    }
+
+    private long getID(@NonNull ByteBuffer buffer, int size) {
+        switch (size) {
+            case 1:
+                return buffer.get();
+            case 2:
+                return buffer.getShort();
+            case 4:
+                return buffer.getInt();
+            case 8:
+                return buffer.getLong();
+            default:
+                throw new IllegalArgumentException("Unsupported id size: " + size);
+        }
     }
 }

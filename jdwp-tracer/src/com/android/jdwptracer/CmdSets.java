@@ -38,7 +38,7 @@ class CmdSets {
         // 13 ArrayReference TODO
         // 14 ClassLoaderReference TODO
         add(new CmdSetEventRequest()); // 15
-        // 16 StackFrame TODO
+        add(new CmdSetStackFrame()); // 16
         // 17ClassObjectReference TODO
         add(new CmdSetEvent()); // 64
 
