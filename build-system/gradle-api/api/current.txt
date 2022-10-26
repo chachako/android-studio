@@ -1568,7 +1568,7 @@ package com.android.build.api.dsl {
     property public abstract java.util.Set<java.lang.String> pickFirsts;
   }
 
-  @org.gradle.api.Incubating public interface SdkComponents {
+  public interface SdkComponents {
     method public org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> getAdb();
     method public org.gradle.api.provider.Provider<java.util.List<org.gradle.api.file.RegularFile>> getBootClasspath();
     method public org.gradle.api.provider.Provider<org.gradle.api.file.Directory> getNdkDirectory();
