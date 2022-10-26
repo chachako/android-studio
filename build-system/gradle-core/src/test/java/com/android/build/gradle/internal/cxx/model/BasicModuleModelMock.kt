@@ -17,7 +17,7 @@
 package com.android.build.gradle.internal.cxx.model
 
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
-import com.android.build.api.dsl.PrefabPackagingOptions
+import com.android.build.api.dsl.Prefab
 import com.android.build.api.variant.impl.AndroidVersionImpl
 import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
@@ -435,9 +435,10 @@ open class BasicModuleModelMock {
 
         doReturn(null).`when`(gradle).parent
 
-        doReturn(setOf< PrefabPackagingOptions>()).`when`(globalConfig).prefabOrEmpty
+        doReturn(setOf< Prefab>()).`when`(globalConfig).prefabOrEmpty
         doReturn(cmakeDir.resolve("cmake")).`when`(nativeLocationsBuildService).locateCMake(any(), any())
         doReturn(cmakeDir.resolve("ninja")).`when`(nativeLocationsBuildService).locateNinja(any())
+
         mockModule("app1")
     }
 

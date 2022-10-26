@@ -27,7 +27,7 @@ import com.android.build.api.dsl.ExternalNativeBuild
 import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.Lint
-import com.android.build.api.dsl.PrefabPackagingOptions
+import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
@@ -57,7 +57,6 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 
 class GlobalTaskCreationConfigImpl(
@@ -163,7 +162,7 @@ class GlobalTaskCreationConfigImpl(
     override val splits: Splits
         get() = extension.splits
 
-    override val prefab: Set<PrefabPackagingOptions>
+    override val prefab: Set<Prefab>
         get() = (extension as? LibraryExtension)?.prefab
             ?: throw RuntimeException("calling prefab on non Library variant")
 
@@ -183,7 +182,7 @@ class GlobalTaskCreationConfigImpl(
         testOptions.execution.toExecutionEnum()
     }
 
-    override val prefabOrEmpty: Set<PrefabPackagingOptions>
+    override val prefabOrEmpty: Set<Prefab>
         get() = (extension as? LibraryExtension)?.prefab ?: setOf()
 
     override val hasNoBuildTypeMinified: Boolean

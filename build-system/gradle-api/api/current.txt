@@ -1127,11 +1127,11 @@ package com.android.build.api.dsl {
 
   public interface LibraryExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.LibraryBuildFeatures,com.android.build.api.dsl.LibraryBuildType,com.android.build.api.dsl.LibraryDefaultConfig,com.android.build.api.dsl.LibraryProductFlavor> com.android.build.api.dsl.TestedExtension {
     method @org.gradle.api.Incubating public java.util.Collection<java.lang.String>? getAidlPackagedList();
-    method @org.gradle.api.Incubating public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.PrefabPackagingOptions> getPrefab();
+    method @org.gradle.api.Incubating public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> getPrefab();
     method public com.android.build.api.dsl.LibraryPublishing getPublishing();
     method public void publishing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.LibraryPublishing,kotlin.Unit> action);
     property @org.gradle.api.Incubating public abstract java.util.Collection<java.lang.String>? aidlPackagedList;
-    property @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.PrefabPackagingOptions> prefab;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> prefab;
     property public abstract com.android.build.api.dsl.LibraryPublishing publishing;
   }
 
@@ -1479,7 +1479,7 @@ package com.android.build.api.dsl {
     property public abstract boolean isRemoveUnusedResources;
   }
 
-  @org.gradle.api.Incubating public interface PrefabPackagingOptions {
+  public interface Prefab {
     method public boolean getHeaderOnly();
     method public String? getHeaders();
     method public String? getLibraryName();

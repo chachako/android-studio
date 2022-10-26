@@ -136,7 +136,7 @@ private fun propertyValueAsList(value : Any) : List<String> {
 }
 
 /**
- * This is the experimental flag analog of [com.android.build.api.dsl.PrefabPackagingOptions].
+ * This is the experimental flag analog of [com.android.build.api.dsl.Prefab].
  */
 data class PrefabExperimentalPackagingOptions(
     /**

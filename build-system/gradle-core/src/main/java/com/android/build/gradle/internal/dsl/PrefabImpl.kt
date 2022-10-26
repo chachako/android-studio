@@ -16,12 +16,12 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.api.dsl.PrefabPackagingOptions
+import com.android.build.api.dsl.Prefab
 import java.io.Serializable
 import javax.inject.Inject
 
-open class PrefabPackagingOptions @Inject constructor(override var name: String) :
-    PrefabPackagingOptions, Serializable {
+open class PrefabImpl @Inject constructor(override var name: String) :
+    Prefab, Serializable {
 
     override var headers: String? = null
 

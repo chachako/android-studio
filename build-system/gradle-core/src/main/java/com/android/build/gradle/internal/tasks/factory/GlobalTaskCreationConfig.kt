@@ -24,7 +24,7 @@ import com.android.build.api.dsl.DataBinding
 import com.android.build.api.dsl.ExternalNativeBuild
 import com.android.build.api.dsl.Installation
 import com.android.build.api.dsl.Lint
-import com.android.build.api.dsl.PrefabPackagingOptions
+import com.android.build.api.dsl.Prefab
 import com.android.build.api.dsl.Splits
 import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
@@ -82,7 +82,7 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
     val installationOptions: Installation
     val libraryRequests: Collection<LibraryRequest>
     val lintOptions: Lint
-    val prefab: Set<PrefabPackagingOptions>
+    val prefab: Set<Prefab>
     val resourcePrefix: String?
     val splits: Splits
     val testCoverage: TestCoverage
@@ -96,7 +96,7 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
     val legacyLanguageSplitOptions: LanguageSplitOptions
 
     /** the same as [prefab] but returns an empty set on unsupported variants */
-    val prefabOrEmpty: Set<PrefabPackagingOptions>
+    val prefabOrEmpty: Set<Prefab>
 
     val hasNoBuildTypeMinified: Boolean
 
