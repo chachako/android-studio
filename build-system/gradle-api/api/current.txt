@@ -913,7 +913,7 @@ package com.android.build.api.dsl {
     property public abstract org.gradle.api.DomainObjectSet<com.android.build.api.dsl.Device> targetDevices;
   }
 
-  @org.gradle.api.Incubating public interface DexPackagingOptions {
+  public interface DexPackaging {
     method public Boolean? getUseLegacyPackaging();
     method public void setUseLegacyPackaging(Boolean? useLegacyPackaging);
     property public abstract Boolean? useLegacyPackaging;
@@ -1429,10 +1429,10 @@ package com.android.build.api.dsl {
   }
 
   @org.gradle.api.Incubating public interface PackagingOptions {
-    method public void dex(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DexPackagingOptions,kotlin.Unit> action);
+    method public void dex(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DexPackaging,kotlin.Unit> action);
     method @Deprecated public void doNotStrip(String pattern);
     method @Deprecated public void exclude(String pattern);
-    method public com.android.build.api.dsl.DexPackagingOptions getDex();
+    method public com.android.build.api.dsl.DexPackaging getDex();
     method @Deprecated public java.util.Set<java.lang.String> getDoNotStrip();
     method @Deprecated public java.util.Set<java.lang.String> getExcludes();
     method public com.android.build.api.dsl.JniLibsPackagingOptions getJniLibs();
@@ -1443,7 +1443,7 @@ package com.android.build.api.dsl {
     method @Deprecated public void merge(String pattern);
     method @Deprecated public void pickFirst(String pattern);
     method public void resources(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ResourcesPackagingOptions,kotlin.Unit> action);
-    property public abstract com.android.build.api.dsl.DexPackagingOptions dex;
+    property public abstract com.android.build.api.dsl.DexPackaging dex;
     property @Deprecated public abstract java.util.Set<java.lang.String> doNotStrip;
     property @Deprecated public abstract java.util.Set<java.lang.String> excludes;
     property public abstract com.android.build.api.dsl.JniLibsPackagingOptions jniLibs;

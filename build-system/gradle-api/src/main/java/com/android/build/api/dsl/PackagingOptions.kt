@@ -102,10 +102,10 @@ interface PackagingOptions {
     fun doNotStrip(pattern: String)
 
     /** PackagingOptions for dex */
-    val dex: DexPackagingOptions
+    val dex: DexPackaging
 
     /** PackagingOptions for dex */
-    fun dex(action: DexPackagingOptions.() -> Unit)
+    fun dex(action: DexPackaging.() -> Unit)
 
     /** PackagingOptions for jniLibs */
     val jniLibs: JniLibsPackagingOptions

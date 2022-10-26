@@ -129,8 +129,6 @@ class IncubatingApiTest {
                 "com.android.build.api.dsl.BundleDeviceTier#setEnableSplit",
                 "com.android.build.api.dsl.BundleDeviceTier#getDefaultTier",
                 "com.android.build.api.dsl.BundleDeviceTier#setDefaultTier",
-                "com.android.build.api.dsl.DexPackagingOptions#getUseLegacyPackaging",
-                "com.android.build.api.dsl.DexPackagingOptions#setUseLegacyPackaging",
                 "com.android.build.api.dsl.ResourcesPackagingOptions#getExcludes",
                 "com.android.build.api.dsl.ResourcesPackagingOptions#getPickFirsts",
                 "com.android.build.api.dsl.ResourcesPackagingOptions#getMerges",

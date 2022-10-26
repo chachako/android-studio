@@ -32,7 +32,7 @@ import java.util.zip.ZipFile
 /**
  * Integration tests for [DexPackagingOptions]
  */
-class DexPackagingOptionsTest {
+class DexPackagingTest {
 
     private val app =
         MinimalSubProject.app("com.example.app")
