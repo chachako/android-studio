@@ -45,21 +45,21 @@ class CmdSetThreadReference extends CmdSet {
     }
 
     private static Message parseFramesCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         long threadID = reader.getThreadID(byteBuffer);
         int startFrame = reader.getInt(byteBuffer);
         int length = reader.getInt(byteBuffer);
 
-        message.addCmdArg("threadID", threadID);
-        message.addCmdArg("startFrame", startFrame);
-        message.addCmdArg("length", length);
+        message.addArg("threadID", threadID);
+        message.addArg("startFrame", startFrame);
+        message.addArg("length", length);
 
         return message;
     }
 
     private static Message parseFramesReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int frames = reader.getInt(byteBuffer);
 
@@ -75,7 +75,7 @@ class CmdSetThreadReference extends CmdSet {
             framesArray.add(frame);
         }
 
-        message.addReplyArg("frames", framesArray);
+        message.addArg("frames", framesArray);
 
         return message;
     }

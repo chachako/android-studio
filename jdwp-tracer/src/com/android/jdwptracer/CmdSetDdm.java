@@ -62,12 +62,12 @@ class CmdSetDdm extends CmdSet {
     }
 
     private Message parseDdmReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message msg = Message.replyMessage(byteBuffer);
+        Message msg = new Message(byteBuffer);
         return msg;
     }
 
     private Message parseDdmCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message msg = Message.cmdMessage(byteBuffer);
+        Message msg = new Message(byteBuffer);
         int type = reader.getInt(byteBuffer);
         int length = reader.getInt(byteBuffer);
 

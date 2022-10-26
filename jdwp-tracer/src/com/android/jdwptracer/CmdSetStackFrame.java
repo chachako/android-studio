@@ -35,13 +35,13 @@ public class CmdSetStackFrame extends CmdSet {
     }
 
     private static Message parseGetValuesCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         long threadID = reader.getThreadID(byteBuffer);
         long frameID = reader.getFrameID(byteBuffer);
 
-        message.addCmdArg("threadID", threadID);
-        message.addCmdArg("frameID", frameID);
+        message.addArg("threadID", threadID);
+        message.addArg("frameID", frameID);
 
         int numSlots = reader.getInt(byteBuffer);
         JsonArray slots = new JsonArray();
@@ -56,16 +56,16 @@ public class CmdSetStackFrame extends CmdSet {
             slots.add(slotEntry);
         }
 
-        message.addCmdArg("slots", slots);
+        message.addArg("slots", slots);
 
         return message;
     }
 
     private static Message parseGetValuesReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int values = reader.getInt(byteBuffer);
-        message.addReplyArg("values", values);
+        message.addArg("values", values);
 
         return message;
     }

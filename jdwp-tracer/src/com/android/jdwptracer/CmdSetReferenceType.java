@@ -65,33 +65,33 @@ class CmdSetReferenceType extends CmdSet {
     }
 
     private static Message parseSignatureCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addCmdArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
 
         return message;
     }
 
     private static Message parseSignatureReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addReplyArg("signature", reader.getString(byteBuffer));
+        message.addArg("signature", reader.getString(byteBuffer));
 
         return message;
     }
 
     private static Message parseSourceDebugExtensionCmd(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addCmdArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
 
         return message;
     }
 
     private static Message parseSourceDebugExtensionReply(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         // See
         // https://docs.oracle.com/javase/8/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ReferenceType_SourceDebugExtension.
@@ -99,7 +99,7 @@ class CmdSetReferenceType extends CmdSet {
         // message just ends. So we need to test for any remaining bytes before trying to read the
         // extension argument.
         if (byteBuffer.hasRemaining()) {
-            message.addReplyArg("extension", reader.getString(byteBuffer));
+            message.addArg("extension", reader.getString(byteBuffer));
         }
 
         return message;
@@ -107,33 +107,33 @@ class CmdSetReferenceType extends CmdSet {
 
     private static Message parseSignatureWithGenericCmd(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addCmdArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
 
         return message;
     }
 
     private static Message parseSignatureWithGenericReply(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addReplyArg("signature", reader.getString(byteBuffer));
-        message.addReplyArg("genericSignature", reader.getString(byteBuffer));
+        message.addArg("signature", reader.getString(byteBuffer));
+        message.addArg("genericSignature", reader.getString(byteBuffer));
 
         return message;
     }
 
     private static Message parseMethodsCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addCmdArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
 
         return message;
     }
 
     private static Message parseMethodsReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int declared = reader.getInt(byteBuffer);
         JsonArray methods = new JsonArray();
@@ -147,24 +147,24 @@ class CmdSetReferenceType extends CmdSet {
             methods.add(method);
         }
 
-        message.addReplyArg("declared", declared);
-        message.addReplyArg("methods", methods);
+        message.addArg("declared", declared);
+        message.addArg("methods", methods);
 
         return message;
     }
 
     private static Message parseMethodsWithGenericsCmd(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
-        message.addCmdArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
 
         return message;
     }
 
     private static Message parseMethodsWithGenericsReply(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int declared = reader.getInt(byteBuffer);
         JsonArray methods = new JsonArray();
@@ -179,8 +179,8 @@ class CmdSetReferenceType extends CmdSet {
             methods.add(method);
         }
 
-        message.addReplyArg("declared", declared);
-        message.addReplyArg("methods", methods);
+        message.addArg("declared", declared);
+        message.addArg("methods", methods);
 
         return message;
     }

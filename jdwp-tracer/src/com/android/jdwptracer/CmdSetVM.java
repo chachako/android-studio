@@ -99,27 +99,27 @@ class CmdSetVM extends CmdSet {
     @NonNull
     private static Message parseReplyIdSizes(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int fieldIDSize = reader.getInt(byteBuffer);
         reader.setFieldIDSize(fieldIDSize);
-        message.addReplyArg("FieldIDSize", Integer.toString(fieldIDSize));
+        message.addArg("FieldIDSize", Integer.toString(fieldIDSize));
 
         int methodIDSize = reader.getInt(byteBuffer);
         reader.setMethodIDSize(methodIDSize);
-        message.addReplyArg("methodIDSize", Integer.toString(methodIDSize));
+        message.addArg("methodIDSize", Integer.toString(methodIDSize));
 
         int objectIDSize = reader.getInt(byteBuffer);
         reader.setObjectIDSize(objectIDSize);
-        message.addReplyArg("objectIDSize", Integer.toString(objectIDSize));
+        message.addArg("objectIDSize", Integer.toString(objectIDSize));
 
         int referenceTypeIDSize = reader.getInt(byteBuffer);
         reader.setReferenceTypeIDSize(referenceTypeIDSize);
-        message.addReplyArg("referenceTypeID", Integer.toString(referenceTypeIDSize));
+        message.addArg("referenceTypeID", Integer.toString(referenceTypeIDSize));
 
         int frameIDSize = reader.getInt(byteBuffer);
         reader.setFrameIDSize(frameIDSize);
-        message.addReplyArg("frameIDSize", Integer.toString(frameIDSize));
+        message.addArg("frameIDSize", Integer.toString(frameIDSize));
 
         return message;
     }
@@ -127,24 +127,24 @@ class CmdSetVM extends CmdSet {
     @NonNull
     private static Message parseCmdIdSizes(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        return Message.defaultCmdParser(byteBuffer, reader);
+        return Message.defaultMessageParser(byteBuffer, reader);
     }
 
     private static Message parseClassesBySignatureCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.defaultCmdParser(byteBuffer, reader);
+        Message message = Message.defaultMessageParser(byteBuffer, reader);
 
-        message.addCmdArg("signature", reader.getString(byteBuffer));
+        message.addArg("signature", reader.getString(byteBuffer));
 
         return message;
     }
 
     private static Message parseClassesBySignatureReply(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int classes = reader.getInt(byteBuffer);
 
-        message.addReplyArg("classes", classes);
+        message.addArg("classes", classes);
 
         JsonArray classList = new JsonArray();
         for (int i = 0; i < classes; i++) {
@@ -156,22 +156,22 @@ class CmdSetVM extends CmdSet {
             classList.add(classEntry);
         }
 
-        message.addReplyArg("classList", classList);
+        message.addArg("classList", classList);
 
         return message;
     }
 
     private static Message parseAllClassesWithGenericsCmd(
             ByteBuffer byteBuffer, MessageReader reader) {
-        return Message.defaultCmdParser(byteBuffer, reader);
+        return Message.defaultMessageParser(byteBuffer, reader);
     }
 
     private static Message parseAllClassesWithGenericsReply(
             ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.replyMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         int classes = reader.getInt(byteBuffer);
-        message.addReplyArg("classes", Integer.toString(classes));
+        message.addArg("classes", Integer.toString(classes));
 
         JsonArray classList = new JsonArray();
         for (int i = 0; i < classes; i++) {
@@ -185,7 +185,7 @@ class CmdSetVM extends CmdSet {
             classList.add(classEntry);
         }
 
-        message.addReplyArg("classList", classList);
+        message.addArg("classList", classList);
 
         return message;
     }

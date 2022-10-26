@@ -31,23 +31,23 @@ class CmdSetEventRequest extends CmdSet {
     @NonNull
     private static Message parseReply(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        return Message.replyMessage(byteBuffer);
+        return new Message(byteBuffer);
     }
 
     @NonNull
     private static Message parseCmd(@NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         byte eventKind = reader.getByte(byteBuffer);
         String eventName = EventKind.fromID(eventKind).name();
-        message.addCmdArg("eventKind", eventName);
+        message.addArg("eventKind", eventName);
         message.setName(eventName);
 
         byte suspendPolicy = reader.getByte(byteBuffer);
-        message.addCmdArg("suspendPolicy", SuspendPolicy.fromID(suspendPolicy).name());
+        message.addArg("suspendPolicy", SuspendPolicy.fromID(suspendPolicy).name());
 
         int numModifiers = reader.getInt(byteBuffer);
-        message.addCmdArg("numModifiers", Integer.toString(numModifiers));
+        message.addArg("numModifiers", Integer.toString(numModifiers));
 
         return message;
     }

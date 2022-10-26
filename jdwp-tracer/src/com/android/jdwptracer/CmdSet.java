@@ -60,7 +60,7 @@ class CmdSet {
     void add(int cmdID, @NonNull String name) {
         cmds.put(
                 cmdID,
-                new Cmd(cmdID, name, Message::defaultCmdParser, Message::defaultReplyParser));
+                new Cmd(cmdID, name, Message::defaultMessageParser, Message::defaultMessageParser));
     }
 
     @NonNull
@@ -73,7 +73,7 @@ class CmdSet {
 
     public static class UnknownCommand extends Cmd {
         public UnknownCommand(int cmdID) {
-            super(cmdID, "UNKNOWN", Message::defaultCmdParser, Message::defaultReplyParser);
+            super(cmdID, "UNKNOWN", Message::defaultMessageParser, Message::defaultMessageParser);
         }
     }
 }

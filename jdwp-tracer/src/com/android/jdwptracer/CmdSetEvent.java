@@ -28,24 +28,24 @@ class CmdSetEvent extends CmdSet {
     @NonNull
     private static Message parseReplyComposite(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        return Message.replyMessage(byteBuffer);
+        return new Message(byteBuffer);
     }
 
     @NonNull
     private static Message parseCmdComposite(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        Message message = Message.cmdMessage(byteBuffer);
+        Message message = new Message(byteBuffer);
 
         byte suspendPolicy = reader.getByte(byteBuffer);
-        message.addCmdArg("suspendPolicy", Byte.toString(suspendPolicy));
+        message.addArg("suspendPolicy", Byte.toString(suspendPolicy));
 
         int numEvents = reader.getInt(byteBuffer);
-        message.addCmdArg("numEvents", Integer.toString(numEvents));
+        message.addArg("numEvents", Integer.toString(numEvents));
 
         for (int i = 0; i < numEvents; i++) {
             byte eventKind = reader.getByte(byteBuffer);
             EventKind kind = EventKind.fromID(eventKind);
-            message.addCmdArg("EventKing[" + i + "]", kind.name());
+            message.addArg("EventKing[" + i + "]", kind.name());
             message.setName(kind.name());
 
             reader.getInt(byteBuffer); // requestID
@@ -107,11 +107,11 @@ class CmdSetEvent extends CmdSet {
                     break;
                 case CLASS_PREPARE:
                     {
-                        message.addCmdArg("thread", reader.getThreadID(byteBuffer));
-                        message.addCmdArg("refTypeTag", reader.getTypeTag(byteBuffer));
-                        message.addCmdArg("typeID", reader.getReferenceTypeID(byteBuffer));
-                        message.addCmdArg("signature", reader.getString(byteBuffer));
-                        message.addCmdArg("status", reader.getInt(byteBuffer));
+                        message.addArg("thread", reader.getThreadID(byteBuffer));
+                        message.addArg("refTypeTag", reader.getTypeTag(byteBuffer));
+                        message.addArg("typeID", reader.getReferenceTypeID(byteBuffer));
+                        message.addArg("signature", reader.getString(byteBuffer));
+                        message.addArg("status", reader.getInt(byteBuffer));
                     }
                     break;
                 case CLASS_UNLOAD:

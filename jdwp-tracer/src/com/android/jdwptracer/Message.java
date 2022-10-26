@@ -31,8 +31,8 @@ class Message {
 
     private final int payloadLength;
 
-    private Message(int payloadLength) {
-        this.payloadLength = payloadLength;
+    Message(@NonNull ByteBuffer byteBuffer) {
+        this.payloadLength = byteBuffer.remaining();
     }
 
     // A name to be diplayed in the summary UI
@@ -48,37 +48,15 @@ class Message {
         this.name = name;
     }
 
-    @NonNull
-    static Message cmdMessage(@NonNull ByteBuffer byteBuffer) {
-        return new Message(byteBuffer.remaining());
+    void addArg(@NonNull String key, @NonNull String value) {
+        addArg(key, new JsonPrimitive(value));
     }
 
-    @NonNull
-    static Message replyMessage(@NonNull ByteBuffer byteBuffer) {
-        return new Message(byteBuffer.remaining());
+    void addArg(@NonNull String key, @NonNull Number value) {
+        addArg(key, new JsonPrimitive(value));
     }
 
-    void addCmdArg(@NonNull String key, @NonNull String value) {
-        addCmdArg(key, new JsonPrimitive(value));
-    }
-
-    void addCmdArg(@NonNull String key, @NonNull Number value) {
-        addCmdArg(key, new JsonPrimitive(value));
-    }
-
-    void addCmdArg(@NonNull String key, @NonNull JsonElement value) {
-        args.add(key, value);
-    }
-
-    void addReplyArg(@NonNull String key, @NonNull String value) {
-        addReplyArg(key, new JsonPrimitive(value));
-    }
-
-    void addReplyArg(@NonNull String key, @NonNull Number value) {
-        addReplyArg(key, new JsonPrimitive(value));
-    }
-
-    void addReplyArg(@NonNull String key, @NonNull JsonElement value) {
+    void addArg(@NonNull String key, @NonNull JsonElement value) {
         args.add(key, value);
     }
 
@@ -88,12 +66,7 @@ class Message {
     }
 
     @NonNull
-    static Message defaultCmdParser(@NonNull ByteBuffer buffer, @NonNull MessageReader unused) {
-        return Message.cmdMessage(buffer);
-    }
-
-    @NonNull
-    static Message defaultReplyParser(@NonNull ByteBuffer buffer, @NonNull MessageReader unused) {
-        return Message.cmdMessage(buffer);
+    static Message defaultMessageParser(@NonNull ByteBuffer buffer, @NonNull MessageReader unused) {
+        return new Message(buffer);
     }
 }
