@@ -443,6 +443,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 UnsafeBroadcastReceiverDetector.ACTION_STRING,
                 UnsafeBroadcastReceiverDetector.BROADCAST_SMS,
                 UnsafeImplicitIntentDetector.ISSUE,
+                UnsafeIntentLaunchDetector.ISSUE,
                 UnsafeNativeCodeDetector.LOAD,
                 UnsafeNativeCodeDetector.UNSAFE_NATIVE_CODE_LOCATION,
                 UnusedResourceDetector.ISSUE,

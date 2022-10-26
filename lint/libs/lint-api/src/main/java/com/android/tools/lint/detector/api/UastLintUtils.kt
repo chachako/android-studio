@@ -556,6 +556,19 @@ fun isScopingFunction(node: UCallExpression): Boolean {
     return called.containingClass?.qualifiedName == "kotlin.StandardKt__StandardKt"
 }
 
+/**
+ * Returns true if the given call represents a Kotlin scope
+ * function where the return value is the lambda result; see
+ * https://kotlinlang.org/docs/scope-functions.html#function-selection
+ */
+fun isReturningLambdaResult(node: UCallExpression): Boolean {
+    val name = getMethodName(node)
+    if (name == "let" || name == "run" || name == "with") {
+        return isScopingFunction(node)
+    }
+    return false
+}
+
 fun PsiParameter.isReceiver(): Boolean {
     // It's tempting to just check
     //    this is KtUltraLightReceiverParameter

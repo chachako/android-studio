@@ -509,9 +509,9 @@ abstract class DataFlowAnalyzer(
         super.afterVisitBinaryExpressionWithType(node)
     }
 
-    protected fun addVariableReference(node: UVariable) {
-        node.sourcePsi?.let { references.add(it) }
-        (node.javaPsi as? PsiVariable)?.let { references.add(it) }
+    protected fun addVariableReference(node: UVariable): Boolean {
+        return (node.sourcePsi?.let { references.add(it) } ?: false)
+            .or(node.javaPsi?.let { references.add(it) } ?: false)
     }
 
     override fun afterVisitSwitchClauseExpression(node: USwitchClauseExpression) {
@@ -633,30 +633,18 @@ abstract class DataFlowAnalyzer(
 
         val rhs = node.rightOperand
         if (instances.contains(rhs)) {
-            when (val lhs = node.leftOperand.tryResolve()) {
-                is UVariable -> addVariableReference(lhs)
-                is PsiLocalVariable -> references.add(lhs)
-                is PsiParameter -> references.add(lhs)
-                is PsiField -> field(rhs)
-                is PsiMethod -> field(rhs)
-            }
+            clearLhs = addBinaryExpressionReferences(node, rhs)
         } else if (rhs is UReferenceExpression) {
             val resolved = rhs.resolve()
             if (resolved != null && references.contains(resolved)) {
                 clearLhs = false
-                when (val lhs = node.leftOperand.tryResolve()) {
-                    is UVariable -> addVariableReference(lhs)
-                    is PsiParameter -> references.add(lhs)
-                    is PsiLocalVariable -> references.add(lhs)
-                    is PsiField -> field(rhs)
-                    is PsiMethod -> field(rhs)
-                }
+                addBinaryExpressionReferences(node, rhs)
             }
         }
 
         if (clearLhs) {
             // If we reassign one of the variables, clear it out
-            val lhs = node.leftOperand.skipParenthesizedExprDown()?.tryResolve()
+            val lhs = node.leftOperand.skipParenthesizedExprDown().tryResolve()
             if (lhs != null && lhs != initial && references.contains(lhs)) {
                 val block = skipParenthesizedExprUp(node.uastParent)
                 if (block is UBlockExpression && initial.size == 1) {
@@ -707,6 +695,19 @@ abstract class DataFlowAnalyzer(
             }
         }
         super.afterVisitBinaryExpression(node)
+    }
+
+    private fun addBinaryExpressionReferences(node: UBinaryExpression, rhs: UExpression): Boolean {
+        val lhs = node.leftOperand.tryResolve()
+        var referenceAdded = false
+        when (lhs) {
+            is UVariable -> referenceAdded = addVariableReference(lhs)
+            is PsiLocalVariable -> referenceAdded = references.add(lhs)
+            is PsiParameter -> referenceAdded = references.add(lhs)
+            is PsiField -> field(rhs)
+            is PsiMethod -> field(rhs)
+        }
+        return referenceAdded
     }
 
     override fun afterVisitReturnExpression(node: UReturnExpression) {
