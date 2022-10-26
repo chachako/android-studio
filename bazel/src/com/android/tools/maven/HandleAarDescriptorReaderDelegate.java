@@ -16,6 +16,8 @@
 
 package com.android.tools.maven;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import org.apache.maven.model.Model;
 import org.apache.maven.repository.internal.ArtifactDescriptorReaderDelegate;
 import org.eclipse.aether.RepositorySystemSession;
@@ -39,22 +41,23 @@ public class HandleAarDescriptorReaderDelegate extends ArtifactDescriptorReaderD
             return;
         }
 
-        if (!MavenRepository.getArtifactExtension(model)
-                .equals(result.getArtifact().getExtension())) {
-            // When the dependency type does not match the packaging type of the target, we use the packaging
-            // type of the target to clarify the dependency type.
+        if (!getArtifactExtension(model).equals(result.getArtifact().getExtension())) {
+            // When the dependency type does not match the packaging type of the target, we use the
+            // packaging type of the target to clarify the dependency type.
             //
-            // Example: An aar artifact can refer to other aar artifacts without explicitly stating the
-            // dependency type to be "aar". Aether default is "jar", so here we have to convert it back to "aar".
+            // Example: An aar artifact can refer to other aar artifacts without explicitly stating
+            // the dependency type to be "aar". Aether default is "jar", so here we have to convert
+            // it back to "aar".
             //
-            // Example: lint-gradle depends on groovy-all without expressing a dependency type. This defaults to
-            // "jar" dependency type, but groovy-all has packaging type "pom", so we have to convert it to "pom".
+            // Example: lint-gradle depends on groovy-all without expressing a dependency type. This
+            // defaults to "jar" dependency type, but groovy-all has packaging type "pom", so we
+            // have to convert it to "pom".
             //
-            // This is something that Gradle handles automatically by looking at the packaging type of the target
-            // artifact, so we do the same here.
+            // This is something that Gradle handles automatically by looking at the packaging type
+            // of the target artifact, so we do the same here.
             result.setArtifact(
                     new DifferentExtensionArtifact(
-                            MavenRepository.getArtifactExtension(model), result.getArtifact()));
+                            getArtifactExtension(model), result.getArtifact()));
         }
 
         // Workaround for https://youtrack.jetbrains.com/issue/KT-53670, which is present in
@@ -85,5 +88,15 @@ public class HandleAarDescriptorReaderDelegate extends ArtifactDescriptorReaderD
         public String getExtension() {
             return extension;
         }
+    }
+
+    private static final Map<String, String> EXTENSIONS_MAP =
+            ImmutableMap.of(
+                    "bundle", "jar",
+                    "maven-plugin", "jar",
+                    "eclipse-plugin", "jar");
+
+    private static String getArtifactExtension(Model model) {
+        return EXTENSIONS_MAP.getOrDefault(model.getPackaging(), model.getPackaging());
     }
 }

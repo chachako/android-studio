@@ -1,81 +1,82 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.tools.maven;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.collect.ImmutableList;
-import java.nio.file.Path;
-import java.util.List;
 import org.apache.maven.repository.internal.ArtifactDescriptorReaderDelegate;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
-import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.impl.DefaultServiceLocator;
-import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
+import org.eclipse.aether.impl.VersionRangeResolver;
 import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
-import org.eclipse.aether.spi.localrepo.LocalRepositoryManagerFactory;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
-import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.util.graph.selector.AndDependencySelector;
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
-import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
-import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
+import org.eclipse.aether.util.graph.transformer.ConflictResolver;
 
-/** Constructs Aether objects. */
+/** Utility class for constructing Aether objects. */
 public class AetherUtils {
 
+    // Prevents instantiating utility class.
     private AetherUtils() {}
 
-    static RepositorySystem getRepositorySystem() {
-        DefaultServiceLocator serviceLocator = MavenRepositorySystemUtils.newServiceLocator();
-
-        serviceLocator.addService(
-                RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
-        serviceLocator.addService(TransporterFactory.class, HttpTransporterFactory.class);
-
-        // Make sure we use the 'simple' implementation of LocalRepositoryManagerFactory. Otherwise
-        // we generate unnecessary files (related to caching) in the local repo.
-        List<LocalRepositoryManagerFactory> factories =
-                serviceLocator.getServices(LocalRepositoryManagerFactory.class);
-        for (LocalRepositoryManagerFactory factory : factories) {
-            if (factory instanceof SimpleLocalRepositoryManagerFactory) {
-                ((SimpleLocalRepositoryManagerFactory) factory).setPriority(100);
-            }
-        }
-
-        return checkNotNull(serviceLocator.getService(RepositorySystem.class));
+    public static DefaultServiceLocator newServiceLocator(boolean verbose) {
+        DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+        locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
+        locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+        locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+        locator.setServices(VersionRangeResolver.class, new CustomVersionRangeResolver(verbose));
+        return locator;
     }
 
-    static DefaultRepositorySystemSession getRepositorySystemSession(
-            RepositorySystem repositorySystem, Path localRepo) {
+    public static RepositorySystem newRepositorySystem(DefaultServiceLocator locator) {
+        // Note that, if any of the inputs transitively depend on an artifact using a version
+        // range, the default version range resolver will not be able to resolve the version,
+        // because our prebuilts repository does NOT have any maven-metadata.xml files.
+        // In that case, we will have to write our own, custom, version range resolver,
+        // then register it here.
+        return checkNotNull(locator.getService(RepositorySystem.class));
+    }
+
+    public static DefaultRepositorySystemSession newSession(
+            RepositorySystem system, String repoPath) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-        session.setIgnoreArtifactDescriptorRepositories(true);
+
+        // This is where the artifacts will be downloaded to. Since it points to our own local
+        // maven repo, artifacts  that are already there will not be re-downloaded.
         session.setLocalRepositoryManager(
-                repositorySystem.newLocalRepositoryManager(
-                        session, new LocalRepository(localRepo.toFile())));
+                system.newLocalRepositoryManager(session, new LocalRepository(repoPath)));
 
-        session.setRepositoryListener(new ResolutionErrorRepositoryListener());
+        session.setIgnoreArtifactDescriptorRepositories(true);
 
+        // When this flag is false, conflict losers are removed from the dependency graph. E.g.,
+        // even though common:28 depends on guava:28, it will not be in the dependency graph if
+        // there is a conflict and guava:30 wins over guava:28.
+        // When this flag is true, these nodes are kept in the dependency graph, but have a
+        // special marker (NODE_DATA_WINNER).
+        session.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, true);
         session.setConfigProperty(
                 ArtifactDescriptorReaderDelegate.class.getName(),
                 new HandleAarDescriptorReaderDelegate());
 
         return session;
-    }
-
-    public static AndDependencySelector buildDependencySelector(List<Exclusion> exclusions) {
-        return new AndDependencySelector(
-                new OptionalDependencySelector(),
-                new ScopeDependencySelector(
-                        ImmutableList.of(JavaScopes.COMPILE, JavaScopes.RUNTIME), null),
-                new ExclusionDependencySelector(
-                        ImmutableList.of(
-                                new Exclusion("maven-plugins", "*", "*", "*"),
-                                new Exclusion("*", "*", "*", "plugin"))),
-                new ExclusionDependencySelector(exclusions));
     }
 }

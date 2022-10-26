@@ -172,6 +172,7 @@ java_library(
         "@maven//:com.google.guava.guava",
         "@maven//:org.apache.maven.maven-aether-provider",
         "@maven//:org.eclipse.aether.aether-connector-basic",
+        "@maven//:org.eclipse.aether.aether-transport-file",
         "@maven//:org.eclipse.aether.aether-transport-http",
     ],
 )
@@ -549,9 +550,6 @@ java_binary(
         "@maven//:com.google.code.findbugs.jsr305",
         "@maven//:com.google.guava.guava",
         "@maven//:org.apache.maven.maven-aether-provider",
-        "@maven//:org.eclipse.aether.aether-connector-basic",
-        "@maven//:org.eclipse.aether.aether-transport-file",
-        "@maven//:org.eclipse.aether.aether-transport-http",
     ],
 )
 
@@ -570,7 +568,6 @@ coverage_java_test(
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
         "@maven//:org.apache.maven.maven-aether-provider",
-        "@maven//:org.eclipse.aether.aether-transport-file",
     ],
 )
 
