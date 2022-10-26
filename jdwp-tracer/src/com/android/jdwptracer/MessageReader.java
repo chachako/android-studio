@@ -27,6 +27,7 @@ package com.android.jdwptracer;
 import com.android.annotations.NonNull;
 import com.google.gson.JsonObject;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 class MessageReader {
     private int fieldIDSize = 8;
@@ -187,9 +188,10 @@ class MessageReader {
         return getID(buffer, frameIDSize);
     }
 
-    public void getString(@NonNull ByteBuffer buffer) {
-        int size = getInt(buffer);
-        buffer.position(buffer.position() + size);
+    public String getString(@NonNull ByteBuffer buffer) {
+        byte[] bytes = new byte[getInt(buffer)];
+        buffer.get(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     private long getID(@NonNull ByteBuffer buffer, int size) {

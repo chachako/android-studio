@@ -16,6 +16,8 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.nio.ByteBuffer;
 
 class CmdSetVM extends CmdSet {
@@ -58,7 +60,10 @@ class CmdSetVM extends CmdSet {
         super(ID, "VM");
 
         add(Cmd.VERSION);
-        add(Cmd.CLASSES_BY_SIGNATURE);
+        add(
+                Cmd.CLASSES_BY_SIGNATURE,
+                CmdSetVM::parseClassesBySignatureCmd,
+                CmdSetVM::parseClassesBySignatureReply);
         add(Cmd.ALL_CLASSES);
         add(Cmd.ALL_THREADS);
         add(Cmd.TOP_LEVEL_GROUP_THREADS);
@@ -76,7 +81,10 @@ class CmdSetVM extends CmdSet {
         add(Cmd.CAPACITIES_NEW);
         add(Cmd.REDEFINE_CLASSES);
         add(Cmd.SET_DEFAULT_STRATUM);
-        add(Cmd.ALL_CLASSES_WITH_GENERIC);
+        add(
+                Cmd.ALL_CLASSES_WITH_GENERIC,
+                CmdSetVM::parseAllClassesWithGenericsCmd,
+                CmdSetVM::parseAllClassesWithGenericsReply);
         add(Cmd.INSTANCE_COUNTS);
     }
 
@@ -120,5 +128,65 @@ class CmdSetVM extends CmdSet {
     private static Message parseCmdIdSizes(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
         return Message.defaultCmdParser(byteBuffer, reader);
+    }
+
+    private static Message parseClassesBySignatureCmd(ByteBuffer byteBuffer, MessageReader reader) {
+        Message message = Message.defaultCmdParser(byteBuffer, reader);
+
+        message.addCmdArg("signature", reader.getString(byteBuffer));
+
+        return message;
+    }
+
+    private static Message parseClassesBySignatureReply(
+            ByteBuffer byteBuffer, MessageReader reader) {
+        Message message = Message.replyMessage(byteBuffer);
+
+        int classes = reader.getInt(byteBuffer);
+
+        message.addReplyArg("classes", classes);
+
+        JsonArray classList = new JsonArray();
+        for (int i = 0; i < classes; i++) {
+            JsonObject classEntry = new JsonObject();
+            classEntry.addProperty("refTypeTag", reader.getByte(byteBuffer));
+            classEntry.addProperty("typeID", reader.getReferenceTypeID(byteBuffer));
+            classEntry.addProperty("status", reader.getInt(byteBuffer));
+
+            classList.add(classEntry);
+        }
+
+        message.addReplyArg("classList", classList);
+
+        return message;
+    }
+
+    private static Message parseAllClassesWithGenericsCmd(
+            ByteBuffer byteBuffer, MessageReader reader) {
+        return Message.defaultCmdParser(byteBuffer, reader);
+    }
+
+    private static Message parseAllClassesWithGenericsReply(
+            ByteBuffer byteBuffer, MessageReader reader) {
+        Message message = Message.replyMessage(byteBuffer);
+
+        int classes = reader.getInt(byteBuffer);
+        message.addReplyArg("classes", Integer.toString(classes));
+
+        JsonArray classList = new JsonArray();
+        for (int i = 0; i < classes; i++) {
+            JsonObject classEntry = new JsonObject();
+            classEntry.addProperty("refTypeTag", reader.getByte(byteBuffer));
+            classEntry.addProperty("typeID", reader.getReferenceTypeID(byteBuffer));
+            classEntry.addProperty("signature", reader.getString(byteBuffer));
+            classEntry.addProperty("genericSignature", reader.getString(byteBuffer));
+            classEntry.addProperty("status", reader.getInt(byteBuffer));
+
+            classList.add(classEntry);
+        }
+
+        message.addReplyArg("classList", classList);
+
+        return message;
     }
 }

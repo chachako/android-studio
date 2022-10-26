@@ -107,11 +107,11 @@ class CmdSetEvent extends CmdSet {
                     break;
                 case CLASS_PREPARE:
                     {
-                        reader.getThreadID(byteBuffer);
-                        reader.getByte(byteBuffer); // refTypeTag
-                        reader.getReferenceTypeID(byteBuffer);
-                        reader.getString(byteBuffer);
-                        reader.getInt(byteBuffer); // status
+                        message.addCmdArg("thread", reader.getThreadID(byteBuffer));
+                        message.addCmdArg("refTypeTag", reader.getTypeTag(byteBuffer));
+                        message.addCmdArg("typeID", reader.getReferenceTypeID(byteBuffer));
+                        message.addCmdArg("signature", reader.getString(byteBuffer));
+                        message.addCmdArg("status", reader.getInt(byteBuffer));
                     }
                     break;
                 case CLASS_UNLOAD:

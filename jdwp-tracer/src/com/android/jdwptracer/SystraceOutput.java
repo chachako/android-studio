@@ -74,7 +74,7 @@ class SystraceOutput {
             JsonObject args = new JsonObject();
             args.add("cmd", makeMessagePayload(command.message()));
             args.add("reply", makeMessagePayload(reply.message()));
-            emitCompleteEvent(out, command.time() / 1000, duration / 1000, i, args);
+            emitCompleteEvent(out, command.time() / 1000, duration / 1000, i, name, args);
         } else {
             emitInstantEvent(
                     out, command.time() / 1000, i, name, makeMessagePayload(command.message()));
@@ -97,10 +97,15 @@ class SystraceOutput {
     }
 
     private static void emitCompleteEvent(
-            @NonNull FileWriter out, long startTime, long duration, int i, @NonNull JsonObject args)
+            @NonNull FileWriter out,
+            long startTime,
+            long duration,
+            int i,
+            @NonNull String name,
+            @NonNull JsonObject args)
             throws IOException {
         JsonObject part = new JsonObject();
-        part.addProperty("name", "duration");
+        part.addProperty("name", name);
         part.addProperty("cat", "foo");
         part.addProperty("ph", "X");
         part.addProperty("ts", startTime);
