@@ -108,10 +108,10 @@ interface PackagingOptions {
     fun dex(action: DexPackaging.() -> Unit)
 
     /** PackagingOptions for jniLibs */
-    val jniLibs: JniLibsPackagingOptions
+    val jniLibs: JniLibsPackaging
 
     /** PackagingOptions for jniLibs */
-    fun jniLibs(action: JniLibsPackagingOptions.() -> Unit)
+    fun jniLibs(action: JniLibsPackaging.() -> Unit)
 
     /** PackagingOptions for java resources */
     val resources: ResourcesPackagingOptions

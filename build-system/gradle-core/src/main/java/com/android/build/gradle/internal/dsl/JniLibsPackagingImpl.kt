@@ -16,9 +16,9 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.api.dsl.JniLibsPackagingOptions
+import com.android.build.api.dsl.JniLibsPackaging
 
-abstract class JniLibsPackagingOptionsImpl : JniLibsPackagingOptions {
+abstract class JniLibsPackagingImpl : JniLibsPackaging {
     // support excludes += 'foo' syntax in groovy
     abstract fun setExcludes(patterns: Set<String>)
 

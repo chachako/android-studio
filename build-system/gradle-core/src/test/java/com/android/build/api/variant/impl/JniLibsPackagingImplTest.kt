@@ -53,7 +53,7 @@ class JniLibsPackagingImplTest {
         // test setExcludes method too
         val dslJniLibsPackagingOptionsImpl =
             dslPackagingOptions.jniLibs
-                as com.android.build.gradle.internal.dsl.JniLibsPackagingOptionsImpl
+                as com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
         dslJniLibsPackagingOptionsImpl.setExcludes(
             Sets.union(dslPackagingOptions.jniLibs.excludes, setOf("baz"))
         )
@@ -71,7 +71,7 @@ class JniLibsPackagingImplTest {
         // test setPickFirsts method too
         val dslJniLibsPackagingOptionsImpl =
             dslPackagingOptions.jniLibs
-                as com.android.build.gradle.internal.dsl.JniLibsPackagingOptionsImpl
+                as com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
         dslJniLibsPackagingOptionsImpl.setPickFirsts(
             Sets.union(dslPackagingOptions.jniLibs.pickFirsts, setOf("baz"))
         )
@@ -89,7 +89,7 @@ class JniLibsPackagingImplTest {
         // test setKeepDebugSymbols method too
         val dslJniLibsPackagingOptionsImpl =
             dslPackagingOptions.jniLibs
-                as com.android.build.gradle.internal.dsl.JniLibsPackagingOptionsImpl
+                as com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
         dslJniLibsPackagingOptionsImpl.setKeepDebugSymbols(
             Sets.union(dslPackagingOptions.jniLibs.keepDebugSymbols, setOf("baz"))
         )

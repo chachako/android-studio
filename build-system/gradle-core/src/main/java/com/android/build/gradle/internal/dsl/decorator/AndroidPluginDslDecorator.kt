@@ -39,7 +39,7 @@ import com.android.build.api.dsl.DexPackaging
 import com.android.build.api.dsl.ExternalNativeBuild
 import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.api.dsl.JavaCompileOptions
-import com.android.build.api.dsl.JniLibsPackagingOptions
+import com.android.build.api.dsl.JniLibsPackaging
 import com.android.build.api.dsl.KeepRules
 import com.android.build.api.dsl.Lint
 import com.android.build.api.dsl.NdkBuild
@@ -76,7 +76,7 @@ import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
 import com.android.build.gradle.internal.dsl.ExternalNativeBuild as ExternalNativeBuildImpl
 import com.android.build.gradle.internal.dsl.LintImpl
 import com.android.build.gradle.internal.dsl.JavaCompileOptions as JavaCompileOptionsImpl
-import com.android.build.gradle.internal.dsl.JniLibsPackagingOptionsImpl
+import com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
 import com.android.build.gradle.internal.dsl.LibraryPublishingImpl
 import com.android.build.gradle.internal.dsl.NdkBuildOptions
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkBundleImpl
@@ -122,7 +122,7 @@ val AGP_SUPPORTED_PROPERTY_TYPES: List<SupportedPropertyType> = listOf(
     SupportedPropertyType.Block(DependenciesInfo::class.java, DependenciesInfoImpl::class.java),
     SupportedPropertyType.Block(ExternalNativeBuild::class.java, ExternalNativeBuildImpl::class.java),
     SupportedPropertyType.Block(JavaCompileOptions::class.java, JavaCompileOptionsImpl::class.java),
-    SupportedPropertyType.Block(JniLibsPackagingOptions::class.java, JniLibsPackagingOptionsImpl::class.java),
+    SupportedPropertyType.Block(JniLibsPackaging::class.java, JniLibsPackagingImpl::class.java),
     SupportedPropertyType.Block(KeepRules::class.java, com.android.build.gradle.internal.dsl.KeepRulesImpl::class.java),
     SupportedPropertyType.Block(LibraryPublishing::class.java, LibraryPublishingImpl::class.java),
     SupportedPropertyType.Block(Lint::class.java, LintImpl::class.java),

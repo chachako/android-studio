@@ -1072,7 +1072,7 @@ package com.android.build.api.dsl {
     property public abstract com.android.build.api.dsl.AnnotationProcessorOptions annotationProcessorOptions;
   }
 
-  @org.gradle.api.Incubating public interface JniLibsPackagingOptions {
+  public interface JniLibsPackaging {
     method public java.util.Set<java.lang.String> getExcludes();
     method public java.util.Set<java.lang.String> getKeepDebugSymbols();
     method public java.util.Set<java.lang.String> getPickFirsts();
@@ -1434,18 +1434,18 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.DexPackaging getDex();
     method @Deprecated public java.util.Set<java.lang.String> getDoNotStrip();
     method @Deprecated public java.util.Set<java.lang.String> getExcludes();
-    method public com.android.build.api.dsl.JniLibsPackagingOptions getJniLibs();
+    method public com.android.build.api.dsl.JniLibsPackaging getJniLibs();
     method @Deprecated public java.util.Set<java.lang.String> getMerges();
     method @Deprecated public java.util.Set<java.lang.String> getPickFirsts();
     method public com.android.build.api.dsl.ResourcesPackagingOptions getResources();
-    method public void jniLibs(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.JniLibsPackagingOptions,kotlin.Unit> action);
+    method public void jniLibs(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.JniLibsPackaging,kotlin.Unit> action);
     method @Deprecated public void merge(String pattern);
     method @Deprecated public void pickFirst(String pattern);
     method public void resources(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ResourcesPackagingOptions,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.DexPackaging dex;
     property @Deprecated public abstract java.util.Set<java.lang.String> doNotStrip;
     property @Deprecated public abstract java.util.Set<java.lang.String> excludes;
-    property public abstract com.android.build.api.dsl.JniLibsPackagingOptions jniLibs;
+    property public abstract com.android.build.api.dsl.JniLibsPackaging jniLibs;
     property @Deprecated public abstract java.util.Set<java.lang.String> merges;
     property @Deprecated public abstract java.util.Set<java.lang.String> pickFirsts;
     property public abstract com.android.build.api.dsl.ResourcesPackagingOptions resources;

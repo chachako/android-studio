@@ -16,11 +16,9 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Incubating
 
 /** Packaging options for native library (.so) files */
-@Incubating
-interface JniLibsPackagingOptions {
+interface JniLibsPackaging {
     /**
      * Whether to use the legacy convention of compressing all .so files in the APK. If null, .so
      * files will be uncompressed and page-aligned when minSdk >= 23.
