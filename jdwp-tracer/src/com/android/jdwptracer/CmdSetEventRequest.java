@@ -16,6 +16,8 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.nio.ByteBuffer;
 
 class CmdSetEventRequest extends CmdSet {
@@ -31,23 +33,100 @@ class CmdSetEventRequest extends CmdSet {
     @NonNull
     private static Message parseReply(
             @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        return new Message(byteBuffer);
+        Message message = new Message(byteBuffer);
+        message.addArg("requestID", reader.getInt(byteBuffer));
+        return message;
     }
 
     @NonNull
-    private static Message parseCmd(@NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseCmd(@NonNull ByteBuffer buffer, @NonNull MessageReader reader) {
+        Message message = new Message(buffer);
 
-        byte eventKind = reader.getByte(byteBuffer);
+        byte eventKind = reader.getByte(buffer);
         String eventName = EventKind.fromID(eventKind).name();
         message.addArg("eventKind", eventName);
         message.setName(eventName);
 
-        byte suspendPolicy = reader.getByte(byteBuffer);
+        byte suspendPolicy = reader.getByte(buffer);
         message.addArg("suspendPolicy", SuspendPolicy.fromID(suspendPolicy).name());
 
-        int numModifiers = reader.getInt(byteBuffer);
+        int numModifiers = reader.getInt(buffer);
         message.addArg("numModifiers", Integer.toString(numModifiers));
+
+        JsonArray modifiers = new JsonArray();
+        message.addArg("modifiers", modifiers);
+
+        for (int n = 0; n < numModifiers; n++) {
+            ModKind kind = ModKind.fromID(reader.getByte(buffer));
+            JsonObject modifier = new JsonObject();
+            modifiers.add(modifier);
+
+            modifier.addProperty("modKind", kind.name());
+            switch (kind) {
+                case COUNT:
+                    {
+                        int count = reader.getInt(buffer);
+                        modifier.addProperty("count", count);
+                    }
+                    break;
+                case CONDITIONAL:
+                    {
+                        modifier.addProperty("exprID", reader.getInt(buffer));
+                    }
+                    break;
+                case THREAD_ONLY:
+                    {
+                        modifier.addProperty("threadID", reader.getThreadID(buffer));
+                    }
+                    break;
+                case CLASS_ONLY:
+                    {
+                        modifier.addProperty("clazz", reader.getReferenceTypeID(buffer));
+                    }
+                    break;
+                case CLASS_MATCH:
+                case CLASS_EXCLUDE:
+                    {
+                        modifier.addProperty("classPattern", reader.getString(buffer));
+                    }
+                    break;
+                case LOCATION_ONLY:
+                    {
+                        modifier.add("loc", reader.getLocation(buffer));
+                    }
+                    break;
+                case EXCEPTION_ONLY:
+                    {
+                        modifier.addProperty("exceptionOrNull", reader.getReferenceTypeID(buffer));
+                        modifier.addProperty("caught", reader.getBoolean(buffer));
+                        modifier.addProperty("uncaught", reader.getBoolean(buffer));
+                    }
+                    break;
+                case FIELD_ONLY:
+                    {
+                        modifier.addProperty("declaring", reader.getReferenceTypeID(buffer));
+                        modifier.addProperty("fieldID", reader.getFieldID(buffer));
+                    }
+                    break;
+                case STEP:
+                    {
+                        modifier.addProperty("thread", reader.getThreadID(buffer));
+                        modifier.addProperty("size", reader.getInt(buffer));
+                        modifier.addProperty("depth", reader.getInt(buffer));
+                    }
+                    break;
+                case INSTANCE_ONLY:
+                    {
+                        modifier.addProperty("instance", reader.getObjectID(buffer));
+                    }
+                    break;
+                case SOURCE_NAME_MATCH:
+                    {
+                        modifier.addProperty("sourceNamePattern", reader.getString(buffer));
+                    }
+                    break;
+            }
+        }
 
         return message;
     }
