@@ -275,29 +275,14 @@ class RestrictionsDetector : ResourceXmlDetector() {
     ): String? {
         var fullAttribute = attribute
         if (!element.hasAttributeNS(ANDROID_URI, fullAttribute)) {
-            var prefix: String? = element.ownerDocument.lookupNamespaceURI(ANDROID_URI)
-            if (prefix == null) {
-                val root = element.ownerDocument.documentElement
-                val attributes = root.attributes
-                var i = 0
-                val n = attributes.length
-                while (i < n) {
-                    val a = attributes.item(i) as Attr
-                    if (a.name.startsWith(XMLNS_PREFIX) && ANDROID_URI == a.value) {
-                        prefix = a.name.substring(XMLNS_PREFIX.length)
-                        break
-                    }
-                    i++
-                }
-            }
+            val prefix: String? = element.lookupPrefix(ANDROID_URI)
             if (prefix != null) {
-                fullAttribute = prefix + ':'.toString() + fullAttribute
+                fullAttribute = "$prefix:$fullAttribute"
             }
             context.report(
                 ISSUE,
                 element,
                 context.getElementLocation(element),
-                // TODO: Include namespace prefix?
                 String.format("Missing required attribute `%1\$s`", fullAttribute)
             )
             return null

@@ -144,6 +144,53 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
             )
     }
 
+    fun testIntentFilterDataDeclarationCustomAndroidNamespace() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:alt-android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+                    <activity alt-android:name="com.example.Activity">
+                        <intent-filter>
+                            <data alt-android:scheme="https" alt-android:host="example.com"/>
+                            <data alt-android:scheme="http" alt-android:host="example.org"/>
+                        </intent-filter>
+                    </activity>
+                </manifest>
+                """
+            ).indented()
+        )
+            .issues(AppLinksValidDetector.INTENT_FILTER_UNIQUE_DATA_ATTRIBUTES)
+            .run()
+            .expect(
+                """
+                AndroidManifest.xml:5: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                            <data alt-android:scheme="https" alt-android:host="example.com"/>
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                AndroidManifest.xml:6: Warning: Consider splitting data tag into multiple tags with individual attributes to avoid confusion [IntentFilterUniqueDataAttributes]
+                            <data alt-android:scheme="http" alt-android:host="example.org"/>
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 2 warnings
+                """
+            )
+            .verifyFixes()
+            .robot(true)
+            .expectFixDiffs(
+                """
+                Autofix for AndroidManifest.xml line 5: Replace with <data alt-android:scheme="https"/>...:
+                @@ -5 +5
+                -             <data alt-android:scheme="https" alt-android:host="example.com"/>
+                +             <data alt-android:scheme="https"/>
+                +             <data alt-android:host="example.com"/>
+                Autofix for AndroidManifest.xml line 6: Replace with <data alt-android:scheme="http"/>...:
+                @@ -6 +6
+                -             <data alt-android:scheme="http" alt-android:host="example.org"/>
+                +             <data alt-android:scheme="http"/>
+                +             <data alt-android:host="example.org"/>
+                """
+            )
+    }
+
     fun testWrongNamespace() {
         val expected =
             """

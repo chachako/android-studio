@@ -124,7 +124,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
                     ?: Int.MAX_VALUE
             }
 
-            val namespace = element.lookupNamespaceURI(ANDROID_URI) ?: ANDROID_NS_NAME
+            val namespace = element.lookupPrefix(ANDROID_URI) ?: ANDROID_NS_NAME
             val hostIndex = attributes.indexOfFirst { it.localName == ATTR_HOST }
             val portIndex = attributes.indexOfFirst { it.localName == ATTR_PORT }
 
