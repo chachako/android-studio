@@ -7,5 +7,9 @@ iml_module(
     iml_files = ["android.sdktools.jdwptracer.iml"],
     jvm_target = "8",
     visibility = ["//visibility:public"],
-    deps = ["//tools/base/annotations:studio.android.sdktools.android-annotations[module]"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
+    ],
 )

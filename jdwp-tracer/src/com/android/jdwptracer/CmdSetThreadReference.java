@@ -15,6 +15,8 @@
  */
 package com.android.jdwptracer;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.nio.ByteBuffer;
 
 class CmdSetThreadReference extends CmdSet {
@@ -49,9 +51,9 @@ class CmdSetThreadReference extends CmdSet {
         int startFrame = reader.getInt(byteBuffer);
         int length = reader.getInt(byteBuffer);
 
-        message.addCmdArg("threadID", Long.toUnsignedString(threadID));
-        message.addCmdArg("startFrame", Integer.toString(startFrame));
-        message.addCmdArg("length", Integer.toString(length));
+        message.addCmdArg("threadID", threadID);
+        message.addCmdArg("startFrame", startFrame);
+        message.addCmdArg("length", length);
 
         return message;
     }
@@ -61,16 +63,19 @@ class CmdSetThreadReference extends CmdSet {
 
         int frames = reader.getInt(byteBuffer);
 
-        StringBuilder sb = new StringBuilder();
+        JsonArray framesArray = new JsonArray();
         for (int i = 0; i < frames; i++) {
-            long frameId = reader.getFrameID(byteBuffer);
-            reader.getLocation(byteBuffer);
+            long frameID = reader.getFrameID(byteBuffer);
+            JsonObject location = reader.getLocation(byteBuffer);
 
-            if (i != 0) sb.append(",");
-            sb.append(Long.toUnsignedString(frameId));
+            JsonObject frame = new JsonObject();
+            frame.addProperty("frameID", frameID);
+            frame.add("location", location);
+
+            framesArray.add(frame);
         }
 
-        message.addReplyArg("frames", sb.toString());
+        message.addReplyArg("frames", framesArray);
 
         return message;
     }

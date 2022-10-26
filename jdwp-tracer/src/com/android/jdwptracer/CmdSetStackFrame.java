@@ -15,6 +15,8 @@
  */
 package com.android.jdwptracer;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.nio.ByteBuffer;
 
 public class CmdSetStackFrame extends CmdSet {
@@ -38,25 +40,23 @@ public class CmdSetStackFrame extends CmdSet {
         long threadID = reader.getThreadID(byteBuffer);
         long frameID = reader.getFrameID(byteBuffer);
 
-        message.addCmdArg("threadID", Long.toUnsignedString(threadID));
-        message.addCmdArg("frameID", Long.toUnsignedString(frameID));
+        message.addCmdArg("threadID", threadID);
+        message.addCmdArg("frameID", frameID);
 
         int numSlots = reader.getInt(byteBuffer);
-        StringBuilder sb = new StringBuilder();
+        JsonArray slots = new JsonArray();
         for (int i = 0; i < numSlots; i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-
             int slot = reader.getInt(byteBuffer);
             byte sigbyte = reader.getByte(byteBuffer);
 
-            sb.append(slot);
-            sb.append(':');
-            sb.append(sigbyte);
+            JsonObject slotEntry = new JsonObject();
+            slotEntry.addProperty("slot", slot);
+            slotEntry.addProperty("sigbyte", sigbyte);
+
+            slots.add(slotEntry);
         }
 
-        message.addCmdArg("slots", sb.toString());
+        message.addCmdArg("slots", slots);
 
         return message;
     }
@@ -65,7 +65,7 @@ public class CmdSetStackFrame extends CmdSet {
         Message message = Message.replyMessage(byteBuffer);
 
         int values = reader.getInt(byteBuffer);
-        message.addReplyArg("values", Integer.toString(values));
+        message.addReplyArg("values", values);
 
         return message;
     }

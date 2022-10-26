@@ -25,6 +25,7 @@ package com.android.jdwptracer;
 // MUST be done through this class.
 
 import com.android.annotations.NonNull;
+import com.google.gson.JsonObject;
 import java.nio.ByteBuffer;
 
 class MessageReader {
@@ -58,6 +59,20 @@ class MessageReader {
         return buffer.get();
     }
 
+    String getTypeTag(@NonNull ByteBuffer buffer) {
+        byte type = getByte(buffer);
+        switch (type) {
+            case 1:
+                return "CLASS";
+            case 2:
+                return "INTERFACE";
+            case 3:
+                return "ARRAY";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
     boolean getBoolean(@NonNull ByteBuffer buffer) {
         return buffer.get() != 0;
     }
@@ -74,11 +89,14 @@ class MessageReader {
         return buffer.getLong();
     }
 
-    void getLocation(@NonNull ByteBuffer buffer) {
-        getByte(buffer); // tag
-        getObjectID(buffer); // classID
-        getMethodID(buffer); // methodID
-        getLong(buffer); // index
+    JsonObject getLocation(@NonNull ByteBuffer buffer) {
+        JsonObject location = new JsonObject();
+        location.addProperty("type", getTypeTag(buffer));
+        location.addProperty("classID", getClassID(buffer));
+        location.addProperty("methodID", getMethodID(buffer));
+        location.addProperty("index", getLong(buffer));
+
+        return location;
     }
 
     void getValue(@NonNull ByteBuffer buffer) {
@@ -144,6 +162,10 @@ class MessageReader {
         return getID(buffer, methodIDSize);
     }
 
+    long getClassID(@NonNull ByteBuffer buffer) {
+        return getReferenceTypeID(buffer);
+    }
+
     long getObjectID(@NonNull ByteBuffer buffer) {
         return getID(buffer, objectIDSize);
     }
@@ -157,8 +179,8 @@ class MessageReader {
         getByte(buffer);
     }
 
-    void getReferenceTypeID(@NonNull ByteBuffer buffer) {
-        buffer.position(buffer.position() + referenceTypeIDSize);
+    long getReferenceTypeID(@NonNull ByteBuffer buffer) {
+        return getID(buffer, referenceTypeIDSize);
     }
 
     long getFrameID(@NonNull ByteBuffer buffer) {

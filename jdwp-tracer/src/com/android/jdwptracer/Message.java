@@ -16,23 +16,32 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 // The payload of a packet (cmd or reply). For now all fields are stored in a hashmap.
 // Some fields like payload_length are synthetic (they do not correspond to an actual field in
 // the packet payload.
 class Message {
-    private final Map<String, String> args = new HashMap<>();
+    private final JsonObject args = new JsonObject();
 
     private String name = "";
 
-    private Message() {}
+    private final int payloadLength;
+
+    private Message(int payloadLength) {
+        this.payloadLength = payloadLength;
+    }
 
     // A name to be diplayed in the summary UI
     String name() {
         return name;
+    }
+
+    int payloadLength() {
+        return payloadLength;
     }
 
     void setName(@NonNull String name) {
@@ -41,28 +50,40 @@ class Message {
 
     @NonNull
     static Message cmdMessage(@NonNull ByteBuffer byteBuffer) {
-        Message message = new Message();
-        message.addCmdArg("payload_length", Integer.toString(byteBuffer.remaining()));
-        return message;
+        return new Message(byteBuffer.remaining());
     }
 
     @NonNull
     static Message replyMessage(@NonNull ByteBuffer byteBuffer) {
-        Message message = new Message();
-        message.addReplyArg("payload_length", Integer.toString(byteBuffer.remaining()));
-        return message;
+        return new Message(byteBuffer.remaining());
     }
 
     void addCmdArg(@NonNull String key, @NonNull String value) {
-        args.put("cmd." + key, value);
+        addCmdArg(key, new JsonPrimitive(value));
+    }
+
+    void addCmdArg(@NonNull String key, @NonNull Number value) {
+        addCmdArg(key, new JsonPrimitive(value));
+    }
+
+    void addCmdArg(@NonNull String key, @NonNull JsonElement value) {
+        args.add(key, value);
     }
 
     void addReplyArg(@NonNull String key, @NonNull String value) {
-        args.put("reply." + key, value);
+        addReplyArg(key, new JsonPrimitive(value));
+    }
+
+    void addReplyArg(@NonNull String key, @NonNull Number value) {
+        addReplyArg(key, new JsonPrimitive(value));
+    }
+
+    void addReplyArg(@NonNull String key, @NonNull JsonElement value) {
+        args.add(key, value);
     }
 
     @NonNull
-    Map<String, String> args() {
+    JsonObject args() {
         return args;
     }
 
