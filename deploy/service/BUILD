@@ -22,7 +22,7 @@ java_binary(
         "//tools/base/annotations",
         "//tools/base/bazel:studio-grpc",
         "//tools/base/bazel:studio-proto",
-        "//tools/base/common:studio.android.sdktools.common",
+        "//tools/base/common:tools.common",
         "//tools/base/ddmlib:tools.ddmlib",
         "//tools/base/deploy/deployer:tools.deployer",
         "//tools/base/deploy/proto:deploy_java_proto",
