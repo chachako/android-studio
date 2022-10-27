@@ -105,10 +105,8 @@ gradle_connected_test(
         "@maven//:androidx.appcompat.appcompat_1.4.1",
         "@maven//:androidx.annotation.annotation_1.2.0-rc01",
         "@maven//:androidx.core.core-ktx_1.8.0",
-        "@maven//:androidx.test.rules_1.3.0",
         "@maven//:junit.junit_4.13.2",
         "@maven//:androidx.test.espresso.espresso-core_3.4.0",
-        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.3",
     ],
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = [
@@ -116,6 +114,7 @@ gradle_connected_test(
         "//tools/base/build-system/integration-test:utp_plugins",
         "//tools/base/build-system/integration-test:kotlin_gradle_plugin_latest_prebuilts",
     ],
+    tags = ["very_flaky"],  # b/247003418
     deps = TEST_DEPS,
 )
 

@@ -6,11 +6,10 @@ plugins {
 android {
     namespace 'com.example.rubidumconsumer'
     compileSdkPreview = 'TiramisuPrivacySandbox'
-
     defaultConfig {
         applicationId "com.example.rubidumconsumer"
-        minSdk = 33
-        targetSdkPreview = 'TiramisuPrivacySandbox'
+        minSdk 24
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -28,7 +27,6 @@ android {
 
 dependencies {
     implementation project(':ads-sdk')
-    implementation project(':ads-sdk-implementation')
     implementation 'androidx.appcompat:appcompat:1.4.1'
 
     // This is implementation because of https://github.com/android/android-test/issues/1412
