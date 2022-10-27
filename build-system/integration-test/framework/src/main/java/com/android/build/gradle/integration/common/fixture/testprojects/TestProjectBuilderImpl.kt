@@ -42,7 +42,7 @@ internal class RootTestProjectBuilderImpl: TestProjectBuilderImpl(":") {
     }
 }
 
-internal open class TestProjectBuilderImpl(override val name: String): TestProjectBuilder, TestProject {
+internal open class TestProjectBuilderImpl(override val name: String, override var withKotlinPlugin: Boolean = false): TestProjectBuilder, TestProject {
 
     private val _includedBuilds = mutableListOf<TestProjectBuilderImpl>()
     override val includedBuilds: List<TestProjectBuilderImpl>

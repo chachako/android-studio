@@ -32,10 +32,9 @@ class LayoutFileBuilder {
             """.trimIndent()
         )
     }
-
-    fun addTextView(id: String, text: String = "", customProperties: List<String> = listOf()) {
+    fun addView(viewClass: String, id: String, text: String = "", customProperties: List<String> = listOf()) {
         widgets.append("\n")
-        widgets.append("<TextView")
+        widgets.append("<$viewClass")
 
         val properties = StringBuilder()
         properties.append("\n")
@@ -57,6 +56,10 @@ class LayoutFileBuilder {
             """.trimIndent())
 
         widgets.append(properties.toString().prependIndent("\t"))
+    }
+
+    fun addTextView(id: String, text: String = "", customProperties: List<String> = listOf()) {
+        return addView("TextView", id, text, customProperties)
     }
 
     fun build(): String {

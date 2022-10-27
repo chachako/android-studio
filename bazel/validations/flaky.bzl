@@ -10,6 +10,7 @@ APPROVED_FLAKY_TESTS = [
     "//tools/base/build-system/integration-test/connected:FailureRetentionConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:TestWithSameDepAsAppConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:TestingSupportLibraryConnectedTest",  # b/148626301
+    "//tools/base/build-system/integration-test/connected:LibraryAndroidTestWithViewTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:SigningConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:ShardingConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:SeparateTestWithMinificationButNoObfuscationConnectedTest",  # b/148626301

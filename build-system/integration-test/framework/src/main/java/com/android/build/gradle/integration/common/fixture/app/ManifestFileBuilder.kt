@@ -21,19 +21,23 @@ class ManifestFileBuilder() {
 
     private val tags = StringBuilder()
 
-    fun addApplicationTag(activityClassName: String) {
+    @JvmOverloads
+    fun addApplicationTag(activityClassName: String, namespace:String = "", isMainActivity: Boolean = true) {
+        val mainLauncherIntentFilter = """
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+        """.trimIndent()
         tags.append(
             """
             <application
                 android:allowBackup="true"
                 android:supportsRtl="true"
                 android:theme="@style/Theme.AppCompat.Light">
-                <activity android:name=".$activityClassName">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
+                <activity android:name= "$namespace.$activityClassName">
+                ${if(isMainActivity) mainLauncherIntentFilter else ""}
                 </activity>
             </application>
             """.trimIndent()

@@ -289,7 +289,6 @@ class EmptyActivityProjectBuilder {
         addImplementationDependencyFromApp: Boolean = false // default to false to match AS behavior
     ): EmptyActivityProjectBuilder {
         val lib = EmptyGradleProject(subprojectName)
-
         // 1. Create build.gradle file
         lib.addFile(
             "build.gradle",

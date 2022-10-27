@@ -50,6 +50,7 @@ fun createGradleProjectBuilder(action: TestProjectBuilder.() -> Unit): GradleTes
     return GradleTestProject
         .builder()
         .fromTestApp(builder)
+        .withKotlinGradlePlugin(builder.withKotlinPlugin)
         .withAdditionalMavenRepo(builder.mavenRepoGenerator)
 }
 
@@ -61,6 +62,8 @@ interface TestProjectBuilder {
     val name: String
 
     var buildFileType: BuildFileType
+
+    var withKotlinPlugin: Boolean
 
     fun settings(action: SettingsBuilder.() -> Unit)
 
@@ -155,7 +158,7 @@ interface AndroidProjectBuilder {
     var targetProjectPath: String?
     var renderscriptTargetApi: Int?
     var renderscriptSupportModeEnabled: Boolean?
-
+    var hasInstrumentationTests: Boolean?
     val dynamicFeatures: MutableSet<String>
 
     /**
@@ -212,6 +215,7 @@ interface BuildFeaturesBuilder {
     var shaders: Boolean?
     var androidResources: Boolean?
     var mlModelBinding: Boolean?
+    var viewBinding: Boolean?
 }
 
 interface TestFixturesBuilder {

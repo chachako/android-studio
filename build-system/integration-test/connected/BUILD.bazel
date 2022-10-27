@@ -214,6 +214,21 @@ gradle_connected_test(
 )
 
 gradle_connected_test(
+    name = "LibraryAndroidTestWithViewTest",
+    srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
+    avd = ":avd",
+    data = TEST_DATA,
+    flaky = True,  # b/148626301 flaky emulator connectivity
+    maven_repo_zips = MAVEN_REPO_ZIPS + [
+        "//tools/data-binding:data_binding_runtime",
+    ],
+    maven_repos = TEST_MAVEN_REPOS + [
+        "//tools/base/build-system/integration-test/connected:databinding_prebuilts",
+    ],
+    deps = TEST_DEPS,
+)
+
+gradle_connected_test(
     name = "CoreLibraryDesugarConversionConnectedTest",
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd",
@@ -799,6 +814,7 @@ maven_repository(
         "@maven//:androidx.test.rules_1.1.0",
         "@maven//:androidx.test.rules_1.4.0-alpha06",
         "@maven//:androidx.test.runner_1.4.0-alpha06",
+        "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
         "@maven//:com.android.support.multidex-instrumentation_1.0.2",
         "@maven//:com.android.support.multidex_1.0.2",
         "@maven//:com.android.tools.desugar_jdk_libs_1.1.5",

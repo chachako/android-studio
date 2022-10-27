@@ -35,7 +35,7 @@ internal class AndroidProjectBuilderImpl(
     override var targetProjectPath: String? = null
     override var renderscriptTargetApi: Int? = null
     override var renderscriptSupportModeEnabled: Boolean? = null
-
+    override var hasInstrumentationTests: Boolean? = null
     override val dynamicFeatures: MutableSet<String> = mutableSetOf()
 
     private val buildFeatures = BuildFeaturesBuilderImpl()
@@ -149,7 +149,9 @@ internal class AndroidProjectBuilderImpl(
         } else if (minSdkPreview != null) {
             sb.append("  minSdkPreview = $minSdkPreview\n")
         }
-
+        if (hasInstrumentationTests == true) {
+            sb.append("testInstrumentationRunner \"androidx.test.runner.AndroidJUnitRunner\"")
+        }
         applicationId?.let {
             sb.append("    applicationId = \"$it\"\n")
         }
@@ -196,6 +198,7 @@ internal class AndroidProjectBuilderImpl(
             buildFeatures.shaders?.let { sb.append("    shaders = $it\n") }
             buildFeatures.androidResources?.let { sb.append("    androidResources = $it\n") }
             buildFeatures.mlModelBinding?.let { sb.append("    mlModelBinding = $it\n") }
+            buildFeatures.viewBinding?.let { sb.append("    viewBinding = $it\n") }
             sb.append("  }\n") // BUILD-FEATURES
         }
 
@@ -339,6 +342,7 @@ internal class BuildFeaturesBuilderImpl: BuildFeaturesBuilder {
     override var shaders: Boolean? = null
     override var androidResources: Boolean? = null
     override var mlModelBinding: Boolean? = null
+    override var viewBinding: Boolean? = null
 
     fun hasNonDefaultValue(): Boolean {
         return aidl != null
@@ -350,6 +354,7 @@ internal class BuildFeaturesBuilderImpl: BuildFeaturesBuilder {
                 || shaders != null
                 || androidResources != null
                 || mlModelBinding != null
+                || viewBinding != null
     }
 }
 
