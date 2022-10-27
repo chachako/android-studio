@@ -127,6 +127,11 @@ Folder of the module level build.gradle.
 - example: $PROJECTS/MyProject/Source/Android/app1
 - environment: android-gradle
 
+## ${ndk.moduleHasBuildTimeInformation}
+Whether build-time information is available. If false, then only configuration-time information is available.
+- example: true
+- environment: android-gradle
+
 ## ${ndk.moduleMakeFile}
 Path to the make file for the current build system type.
 - cmake example: $PROJECTS/MyProject/CMakeLists.txt

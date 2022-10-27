@@ -360,8 +360,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
             taskFactory,
             globalConfig.services.projectOptions,
             variants,
-            project.providers,
-            project.layout
+            project
         )
 
         // Global tasks required for privacy sandbox sdk consumption

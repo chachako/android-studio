@@ -153,9 +153,7 @@ class SettingsConfigurationRewriterKtTest {
             val model =
                     createInitialCxxModel(
                         sdkComponents,
-                        androidLocationProvider,
                         listOf(configurationParameters),
-                        versionExecutor,
                         providers,
                         layout
                     )
@@ -179,9 +177,7 @@ class SettingsConfigurationRewriterKtTest {
             val abis =
                     createInitialCxxModel(
                         sdkComponents,
-                        androidLocationProvider,
                         listOf(configurationParameters),
-                        versionExecutor,
                         providers,
                         layout
                     )

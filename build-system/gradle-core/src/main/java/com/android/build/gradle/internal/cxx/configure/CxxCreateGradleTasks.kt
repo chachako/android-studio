@@ -66,9 +66,9 @@ import org.gradle.api.tasks.TaskProvider
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.PREFAB_PACKAGE
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH
 import com.android.build.gradle.tasks.ExternalNativeBuildTask
+import org.gradle.api.Project
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.provider.ProviderFactory
-import java.io.File
 
 /**
  * Construct gradle tasks for C/C++ configuration and build.
@@ -80,9 +80,10 @@ fun <VariantBuilderT : ComponentBuilder, VariantT : VariantCreationConfig> creat
         taskFactory: TaskFactory,
         projectOptions: ProjectOptions,
         variants: Collection<ComponentInfo<VariantBuilderT, VariantT>>,
-        providers: ProviderFactory,
-        layout: ProjectLayout) {
+        project: Project) {
     if (variants.isEmpty()) return
+    val providers = project.providers
+    val layout = project.layout
     IssueReporterLoggingEnvironment(
         issueReporter,
         variants.first().variant.services.projectInfo.rootDir,
@@ -95,11 +96,12 @@ fun <VariantBuilderT : ComponentBuilder, VariantT : VariantCreationConfig> creat
             TimingEnvironment(
                 configurationParameters.first().intermediatesFolder.resolve("cxx"),
                 "create_cxx_tasks").use {
+
+            NativeLocationsBuildService.register(project)
+
             val abis = time("create-initial-cxx-model") {
                 createInitialCxxModel(sdkComponents,
-                        androidLocationsProvider,
                         configurationParameters,
-                        providers.createConfigurationTimeVersionExecutor(),
                         providers,
                         layout
                 )
@@ -116,6 +118,7 @@ fun <VariantBuilderT : ComponentBuilder, VariantT : VariantCreationConfig> creat
                     is Configure -> {
                         val variant = variantMap.getValue(task.representative.variant.variantName)
                         val configureTask = taskFactory.register(createCxxConfigureTask(
+                            project,
                             globalConfig,
                             variant,
                             task.representative,
@@ -321,9 +324,7 @@ fun createFoldedCxxTaskDependencyModel(globalAbis: List<CxxAbiModel>) : CxxTaskD
  */
 fun createInitialCxxModel(
     sdkComponents: SdkComponentsBuildService,
-    androidLocationsProvider: AndroidLocationsProvider,
     configurationParameters: List<CxxConfigurationParameters>,
-    versionExecutor: (File) -> String,
     providers: ProviderFactory,
     layout: ProjectLayout
 ) : List<CxxAbiModel> {
@@ -341,8 +342,6 @@ fun createInitialCxxModel(
         val module = time("create-module-model") {
             createCxxModuleModel(
                 sdkComponents,
-                androidLocationsProvider,
-                versionExecutor,
                 parameters)
         }
         val variant = time("create-variant-model") {
@@ -355,12 +354,6 @@ fun createInitialCxxModel(
             }
         }
     }
-}
-
-private fun ProviderFactory.createConfigurationTimeVersionExecutor() : (File) -> String = { exe ->
-    exec { spec ->
-        spec.commandLine(exe.path, "--version")
-    }.standardOutput.asText.get()
 }
 
 private fun List<CxxAbiModel>.toConfigurationModel() =

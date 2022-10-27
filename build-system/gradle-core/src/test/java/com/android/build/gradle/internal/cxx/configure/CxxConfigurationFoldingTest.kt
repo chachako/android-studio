@@ -48,9 +48,7 @@ class CxxConfigurationFoldingTest {
             val config2 = configurationParameters.copy(variantName = "debug2")
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -69,9 +67,7 @@ class CxxConfigurationFoldingTest {
             val config2 = configurationParameters.copy(variantName = "debug2")
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -99,9 +95,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -129,9 +123,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -158,9 +150,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -180,9 +170,7 @@ class CxxConfigurationFoldingTest {
             val config2 = configurationParameters.copy(variantName = "release")
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -212,9 +200,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -244,9 +230,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -276,9 +260,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -308,9 +290,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -344,9 +324,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2, config3),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -403,9 +381,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -437,9 +413,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )
@@ -469,9 +443,7 @@ class CxxConfigurationFoldingTest {
             )
             val allAbis = createInitialCxxModel(
                 sdkComponents,
-                androidLocationProvider,
                 listOf(config1, config2),
-                versionExecutor,
                 providers,
                 layout
             )

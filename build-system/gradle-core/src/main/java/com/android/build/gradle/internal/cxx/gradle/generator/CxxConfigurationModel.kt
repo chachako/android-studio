@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.component.features.NativeBuildCreationC
 import com.android.build.gradle.internal.cxx.caching.CachingEnvironment
 import com.android.build.gradle.internal.cxx.configure.CXX_DEFAULT_CONFIGURATION_SUBFOLDER
 import com.android.build.gradle.internal.cxx.configure.NativeBuildSystemVariantConfig
+import com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildService
 import com.android.build.gradle.internal.cxx.configure.NinjaMetadataGenerator
 import com.android.build.gradle.internal.cxx.configure.createNativeBuildSystemVariantConfig
 import com.android.build.gradle.internal.cxx.configure.ninja
@@ -33,6 +34,7 @@ import com.android.build.gradle.internal.cxx.logging.infoln
 import com.android.build.gradle.internal.cxx.logging.warnln
 import com.android.build.gradle.internal.cxx.model.CxxAbiModel
 import com.android.build.gradle.internal.cxx.model.CxxVariantModel
+import com.android.build.gradle.internal.cxx.model.minimumCmakeVersion
 import com.android.build.gradle.internal.ndk.NdkHandler
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.profile.PROFILE_DIRECTORY
@@ -58,13 +60,14 @@ import com.android.builder.profile.ChromeTracingProfileConverter
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
 import com.android.utils.FileUtils.join
+import com.android.utils.cxx.CxxDiagnosticCode
 import com.android.utils.cxx.CxxDiagnosticCode.BUILD_OUTPUT_LEVEL_NOT_SUPPORTED
 import com.android.utils.cxx.CxxDiagnosticCode.CMAKE_IS_MISSING
 import com.android.utils.cxx.CxxDiagnosticCode.INVALID_EXTERNAL_NATIVE_BUILD_CONFIG
+import com.android.utils.cxx.CxxDiagnosticCode.NINJA_IS_MISSING
 import org.gradle.api.file.FileCollection
 import java.io.File
 import java.util.Locale
-import java.util.Objects
 
 /**
  * The createCxxMetadataGenerator(...) function is meant to be use at
@@ -391,27 +394,28 @@ fun createCxxMetadataGenerator(
             variantBuilder
         )
         CMAKE -> {
-            val cmake =
-                Objects.requireNonNull(variant.module.cmake)!!
-            if (!cmake.isValidCmakeAvailable) {
+            val cmake = abi.variant.module.cmake
+            if (cmake == null) {
                 errorln(CMAKE_IS_MISSING, "No valid CMake executable was found.")
-                return CxxNopMetadataGenerator(variantBuilder)
+                CxxNopMetadataGenerator(variantBuilder)
+            } else {
+                val cmakeRevision = cmake.minimumCmakeVersion
+                variantBuilder?.nativeCmakeVersion = cmakeRevision.toString()
+                if (cmakeRevision.major < 3
+                    || cmakeRevision.major == 3 && cmakeRevision.minor <= 6
+                ) {
+                    // Aside from fork-CMake, this is the range of CMake versions that was
+                    // unsupported before the introduction of Ninja-parsing based metadata generation.
+                    CMakeNinjaParserMetadataGenerator(abi, variantBuilder)
+                } else {
+                    val isPreCmakeFileApiVersion = cmakeRevision.major == 3 && cmakeRevision.minor < 15
+                    if (isPreCmakeFileApiVersion) {
+                        CmakeServerExternalNativeJsonGenerator(abi, variantBuilder)
+                    } else {
+                        CmakeQueryMetadataGenerator(abi, variantBuilder)
+                    }
+                }
             }
-            val cmakeRevision = cmake.minimumCmakeVersion
-            variantBuilder?.nativeCmakeVersion = cmakeRevision.toString()
-            if (cmakeRevision.major < 3
-                || cmakeRevision.major == 3 && cmakeRevision.minor <= 6
-            ) {
-                // Aside from fork-CMake, this is the range of CMake versions that was
-                // unsupported before the introduction of Ninja-parsing based metadata generation.
-                return CMakeNinjaParserMetadataGenerator(abi, variantBuilder)
-            }
-
-            val isPreCmakeFileApiVersion = cmakeRevision.major == 3 && cmakeRevision.minor < 15
-            if (isPreCmakeFileApiVersion) {
-                return CmakeServerExternalNativeJsonGenerator(abi, variantBuilder)
-            }
-            return CmakeQueryMetadataGenerator(abi, variantBuilder)
         }
         else -> error("${variant.module.buildSystem}")
     }

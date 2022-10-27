@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.core.MergedNdkConfig
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
 import com.android.build.gradle.internal.cxx.configure.CmakeLocator
+import com.android.build.gradle.internal.cxx.configure.NativeLocationsBuildService
 import com.android.build.gradle.internal.cxx.configure.NinjaLocator
 import com.android.build.gradle.internal.cxx.configure.defaultCmakeVersion
 import com.android.build.gradle.internal.cxx.gradle.generator.tryCreateConfigurationParameters
@@ -185,6 +186,11 @@ open class BasicModuleModelMock {
 
     val androidLocationProvider = mock(
         AndroidLocationsProvider::class.java
+    )
+
+    val nativeLocationsBuildService = mock(
+        NativeLocationsBuildService::class.java,
+        throwUnmocked
     )
 
     val sdkComponents = mock(
@@ -430,7 +436,8 @@ open class BasicModuleModelMock {
         doReturn(null).`when`(gradle).parent
 
         doReturn(setOf< PrefabPackagingOptions>()).`when`(globalConfig).prefabOrEmpty
-
+        doReturn(cmakeDir.resolve("cmake")).`when`(nativeLocationsBuildService).locateCMake(any(), any())
+        doReturn(cmakeDir.resolve("ninja")).`when`(nativeLocationsBuildService).locateNinja(any())
         mockModule("app1")
     }
 

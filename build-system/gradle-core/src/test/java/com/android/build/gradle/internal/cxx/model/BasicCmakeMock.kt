@@ -32,11 +32,7 @@ open class BasicCmakeMock(createFakeNinja : Boolean = true) : BasicModuleModelMo
     val module by lazy {
         createCxxModuleModel(
             sdkComponents,
-            androidLocationProvider,
-            configurationParameters,
-            versionExecutor,
-            cmakeFinder,
-            ninjaFinder
+            configurationParameters
         )
     }
     val variant by lazy { createCxxVariantModel(configurationParameters, module) }

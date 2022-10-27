@@ -45,8 +45,6 @@ class CreateCxxModuleModelTest {
             doReturn(File("./CMakeLists.txt")).`when`(it.cmake).path
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
-                it.androidLocationProvider,
-                it.versionExecutor,
                 it.configurationParameters)).isNotNull()
         }
     }
@@ -57,8 +55,6 @@ class CreateCxxModuleModelTest {
             doReturn(File("./Android.mk")).`when`(it.ndkBuild).path
             assertThat(createCxxModuleModel(
                 it.sdkComponents,
-                it.androidLocationProvider,
-                it.versionExecutor,
                 it.configurationParameters
             )).isNotNull()
         }
@@ -94,8 +90,6 @@ class CreateCxxModuleModelTest {
                     )!!
                 val module = createCxxModuleModel(
                     it.sdkComponents,
-                    it.androidLocationProvider,
-                    it.versionExecutor,
                     it.configurationParameters
                 )
                 val finalStagingDir = module.cxxFolder
@@ -116,8 +110,6 @@ class CreateCxxModuleModelTest {
                         it.variantImpl)!!
                 val module = createCxxModuleModel(
                     it.sdkComponents,
-                    it.androidLocationProvider,
-                    it.versionExecutor,
                     configurationParameters
                 )
                 val finalStagingDir = module.cxxFolder

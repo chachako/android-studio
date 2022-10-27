@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.cxx.settings
 
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.configure.createInitialCxxModel
+import com.android.build.gradle.internal.cxx.configure.rewriteWithLocations
 import com.android.build.gradle.internal.cxx.model.BasicCmakeMock
 import com.android.build.gradle.internal.cxx.model.BasicNdkBuildMock
 import com.android.build.gradle.internal.cxx.model.createCxxAbiModel
@@ -45,11 +46,7 @@ class LookupSettingFromModelKtTest {
             // Walk all vals in the model and invoke them
             val module = createCxxModuleModel(
                 it.sdkComponents,
-                it.androidLocationProvider,
-                it.configurationParameters,
-                it.versionExecutor,
-                it.cmakeFinder,
-                it.ninjaFinder)
+                it.configurationParameters)
             val variant = createCxxVariantModel(
                 it.configurationParameters,
                 module)
@@ -76,9 +73,7 @@ class LookupSettingFromModelKtTest {
                     buildSystem = NativeBuildSystem.NDK_BUILD)
             val abi = createInitialCxxModel(
                     sdkComponents,
-                    androidLocationProvider,
                     listOf(parameters),
-                    versionExecutor,
                     providers,
                     layout)
                     .single { abi -> abi.abi == Abi.X86_64 }
@@ -99,10 +94,12 @@ class LookupSettingFromModelKtTest {
                     )
             )
             val allAbis = createInitialCxxModel(
-                it.sdkComponents, it.androidLocationProvider, listOf(configurationParameters),
-                it.versionExecutor, it.providers, it.layout
+                it.sdkComponents, listOf(configurationParameters),
+                it.providers, it.layout
             )
-            val abi = allAbis.single { abi -> abi.abi == Abi.X86_64 }
+            val abi = allAbis
+                .single { abi -> abi.abi == Abi.X86_64 }
+                .rewriteWithLocations(it.nativeLocationsBuildService)
 
             Macro.values().forEach { macro ->
                 val resolved = abi.resolveMacroValue(macro)
@@ -140,13 +137,16 @@ class LookupSettingFromModelKtTest {
             val allAbis =
                     createInitialCxxModel(
                         it.sdkComponents,
-                        it.androidLocationProvider,
                         listOf(it.configurationParameters),
-                        it.versionExecutor,
                         it.providers,
                         it.layout
                     )
-            val abi = allAbis.single { abi -> abi.abi == Abi.X86_64 }
+            val abi = allAbis
+                .single { abi -> abi.abi == Abi.X86_64 }
+                .rewriteWithLocations(it.nativeLocationsBuildService)
+            if (!abi.variant.module.hasBuildTimeInformation) {
+                error("Expected build time information after rewriteWithLocations")
+            }
 
             Macro.values().forEach { macro ->
                 val resolved = abi.resolveMacroValue(macro)

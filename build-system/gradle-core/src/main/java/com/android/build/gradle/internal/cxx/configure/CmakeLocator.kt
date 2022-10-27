@@ -466,7 +466,7 @@ fun Revision.isCmakeForkVersion() = major == 3 && minor == 6 && micro == 0
 class CmakeLocator {
     fun findCmakePath(
         cmakeVersionFromDsl: String?,
-        cmakeFile: File?,
+        localPropertiesCMakeDir: File?,
         androidLocationsProvider: AndroidLocationsProvider,
         sdkFolder: File?,
         versionExecutor: (File) -> String,
@@ -474,7 +474,7 @@ class CmakeLocator {
         PassThroughRecordingLoggingEnvironment().use {
             return findCmakePathLogic(
                     cmakeVersionFromDsl,
-                    cmakeFile,
+                    localPropertiesCMakeDir,
                     downloader,
                     { getEnvironmentPaths() },
                     { getSdkCmakeFolders(sdkFolder) },
