@@ -127,7 +127,7 @@ class PluginVersionCheckTest {
             """.trimIndent()
         )
 
-        val model = project.modelV2().ignoreSyncIssues().fetchModels()
+        val model = project.modelV2().withFailOnWarning(false).ignoreSyncIssues().fetchModels()
         val syncIssues = model.container.getNonDeprecationIssues()
         assertThat(syncIssues).hasSize(1)
         val syncIssue = syncIssues.single()
