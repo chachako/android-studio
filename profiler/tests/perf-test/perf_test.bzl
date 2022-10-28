@@ -1,7 +1,7 @@
 load("//tools/base/transport/test-framework:transport_test.bzl", "transport_test")
 load("//tools/base/bazel:android.bzl", "dex_library")
 
-# Run an integration test that verifes profiler APIs.
+# Run an integration test that verifies profiler APIs.
 #
 # srcs: One or more test classes to run under this test.
 # test_app: A target that represents a mock app (i.e. a collection of mock
