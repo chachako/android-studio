@@ -72,6 +72,8 @@ class CacheabilityTest {
             TaskInfo(FROM_CACHE, "process", "Resources", listOf("Debug", "Release")),
             TaskInfo(FROM_CACHE, "test", "", listOf("DebugUnitTest", "ReleaseUnitTest")),
             TaskInfo(FROM_CACHE, "compile", "ArtProfile", listOf("Release")),
+            TaskInfo(FROM_CACHE, "package", "Resources", listOf("Debug", "Release")),
+            TaskInfo(FROM_CACHE, "parse", "LocalResources", listOf("Debug", "Release")),
 
             /*
              * The following tasks are either not yet cacheable, or not intended to be cacheable

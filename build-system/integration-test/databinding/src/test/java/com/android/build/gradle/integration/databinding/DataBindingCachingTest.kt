@@ -70,6 +70,8 @@ class DataBindingCachingTest(private val withKotlin: Boolean) {
         ":javaPreCompileDebug" to FROM_CACHE,
         ":mapDebugSourceSetPaths" to DID_WORK, /* Intentionally not cacheable. */
         ":mergeDebugResources" to FROM_CACHE,
+        ":packageDebugResources" to FROM_CACHE,
+        ":parseDebugLocalResources" to FROM_CACHE,
         ":preBuild" to UP_TO_DATE,
         ":preDebugBuild" to UP_TO_DATE,
         ":processDebugMainManifest" to FROM_CACHE,
@@ -174,6 +176,7 @@ class DataBindingCachingTest(private val withKotlin: Boolean) {
         val updatedExpectedTaskStates = expectedTaskStates.toMutableMap()
         updatedExpectedTaskStates[":dataBindingGenBaseClassesDebug"] = DID_WORK
         updatedExpectedTaskStates[":mergeDebugResources"] = DID_WORK
+        updatedExpectedTaskStates[":packageDebugResources"] = DID_WORK
 
         if (withKotlin) {
             updatedExpectedTaskStates[":kaptDebugKotlin"] = DID_WORK

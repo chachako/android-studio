@@ -64,6 +64,8 @@ class MinifyCacheabilityTest {
             ":mergeMinifiedResources",
             ":mergeMinifiedShaders",
             ":minifyMinifiedWithR8",
+            ":packageMinifiedResources",
+            ":parseMinifiedLocalResources",
             ":processMinifiedMainManifest",
             ":processMinifiedManifest",
             ":processMinifiedManifestForPackage",

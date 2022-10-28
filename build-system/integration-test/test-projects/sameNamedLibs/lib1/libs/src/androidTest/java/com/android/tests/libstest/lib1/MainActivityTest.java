@@ -27,7 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
     @Rule
@@ -47,8 +46,8 @@ public class MainActivityTest {
 
         mLib1TextView1 = (TextView) a.findViewById(R.id.lib1_text1);
         mLib1TextView2 = (TextView) a.findViewById(R.id.lib1_text2);
-        mLib2TextView1 = (TextView) a.findViewById(R.id.lib2_text1);
-        mLib2TextView2 = (TextView) a.findViewById(R.id.lib2_text2);
+        mLib2TextView1 = (TextView) a.findViewById(com.android.tests.libstest.lib2.R.id.lib2_text1);
+        mLib2TextView2 = (TextView) a.findViewById(com.android.tests.libstest.lib2.R.id.lib2_text2);
     }
 
     /**

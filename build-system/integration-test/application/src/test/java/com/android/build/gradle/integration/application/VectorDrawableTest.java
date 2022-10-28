@@ -552,7 +552,7 @@ public class VectorDrawableTest {
     @Test
     public void testVectorDrawablesWithInvalidFillTypeValueThrowsException()
             throws IOException, InterruptedException {
-        File vector = new File(project.getProjectDir(), "src/main/res/drawable/icon.xml");
+        File vector = new File(project.getProjectDir(), "src/main/res/drawable/invalid_icon.xml");
         Files.asCharSink(
                 vector,
                 StandardCharsets.UTF_8)

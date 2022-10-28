@@ -91,7 +91,7 @@ enum class BooleanOption(
     GENERATE_MANIFEST_CLASS("android.generateManifestClass", false, ApiStage.Stable),
 
     USE_NON_FINAL_RES_IDS("android.nonFinalResIds", false, ApiStage.Stable),
-    NON_TRANSITIVE_R_CLASS("android.nonTransitiveRClass", false, ApiStage.Stable),
+    NON_TRANSITIVE_R_CLASS("android.nonTransitiveRClass", true, ApiStage.Stable),
 
     /* ------------------
      * SUPPORTED FEATURES

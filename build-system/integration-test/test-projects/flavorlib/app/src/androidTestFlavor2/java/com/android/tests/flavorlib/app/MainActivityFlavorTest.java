@@ -58,8 +58,8 @@ public class MainActivityFlavorTest {
         // ensure a valid handle to the activity has been returned
         assertNotNull(a);
 
-        mLibTextView1 = (TextView) a.findViewById(R.id.lib_text1);
-        mLibTextView2 = (TextView) a.findViewById(R.id.lib_text2);
+        mLibTextView1 = (TextView) a.findViewById(com.android.tests.flavorlib.lib.R.id.lib_text1);
+        mLibTextView2 = (TextView) a.findViewById(com.android.tests.flavorlib.lib.R.id.lib_text2);
     }
 
     /**

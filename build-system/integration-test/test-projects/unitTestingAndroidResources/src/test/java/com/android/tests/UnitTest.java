@@ -56,17 +56,11 @@ public class UnitTest {
     @Test
     public void idsAreConsistent() throws Exception {
         Map<String, Integer> seenIds = new HashMap<>();
-        Class<?> mainRClass = com.android.tests.R.id.class;
 
         for (Field field : android.support.v7.appcompat.R.id.class.getFields()) {
             String name = field.getName();
             int appCompatId = (Integer) field.get(null);
             seenIds.put(name, appCompatId);
-
-            // Make sure the "main" R class uses the same numbers.
-            int idInMainClass = (Integer) mainRClass.getField(name).get(null);
-            assertEquals("android.support.v7.appcompat.R.id." + name
-                    + " != com.android.tests.R.id." + name, appCompatId, idInMainClass);
         }
 
         for (Field field : android.support.constraint.R.id.class.getFields()) {
@@ -80,16 +74,19 @@ public class UnitTest {
             } else {
                 assertFalse(String.format("%x", constraintId), seenIds.containsValue(constraintId));
             }
-
-            int idInMainClass = (Integer) mainRClass.getField(name).get(null);
-            assertEquals(name, constraintId, idInMainClass);
         }
     }
 
     @Test
     public void stylablesArePresent() throws Exception {
-        int[] stylable = com.android.tests.R.styleable.AppCompatTheme;
-        int child = com.android.tests.R.styleable.AppCompatTheme_listPreferredItemPaddingRight;
+        int[] stylable = android.support.v7.appcompat.R.styleable.AppCompatTheme;
+        int child =
+                android.support
+                        .v7
+                        .appcompat
+                        .R
+                        .styleable
+                        .AppCompatTheme_listPreferredItemPaddingRight;
         assertTrue(stylable.length > 0);
         assertTrue(child >= 0);
     }

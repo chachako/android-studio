@@ -16,7 +16,7 @@
 
 package com.android.tests.testprojecttest.lib;
 
-import com.android.tests.testprojecttest.app.R;
+import static org.junit.Assert.*;
 
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
@@ -26,8 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
 
 /**
  * An example of an {@link ActivityInstrumentationTestCase2} of a specific activity {@link Focus2}.
@@ -58,7 +56,7 @@ public class LibActivityTest {
         final LibActivity a = rule.getActivity();
         // ensure a valid handle to the activity has been returned
         assertNotNull(a);
-        mTextView = (TextView) a.findViewById(R.id.text);
+        mTextView = (TextView) a.findViewById(com.android.tests.testprojecttest.lib.R.id.text);
     }
 
     /**

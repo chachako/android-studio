@@ -3,7 +3,6 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
-import com.android.build.gradle.options.BooleanOption
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -37,8 +36,8 @@ class MapSourceSetPathsTaskTest {
         val expectedContents = """
             com.android.tests.flavors-f1Fa-0 $projectDir/build/generated/res/pngs/f1Fa/debug
             com.android.tests.flavors-f1Fa-1 $projectDir/build/generated/res/resValues/f1Fa/debug
-            com.android.tests.flavors-mergeF1FaDebugResources-2 $projectDir/build/intermediates/incremental/f1FaDebug/mergeF1FaDebugResources/merged.dir
-            com.android.tests.flavors-mergeF1FaDebugResources-3 $projectDir/build/intermediates/incremental/f1FaDebug/mergeF1FaDebugResources/stripped.dir
+            com.android.tests.flavors-packageF1FaDebugResources-2 $projectDir/build/intermediates/incremental/f1FaDebug/packageF1FaDebugResources/merged.dir
+            com.android.tests.flavors-packageF1FaDebugResources-3 $projectDir/build/intermediates/incremental/f1FaDebug/packageF1FaDebugResources/stripped.dir
             com.android.tests.flavors-f1Fa-4 $projectDir/build/intermediates/merged-not-compiled-resources/f1Fa/debug
             com.android.tests.flavors-merged_res-5 $projectDir/build/intermediates/merged_res/f1FaDebug
             com.android.tests.flavors-debug-6 $projectDir/src/debug/res

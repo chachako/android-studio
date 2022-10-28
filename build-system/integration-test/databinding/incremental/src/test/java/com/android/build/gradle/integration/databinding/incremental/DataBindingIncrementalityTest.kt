@@ -234,7 +234,7 @@ class DataBindingIncrementalityTest(private val withIncrementalDB: Boolean) {
                                 }
                             });
 
-                            com.example.lib.databinding.Layout1Binding binding = DataBindingUtil.setContentView(this, R.layout.layout1);
+                            com.example.lib.databinding.Layout1Binding binding = DataBindingUtil.setContentView(this, com.example.lib.R.layout.layout1);
                             binding.setData1(data1);
                         }
                     }

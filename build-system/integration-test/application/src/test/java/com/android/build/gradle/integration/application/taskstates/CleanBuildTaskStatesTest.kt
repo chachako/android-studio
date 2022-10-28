@@ -61,6 +61,8 @@ class CleanBuildTaskStatesTest {
                 ":app:mergeDexDebug",
                 ":app:mergeExtDexDebug",
                 ":app:packageDebug",
+                ":app:packageDebugResources",
+                ":app:parseDebugLocalResources",
                 ":app:processDebugMainManifest",
                 ":app:processDebugManifest",
                 ":app:processDebugManifestForPackage",

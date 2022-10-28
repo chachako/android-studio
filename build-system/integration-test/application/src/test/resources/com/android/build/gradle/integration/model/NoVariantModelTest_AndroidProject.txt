@@ -17,7 +17,7 @@
       * "JETPACK_COMPOSE -> false"
       * "ML_MODEL_BINDING -> false"
       * "TEST_R_CLASS_CONSTANT_IDS -> true"
-      * "TRANSITIVE_R_CLASS -> true"
+      * "TRANSITIVE_R_CLASS -> false"
       * "UNIFIED_TEST_PLATFORM -> true"
    - lintChecksJars        = []
    - modelSyncFiles:

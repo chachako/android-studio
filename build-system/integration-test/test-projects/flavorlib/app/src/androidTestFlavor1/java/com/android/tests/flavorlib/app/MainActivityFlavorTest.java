@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import android.widget.TextView;
 
 /**
  * An example of an {@link ActivityInstrumentationTestCase2} of a specific activity {@link Focus2}.
@@ -58,9 +57,9 @@ public class MainActivityFlavorTest {
         final MainActivity a = rule.getActivity();
         // ensure a valid handle to the activity has been returned
         assertNotNull(a);
-        
-        mLibTextView1 = (TextView) a.findViewById(R.id.lib_text1);
-        mLibTextView2 = (TextView) a.findViewById(R.id.lib_text2);
+
+        mLibTextView1 = (TextView) a.findViewById(com.android.tests.flavorlib.lib.R.id.lib_text1);
+        mLibTextView2 = (TextView) a.findViewById(com.android.tests.flavorlib.lib.R.id.lib_text2);
     }
 
     /**

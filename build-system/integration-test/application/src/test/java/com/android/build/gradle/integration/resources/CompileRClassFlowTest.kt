@@ -20,10 +20,8 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
-import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
@@ -69,6 +67,9 @@ class CompileRClassFlowTest {
         .withFile(
             "src/main/java/com/example/app/Example.java",
             """package com.example.app;
+
+                    import com.example.lib2.R;
+
                     public class Example {
                         public void checkLibRFilesConstant() {
                             int x = R.string.lib2String;

@@ -476,7 +476,6 @@ class MergeResourcesTest {
         )
 
         assertThat(inMergedDir).contains("my_library_string")
-        assertThat(smallMerge).doesNotExist()
 
         project.executor()
             .with(BooleanOption.ENABLE_APP_COMPILE_TIME_R_CLASS, true)

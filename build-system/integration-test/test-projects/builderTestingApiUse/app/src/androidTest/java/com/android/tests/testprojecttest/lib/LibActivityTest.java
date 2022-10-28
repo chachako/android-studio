@@ -20,7 +20,6 @@ import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.widget.TextView;
-import com.android.tests.testprojecttest.app.R;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

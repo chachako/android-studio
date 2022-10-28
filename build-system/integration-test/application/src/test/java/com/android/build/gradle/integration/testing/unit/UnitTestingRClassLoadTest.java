@@ -16,17 +16,15 @@
 
 package com.android.build.gradle.integration.testing.unit;
 
-import static com.android.build.gradle.integration.common.truth.ScannerSubject.assertThat;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject;
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.common.utils.VariantUtils;
-import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.JavaArtifact;
 import com.android.builder.model.Variant;
@@ -34,6 +32,7 @@ import com.android.testutils.apk.Zip;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -41,6 +40,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -94,6 +94,12 @@ public class UnitTestingRClassLoadTest {
 
     @Rule
     public GradleTestProject project = GradleTestProject.builder().fromTestApp(build).create();
+
+    @Before
+    public void disabledNonTransitiveRClasses() throws IOException {
+        TestFileUtils.appendToFile(
+                project.file("gradle.properties"), "android.nonTransitiveRClass=false");
+    }
 
     /**
      * Check that the test passes when run (regression test for

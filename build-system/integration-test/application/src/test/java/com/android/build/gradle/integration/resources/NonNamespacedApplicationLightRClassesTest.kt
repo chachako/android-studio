@@ -46,7 +46,6 @@ class NonNamespacedApplicationLightRClassesTest {
                     public class Example {
                         public static int LOCAL_RES = R.string.lib_string;
                         public static int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
-                        public static int DEP_RES_AS_LOCAL = R.attr.actionBarDivider;
                     }
                     """)
 
@@ -72,10 +71,7 @@ class NonNamespacedApplicationLightRClassesTest {
                     public class Example {
                         public static int LOCAL_RES = R.string.app_string;
                         public static int LIB_RES = com.example.lib.R.string.lib_string;
-                        public static int LIB_RES_AS_LOCAL = R.string.lib_string;
                         public static int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
-                        public static int DEP_RES_AS_LIB = com.example.lib.R.attr.actionBarDivider;
-                        public static int DEP_RES_AS_LOCAL = R.attr.actionBarDivider;
 
                         public int test(int resId) {
                             switch(resId) {
@@ -104,10 +100,7 @@ class NonNamespacedApplicationLightRClassesTest {
                             int LOCAL_RES = com.example.app.test.R.string.test_app_string;
                             int APP_RES = R.string.app_string;
                             int LIB_RES = com.example.lib.R.string.lib_string;
-                            int LIB_RES_AS_LOCAL = R.string.lib_string;
                             int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
-                            int DEP_RES_AS_LIB = com.example.lib.R.attr.actionBarDivider;
-                            int DEP_RES_AS_LOCAL = R.attr.actionBarDivider;
                         }
                     }
                     """)

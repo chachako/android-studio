@@ -28,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
     @Rule
@@ -54,14 +53,18 @@ public class MainActivityTest {
 
         mAppTextView1 = (TextView) a.findViewById(R.id.app_text1);
         mAppTextView2 = (TextView) a.findViewById(R.id.app_text1);
-        mLib1TextView1 = (TextView) a.findViewById(R.id.lib1_text1);
-        mLib1TextView2 = (TextView) a.findViewById(R.id.lib1_text2);
-        mLib2TextView1 = (TextView) a.findViewById(R.id.lib2_text1);
-        mLib2TextView2 = (TextView) a.findViewById(R.id.lib2_text2);
-        mLib2bTextView1 = (TextView) a.findViewById(R.id.lib2b_text1);
-        mLib2bTextView2 = (TextView) a.findViewById(R.id.lib2b_text2);
-        mLibappTextView1 = (TextView) a.findViewById(R.id.libapp_text1);
-        mLibappTextView2 = (TextView) a.findViewById(R.id.libapp_text2);
+        mLib1TextView1 = (TextView) a.findViewById(com.android.tests.libstest.lib1.R.id.lib1_text1);
+        mLib1TextView2 = (TextView) a.findViewById(com.android.tests.libstest.lib1.R.id.lib1_text2);
+        mLib2TextView1 = (TextView) a.findViewById(com.android.tests.libstest.lib2.R.id.lib2_text1);
+        mLib2TextView2 = (TextView) a.findViewById(com.android.tests.libstest.lib2.R.id.lib2_text2);
+        mLib2bTextView1 =
+                (TextView) a.findViewById(com.android.tests.libstest.lib2b.R.id.lib2b_text1);
+        mLib2bTextView2 =
+                (TextView) a.findViewById(com.android.tests.libstest.lib2b.R.id.lib2b_text2);
+        mLibappTextView1 =
+                (TextView) a.findViewById(com.android.tests.libstest.libapp.R.id.libapp_text1);
+        mLibappTextView2 =
+                (TextView) a.findViewById(com.android.tests.libstest.libapp.R.id.libapp_text2);
     }
 
     /**

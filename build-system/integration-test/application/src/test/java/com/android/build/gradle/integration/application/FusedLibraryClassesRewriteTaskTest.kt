@@ -55,9 +55,9 @@ internal class FusedLibraryClassesRewriteTaskTest {
                 // language=JAVA
                 """package com.example.androidLib2;
                 public class MyClass {
-                    public static void methodUsingNonNamespacedResource() {
-                        int string = R.string.greeting;
-                        int string2 = R.string.farewell;
+                    public static void methodUsingNamespacedResource() {
+                        int string = com.example.androidLib1.R.string.greeting;
+                        int string2 = com.example.androidLib1.R.string.farewell;
                     }
                 }
             """.trimIndent()
@@ -107,7 +107,7 @@ internal class FusedLibraryClassesRewriteTaskTest {
             // Check that R class references use the fused library R Class
             try {
                 val myClass = classLoader.loadClass("com.example.androidLib2.MyClass")
-                val method = myClass.getMethod("methodUsingNonNamespacedResource")
+                val method = myClass.getMethod("methodUsingNamespacedResource")
                 method.invoke(null)
             } catch (e: Exception) {
                 throw AssertionError(

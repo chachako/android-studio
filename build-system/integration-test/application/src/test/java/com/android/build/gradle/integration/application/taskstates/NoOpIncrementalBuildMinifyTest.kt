@@ -16,14 +16,12 @@
 
 package com.android.build.gradle.integration.application.taskstates
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.DID_WORK
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.SKIPPED
 import com.android.build.gradle.integration.common.truth.TaskStateList.ExecutionState.UP_TO_DATE
 import com.android.build.gradle.integration.common.utils.TaskStateAssertionHelper
-import com.android.build.gradle.options.BooleanOption
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -102,7 +100,11 @@ class NoOpIncrementalBuildMinifyTest {
                 ":minifyReleaseWithR8",
                 ":optimizeReleaseResources",
                 ":packageDebugAndroidTest",
+                ":packageDebugResources",
                 ":packageRelease",
+                ":packageReleaseResources",
+                ":parseDebugLocalResources",
+                ":parseReleaseLocalResources",
                 ":preBuild",
                 ":preDebugBuild",
                 ":preReleaseBuild",

@@ -93,11 +93,9 @@ class DisableLibraryResourcesTest {
 
                 public class MyClass {
                     void test() {
-                        int r = com.example.app.R.string.leaf_lib_string;
-                        int r2 = com.example.localLib.R.string.leaf_lib_string;
-                        int r3 = com.example.leafLib.R.string.leaf_lib_string;
-                        int r4 = com.example.app.R.raw.raw_file;
-                        int r5 = com.example.app.R.string.local_lib_string;
+                        int leafLibString = com.example.leafLib.R.string.leaf_lib_string;
+                        int rawFile = com.example.localLib.R.raw.raw_file;
+                        int localLibString = com.example.localLib.R.string.local_lib_string;
                     }
                 }
             """.trimIndent())
@@ -138,8 +136,9 @@ class DisableLibraryResourcesTest {
         val result = project.executor().expectFailure().run(":app:assembleDebug")
         result.stderr.use {
             ScannerSubject.assertThat(it).contains("package com.example.localLib.R does not exist")
-            ScannerSubject.assertThat(it).contains("error: cannot find symbol")
-            ScannerSubject.assertThat(it).contains("com.example.app.R.string.local_lib_string")
+
+            ScannerSubject.assertThat(it).contains("com.example.localLib.R.raw.raw_file")
+            ScannerSubject.assertThat(it).contains("com.example.localLib.R.string.local_lib_string")
         }
     }
 
@@ -153,8 +152,8 @@ class DisableLibraryResourcesTest {
         val appClass =
             project.getSubproject("app").file("src/main/java/com/example/app/MyClass.java")
         // Remove the reference in the app's class.
-        TestFileUtils.searchAndReplace(appClass, "int r2 ","//int r2 ")
-        TestFileUtils.searchAndReplace(appClass, "int r5 ","//int r5 ")
+        TestFileUtils.searchAndReplace(appClass, "int rawFile ","//int rawFile ")
+        TestFileUtils.searchAndReplace(appClass, "int localLibString ","//int localLibString ")
 
         val result = project.executor().run(":app:assembleDebug")
         // Make sure that in the local lib we called the task to generate the empty resources, and
@@ -184,12 +183,13 @@ class DisableLibraryResourcesTest {
             .run(":app:assembleDebug")
 
         result.stderr.use {
-            ScannerSubject.assertThat(it).contains("error: cannot find symbol")
-            ScannerSubject.assertThat(it).contains("com.example.app.R.string.leaf_lib_string")
-            ScannerSubject.assertThat(it).contains("com.example.localLib.R.string.leaf_lib_string")
+
+            ScannerSubject.assertThat(it).contains("package com.example.leafLib.R does not exist")
             ScannerSubject.assertThat(it).contains("com.example.leafLib.R.string.leaf_lib_string")
-            ScannerSubject.assertThat(it).contains("com.example.app.R.raw.raw_file")
-            ScannerSubject.assertThat(it).contains("com.example.app.R.string.local_lib_string")
+
+            ScannerSubject.assertThat(it).contains("package com.example.localLib.R does not exist")
+            ScannerSubject.assertThat(it).contains("com.example.localLib.R.raw.raw_file")
+            ScannerSubject.assertThat(it).contains("com.example.localLib.R.string.local_lib_string")
         }
 
         assertThat(result.didWorkTasks).contains(":localLib:generateDebugEmptyResourceFiles")

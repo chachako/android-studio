@@ -65,6 +65,8 @@ class IncrementalBuildWithOnlyEmptySrcDirsTaskStatesTest {
                             ":app:mergeDexDebug",
                             ":app:mergeExtDexDebug",
                             ":app:packageDebug",
+                            ":app:packageDebugResources",
+                            ":app:parseDebugLocalResources",
                             ":app:preBuild",
                             ":app:preDebugBuild",
                             ":app:processDebugMainManifest",

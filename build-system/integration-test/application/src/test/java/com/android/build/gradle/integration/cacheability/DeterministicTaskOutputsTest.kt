@@ -46,6 +46,7 @@ class DeterministicTaskOutputsTest {
             "app/build/intermediates/incremental/mergeDebugJniLibFolders",
             "app/build/intermediates/incremental/debug/mergeDebugResources",
             "app/build/intermediates/incremental/packageDebugResources",
+            "app/build/intermediates/incremental/debug/packageDebugResources",
             "app/build/intermediates/incremental/mergeDebugShaders",
             "app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt",
             "app/build/intermediates/incremental/packageDebug/tmp/debug/zip-cache",

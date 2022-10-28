@@ -106,11 +106,9 @@ public class OptionalAarTest {
                         "debug",
                         it -> {
                             it.doesNotContainResource("layout/lib2layout.xml");
+                            it.textSymbolFile().doesNotContain("int layout lib2layout");
+
                             it.textSymbolFile().contains("int layout liblayout");
-                            // With the new Compile library R class flow, the text symbol file will
-                            // contain
-                            // provided resources.
-                            it.textSymbolFile().contains("int layout lib2layout");
                         });
     }
 
