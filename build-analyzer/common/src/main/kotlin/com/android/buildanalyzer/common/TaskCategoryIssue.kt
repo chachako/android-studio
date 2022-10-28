@@ -42,23 +42,6 @@ enum class TaskCategoryIssue(val taskCategory: TaskCategory, val severity: Sever
     RESOURCE_VALIDATION_ENABLED(TaskCategory.ANDROID_RESOURCES, Severity.WARNING),
 
     /**
-     * Informational message to notify user that test sharding can be enabled
-     * if multiple devices are connected in parallel to run faster.
-     * BooleanOption android.androidTest.shardBetweenDevices = false.
-     */
-    TEST_SHARDING_DISABLED(TaskCategory.TEST, Severity.INFO),
-
-    /**
-     * Warning that Renderscript APIs are deprecated.
-     */
-    RENDERSCRIPT_API_DEPRECATED(TaskCategory.RENDERSCRIPT, Severity.WARNING),
-
-    /**
-     * General AIDL information which can be found on DAC .
-     */
-    AVOID_AIDL_UNNECESSARY_USE(TaskCategory.AIDL, Severity.INFO),
-
-    /**
      * Non-incremental Java annotation processor warning.
      */
     JAVA_NON_INCREMENTAL_ANNOTATION_PROCESSOR(TaskCategory.JAVA, Severity.WARNING),

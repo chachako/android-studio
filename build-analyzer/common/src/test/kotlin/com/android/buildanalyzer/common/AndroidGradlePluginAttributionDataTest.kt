@@ -65,7 +65,7 @@ class AndroidGradlePluginAttributionDataTest {
             "c" to TaskInfo(className = "d", taskCategoryInfo = TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN))
         ),
         taskCategoryIssues = listOf(
-            TaskCategoryIssue.TEST_SHARDING_DISABLED,
+            TaskCategoryIssue.MINIFICATION_ENABLED_IN_DEBUG_BUILD,
             TaskCategoryIssue.NON_TRANSITIVE_R_CLASS_DISABLED
         )
     )
@@ -114,7 +114,7 @@ class AndroidGradlePluginAttributionDataTest {
                 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
                 |{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
 |],
-|"taskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
+|"taskCategoryIssues":["MINIFICATION_ENABLED_IN_DEBUG_BUILD","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
 """.trimMargin().replace("\n", "")
 
@@ -203,7 +203,7 @@ class AndroidGradlePluginAttributionDataTest {
 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
 |{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
 |],
-|"taskCategoryIssues":["TEST_SHARDING_DISABLED","NON_TRANSITIVE_R_CLASS_DISABLED"]
+|"taskCategoryIssues":["MINIFICATION_ENABLED_IN_DEBUG_BUILD","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
 """.trimMargin().replace("\n", "")
         )
