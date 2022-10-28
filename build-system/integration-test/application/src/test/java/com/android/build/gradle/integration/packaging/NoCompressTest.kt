@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.packaging.PackagingTests.checkZipAlign
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.build.apkzlib.zip.CompressionMethod
@@ -167,6 +168,8 @@ class NoCompressTest {
         val apk = project.getApk(GradleTestProject.ApkType.DEBUG)
         assertThat(apk).exists()
         verifyCompression(apk.file.toFile())
+        // check alignment as regression test for Issue 241469653
+        checkZipAlign(apk)
     }
 
     @Test
