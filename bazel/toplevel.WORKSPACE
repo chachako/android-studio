@@ -126,6 +126,14 @@ http_archive(
 )
 
 http_archive(
+    name = "system_image_android-30_default_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "a97f08f286df90dd510abcfbf7a785f950b42775930f7cf00b1453c59a4ec6e5",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/android/x86_64-30_r10.zip",
+)
+
+http_archive(
     name = "system_image_android-TiramisuPrivacySandbox_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "cebb267230c4a77cbf3ab984876d9715f11d9e870ebaead486bb58d2a0b28bf1",
