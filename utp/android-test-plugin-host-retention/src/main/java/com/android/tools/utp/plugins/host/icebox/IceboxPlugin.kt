@@ -236,7 +236,7 @@ class IceboxPlugin @VisibleForTesting constructor(
     private fun getGrpcInfo(): EmulatorGrpcInfo {
         if (iceboxPluginConfig.emulatorGrpcPort != 0) {
             return EmulatorGrpcInfo(
-                    iceboxPluginConfig.emulatorGrpcPort, iceboxPluginConfig.emulatorGrpcToken)
+                    iceboxPluginConfig.emulatorGrpcPort, iceboxPluginConfig.emulatorGrpcToken, "", "", "")
         }
         return grpcInfoFinder.findInfo(deviceController.getDevice().serial)
     }

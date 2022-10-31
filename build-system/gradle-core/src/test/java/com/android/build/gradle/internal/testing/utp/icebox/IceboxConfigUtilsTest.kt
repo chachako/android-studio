@@ -29,7 +29,7 @@ class IceboxConfigUtilsTest {
     @Test
     fun defaultPortTest() {
         val grpcInfo = findGrpcInfo("")
-        assertThat(grpcInfo.port).isEqualTo(DEFAULT_EMULATOR_GRPC_PORT)
+        assertThat(grpcInfo.port).isEqualTo(DEFAULT_EMULATOR_GRPC_PORT.toInt())
         assertThat(grpcInfo.token).isNull()
     }
 

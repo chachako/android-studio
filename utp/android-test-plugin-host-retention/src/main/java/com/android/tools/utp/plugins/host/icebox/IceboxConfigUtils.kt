@@ -31,7 +31,7 @@ import java.util.logging.Logger
 import java.util.regex.Pattern
 
 // Emulator gRPC port
-const val DEFAULT_EMULATOR_GRPC_PORT = 8554
+const val DEFAULT_EMULATOR_GRPC_PORT = "8554"
 
 private val LOG = Logger.getLogger("IceboxConfigUtils")
 
@@ -41,12 +41,20 @@ private val LOG = Logger.getLogger("IceboxConfigUtils")
  * @param port: The port that the GRPC connection is on.
  * @param token: The GRPC token of the Android Emulator.
  */
-data class EmulatorGrpcInfo(val port: Int, val token: String?)
+data class EmulatorGrpcInfo(
+    val port: Int,
+    val token: String?,
+    val server_cert: String,
+    val jwkDirectory: String,
+    val jwkActivePath: String
+)
 
 @VisibleForTesting
-val DEFAULT_EMULATOR_GRPC_INFO = EmulatorGrpcInfo(DEFAULT_EMULATOR_GRPC_PORT, null)
+val DEFAULT_EMULATOR_GRPC_INFO =
+    EmulatorGrpcInfo(DEFAULT_EMULATOR_GRPC_PORT.toInt(), "", "", "", "")
 
 class GrpcInfoFinder {
+
     fun findInfo(deviceSerial: String): EmulatorGrpcInfo {
         try {
             val fileNamePattern = Pattern.compile("pid_\\d+.ini")
@@ -82,9 +90,11 @@ private fun computeRegistrationDirectoryContainer(): Path? {
                 "TemporaryItems"
             )
         }
+
         os.startsWith("win") -> {
             return Paths.get(System.getenv("LOCALAPPDATA") ?: "/", "Temp")
         }
+
         else -> { // Linux and Chrome OS.
             for (dirstr in arrayOf(
                 System.getenv("XDG_RUNTIME_DIR"),
@@ -141,26 +151,24 @@ private fun getUid(): String? {
  * Otherwise, the GrpcInfo of the .ini file is returned.
  */
 internal fun findGrpcInfo(deviceSerial: String, file: Path): EmulatorGrpcInfo? {
-    var currentGrpcPort = DEFAULT_EMULATOR_GRPC_PORT
-    var currentGrpcToken: String? = null
-    var matchedAvd = false
+    var discovered = mutableMapOf<String, String>()
     Files.readAllLines(file).forEach { line ->
-        when {
-            line.startsWith("grpc.port=") -> {
-                currentGrpcPort =
-                    Integer.parseInt(line.substring("grpc.port=".length), 10)
-            }
-            line.startsWith("grpc.token=") -> {
-                currentGrpcToken = line.substring("grpc.token=".length)
-            }
-            line.startsWith("port.serial=") -> {
-                val serial = line.substring("port.serial=".length)
-                matchedAvd = ("emulator-" + serial == deviceSerial)
-            }
+        val keyValuePair = line.split("=", limit = 2)
+        if (keyValuePair.size == 2) {
+            discovered[keyValuePair[0]] = keyValuePair[1]
         }
     }
+    val serial = discovered.getOrDefault("port.serial", "")
+    val matchedAvd = ("emulator-" + serial == deviceSerial)
+
     if (matchedAvd) {
-        return EmulatorGrpcInfo(currentGrpcPort, currentGrpcToken)
+        return EmulatorGrpcInfo(
+            discovered.getOrDefault("grpc.port", DEFAULT_EMULATOR_GRPC_PORT).toInt(),
+            discovered.getOrDefault("grpc.token", ""),
+            discovered.getOrDefault("grpc.server_cert", ""),
+            discovered.getOrDefault("grpc.jwks", ""),
+            discovered.getOrDefault("grpc.jwk_active", "")
+        )
     } else {
         return null
     }
