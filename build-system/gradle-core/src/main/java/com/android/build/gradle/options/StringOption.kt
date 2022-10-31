@@ -41,7 +41,6 @@ enum class StringOption(
      * STABLE APIs
      */
 
-    IDE_BUILD_TARGET_DENSITY(PROPERTY_BUILD_DENSITY, ApiStage.Stable),
     IDE_BUILD_TARGET_ABI(PROPERTY_BUILD_ABI, ApiStage.Stable),
 
     IDE_ATTRIBUTION_FILE_LOCATION(PROPERTY_ATTRIBUTION_FILE_LOCATION, ApiStage.Stable),
@@ -149,6 +148,12 @@ enum class StringOption(
     BUILD_CACHE_DIR(
         "android.buildCacheDir",
         ApiStage.Removed(Version.VERSION_7_0, "The Android-specific build caches were superseded by the Gradle build cache (https://docs.gradle.org/current/userguide/build_cache.html).")
+    ),
+
+    @Suppress("unused")
+    IDE_BUILD_TARGET_DENSITY(
+            PROPERTY_BUILD_DENSITY,
+            ApiStage.Removed(Version.VERSION_8_0, "Density property injection from Android Studio has been removed.")
     ),
 
     ;

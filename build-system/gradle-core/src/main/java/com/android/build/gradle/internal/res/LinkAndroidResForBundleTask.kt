@@ -87,8 +87,6 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
     @get:Internal
     abstract val manifestMergeBlameFile: RegularFileProperty
 
-    private var buildTargetDensity: String? = null
-
     @get:OutputFile
     abstract val bundledResFile: RegularFileProperty
 
@@ -272,9 +270,6 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
                 .setDisallowChanges(
                     projectOptions.getProvider(BooleanOption.EXCLUDE_RES_SOURCES_FOR_RELEASE_BUNDLES)
                 )
-
-            task.buildTargetDensity =
-                    projectOptions.get(StringOption.IDE_BUILD_TARGET_DENSITY)
 
             task.mergeBlameLogFolder.setDisallowChanges(creationConfig.artifacts.get(InternalArtifactType.MERGED_RES_BLAME_FOLDER))
 

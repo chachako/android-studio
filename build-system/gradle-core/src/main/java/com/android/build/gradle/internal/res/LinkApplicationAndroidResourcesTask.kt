@@ -213,11 +213,6 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
     abstract val namespace: Property<String>
 
     @get:Input
-    @get:Optional
-    var buildTargetDensity: String? = null
-        private set
-
-    @get:Input
     var useConditionalKeepRules: Boolean = false
         private set
 
@@ -337,7 +332,6 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
 
             parameters.aaptOptions.set(AaptOptions(noCompress.orNull, aaptAdditionalParameters.orNull))
             parameters.applicationId.set(applicationId)
-            parameters.buildTargetDensity.set(buildTargetDensity)
             parameters.canHaveSplits.set(canHaveSplits)
             parameters.compiledDependenciesResources.from(compiledDependenciesResources)
             parameters.dependencies.from(dependenciesFileCollection)
@@ -383,7 +377,6 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
         abstract val symbolTableBuildService: Property<SymbolTableBuildService>
         abstract val aaptOptions: Property<AaptOptions>
         abstract val applicationId: Property<String>
-        abstract val buildTargetDensity: Property<String?>
         abstract val canHaveSplits: Property<Boolean>
         abstract val compiledDependenciesResources: ConfigurableFileCollection
         abstract val dependencies: ConfigurableFileCollection
@@ -589,8 +582,6 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
             }
             task.noCompress.disallowChanges()
             task.aaptAdditionalParameters.disallowChanges()
-
-            task.buildTargetDensity = projectOptions.get(StringOption.IDE_BUILD_TARGET_DENSITY)
 
             task.useConditionalKeepRules = projectOptions.get(BooleanOption.CONDITIONAL_KEEP_RULES)
             task.useMinimalKeepRules = projectOptions.get(BooleanOption.MINIMAL_KEEP_RULES)
@@ -881,11 +872,8 @@ abstract class LinkApplicationAndroidResourcesTask @Inject constructor(objects: 
 
             val densityFilterData = variantOutput.variantOutputConfiguration
                 .getFilter(FilterConfiguration.FilterType.DENSITY)
-            // if resConfigs is set, we should not use our preferredDensity.
-            val preferredDensity =
-                densityFilterData?.identifier
-                    ?: if (parameters.resourceConfigs.get().isEmpty()) parameters.buildTargetDensity.orNull else null
 
+            val preferredDensity = densityFilterData?.identifier
 
             try {
 

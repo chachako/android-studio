@@ -293,7 +293,6 @@ class VariantPathHelper(
                 // matters if it is an 'optimized' build and in that case, we consider it a
                 // custom build.
                 val customBuild =
-                        dslServices.projectOptions.get(StringOption.IDE_BUILD_TARGET_DENSITY) != null ||
                         dslServices.projectOptions.get(StringOption.IDE_BUILD_TARGET_ABI) != null ||
                         dslServices.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API) != null
                 val baseDirectory =when {

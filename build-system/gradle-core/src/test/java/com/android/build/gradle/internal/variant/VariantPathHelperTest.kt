@@ -77,17 +77,6 @@ internal class VariantPathHelperTest {
     }
 
     @Test
-    fun testCustomDensityBuildLocation() {
-        val variantPathHelper = VariantPathHelper(
-            buildDirectory,
-            variantDslInfo,
-            dslServices
-        )
-        doReturn("xxdpi").`when`(projectOptions).get(StringOption.IDE_BUILD_TARGET_DENSITY)
-        Truth.assertThat(variantPathHelper.apkLocation.absolutePath).contains("intermediates")
-    }
-
-    @Test
     fun testCustomAPIBuildLocation() {
         val variantPathHelper = VariantPathHelper(
             buildDirectory,

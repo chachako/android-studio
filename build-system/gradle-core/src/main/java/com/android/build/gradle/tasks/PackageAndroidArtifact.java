@@ -258,8 +258,6 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
     @Nullable protected String buildTargetAbi;
 
-    @Nullable protected String buildTargetDensity;
-
     @Input
     public abstract Property<String> getProjectBaseName();
 
@@ -378,13 +376,6 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
     @Nullable
     public String getBuildTargetAbi() {
         return buildTargetAbi;
-    }
-
-    @Input
-    @Optional
-    @Nullable
-    public String getBuildTargetDensity() {
-        return buildTargetDensity;
     }
 
     @OutputDirectory
@@ -1297,10 +1288,6 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                                         : ImmutableSet.of());
             }
             packageAndroidArtifact.getAbiFilters().disallowChanges();
-            packageAndroidArtifact.buildTargetDensity =
-                    creationConfig.getGlobal().getSplits().getDensity().isEnable()
-                            ? projectOptions.get(StringOption.IDE_BUILD_TARGET_DENSITY)
-                            : null;
 
             packageAndroidArtifact.getCreatedBy().set(creationConfig.getGlobal().getCreatedBy());
 

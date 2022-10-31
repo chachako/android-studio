@@ -35,10 +35,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-/**
- * Test injected ABI and density reduces the number of splits being built.
- */
-public class InjectedAbiAndDensitySplitTest {
+/** Test injected ABI reduces the number of splits being built. */
+public class InjectedAbiSplitTest {
 
     @ClassRule
     public static GradleTestProject sProject = GradleTestProject.builder()
@@ -83,45 +81,6 @@ public class InjectedAbiAndDensitySplitTest {
         assertThat(getApk("x86")).doesNotExist();
         assertThat(getApk("ldpiX86")).doesNotExist();
         assertThat(getApk("hdpiX86")).doesNotExist();
-    }
-
-    @Test
-    public void checkAbiAndDensity() throws Exception {
-        sProject.executor()
-                .with(StringOption.IDE_BUILD_TARGET_ABI, "armeabi-v7a")
-                .with(StringOption.IDE_BUILD_TARGET_DENSITY, "ldpi")
-                .run("clean", "assembleDebug");
-
-        Apk apk;
-        // Either ldpi or universal density can match the injected density.
-        if (getApk("armeabi-v7a").exists()) {
-            apk = getApk("armeabi-v7a");
-            assertThat(getApk("ldpiArmeabi-v7a")).doesNotExist();
-        } else {
-            apk = getApk("ldpiArmeabi-v7a");
-            assertThat(getApk("armeabi-v7a")).doesNotExist();
-        }
-        assertThat(apk).exists();
-        assertThat(apk).contains("lib/armeabi-v7a/libprebuilt.so");
-        assertThat(getApk("hdpiArmeabi-v7a")).doesNotExist();
-        assertThat(getApk("x86")).doesNotExist();
-        assertThat(getApk("ldpiX86")).doesNotExist();
-        assertThat(getApk("hdpiX86")).doesNotExist();
-    }
-
-    /** All splits are built if only density is present. */
-    @Test
-    public void checkOnlyDensity() throws Exception {
-        sProject.executor()
-                .with(StringOption.IDE_BUILD_TARGET_DENSITY, "ldpi")
-                .run("clean", "assembleDebug");
-
-        assertThat(getApk("armeabi-v7a").exists());
-        assertThat(getApk("ldpiArmeabi-v7a")).exists();
-        assertThat(getApk("hdpiArmeabi-v7a")).exists();
-        assertThat(getApk("x86")).exists();
-        assertThat(getApk("ldpiX86")).exists();
-        assertThat(getApk("hdpiX86")).exists();
     }
 
     @Test
