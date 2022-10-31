@@ -1389,6 +1389,8 @@ com.android.build.gradle.internal.dsl.DynamicFeatureExtension.useLibrary: void (
 com.android.build.gradle.internal.dsl.DynamicFeatureExtension.useLibrary: void (java.lang.String, boolean)
 com.android.build.gradle.internal.dsl.DynamicFeatureExtension.viewBinding: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ViewBinding, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.DynamicFeatureExtension.viewBinding: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.ViewBindingOptionsImpl>)
+com.android.build.gradle.internal.dsl.EmulatorControl implements com.android.build.api.dsl.EmulatorControl
+com.android.build.gradle.internal.dsl.EmulatorControl.<init>: com.android.build.gradle.internal.dsl.EmulatorControl (com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.EmulatorSnapshots implements com.android.build.api.dsl.EmulatorSnapshots, com.android.build.api.dsl.FailureRetention
 com.android.build.gradle.internal.dsl.EmulatorSnapshots.<init>: com.android.build.gradle.internal.dsl.EmulatorSnapshots (com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.EmulatorSnapshots.getCompressSnapshots: boolean ()
@@ -1839,6 +1841,8 @@ com.android.build.gradle.internal.dsl.TestOptions$UnitTestOptions.isReturnDefaul
 com.android.build.gradle.internal.dsl.TestOptions$UnitTestOptions.setIncludeAndroidResources: void (boolean)
 com.android.build.gradle.internal.dsl.TestOptions$UnitTestOptions.setReturnDefaultValues: void (boolean)
 com.android.build.gradle.internal.dsl.TestOptions.<init>: com.android.build.gradle.internal.dsl.TestOptions (com.android.build.gradle.internal.services.DslServices)
+com.android.build.gradle.internal.dsl.TestOptions.emulatorControl: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl, kotlin.Unit>)
+com.android.build.gradle.internal.dsl.TestOptions.emulatorControl: void (org.gradle.api.Action<com.android.build.api.dsl.EmulatorControl>)
 com.android.build.gradle.internal.dsl.TestOptions.emulatorSnapshots: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.TestOptions.emulatorSnapshots: void (org.gradle.api.Action<com.android.build.api.dsl.EmulatorSnapshots>)
 com.android.build.gradle.internal.dsl.TestOptions.failureRetention: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.FailureRetention, kotlin.Unit>)
@@ -1846,6 +1850,7 @@ com.android.build.gradle.internal.dsl.TestOptions.failureRetention: void (org.gr
 com.android.build.gradle.internal.dsl.TestOptions.getAnimationsDisabled: boolean ()
 com.android.build.gradle.internal.dsl.TestOptions.getDeviceGroups: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> ()
 com.android.build.gradle.internal.dsl.TestOptions.getDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
+com.android.build.gradle.internal.dsl.TestOptions.getEmulatorControl: com.android.build.api.dsl.EmulatorControl ()
 com.android.build.gradle.internal.dsl.TestOptions.getEmulatorSnapshots: com.android.build.api.dsl.EmulatorSnapshots ()
 com.android.build.gradle.internal.dsl.TestOptions.getExecution: java.lang.String ()
 com.android.build.gradle.internal.dsl.TestOptions.getExecutionEnum: com.android.builder.model.TestOptions$Execution ()

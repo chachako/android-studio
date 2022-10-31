@@ -1008,6 +1008,17 @@ package com.android.build.api.dsl {
   public interface DynamicFeatureVariantDimension extends com.android.build.api.dsl.VariantDimension {
   }
 
+  @org.gradle.api.Incubating public interface EmulatorControl {
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getAllowedEndpoints();
+    method @org.gradle.api.Incubating public boolean getEnable();
+    method @org.gradle.api.Incubating public int getSecondsValid();
+    method @org.gradle.api.Incubating public void setEnable(boolean enable);
+    method @org.gradle.api.Incubating public void setSecondsValid(int secondsValid);
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> allowedEndpoints;
+    property @org.gradle.api.Incubating public abstract boolean enable;
+    property @org.gradle.api.Incubating public abstract int secondsValid;
+  }
+
   @org.gradle.api.Incubating public interface EmulatorSnapshots {
     method public boolean getCompressSnapshots();
     method public boolean getEnableForTestFailures();
@@ -1725,11 +1736,13 @@ package com.android.build.api.dsl {
   }
 
   public interface TestOptions {
+    method @org.gradle.api.Incubating public void emulatorControl(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void emulatorSnapshots(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void failureRetention(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.FailureRetention,kotlin.Unit> action);
     method public boolean getAnimationsDisabled();
     method @Deprecated @org.gradle.api.Incubating public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> getDeviceGroups();
     method @Deprecated @org.gradle.api.Incubating public org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> getDevices();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorControl getEmulatorControl();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.EmulatorSnapshots getEmulatorSnapshots();
     method public String getExecution();
     method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.FailureRetention getFailureRetention();
@@ -1746,6 +1759,7 @@ package com.android.build.api.dsl {
     property public abstract boolean animationsDisabled;
     property @Deprecated @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> deviceGroups;
     property @Deprecated @org.gradle.api.Incubating public abstract org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> devices;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorControl emulatorControl;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.EmulatorSnapshots emulatorSnapshots;
     property public abstract String execution;
     property @Deprecated @org.gradle.api.Incubating public abstract com.android.build.api.dsl.FailureRetention failureRetention;
