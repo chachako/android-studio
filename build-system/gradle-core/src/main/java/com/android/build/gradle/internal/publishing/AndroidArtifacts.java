@@ -101,6 +101,8 @@ public class AndroidArtifacts {
     private static final String TYPE_PUBLIC_RES = "android-public-res";
     private static final String TYPE_SYMBOL = "android-symbol";
     private static final String TYPE_SYMBOL_WITH_PACKAGE_NAME = "android-symbol-with-package-name";
+
+    private static final String TYPE_APP_SYMBOL_FOR_DATA_BINDING = "android-app-symbol-for-data-binding";
     private static final String TYPE_UNFILTERED_PROGUARD_RULES = "android-consumer-proguard-rules";
     private static final String TYPE_FILTERED_PROGUARD_RULES = "android-filtered-proguard-rules";
     private static final String TYPE_AAPT_PROGUARD_RULES = "android-aapt-proguard-rules";
@@ -387,6 +389,13 @@ public class AndroidArtifacts {
          * AndroidManifest.xml to the existing r.txt file.
          */
         SYMBOL_LIST_WITH_PACKAGE_NAME(TYPE_SYMBOL_WITH_PACKAGE_NAME),
+
+        /**
+         * Same as [SYMBOL_LIST_WITH_PACKAGE_NAME] but for apps, this is published only for data
+         * binding classes generation tasks in test projects and dynamic features.
+         */
+        APP_SYMBOL_LIST_FOR_DATA_BINDING(TYPE_APP_SYMBOL_FOR_DATA_BINDING),
+
         /** Intermediate format of the preprocessed AAR for auto-namespacing */
         MAYBE_NON_NAMESPACED_PROCESSED_AAR(TYPE_MAYBE_NOT_NAMESPACED_AAR),
         PREPROCESSED_AAR_FOR_AUTO_NAMESPACE(TYPE_PREPROCESSED_AAR_FOR_AUTO_NAMESPACE),

@@ -273,13 +273,22 @@ abstract class DataBindingGenBaseClassesTask : AndroidVariantTask() {
                         task.localResourcesFile
                 )
 
+                task.dependenciesFileCollection.from(
+                    creationConfig
+                        .variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
+                            AndroidArtifacts.ArtifactScope.ALL,
+                            AndroidArtifacts.ArtifactType.APP_SYMBOL_LIST_FOR_DATA_BINDING
+                        )
+                )
+
                 task.dependenciesFileCollection.fromDisallowChanges(
-                        creationConfig
-                                .variantDependencies.getArtifactFileCollection(
-                                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                                        AndroidArtifacts.ArtifactScope.ALL,
-                                        AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME
-                                )
+                    creationConfig
+                        .variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                            AndroidArtifacts.ArtifactScope.ALL,
+                            AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME
+                        )
                 )
 
                 task.symbolTableBuildService.set(
