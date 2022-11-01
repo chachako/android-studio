@@ -1895,7 +1895,9 @@ abstract class ViewLayoutInspectorTestBase {
             inspectorRule.commandCallback
         )
 
-        ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
+        checkNonProgressEvent(eventQueue) { event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
+        }
 
         // Remove the root views simulating the app going into the background
         WindowManagerGlobal.getInstance().rootViews.clear()
@@ -1905,9 +1907,6 @@ abstract class ViewLayoutInspectorTestBase {
         mainScreen.viewRootImpl.mSurface.bitmapBytes = byteArrayOf(1, 2, 3)
         mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
 
-        checkNonProgressEvent(eventQueue) { event ->
-            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
-        }
         checkNonProgressEvent(eventQueue) { event ->
             assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
         }
