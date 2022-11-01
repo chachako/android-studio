@@ -224,22 +224,6 @@
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization">
         <location
-            file="src/main/java/com/android/build/gradle/internal/tasks/AppPreBuildTask.kt"
-            line="56"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/tasks/AppPreBuildTask.kt"
-            line="61"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
-        <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantBuilderImpl.kt"
             line="55"/>
     </issue>
