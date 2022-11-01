@@ -14156,6 +14156,24 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.fragment.fragment-ktx_1.5.2",
+    pom = "repository/androidx/fragment/fragment-ktx/1.5.2/fragment-ktx-1.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/fragment/fragment-ktx/1.5.2",
+    deps = [
+        "androidx.activity.activity-ktx_1.5.1",
+        "androidx.collection.collection-ktx_1.1.0",
+        "androidx.core.core-ktx_1.2.0",
+        "androidx.fragment.fragment_1.5.2",
+        "androidx.lifecycle.lifecycle-livedata-core-ktx_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-ktx_2.5.1",
+        "androidx.savedstate.savedstate-ktx_1.2.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.fragment.fragment_1.0.0",
     pom = "repository/androidx/fragment/fragment/1.0.0/fragment-1.0.0.pom",
     repo_root_path = "repository",
@@ -14307,6 +14325,28 @@ maven_artifact(
         "androidx.savedstate.savedstate_1.1.0",
         "androidx.annotation.annotation-experimental_1.0.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.5.31",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.fragment.fragment_1.5.2",
+    pom = "repository/androidx/fragment/fragment/1.5.2/fragment-1.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/fragment/fragment/1.5.2",
+    deps = [
+        "androidx.activity.activity_1.5.1",
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.annotation.annotation-experimental_1.0.0",
+        "androidx.collection.collection_1.1.0",
+        "androidx.core.core-ktx_1.2.0",
+        "androidx.lifecycle.lifecycle-livedata-core_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-savedstate_2.5.1",
+        "androidx.loader.loader_1.0.0",
+        "androidx.savedstate.savedstate_1.2.0",
+        "androidx.viewpager.viewpager_1.0.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -14644,6 +14684,18 @@ maven_artifact(
     deps = [
         "androidx.lifecycle.lifecycle-livedata-core_2.4.1",
         "org.jetbrains.kotlin.kotlin-stdlib_1.5.30",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.lifecycle.lifecycle-livedata-core-ktx_2.5.1",
+    pom = "repository/androidx/lifecycle/lifecycle-livedata-core-ktx/2.5.1/lifecycle-livedata-core-ktx-2.5.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lifecycle/lifecycle-livedata-core-ktx/2.5.1",
+    deps = [
+        "androidx.lifecycle.lifecycle-livedata-core_2.5.1",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -15548,6 +15600,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.navigation.navigation-common-ktx_2.5.2",
+    pom = "repository/androidx/navigation/navigation-common-ktx/2.5.2/navigation-common-ktx-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-common-ktx/2.5.2",
+    deps = [
+        "androidx.navigation.navigation-common_2.5.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.navigation.navigation-common_2.0.0",
     pom = "repository/androidx/navigation/navigation-common/2.0.0/navigation-common-2.0.0.pom",
     repo_root_path = "repository",
@@ -15609,6 +15672,24 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.navigation.navigation-common_2.5.2",
+    pom = "repository/androidx/navigation/navigation-common/2.5.2/navigation-common-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-common/2.5.2",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.collection.collection-ktx_1.1.0",
+        "androidx.core.core-ktx_1.1.0",
+        "androidx.lifecycle.lifecycle-runtime-ktx_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-ktx_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-savedstate_2.5.1",
+        "androidx.savedstate.savedstate-ktx_1.2.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.navigation.navigation-compose_2.4.0",
     pom = "repository/androidx/navigation/navigation-compose/2.4.0/navigation-compose-2.4.0.pom",
     repo_root_path = "repository",
@@ -15655,6 +15736,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.navigation.navigation-fragment-ktx_2.5.2",
+    pom = "repository/androidx/navigation/navigation-fragment-ktx/2.5.2/navigation-fragment-ktx-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-fragment-ktx/2.5.2",
+    deps = [
+        "androidx.navigation.navigation-fragment_2.5.2",
+        "androidx.navigation.navigation-runtime-ktx_2.5.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.navigation.navigation-fragment_2.3.5",
     pom = "repository/androidx/navigation/navigation-fragment/2.3.5/navigation-fragment-2.3.5.pom",
     repo_root_path = "repository",
@@ -15676,6 +15769,20 @@ maven_artifact(
         "androidx.navigation.navigation-runtime_2.4.1",
         "androidx.slidingpanelayout.slidingpanelayout_1.2.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.6.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.navigation.navigation-fragment_2.5.2",
+    pom = "repository/androidx/navigation/navigation-fragment/2.5.2/navigation-fragment-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-fragment/2.5.2",
+    deps = [
+        "androidx.fragment.fragment-ktx_1.5.2",
+        "androidx.navigation.navigation-runtime_2.5.2",
+        "androidx.slidingpanelayout.slidingpanelayout_1.2.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -15727,6 +15834,18 @@ maven_artifact(
     deps = [
         "androidx.navigation.navigation-runtime_2.4.1",
         "androidx.navigation.navigation-common-ktx_2.4.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.navigation.navigation-runtime-ktx_2.5.2",
+    pom = "repository/androidx/navigation/navigation-runtime-ktx/2.5.2/navigation-runtime-ktx-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-runtime-ktx/2.5.2",
+    deps = [
+        "androidx.navigation.navigation-common-ktx_2.5.2",
+        "androidx.navigation.navigation-runtime_2.5.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -15786,6 +15905,23 @@ maven_artifact(
         "androidx.lifecycle.lifecycle-viewmodel-ktx_2.3.1",
         "androidx.annotation.annotation-experimental_1.1.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.6.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.navigation.navigation-runtime_2.5.2",
+    pom = "repository/androidx/navigation/navigation-runtime/2.5.2/navigation-runtime-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-runtime/2.5.2",
+    deps = [
+        "androidx.activity.activity-ktx_1.5.1",
+        "androidx.annotation.annotation-experimental_1.1.0",
+        "androidx.collection.collection_1.0.0",
+        "androidx.lifecycle.lifecycle-runtime-ktx_2.5.1",
+        "androidx.lifecycle.lifecycle-viewmodel-ktx_2.5.1",
+        "androidx.navigation.navigation-common_2.5.2",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -15874,6 +16010,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.navigation.navigation-ui-ktx_2.5.2",
+    pom = "repository/androidx/navigation/navigation-ui-ktx/2.5.2/navigation-ui-ktx-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-ui-ktx/2.5.2",
+    deps = [
+        "androidx.navigation.navigation-runtime-ktx_2.5.2",
+        "androidx.navigation.navigation-ui_2.5.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.navigation.navigation-ui_2.3.5",
     pom = "repository/androidx/navigation/navigation-ui/2.3.5/navigation-ui-2.3.5.pom",
     repo_root_path = "repository",
@@ -15900,6 +16048,22 @@ maven_artifact(
         "com.google.android.material.material_1.4.0-beta01",
         "androidx.annotation.annotation-experimental_1.1.0",
         "androidx.transition.transition_1.3.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.navigation.navigation-ui_2.5.2",
+    pom = "repository/androidx/navigation/navigation-ui/2.5.2/navigation-ui-2.5.2.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/navigation/navigation-ui/2.5.2",
+    deps = [
+        "androidx.annotation.annotation-experimental_1.1.0",
+        "androidx.customview.customview_1.1.0",
+        "androidx.drawerlayout.drawerlayout_1.1.1",
+        "androidx.navigation.navigation-runtime_2.5.2",
+        "androidx.transition.transition_1.3.0",
+        "com.google.android.material.material_1.4.0-beta01",
     ],
     visibility = ["//visibility:public"],
 )
