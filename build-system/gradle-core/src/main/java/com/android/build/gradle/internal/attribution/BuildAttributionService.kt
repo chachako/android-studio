@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.attribution
 
-import com.android.SdkConstants
 import com.android.Version
 import com.android.build.gradle.internal.isConfigurationCache
 import com.android.build.gradle.internal.services.ServiceRegistrationAction
@@ -33,7 +32,6 @@ import com.android.buildanalyzer.common.TaskCategoryIssue
 import com.android.builder.utils.SynchronizedFile
 import com.android.utils.HelpfulEnumConverter
 import com.android.tools.analytics.HostData
-import com.android.utils.FileUtils
 import org.gradle.api.Project
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -196,10 +194,8 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         ) {
             val partialResults = BuildAnalyzerPartialResult(taskCategoryIssues)
 
-            val partialResultsOutputDir = FileUtils.join(
-                File(parameters.attributionFileLocation.get()),
-                SdkConstants.FD_BUILD_ATTRIBUTION,
-                "partial-results"
+            val partialResultsOutputDir = AndroidGradlePluginAttributionData.getPartialResultsDir(
+                File(parameters.attributionFileLocation.get())
             )
 
             // This will be invoked under a file lock, and so it's safe to read the output of other

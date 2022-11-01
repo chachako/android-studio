@@ -105,10 +105,16 @@ data class AndroidGradlePluginAttributionData(
 
     companion object {
 
-        fun getAttributionFile(outputDir: File) = FileUtils.join(
+        fun getAttributionFile(outputDir: File): File = FileUtils.join(
             outputDir,
             SdkConstants.FD_BUILD_ATTRIBUTION,
             SdkConstants.FN_AGP_ATTRIBUTION_DATA
+        )
+
+        fun getPartialResultsDir(outputDir: File): File = FileUtils.join(
+            outputDir,
+            SdkConstants.FD_BUILD_ATTRIBUTION,
+            "partial-results"
         )
 
         fun load(outputDir: File): AndroidGradlePluginAttributionData? {
