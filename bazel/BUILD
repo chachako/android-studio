@@ -1,9 +1,9 @@
 load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
-load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:utils.bzl", "java_jarjar")
 load("//tools/base/bazel:proto.bzl", "PROTOC_VERSION")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//tools/base/bazel:maven/artifacts.bzl", "ARTIFACTS", "DATA", "REMOTE_REPOS")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 exports_files(["jarjar_rules.txt"])
 
@@ -479,6 +479,25 @@ selects.config_setting_group(
     ],
     visibility = ["//visibility:public"],
 )
+
+string_flag(
+    name = "migration_java_language_version",
+    build_setting_default = "11",
+    visibility = ["//visibility:private"],
+)
+
+[
+    config_setting(
+        name = "java_language_version_%s" % v,
+        # TODO switch to checking java_language_version, when 17 is fully supported
+        #values = {"java_language_version": v},
+        flag_values = {
+            ":migration_java_language_version": v,
+        },
+        visibility = ["//visibility:public"],
+    )
+    for v in ("8", "11", "17")
+]
 
 coverage_java_test(
     name = "iml_to_build_tests",

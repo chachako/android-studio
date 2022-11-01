@@ -1,10 +1,8 @@
 load(":coverage.bzl", "coverage_baseline", "coverage_java_test")
-load(":functions.bzl", "create_option_file", "explicit_target", "label_workspace_path", "workspace_path")
-load(":kotlin.bzl", "kotlin_compile")
-load(":kotlin.bzl", "test_kotlin_use_ir")
+load(":functions.bzl", "create_option_file", "label_workspace_path")
+load(":kotlin.bzl", "kotlin_compile", "test_kotlin_use_ir")
 load(":lint.bzl", "lint_test")
 load(":merge_archives.bzl", "run_singlejar")
-load("@bazel_tools//tools/jdk:toolchain_utils.bzl", "find_java_runtime_toolchain", "find_java_toolchain")
 
 ImlModuleInfo = provider(
     doc = "Info produced by the iml_module rule.",
@@ -98,7 +96,7 @@ def _iml_module_jar_impl(
     full_ijar = ctx.actions.declare_file(name + ".merged-ijar-iml.jar")
 
     # Compiler args and JVM target.
-    java_toolchain = find_java_toolchain(ctx, ctx.attr._java_toolchain)
+    java_toolchain = ctx.attr.java_toolchain[java_common.JavaToolchainInfo]
     jvm_target = ctx.attr.jvm_target if ctx.attr.jvm_target else java_toolchain.target_version
     javac_opts = java_common.default_javac_opts(java_toolchain = java_toolchain) + ctx.attr.javacopts
     kotlinc_opts = list(ctx.attr.kotlinc_opts)
@@ -108,8 +106,14 @@ def _iml_module_jar_impl(
         kt_java_runtime = ctx.attr._kt_java_runtime_8[java_common.JavaRuntimeInfo]
     elif jvm_target == "11":
         # Ideally we use "--release 11" for javac too, but that is incompatible with "--add-exports".
+        # compile with JDK 11 instead
         kotlinc_opts += ["-jvm-target", "11"]
         kt_java_runtime = ctx.attr._kt_java_runtime_11[java_common.JavaRuntimeInfo]
+    elif jvm_target == "17":
+        # Ideally we use "--release 17" for javac too, but that is incompatible with "--add-exports".
+        # compile with JDK 17 instead
+        kotlinc_opts += ["-jvm-target", "17"]
+        kt_java_runtime = ctx.attr._kt_java_runtime_17[java_common.JavaRuntimeInfo]
     else:
         fail("JVM target " + jvm_target + " is not currently supported in iml_module")
 
@@ -393,10 +397,11 @@ _iml_module_ = rule(
         "test_deps": attr.label_list(providers = [[JavaInfo], [ImlModuleInfo], [CcInfo]]),
         "test_friends": attr.label_list(providers = [JavaInfo]),
         "data": attr.label_list(allow_files = True),
-        "_java_toolchain": attr.label(default = Label("//prebuilts/studio/jdk:jdk11_toolchain_java11")),
+        "java_toolchain": attr.label(),
         "_kt_java_runtime_8": attr.label(
             # We need this to be able to target JRE 8 in Kotlin, because
             # Kotlinc does not support the --release 8 Javac option.
+            # see https://youtrack.jetbrains.com/issue/KT-29974
             default = Label("//prebuilts/studio/jdk:jdk_runtime"),
             providers = [java_common.JavaRuntimeInfo],
             cfg = "exec",
@@ -404,7 +409,16 @@ _iml_module_ = rule(
         "_kt_java_runtime_11": attr.label(
             # We need this to be able to target JRE 11 in Kotlin, because
             # Kotlinc does not support the --release 11 Javac option.
-            default = Label("//prebuilts/studio/jdk:jdk11_runtime"),
+            # see https://youtrack.jetbrains.com/issue/KT-29974
+            default = Label("//prebuilts/studio/jdk/jdk11:jdk11_runtime"),
+            providers = [java_common.JavaRuntimeInfo],
+            cfg = "exec",
+        ),
+        "_kt_java_runtime_17": attr.label(
+            # We need this to be able to target JRE 17 in Kotlin, because
+            # Kotlinc does not support the --release 17 Javac option.
+            # see https://youtrack.jetbrains.com/issue/KT-29974
+            default = Label("//prebuilts/studio/jdk/jdk17:jdk17_runtime"),
             providers = [java_common.JavaRuntimeInfo],
             cfg = "exec",
         ),
@@ -572,6 +586,15 @@ def iml_module(
 
     srcs = split_srcs(srcs, resources, exclude)
     split_test_srcs = split_srcs(test_srcs, test_resources, exclude)
+
+    # we can't use JDK 17 and target 11, because of next restriction:
+    # "error: exporting a package from system module java.desktop is not allowed with --release"
+    # so instead use same JDK as jvm_target
+    java_toolchain = select({
+        "//tools/base/bazel:java_language_version_17": "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain",
+        "//conditions:default": "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11",
+    })
+
     _iml_module_(
         name = name,
         tags = tags,
@@ -591,6 +614,7 @@ def iml_module(
         test_roots = split_test_srcs.roots,
         package_prefixes = package_prefixes,
         jvm_target = jvm_target,
+        java_toolchain = java_toolchain,
         javacopts = javacopts + javacopts_from_jps,
         iml_files = iml_files,
         exports = exports,
