@@ -106,6 +106,8 @@ public class GmavenZipTest {
                     "com/android/tools/utp/android-test-plugin-result-listener-gradle:sources",
                     "com/android/tools/utp/android-test-plugin-host-logcat",
                     "com/android/tools/utp/android-test-plugin-host-logcat:sources",
+                    "com/android/tools/utp/android-test-plugin-host-logcat-proto",
+                    "com/android/tools/utp/android-test-plugin-host-logcat-proto:sources",
                     "com/android/tools/utp/android-device-provider-ddmlib",
                     "com/android/tools/utp/android-device-provider-ddmlib:sources",
                     "com/android/tools/utp/android-device-provider-gradle",

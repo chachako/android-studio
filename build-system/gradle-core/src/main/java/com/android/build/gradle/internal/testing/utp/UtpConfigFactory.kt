@@ -36,6 +36,7 @@ import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAddi
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto.AndroidTestCoverageConfig
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.IceboxPlugin
+import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto.AndroidTestLogcatConfig
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerConfigProto.GradleAndroidTestResultListenerConfig
 import com.google.protobuf.Any
 import com.google.protobuf.Message
@@ -370,7 +371,8 @@ class UtpConfigFactory {
             addHostPlugin(createAndroidTestPlugin(
                     testData, appApks, additionalInstallOptions, helperApks, installApkTimeout, utpDependencies))
             addHostPlugin(createAndroidTestDeviceInfoPlugin(utpDependencies))
-            addHostPlugin(createAndroidTestLogcatPlugin(utpDependencies))
+            addHostPlugin(createAndroidTestLogcatPlugin(
+                    testData.instrumentationTargetPackageId, utpDependencies))
             if (testData.isTestCoverageEnabled) {
                 addHostPlugin(createAndroidTestCoveragePlugin(
                     coverageOutputDir, useOrchestrator, testData, utpDependencies
@@ -639,8 +641,13 @@ class UtpConfigFactory {
         }
     }
 
-    private fun createAndroidTestLogcatPlugin(utpDependencies:UtpDependencies): ExtensionProto.Extension {
-        return ANDROID_TEST_LOGCAT_PLUGIN.toExtensionProto(utpDependencies)
+    private fun createAndroidTestLogcatPlugin(
+        testPackageName: String,
+        utpDependencies:UtpDependencies): ExtensionProto.Extension {
+        return ANDROID_TEST_LOGCAT_PLUGIN.toExtensionProto(
+                utpDependencies, AndroidTestLogcatConfig::newBuilder) {
+            targetTestProcessName = testPackageName
+        }
     }
 
     private fun createSingleDeviceExecutor(

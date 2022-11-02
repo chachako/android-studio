@@ -14,6 +14,7 @@ maven_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",
+        "//tools/base/utp/android-test-plugin-host-logcat-proto",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:com.google.protobuf.protobuf-java",
         # Don't change dependency order or the test fails. Those plugins bundle kotlinx

@@ -477,6 +477,7 @@ com.android.tools.build:gradle
     com.android.tools.utp:android-device-provider-gradle-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-additional-test-output-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-coverage-proto (runtime)
+    com.android.tools.utp:android-test-plugin-host-logcat-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-retention-proto (runtime)
     com.android.tools.utp:android-test-plugin-result-listener-gradle-proto (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
@@ -806,9 +807,16 @@ com.android.tools.utp:android-test-plugin-host-logcat
   description=A UTP plugin to export logcat information
   dependencies:
     com.android.tools:common (runtime)
+    com.android.tools.utp:android-test-plugin-host-logcat-proto (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     com.google.protobuf:protobuf-java (runtime)
     com.google.testing.platform:android-device-provider-local (runtime)
+
+com.android.tools.utp:android-test-plugin-host-logcat-proto
+  pomName=com.android.tools.utp.android-test-plugin-host-logcat-proto
+  description=A protobuf message used in a UTP plugin to export logcat information
+  dependencies:
+    com.google.protobuf:protobuf-java (runtime)
 
 com.android.tools.utp:android-test-plugin-host-retention
   pomName=com.android.tools.utp.android-test-plugin-host-retention

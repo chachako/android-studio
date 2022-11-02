@@ -3353,6 +3353,19 @@ com/android/tools/utp/android-test-plugin-host-logcat
   com/android/tools/utp/plugins/host/
   com/android/tools/utp/plugins/host/logcat/
 
+com/android/tools/utp/android-test-plugin-host-logcat-proto
+  META-INF/
+  META-INF/MANIFEST.MF
+  android_test_logcat_config.proto
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/utp/
+  com/android/tools/utp/plugins/
+  com/android/tools/utp/plugins/host/
+  com/android/tools/utp/plugins/host/logcat/
+  com/android/tools/utp/plugins/host/logcat/proto/
+
 com/android/tools/utp/android-test-plugin-host-retention
   META-INF/
   META-INF/MANIFEST.MF

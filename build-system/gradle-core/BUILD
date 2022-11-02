@@ -72,6 +72,7 @@ kotlin_library(
         "//tools/base/utp/android-device-provider-gradle-proto",
         "//tools/base/utp/android-test-plugin-host-additional-test-output-proto",
         "//tools/base/utp/android-test-plugin-host-coverage-proto",
+        "//tools/base/utp/android-test-plugin-host-logcat-proto",
         "//tools/base/utp/android-test-plugin-host-retention-proto",
         "//tools/base/utp/android-test-plugin-result-listener-gradle-proto",
         "//tools/data-binding:tools.baseLibrary",

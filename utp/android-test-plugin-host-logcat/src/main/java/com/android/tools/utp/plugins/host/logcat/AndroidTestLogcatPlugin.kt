@@ -15,21 +15,27 @@
  */
 package com.android.tools.utp.plugins.host.logcat
 
-import com.google.testing.platform.api.config.Config
+import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto.AndroidTestLogcatConfig
+import com.google.testing.platform.api.config.ProtoConfig
 import com.google.testing.platform.api.config.environment
 import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.CommandHandle
 import com.google.testing.platform.api.device.DeviceController
 import com.google.testing.platform.api.plugin.HostPlugin
 import com.google.testing.platform.lib.logging.jvm.getLogger
+import com.google.testing.platform.proto.api.core.IssueProto
 import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestCaseProto.TestCase
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
+import com.google.testing.platform.proto.api.core.TestStatusProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.runtime.android.controller.ext.deviceShell
 import java.io.BufferedWriter
 import java.io.File
 import java.util.Collections
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 
 /**
@@ -41,19 +47,41 @@ class AndroidTestLogcatPlugin(
     // Empty companion object is needed to call getLogger() method
     // from the constructor's default parameter. If you remove it,
     // the Kotlin compiler fails with an error.
-    companion object {}
+    companion object {
+        private const val TEST_CRASH_INDICATOR = "E AndroidRuntime: "
+    }
 
     private lateinit var outputDir: String
     private lateinit var tempLogcatFile: File
     private lateinit var tempLogcatWriter: BufferedWriter
     private lateinit var logcatCommandHandle: CommandHandle
+    private lateinit var crashLogcatFile: File
+    private lateinit var crashLogcatWriter: BufferedWriter
+    private lateinit var targetTestProcessName: String
+    private lateinit var crashLogcatStartMatcher: Regex
+    private lateinit var testPid: String
 
+    private val crashLogFinished = CountDownLatch(1)
+    // Heuristic value for reading 5 lines of logcat message before deciding if there's a crash
+    private val logcatCounter = CountDownLatch(5)
     private var logcatFilePaths: MutableList<String> = Collections.synchronizedList(mutableListOf())
     private var logcatOptions: List<String> = mutableListOf()
+    private var crashHappened: AtomicBoolean = AtomicBoolean(false)
+
+    private val  crashLogcatFinishMatcher: Regex by lazy {
+        Regex(".*I\\sProcess.*Sending\\ssignal.*PID:.*${testPid}.*SIG:\\s9")
+    }
+    private val crashLogcatProgressMatcher: Regex by lazy {
+        Regex(".*${testPid}.*${TEST_CRASH_INDICATOR}.*")
+    }
 
     override fun configure(context: Context) {
-        val config = context[Context.CONFIG_KEY] as Config
+        val config = context[Context.CONFIG_KEY] as ProtoConfig
         outputDir = config.environment.outputDirectory
+        this.targetTestProcessName = AndroidTestLogcatConfig
+                .parseFrom(config.configProto!!.value).targetTestProcessName
+        crashLogcatStartMatcher = Regex(
+                ".*E\\sAndroidRuntime:\\sProcess:\\s${targetTestProcessName}.*")
     }
 
     override fun beforeAll(deviceController: DeviceController) {
@@ -98,8 +126,23 @@ class AndroidTestLogcatPlugin(
         deviceController: DeviceController,
         cancelled: Boolean
     ): TestSuiteResult {
+        var updatedTestSuiteResult = testSuiteResult
+        // CountDownLatch await with timeout means that the latch will release after timeout.
+        // It continues immediately if thread is interrupted or latch reaches 0 before timeout
+        // We wait here in case there's a delay in reading logcat message
+        logcatCounter.await(2, TimeUnit.SECONDS)
+        if(crashHappened.get()) {
+            crashLogFinished.await(2, TimeUnit.SECONDS)
+            updatedTestSuiteResult = testSuiteResult.toBuilder().apply {
+                addIssue(IssueProto.Issue.newBuilder().apply {
+                    severity = IssueProto.Issue.Severity.SEVERE
+                    message = "Logcat of last crash: \n" +
+                            crashLogcatFile.bufferedReader().use { it.readText() }
+                }.build())
+            }.build()
+        }
         stopLogcat()
-        return testSuiteResult
+        return updatedTestSuiteResult
     }
 
     override fun canRun(): Boolean = true
@@ -132,6 +175,8 @@ class AndroidTestLogcatPlugin(
             add("threadtime")
             add("-b")
             add("main")
+            add("-b")
+            add("crash")
             addAll(logcatOptions)
         }
         return logcatCommand
@@ -145,6 +190,27 @@ class AndroidTestLogcatPlugin(
         }
         var testRunInProgress = false
         return controller.executeAsync(setUpLogcatCommandLine()) { line ->
+            logcatCounter.countDown()
+            // Use regular expression to find start of the logcat for the crash
+            // Should be similar to this line:
+            // 10-27 15:26:52.863 22058 22058 E AndroidRuntime: Process: com.example.myapplication4, PID: 22058
+            if (!crashHappened.get() && line.matches(crashLogcatStartMatcher)) {
+                crashLogcatFile = File(generateLogcatFileName(targetTestProcessName, "crash-report"))
+                crashLogcatWriter = crashLogcatFile.outputStream().bufferedWriter()
+                crashHappened.set(true)
+                testPid = line.split(" ").last()
+            }
+            if (crashHappened.get() && line.matches(crashLogcatProgressMatcher)){
+                crashLogcatWriter.write(line.split(TEST_CRASH_INDICATOR).last())
+                crashLogcatWriter.newLine()
+                crashLogcatWriter.flush()
+            }
+            // Use regular expression to find end of the logcat for the crash
+            // Should be similar to this line:
+            // 10-27 15:26:52.864 22058 22058 I Process : Sending signal. PID: 22058 SIG: 9
+            if (crashHappened.get() && line.matches(crashLogcatFinishMatcher))
+                crashLogFinished.countDown()
+
             if (line.contains("TestRunner: started: ")) {
                 testRunInProgress = true
                 parseLine(line)
@@ -172,6 +238,9 @@ class AndroidTestLogcatPlugin(
         } finally {
             if (this::tempLogcatWriter.isInitialized) {
                 tempLogcatWriter.close()
+            }
+            if (this::crashLogcatWriter.isInitialized) {
+                crashLogcatWriter.close()
             }
         }
     }

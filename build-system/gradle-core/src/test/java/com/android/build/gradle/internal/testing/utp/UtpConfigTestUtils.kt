@@ -21,8 +21,8 @@ import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAn
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
+import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerConfigProto
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.plugin.android.proto.AndroidDevicePluginProto
 import com.google.testing.platform.proto.api.config.AndroidInstrumentationDriverProto
@@ -36,6 +36,7 @@ private val protoPrinter: ProtoPrinter = ProtoPrinter(listOf(
     AndroidDeviceProviderDdmlibConfigProto.DdmlibAndroidDeviceProviderConfig::class.java,
     AndroidInstrumentationDriverProto.AndroidInstrumentationDriver::class.java,
     AndroidTestCoverageConfigProto.AndroidTestCoverageConfig::class.java,
+    AndroidTestLogcatConfigProto.AndroidTestLogcatConfig::class.java,
     GradleAndroidTestResultListenerConfigProto.GradleAndroidTestResultListenerConfig::class.java,
     GradleManagedAndroidDeviceProviderProto.GradleManagedAndroidDeviceProviderConfig::class.java,
     IceboxPluginProto.IceboxPlugin::class.java,
@@ -280,6 +281,12 @@ fun assertRunnerConfigProto(
             class_name: "com.android.tools.utp.plugins.host.logcat.AndroidTestLogcatPlugin"
             jar {
               path: "path-to-TestLogcatPlugin.jar"
+            }
+            config {
+              type_url: "type.googleapis.com/com.android.tools.utp.plugins.host.logcat.AndroidTestLogcatConfig"
+              value {
+                target_test_process_name: "com.example.application"
+              }
             }
           }
           ${"\n" + testCoveragePluginProto.trimIndent().prependIndent(" ".repeat(10))}
