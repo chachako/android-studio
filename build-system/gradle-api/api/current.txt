@@ -1363,7 +1363,7 @@ package com.android.build.api.dsl {
     property @Deprecated @org.gradle.api.Incubating public abstract boolean xmlReport;
   }
 
-  @org.gradle.api.Incubating public interface ManagedDevices {
+  public interface ManagedDevices {
     method public org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> getDevices();
     method public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> getGroups();
     property public abstract org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> devices;

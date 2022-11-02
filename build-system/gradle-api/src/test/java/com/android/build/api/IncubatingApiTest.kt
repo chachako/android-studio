@@ -192,8 +192,6 @@ class IncubatingApiTest {
                 "com.android.build.api.dsl.PrefabPackagingOptions#setLibraryName",
                 "com.android.build.api.dsl.PrefabPackagingOptions#getHeaderOnly",
                 "com.android.build.api.dsl.PrefabPackagingOptions#setHeaderOnly",
-                "com.android.build.api.dsl.ManagedDevices#getDevices",
-                "com.android.build.api.dsl.ManagedDevices#getGroups",
                 "com.android.build.api.dsl.JniLibsPackagingOptions#getExcludes",
                 "com.android.build.api.dsl.JniLibsPackagingOptions#getUseLegacyPackaging",
                 "com.android.build.api.dsl.JniLibsPackagingOptions#setUseLegacyPackaging",
