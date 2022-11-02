@@ -373,6 +373,10 @@ abstract class LintClient {
     /** Returns a visitor to use to analyze Gradle build scripts. */
     abstract fun getGradleVisitor(): GradleVisitor
 
+
+    /** Returns a visitor to use to analyze *.versions.toml dependency files. */
+    abstract fun getGradleTomlVisitor(): GradleVisitor
+
     /**
      * Reads the given text file and returns the content as a string
      *

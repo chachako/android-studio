@@ -41,6 +41,7 @@ import com.android.tools.lint.checks.infrastructure.TestFile.JavaTestFile;
 import com.android.tools.lint.checks.infrastructure.TestFile.KotlinTestFile;
 import com.android.tools.lint.checks.infrastructure.TestFile.ManifestTestFile;
 import com.android.tools.lint.checks.infrastructure.TestFile.PropertyTestFile;
+import com.android.tools.lint.checks.infrastructure.TestFile.VersionCatalogTestFile;
 import com.android.tools.lint.client.api.CircularDependencyException;
 import com.android.tools.lint.client.api.Configuration;
 import com.android.tools.lint.client.api.ConfigurationHierarchy;
@@ -410,6 +411,11 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
     @NonNull
     public static GradleTestFile gradle(@NonNull @Language("Groovy") String source) {
         return TestFiles.gradle(source);
+    }
+
+    @NonNull
+    public static VersionCatalogTestFile versionCatalog(@NonNull String source) {
+        return TestFiles.versionCatalog(source);
     }
 
     @NonNull

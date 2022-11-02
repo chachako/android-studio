@@ -504,6 +504,10 @@ open class ConfigurationHierarchy(
                     unsupported()
                 }
 
+                override fun getGradleTomlVisitor(): GradleVisitor {
+                    unsupported()
+                }
+
                 override fun readFile(file: File): CharSequence {
                     unsupported()
                 }

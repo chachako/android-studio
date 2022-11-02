@@ -121,6 +121,22 @@ class GradleDetectorTest : AbstractCheckTest() {
             "    androidTestCompile 'com.android.support.test:runner:0.3'\n" +
             "}\n"
     )
+    private val minimalGradle = gradle(
+        """
+                buildscript {
+                  repositories {
+                    google()
+                    mavenCentral()
+                  }
+                }
+
+                allprojects {
+                  repositories {
+                    mavenCentral()
+                  }
+                }
+                """
+    ).indented()
 
     override fun tearDown() {
         super.tearDown()
@@ -952,6 +968,33 @@ class GradleDetectorTest : AbstractCheckTest() {
             .run().expect(expected)
     }
 
+    fun testTooRecentVersionInVersionCatalog() {
+        val expected = "" +
+                "gradle/libs.versions.toml:2: Warning: A newer version of com.android.tools.build:gradle than 3.3.0-alpha04 is available: 3.3.2 [AndroidGradlePluginVersion]\n" +
+                "gradle = \"com.android.tools.build:gradle:3.3.0-alpha04\"\n" +
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                "0 errors, 1 warnings"
+
+        lint().files(
+            minimalGradle,
+            versionCatalog(
+                """
+                [libraries]
+                gradle = "com.android.tools.build:gradle:3.3.0-alpha04"
+                """
+            ).indented()
+        ).issues(AGP_DEPENDENCY)
+            .clientFactory({
+                object :
+                    com.android.tools.lint.checks.infrastructure.TestLintClient(CLIENT_STUDIO) {
+                    // Studio 3.3.0
+                    override fun getClientRevision(): String = "3.3.0.0"
+                }
+            })
+            .run().expect(expected)
+    }
+
+
     fun testTooRecentVersion2() {
         // Regression test for https://issuetracker.google.com/119210741
         // Don't offer Gradle plugin versions newer than the IDE (when running in the IDE)
@@ -1094,6 +1137,41 @@ class GradleDetectorTest : AbstractCheckTest() {
             "0 errors, 5 warnings\n"
 
         lint().files(mDependencies).issues(DEPENDENCY).run().expect(expected)
+    }
+
+    fun testVersionCatalogDependencies() {
+        val mCatalogDependencies = "[versions]\n" +
+                    "multidexVersion = \"1.0.0\" \n" +
+                    "guavaVersion = { prefer = \"11.0.2\" }\n"+
+                    "testRunnerVersion = { strictly = \"0.3\" }\n"+
+                    "[libraries]\n" +
+                    "appcompat1 = 'com.android.support:appcompat-v7:+'\n" +
+                    "guava = { module = \"com.google.guava:guava\", version.ref=\"guavaVersion\" }\n" +
+                    "appcompat2 = \"com.android.support:appcompat-v7:13.0.0\"\n" +
+                    "wearable = { module = \"com.google.android.support:wearable\", version=\"1.2.0\" }\n" +
+                    "multidex = { group = \"com.android.support\", name =\"multidex\", version.ref=\"multidexVersion\" } \n" +
+                    "testRunner = { module= \"com.android.support.test:runner\", version= { prefer = \"0.1\" } } \n" +
+                    "testRunner2 = { module = \"com.android.support.test:runner\", version =  { strictly =\"0.3\" } }\n" +
+                    "testRunner3 = { module = \"com.android.support.test:runner\", version.ref =\"testRunnerVersion\" }"
+        val toml = "gradle/libs.versions.toml"
+        val expected = "$toml:2: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]\n" +
+                "multidexVersion = \"1.0.0\" \n" +
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                "$toml:4: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]\n" +
+                "testRunnerVersion = { strictly = \"0.3\" }\n" +
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                "$toml:8: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]\n" +
+                "appcompat2 = \"com.android.support:appcompat-v7:13.0.0\"\n" +
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                "$toml:9: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]\n" +
+                "wearable = { module = \"com.google.android.support:wearable\", version=\"1.2.0\" }\n" +
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                "$toml:12: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]\n" +
+                "testRunner2 = { module = \"com.android.support.test:runner\", version =  { strictly =\"0.3\" } }\n" +
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                "0 errors, 5 warnings"
+
+        lint().files(minimalGradle ,versionCatalog(mCatalogDependencies)).issues(DEPENDENCY).run().expect(expected)
     }
 
     fun testLongHandDependencies() {

@@ -20,19 +20,11 @@ import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FN_BUILD_GRADLE
+import com.android.SdkConstants.FD_GRADLE
+import com.android.SdkConstants.FN_VERSION_CATALOG
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
-import com.android.tools.lint.checks.infrastructure.TestFile.BinaryTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.ByteProducer
-import com.android.tools.lint.checks.infrastructure.TestFile.BytecodeProducer
-import com.android.tools.lint.checks.infrastructure.TestFile.GradleTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.ImageTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.JarTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.JavaTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.KotlinTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.ManifestTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.PropertyTestFile
-import com.android.tools.lint.checks.infrastructure.TestFile.XmlTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.*
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.google.common.base.Joiner
 import com.google.common.base.Splitter
@@ -116,6 +108,10 @@ object TestFiles {
     @JvmStatic
     fun gradle(@Language("Groovy") source: String): GradleTestFile {
         return GradleTestFile(FN_BUILD_GRADLE, source)
+    }
+    @JvmStatic
+    fun versionCatalog(source: String): VersionCatalogTestFile {
+        return VersionCatalogTestFile("$FD_GRADLE/$FN_VERSION_CATALOG", source)
     }
 
     @JvmStatic

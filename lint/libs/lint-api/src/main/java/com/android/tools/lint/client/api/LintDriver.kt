@@ -26,6 +26,7 @@ import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
+import com.android.SdkConstants.DOT_VERSIONS_DOT_TOML
 import com.android.SdkConstants.FQCN_SUPPRESS_LINT
 import com.android.SdkConstants.KOTLIN_SUPPRESS
 import com.android.SdkConstants.RES_FOLDER
@@ -1550,17 +1551,46 @@ class LintDriver(
                         return@runReadAction (true)
                     }
                     if (!fileAnalyzed) {
-                        val message = "Lint CLI cannot analyze build.gradle files\n" +
-                            "To analyze a Gradle project, please use Gradle to run the project's 'lint' task.\n" +
-                            "See https://developer.android.com/studio/write/lint#commandline for more details.\n" +
-                            "If you are using lint in a custom context, such as in tests, add org.codehaus.groovy:groovy to the runtime classpath."
-                        val context = Context(this, project, main, file)
-                        context.report(Incident(IssueRegistry.LINT_WARNING, Location.create(context.file), message))
+                        reportAnalysisFailed("build.gradle", project, main, file)
+                        break // Only report once.
+                    }
+                } else if (file.path.endsWith(DOT_VERSIONS_DOT_TOML)) {
+                    val fileAnalyzed = client.runReadAction<Boolean> {
+                        val tomlVisitor = try {
+                            project.client.getGradleTomlVisitor()
+                        } catch (e: NoClassDefFoundError) {
+                            return@runReadAction (false)
+                        }
+                        val context = GradleContext(tomlVisitor, this, project, main, file)
+                        for (detector in detectors) {
+                            detector.beforeCheckFile(context)
+                        }
+                        tomlVisitor.visitBuildScript(context, gradleScanners)
+                        for (scanner in customVisitedGradleScanners) {
+                            scanner.visitBuildScript(context)
+                        }
+                        for (detector in detectors) {
+                            detector.afterCheckFile(context)
+                        }
+                        fileCount++
+                        return@runReadAction (true)
+                    }
+                    if (!fileAnalyzed) {
+                        reportAnalysisFailed("*.versions.toml", project, main, file)
                         break // Only report once.
                     }
                 }
             }
         }
+    }
+
+    private fun reportAnalysisFailed(fileType: String, project: Project, main: Project?, file: File) {
+        val message = "Lint CLI cannot analyze $fileType files\n" +
+                "To analyze a Gradle project, please use Gradle to run the project's 'lint' task.\n" +
+                "See https://developer.android.com/studio/write/lint#commandline for more details.\n" +
+                "If you are using lint in a custom context, such as in tests, add org.codehaus.groovy:groovy to the runtime classpath."
+        val context = Context(this, project, main, file)
+        context.report(Incident(IssueRegistry.LINT_WARNING, Location.create(context.file), message))
     }
 
     private fun checkProGuard(project: Project, main: Project) {
@@ -2968,6 +2998,8 @@ class LintDriver(
             delegate.closeConnection(connection)
 
         override fun getGradleVisitor(): GradleVisitor = delegate.getGradleVisitor()
+
+        override fun getGradleTomlVisitor(): GradleVisitor = delegate.getGradleTomlVisitor()
 
         override fun getGeneratedResourceFolders(project: Project): List<File> {
             return delegate.getGeneratedResourceFolders(project)

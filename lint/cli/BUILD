@@ -46,8 +46,10 @@ maven_library(
         "//tools/base/sdklib:tools.sdklib",
         "@maven//:com.google.guava.guava",
         "@maven//:net.sf.kxml.kxml2",
+        "@maven//:org.antlr.antlr4-runtime",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+        "@maven//:org.tomlj.tomlj",
     ],
 )
 
@@ -84,6 +86,7 @@ iml_module(
         "//tools/base/lint:studio.android.sdktools.lint-api[module]",
         "//tools/analytics-library/tracker:analytics-tracker[module]",
         "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
+        "//tools/adt/idea/.idea/libraries:tomlj",
         "//tools/analytics-library/shared:analytics-shared[module]",
         "//tools/base/lint:studio.android.sdktools.lint-checks[module]",
         "//tools/base/common:studio.android.sdktools.common[module]",

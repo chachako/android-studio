@@ -25,6 +25,8 @@ import static com.android.SdkConstants.APPCOMPAT_LIB_ARTIFACT;
 import static com.android.SdkConstants.ATTR_MIN_SDK_VERSION;
 import static com.android.SdkConstants.ATTR_PACKAGE;
 import static com.android.SdkConstants.ATTR_TARGET_SDK_VERSION;
+import static com.android.SdkConstants.DOT_VERSIONS_DOT_TOML;
+import static com.android.SdkConstants.FD_GRADLE_CATALOGS;
 import static com.android.SdkConstants.FD_GRADLE_WRAPPER;
 import static com.android.SdkConstants.FN_BUILD_GRADLE;
 import static com.android.SdkConstants.FN_BUILD_GRADLE_KTS;
@@ -1263,6 +1265,14 @@ public class Project {
                 settings = new File(dir, FN_SETTINGS_GRADLE_KTS);
                 if (settings.exists()) {
                     gradleFiles.add(settings);
+                }
+                File tomlFolder = new File(dir, FD_GRADLE_CATALOGS);
+                if (tomlFolder.exists()) {
+                    for (File file : tomlFolder.listFiles()) {
+                        if (file.getName().endsWith(DOT_VERSIONS_DOT_TOML)) {
+                            gradleFiles.add(file);
+                        }
+                    }
                 }
             } else {
                 gradleFiles = Collections.emptyList();
