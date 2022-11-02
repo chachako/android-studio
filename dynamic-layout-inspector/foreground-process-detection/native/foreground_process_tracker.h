@@ -107,15 +107,7 @@ class ForegroundProcessTracker {
     eventBuffer_ = buffer;
   }
 
-  ~ForegroundProcessTracker() {
-    shouldDoPolling_.store(false);
-    if (isThreadRunning_.load()) {
-      if (workerThread_.joinable()) {
-        workerThread_.join();
-        isThreadRunning_.store(false);
-      }
-    }
-  }
+  ~ForegroundProcessTracker() { StopTracking(); }
 
   // Runs dumpsys and tries to extract the foreground process for its output.
   // Returns false if foreground process info can't be extracted.

@@ -496,4 +496,16 @@ TEST_F(ForegroundProcessTrackerTest, Handshake_dumpsys_not_found) {
               TrackingForegroundProcessSupported::GREP_NOT_FOUND);
 }
 
+TEST_F(ForegroundProcessTrackerTest, Stop_called_multiple_times_consecutively) {
+  auto process_tracker = createDefaultForegroundProcessTracker(&event_buffer_);
+
+  WaitForEvents(process_tracker.get(), 2);
+
+  // WaitForEvents already calls `StopTracking`.
+  // Calling it again should not throw exception
+  process_tracker.get()->StopTracking();
+
+  process_tracker.get()->StopTracking();
+}
+
 }  // namespace layout_inspector
