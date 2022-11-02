@@ -17,10 +17,13 @@
 package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
+import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
+import com.android.build.gradle.internal.fixtures.FakeGradleRegularFile
 import com.android.build.gradle.internal.transforms.testdata.Animal
 import com.android.build.gradle.internal.transforms.testdata.CarbonForm
 import com.android.build.gradle.internal.transforms.testdata.Cat
 import com.android.build.gradle.internal.transforms.testdata.OuterClass
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.tasks.testdata.MySdk
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.TestUtils
@@ -34,6 +37,9 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.util.jar.JarFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 
 internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
 
@@ -48,10 +54,10 @@ internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
     @Ignore
     @Test
     fun testStubJarContainsExpectedEntries() {
-        testWithTask { dir: File, outputStubJar: File, task: PrivacySandboxSdkGenerateJarStubsTask ->
+        testWithTask { classesDir: File, javaResJar: File, outputStubJar: File, task: PrivacySandboxSdkGenerateJarStubsTask ->
 
             TestInputsGenerator.pathWithClasses(
-                    dir.toPath(),
+                    classesDir.toPath(),
                     listOf(
                             MySdk::class.java,
                             Cat::class.java,
@@ -62,8 +68,15 @@ internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
                     ),
             )
             FileUtils.createFile(
-                    FileUtils.join(dir, "META-INF", "MANIFEST.mf"),
+                    FileUtils.join(classesDir, "META-INF", "MANIFEST.mf"),
                     "Manifest-Version: 1.0")
+
+            ZipOutputStream(javaResJar.outputStream()).use {
+                val entry = ZipEntry("unkept.txt")
+                it.putNextEntry(entry)
+                it.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit...".toByteArray())
+                it.closeEntry()
+            }
 
             task.doTaskAction()
 
@@ -79,13 +92,14 @@ internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
         }
     }
 
-    private fun testWithTask(action: (File, File, PrivacySandboxSdkGenerateJarStubsTask) -> Unit) {
+    private fun testWithTask(action: (File, File, File, PrivacySandboxSdkGenerateJarStubsTask) -> Unit) {
         val project: Project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         val task = project.tasks.register("privacySandboxClassesJarStubs",
                 PrivacySandboxSdkGenerateJarStubsTask::class.java).get()
+        val sourcesDir = temporaryFolder.newFolder("apipackager-sources")
         val classesDir = temporaryFolder.newFolder("src")
+        val javaResourcesJar = temporaryFolder.newFile("resources.jar")
 
-        task.mergedClasses.from(classesDir)
         val outJar =
                 FileUtils.join(build,
                         PrivacySandboxSdkGenerateJarStubsTask.privacySandboxSdkStubJarFilename)
@@ -96,8 +110,11 @@ internal class PrivacySandboxSdkGenerateJarStubsTaskTest {
                 "androidx/privacysandbox/tools/tools-apipackager/1.0.0-SNAPSHOT/tools-apipackager-1.0.0-SNAPSHOT.jar",
         ).map { TestUtils.getLocalMavenRepoFile(it).toFile() }
 
+        task.sourceDirectory.setDisallowChanges(FakeGradleDirectory(sourcesDir))
+        task.mergedClasses.from(classesDir)
+        task.mergedJavaResources.setDisallowChanges(FakeGradleRegularFile(javaResourcesJar))
         task.apiPackager.setFrom(FakeConfigurableFileCollection(apipackagerDependencyJars))
         task.outputJar.set(outJar)
-        action(classesDir, outJar, task)
+        action(classesDir, javaResourcesJar, outJar, task)
     }
 }

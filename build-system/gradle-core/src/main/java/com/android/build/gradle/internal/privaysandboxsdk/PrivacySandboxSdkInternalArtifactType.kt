@@ -29,6 +29,9 @@ PrivacySandboxSdkInternalArtifactType<T : FileSystemLocation>(
     category: Category = Category.INTERMEDIATES,
 ) : Artifact.Single<T>(kind, category) {
 
+    // Directory containing classes and java resources provided to the api packager.
+    object API_PACKAGER_SOURCES: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
+
     // generated manifest file that contains permissions to be automatically added to the sandbox.
     object SANDBOX_MANIFEST: PrivacySandboxSdkInternalArtifactType<RegularFile>(ArtifactKind.FILE), Replaceable
 

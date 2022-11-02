@@ -20,16 +20,21 @@ import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifa
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkInternalArtifactType
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
+import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
-import com.android.buildanalyzer.common.TaskCategory
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.StringOption
+import com.android.buildanalyzer.common.TaskCategory
 import com.android.utils.FileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -37,7 +42,9 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
 import java.net.URLClassLoader
+import java.nio.file.Files
 import java.nio.file.Path
+import java.util.zip.ZipFile
 
 /**
  * Task generates empty jar containing all classes to be included in a privacy sandbox sdk.
@@ -49,16 +56,37 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
     @get:Classpath
     abstract val mergedClasses: ConfigurableFileCollection
 
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val mergedJavaResources: RegularFileProperty
+
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val apiPackager: ConfigurableFileCollection
+
+    // Classes and java resource dirs require merging, this input is used as a temporary dir.
+    @get:Internal
+    abstract val sourceDirectory: DirectoryProperty
 
     @get:OutputFile
     abstract val outputJar: RegularFileProperty
 
     @TaskAction
     fun doTaskAction() {
-        val classFilesDir = mergedClasses.singleFile
+        val sourcesDir = sourceDirectory.get().asFile
+        FileUtils.cleanOutputDir(sourcesDir)
+
+        FileUtils.copyDirectory(mergedClasses.singleFile, sourcesDir)
+
+        ZipFile(mergedJavaResources.get().asFile).use { zip ->
+            zip.entries().asIterator().forEach { entry ->
+                val entryBytes = zip.getInputStream(entry).readAllBytes()
+                val candidateFile = FileUtils.join(sourcesDir, entry.name)
+                FileUtils.createFile(candidateFile, "")
+                candidateFile.writeBytes(entryBytes)
+            }
+        }
+
         FileUtils.deleteIfExists(outputJar.get().asFile)
         val outJar = outputJar.get().asFile
         val apiPackager = apiPackager.files.map { it.toURI().toURL() }.toTypedArray()
@@ -67,7 +95,7 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
         }
         URLClassLoader(apiPackager).use {
             PrivacySandboxApiPackager(it).packageSdkDescriptors(
-                    classFilesDir.toPath(), outJar.toPath()
+                    sourcesDir.toPath(), outJar.toPath()
             )
         }
     }
@@ -89,6 +117,11 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
                     PrivacySandboxSdkGenerateJarStubsTask::outputJar
             ).withName(privacySandboxSdkStubJarFilename)
                     .on(PrivacySandboxSdkInternalArtifactType.STUB_JAR)
+
+            creationConfig.artifacts.setInitialProvider(
+                    taskProvider,
+                    PrivacySandboxSdkGenerateJarStubsTask::sourceDirectory
+            ).on(PrivacySandboxSdkInternalArtifactType.API_PACKAGER_SOURCES)
         }
 
         override fun configure(task: PrivacySandboxSdkGenerateJarStubsTask) {
@@ -104,6 +137,9 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
             task.apiPackager.setFrom(apiPackager.files)
             task.mergedClasses.fromDisallowChanges(
                     creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_CLASSES)
+            )
+            task.mergedJavaResources.setDisallowChanges(
+                    creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_JAVA_RES)
             )
         }
     }
