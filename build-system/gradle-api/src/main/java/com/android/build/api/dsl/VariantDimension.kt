@@ -47,12 +47,9 @@ interface VariantDimension {
     var multiDexKeepFile: File?
 
     /** Encapsulates per-variant configurations for the NDK, such as ABI filters.  */
-
-    @get:Incubating
     val ndk: Ndk
 
     /** Encapsulates per-variant configurations for the NDK, such as ABI filters.  */
-    @Incubating
     fun ndk(action: Ndk.() -> Unit)
 
     /**
@@ -166,11 +163,9 @@ interface VariantDimension {
     fun javaCompileOptions(action: JavaCompileOptions.() -> Unit)
 
     /** Options for configuring the shader compiler.  */
-    @get:Incubating
     val shaders: Shaders
 
     /** Configure the shader compiler options. */
-    @Incubating
     fun shaders(action: Shaders.() -> Unit)
 
     /**

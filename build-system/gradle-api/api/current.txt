@@ -1766,13 +1766,13 @@ package com.android.build.api.dsl {
     method public java.util.Map<java.lang.String,java.lang.Object> getManifestPlaceholders();
     method @Deprecated public java.io.File? getMultiDexKeepFile();
     method public java.io.File? getMultiDexKeepProguard();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.Ndk getNdk();
+    method public com.android.build.api.dsl.Ndk getNdk();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.Optimization getOptimization();
     method public java.util.List<java.io.File> getProguardFiles();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.Shaders getShaders();
+    method public com.android.build.api.dsl.Shaders getShaders();
     method public java.util.List<java.io.File> getTestProguardFiles();
     method public void javaCompileOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.JavaCompileOptions,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void ndk(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Ndk,kotlin.Unit> action);
+    method public void ndk(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Ndk,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void optimization(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Optimization,kotlin.Unit> action);
     method public Object proguardFile(Object proguardFile);
     method public Object proguardFiles(java.lang.Object... files);
@@ -1781,7 +1781,7 @@ package com.android.build.api.dsl {
     method @Deprecated public void setMultiDexKeepFile(java.io.File? multiDexKeepFile);
     method public void setMultiDexKeepProguard(java.io.File? multiDexKeepProguard);
     method public Object setProguardFiles(Iterable<?> proguardFileIterable);
-    method @org.gradle.api.Incubating public void shaders(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Shaders,kotlin.Unit> action);
+    method public void shaders(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Shaders,kotlin.Unit> action);
     method public Object testProguardFile(Object proguardFile);
     method public Object testProguardFiles(java.lang.Object... proguardFiles);
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ExternalNativeBuildOptions externalNativeBuild;
@@ -1789,10 +1789,10 @@ package com.android.build.api.dsl {
     property public abstract java.util.Map<java.lang.String,java.lang.Object> manifestPlaceholders;
     property @Deprecated public abstract java.io.File? multiDexKeepFile;
     property public abstract java.io.File? multiDexKeepProguard;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.Ndk ndk;
+    property public abstract com.android.build.api.dsl.Ndk ndk;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.Optimization optimization;
     property public abstract java.util.List<java.io.File> proguardFiles;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.Shaders shaders;
+    property public abstract com.android.build.api.dsl.Shaders shaders;
     property public abstract java.util.List<java.io.File> testProguardFiles;
   }
 
