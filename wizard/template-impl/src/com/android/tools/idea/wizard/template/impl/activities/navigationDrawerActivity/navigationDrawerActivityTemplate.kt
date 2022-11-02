@@ -35,7 +35,7 @@ import com.android.tools.idea.wizard.template.template
 import java.io.File
 
 val navigationDrawerActivityTemplate = template {
-  name = "Navigation Drawer Activity"
+  name = "Navigation Drawer Views Activity"
   minApi = MIN_API
   description = "Creates a new Activity with a Navigation Drawer"
 

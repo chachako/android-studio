@@ -42,7 +42,7 @@ import java.io.File
 
 val androidTVActivityTemplate
   get() = template {
-    name = "Android TV Blank View Activity"
+    name = "Android TV Blank Views Activity"
     minApi = 21
     description = "Creates a new Android TV activity using Leanback Support library"
     constraints = listOf(TemplateConstraint.AndroidX)

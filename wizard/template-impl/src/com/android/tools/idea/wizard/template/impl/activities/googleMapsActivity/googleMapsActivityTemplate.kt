@@ -41,7 +41,7 @@ import java.io.File
 
 val googleMapsActivityTemplate
   get() = template {
-    name = "Google Maps View Activity"
+    name = "Google Maps Views Activity"
     description = "Creates a new activity with a Google Map"
     minApi = MIN_API
     constraints = listOf(TemplateConstraint.AndroidX)

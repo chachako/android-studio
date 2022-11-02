@@ -36,7 +36,7 @@ import com.android.tools.idea.wizard.template.template
 import java.io.File
 
 val responsiveActivityTemplate = template {
-  name = "Responsive Activity"
+  name = "Responsive Views Activity"
   minApi = MIN_API
   description = "Creates a new Responsive layout Activity that is resizeable"
 
