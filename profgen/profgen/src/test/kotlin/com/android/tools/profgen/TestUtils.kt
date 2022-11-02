@@ -20,7 +20,6 @@ import com.android.testutils.TestUtils
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.file.Path
-import kotlin.test.fail
 
 fun testData(relativePath: String): File {
     return testDataPath(relativePath).toFile()

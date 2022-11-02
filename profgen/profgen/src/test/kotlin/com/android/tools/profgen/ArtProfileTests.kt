@@ -1,6 +1,7 @@
 package com.android.tools.profgen
 
 import com.google.common.truth.Truth.assertThat
+import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -11,7 +12,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
-import org.junit.Test
 
 class ArtProfileTests {
     @Test
@@ -269,6 +269,27 @@ class ArtProfileTests {
             println(hrf)
             println("-------------------------------------")
             assert(hrf.isNotEmpty())
+        }
+    }
+
+    @Test
+    fun testDumpProfiles_withInlineCaches_V015S() {
+        val obf = ObfuscationMap.Empty
+        val apkFile = testData("inlineCaches/app.apk")
+        val profileFile = testData("inlineCaches/primary.prof")
+        val golden = testData("inlineCaches/golden-prof.txt").readText()
+        val apk = Apk(apkFile)
+        val input = profileFile.inputStream()
+        input.use {
+            val prof = ArtProfile(input)!!
+            val builder = StringBuilder()
+            dumpProfile(builder, prof, apk, obf, strict = false)
+            val hrf = builder.toString()
+            println("--- Output Human readable profile ---")
+            println(hrf)
+            println("-------------------------------------")
+            assert(hrf.isNotEmpty())
+            assertEquals(golden, hrf)
         }
     }
 

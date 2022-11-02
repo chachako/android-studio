@@ -32,21 +32,30 @@ fun dumpProfile(
           } else {
               continue
           }
+
         for ((key, method) in dexFileData.methods) {
-            if (method.flags != 0) {
-                val dexMethod = file.methodPool[key]
+            // Method data is not guaranteed to exist given they might be stored as
+            // extra descriptors.
+
+            // Context:
+            // java/com/google/android/art/profiles/ArtProfileLoaderForS.java;l=469;rcl=382185618
+            val dexMethod = file.methodPool.getOrNull(key)
+            if (method.flags != 0 && dexMethod != null) {
                 val deobfuscated = obf.deobfuscate(dexMethod)
                 method.print(os)
                 deobfuscated.print(os)
                 os.append('\n')
             }
         }
+
         for (key in dexFileData.typeIndexes) {
-            val dexClass = file.typePool[key]
-            val deobfuscated = obf.deobfuscate(dexClass)
-            for (type in deobfuscated) {
-                os.append(type)
-                os.append('\n')
+            val dexClass = file.typePool.getOrNull(key)
+            if (dexClass != null) {
+                val deobfuscated = obf.deobfuscate(dexClass)
+                for (type in deobfuscated) {
+                    os.append(type)
+                    os.append('\n')
+                }
             }
         }
     }
