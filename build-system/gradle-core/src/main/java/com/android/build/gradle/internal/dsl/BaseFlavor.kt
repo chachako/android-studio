@@ -30,10 +30,8 @@ import com.android.builder.core.AbstractProductFlavor
 import com.android.builder.core.BuilderConstants
 import com.android.builder.core.DefaultApiVersion
 import com.android.builder.internal.ClassFieldImpl
-import com.android.builder.model.ApiVersion
 import com.android.builder.model.BaseConfig
 import com.android.builder.model.ProductFlavor
-import com.google.common.base.Strings
 import com.google.common.collect.Iterables
 import java.io.File
 import org.gradle.api.Action
@@ -348,7 +346,7 @@ abstract class BaseFlavor(name: String, private val dslServices: DslServices) :
         action.execute(externalNativeBuild)
     }
 
-    override fun externalNativeBuild(action: com.android.build.api.dsl.ExternalNativeBuildOptions.() -> Unit) {
+    override fun externalNativeBuild(action: com.android.build.api.dsl.ExternalNativeBuildFlags.() -> Unit) {
         action.invoke(externalNativeBuild)
     }
 

@@ -25,7 +25,7 @@ import org.gradle.api.Incubating
  * [Building Your Project](https://developer.android.com/ndk/guides/build.html).
  */
 @Incubating
-interface ExternalNativeNdkBuildOptions {
+interface NdkBuildFlags {
     /**
      * Specifies arguments for ndk-build.
      *

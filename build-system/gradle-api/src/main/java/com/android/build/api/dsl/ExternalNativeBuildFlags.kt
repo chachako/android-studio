@@ -54,7 +54,7 @@ import org.gradle.api.Incubating
  * [android.externalNativeBuild][ExternalNativeBuild].
  */
 @Incubating
-interface ExternalNativeBuildOptions {
+interface ExternalNativeBuildFlags {
     /**
      * Encapsulates per-variant ndk-build configurations, such as compiler flags and toolchain
      * arguments.
@@ -62,7 +62,7 @@ interface ExternalNativeBuildOptions {
      * To enable external native builds and set the path to your `Android.mk` script, use
      * [android.externalNativeBuild.ndkBuild.path][NdkBuild.path].
      */
-    val ndkBuild: ExternalNativeNdkBuildOptions
+    val ndkBuild: NdkBuildFlags
 
     /**
      * Encapsulates per-variant ndk-build configurations, such as compiler flags and toolchain
@@ -71,7 +71,7 @@ interface ExternalNativeBuildOptions {
      * To enable external native builds and set the path to your `Android.mk` script, use
      * [android.externalNativeBuild.ndkBuild.path][NdkBuild.path].
      */
-    fun ndkBuild(action: ExternalNativeNdkBuildOptions.() -> Unit)
+    fun ndkBuild(action: NdkBuildFlags.() -> Unit)
 
     /**
      * Encapsulates per-variant CMake configurations, such as compiler flags and toolchain
@@ -80,7 +80,7 @@ interface ExternalNativeBuildOptions {
      * To enable external native builds and set the path to your `CMakeLists.txt` script, use
      * [android.externalNativeBuild.cmake.path][Cmake.path].
      */
-    val cmake: ExternalNativeCmakeOptions
+    val cmake: CmakeFlags
 
     /**
      * Encapsulates per-variant CMake configurations, such as compiler flags and toolchain
@@ -89,7 +89,7 @@ interface ExternalNativeBuildOptions {
      * To enable external native builds and set the path to your `CMakeLists.txt` script, use
      * [android.externalNativeBuild.cmake.path][Cmake.path].
      */
-    fun cmake(action: ExternalNativeCmakeOptions.() -> Unit)
+    fun cmake(action: CmakeFlags.() -> Unit)
 
     /**
      * Additional per-variant experimental properties for C and C++.

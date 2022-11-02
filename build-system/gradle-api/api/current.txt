@@ -726,6 +726,24 @@ package com.android.build.api.dsl {
     property public abstract String? version;
   }
 
+  public interface CmakeFlags {
+    method public void abiFilters(java.lang.String... abiFilters);
+    method public void arguments(java.lang.String... arguments);
+    method public void cFlags(java.lang.String... cFlags);
+    method public void cppFlags(java.lang.String... cppFlags);
+    method public java.util.Set<java.lang.String> getAbiFilters();
+    method public java.util.List<java.lang.String> getArguments();
+    method public java.util.List<java.lang.String> getCFlags();
+    method public java.util.List<java.lang.String> getCppFlags();
+    method public java.util.Set<java.lang.String> getTargets();
+    method public void targets(java.lang.String... targets);
+    property public abstract java.util.Set<java.lang.String> abiFilters;
+    property public abstract java.util.List<java.lang.String> arguments;
+    property public abstract java.util.List<java.lang.String> cFlags;
+    property public abstract java.util.List<java.lang.String> cppFlags;
+    property public abstract java.util.Set<java.lang.String> targets;
+  }
+
   public interface CommonExtension<BuildFeaturesT extends com.android.build.api.dsl.BuildFeatures, BuildTypeT extends com.android.build.api.dsl.BuildType, DefaultConfigT extends com.android.build.api.dsl.DefaultConfig, ProductFlavorT extends com.android.build.api.dsl.ProductFlavor> {
     method @Deprecated @org.gradle.api.Incubating public void aaptOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AaptOptions,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void adbOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AdbOptions,kotlin.Unit> action);
@@ -987,51 +1005,15 @@ package com.android.build.api.dsl {
     property public abstract com.android.build.api.dsl.NdkBuild ndkBuild;
   }
 
-  @org.gradle.api.Incubating public interface ExternalNativeBuildOptions {
-    method public void cmake(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeCmakeOptions,kotlin.Unit> action);
-    method public com.android.build.api.dsl.ExternalNativeCmakeOptions getCmake();
+  @org.gradle.api.Incubating public interface ExternalNativeBuildFlags {
+    method public void cmake(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.CmakeFlags,kotlin.Unit> action);
+    method public com.android.build.api.dsl.CmakeFlags getCmake();
     method @org.gradle.api.Incubating public java.util.Map<java.lang.String,java.lang.Object> getExperimentalProperties();
-    method public com.android.build.api.dsl.ExternalNativeNdkBuildOptions getNdkBuild();
-    method public void ndkBuild(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeNdkBuildOptions,kotlin.Unit> action);
-    property public abstract com.android.build.api.dsl.ExternalNativeCmakeOptions cmake;
+    method public com.android.build.api.dsl.NdkBuildFlags getNdkBuild();
+    method public void ndkBuild(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.NdkBuildFlags,kotlin.Unit> action);
+    property public abstract com.android.build.api.dsl.CmakeFlags cmake;
     property @org.gradle.api.Incubating public abstract java.util.Map<java.lang.String,java.lang.Object> experimentalProperties;
-    property public abstract com.android.build.api.dsl.ExternalNativeNdkBuildOptions ndkBuild;
-  }
-
-  public interface ExternalNativeCmakeOptions {
-    method public void abiFilters(java.lang.String... abiFilters);
-    method public void arguments(java.lang.String... arguments);
-    method public void cFlags(java.lang.String... cFlags);
-    method public void cppFlags(java.lang.String... cppFlags);
-    method public java.util.Set<java.lang.String> getAbiFilters();
-    method public java.util.List<java.lang.String> getArguments();
-    method public java.util.List<java.lang.String> getCFlags();
-    method public java.util.List<java.lang.String> getCppFlags();
-    method public java.util.Set<java.lang.String> getTargets();
-    method public void targets(java.lang.String... targets);
-    property public abstract java.util.Set<java.lang.String> abiFilters;
-    property public abstract java.util.List<java.lang.String> arguments;
-    property public abstract java.util.List<java.lang.String> cFlags;
-    property public abstract java.util.List<java.lang.String> cppFlags;
-    property public abstract java.util.Set<java.lang.String> targets;
-  }
-
-  @org.gradle.api.Incubating public interface ExternalNativeNdkBuildOptions {
-    method public void abiFilters(java.lang.String... abiFilters);
-    method public void arguments(java.lang.String... arguments);
-    method public void cFlags(java.lang.String... cFlags);
-    method public void cppFlags(java.lang.String... cppFlags);
-    method public java.util.Set<java.lang.String> getAbiFilters();
-    method public java.util.List<java.lang.String> getArguments();
-    method public java.util.List<java.lang.String> getCFlags();
-    method public java.util.List<java.lang.String> getCppFlags();
-    method public java.util.Set<java.lang.String> getTargets();
-    method public void targets(java.lang.String... targets);
-    property public abstract java.util.Set<java.lang.String> abiFilters;
-    property public abstract java.util.List<java.lang.String> arguments;
-    property public abstract java.util.List<java.lang.String> cFlags;
-    property public abstract java.util.List<java.lang.String> cppFlags;
-    property public abstract java.util.Set<java.lang.String> targets;
+    property public abstract com.android.build.api.dsl.NdkBuildFlags ndkBuild;
   }
 
   @Deprecated @org.gradle.api.Incubating public interface FailureRetention extends com.android.build.api.dsl.EmulatorSnapshots {
@@ -1433,6 +1415,24 @@ package com.android.build.api.dsl {
     property public abstract java.io.File? path;
   }
 
+  @org.gradle.api.Incubating public interface NdkBuildFlags {
+    method public void abiFilters(java.lang.String... abiFilters);
+    method public void arguments(java.lang.String... arguments);
+    method public void cFlags(java.lang.String... cFlags);
+    method public void cppFlags(java.lang.String... cppFlags);
+    method public java.util.Set<java.lang.String> getAbiFilters();
+    method public java.util.List<java.lang.String> getArguments();
+    method public java.util.List<java.lang.String> getCFlags();
+    method public java.util.List<java.lang.String> getCppFlags();
+    method public java.util.Set<java.lang.String> getTargets();
+    method public void targets(java.lang.String... targets);
+    property public abstract java.util.Set<java.lang.String> abiFilters;
+    property public abstract java.util.List<java.lang.String> arguments;
+    property public abstract java.util.List<java.lang.String> cFlags;
+    property public abstract java.util.List<java.lang.String> cppFlags;
+    property public abstract java.util.Set<java.lang.String> targets;
+  }
+
   @org.gradle.api.Incubating public interface Optimization {
     method @org.gradle.api.Incubating public void keepRules(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KeepRules,kotlin.Unit> action);
   }
@@ -1763,8 +1763,8 @@ package com.android.build.api.dsl {
   public interface VariantDimension {
     method public void addManifestPlaceholders(java.util.Map<java.lang.String,?> manifestPlaceholders);
     method public void buildConfigField(String type, String name, String value);
-    method @org.gradle.api.Incubating public void externalNativeBuild(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeBuildOptions,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.ExternalNativeBuildOptions getExternalNativeBuild();
+    method @org.gradle.api.Incubating public void externalNativeBuild(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeBuildFlags,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ExternalNativeBuildFlags getExternalNativeBuild();
     method public com.android.build.api.dsl.JavaCompileOptions getJavaCompileOptions();
     method public java.util.Map<java.lang.String,java.lang.Object> getManifestPlaceholders();
     method @Deprecated public java.io.File? getMultiDexKeepFile();
@@ -1787,7 +1787,7 @@ package com.android.build.api.dsl {
     method public void shaders(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Shaders,kotlin.Unit> action);
     method public Object testProguardFile(Object proguardFile);
     method public Object testProguardFiles(java.lang.Object... proguardFiles);
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ExternalNativeBuildOptions externalNativeBuild;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ExternalNativeBuildFlags externalNativeBuild;
     property public abstract com.android.build.api.dsl.JavaCompileOptions javaCompileOptions;
     property public abstract java.util.Map<java.lang.String,java.lang.Object> manifestPlaceholders;
     property @Deprecated public abstract java.io.File? multiDexKeepFile;

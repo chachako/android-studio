@@ -450,7 +450,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         return externalNativeBuildOptions
     }
 
-    override fun externalNativeBuild(action: com.android.build.api.dsl.ExternalNativeBuildOptions.() -> Unit) {
+    override fun externalNativeBuild(action: com.android.build.api.dsl.ExternalNativeBuildFlags.() -> Unit) {
         action.invoke(externalNativeBuild)
     }
 
