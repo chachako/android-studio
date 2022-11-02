@@ -908,7 +908,7 @@ package com.android.build.api.dsl {
   @org.gradle.api.Incubating public interface Device extends org.gradle.api.Named java.io.Serializable {
   }
 
-  @org.gradle.api.Incubating public interface DeviceGroup extends org.gradle.api.Named {
+  public interface DeviceGroup extends org.gradle.api.Named {
     method public org.gradle.api.DomainObjectSet<com.android.build.api.dsl.Device> getTargetDevices();
     property public abstract org.gradle.api.DomainObjectSet<com.android.build.api.dsl.Device> targetDevices;
   }

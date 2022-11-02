@@ -212,7 +212,6 @@ class IncubatingApiTest {
                 "com.android.build.api.dsl.ManagedVirtualDevice#setSystemImageSource",
                 "com.android.build.api.dsl.ManagedVirtualDevice#getRequire64Bit",
                 "com.android.build.api.dsl.ManagedVirtualDevice#setRequire64Bit",
-                "com.android.build.api.dsl.DeviceGroup#getTargetDevices",
                 "com.android.build.api.dsl.EmulatorSnapshots#retainAll",
                 "com.android.build.api.dsl.EmulatorSnapshots#getEnableForTestFailures",
                 "com.android.build.api.dsl.EmulatorSnapshots#setEnableForTestFailures",
