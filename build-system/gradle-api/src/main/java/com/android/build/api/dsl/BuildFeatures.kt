@@ -16,7 +16,6 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Incubating
 import org.gradle.api.plugins.ExtensionAware
 
 /**
@@ -37,8 +36,6 @@ interface BuildFeatures : ExtensionAware {
 
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var aidl: Boolean?
 
     /**
@@ -49,8 +46,6 @@ interface BuildFeatures : ExtensionAware {
      *
      * More information available about this feature at: TBD
      **/
-    @get:Incubating
-    @set:Incubating
     var compose: Boolean?
 
     /**
@@ -65,8 +60,6 @@ interface BuildFeatures : ExtensionAware {
      *
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var buildConfig: Boolean?
 
     /**
@@ -85,8 +78,6 @@ interface BuildFeatures : ExtensionAware {
      *
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var prefab: Boolean?
 
     /**
@@ -101,8 +92,6 @@ interface BuildFeatures : ExtensionAware {
 
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var renderScript: Boolean?
 
     /**
@@ -117,8 +106,6 @@ interface BuildFeatures : ExtensionAware {
 
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var resValues: Boolean?
 
     /**
@@ -133,8 +120,6 @@ interface BuildFeatures : ExtensionAware {
 
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var shaders: Boolean?
 
     /**
@@ -149,7 +134,5 @@ interface BuildFeatures : ExtensionAware {
 
      * More information about this feature at: TBD
      */
-    @get:Incubating
-    @set:Incubating
     var viewBinding: Boolean?
 }
