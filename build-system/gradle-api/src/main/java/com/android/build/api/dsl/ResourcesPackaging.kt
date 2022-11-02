@@ -16,11 +16,8 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Incubating
-
 /** Packaging options for java resource files */
-@Incubating
-interface ResourcesPackagingOptions {
+interface ResourcesPackaging {
     /**
      * The set of excluded patterns. Java resources matching any of these patterns do not get
      * packaged in the APK.

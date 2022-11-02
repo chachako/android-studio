@@ -17,6 +17,7 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.dsl.PackagingOptions
+import com.android.build.gradle.internal.dsl.ResourcesPackagingImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.packaging.defaultExcludes
 import com.android.build.gradle.internal.services.DslServices
@@ -56,7 +57,7 @@ class ResourcesApkPackagingOptionsImplTest {
         // test setExcludes method too
         val dslResourcesPackagingOptionsImpl =
             dslPackagingOptions.resources
-                as com.android.build.gradle.internal.dsl.ResourcesPackagingOptionsImpl
+                as ResourcesPackagingImpl
         dslResourcesPackagingOptionsImpl.setExcludes(
             Sets.union(dslPackagingOptions.resources.excludes, setOf("baz"))
         )

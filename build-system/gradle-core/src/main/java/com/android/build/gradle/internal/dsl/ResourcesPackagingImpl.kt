@@ -16,14 +16,14 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.api.dsl.ResourcesPackagingOptions
+import com.android.build.api.dsl.ResourcesPackaging
 import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
 import com.android.build.gradle.internal.packaging.defaultExcludes
 import com.android.build.gradle.internal.packaging.defaultMerges
 import javax.inject.Inject
 
-abstract class ResourcesPackagingOptionsImpl
-@Inject @WithLazyInitialization("lazyInit") constructor() : ResourcesPackagingOptions {
+abstract class ResourcesPackagingImpl
+@Inject @WithLazyInitialization("lazyInit") constructor() : ResourcesPackaging {
 
     protected fun lazyInit() {
         setExcludes(defaultExcludes)

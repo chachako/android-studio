@@ -57,7 +57,7 @@ class ResourcesPackagingImplTest {
         // test setExcludes method too
         val dslResourcesPackagingOptionsImpl =
             dslPackagingOptions.resources
-                as com.android.build.gradle.internal.dsl.ResourcesPackagingOptionsImpl
+                as com.android.build.gradle.internal.dsl.ResourcesPackagingImpl
         dslResourcesPackagingOptionsImpl.setExcludes(
             Sets.union(dslPackagingOptions.resources.excludes, setOf("baz"))
         )
@@ -79,7 +79,7 @@ class ResourcesPackagingImplTest {
         // test setPickFirsts method too
         val dslResourcesPackagingOptionsImpl =
             dslPackagingOptions.resources
-                as com.android.build.gradle.internal.dsl.ResourcesPackagingOptionsImpl
+                as com.android.build.gradle.internal.dsl.ResourcesPackagingImpl
         dslResourcesPackagingOptionsImpl.setPickFirsts(
             Sets.union(dslPackagingOptions.resources.pickFirsts, setOf("baz"))
         )
@@ -98,7 +98,7 @@ class ResourcesPackagingImplTest {
         // test setMerges method too
         val dslResourcesPackagingOptionsImpl =
             dslPackagingOptions.resources
-                as com.android.build.gradle.internal.dsl.ResourcesPackagingOptionsImpl
+                as com.android.build.gradle.internal.dsl.ResourcesPackagingImpl
         dslResourcesPackagingOptionsImpl.setMerges(
             Sets.union(dslPackagingOptions.resources.merges, setOf("baz"))
         )

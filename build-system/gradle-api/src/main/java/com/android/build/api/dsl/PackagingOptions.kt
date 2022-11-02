@@ -114,8 +114,8 @@ interface PackagingOptions {
     fun jniLibs(action: JniLibsPackaging.() -> Unit)
 
     /** PackagingOptions for java resources */
-    val resources: ResourcesPackagingOptions
+    val resources: ResourcesPackaging
 
     /** PackagingOptions for java resources */
-    fun resources(action: ResourcesPackagingOptions.() -> Unit)
+    fun resources(action: ResourcesPackaging.() -> Unit)
 }
