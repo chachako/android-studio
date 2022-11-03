@@ -40,6 +40,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiPlainTextFile
 import com.intellij.psi.impl.light.LightElement
 import com.intellij.psi.impl.source.tree.TreeElement
+import org.jetbrains.kotlin.asJava.elements.KtLightIdentifier
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtFile
@@ -211,12 +212,12 @@ open class DefaultUastParser(
     override fun getLocation(context: JavaContext, element: PsiElement): Location {
         var range: TextRange? = null
 
-        if (element is PsiCompiledElement) {
+        if (!element.hasValidSourceLocation) {
             if (element is LightElement) {
                 range = (element as PsiElement).textRange
             }
             if (range == null || TextRange.EMPTY_RANGE == range) {
-                val containingFile = element.getContainingFile()
+                val containingFile = element.containingFile
                 if (containingFile != null) {
                     val virtualFile = containingFile.virtualFile
                     if (virtualFile != null) {
@@ -263,6 +264,15 @@ open class DefaultUastParser(
         return Location.create(file, contents, range.startOffset, range.endOffset)
             .setSource(element)
     }
+
+    private val PsiElement.hasValidSourceLocation: Boolean
+        get() {
+            if (this is PsiCompiledElement) return false
+            // [KtLightIdentifier] is no longer a subtype of [PsiCompiledElement] after fixing KTIJ-21412
+            // An identifier that can't tell its origin does not have a valid source location.
+            if (this is KtLightIdentifier && this.origin == null) return false
+            return textOffset >= 0
+        }
 
     override fun getLocation(context: JavaContext, element: UElement): Location {
         if (element is UElementWithLocation) {
@@ -366,9 +376,8 @@ open class DefaultUastParser(
     override fun createLocation(element: PsiElement): Location {
         val range = element.textRange
         val containingFile = element.containingFile
-        val contents: CharSequence
         val file = getFile(containingFile) ?: return Location.NONE
-        contents = getFileContents(containingFile)
+        val contents = getFileContents(containingFile)
         return Location.create(file, contents, range.startOffset, range.endOffset)
             .setSource(element)
     }
