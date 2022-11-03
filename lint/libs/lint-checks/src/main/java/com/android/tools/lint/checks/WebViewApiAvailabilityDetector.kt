@@ -111,7 +111,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
 
             // Note: we expect to bump the maximum sdk for future releases (but doing so requires
             // updating the deny list).
-            if (api == ApiConstraint.NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return
             }
             val level = api.min()

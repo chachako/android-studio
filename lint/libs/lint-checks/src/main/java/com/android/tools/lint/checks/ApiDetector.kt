@@ -72,7 +72,6 @@ import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.ApiConstraint
-import com.android.tools.lint.detector.api.ApiConstraint.Companion.NONE
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ClassContext.Companion.getFqcn
@@ -230,7 +229,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 val owner = "android/R\$attr"
                 attributeApiLevel = apiDatabase.getFieldVersions(owner, name)
                 val minSdk = getMinSdk(context) ?: return
-                if (attributeApiLevel != ApiConstraint.NONE && !(
+                if (attributeApiLevel != ApiConstraint.UNKNOWN && !(
                     minSdk.isAtLeast(attributeApiLevel) ||
                         context.folderVersion.isAtLeast(attributeApiLevel) ||
                         getLocalMinSdk(attribute.ownerElement).isAtLeast(attributeApiLevel) ||
@@ -404,13 +403,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
         name ?: return
         val api = apiDatabase.getFieldVersions(owner, name)
+        if (api == ApiConstraint.UNKNOWN) {
+            return
+        }
         val minSdk = getMinSdk(context) ?: return
-        if (api != NONE && !(
-            minSdk.isAtLeast(api) ||
-                context.folderVersion.isAtLeast(api) ||
-                getLocalMinSdk(attribute.ownerElement).isAtLeast(api)
-            )
-        ) {
+        if (!(minSdk.isAtLeast(api) || context.folderVersion.isAtLeast(api) || getLocalMinSdk(attribute.ownerElement).isAtLeast(api))) {
             // Don't complain about resource references in the tools namespace,
             // such as for example "tools:layout="@android:layout/list_content",
             // used only for designtime previews
@@ -419,6 +416,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
 
             when {
+                attributeApiLevel == ApiConstraint.UNKNOWN -> return
                 attributeApiLevel.isAtLeast(api) -> {
                     // The attribute will only be *read* on platforms >= attributeApiLevel.
                     // If this isn't lower than the attribute reference's API level, it
@@ -511,17 +509,19 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 val owner = "android/R$$typeString"
                                 val name = resourceNameToFieldName(text.substring(index + 1))
                                 val api = apiDatabase.getFieldVersions(owner, name)
-                                val minSdk = getMinSdk(context) ?: return
-                                if (!(
-                                    minSdk.isAtLeast(api) ||
-                                        context.folderVersion.isAtLeast(api) ||
-                                        getLocalMinSdk(element).isAtLeast(api)
-                                    )
-                                ) {
-                                    val location = context.getLocation(textNode)
-                                    val message =
-                                        "`$text` requires API level ${api.minString()} (current min is %1\$s)"
-                                    report(context, UNSUPPORTED, element, location, message, api, minSdk)
+                                if (api != ApiConstraint.UNKNOWN) {
+                                    val minSdk = getMinSdk(context) ?: return
+                                    if (!(
+                                        minSdk.isAtLeast(api) ||
+                                            context.folderVersion.isAtLeast(api) ||
+                                            getLocalMinSdk(element).isAtLeast(api)
+                                        )
+                                    ) {
+                                        val location = context.getLocation(textNode)
+                                        val message =
+                                            "`$text` requires API level ${api.minString()} (current min is %1\$s)"
+                                        report(context, UNSUPPORTED, element, location, message, api, minSdk)
+                                    }
                                 }
                             }
                         }
@@ -551,7 +551,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
             // TODO: Consider other widgets outside of android.widget.*
             val api = apiDatabase.getClassVersions(fqn)
-            if (api == NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return
             }
             val minSdk = getMinSdk(context) ?: return
@@ -969,17 +969,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             put(KEY_REQUIRES_API, api)
             put(KEY_MESSAGE, message)
 
-            val localMinSdk = if (minSdk == ApiConstraint.NONE || minSdk == ApiConstraint.ALL) {
-                val element = when (scope) {
-                    is Attr -> scope.ownerElement
-                    is Element -> scope
-                    else -> scope.ownerDocument.documentElement
-                }
-                getLocalMinSdk(element)
-            } else {
-                minSdk
+            assert(minSdk !== ApiConstraint.UNKNOWN)
+            val element = when (scope) {
+                is Attr -> scope.ownerElement
+                is Element -> scope
+                else -> scope.ownerDocument.documentElement
             }
-            put(KEY_MIN_API, localMinSdk)
+            put(KEY_MIN_API, max(minSdk, getLocalMinSdk(element)))
         }
         context.report(incident, map)
     }
@@ -1109,7 +1105,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 ?: return
 
             val api = apiDatabase.getMethodVersions(owner, name, desc)
-            if (api == ApiConstraint.NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return
             }
             var minSdk = getMinSdk(context) ?: return
@@ -1184,7 +1180,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val evaluator = context.evaluator
             val expressionOwner = evaluator.getQualifiedName(classType) ?: return true
             val api = apiDatabase.getClassVersions(expressionOwner)
-            if (api == ApiConstraint.NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return true
             }
             var minSdk = getMinSdk(context) ?: return true
@@ -1238,7 +1234,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
             val apiDatabase = apiDatabase ?: return
             val api = apiDatabase.getValidCastVersions(classType, interfaceType)
-            if (api == ApiConstraint.NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return
             }
 
@@ -1347,6 +1343,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
 
             val buildSdk = ApiConstraint.get(context.project.buildSdk)
+            if (buildSdk == ApiConstraint.UNKNOWN) {
+                return
+            }
             val name = node.name
             val evaluator = context.evaluator
             var superMethod = evaluator.getSuperMethod(node)
@@ -1361,9 +1360,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                     if (desc != null) {
                         val owner = evaluator.getQualifiedName(cls) ?: return
                         val api = apiDatabase.getMethodVersions(owner, name, desc)
-                        if (api != ApiConstraint.NONE && !buildSdk.isAtLeast(api)) {
-                            if (context.driver.isSuppressed(context, OVERRIDE, node as UElement)
-                            ) {
+                        if (api != ApiConstraint.UNKNOWN && !buildSdk.isAtLeast(api)) {
+                            if (context.driver.isSuppressed(context, OVERRIDE, node as UElement)) {
                                 return
                             }
 
@@ -1483,7 +1481,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         ) {
             val apiDatabase = apiDatabase ?: return
             val api = apiDatabase.getClassVersions(owner)
-            if (api == ApiConstraint.NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return
             }
             var minSdk = getMinSdk(context) ?: return
@@ -1516,7 +1514,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             if (type is PsiClassType) {
                 val expressionOwner = evaluator.getQualifiedName(type) ?: return
                 val api = apiDatabase.getClassVersions(expressionOwner)
-                if (api == ApiConstraint.NONE) {
+                if (api == ApiConstraint.UNKNOWN) {
                     return
                 }
                 var minSdk = getMinSdk(context) ?: return
@@ -1654,7 +1652,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
 
             var api = apiDatabase.getMethodVersions(owner, name, desc)
-            if (api == ApiConstraint.NONE) {
+            if (api == ApiConstraint.UNKNOWN) {
                 return
             }
             var minSdk = getMinSdk(context) ?: return
@@ -1713,7 +1711,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 val expressionOwner = evaluator.getQualifiedName(type)
                                 if (expressionOwner != null && expressionOwner != owner) {
                                     val specificApi = apiDatabase.getMethodVersions(expressionOwner, name, desc)
-                                    if (specificApi == ApiConstraint.NONE) {
+                                    if (specificApi == ApiConstraint.UNKNOWN) {
                                         if (apiDatabase.isRelevantOwner(expressionOwner)) {
                                             return
                                         }
@@ -1791,7 +1789,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         }
                         val specificApi =
                             apiDatabase.getMethodVersions(expressionOwner, name, desc)
-                        if (specificApi == ApiConstraint.NONE) {
+                        if (specificApi == ApiConstraint.UNKNOWN) {
                             if (apiDatabase.isRelevantOwner(expressionOwner)) {
                                 break
                             }
@@ -1842,7 +1840,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                         val methodApi = apiDatabase.getMethodVersions(
                                             methodOwner, name, desc
                                         )
-                                        if (methodApi == ApiConstraint.NONE || minSdk.isAtLeast(methodApi)) {
+                                        if (methodApi == ApiConstraint.UNKNOWN || minSdk.isAtLeast(methodApi)) {
                                             // Yes, we found another call that doesn't have an API requirement
                                             return
                                         }
@@ -2185,7 +2183,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             if (resolved != null) {
                 val signature = context.evaluator.getQualifiedName(resolved) ?: return
                 val api = apiDatabase.getClassVersions(signature)
-                if (api == ApiConstraint.NONE) {
+                if (api == ApiConstraint.UNKNOWN) {
                     return
                 }
                 val minSdk = getMinSdk(context) ?: return
@@ -2302,122 +2300,123 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             }
 
             var api = apiDatabase.getFieldVersions(owner, name)
-            if (api != ApiConstraint.NONE) {
-                var minSdk = getMinSdk(context) ?: return
-                if (!isAtLeast(minSdk, node, api)) {
-                    // Only look for compile time constants. See JLS 15.28 and JLS 13.4.9.
-                    val issue = if (isInlined(field, evaluator)) INLINED else UNSUPPORTED
-                    if (issue == UNSUPPORTED) {
-                        // Declaring enum constants are safe; they won't be called on older
-                        // platforms.
-                        val parent = skipParenthesizedExprUp(node.uastParent)
-                        if (parent is USwitchClauseExpression) {
-                            val conditions = parent.caseValues
+            if (api == ApiConstraint.UNKNOWN) {
+                return
+            }
+            var minSdk = getMinSdk(context) ?: return
+            if (!isAtLeast(minSdk, node, api)) {
+                // Only look for compile time constants. See JLS 15.28 and JLS 13.4.9.
+                val issue = if (isInlined(field, evaluator)) INLINED else UNSUPPORTED
+                if (issue == UNSUPPORTED) {
+                    // Declaring enum constants are safe; they won't be called on older
+                    // platforms.
+                    val parent = skipParenthesizedExprUp(node.uastParent)
+                    if (parent is USwitchClauseExpression) {
+                        val conditions = parent.caseValues
 
-                            if (conditions.contains(node)) {
-                                return
-                            }
-                        }
-                    } else if (issue == INLINED && isBenignConstantUsage(evaluator, field, node, name, owner)) {
-                        return
-                    }
-
-                    if (owner == "java.lang.annotation.ElementType") {
-                        // TYPE_USE and TYPE_PARAMETER annotations cannot be referenced
-                        // on older devices, but it's typically fine to declare these
-                        // annotations since they're normally not loaded at runtime; they're
-                        // meant for static analysis.
-                        val parent: UDeclaration? = node.getParentOfType(
-                            parentClass = UDeclaration::class.java,
-                            strict = true
-                        )
-                        if (parent is UClass && parent.isAnnotationType) {
+                        if (conditions.contains(node)) {
                             return
                         }
                     }
+                } else if (issue == INLINED && isBenignConstantUsage(evaluator, field, node, name, owner)) {
+                    return
+                }
 
-                    val (suppressed, localMinSdk) = getSuppressed(context, api, node, minSdk)
-                    if (suppressed) {
+                if (owner == "java.lang.annotation.ElementType") {
+                    // TYPE_USE and TYPE_PARAMETER annotations cannot be referenced
+                    // on older devices, but it's typically fine to declare these
+                    // annotations since they're normally not loaded at runtime; they're
+                    // meant for static analysis.
+                    val parent: UDeclaration? = node.getParentOfType(
+                        parentClass = UDeclaration::class.java,
+                        strict = true
+                    )
+                    if (parent is UClass && parent.isAnnotationType) {
                         return
                     }
-                    minSdk = max(minSdk, localMinSdk)
+                }
 
-                    // Look to see if it's a field reference for a specific sub class
-                    // or interface which defined the field or constant at an earlier
-                    // API level.
-                    //
-                    // For example, for api 28/29 and android.app.TaskInfo,
-                    // A number of fields were moved up from ActivityManager.RecentTaskInfo
-                    // to the new class TaskInfo in Q; however, these field are almost
-                    // always accessed via ActivityManager#taskInfo which is still
-                    // a RecentTaskInfo so this code works prior to Q. If you explicitly
-                    // access it as a TaskInfo the class reference itself will be
-                    // flagged by lint. (The platform change was in
-                    // Change-Id: Iaf1731002196bb89319de141a05ab92a7dcb2928)
-                    // We can't just unconditionally exit here, since there are existing
-                    // API requirements on various fields in the TaskInfo subclasses,
-                    // so try to pick out the real type.
-                    val parent = node.uastParent
-                    if (parent is UQualifiedReferenceExpression) {
-                        val receiver = parent.receiver
-                        val specificOwner = receiver.getExpressionType()?.canonicalText
-                            ?: (receiver as? UReferenceExpression)?.getQualifiedName()
-                        val specificApi = if (specificOwner != null)
-                            apiDatabase.getFieldVersions(specificOwner, name)
-                        else
-                            ApiConstraint.NONE
-                        if (specificApi != ApiConstraint.NONE && specificOwner != null) {
-                            if (!specificApi.isAtLeast(api)) {
-                                // Make sure the error message reflects the correct (lower)
-                                // minSdkVersion if we have a more specific match on the field
-                                // type
-                                api = specificApi
-                                owner = specificOwner
-                            }
-                            if (!isAtLeast(minSdk, node, specificApi)) {
-                                if (isSuppressed(context, specificApi, node, minSdk)) {
-                                    return
-                                }
-                            } else {
+                val (suppressed, localMinSdk) = getSuppressed(context, api, node, minSdk)
+                if (suppressed) {
+                    return
+                }
+                minSdk = max(minSdk, localMinSdk)
+
+                // Look to see if it's a field reference for a specific sub class
+                // or interface which defined the field or constant at an earlier
+                // API level.
+                //
+                // For example, for api 28/29 and android.app.TaskInfo,
+                // A number of fields were moved up from ActivityManager.RecentTaskInfo
+                // to the new class TaskInfo in Q; however, these field are almost
+                // always accessed via ActivityManager#taskInfo which is still
+                // a RecentTaskInfo so this code works prior to Q. If you explicitly
+                // access it as a TaskInfo the class reference itself will be
+                // flagged by lint. (The platform change was in
+                // Change-Id: Iaf1731002196bb89319de141a05ab92a7dcb2928)
+                // We can't just unconditionally exit here, since there are existing
+                // API requirements on various fields in the TaskInfo subclasses,
+                // so try to pick out the real type.
+                val parent = node.uastParent
+                if (parent is UQualifiedReferenceExpression) {
+                    val receiver = parent.receiver
+                    val specificOwner = receiver.getExpressionType()?.canonicalText
+                        ?: (receiver as? UReferenceExpression)?.getQualifiedName()
+                    val specificApi = if (specificOwner != null)
+                        apiDatabase.getFieldVersions(specificOwner, name)
+                    else
+                        ApiConstraint.UNKNOWN
+                    if (specificApi != ApiConstraint.UNKNOWN && specificOwner != null) {
+                        if (!specificApi.isAtLeast(api)) {
+                            // Make sure the error message reflects the correct (lower)
+                            // minSdkVersion if we have a more specific match on the field
+                            // type
+                            api = specificApi
+                            owner = specificOwner
+                        }
+                        if (!isAtLeast(minSdk, node, specificApi)) {
+                            if (isSuppressed(context, specificApi, node, minSdk)) {
                                 return
                             }
                         } else {
-                            if (specificOwner == "android.app.TaskInfo" && (specificApi.min() == 28 || specificApi.min() == 29)) {
-                                return
-                            }
+                            return
+                        }
+                    } else {
+                        if (specificOwner == "android.app.TaskInfo" && (specificApi.min() == 28 || specificApi.min() == 29)) {
+                            return
                         }
                     }
-
-                    // If the reference is a qualified expression, don't just highlight the
-                    // field name itself; include the qualifiers too
-                    var locationNode = node
-
-                    // But only include expressions to the left; for example, if we're
-                    // trying to highlight the field "OVERLAY" in
-                    //     PorterDuff.Mode.OVERLAY.hashCode()
-                    // we should *not* include the .hashCode() suffix
-                    while (locationNode.uastParent is UQualifiedReferenceExpression &&
-                        (locationNode.uastParent as UQualifiedReferenceExpression)
-                            .selector === locationNode
-                    ) {
-                        locationNode = locationNode.uastParent ?: node
-                    }
-
-                    val location = context.getLocation(locationNode)
-                    val fqcn = getFqcn(owner) + '#'.toString() + name
-                    report(
-                        issue,
-                        node,
-                        location,
-                        "Field",
-                        fqcn,
-                        api,
-                        minSdk,
-                        null,
-                        owner,
-                        name
-                    )
                 }
+
+                // If the reference is a qualified expression, don't just highlight the
+                // field name itself; include the qualifiers too
+                var locationNode = node
+
+                // But only include expressions to the left; for example, if we're
+                // trying to highlight the field "OVERLAY" in
+                //     PorterDuff.Mode.OVERLAY.hashCode()
+                // we should *not* include the .hashCode() suffix
+                while (locationNode.uastParent is UQualifiedReferenceExpression &&
+                    (locationNode.uastParent as UQualifiedReferenceExpression)
+                        .selector === locationNode
+                ) {
+                    locationNode = locationNode.uastParent ?: node
+                }
+
+                val location = context.getLocation(locationNode)
+                val fqcn = getFqcn(owner) + '#'.toString() + name
+                report(
+                    issue,
+                    node,
+                    location,
+                    "Field",
+                    fqcn,
+                    api,
+                    minSdk,
+                    null,
+                    owner,
+                    name
+                )
             }
         }
     }
@@ -2452,7 +2451,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val constraint = getVersionCheckConditional(binary, context.client, context.evaluator, context.project)
             if (constraint != null) {
                 val always = constraint.alwaysAtLeast(minSdk)
-                val never = constraint.neverAtMost(minSdk)
+                val never = constraint.not().alwaysAtLeast(minSdk)
                 val minString = minSdk.minString()
                 val outer = VersionChecks.Companion.getOuterVersionCheckConstraint(context, binary)
                     ?.findSdk(constraint.getSdk())
@@ -2732,10 +2731,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
 
         private fun apiLevelFix(api: ApiConstraint, minSdk: ApiConstraint): LintFix {
-            return LintFix.create().data(
-                KEY_REQUIRES_API, api, KEY_MIN_API,
-                if (minSdk != NONE && minSdk != ApiConstraint.ALL) minSdk else null
-            )
+            return LintFix.create().data(KEY_REQUIRES_API, api, KEY_MIN_API, minSdk)
         }
 
         /**

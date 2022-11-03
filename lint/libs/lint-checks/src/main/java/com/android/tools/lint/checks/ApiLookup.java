@@ -315,7 +315,6 @@ public class ApiLookup extends ApiDatabase {
     /** Use one of the {@link #get} factory methods instead. */
     private ApiLookup(
             @NonNull LintClient client, @NonNull File xmlFile, @Nullable File binaryFile) {
-
         if (binaryFile != null) {
             readData(client, binaryFile, cacheCreator(xmlFile), API_LOOKUP_BINARY_FORMAT_VERSION);
             initializeApiConstraints();
@@ -396,12 +395,13 @@ public class ApiLookup extends ApiDatabase {
      * @return the minimum API version the method is supported for, or -1 if it's unknown <b>or
      *     version 1</b>
      */
+    @NonNull
     public ApiConstraint getClassVersions(@NonNull String className) {
         if (mData != null) {
             return getClassVersions(findClass(className));
         }
 
-        return ApiConstraint.NONE;
+        return ApiConstraint.UNKNOWN;
     }
 
     private ApiConstraint getClassVersions(int classNumber) {
@@ -412,7 +412,7 @@ public class ApiLookup extends ApiDatabase {
                 return apiConstraints.get(api);
             }
         }
-        return ApiConstraint.NONE;
+        return ApiConstraint.UNKNOWN;
     }
 
     /**
@@ -439,6 +439,7 @@ public class ApiLookup extends ApiDatabase {
      * @param destinationClass the class to cast the sourceClass to
      * @return the minimum API version the method is supported for, or 1 or -1 if it's unknown
      */
+    @NonNull
     public ApiConstraint getValidCastVersions(
             @NonNull String sourceClass, @NonNull String destinationClass) {
         if (mData != null) {
@@ -461,7 +462,21 @@ public class ApiLookup extends ApiDatabase {
             }
         }
 
-        return ApiConstraint.NONE;
+        return ApiConstraint.UNKNOWN;
+    }
+
+    /**
+     * @deprecated Use {@link #getClassDeprecatedInVersions} instead to properly handle APIs which
+     *     can now appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getClassDeprecatedIn(@NonNull String className) {
+        ApiConstraint versions = getClassDeprecatedInVersions(className);
+        if (versions != ApiConstraint.UNKNOWN) {
+            return versions.min();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -472,22 +487,39 @@ public class ApiLookup extends ApiDatabase {
      *     (as returned by Class.getName())
      * @return the API version the API was deprecated in, or -1 if it's unknown <b>or version 0</b>
      */
-    public int getClassDeprecatedIn(@NonNull String className) {
+    @NonNull
+    public ApiConstraint getClassDeprecatedInVersions(@NonNull String className) {
         if (mData != null) {
             int classNumber = findClass(className);
             if (classNumber >= 0) {
                 int offset = seekClassData(classNumber, CLASS_HEADER_DEPRECATED);
                 if (offset < 0) {
                     // Not deprecated
-                    return -1;
+                    return ApiConstraint.UNKNOWN;
                 }
                 int deprecatedIn = Byte.toUnsignedInt(mData[offset]) & API_MASK;
 
-                return deprecatedIn != 0 ? deprecatedIn : -1;
+                return deprecatedIn != 0
+                        ? ApiConstraint.get(deprecatedIn, ANDROID_SDK_ID)
+                        : ApiConstraint.UNKNOWN;
             }
         }
 
-        return -1;
+        return ApiConstraint.UNKNOWN;
+    }
+
+    /**
+     * @deprecated Use {@link #getClassRemovedInVersions} instead to properly handle APIs which can
+     *     now appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getClassRemovedIn(@NonNull String className) {
+        ApiConstraint versions = getClassRemovedInVersions(className);
+        if (versions != ApiConstraint.UNKNOWN) {
+            return versions.min();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -497,21 +529,25 @@ public class ApiLookup extends ApiDatabase {
      *     (as returned by Class.getName())
      * @return the API version the API was removed in, or -1 if it's unknown <b>or version 0</b>
      */
-    public int getClassRemovedIn(@NonNull String className) {
+    @NonNull
+    public ApiConstraint getClassRemovedInVersions(@NonNull String className) {
         if (mData != null) {
             int classNumber = findClass(className);
             if (classNumber >= 0) {
                 int offset = seekClassData(classNumber, CLASS_HEADER_REMOVED);
                 if (offset < 0) {
                     // Not removed
-                    return -1;
+                    return ApiConstraint.UNKNOWN;
                 }
                 int removedIn = Byte.toUnsignedInt(mData[offset]) & API_MASK;
-                return removedIn != 0 ? removedIn : -1;
+                // TODO: Support in database
+                return removedIn != 0
+                        ? ApiConstraint.get(removedIn, ANDROID_SDK_ID)
+                        : ApiConstraint.UNKNOWN;
             }
         }
 
-        return -1;
+        return ApiConstraint.UNKNOWN;
     }
 
     /**
@@ -534,6 +570,7 @@ public class ApiLookup extends ApiDatabase {
      * @deprecated Use {@link #getClassVersions} instead to properly handle APIs which can now
      *     appear in multiple SDK extensions.
      */
+    @Deprecated
     public int getMethodVersion(@NonNull String owner, @NonNull String name, @NonNull String desc) {
         return getMethodVersions(owner, name, desc).min();
     }
@@ -550,6 +587,7 @@ public class ApiLookup extends ApiDatabase {
      * @param desc the method's descriptor - see {@link org.objectweb.asm.Type}
      * @return the minimum API version the method is supported for, or -1 if it's unknown
      */
+    @NonNull
     public ApiConstraint getMethodVersions(
             @NonNull String owner, @NonNull String name, @NonNull String desc) {
         //noinspection VariableNotUsedInsideIf
@@ -558,13 +596,28 @@ public class ApiLookup extends ApiDatabase {
             if (classNumber >= 0) {
                 int api = findMember(classNumber, name, desc);
                 if (api < 0) {
-                    return ApiConstraint.NONE;
+                    return ApiConstraint.UNKNOWN;
                 }
                 return apiConstraints.get(api);
             }
         }
 
-        return ApiConstraint.NONE;
+        return ApiConstraint.UNKNOWN;
+    }
+
+    /**
+     * @deprecated Use {@link #getClassDeprecatedInVersions} instead to properly handle APIs which
+     *     can now appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getMethodDeprecatedIn(
+            @NonNull String owner, @NonNull String name, @NonNull String desc) {
+        ApiConstraint versions = getMethodDeprecatedInVersions(owner, name, desc);
+        if (versions != ApiConstraint.UNKNOWN) {
+            return versions.min();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -577,18 +630,36 @@ public class ApiLookup extends ApiDatabase {
      * @param desc the method's descriptor - see {@link org.objectweb.asm.Type}
      * @return the API version the API was deprecated in, or -1 if the method is not deprecated
      */
-    public int getMethodDeprecatedIn(
+    @NonNull
+    public ApiConstraint getMethodDeprecatedInVersions(
             @NonNull String owner, @NonNull String name, @NonNull String desc) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int deprecatedIn = findMemberDeprecatedIn(classNumber, name, desc);
-                return deprecatedIn == 0 ? -1 : deprecatedIn;
+                return deprecatedIn == 0
+                        ? ApiConstraint.UNKNOWN
+                        : ApiConstraint.get(deprecatedIn, ANDROID_SDK_ID);
             }
         }
 
-        return -1;
+        return ApiConstraint.UNKNOWN;
+    }
+
+    /**
+     * @deprecated Use {@link #getMethodRemovedInVersions} instead to properly handle APIs which can
+     *     now appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getMethodRemovedIn(
+            @NonNull String owner, @NonNull String name, @NonNull String desc) {
+        ApiConstraint versions = getMethodRemovedInVersions(owner, name, desc);
+        if (versions != ApiConstraint.UNKNOWN) {
+            return versions.min();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -600,18 +671,21 @@ public class ApiLookup extends ApiDatabase {
      * @param desc the method's descriptor - see {@link org.objectweb.asm.Type}
      * @return the API version the API was removed in, or -1 if the method was not removed
      */
-    public int getMethodRemovedIn(
+    @NonNull
+    public ApiConstraint getMethodRemovedInVersions(
             @NonNull String owner, @NonNull String name, @NonNull String desc) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int removedIn = findMemberRemovedIn(classNumber, name, desc);
-                return removedIn == 0 ? -1 : removedIn;
+                return removedIn == 0
+                        ? ApiConstraint.UNKNOWN
+                        : ApiConstraint.get(removedIn, ANDROID_SDK_ID);
             }
         }
 
-        return -1;
+        return ApiConstraint.UNKNOWN;
     }
 
     /**
@@ -724,6 +798,7 @@ public class ApiLookup extends ApiDatabase {
      * @deprecated Use {@link #getClassVersions} instead to properly handle APIs which can now
      *     appear in multiple SDK extensions.
      */
+    @Deprecated
     public int getFieldVersion(@NonNull String owner, @NonNull String name) {
         return getFieldVersions(owner, name).min();
     }
@@ -738,6 +813,7 @@ public class ApiLookup extends ApiDatabase {
      * @param name the method's name
      * @return the minimum API version the method is supported for, or -1 if it's unknown
      */
+    @NonNull
     public ApiConstraint getFieldVersions(@NonNull String owner, @NonNull String name) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
@@ -745,13 +821,27 @@ public class ApiLookup extends ApiDatabase {
             if (classNumber >= 0) {
                 int api = findMember(classNumber, name, null);
                 if (api < 0) {
-                    return ApiConstraint.NONE;
+                    return ApiConstraint.UNKNOWN;
                 }
                 return apiConstraints.get(api);
             }
         }
 
-        return ApiConstraint.NONE;
+        return ApiConstraint.UNKNOWN;
+    }
+
+    /**
+     * @deprecated Use {@link #getFieldDeprecatedInVersions} instead to properly handle APIs which
+     *     can now appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getFieldDeprecatedIn(@NonNull String owner, @NonNull String name) {
+        ApiConstraint versions = getFieldDeprecatedInVersions(owner, name);
+        if (versions != ApiConstraint.UNKNOWN) {
+            return versions.min();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -763,17 +853,34 @@ public class ApiLookup extends ApiDatabase {
      * @param name the method's name
      * @return the API version the API was deprecated in, or -1 if the field is not deprecated
      */
-    public int getFieldDeprecatedIn(@NonNull String owner, @NonNull String name) {
+    @NonNull
+    public ApiConstraint getFieldDeprecatedInVersions(@NonNull String owner, @NonNull String name) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int deprecatedIn = findMemberDeprecatedIn(classNumber, name, null);
-                return deprecatedIn == 0 ? -1 : deprecatedIn;
+                return deprecatedIn == 0
+                        ? ApiConstraint.UNKNOWN
+                        : ApiConstraint.get(deprecatedIn, ANDROID_SDK_ID);
             }
         }
 
-        return -1;
+        return ApiConstraint.UNKNOWN;
+    }
+
+    /**
+     * @deprecated Use {@link #getFieldRemovedInVersions} instead to properly handle APIs which can
+     *     now appear in multiple SDK extensions.
+     */
+    @Deprecated
+    public int getFieldRemovedIn(@NonNull String owner, @NonNull String name) {
+        ApiConstraint versions = getFieldRemovedInVersions(owner, name);
+        if (versions != ApiConstraint.UNKNOWN) {
+            return versions.min();
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -784,17 +891,20 @@ public class ApiLookup extends ApiDatabase {
      * @param name the method's name
      * @return the API version the API was removed in, or -1 if the field was not removed
      */
-    public int getFieldRemovedIn(@NonNull String owner, @NonNull String name) {
+    @NonNull
+    public ApiConstraint getFieldRemovedInVersions(@NonNull String owner, @NonNull String name) {
         //noinspection VariableNotUsedInsideIf
         if (mData != null) {
             int classNumber = findClass(owner);
             if (classNumber >= 0) {
                 int removedIn = findMemberRemovedIn(classNumber, name, null);
-                return removedIn == 0 ? -1 : removedIn;
+                return removedIn == 0
+                        ? ApiConstraint.UNKNOWN
+                        : ApiConstraint.get(removedIn, ANDROID_SDK_ID);
             }
         }
 
-        return -1;
+        return ApiConstraint.UNKNOWN;
     }
 
     /**

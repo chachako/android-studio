@@ -1950,7 +1950,7 @@ open class LintFix protected constructor(
          */
         @JvmStatic
         @Contract("_, _, !null -> !null")
-        fun getApiConstraint(fix: LintFix?, key: String, defaultValue: ApiConstraint? = ApiConstraint.NONE): ApiConstraint? {
+        fun getApiConstraint(fix: LintFix?, key: String, defaultValue: ApiConstraint? = ApiConstraint.UNKNOWN): ApiConstraint? {
             return if (fix is DataMap) {
                 fix.getApiConstraint(key) ?: defaultValue
             } else defaultValue

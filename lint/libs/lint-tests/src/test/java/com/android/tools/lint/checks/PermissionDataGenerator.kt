@@ -414,7 +414,7 @@ class PermissionDataGenerator {
             val permission = nameToPermission[name] ?: run {
                 val fieldVersion = if (field != null) apiLookup.getFieldVersions(
                     "android/Manifest\$permission", field
-                ) else ApiConstraint.NONE
+                ) else ApiConstraint.UNKNOWN
 
                 val new = Permission(name, field, fieldVersion.min())
                 nameToPermission.put(name, new)

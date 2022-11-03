@@ -5735,7 +5735,8 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(expected)
                 .expectFixDiffs(
-                        "Data for src/test/pkg/MapApiTest.java line 8:   requiresApi : ffffffffff800000");
+                        "Data for src/test/pkg/MapApiTest.java line 8:   minSdk : ffffffffffffffff\n"
+                                + "  requiresApi : ffffffffff800000");
     }
 
     public void testExtensionFunction() {
@@ -8597,6 +8598,35 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                                                 + "    }\n"
                                                                 + "}")))
                 .expectClean();
+    }
+
+    public void testSdkExtensionOrder3() {
+        ApiLookupTest.runApiCheckWithCustomLookup(
+                        () ->
+                                lint().files(
+                                                manifest(
+                                                                ""
+                                                                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
+                                                                        + "    <uses-sdk android:minSdkVersion=\"24\" android:targetSdkVersion=\"31\">\n"
+                                                                        + "      <extension-sdk android:sdkVersion=\"35\" android:minExtensionVersion=\"2\" />\n"
+                                                                        + "    </uses-sdk>\n"
+                                                                        + "</manifest>\n")
+                                                        .indented(),
+                                                kotlin(
+                                                        ""
+                                                                + "package test.pkg\n"
+                                                                + "\n"
+                                                                + "import android.app.GameManager\n"
+                                                                + "\n"
+                                                                + "fun test(gameManager: GameManager) {\n"
+                                                                + "    GameManager.GAME_MODE_BATTERY\n"
+                                                                + "}")))
+                .expect(
+                        ""
+                                + "src/test/pkg/test.kt:6: Warning: Field requires version 4 of the AD_SERVICES-ext SDK (current min is 0): android.app.GameManager#GAME_MODE_BATTERY [InlinedApi]\n"
+                                + "    GameManager.GAME_MODE_BATTERY\n"
+                                + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                                + "0 errors, 1 warnings");
     }
 
     public void testFutureCodename() {

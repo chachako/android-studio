@@ -75,7 +75,8 @@ import org.w3c.dom.Node
 sealed class ApiConstraint {
     /**
      * The lowest API level included in the constraint. E.g. for "X >=
-     * 21" it's 21, for "X < 15" it's 1, and for [NONE] it's -1.
+     * 21" it's 21, for "X < 15" it's 1, and for [NONE] and [UNKNOWN]
+     * it's -1.
      *
      * Alias for [fromInclusive] which makes some code clearer.
      */
@@ -83,7 +84,8 @@ sealed class ApiConstraint {
 
     /**
      * The lowest API level included in the constraint. E.g. for "X >=
-     * 21" it's 21, for "X < 15" it's 1, and for [NONE] it's -1.
+     * 21" it's 21, for "X < 15" it's 1, and for [NONE] or [UNKNOWN]
+     * it's -1.
      *
      * If called on a constraint with multiple versions, this will
      * return the lowest API level from all of them.
@@ -127,18 +129,6 @@ sealed class ApiConstraint {
      * value of SDK_INT (the known constraint from minSdkVersion).
      */
     abstract fun alwaysAtLeast(minSdk: ApiConstraint): Boolean
-
-    /**
-     * Will this API level or anything higher never match this
-     * constraint?
-     *
-     * For example, if we know from minSdkVersion that SDK_INT >= 32,
-     * and we see a check if SDK_INT is <= 21, that check will never be
-     * true. That's what this method is for; this [ApiConstraint] is the
-     * minSdkVersion requirement, and the passed in [minSdk] represents
-     * the maximum value of the at-most check.
-     */
-    abstract fun neverAtMost(minSdk: ApiConstraint): Boolean
 
     /** Inverts the given constraint, e.g. X < 20 becomes X >= 20. */
     abstract operator fun not(): ApiConstraint
@@ -211,12 +201,6 @@ sealed class ApiConstraint {
     )
     abstract fun everHigher(apiLevel: Int): Boolean
 
-    @Deprecated(
-        "Use the ApiConstraint version instead to make sure you're checking the right SDK extension",
-        ReplaceWith("neverAtMost(ApiConstraint.get(apiLevel,com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID))")
-    )
-    abstract fun neverAtMost(minSdk: Int): Boolean
-
     /**
      * Find the first missing or unsatisfied [SdkApiConstraint] from the
      * given [requirement]. Should only be called on an [ApiConstraint]
@@ -227,15 +211,22 @@ sealed class ApiConstraint {
     companion object {
 
         /**
-         * Special constraint value which means that there is no known
-         * constraint.
-         *
-         * TODO: Split this into two separate constants: NONE (no match
-         *     possible), UNKNOWN (constraint not known, for example as
-         *     a return value from ApiLookup for a missing API)
+         * Special constraint value which means that there are no valid
+         * API levels. This is for example the case inside "if (SDK_INT
+         * < 5 && SDK_INT > 5)".
          */
         @JvmField
         val NONE: SdkApiConstraint = SdkApiConstraint.NO_LEVELS
+
+        /**
+         * Special constraint value which means that the API is unknown
+         * or the constraint is unknown.
+         *
+         * This is not a valid level, only a marker, so you cannot call
+         * operations on it like [isAtLeast], [and], etc.
+         */
+        @JvmField
+        val UNKNOWN: SdkApiConstraint = SdkApiConstraint(0UL, -2)
 
         /** All versions allowed (1; always available) */
         @JvmField
@@ -248,7 +239,7 @@ sealed class ApiConstraint {
         @JvmStatic
         fun get(apiLevel: Int, sdkId: Int = ANDROID_SDK_ID): SdkApiConstraint {
             if (apiLevel == -1) {
-                return NONE
+                return UNKNOWN
             } else if (apiLevel < simpleApiLevels.size && sdkId == ANDROID_SDK_ID) {
                 return simpleApiLevels[apiLevel]
             }
@@ -269,6 +260,8 @@ sealed class ApiConstraint {
          * rather than both.
          */
         fun max(api1: ApiConstraint, api2: ApiConstraint?, either: Boolean = false): ApiConstraint {
+            assert(api1 !== UNKNOWN)
+            assert(api2 !== UNKNOWN)
             when {
                 api2 == null -> return api1
                 api1.isEmpty() -> return NONE
@@ -473,6 +466,7 @@ sealed class ApiConstraint {
         }
 
         override fun isAtLeast(constraint: ApiConstraint): Boolean {
+            assert(this !== UNKNOWN && constraint !== UNKNOWN)
             if (bits == 0UL) {
                 return true
             }
@@ -538,6 +532,7 @@ sealed class ApiConstraint {
 
         @Suppress("OVERRIDE_DEPRECATION")
         override fun isAtLeast(apiLevel: Int): Boolean {
+            assert(this !== UNKNOWN)
             // True if the target [apiLevel] does not have any API levels
             // lower than this.
             return sdkId == ANDROID_SDK_ID && fromInclusive() >= apiLevel
@@ -574,30 +569,6 @@ sealed class ApiConstraint {
             return (minSdk and bits) != 0UL
         }
 
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun neverAtMost(minSdk: Int): Boolean {
-            val minSdkBits = createConstraintBits(fromInclusive = minSdk)
-            return (minSdkBits and bits) == 0UL
-        }
-
-        override fun neverAtMost(minSdk: ApiConstraint): Boolean {
-            when (minSdk) {
-                is SdkApiConstraint -> {
-                    if (sdkId != minSdk.sdkId) {
-                        return true
-                    }
-                    assert(sdkId == minSdk.sdkId)
-                    return minSdk.bits and bits == 0UL
-                }
-
-                is MultiSdkApiConstraint -> {
-                    // Compare by SDK ints
-                    val sdk = minSdk.findSdk(sdkId) ?: return false
-                    return neverAtMost(sdk)
-                }
-            }
-        }
-
         override operator fun not(): SdkApiConstraint {
             return SdkApiConstraint(bits.inv(), sdkId)
         }
@@ -607,12 +578,13 @@ sealed class ApiConstraint {
         }
 
         override infix fun or(other: ApiConstraint?): ApiConstraint {
+            assert(this !== UNKNOWN && other !== UNKNOWN)
             when (other) {
                 null -> return this
-                NONE -> return this
                 is SdkApiConstraint -> {
+                    if (other.isEmpty()) return this
                     if (sdkId != other.sdkId) {
-                        if (this === NONE) return other
+                        if (isEmpty()) return other
                         return MultiSdkApiConstraint(
                             listOf(
                                 SdkApiConstraints(sdkId, null, this),
@@ -624,7 +596,8 @@ sealed class ApiConstraint {
                 }
 
                 is MultiSdkApiConstraint -> {
-                    if (this === NONE) return other
+                    if (isEmpty()) return other
+                    if (other.isEmpty()) return this
                     val list =
                         other.sdkConstraints.map {
                             if (it.sdkId == sdkId) {
@@ -642,7 +615,8 @@ sealed class ApiConstraint {
         }
 
         override infix fun and(other: ApiConstraint?): ApiConstraint {
-            if (this === NONE || other === NONE) return NONE
+            assert(this !== UNKNOWN && other !== UNKNOWN)
+            if (this.isEmpty() || other != null && other.isEmpty()) return NONE
             when (other) {
                 null -> return this
                 is SdkApiConstraint -> {
@@ -676,6 +650,9 @@ sealed class ApiConstraint {
         override fun toString(): String {
             val desc = if (sdkId == ANDROID_SDK_ID) "API level" else "version"
             if (bits == NO_LEVELS.bits) {
+                if (this === UNKNOWN) {
+                    return "Unknown"
+                }
                 return "No ${desc}s"
             } else if (bits == ALL_LEVELS.bits) {
                 return "All ${desc}s"
@@ -1046,6 +1023,7 @@ sealed class ApiConstraint {
         }
 
         override fun isAtLeast(constraint: ApiConstraint): Boolean {
+            assert(constraint !== UNKNOWN)
             if (constraint.isEmpty()) {
                 return true
             }
@@ -1198,36 +1176,6 @@ sealed class ApiConstraint {
             }
         }
 
-        @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-        override fun neverAtMost(minSdk: Int): Boolean {
-            for (api in apis) {
-                if (api.neverAtMost(minSdk)) {
-                    return true
-                }
-            }
-            return false
-        }
-
-        override fun neverAtMost(minSdk: ApiConstraint): Boolean {
-            when (minSdk) {
-                is SdkApiConstraint -> {
-                    val sdk = findSdk(minSdk.sdkId) ?: return false
-                    return sdk.neverAtMost(minSdk)
-                }
-
-                is MultiSdkApiConstraint -> {
-                    // Compare by SDK id's
-                    for (api in apis) {
-                        val match = minSdk.findSdk(api.sdkId)
-                        if (match != null && api.neverAtMost(match)) {
-                            return true
-                        }
-                    }
-                    return false
-                }
-            }
-        }
-
         override fun not(): ApiConstraint {
             val reversed = sdkConstraints.map { SdkApiConstraints(it.sdkId, it.sometimes?.not(), it.always?.not()) }
             return MultiSdkApiConstraint(reversed)
@@ -1238,6 +1186,7 @@ sealed class ApiConstraint {
         }
 
         override fun or(other: ApiConstraint?): ApiConstraint {
+            assert(other !== UNKNOWN)
             other ?: return this
             when (other) {
                 is SdkApiConstraint -> {
@@ -1264,6 +1213,7 @@ sealed class ApiConstraint {
         }
 
         override fun and(other: ApiConstraint?): ApiConstraint {
+            assert(other !== UNKNOWN)
             other ?: return this
             when (other) {
                 is SdkApiConstraint -> {

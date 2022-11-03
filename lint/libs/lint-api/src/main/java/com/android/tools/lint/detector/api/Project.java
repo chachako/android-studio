@@ -804,7 +804,7 @@ public class Project {
      * Returns the minimum API levels for the project (the `minSdkVersion`, along with any SDK
      * extensions required to be present.)
      *
-     * @return the minimum API level or {@link ApiConstraint#NONE} if unknown
+     * @return the minimum API level or {@link ApiConstraint#UNKNOWN} if unknown
      */
     @NonNull
     public ApiConstraint getMinSdkVersions() {

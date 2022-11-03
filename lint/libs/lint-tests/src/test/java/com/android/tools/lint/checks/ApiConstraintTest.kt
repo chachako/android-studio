@@ -193,9 +193,12 @@ class ApiConstraintTest {
         assertFalse(below(11).alwaysAtLeast(9))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun testNeverAtMost() {
+        fun ApiConstraint.neverAtMost(level: Int): Boolean {
+            return not().alwaysAtLeast(level)
+        }
+
         assertFalse(below(21).neverAtMost(20))
         assertTrue(below(21).neverAtMost(21))
         assertTrue(below(21).neverAtMost(22))

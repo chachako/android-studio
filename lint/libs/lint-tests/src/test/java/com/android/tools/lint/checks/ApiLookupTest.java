@@ -58,12 +58,39 @@ public class ApiLookupTest extends AbstractCheckTest {
         return mDb.getFieldVersions(owner, name).min();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private int getFieldVersion(ApiLookup lookup, String owner, String name) {
         return lookup.getFieldVersions(owner, name).min();
     }
 
     private int getCastVersion(String source, String destination) {
         return mDb.getValidCastVersions(source, destination).min();
+    }
+
+    public int getFieldDeprecatedIn(@NonNull String owner, @NonNull String name) {
+        return mDb.getFieldDeprecatedInVersions(owner, name).min();
+    }
+
+    public int getMethodDeprecatedIn(
+            @NonNull String owner, @NonNull String name, @NonNull String desc) {
+        return mDb.getMethodDeprecatedInVersions(owner, name, desc).min();
+    }
+
+    public int getClassDeprecatedIn(@NonNull String className) {
+        return mDb.getClassDeprecatedInVersions(className).min();
+    }
+
+    public int getClassRemovedIn(@NonNull String className) {
+        return mDb.getClassRemovedInVersions(className).min();
+    }
+
+    public int getFieldRemovedIn(@NonNull String owner, @NonNull String name) {
+        return mDb.getFieldRemovedInVersions(owner, name).min();
+    }
+
+    public int getMethodRemovedIn(
+            @NonNull String owner, @NonNull String name, @NonNull String desc) {
+        return mDb.getMethodRemovedInVersions(owner, name, desc).min();
     }
 
     public void testBasic() {
@@ -147,41 +174,36 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public void testDeprecatedFields() {
         // Not deprecated:
-        assertEquals(
-                -1, mDb.getFieldDeprecatedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
+        assertEquals(-1, getFieldDeprecatedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
         // Field only has since > 1, no deprecation
         assertEquals(9, getFieldVersion("android/Manifest$permission", "NFC"));
 
         // Deprecated
-        assertEquals(21, mDb.getFieldDeprecatedIn("android/Manifest$permission", "GET_TASKS"));
+        assertEquals(21, getFieldDeprecatedIn("android/Manifest$permission", "GET_TASKS"));
         // Field both deprecated and since > 1
-        assertEquals(
-                21, mDb.getFieldDeprecatedIn("android/Manifest$permission", "READ_SOCIAL_STREAM"));
+        assertEquals(21, getFieldDeprecatedIn("android/Manifest$permission", "READ_SOCIAL_STREAM"));
         assertEquals(15, getFieldVersion("android/Manifest$permission", "READ_SOCIAL_STREAM"));
     }
 
     public void testDeprecatedMethods() {
-        // Not deprecated:
-        // assertEquals(12, getMethodVersion("android/app/Fragment", "onInflate",
-        //        "(Landroid/app/Activity;Landroid/util/AttributeSet;Landroid/os/Bundle;)V"));
         assertEquals(
                 24,
-                mDb.getMethodDeprecatedIn(
+                getMethodDeprecatedIn(
                         "android/app/Activity", "setProgressBarIndeterminate", "(Z)V"));
         assertEquals(
                 -1,
-                mDb.getMethodDeprecatedIn(
+                getMethodDeprecatedIn(
                         "android/app/Activity", "getParent", "()Landroid/app/Activity;"));
         // Deprecated
         assertEquals(
                 17,
-                mDb.getMethodDeprecatedIn(
+                getMethodDeprecatedIn(
                         "android/content/IntentSender",
                         "getTargetPackage",
                         "()Ljava/lang/String;"));
         assertEquals(
                 23,
-                mDb.getMethodDeprecatedIn(
+                getMethodDeprecatedIn(
                         "android/app/Fragment",
                         "onInflate",
                         "(Landroid/app/Activity;Landroid/util/AttributeSet;Landroid/os/Bundle;)V"));
@@ -189,39 +211,36 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public void testDeprecatedClasses() {
         // Not deprecated:
-        assertEquals(-1, mDb.getClassDeprecatedIn("android/app/Activity"));
+        assertEquals(-1, getClassDeprecatedIn("android/app/Activity"));
         // Deprecated
-        assertEquals(9, mDb.getClassDeprecatedIn("org/xml/sax/Parser"));
+        assertEquals(9, getClassDeprecatedIn("org/xml/sax/Parser"));
     }
 
     public void testRemovedFields() {
         // Not removed
-        assertEquals(-1, mDb.getFieldRemovedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
+        assertEquals(-1, getFieldRemovedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
         // Field only has since > 1, no removal
         assertEquals(9, getFieldVersion("android/Manifest$permission", "NFC"));
 
         // Removed
-        assertEquals(
-                23, mDb.getFieldRemovedIn("android/Manifest$permission", "ACCESS_MOCK_LOCATION"));
+        assertEquals(23, getFieldRemovedIn("android/Manifest$permission", "ACCESS_MOCK_LOCATION"));
         // Field both removed and since > 1
-        assertEquals(
-                23, mDb.getFieldRemovedIn("android/Manifest$permission", "AUTHENTICATE_ACCOUNTS"));
+        assertEquals(23, getFieldRemovedIn("android/Manifest$permission", "AUTHENTICATE_ACCOUNTS"));
     }
 
     public void testRemovedMethods() {
         // Not removed
         assertEquals(
                 -1,
-                mDb.getMethodRemovedIn(
+                getMethodRemovedIn(
                         "android/app/Activity",
                         "enterPictureInPictureMode",
                         "(Landroid/app/PictureInPictureArgs;)Z"));
         // Moved to an interface
         assertEquals(
-                -1,
-                mDb.getMethodRemovedIn("android/database/sqlite/SQLiteDatabase", "close", "()V"));
+                -1, getMethodRemovedIn("android/database/sqlite/SQLiteDatabase", "close", "()V"));
         // Removed
-        assertEquals(11, mDb.getMethodRemovedIn("android/app/Activity", "setPersistent", "(Z)V"));
+        assertEquals(11, getMethodRemovedIn("android/app/Activity", "setPersistent", "(Z)V"));
     }
 
     public void testGetRemovedFields() {
@@ -251,9 +270,9 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public void testRemovedClasses() {
         // Not removed
-        assertEquals(-1, mDb.getClassRemovedIn("android/app/Fragment"));
+        assertEquals(-1, getClassRemovedIn("android/app/Fragment"));
         // Removed
-        assertEquals(24, mDb.getClassRemovedIn("android/graphics/AvoidXfermode"));
+        assertEquals(24, getClassRemovedIn("android/graphics/AvoidXfermode"));
     }
 
     public void testInheritInterfaces() {
@@ -423,32 +442,31 @@ public class ApiLookupTest extends AbstractCheckTest {
     }
 
     public void testDeprecatedIn() {
-        assertEquals(9, mDb.getClassDeprecatedIn("org/xml/sax/Parser"));
+        assertEquals(9, getClassDeprecatedIn("org/xml/sax/Parser"));
         assertEquals(
                 26,
-                mDb.getFieldDeprecatedIn(
+                getFieldDeprecatedIn(
                         "android/accounts/AccountManager", "LOGIN_ACCOUNTS_CHANGED_ACTION"));
 
         assertEquals(
                 20,
-                mDb.getMethodDeprecatedIn(
+                getMethodDeprecatedIn(
                         "android/view/View", "fitSystemWindows", "(Landroid/graphics/Rect;)"));
         assertEquals(
                 16, getMethodVersion("android/widget/CalendarView", "getWeekNumberColor", "()"));
         assertEquals(
                 23,
-                mDb.getMethodDeprecatedIn(
-                        "android/widget/CalendarView", "getWeekNumberColor", "()"));
+                getMethodDeprecatedIn("android/widget/CalendarView", "getWeekNumberColor", "()"));
         assertEquals(
                 19, getMethodVersion("android/webkit/WebView", "createPrintDocumentAdapter", "()"));
         // Regression test for 65376457: CreatePrintDocumentAdapter() was deprecated in api 21,
         // not api 3 as lint reports.
         // (The root bug was that for deprecation we also lowered it if superclasses were
         // deprecated (such as AbsoluteLayout, a superclass of WebView) - this is necessary when
-        // computing version-requirements but not deprecation versions.
+        // computing version-requirements but not deprecation versions.)
         assertEquals(
                 21,
-                mDb.getMethodDeprecatedIn(
+                getMethodDeprecatedIn(
                         "android/webkit/WebView", "createPrintDocumentAdapter", "()"));
     }
 
@@ -460,9 +478,9 @@ public class ApiLookupTest extends AbstractCheckTest {
     }
 
     public void testClassDeprecation() {
-        assertEquals(5, mDb.getClassDeprecatedIn("android/webkit/PluginData"));
+        assertEquals(5, getClassDeprecatedIn("android/webkit/PluginData"));
         assertEquals(1, getClassVersion("java/io/LineNumberInputStream"));
-        assertEquals(1, mDb.getClassDeprecatedIn("java/io/LineNumberInputStream"));
+        assertEquals(1, getClassDeprecatedIn("java/io/LineNumberInputStream"));
     }
 
     // Flaky test - http://b.android.com/225879
@@ -512,10 +530,9 @@ public class ApiLookupTest extends AbstractCheckTest {
                     continue;
                 }
                 if (classDeprecatedIn >= 1) {
-                    assertSameApi(
-                            className, classDeprecatedIn, mDb.getClassDeprecatedIn(className));
+                    assertSameApi(className, classDeprecatedIn, getClassDeprecatedIn(className));
                 } else {
-                    assertSameApi(className, -1, mDb.getClassDeprecatedIn(className));
+                    assertSameApi(className, -1, getClassDeprecatedIn(className));
                 }
 
                 for (String method : cls.getAllMethods(info)) {
@@ -529,15 +546,14 @@ public class ApiLookupTest extends AbstractCheckTest {
                     assertSameApi(
                             method + " in " + className,
                             deprecatedIn,
-                            mDb.getMethodDeprecatedIn(className, name, desc));
+                            getMethodDeprecatedIn(className, name, desc));
                 }
                 for (String method : cls.getAllFields(info)) {
                     int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
                     if (deprecatedIn == 0) {
                         deprecatedIn = -1;
                     }
-                    assertSameApi(
-                            method, deprecatedIn, mDb.getFieldDeprecatedIn(className, method));
+                    assertSameApi(method, deprecatedIn, getFieldDeprecatedIn(className, method));
                 }
             }
         }
@@ -559,10 +575,10 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public void testFrom() throws IOException {
         getTempDir();
-        // Note: We're *not* unsing mDb as lookup here (the real API database); we're using a
+        // Note: We're *not* using mDb as lookup here (the real API database); we're using a
         // customized database which contains a handful of APIs using the new API vector
         // (sdks=) format to test it before it lands in an official SDK.
-        ApiLookup lookup = createMultiSdkLookup(true, false);
+        ApiLookup lookup = ApiLookupTest.createMultiSdkLookup(true, false);
         assertEquals("All API levels", lookup.getClassVersions("android.Manifest").toString());
         assertEquals(
                 "API level ≥ 11",
@@ -606,7 +622,7 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public static TestLintResult runApiCheckWithCustomLookup(
             boolean force2ByteFormat, @NonNull CreateLintTask createTask) {
-        // this is here to prevent the SoftReference in ApiLookup's
+        // this is here to prevent the SoftReference in the ApiLookup's
         // instance table from getting gc'ed
         @SuppressWarnings("WriteOnlyObject")
         AtomicReference<ApiLookup> lookup = new AtomicReference<>();
@@ -615,9 +631,8 @@ public class ApiLookupTest extends AbstractCheckTest {
             return lint.clientFactory(
                             () -> {
                                 // This method has a side effect (because we pass in
-                                // disposeAfter=false) will
-                                // leave a custom ApiLookup around for when lint.run() loads the
-                                // ApiDetector
+                                // disposeAfter=false) will leave a custom ApiLookup
+                                // around for when lint.run() loads the ApiDetector
                                 // and performs the check.
                                 try {
                                     lookup.set(
@@ -664,6 +679,8 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "        <sdk id=\"30\" name=\"R-ext\" reference=\"android/os/Build$VERSION_CODES$R\"/>\n"
                         + "        <sdk id=\"31\" name=\"S-ext\"/>\n"
                         + "        <sdk id=\"33\" name=\"T-ext\"/>\n"
+                        + "        <sdk id=\"34\" name=\"U-ext\"/>\n"
+                        + "        <sdk id=\"35\" name=\"V-ext\"/>\n"
                         + "        <sdk id=\"1000000\" name=\"AD_SERVICES-ext\" reference=\"android/os/ext/SdkExtensions$AD_SERVICES\"/>\n"
                         + "        <class name=\"java/lang/Object\" since=\"1\">\n"
                         + "                <method name=\"&lt;init>()V\"/>\n"
@@ -725,8 +742,12 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "        <class name=\"android/app/GameManager\" since=\"10000\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"
                         + "                <method name=\"getGameMode()I\"/>\n"
+                        // Made up extra numbers (for testing purposes in
+                        // ApiDetectorTest#testSdkExtensionOrder3 where
+                        // we need a particular order)
+                        + "                <field name=\"GAME_MODE_BATTERY\" since=\"34\" sdks=\"1000000:4,0:34,33:4\"/>\n"
                         + "        </class>\n"
-                        // Like GameManager, but using cmopat-format with the 10000 payload in sdks=
+                        // Like GameManager, but using compat-format with the 10000 payload in sdks=
                         // and a low version for old-lint compat
                         + "        <class name=\"android/app/GameState\" since=\"34\" sdks=\"0:10000\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"
