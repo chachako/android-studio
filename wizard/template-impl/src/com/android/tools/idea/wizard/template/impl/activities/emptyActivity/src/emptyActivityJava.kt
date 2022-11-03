@@ -19,12 +19,13 @@ import com.android.tools.idea.wizard.template.getMaterialComponentName
 import com.android.tools.idea.wizard.template.renderIf
 
 fun emptyActivityJava(
-  packageName: String, activityClass: String, layoutName: String, generateLayout: Boolean, useAndroidX: Boolean
+  packageName: String, namespace: String, activityClass: String, layoutName: String, generateLayout: Boolean, useAndroidX: Boolean
 ) = """
 package ${packageName};
 
 import ${getMaterialComponentName("android.support.v7.app.AppCompatActivity", useAndroidX)};
 import android.os.Bundle;
+${renderIf(namespace != packageName) { "import ${namespace}.R;" }}
 
 public class ${activityClass} extends AppCompatActivity {
 

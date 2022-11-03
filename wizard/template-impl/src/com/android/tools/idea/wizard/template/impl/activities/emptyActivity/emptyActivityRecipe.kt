@@ -53,8 +53,8 @@ fun RecipeExecutor.generateEmptyActivity(
   }
 
   val simpleActivity = when (projectData.language) {
-    Language.Kotlin -> emptyActivityKt(packageName, activityClass, layoutName, generateLayout, useAndroidX)
-    Language.Java -> emptyActivityJava(packageName, activityClass, layoutName, generateLayout, useAndroidX)
+    Language.Kotlin -> emptyActivityKt(packageName, moduleData.namespace, activityClass, layoutName, generateLayout, useAndroidX)
+    Language.Java -> emptyActivityJava(packageName, moduleData.namespace, activityClass, layoutName, generateLayout, useAndroidX)
   }
 
   val simpleActivityPath = srcOut.resolve("$activityClass.$ktOrJavaExt")
