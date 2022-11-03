@@ -174,7 +174,8 @@ class ForegroundProcessTrackerTest : public ::testing::Test {
   // Waits until the specified number of events is received from
   // |process_tracker|.
   void WaitForEvents(ForegroundProcessTracker* process_tracker,
-                     int expected_event_count) {
+                     int expected_event_count,
+                     std::function<void()> onNewEvent = []() -> void {}) {
     // Not released, we want to block on events
     released.store(false);
     process_tracker->StartTracking();
@@ -198,6 +199,7 @@ class ForegroundProcessTrackerTest : public ::testing::Test {
       if (waiting.load()) {
         // an event is available
         event_count += 1;
+        onNewEvent();
         if (event_count < expected_event_count) {
           // keep blocking, otherwise one extra event will be published
           // the last event is effectively available when |released| is set to
@@ -506,6 +508,39 @@ TEST_F(ForegroundProcessTrackerTest, Stop_called_multiple_times_consecutively) {
   process_tracker.get()->StopTracking();
 
   process_tracker.get()->StopTracking();
+}
+
+TEST_F(ForegroundProcessTrackerTest, Call_start_tracking_while_polling) {
+  auto process_tracker = createDefaultForegroundProcessTracker(&event_buffer_);
+
+  WaitForEvents(process_tracker.get(), 2, [&process_tracker]() -> void {
+    process_tracker->StartTracking();
+  });
+
+  EXPECT_THAT(events_.size(), 3);
+
+  EXPECT_THAT(events_.get(0).kind(),
+              profiler::proto::Event::LAYOUT_INSPECTOR_FOREGROUND_PROCESS);
+  EXPECT_THAT(events_.get(0).layout_inspector_foreground_process().pid(), "1");
+  EXPECT_THAT(
+      events_.get(0).layout_inspector_foreground_process().process_name(),
+      "fake.process1");
+
+  // fake.process1 is repeated because we called `StartTracking` after
+  // the first foreground process is received.
+  EXPECT_THAT(events_.get(1).kind(),
+              profiler::proto::Event::LAYOUT_INSPECTOR_FOREGROUND_PROCESS);
+  EXPECT_THAT(events_.get(1).layout_inspector_foreground_process().pid(), "1");
+  EXPECT_THAT(
+      events_.get(1).layout_inspector_foreground_process().process_name(),
+      "fake.process1");
+
+  EXPECT_THAT(events_.get(2).kind(),
+              profiler::proto::Event::LAYOUT_INSPECTOR_FOREGROUND_PROCESS);
+  EXPECT_THAT(events_.get(2).layout_inspector_foreground_process().pid(), "2");
+  EXPECT_THAT(
+      events_.get(2).layout_inspector_foreground_process().process_name(),
+      "fake.process2");
 }
 
 }  // namespace layout_inspector

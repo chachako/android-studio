@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+/** This test can only be run on linux, because of fake-android which is only supported on linux */
 @RunWith(Parameterized.class)
 public class ForegroundProcessTrackerTest {
     @NonNull
