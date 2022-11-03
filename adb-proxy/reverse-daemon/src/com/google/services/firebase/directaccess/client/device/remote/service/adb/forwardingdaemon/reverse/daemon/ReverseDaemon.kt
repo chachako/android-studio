@@ -84,9 +84,11 @@ object ReverseDaemon {
 
       var socketId = 1
       while (true) {
-        Log.d(TAG, "Waiting for a socket.")
+        Log.d(TAG, "Waiting for a socket. id: $socketId")
         val socket = acceptor.accept(socketId)
         openSockets[socketId] = socket
+        // send the connect message synchronously to ensure ordering
+        socket.init()
         socketExecutor.execute(socket)
         socketId += 1
       }
@@ -144,11 +146,14 @@ object ReverseDaemon {
   ) : Runnable {
     private val buffer = ByteArray(1024 * 1024)
 
-    override fun run() {
-      synchronized(writeLock) {
-        output.write(StreamDataHeader(MessageType.OPEN, streamId, 0).toByteArray())
-      }
+    fun init() {
+        synchronized(writeLock) {
+            Log.d(TAG, "write open socket $streamId")
+            output.write(StreamDataHeader(MessageType.OPEN, streamId, 0).toByteArray())
+        }
+    }
 
+    override fun run() {
       while (true) {
         val bytesRead = input.read(buffer)
         if (bytesRead == -1) break
