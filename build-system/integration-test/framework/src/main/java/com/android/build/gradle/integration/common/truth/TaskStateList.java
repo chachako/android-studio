@@ -20,10 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.build.gradle.internal.profile.AnalyticsResourceManagerKt;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.wireless.android.sdk.stats.GradleTaskExecution.TaskState;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,11 +36,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.gradle.tooling.events.ProgressEvent;
-import org.gradle.tooling.events.task.TaskFailureResult;
 import org.gradle.tooling.events.task.TaskFinishEvent;
 import org.gradle.tooling.events.task.TaskOperationResult;
-import org.gradle.tooling.events.task.TaskSkippedResult;
-import org.gradle.tooling.events.task.TaskSuccessResult;
 
 /**
  * List of the task state for a build.
@@ -124,27 +123,10 @@ public class TaskStateList {
         for (ProgressEvent progressEvent : progressEvents) {
             if (progressEvent instanceof TaskFinishEvent) {
                 String task = progressEvent.getDescriptor().getName();
-                TaskOperationResult result = ((TaskFinishEvent) progressEvent).getResult();
-
                 taskListBuilder.add(task);
-                if (result instanceof TaskSuccessResult) {
-                    TaskSuccessResult successResult = (TaskSuccessResult) result;
-                    // When the task's output is retrieved from the cache, Gradle returns both
-                    // upToDate() and fromCache() as true (see
-                    // https://github.com/gradle/gradle/issues/5252). Therefore, we need to check
-                    // isFromCache() before wasUpToDate().
-                    if (successResult.isFromCache()) {
-                        taskMap.get(ExecutionState.FROM_CACHE).add(task);
-                    } else if (successResult.isUpToDate()) {
-                        taskMap.get(ExecutionState.UP_TO_DATE).add(task);
-                    } else {
-                        taskMap.get(ExecutionState.DID_WORK).add(task);
-                    }
-                } else if (result instanceof TaskSkippedResult) {
-                    taskMap.get(ExecutionState.SKIPPED).add(task);
-                } else if (result instanceof TaskFailureResult) {
-                    taskMap.get(ExecutionState.FAILED).add(task);
-                }
+                ExecutionState taskState =
+                        getTaskState(((TaskFinishEvent) progressEvent).getResult());
+                taskMap.get(taskState).add(task);
             }
         }
 
@@ -177,6 +159,25 @@ public class TaskStateList {
             taskStateMapBuilder.put(state, ImmutableSet.copyOf(taskMap.get(state)));
         }
         taskStateMap = taskStateMapBuilder.build();
+    }
+
+    @NonNull
+    private static ExecutionState getTaskState(@NonNull TaskOperationResult taskOperationResult) {
+        TaskState taskState = AnalyticsResourceManagerKt.getTaskState(taskOperationResult);
+        switch (taskState) {
+            case UP_TO_DATE:
+                return ExecutionState.UP_TO_DATE;
+            case FROM_CACHE:
+                return ExecutionState.FROM_CACHE;
+            case DID_WORK_INCREMENTAL:
+            case DID_WORK_NON_INCREMENTAL:
+                return ExecutionState.DID_WORK;
+            case SKIPPED:
+                return ExecutionState.SKIPPED;
+            case FAILED:
+                return ExecutionState.FAILED;
+        }
+        throw new IllegalStateException("Task state is not yet handled: " + taskState);
     }
 
     @NonNull

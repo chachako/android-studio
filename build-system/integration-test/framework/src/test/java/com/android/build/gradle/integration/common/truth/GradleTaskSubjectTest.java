@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.android.annotations.NonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.truth.ExpectFailure;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -35,6 +36,7 @@ import org.gradle.tooling.events.task.internal.DefaultTaskFailureResult;
 import org.gradle.tooling.events.task.internal.DefaultTaskFinishEvent;
 import org.gradle.tooling.events.task.internal.DefaultTaskSkippedResult;
 import org.gradle.tooling.events.task.internal.DefaultTaskSuccessResult;
+import org.gradle.tooling.events.task.internal.TaskExecutionDetails;
 import org.gradle.tooling.model.UnsupportedMethodException;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +66,8 @@ public class GradleTaskSubjectTest {
         ImmutableList.Builder<ProgressEvent> events = ImmutableList.builder();
         events.add(upToDate(":upToDateTask"));
         events.add(fromCache(":fromCacheTask"));
-        events.add(didWork(":didWorkTask"));
+        events.add(didWork(":didWorkTask", true));
+        events.add(didWork(":didWorkTask", false));
         events.add(skipped(":skippedTask"));
         events.add(failed(":failedTask"));
 
@@ -168,12 +171,17 @@ public class GradleTaskSubjectTest {
                 new DefaultTaskSuccessResult(0, 5, true, true, null));
     }
 
-    private static TaskProgressEvent didWork(String name) {
+    private static TaskProgressEvent didWork(String name, boolean isIncremental) {
         return new DefaultTaskFinishEvent(
                 0,
                 "Task :" + name + " SUCCESS",
                 new FakeTaskOperationDescriptor(name),
-                new DefaultTaskSuccessResult(0, 5, false, false, null));
+                new DefaultTaskSuccessResult(
+                        0,
+                        5,
+                        false,
+                        false,
+                        TaskExecutionDetails.of(isIncremental, new ArrayList<>())));
     }
 
     private static TaskProgressEvent skipped(String name) {
