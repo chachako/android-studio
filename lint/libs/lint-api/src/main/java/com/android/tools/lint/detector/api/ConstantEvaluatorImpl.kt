@@ -417,21 +417,6 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
     }
 
     private data class PrimArrayType(val constructorName: String, val varargConstructorName: String, val type: PsiPrimitiveType)
-    private val kotlinPrimArrayTypes = listOf(
-        PrimArrayType("ByteArray", "byteArrayOf", PsiPrimitiveType.BYTE),
-        PrimArrayType("CharArray", "charArrayOf", PsiPrimitiveType.CHAR),
-        PrimArrayType("ShortArray", "shortArrayOf", PsiPrimitiveType.SHORT),
-        PrimArrayType("IntArray", "intArrayOf", PsiPrimitiveType.INT),
-        PrimArrayType("LongArray", "longArrayOf", PsiPrimitiveType.LONG),
-        PrimArrayType("FloatArray", "floatArrayOf", PsiPrimitiveType.FLOAT),
-        PrimArrayType("DoubleArray", "doubleArrayOf", PsiPrimitiveType.DOUBLE),
-        PrimArrayType("BooleanArray", "booleanArrayOf", PsiPrimitiveType.BOOLEAN)
-    )
-    private val kotlinPrimArrayFixedArgConstructors = kotlinPrimArrayTypes.map(PrimArrayType::constructorName)
-    private val kotlinPrimArrayVarargConstructors = kotlinPrimArrayTypes.map(PrimArrayType::varargConstructorName)
-    private val kotlinPrimArrayTypeByConstructor =
-        kotlinPrimArrayTypes.associate { (k, _, t) -> k to t } +
-            kotlinPrimArrayTypes.associate { (_, k, t) -> k to t }
 
     private fun surroundedByVariableCheck(node: UElement?, variable: PsiVariable): Boolean {
         // See if it looks like the value has been clamped locally, e.g.
@@ -598,6 +583,22 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
                 .filterIsInstance<Exact<PsiExpression?>>()
                 .firstOrNull()?.value
         }
+
+        private val kotlinPrimArrayTypes = listOf(
+            PrimArrayType("ByteArray", "byteArrayOf", PsiPrimitiveType.BYTE),
+            PrimArrayType("CharArray", "charArrayOf", PsiPrimitiveType.CHAR),
+            PrimArrayType("ShortArray", "shortArrayOf", PsiPrimitiveType.SHORT),
+            PrimArrayType("IntArray", "intArrayOf", PsiPrimitiveType.INT),
+            PrimArrayType("LongArray", "longArrayOf", PsiPrimitiveType.LONG),
+            PrimArrayType("FloatArray", "floatArrayOf", PsiPrimitiveType.FLOAT),
+            PrimArrayType("DoubleArray", "doubleArrayOf", PsiPrimitiveType.DOUBLE),
+            PrimArrayType("BooleanArray", "booleanArrayOf", PsiPrimitiveType.BOOLEAN)
+        )
+        private val kotlinPrimArrayFixedArgConstructors = kotlinPrimArrayTypes.map(PrimArrayType::constructorName)
+        private val kotlinPrimArrayVarargConstructors = kotlinPrimArrayTypes.map(PrimArrayType::varargConstructorName)
+        private val kotlinPrimArrayTypeByConstructor =
+            kotlinPrimArrayTypes.associate { (k, _, t) -> k to t } +
+                    kotlinPrimArrayTypes.associate { (_, k, t) -> k to t }
     }
 
     internal class LastAssignmentFinder(
