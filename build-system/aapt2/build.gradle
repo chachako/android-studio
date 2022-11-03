@@ -12,17 +12,17 @@ version = rootProject.ext.buildVersion + '-' + aaptVersionProperties.getProperty
 
 task zipDarwin(type: Jar) {
     from rootProject.file('../prebuilts/tools/common/aapt/darwin',)
-    from 'NOTICE'
+    from rootProject.file('../prebuilts/tools/common/aapt/NOTICE',)
     classifier 'osx'
 }
 task zipLinux(type: Jar) {
     from rootProject.file('../prebuilts/tools/common/aapt/linux',)
-    from 'NOTICE'
+    from rootProject.file('../prebuilts/tools/common/aapt/NOTICE',)
     classifier 'linux'
 }
 task zipWindows(type: Jar) {
     from rootProject.file('../prebuilts/tools/common/aapt/windows',)
-    from 'NOTICE'
+    from rootProject.file('../prebuilts/tools/common/aapt/NOTICE',)
     classifier 'windows'
 }
 

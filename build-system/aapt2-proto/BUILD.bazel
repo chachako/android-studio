@@ -7,20 +7,12 @@ maven_library(
     srcs = [],
     bundled_deps = [
         "//prebuilts/tools/common/aapt/protos",
-        ":notice",
     ],
     coordinates = "com.android.tools.build:aapt2-proto:" + BUILD_VERSION + "-" + AAPT2_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:com.google.protobuf.protobuf-java",
     ],
-)
-
-# This is here to merge the NOTICE file into the aapt2-proto jar.
-java_library(
-    name = "notice",
-    resource_strip_prefix = "tools/base/build-system/aapt2-proto",
-    resources = ["NOTICE"],
 )
 
 filegroup(
@@ -31,7 +23,6 @@ filegroup(
         "src/main/resources/**",
     ]) + [
         "build.gradle",
-        "NOTICE",
         "//tools/buildSrc/base:version.properties",
         "//prebuilts/tools/common/aapt:aapt2_version.properties",
     ],

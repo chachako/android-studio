@@ -18,8 +18,8 @@ custom_maven_library(
 
 java_library(
     name = "notice",
-    resource_strip_prefix = "tools/base/build-system/aapt2",
-    resources = ["NOTICE"],
+    resource_strip_prefix = "prebuilts/tools/common/aapt",
+    resources = ["//prebuilts/tools/common/aapt:NOTICE"],
 )
 
 DARWIN_FILES = [
@@ -93,7 +93,7 @@ filegroup(
         "src/main/resources/**",
     ]) + [
         "build.gradle",
-        "NOTICE",
+        "//prebuilts/tools/common/aapt:NOTICE",
     ] + DARWIN_FILES + LINUX_FILES + WINDOWS_FILES,
     visibility = ["//tools/base/build-system:__pkg__"],
 )
