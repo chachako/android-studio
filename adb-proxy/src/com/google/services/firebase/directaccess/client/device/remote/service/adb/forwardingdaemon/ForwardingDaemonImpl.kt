@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -85,6 +86,7 @@ internal class ForwardingDaemonImpl(
               )
 
             while (true) {
+              ensureActive()
               val command = Command.readFrom(adbdSocket.getInputStream())
 
               logger.fine("Local Server -> Device: $command")
@@ -128,9 +130,9 @@ internal class ForwardingDaemonImpl(
 
   override fun close() {
     if (started.get()) {
+      adbCommandHandler.cancel()
       streams.values.forEach { it.sendClose() }
       runBlocking(scope.coroutineContext) { onStateChanged(DeviceState.OFFLINE) }
-      adbCommandHandler.cancel()
     }
   }
 
