@@ -128,6 +128,13 @@ data class ModuleTemplateData(
 ): TemplateData() {
   val isDynamic: Boolean
     get() = baseFeature != null
+
+  /**
+   * Returns the [namespace](https://developer.android.com/studio/build/configure-app-module#set-namespace)
+   * of the module, i.e. the package where the R and BuildConfig classes are generated.
+   */
+  val namespace: String
+    get() = projectTemplateData.applicationPackage ?: packageName
 }
 
 /**
