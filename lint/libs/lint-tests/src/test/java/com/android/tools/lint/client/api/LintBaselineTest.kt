@@ -1304,6 +1304,11 @@ class LintBaselineTest {
             assertTrue(lintJar.exists())
 
             val baseline = File(root, "baseline.xml")
+            val config = File(root, "config.xml")
+            config.writeText(
+                "<lint checkDependencies='false'/>\n                  "
+            )
+
             MainTest.checkDriver(
                 // Expected output
                 null, // not checked since it has an absolute path which depends on specific test machine
@@ -1312,6 +1317,8 @@ class LintBaselineTest {
                 // Expected exit code
                 ERRNO_CREATED_BASELINE,
                 arrayOf(
+                    "--config",
+                    config.path,
                     "--exit-code",
                     "--ignore",
                     "LintBaseline,MissingVersion,OldTargetApi",

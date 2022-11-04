@@ -598,7 +598,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
         private val kotlinPrimArrayVarargConstructors = kotlinPrimArrayTypes.map(PrimArrayType::varargConstructorName)
         private val kotlinPrimArrayTypeByConstructor =
             kotlinPrimArrayTypes.associate { (k, _, t) -> k to t } +
-                    kotlinPrimArrayTypes.associate { (_, k, t) -> k to t }
+                kotlinPrimArrayTypes.associate { (_, k, t) -> k to t }
     }
 
     internal class LastAssignmentFinder(
