@@ -1,3 +1,5 @@
+load("//tools/base/bazel/jarjar:jarjar.bzl", "jarjar")
+
 def _fileset_impl(ctx):
     srcs = depset(order = "postorder", transitive = [src.files for src in ctx.attr.srcs])
 
@@ -79,46 +81,19 @@ def fileset(name, srcs = [], mappings = {}, tags = [], **kwargs):
         **kwargs
     )
 
-# Usage:
-# java_jarjar(
-#     name = <the name of the rule. The output of the rule will be ${name}.jar.
-#     srcs = <a list of all the jars to jarjar and include into the output jar>
-#     rules = <the rule file to apply>
-#     rename_services = <whether to also apply jarjar rules to META-INF/services>
-# )
-#
-# TODO: This rule is using anarres jarjar which doesn't produce stable zips (timestamps)
-# jarjar is available in bazel but the current version is old and uses ASM4, so no Java8
-# will migrate to it when it's fixed.
-def java_jarjar(name, rules, srcs = [], visibility = None, rename_services = False):
-    jarjar_out = name + "_intermediate.jar" if rename_services else name + ".jar"
-    native.genrule(
-        name = "java_jarjar_" + name,
-        srcs = srcs + [rules],
-        outs = [jarjar_out],
-        tools = ["//tools/base/bazel:jarjar"],
-        cmd = ("$(location //tools/base/bazel:jarjar) --rules " +
-               "$(location " + rules + ") " +
-               " ".join(["$(location " + src + ")" for src in srcs]) + " " +
-               "--output '$@'"),
+def java_jarjar(name, rules, srcs = [], visibility = None, rename_services = False, manifest_lines = []):
+    jarjar(
+        name = name,
+        rule_file = rules,
+        src_jars = srcs,
+        manifest_lines = manifest_lines,
+        rename_services = rename_services,
         visibility = visibility,
     )
-    if rename_services:
-        native.genrule(
-            name = "rename_services_" + name,
-            srcs = [jarjar_out, rules],
-            outs = [name + ".jar"],
-            tools = ["//tools/base/bazel:rename_jar_services"],
-            cmd = ("$(location //tools/base/bazel:rename_jar_services) " +
-                   "--rules $(location " + rules + ") " +
-                   "--in $(location " + jarjar_out + ") " +
-                   "--out '$@'"),
-            visibility = visibility,
-        )
-
-    native.java_import(
-        name = name,
-        jars = [name + ".jar"],
+    native.alias(
+        name = "%s.jar" % name,
+        actual = name,
+        deprecation = "This alias is deprecated and scheduled for removal. Use target '%s' instead." % name,
         visibility = visibility,
     )
 

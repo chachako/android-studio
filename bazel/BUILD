@@ -244,32 +244,6 @@ java_test(
 )
 
 java_binary(
-    name = "jarjar",
-    main_class = "com.tonicsystems.jarjar.Main",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        "//prebuilts/tools/common/m2:jarjar_deps",
-    ],
-)
-
-py_binary(
-    name = "rename_jar_services",
-    srcs = ["rename_jar_services.py"],
-    visibility = ["//visibility:public"],
-)
-
-py_test(
-    name = "rename_jar_services_test",
-    srcs = ["rename_jar_services_test.py"],
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [":rename_jar_services"],
-)
-
-java_binary(
     name = "gradlew",
     main_class = "com.android.tools.gradle.GradleW",
     visibility = ["//visibility:public"],
