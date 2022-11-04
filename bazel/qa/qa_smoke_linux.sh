@@ -20,7 +20,7 @@ if [[ $lsb_release == "crostini" ]]; then
   # The BAZEL_* variable (credentials) is configured on the ChromeBot Host.
   export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
   # don't use any remote cached items, some items built on Linux may not be compatible. b/172365127
-  config_options="--config=_remote_base --config=sponge"
+  config_options="--config=local --config=rcache --config=ants"
   target_filters=qa_smoke,ui_test,-qa_unreliable,-no_linux,-no_test_linux,-requires_emulator,-no_crostini
 
   current_time=$(date +"%s")
@@ -56,7 +56,7 @@ if [[ $lsb_release == "crostini" ]]; then
     --max_idle_secs=60 \
     test \
     --keep_going \
-    ${config_options} --config=ants \
+    ${config_options} \
     ${bazel_flags} \
     --test_strategy=exclusive \
     --jobs=4 \
