@@ -18,7 +18,6 @@ package com.android.tools.lint.checks
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
-import java.util.HashMap
 
 /**
  * Represents a class and its hidden methods/fields, which are not part
@@ -48,7 +47,7 @@ class PrivateApiClass(name: String) : ApiClassBase(name) {
         members.addAll(fields.keys)
         members.addAll(methods.keys)
         members.sort()
-
+        includeNames = true
         for (member in members) {
             estimatedSize += member.length
             estimatedSize += 8

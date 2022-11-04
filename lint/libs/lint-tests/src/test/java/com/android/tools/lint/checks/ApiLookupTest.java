@@ -126,7 +126,9 @@ public class ApiLookupTest extends AbstractCheckTest {
         // Field lookup: Unknown class
         assertEquals(-1, getFieldVersion("foo/Bar", "FOOBAR"));
         // Field lookup: Unknown field
-        assertEquals(-1, getFieldVersion("android/Manifest$permission", "FOOBAR"));
+        assertEquals(
+                ApiClass.STRIP_MEMBERS ? 1 : -1,
+                getFieldVersion("android/Manifest$permission", "FOOBAR"));
         // Method lookup: Unknown class
         assertEquals(
                 -1,
@@ -136,14 +138,15 @@ public class ApiLookupTest extends AbstractCheckTest {
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         // Method lookup: Unknown name
         assertEquals(
-                -1,
+                ApiClass.STRIP_MEMBERS ? 1 : -1,
                 getMethodVersion(
                         "android/graphics/drawable/BitmapDrawable",
                         "foo",
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         // Method lookup: Unknown argument list
         assertEquals(
-                -1, getMethodVersion("android/graphics/drawable/BitmapDrawable", "<init>", "(I)V"));
+                ApiClass.STRIP_MEMBERS ? 1 : -1,
+                getMethodVersion("android/graphics/drawable/BitmapDrawable", "<init>", "(I)V"));
     }
 
     public void testWildcardSyntax() {
@@ -153,7 +156,9 @@ public class ApiLookupTest extends AbstractCheckTest {
     }
 
     public void testIssue26467() {
-        assertTrue(getMethodVersion("java/nio/ByteBuffer", "array", "()") <= 1);
+        // We no longer support negative lookup; this isn't something we've needed in
+        // actual detectors, so we can save space and time by omitting this info.
+        //   assertTrue(getMethodVersion("java/nio/ByteBuffer", "array", "()") <= 1);
         assertEquals(9, getMethodVersion("java/nio/Buffer", "array", "()"));
     }
 
@@ -249,23 +254,6 @@ public class ApiLookupTest extends AbstractCheckTest {
         assertTrue(removedFields.contains(new ApiMember("FLASHLIGHT", 1, 0, 24)));
         assertTrue(removedFields.contains(new ApiMember("READ_SOCIAL_STREAM", 15, 21, 23)));
         assertTrue(removedFields.stream().noneMatch(member -> member.getSignature().equals("NFC")));
-    }
-
-    public void testGetRemovedMethods() {
-        Collection<ApiMember> removedMethods = mDb.getRemovedMethods("android/app/Activity");
-        assertTrue(removedMethods.contains(new ApiMember("getInstanceCount()", 1, 0, 11)));
-        assertTrue(removedMethods.contains(new ApiMember("setPersistent(Z)", 1, 0, 11)));
-        assertTrue(
-                removedMethods.stream().noneMatch(member -> member.getSignature().equals("NFC")));
-
-        removedMethods = mDb.getRemovedMethods("android/database/sqlite/SQLiteProgram");
-        assertTrue(
-                removedMethods.contains(
-                        new ApiMember("native_bind_string(ILjava/lang/String;)", 1, 0, 16)));
-        // Method moved to a super class
-        assertTrue(
-                removedMethods.stream()
-                        .noneMatch(member -> member.getSignature().equals("close()")));
     }
 
     public void testRemovedClasses() {

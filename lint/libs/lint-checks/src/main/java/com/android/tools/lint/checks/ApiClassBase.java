@@ -44,6 +44,10 @@ public abstract class ApiClassBase implements Comparable<ApiClassBase> {
 
     // Persistence data: Used when writing out binary data in ApiLookup
     List<String> members;
+    // Persistence data: Whether we want to force member names to be include in the database instead
+    // of hash codes
+    boolean includeNames;
+
     int index; // class number, e.g. entry in index where the pointer can be found
     int indexOffset; // offset of the class entry
     int memberOffsetBegin; // offset of the first member entry in the class

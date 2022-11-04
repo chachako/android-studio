@@ -22,7 +22,6 @@ import com.android.tools.lint.checks.infrastructure.TestLintClient
 import com.android.tools.lint.checks.infrastructure.checkTransitiveComparator
 import org.junit.Test
 import java.io.File
-import java.util.Collections
 import java.util.Random
 
 class ApiClassTest {
@@ -37,7 +36,7 @@ class ApiClassTest {
             ApiLookup.SDK_DATABASE_MIN_VERSION,
             true
         ) ?: return
-        val folder: File = File(target.getLocation())
+        val folder = File(target.location)
         val database =
             File(folder, SdkConstants.FD_DATA + File.separator + ApiLookup.XML_FILE_PATH)
         if (database.isFile) {
@@ -49,7 +48,7 @@ class ApiClassTest {
             // an error if it should happen
             val seed = System.currentTimeMillis()
             val generator = Random(seed)
-            Collections.shuffle(classes, generator)
+            classes.shuffle(generator)
             val sublist = classes.subList(0, 99)
             try {
                 checkTransitiveComparator(sublist)

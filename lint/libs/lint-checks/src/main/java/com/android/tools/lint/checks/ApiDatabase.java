@@ -15,6 +15,9 @@
  */
 package com.android.tools.lint.checks;
 
+import static com.android.tools.lint.checks.ApiClass.USE_HASH_CODES;
+import static com.android.tools.lint.checks.ApiClass.USING_HASH_CODE_MASK;
+
 import com.android.annotations.NonNull;
 import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.detector.api.ExtensionSdk;
@@ -55,7 +58,7 @@ public class ApiDatabase {
     public static final int IS_SHORT_FLAG = 1 << 6;
     public static final int API_MASK = ~HAS_EXTRA_BYTE_FLAG;
 
-    private static final int BINARY_FORMAT_VERSION = 16;
+    private static final int BINARY_FORMAT_VERSION = 17;
 
     protected byte[] mData;
     protected int[] mIndices;
@@ -103,7 +106,9 @@ public class ApiDatabase {
      *    c. Offsets to the container entries, one for each package or a class containing inner
      *       classes [a 4-byte integer].
      *    d. Offsets to the class entries, one for each class [a 4-byte integer].
-     *    e. Offsets to the member entries, one for each member [a 4-byte integer].
+     *    e. Offsets to the member entries, one for each member [a 4-byte integer]. Note that
+     *       if a member entry name is stored as a hash code instead of a full name and
+     *       description, the highest level bit (1 << 31) is set in the starting index.
      *
      * 4. The member entries -- one for each member. A given class entry will point to the
      *    first and last members in the index table above, and the offset of a given member
@@ -111,7 +116,10 @@ public class ApiDatabase {
      *    a. The name and description (except for the return value) of the member, in JVM format
      *       (e.g. for toLowerCase(char) we'd have "toLowerCase(C)". This is converted into
      *       UTF_8 representation as bytes [n bytes, the length of the byte representation of
-     *       the description).
+     *       the description). NOTE: If the high level bit (1 << 31) in the starting offset is set,
+     *       then a 4-byte hashcode is stored instead of the name and description to uniquely
+     *       identify the name and description. The hash coding algorithm used is
+     *       {@link ApiLookup#signatureHashCode(String, String)}.
      *    b. A terminating 0 byte [1 byte].
      *    c. A sequence of bytes representing custom data attached to this entry, to be interpreted
      *       by the consumer.
@@ -137,6 +145,21 @@ public class ApiDatabase {
      *       class [a 3-byte integer.]
      *    d. The number of classes in the package or the number of inner classes in the outer class
      *       [a 2-byte integer].
+     *
+     * 7. The API vector table.
+     *    a. The number of API constraint vectors as an integer.
+     *    b. For each vector, if there are multiple SDKs, then a series of pairs of integers,
+     *       one for each SDK included in the vector, where the first integer is the SDK id
+     *       and the second is the version. This is followed by an integer -1 as a terminator.
+     *       Otherwise, the API constraint vector represents a single API level: an int followed
+     *       by a -1 integer terminator.
+     *
+     * 8. The SDK table -- one for each extension SDK.
+     *    a. The number of extension SDKs as an integer.
+     *    b. For each integer, the serialized form of each {@link ExtensionSdk}, as encoded
+     *       by {@link ExtensionSdk.Companion#serialize(ExtensionSdk)}, encoded as UTF-8,
+     *       and then stored as first the number of bytes in the string (as an integer)
+     *       followed by the UTF-8 encoded bytes.
      * </pre>
      */
     protected void readData(
@@ -271,7 +294,7 @@ public class ApiDatabase {
 
         // Write container index.
         int newIndex = buffer.position();
-        for (ApiClassOwner container : containers) {
+        for (ApiClassOwner<? extends ApiClassBase> container : containers) {
             container.indexOffset = newIndex;
             newIndex += 4;
             indexCount++;
@@ -287,7 +310,7 @@ public class ApiDatabase {
             }
         }
 
-        // Write member indices.
+        // Compute member indices.
         for (ApiClassOwner<? extends ApiClassBase> container : containers) {
             for (ApiClassBase cls : container.getClasses()) {
                 if (cls.members != null && !cls.members.isEmpty()) {
@@ -317,11 +340,21 @@ public class ApiDatabase {
         for (ApiClassOwner<? extends ApiClassBase> container : containers) {
             for (ApiClassBase apiClass : container.getClasses()) {
                 int index = apiClass.memberOffsetBegin;
-                for (String member : apiClass.members) {
+                List<String> members = apiClass.members;
+                for (int i = 0; i < members.size(); i++) {
+                    String member = members.get(i);
                     // Update member offset to point to this entry
                     int start = buffer.position();
                     buffer.position(index);
-                    buffer.putInt(start);
+
+                    if (USE_HASH_CODES && i == 0 && !apiClass.includeNames) {
+                        // Marker bit for first index: use hash codes for this class.
+                        // Integer offsets was generous; we really only need 3 bytes to represent
+                        // offsets in our table so this bit is available.
+                        buffer.putInt(start | USING_HASH_CODE_MASK);
+                    } else {
+                        buffer.putInt(start);
+                    }
                     index = buffer.position();
                     buffer.position(start);
 
@@ -395,7 +428,7 @@ public class ApiDatabase {
         buffer.putInt(sdkTableOffset);
         buffer.position(sdkTableOffset);
 
-        // Write SDK table
+        // Write API constraint vectors
         List<String> sdks = info.getSdks();
         int sdkCount = sdks.size();
         put2ByteInt(buffer, sdkCount);

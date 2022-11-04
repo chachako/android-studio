@@ -20,6 +20,7 @@ import static com.android.SdkConstants.CONSTRUCTOR_NAME;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.utils.Pair;
 import com.google.common.collect.Iterables;
 import java.nio.ByteBuffer;
@@ -27,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +45,27 @@ import java.util.Set;
  * <p>{@link #getField} returns the API level when the field was introduced.
  */
 public final class ApiClass extends ApiClassBase {
+
+    /**
+     * Removes members whose metadata is the same as the surrounding class.
+     *
+     * <p>Reduces the database size from 8.56MB down to 3.30M as of API level 33.
+     */
+    public static final boolean STRIP_MEMBERS = true;
+
+    /**
+     * Removes entry data (unless {@link ApiClassBase#includeNames} is set) and just records the
+     * hash code instead for faster matching.
+     *
+     * <p>Reduces the database size from 3.30MB down to 0.94M as of API level 33.
+     */
+    public static final boolean USE_HASH_CODES = true;
+    /**
+     * Bit set in member offset indicating that the entries are hash codes. (Only used with {@link
+     * #USE_HASH_CODES})
+     */
+    public static final int USING_HASH_CODE_MASK = 1 << 31;
+
     private final String mSdks;
     private final int mSince;
     private final int mDeprecatedIn;
@@ -547,30 +570,94 @@ public final class ApiClass extends ApiClassBase {
     int computeExtraStorageNeeded(Api<? extends ApiClassBase> info) {
         int estimatedSize = 0;
 
-        Set<String> allMethods = getAllMethods(info);
-        Set<String> allFields = getAllFields(info);
-        members = new ArrayList<>(allMethods.size() + allFields.size());
-        members.addAll(allMethods);
-        members.addAll(allFields);
+        initializeMembers(info);
 
         estimatedSize += 2 + 4 * (getInterfaces().size());
         if (getSuperClasses().size() > 1) {
             estimatedSize += 2 + 4 * (getSuperClasses().size());
         }
 
-        // Only include classes that have one or more members requiring version 2 or higher:
-        Collections.sort(members);
         for (String member : members) {
             estimatedSize += member.length();
             estimatedSize += 16;
         }
+
         return estimatedSize;
     }
 
+    void initializeMembers(Api<? extends ApiClassBase> info) {
+        Set<String> allMethods = getAllMethods(info);
+        Set<String> allFields = getAllFields(info);
+        List<String> members = new ArrayList<>(allMethods.size() + allFields.size());
+
+        if (STRIP_MEMBERS) {
+            for (String member : allMethods) {
+                if (getMethod(member, info) != getSince()
+                        || getMemberDeprecatedIn(member, info) != getDeprecatedIn()
+                        || getMemberRemovedIn(member, info) != getRemovedIn()
+                        || getMemberSdks(member, info) != null) {
+                    members.add(member);
+                }
+            }
+
+            for (String member : allFields) {
+                if (getField(member, info) != getSince()
+                        || getMemberDeprecatedIn(member, info) != getDeprecatedIn()
+                        || getMemberRemovedIn(member, info) != getRemovedIn()
+                        || getMemberSdks(member, info) != null) {
+                    members.add(member);
+                }
+            }
+        } else {
+            members.addAll(allMethods);
+            members.addAll(allFields);
+        }
+
+        if (USE_HASH_CODES) {
+            // Whether we want to force names. If we wanted to be able to
+            // return names from the database, we'd need this. Currently, this
+            // is only needed for one known case: android.Manifest.permission, so
+            // we special case it for that instead of keeping *all* removed
+            // APIs (which adds up to >1 MB in entry data, which again
+            // is currently unused.)
+            // cls.getMemberRemovedIn(member, info) > 0 || cls.getMemberRemovedIn(member, info) > 0
+            includeNames = getName().equals("android/Manifest$permission");
+
+            // Also look for hashcode conflicts; that's another reason to use full
+            // names. There are no hash code conflicts anywhere in Android 33, and it's
+            // unlikely since we only need to have unique hash codes within each single
+            // class, but this code is here to make sure the API database doesn't break
+            // sometime in the future if a hash code conflict was introduced.
+            Set<Integer> hashCodes = new HashSet<>();
+            if (ApiClass.USE_HASH_CODES && !includeNames) {
+                for (String member : members) {
+                    if (!hashCodes.add(ApiLookup.signatureHashCode(member, null))) {
+                        includeNames = true;
+                        break;
+                    }
+                }
+            }
+            if (includeNames) {
+                // Alphabetize by member name for binary search on name
+                Collections.sort(members);
+            } else {
+                // Alphabetize by hashcode for binary search on hash codes
+                members.sort(Comparator.comparingInt(o -> ApiLookup.signatureHashCode(o, null)));
+            }
+        } else {
+            // Alphabetize by member name for binary search on name
+            Collections.sort(members);
+        }
+
+        this.members = members;
+    }
+
     /**
-     * Writes one, two or three bytes representing the API levels when the member was introduced,
-     * deprecated, and removed, respectively. The third byte is present only if the member was
-     * removed. The second byte is present only if the member was deprecated or removed.
+     * Writes out the member-entry for a particular member.
+     *
+     * <p>First it writes out the name of the reference (or, for some entries, just the hash code
+     * which uniquely identifies it), and then it writes out the API data for that member -- the
+     * {@link ApiConstraint}, and optionally the removed-in and deprecated-in versions.
      */
     @Override
     void writeMemberData(Api<? extends ApiClassBase> info, String member, ByteBuffer buffer) {
@@ -591,17 +678,22 @@ public final class ApiClass extends ApiClassBase {
         assert removedIn >= 0 : "Invalid removedIn " + removedIn + " for " + member;
         String sdks = getMemberSdks(member, info);
 
-        byte[] signature = member.getBytes(StandardCharsets.UTF_8);
-        for (byte b : signature) {
-            // Make sure all signatures are really just simple ASCII.
-            assert b == (b & 0x7f) : member;
-            buffer.put(b);
-            // Skip types on methods
-            if (b == (byte) ')') {
-                break;
+        if (USE_HASH_CODES && !includeNames) {
+            int hashCode = ApiLookup.signatureHashCode(member, null);
+            buffer.putInt(hashCode);
+        } else {
+            byte[] signature = member.getBytes(StandardCharsets.UTF_8);
+            for (byte b : signature) {
+                // Make sure all signatures are really just simple ASCII.
+                assert b == (b & 0x7f) : member;
+                buffer.put(b);
+                // Skip types on methods
+                if (b == (byte) ')') {
+                    break;
+                }
             }
+            buffer.put((byte) 0);
         }
-        buffer.put((byte) 0);
         writeSinceDeprecatedInRemovedIn(info, buffer, since, deprecatedIn, removedIn, sdks);
     }
 

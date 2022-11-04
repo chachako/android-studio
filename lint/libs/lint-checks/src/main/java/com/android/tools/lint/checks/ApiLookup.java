@@ -18,6 +18,9 @@ package com.android.tools.lint.checks;
 import static com.android.SdkConstants.DOT_XML;
 import static com.android.SdkConstants.FD_DATA;
 import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
+import static com.android.tools.lint.checks.ApiClass.STRIP_MEMBERS;
+import static com.android.tools.lint.checks.ApiClass.USE_HASH_CODES;
+import static com.android.tools.lint.checks.ApiClass.USING_HASH_CODE_MASK;
 import static com.android.tools.lint.detector.api.ExtensionSdk.ANDROID_SDK_ID;
 
 import com.android.annotations.NonNull;
@@ -596,7 +599,11 @@ public class ApiLookup extends ApiDatabase {
             if (classNumber >= 0) {
                 int api = findMember(classNumber, name, desc);
                 if (api < 0) {
-                    return ApiConstraint.UNKNOWN;
+                    if (STRIP_MEMBERS) {
+                        return getClassVersions(classNumber);
+                    } else {
+                        return ApiConstraint.UNKNOWN;
+                    }
                 }
                 return apiConstraints.get(api);
             }
@@ -691,6 +698,9 @@ public class ApiLookup extends ApiDatabase {
     /**
      * Returns all removed fields of the given class and all its super classes and interfaces.
      *
+     * <p><b>NOTE: This method only works for a limited set of APIs</b>; it is not a general purpose
+     * lookup utility. {@link #getFieldRemovedInVersions} works in the general case.
+     *
      * @param owner the internal name of the field's owner class, e.g. its fully qualified name (as
      *     returned by Class.getName())
      * @return the removed fields, or null if the owner class was not found
@@ -710,19 +720,13 @@ public class ApiLookup extends ApiDatabase {
     /**
      * Returns all removed methods of the given class and all its super classes and interfaces.
      *
-     * @param owner the internal name of the field's owner class, e.g. its fully qualified name (as
-     *     returned by Class.getName())
-     * @return the removed methods, or null if the owner class was not found
+     * @deprecated This method is a no-op (it was unused for years but had some overhead in the
+     *     database which has been removed). Note that you *can* still use {@link
+     *     #getMethodRemovedInVersions}.
      */
+    @Deprecated
     @Nullable
     public Collection<ApiMember> getRemovedMethods(@NonNull String owner) {
-        //noinspection VariableNotUsedInsideIf
-        if (mData != null) {
-            int classNumber = findClass(owner);
-            if (classNumber >= 0) {
-                return getRemovedMembers(classNumber, true);
-            }
-        }
         return null;
     }
 
@@ -821,7 +825,11 @@ public class ApiLookup extends ApiDatabase {
             if (classNumber >= 0) {
                 int api = findMember(classNumber, name, null);
                 if (api < 0) {
-                    return ApiConstraint.UNKNOWN;
+                    if (STRIP_MEMBERS) {
+                        return getClassVersions(classNumber);
+                    } else {
+                        return ApiConstraint.UNKNOWN;
+                    }
                 }
                 return apiConstraints.get(api);
             }
@@ -985,6 +993,41 @@ public class ApiLookup extends ApiDatabase {
         return c;
     }
 
+    /**
+     * Computes the hashcode of the given signature string. If s2 is not null, include it as well as
+     * if it had been appended to s1 (this is done such that we don't have to concatenate strings
+     * just to compute their hashcode). This will omit the type suffix, e.g. in
+     * "toString()Ljava/lang/String;" the String return type is not included. We also treat / and $
+     * as a "."
+     */
+    // Computes hashcode of two strings
+    public static int signatureHashCode(@NonNull String s1, @Nullable String s2) {
+        int h = 0;
+        int n1 = s1.lastIndexOf(')');
+        if (n1 == -1) {
+            n1 = s1.length();
+        }
+        for (int i = 0; i < n1; i++) {
+            char c = normalizeSeparator(s1.charAt(i));
+            // This works because our signatures are always iso latin characters
+            h = 31 * h + (c & 0xff);
+        }
+
+        if (s2 != null) {
+            int n2 = s2.lastIndexOf(')');
+            if (n2 == -1) {
+                n2 = s2.length();
+            }
+            for (int i = 0; i < n2; i++) {
+                char c = normalizeSeparator(s2.charAt(i));
+                // This works because our signatures are always iso latin characters
+                h = 31 * h + (c & 0xff);
+            }
+        }
+
+        return h & ~(1 << 31);
+    }
+
     private int findMember(int classNumber, @NonNull String name, @Nullable String desc) {
         return findMember(classNumber, name, desc, CLASS_HEADER_API);
     }
@@ -1032,8 +1075,7 @@ public class ApiLookup extends ApiDatabase {
         return offset;
     }
 
-    private int findMember(
-            int classNumber, @NonNull String name, @Nullable String desc, int apiLevelField) {
+    private int seekMemberData(int classNumber, @NonNull String name, @Nullable String desc) {
         int curr = seekClassData(classNumber, CLASS_HEADER_MEMBER_OFFSETS);
 
         // 3 bytes for first offset
@@ -1046,6 +1088,45 @@ public class ApiLookup extends ApiDatabase {
         }
         int high = low + length;
 
+        boolean useHashCodes = USE_HASH_CODES && (mIndices[low] & USING_HASH_CODE_MASK) != 0;
+        if (useHashCodes) {
+            int hashCode = signatureHashCode(name, desc);
+
+            while (low < high) {
+                int middle = (low + high) >>> 1;
+                int offset = mIndices[middle];
+                offset = offset & ~(1 << 31);
+
+                int currentHashCode = get4ByteInt(mData, offset);
+
+                if (DEBUG_SEARCH) {
+                    System.out.println(
+                            "Comparing string "
+                                    + (name + (desc != null ? desc : ""))
+                                    + " (hash code "
+                                    + hashCode
+                                    + ") with entry at "
+                                    + offset
+                                    + " which has hash code "
+                                    + currentHashCode);
+                }
+
+                int compare = currentHashCode - hashCode;
+                if (compare == 0) {
+                    offset += 4;
+                    return offset;
+                }
+
+                if (compare < 0) {
+                    low = middle + 1;
+                } else {
+                    high = middle;
+                }
+            }
+
+            return -1;
+        }
+
         while (low < high) {
             int middle = (low + high) >>> 1;
             int offset = mIndices[middle];
@@ -1053,7 +1134,7 @@ public class ApiLookup extends ApiDatabase {
             if (DEBUG_SEARCH) {
                 System.out.println(
                         "Comparing string "
-                                + (name + ';' + desc)
+                                + (name + (desc != null ? desc : ""))
                                 + " with entry at "
                                 + offset
                                 + ": "
@@ -1061,6 +1142,7 @@ public class ApiLookup extends ApiDatabase {
             }
 
             int compare;
+
             if (desc != null) {
                 // Method
                 int nameLength = name.length();
@@ -1079,8 +1161,8 @@ public class ApiLookup extends ApiDatabase {
                         offset += argsEnd + 1;
 
                         if (mData[offset++] == 0) {
-                            // Yes, terminated argument list: get the API level
-                            return getApiLevel(offset, apiLevelField);
+                            // Yes, terminated argument list
+                            return offset;
                         }
                     }
                 }
@@ -1091,8 +1173,8 @@ public class ApiLookup extends ApiDatabase {
                 if (compare == 0) {
                     offset += nameLength;
                     if (mData[offset++] == 0) {
-                        // Yes, terminated argument list: get the API level
-                        return getApiLevel(offset, apiLevelField);
+                        // Yes, terminated argument list
+                        return offset;
                     }
                 }
             }
@@ -1108,6 +1190,15 @@ public class ApiLookup extends ApiDatabase {
         }
 
         return -1;
+    }
+
+    private int findMember(
+            int classNumber, @NonNull String name, @Nullable String desc, int apiLevelField) {
+        int offset = seekMemberData(classNumber, name, desc);
+        if (offset == -1) {
+            return -1;
+        }
+        return getApiLevel(offset, apiLevelField);
     }
 
     private int getApiLevel(int offset, int apiLevelField) {
