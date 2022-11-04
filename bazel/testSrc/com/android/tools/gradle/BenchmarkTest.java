@@ -19,8 +19,8 @@ package com.android.tools.gradle;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.testutils.TestUtils;
 import com.android.testutils.diff.UnifiedDiff;
+import com.android.testutils.TestUtils;
 import com.android.tools.gradle.benchmarkassertions.BenchmarkProjectAssertion;
 import com.android.tools.perflogger.Benchmark;
 import com.android.tools.perflogger.PerfData;
@@ -30,9 +30,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +79,6 @@ public class BenchmarkTest {
     private String yourKitLibraryPath = null;
     private String yourKitSettingsPath = null;
     private boolean useJdk11 = false;
-    private boolean withDensity = false;
 
     @Before
     public void setUp() throws Exception {
@@ -146,10 +145,6 @@ public class BenchmarkTest {
         value = System.getProperty("from-studio");
         if (value != null && !value.isEmpty()) {
             fromStudio = Boolean.parseBoolean(value);
-        }
-        value = System.getProperty("with-density");
-        if (value != null && !value.isEmpty()) {
-            withDensity = Boolean.parseBoolean(value);
         }
         testProjectGradleRootFromSourceRoot = System.getProperty("gradle-root");
         value = System.getProperty("pre_mutate_assertion");
@@ -344,14 +339,10 @@ public class BenchmarkTest {
                 gradle.addArgument(
                         "-Pandroid.injected.build.api=10000"); // as high as possible so we never need to change it.
                 gradle.addArgument("-Pandroid.injected.build.abi=arm64-v8a");
-
+                gradle.addArgument("-Pandroid.injected.build.density=xhdpi");
                 gradle.addArgument(
                         "-Pandroid.injected.attribution.file.location="
                                 + new File(out, "attribution_out").getAbsolutePath());
-
-                if (withDensity) {
-                    gradle.addArgument("-Pandroid.injected.build.density=xhdpi");
-                }
             }
             if (failOnWarning) {
                 gradle.addArgument("--warning-mode=fail");
