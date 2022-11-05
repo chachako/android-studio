@@ -24,21 +24,21 @@ import com.android.build.gradle.internal.ndk.AbiInfo
 import com.android.repository.Revision
 import org.gradle.api.file.FileCollection
 import java.io.File
-import java.lang.Math.abs
 import java.lang.RuntimeException
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
 import java.util.Random
+import kotlin.math.abs
 
 /**
  * Test helper class. Used to generate a random instance of a given class.
  * Useful for automatically testing data classes when new fields are added.
  */
 @Suppress("UNCHECKED_CAST")
-class RandomInstanceGenerator {
+class RandomInstanceGenerator(val seed : Long = 192L) {
     private val defaultSequenceLength = 100
-    private val random = Random(192)
+    private val random = Random(seed)
     private val factoryMap = mutableMapOf<Type, (RandomInstanceGenerator) -> Any?>()
 
     init {
@@ -61,7 +61,7 @@ class RandomInstanceGenerator {
         provideNull(FileCollection::class.java)
         provide(BuildSettingsConfiguration::class.java) { buildSettings() }
     }
-    fun <T> oneOf(vararg creators : () -> T) = creators[abs(int()) % creators.size]()
+    fun <T> oneOf(vararg creators : () -> T) = sample(creators.toList())()
     fun <T> makeListOf(create : ()->T) = (0 until sample(LIST_SIZE_DOMAIN)).map { create() }
     fun file() = File(string().trimEnd('/', '\\'))
     fun string() = (0 until sample(LIST_SIZE_DOMAIN)).joinToString("") { sample(SEGMENT_DOMAIN) }
@@ -77,7 +77,15 @@ class RandomInstanceGenerator {
     fun int() = sample(INT_DOMAIN)
     fun boolean() = sample(BOOLEAN_DOMAIN)
     fun revision() = Revision(unsignedInt(), unsignedInt(), unsignedInt(), unsignedInt())
-    private fun <T> sample(domain : List<T>) = domain[abs(random.nextInt()) % domain.size]
+    private fun <T> sample(domain : List<T>) : T {
+        val i : Long = random.nextInt().toLong()
+        val a : Long = abs(i)
+        val m : Long = a % domain.size
+        if (m < 0) {
+            error("how?")
+        }
+        return domain[m.toInt()]
+    }
     fun list(type: Type) = (0 until sample(LIST_SIZE_DOMAIN)).map { syntheticOfType(type) }
     fun set(type: Type) = list(type).toSet()
     fun map(key: Type, value: Type) =
@@ -184,6 +192,28 @@ class RandomInstanceGenerator {
             "RULE input.txt\n", "build output.txt: ",
             "|", "||", "=", ":", "\n  ", "\\", "/", "C${'$'}:/"
         )
+        private val CLANG_STDOUT_DOMAIN = listOf(
+            "1 warning.", "2 warnings.", "1 error.", "2 errors.",
+            "1 warning and 1 error", "1 warning and 2 errors.",
+            "2 warnings and 1 error.", "2 warnings and 2 errors.",
+            "In file included from file.h:1:2",
+            "clang: error: linker command failed with exit code ",
+            "/f.c:1:2: error: b",
+            "/f.c:1:2: warning: b",
+            "/f.c:1:2: note: b",
+            "ld: fatal error: f.so: open: Invalid argument",
+            "[x86] Compile x",
+            "ninja: build stopped.",
+            "clang++ --target=android",
+            "ninja: Entering directory `/some/dir'",
+            "ninja: Entering directory `", "'",
+            "ninja: Entering directory '",
+            " error:", " warn:", " note:",
+            "/f.c:1:2:", "ld:", " and ",
+            "> Task :app:buildCMakeDebug[x86]",
+            "> Task :app:configureNdkBuildRelease[x86_64]",
+            "BUILD FAILED in 1s"
+        )
         private val COMMAND_LINE_DOMAIN =
             listOf("B", "D", "H", "G", "W", "help", "?")
                 .flatMap { expandCommandLine(it) }
@@ -193,7 +223,8 @@ class RandomInstanceGenerator {
                 COMMAND_LINE_DOMAIN +
                 VERSION_DOMAIN +
                 POSIX_FILE_PATHS_DOMAIN +
-                NINJA_DOMAIN
+                NINJA_DOMAIN +
+                CLANG_STDOUT_DOMAIN
         val LIST_SIZE_DOMAIN = listOf(0, 1, 2, 3, 10, 50)
         val BOOLEAN_DOMAIN = listOf(true, false)
         val UNSIGNED_INT_DOMAIN = listOf(0, 1, 32, 64, 256, Int.MAX_VALUE)

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.process
 
+import com.android.build.gradle.internal.cxx.RandomInstanceGenerator
 import com.android.build.gradle.internal.cxx.logging.LoggingMessage
 import com.android.build.gradle.internal.cxx.logging.ThreadLoggingEnvironment
 import com.android.build.gradle.internal.cxx.logging.text
@@ -92,7 +93,6 @@ class DefaultProcessOutputHandlerTest {
             """.trimIndent(),
     )
 
-
     @Test
     fun `skip logging ninja directory line if no compiler output`() = check(
         logStdout = true,
@@ -126,13 +126,46 @@ class DefaultProcessOutputHandlerTest {
             """.trimIndent(),
     )
 
+    data class StdOut(val lines : List<String>)
+
+    @Test
+    fun fuzz() {
+        var worst = ""
+        var worstE : Exception? = null
+        (0L until 100).forEach { n ->
+            RandomInstanceGenerator(n)
+                .synthetics(StdOut::class.java, 1000)
+                .forEach { lines ->
+                    val stdout = lines.lines.joinToString("\n")
+                    try {
+                        check(
+                            logStdout = true,
+                            logStderr = false,
+                            logFullStdout = false,
+                            stdout = stdout,
+                            stderr = "stderr"
+                        )
+                    } catch (e : Exception) {
+                        if (worst.isEmpty() || stdout.length < worst.length) {
+                            worst = stdout
+                            worstE = e
+                            println("$stdout\n=============================")
+                        }
+                    }
+                }
+            }
+        if (worstE != null) {
+            throw(worstE!!)
+        }
+    }
+
     private fun check(
         logStdout: Boolean,
         logStderr: Boolean,
         logFullStdout: Boolean,
         stdout: String,
         stderr: String,
-        lifecycle: String
+        lifecycle: String? = null
     ) {
         val messages = mutableListOf<String>()
         FakeThreadLoggingEnvironment(messages).use {
@@ -148,7 +181,9 @@ class DefaultProcessOutputHandlerTest {
                 it.errorOutput.write(stderr.toByteArray(StandardCharsets.UTF_8))
             }
         }
-        Truth.assertThat(messages.joinToString("\n")).isEqualTo(lifecycle)
+        if (lifecycle != null) {
+            Truth.assertThat(messages.joinToString("\n")).isEqualTo(lifecycle)
+        }
     }
 
     class FakeThreadLoggingEnvironment(val messages: MutableList<String>) : ThreadLoggingEnvironment() {

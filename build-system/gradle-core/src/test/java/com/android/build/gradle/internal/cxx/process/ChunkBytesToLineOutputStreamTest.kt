@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.cxx.process
 
+import com.android.utils.cxx.process.LineOutputStream
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.PrintWriter
@@ -27,9 +28,12 @@ class ChunkBytesToLineOutputStreamTest {
         val sb = StringBuilder()
         val out = ChunkBytesToLineOutputStream(
             "",
-            { message -> sb.append("->$message<-") }
+            object: LineOutputStream {
+                override fun consume(line: String) { sb.append("->$line<-") }
+                override fun close() { }
+            }
         )
-        PrintWriter(out).use({ p -> p.println("Hello") })
+        PrintWriter(out).use { p -> p.println("Hello") }
         assertThat(sb.toString()).isEqualTo("->Hello<-")
     }
 
@@ -47,13 +51,16 @@ class ChunkBytesToLineOutputStreamTest {
                     val sb = StringBuilder()
                     val out = ChunkBytesToLineOutputStream(
                         "@",
-                        { message -> sb.append("->$message<-") },
+                        object: LineOutputStream {
+                            override fun consume(line: String) { sb.append("->$line<-") }
+                            override fun close() { }
+                        },
                         start
                     )
-                    PrintWriter(out).use({ p ->
+                    PrintWriter(out).use { p ->
                         p.print(left)
                         p.print(right)
-                    })
+                    }
                     assertThat(sb.toString()).isEqualTo("->@a<-->@bb<-->@ccc<-->@dddd<-")
                 }
             }
