@@ -15,6 +15,10 @@
  */
 package com.android.utils
 
+import com.android.utils.time.TimeSource
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+
 /**
  * Executes [block] at least once and up to [maxRetries] additional times, retrying if it throws
  * [E].
@@ -29,13 +33,44 @@ inline fun <reified E: Throwable> executeWithRetries(maxRetries: Int, block: () 
  */
 inline fun <reified E: Throwable, T> executeWithRetries(maxRetries: Int, block: () -> T): T {
     var retriesRemaining = maxRetries
-    while(true) {
+    return executeWithRetries<E,T>({ retriesRemaining-- > 0 }, block)
+}
+
+/** Executes [block] at least once, retrying if it throws [E] and [duration] has not elapsed. */
+@OptIn(ExperimentalTime::class) // For Duration which is no longer experimental
+inline fun <reified E: Throwable> executeWithRetries(
+    duration: Duration, timeSource: TimeSource = TimeSource.Monotonic, block: () -> Unit) {
+    executeWithRetries<E, Unit>(duration, timeSource, block)
+}
+
+/**
+ * Executes [block] at least once, returning its result and retrying if it throws [E] and [duration]
+ * has not elapsed.
+ */
+@OptIn(ExperimentalTime::class) // For Duration which is no longer experimental
+inline fun <reified E: Throwable, T> executeWithRetries(
+    duration: Duration, timeSource: TimeSource = TimeSource.Monotonic, block: () -> T): T {
+    val start = timeSource.markNow()
+    return executeWithRetries<E, T>({ start.elapsedNow() < duration }, block)
+}
+
+/** Executes [block] at least once, retrying if it throws [E] and [retryCondition] returns true. */
+inline fun <reified E: Throwable> executeWithRetries(
+    retryCondition: () -> Boolean, block: () -> Unit) {
+    executeWithRetries<E, Unit>(retryCondition, block)
+}
+
+/**
+ * Executes [block] at least once, returning its result and retrying if it throws [E] and
+ * [retryCondition] returns true.
+ */
+inline fun <reified E: Throwable, T> executeWithRetries(
+    retryCondition: () -> Boolean, block: () -> T): T {
+    while (true) {
         try {
             return block()
-        }
-        catch (t: Throwable) {
-            if (retriesRemaining == 0 || t !is E) throw t
-            --retriesRemaining
+        } catch (t: Throwable) {
+            if (!retryCondition() || t !is E) throw t
         }
     }
 }
