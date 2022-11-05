@@ -90,14 +90,6 @@ ForegroundProcessTracker::IsTrackingForegroundProcessSupported() {
 }
 
 void ForegroundProcessTracker::StartTracking() {
-  // if we receive the start tracking command while we are already polling, it
-  // probably means a new Project was opened in Studio, which is now waiting to
-  // receive a foreground process. We should send the last seen foreground
-  // process.
-  if (shouldDoPolling_.load() && !latestForegroundProcess_.isEmpty) {
-    sendForegroundProcessEvent(latestForegroundProcess_);
-  }
-
   // checking both variables makes sure that only one thread is running at any
   // time.
   if (shouldDoPolling_.load() || isThreadRunning_.load()) {

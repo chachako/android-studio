@@ -37,7 +37,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-/** This test can only be run on linux, because of fake-android which is only supported on linux */
 @RunWith(Parameterized.class)
 public class ForegroundProcessTrackerTest {
     @NonNull
@@ -184,60 +183,6 @@ public class ForegroundProcessTrackerTest {
                         (event.getKind()
                                 == Common.Event.Kind
                                         .LAYOUT_INSPECTOR_TRACKING_FOREGROUND_PROCESS_SUPPORTED),
-                () -> {});
-
-        assertThat(count[0]).isEqualTo(3);
-    }
-
-    @Test
-    public void testCallingStartAfterPollingIsStartedReturnLastSeenProcess() {
-        TransportAsyncStubWrapper transportWrapper =
-                TransportAsyncStubWrapper.create(myTransportRule.getGrpc());
-        TransportServiceGrpc.TransportServiceBlockingStub transportStub =
-                TransportServiceGrpc.newBlockingStub(myTransportRule.getGrpc().getChannel());
-
-        sendStartPollingCommand(transportStub);
-
-        final int[] count = {0};
-
-        transportWrapper.getEvents(
-                event -> {
-                    if (event.getKind() == Common.Event.Kind.LAYOUT_INSPECTOR_FOREGROUND_PROCESS) {
-                        String pid = event.getLayoutInspectorForegroundProcess().getPid();
-                        String processName =
-                                event.getLayoutInspectorForegroundProcess().getProcessName();
-
-                        if (count[0] == 0) {
-                            // first foreground process detected
-                            assertThat(pid).isEqualTo("1");
-                            assertThat(processName).isEqualTo("fake.process1");
-
-                            // call start polling again
-                            sendStartPollingCommand(transportStub);
-                        }
-
-                        if (count[0] == 1) {
-                            // after calling start polling for the second time we expect to receive
-                            // the last seen foreground process
-                            assertThat(pid).isEqualTo("1");
-                            assertThat(processName).isEqualTo("fake.process1");
-                        }
-
-                        if (count[0] == 2) {
-                            // foreground process detection continues as expected
-                            assertThat(pid).isEqualTo("2");
-                            assertThat(processName).isEqualTo("fake.process2");
-                        }
-
-                        count[0] += 1;
-                    }
-
-                    if (count[0] == 3) {
-                        sendStopPollingCommand(transportStub);
-                    }
-                    return count[0] == 3;
-                },
-                event -> (event.getKind() == Common.Event.Kind.LAYOUT_INSPECTOR_FOREGROUND_PROCESS),
                 () -> {});
 
         assertThat(count[0]).isEqualTo(3);
