@@ -43,8 +43,12 @@ class FlightRecorderRule(private val sizeLimit: Int = 1000) : ExternalResource()
                     FlightRecorder.print()
                     throw e
                 } finally {
-                    FlightRecorder.getAndClear()
-                    after()
+                    try {
+                        after()
+                    }
+                    finally {
+                        FlightRecorder.initialize(0)
+                    }
                 }
             }
         }
