@@ -586,7 +586,11 @@ public class GradleVersion implements Comparable<GradleVersion> {
      * @return the created {@link GradleVersion} instance, or {@code null} if the given string does
      *     not represent a valid Android Gradle plugin version.
      * @see #tryParse(String)
+     * @deprecated in favour of {@link AgpVersion#tryParse(String)} for internal Studio and AGP
+     *     use only; Gradle plugin authors should use
+     *     <a href="https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/AndroidPluginVersion">{@code AndroidPluginVersion}</a>.
      */
+    @Deprecated
     @Nullable
     public static GradleVersion tryParseAndroidGradlePluginVersion(@NonNull String value) {
         if (value.matches("\\d+\\.\\d+\\.\\d+(-(((alpha|beta|rc)\\d+)|(dev\\d*)))?")) {
@@ -611,7 +615,11 @@ public class GradleVersion implements Comparable<GradleVersion> {
      * @return the created {@link GradleVersion} instance, or {@code null} if the given string does
      *     not represent a valid stable Android Gradle plugin version.
      * @see #tryParseAndroidGradlePluginVersion(String)
+     * @deprecated in favour of {@link AgpVersion#tryParseStable(String)} for internal Studio and AGP
+     *     use only; Gradle plugin authors should use
+     *     <a href="https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/AndroidPluginVersion">{@code AndroidPluginVersion}</a>.
      */
+    @Deprecated
     @Nullable
     public static GradleVersion tryParseStableAndroidGradlePluginVersion(@NonNull String value) {
         if (value.matches("\\d+\\.\\d+\\.\\d+")) {
@@ -623,6 +631,17 @@ public class GradleVersion implements Comparable<GradleVersion> {
         }
     }
 
+    /**
+     *
+     * @param value the string to parse
+     * @return the created {@link GradleVersion} instance
+     * @throws IllegalArgumentException if the string does not represent a valid stable Android
+     *         Gradle plugin version.
+     * @deprecated in favour of {@link AgpVersion#parse(String)} for internal Studio and AGP
+     *     use only; Gradle plugin authors should use
+     *     <a href="https://developer.android.com/reference/tools/gradle-api/current/com/android/build/api/AndroidPluginVersion">{@code AndroidPluginVersion}</a>.
+     */
+    @Deprecated
     @NonNull
     public static GradleVersion parseAndroidGradlePluginVersion(@NonNull String value) {
         GradleVersion version = tryParseAndroidGradlePluginVersion(value);

@@ -130,6 +130,29 @@ class AgpVersionTest {
     }
 
     @Test
+    fun testParseStable() {
+        // Valid version
+        assertThat(convertAGPVersionToString(AgpVersion.parse("3.0.0"))).isEqualTo("3.0.0")
+
+        // Invalid version
+        try {
+            AgpVersion.parseStable("3.1")
+            Assert.fail("Expect IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertThat(e.message).isEqualTo("3.1 is not a valid stable AGP version string.")
+        }
+
+        // Valid but preview version
+        try {
+            AgpVersion.parseStable("4.0.0-alpha01")
+            Assert.fail("Expect IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertThat(e.message)
+                .isEqualTo("4.0.0-alpha01 is not a valid stable AGP version string.")
+        }
+    }
+
+    @Test
     fun testCompareTo() {
         assertThat(compareAGPVersions("3.1.0", "3.1.0")).isEqualTo(0)
         assertThat(compareAGPVersions("3.1.0-alpha01", "3.1.0-alpha01")).isEqualTo(0)

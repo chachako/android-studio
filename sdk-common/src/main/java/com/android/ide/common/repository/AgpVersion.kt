@@ -267,6 +267,7 @@ class AgpVersion private constructor(
          * Parse [value] as a String corresponding to a valid AGP version. See [tryParse] for
          * details on the version string format recognized.
          *
+         * @param value a String
          * @return an AgpVersion object corresponding to [value].
          * @throws IllegalArgumentException if [value] is not a valid AGP version string.
          */
@@ -296,6 +297,7 @@ class AgpVersion private constructor(
          * @param value a String
          * @return an AgpVersion object corresponding to [value], or null
          */
+        @JvmStatic
         fun tryParseStable(value: String): AgpVersion? {
             val matchResult = STABLE_VERSION_REGEX.matchEntire(value) ?: return null
             val matchList = matchResult.destructured.toList()
@@ -307,6 +309,21 @@ class AgpVersion private constructor(
             } catch (e: NumberFormatException) {
                 null
             }
+        }
+
+        /**
+         * Parse [value] as a String corresponding to a valid stable AGP version.  See
+         * [tryParseStable] for details on the version string format recognized.
+         *
+         * @param value a String
+         * @return an AgpVersion object corresponding to [value].
+         * @throws IllegalArgumentException if [value] is not a valid stable AGP version string.
+         */
+        @JvmStatic
+        fun parseStable(value: String): AgpVersion {
+            return tryParseStable(value)
+                ?: throw IllegalArgumentException(
+                    "$value is not a valid stable AGP version string.")
         }
     }
 }
