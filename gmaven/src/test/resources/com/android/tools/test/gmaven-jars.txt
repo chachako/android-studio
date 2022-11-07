@@ -1400,6 +1400,7 @@ com/android/tools/external/com-intellij/intellij-core
 com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/
   META-INF/MANIFEST.MF
+  META-INF/analysis-api-fe10.kotlin_module
   META-INF/analysis-api-fir.kotlin_module
   META-INF/analysis-api-impl-barebone.kotlin_module
   META-INF/analysis-api-impl-base.kotlin_module
@@ -1480,6 +1481,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/kotlin-util-klib-metadata.kotlin_module
   META-INF/kotlin-util-klib.kotlin_module
   META-INF/kotlinx-collections-immutable.kotlin_module
+  META-INF/kt-references-fe10.kotlin_module
   META-INF/kt-references.kotlin_module
   META-INF/light-classes-for-decompiled-fe10.kotlin_module
   META-INF/light-classes-for-decompiled.kotlin_module
@@ -1650,6 +1652,22 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/base/
   org/jetbrains/kotlin/analysis/api/calls/
   org/jetbrains/kotlin/analysis/api/components/
+  org/jetbrains/kotlin/analysis/api/descriptors/
+  org/jetbrains/kotlin/analysis/api/descriptors/annotations/
+  org/jetbrains/kotlin/analysis/api/descriptors/components/
+  org/jetbrains/kotlin/analysis/api/descriptors/components/base/
+  org/jetbrains/kotlin/analysis/api/descriptors/references/
+  org/jetbrains/kotlin/analysis/api/descriptors/scopes/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/base/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/descriptorBased/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/descriptorBased/base/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/pointers/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/psiBased/
+  org/jetbrains/kotlin/analysis/api/descriptors/symbols/psiBased/base/
+  org/jetbrains/kotlin/analysis/api/descriptors/types/
+  org/jetbrains/kotlin/analysis/api/descriptors/types/base/
+  org/jetbrains/kotlin/analysis/api/descriptors/utils/
   org/jetbrains/kotlin/analysis/api/diagnostics/
   org/jetbrains/kotlin/analysis/api/fir/
   org/jetbrains/kotlin/analysis/api/fir/annotations/
@@ -2163,6 +2181,10 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/psi2ir/intermediate/
   org/jetbrains/kotlin/psi2ir/preprocessing/
   org/jetbrains/kotlin/psi2ir/transformations/
+  org/jetbrains/kotlin/references/
+  org/jetbrains/kotlin/references/fe10/
+  org/jetbrains/kotlin/references/fe10/base/
+  org/jetbrains/kotlin/references/fe10/util/
   org/jetbrains/kotlin/renderer/
   org/jetbrains/kotlin/resolve/
   org/jetbrains/kotlin/resolve/annotations/
