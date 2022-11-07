@@ -29,6 +29,30 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
 import com.intellij.psi.impl.PsiNameHelperImpl
 import com.intellij.util.io.URLUtil.JAR_SEPARATOR
+import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
+import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade
+import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisHandlerExtension
+import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisSessionProvider
+import org.jetbrains.kotlin.analysis.api.descriptors.references.ReadWriteAccessCheckerDescriptorsImpl
+import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
+import org.jetbrains.kotlin.analysis.api.lifetime.KtDefaultLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.lifetime.KtReadActionConfinementDefaultLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider
+import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProvider
+import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProviderImpl
+import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
+import org.jetbrains.kotlin.analysis.project.structure.impl.buildKtModuleProviderByCompilerConfiguration
+import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
+import org.jetbrains.kotlin.analysis.project.structure.impl.getSourceFilePaths
+import org.jetbrains.kotlin.analysis.providers.KotlinAnnotationsResolverFactory
+import org.jetbrains.kotlin.analysis.providers.KotlinDeclarationProviderFactory
+import org.jetbrains.kotlin.analysis.providers.KotlinModificationTrackerFactory
+import org.jetbrains.kotlin.analysis.providers.KotlinPackageProviderFactory
+import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticAnnotationsResolverFactory
+import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticDeclarationProviderFactory
+import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticModificationTrackerFactory
+import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticPackageProviderFactory
 import org.jetbrains.kotlin.asJava.classes.FacadeCache
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
@@ -42,6 +66,8 @@ import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
+import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
@@ -256,6 +282,45 @@ private fun configureFe10ProjectEnvironment(
     project.registerService(PsiNameHelper::class.java, PsiNameHelperImpl::class.java)
 
     configureProjectEnvironment(project, config)
+
+    configureAnalysisApiServices(project, config)
+}
+
+@OptIn(KtAnalysisApiInternals::class)
+private fun configureAnalysisApiServices(
+    project: MockProject,
+    config: UastEnvironment.Configuration,
+) {
+    // Analysis API Base, i.e., base services for FE1.0 and FIR
+    // But, for FIR, AA session builder already register these
+    project.registerService(KotlinModificationTrackerFactory::class.java, KotlinStaticModificationTrackerFactory::class.java)
+    project.registerService(KtDefaultLifetimeTokenProvider::class.java, KtReadActionConfinementDefaultLifetimeTokenProvider::class.java)
+    project.registerService(KtModuleScopeProvider::class.java, KtModuleScopeProviderImpl())
+
+    val ktFiles = getPsiFilesFromPaths<KtFile>(project, getSourceFilePaths(config.kotlinCompilerConfig))
+
+    project.registerService(
+        ProjectStructureProvider::class.java,
+        buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig, project, ktFiles)
+    )
+
+    project.registerService(KotlinAnnotationsResolverFactory::class.java, KotlinStaticAnnotationsResolverFactory(ktFiles))
+    project.registerService(KotlinDeclarationProviderFactory::class.java, KotlinStaticDeclarationProviderFactory(ktFiles))
+    project.registerService(KotlinPackageProviderFactory::class.java, KotlinStaticPackageProviderFactory(ktFiles))
+
+    project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService::class.java)
+
+    // Analysis API FE1.0-specific
+    project.registerService(KtAnalysisSessionProvider::class.java, KtFe10AnalysisSessionProvider(project))
+    project.registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade(project))
+    // Duplicate: already registered at [KotlinCoreEnvironment]
+    // project.registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(enabled = true))
+    project.registerService(ReadWriteAccessChecker::class.java, ReadWriteAccessCheckerDescriptorsImpl())
+
+    // TODO: not available yet?
+    // project.registerService(KotlinReferenceProviderContributor::class.java, KtFe10KotlinReferenceProviderContributor::class.java)
+
+    AnalysisHandlerExtension.registerExtension(project, KtFe10AnalysisHandlerExtension())
 }
 
 private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
