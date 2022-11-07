@@ -36,6 +36,7 @@ interface InternalSources: Sources {
     override val mlModels: LayeredSourceDirectoriesImpl?
     override val aidl: FlatSourceDirectoriesImpl?
     override val renderscript: FlatSourceDirectoriesImpl?
+    override val baselineProfiles: FlatSourceDirectoriesImpl?
 
     /**
      * runs [action] passing the [Sources.java] internal representation if not null.
@@ -66,6 +67,12 @@ interface InternalSources: Sources {
      * If null, action is not run.
      */
     fun renderscript(action: (FlatSourceDirectoriesImpl) -> Unit)
+
+    /**
+     * runs [action] passing the [Sources.baselineProfiles] internal representation if not null.
+     * If null, action is not run.
+     */
+    fun baselineProfiles(action: (FlatSourceDirectoriesImpl) -> Unit)
 
     /**
      * runs [action] passing the [Sources.res] internal representation if not null.

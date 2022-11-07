@@ -84,6 +84,11 @@ interface Sources {
     val renderscript: SourceDirectories.Flat?
 
     /**
+     * Access ot the Baseline profiles source folders.
+     */
+    val baselineProfiles: SourceDirectories.Flat?
+
+    /**
      * Access (and potentially creates) a new [Flat] for a custom source type that can
      * be referenced by its [name].
      *

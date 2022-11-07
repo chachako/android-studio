@@ -21,6 +21,7 @@ import com.android.build.api.dsl.CompileOptions
 import com.android.build.api.dsl.Lint
 import com.android.build.api.variant.InternalSources
 import com.android.build.api.variant.impl.SourceDirectoriesImpl
+import com.android.build.gradle.internal.api.DefaultAndroidSourceDirectorySet
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -202,6 +203,7 @@ internal fun DefaultAndroidSourceSet.convert(
         resourcesDirectories = resourcesDirectories,
         aidlDirectories = if (features.aidl) aidlDirectories else null,
         renderscriptDirectories = if (features.renderScript) renderscriptDirectories else null,
+        baselineProfileDirectories = (baselineProfiles as DefaultAndroidSourceDirectorySet).srcDirs,
         resDirectories = if (features.androidResources) resDirectories else null,
         assetsDirectories = assetsDirectories + variantSourcesForModel(mixin?.assets),
         jniLibsDirectories = jniLibsDirectories + variantSourcesForModel(mixin?.jniLibs),
@@ -223,6 +225,7 @@ internal fun DefaultAndroidSourceSet.convert(
     resourcesDirectories = variantSourcesForModel(sources.resources),
     aidlDirectories = variantSourcesForModel(sources.aidl),
     renderscriptDirectories = variantSourcesForModel(sources.renderscript),
+    baselineProfileDirectories = variantSourcesForModel(sources.baselineProfiles),
     resDirectories = variantSourcesForModel(sources.res),
     assetsDirectories = variantSourcesForModel(sources.assets),
     jniLibsDirectories = variantSourcesForModel(sources.jniLibs),

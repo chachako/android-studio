@@ -287,10 +287,12 @@ package com.android.build.api.dsl {
   public interface AndroidSourceSet extends org.gradle.api.Named {
     method public void aidl(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public void assets(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void baselineProfiles(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getAidl();
     method @org.gradle.api.Incubating public String getAnnotationProcessorConfigurationName();
     method @org.gradle.api.Incubating public String getApiConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getAssets();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.AndroidSourceDirectorySet getBaselineProfiles();
     method @org.gradle.api.Incubating public String getCompileOnlyConfigurationName();
     method @org.gradle.api.Incubating public String getImplementationConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getJava();
@@ -320,6 +322,7 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract String annotationProcessorConfigurationName;
     property @org.gradle.api.Incubating public abstract String apiConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet assets;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AndroidSourceDirectorySet baselineProfiles;
     property @org.gradle.api.Incubating public abstract String compileOnlyConfigurationName;
     property @org.gradle.api.Incubating public abstract String implementationConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet java;
@@ -2494,6 +2497,7 @@ package com.android.build.api.variant {
   @org.gradle.api.Incubating public interface Sources {
     method public com.android.build.api.variant.SourceDirectories.Flat? getAidl();
     method public com.android.build.api.variant.SourceDirectories.Layered? getAssets();
+    method public com.android.build.api.variant.SourceDirectories.Flat? getBaselineProfiles();
     method public com.android.build.api.variant.SourceDirectories.Flat getByName(String name);
     method public com.android.build.api.variant.SourceDirectories.Flat? getJava();
     method public com.android.build.api.variant.SourceDirectories.Layered? getJniLibs();
@@ -2505,6 +2509,7 @@ package com.android.build.api.variant {
     method public com.android.build.api.variant.SourceDirectories.Layered? getShaders();
     property public abstract com.android.build.api.variant.SourceDirectories.Flat? aidl;
     property public abstract com.android.build.api.variant.SourceDirectories.Layered? assets;
+    property public abstract com.android.build.api.variant.SourceDirectories.Flat? baselineProfiles;
     property public abstract com.android.build.api.variant.SourceDirectories.Flat? java;
     property public abstract com.android.build.api.variant.SourceDirectories.Layered? jniLibs;
     property public abstract com.android.build.api.variant.SourceDirectories.Flat? kotlin;

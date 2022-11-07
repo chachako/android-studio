@@ -79,6 +79,7 @@ public class MigratedTest {
                 .setAidlDir("tests/aidl")
                 .setJniDir("tests/jni")
                 .setRenderscriptDir("tests/rs")
+                .setBaselineProfileDir("tests/baselineProfiles")
                 .setResDir("tests/res")
                 .setAssetsDir("tests/assets")
                 .setManifestFile("tests/AndroidManifest.xml")

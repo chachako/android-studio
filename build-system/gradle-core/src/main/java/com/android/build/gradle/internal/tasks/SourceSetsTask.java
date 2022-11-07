@@ -70,6 +70,10 @@ public class SourceSetsTask extends ProjectBasedReportTask {
                 renderDirectorySet("Assets", sourceSet.getAssets(), project);
                 renderDirectorySet("AIDL sources", sourceSet.getAidl(), project);
                 renderDirectorySet("RenderScript sources", sourceSet.getRenderscript(), project);
+                renderDirectorySet(
+                        "Baseline profile sources",
+                        (AndroidSourceDirectorySet) sourceSet.getBaselineProfiles(),
+                        project);
                 renderDirectorySet("JNI sources", sourceSet.getJni(), project);
                 renderDirectorySet("JNI libraries", sourceSet.getJniLibs(), project);
                 if (sourceSet instanceof DefaultAndroidSourceSet) {

@@ -44,6 +44,7 @@ public final class SourceProviderHelper {
     private String assetsDir;
     private String aidlDir;
     private String renderscriptDir;
+    private String baselineProfileDir;
     private String jniDir;
 
     public SourceProviderHelper(
@@ -64,6 +65,7 @@ public final class SourceProviderHelper {
         setAssetsDir("src/" + configName + "/assets");
         setAidlDir("src/" + configName + "/aidl");
         setRenderscriptDir("src/" + configName + "/rs");
+        setBaselineProfileDir("src/" + configName + "/baselineProfiles");
         setJniDir("src/" + configName + "/jni");
     }
 
@@ -112,6 +114,12 @@ public final class SourceProviderHelper {
     @NonNull
     public SourceProviderHelper setRenderscriptDir(String renderscriptDir) {
         this.renderscriptDir = renderscriptDir;
+        return this;
+    }
+
+    @NonNull
+    public SourceProviderHelper setBaselineProfileDir(String baselineProfileDir) {
+        this.baselineProfileDir = baselineProfileDir;
         return this;
     }
 

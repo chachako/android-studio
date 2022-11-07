@@ -66,6 +66,9 @@ public class SourceSetsTaskTest {
                         + "RenderScript sources: ["
                         + FileUtils.toSystemDependentPath("src/debug/rs")
                         + "]\n"
+                        + "Baseline profile sources: ["
+                        + FileUtils.toSystemDependentPath("src/debug/baselineProfiles")
+                        + "]\n"
                         + "JNI sources: ["
                         + FileUtils.toSystemDependentPath("src/debug/jni")
                         + "]\n"

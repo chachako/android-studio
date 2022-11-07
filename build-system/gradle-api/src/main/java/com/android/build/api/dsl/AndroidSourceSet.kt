@@ -70,6 +70,13 @@ interface AndroidSourceSet : Named {
     /** The Android RenderScript source directory for this source set. */
     fun renderscript(action: AndroidSourceDirectorySet.() -> Unit)
 
+    /** The Android Baseline Profiles source directory for this source set. */
+    @get:Incubating
+    val baselineProfiles: AndroidSourceDirectorySet
+    /** The Android Baseline Profiles source directory for this source set. */
+    @Incubating
+    fun baselineProfiles(action: AndroidSourceDirectorySet.() -> Unit)
+
     /**
      * The Android JNI source directory for this source set.
      * @deprecated This is unused and will be removed in AGP 8.0

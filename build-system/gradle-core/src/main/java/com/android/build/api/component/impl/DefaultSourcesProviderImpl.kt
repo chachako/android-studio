@@ -84,6 +84,9 @@ class DefaultSourcesProviderImpl(
             flattenSourceProviders(lateAdditionsDelegate) { sourceSet -> sourceSet.renderscript }
         } else null
 
+    override fun getBaselineProfiles(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry> =
+        flattenSourceProviders(lateAdditionsDelegate, AndroidSourceSet::baselineProfiles )
+
     override val artProfile: File
         get() = variantSources.artProfile
 
@@ -95,6 +98,7 @@ class DefaultSourcesProviderImpl(
 
     override val sourceProvidersNames: List<String>
         get() = variantSources.getSortedSourceProviders().map { it.name }
+
 
     private fun flattenSourceProviders(
         lateAdditionsDelegate: SourceDirectoriesImpl,
@@ -226,7 +230,6 @@ class DefaultSourcesProviderImpl(
                     )
                 }
             )
-
         }
     }
 }

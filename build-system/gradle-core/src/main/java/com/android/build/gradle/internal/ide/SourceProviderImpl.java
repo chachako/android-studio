@@ -51,8 +51,7 @@ final class SourceProviderImpl implements SourceProvider, Serializable {
     private final Collection<File> aidlDirs;
     @NonNull
     private final Collection<File> rsDirs;
-    @NonNull
-    private final Collection<File> resDirs;
+    @NonNull private final Collection<File> resDirs;
     @NonNull
     private final Collection<File> assetsDirs;
     @NonNull

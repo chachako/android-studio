@@ -60,6 +60,7 @@ open class DefaultAndroidSourceSet @Inject constructor(
     final override val res: AndroidSourceDirectorySet
     final override val aidl: AndroidSourceDirectorySet
     final override val renderscript: AndroidSourceDirectorySet
+    final override val baselineProfiles: com.android.build.api.dsl.AndroidSourceDirectorySet
     @Deprecated("Unused")
     final override val jni: AndroidSourceDirectorySet
     final override val jniLibs: AndroidSourceDirectorySet
@@ -109,6 +110,14 @@ open class DefaultAndroidSourceSet @Inject constructor(
             project,
             SourceArtifactType.RENDERSCRIPT
         )
+
+        baselineProfiles = DefaultAndroidSourceDirectorySet(
+            displayName,
+            "baselineProfiles",
+            project,
+            SourceArtifactType.BASELINE_PROFILES
+        )
+        baselineProfiles.filter.include("**/*.txt")
 
         jni = DefaultAndroidSourceDirectorySet(
             displayName, "jni", project, SourceArtifactType.JNI
@@ -283,6 +292,10 @@ open class DefaultAndroidSourceSet @Inject constructor(
         return this
     }
 
+    override fun baselineProfiles(action: com.android.build.api.dsl.AndroidSourceDirectorySet.() -> Unit) {
+        action.invoke(baselineProfiles)
+    }
+
     override fun setRoot(path: String): AndroidSourceSet {
         return initRoot(path)
     }
@@ -296,6 +309,7 @@ open class DefaultAndroidSourceSet @Inject constructor(
         manifest.srcFile("$path/${SdkConstants.FN_ANDROID_MANIFEST_XML}")
         aidl.setSrcDirs(listOf("$path/aidl"))
         renderscript.setSrcDirs(listOf("$path/rs"))
+        baselineProfiles.setSrcDirs(listOf("$path/baselineProfiles"))
         jni.setSrcDirs(listOf("$path/jni"))
         jniLibs.setSrcDirs(listOf("$path/jniLibs"))
         shaders.setSrcDirs(listOf("$path/shaders"))

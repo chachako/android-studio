@@ -72,6 +72,19 @@ class SourcesImpl(
                 variantSourceProvider?.kotlin as DefaultAndroidSourceDirectorySet?)
         }
 
+    override val baselineProfiles =
+        FlatSourceDirectoriesImpl(
+            SourceType.BASELINE_PROFILES.folder,
+            variantServices,
+            null
+        ).also { sourceDirectoriesImpl ->
+
+            defaultSourceProvider.getBaselineProfiles(sourceDirectoriesImpl).run {
+                sourceDirectoriesImpl.addSources(this)
+            }
+            updateSourceDirectories(sourceDirectoriesImpl, variantSourceProvider?.resources)
+        }
+
     override val res =
         ResSourceDirectoriesImpl(
             SourceType.RES.folder,
@@ -211,6 +224,9 @@ class SourcesImpl(
     override fun aidl(action: (FlatSourceDirectoriesImpl) -> Unit) { aidl?.let(action) }
     override fun renderscript(action: (FlatSourceDirectoriesImpl) -> Unit) {
         renderscript?.let(action)
+    }
+    override fun baselineProfiles(action: (FlatSourceDirectoriesImpl) -> Unit) {
+        action(baselineProfiles)
     }
     override fun res(action: (LayeredSourceDirectoriesImpl) -> Unit) { res?.let(action) }
     override fun assets(action: (LayeredSourceDirectoriesImpl) -> Unit) { action(assets) }

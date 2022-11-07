@@ -92,6 +92,11 @@ interface DefaultSourcesProvider {
      */
     fun getRenderscript(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry>?
 
+    /**
+     * the list of sources [DirectoryEntry] for baseline profiles
+     */
+    fun getBaselineProfiles(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry>
+
     val artProfile: File
 
     val mainManifestFile: File

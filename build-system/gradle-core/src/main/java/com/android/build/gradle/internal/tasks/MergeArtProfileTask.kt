@@ -36,20 +36,21 @@ import org.gradle.work.DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ART_PROFILE, secondaryTaskCategories = [TaskCategory.MERGING])
 abstract class MergeArtProfileTask: MergeFileTask() {
 
-    @get:[InputFiles PathSensitive(PathSensitivity.RELATIVE)]
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract override val inputFiles: ConfigurableFileCollection
 
     // Use InputFiles rather than InputFile to allow the file not to exist
-    @get:[InputFiles PathSensitive(PathSensitivity.RELATIVE)]
-    abstract val profileSource: RegularFileProperty
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val profileSources: ConfigurableFileCollection
 
-    @TaskAction
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(MergeFilesWorkAction::class.java) {
             it.initializeFromAndroidVariantTask(this)
             it.inputFiles.from(inputFiles)
-            if (profileSource.get().asFile.isFile) {
-                it.inputFiles.from(profileSource)
+            if (!profileSources.isEmpty) {
+                it.inputFiles.from(profileSources)
             }
             it.outputFile.set(outputFile)
         }
@@ -94,8 +95,14 @@ abstract class MergeArtProfileTask: MergeFileTask() {
                     )
             task.inputFiles.fromDisallowChanges(aarProfilesArtifactCollection.artifactFiles)
 
-            task.profileSource.fileProvider(creationConfig.sources.artProfile)
-            task.profileSource.disallowChanges()
+            // for backwards compat we need to keep reading the old location for baseline profile
+            val artProfile = creationConfig.sources.artProfile
+
+            creationConfig.sources.baselineProfiles {
+                task.profileSources.from(it.getAsFileTrees())
+            }
+            task.profileSources.from(artProfile)
+            task.profileSources.disallowChanges()
         }
     }
 }

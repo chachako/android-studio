@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-dc9c8ee53f5dfde101a6ffe98d63311a50993272ed3b68ff07c0342ac9d68ff2
+ae092a94b356960f53abd92a0db9f2e1398b68573721ff98641475eb04aa16b6
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -721,6 +721,7 @@ com.android.builder.model.v2.ide.ProjectType.values: com.android.builder.model.v
 com.android.builder.model.v2.ide.SourceProvider implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.SourceProvider.getAidlDirectories: java.util.Collection<java.io.File> ()
 com.android.builder.model.v2.ide.SourceProvider.getAssetsDirectories: java.util.Collection<java.io.File> ()
+com.android.builder.model.v2.ide.SourceProvider.getBaselineProfileDirectories: java.util.Collection<java.io.File> ()
 com.android.builder.model.v2.ide.SourceProvider.getCustomDirectories: java.util.Collection<com.android.builder.model.v2.CustomSourceDirectory> ()
 com.android.builder.model.v2.ide.SourceProvider.getJavaDirectories: java.util.Collection<java.io.File> ()
 com.android.builder.model.v2.ide.SourceProvider.getJniLibsDirectories: java.util.Collection<java.io.File> ()
