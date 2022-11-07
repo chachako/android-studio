@@ -26,6 +26,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
@@ -46,6 +47,7 @@ interface TaskCreationServices: BaseServices {
     fun fileProvider(provider: Provider<File>): Provider<RegularFile>
     fun files(vararg files: Any?): FileCollection
     fun directoryProperty(): DirectoryProperty
+    fun <T> listProperty(type: Class<T>): ListProperty<T>
     fun fileCollection(): ConfigurableFileCollection
     fun fileCollection(vararg files: Any): ConfigurableFileCollection
     fun initializeAapt2Input(aapt2Input: Aapt2Input)

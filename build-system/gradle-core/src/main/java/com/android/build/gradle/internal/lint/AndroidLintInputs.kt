@@ -979,7 +979,8 @@ abstract class VariantInputs {
                 .initialize(
                     creationConfig.sources,
                     lintMode,
-                    directoryPropertyCreator = { creationConfig.services.directoryProperty() }
+                    listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
+                    projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory }
                 )
         )
 
@@ -1006,7 +1007,8 @@ abstract class VariantInputs {
                     .initialize(
                         unitTestCreationConfig.sources,
                         lintMode,
-                        directoryPropertyCreator = { creationConfig.services.directoryProperty() },
+                        listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
+                        projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory },
                         unitTestOnly = true
                     )
             )
@@ -1018,7 +1020,8 @@ abstract class VariantInputs {
                     .initialize(
                         androidTestCreationConfig.sources,
                         lintMode,
-                        directoryPropertyCreator = { creationConfig.services.directoryProperty() },
+                        listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
+                        projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory },
                         instrumentationTestOnly = true
                     )
             )
@@ -1030,7 +1033,8 @@ abstract class VariantInputs {
                     .initialize(
                         testFixturesCreationConfig.sources,
                         lintMode,
-                        directoryPropertyCreator = { creationConfig.services.directoryProperty() }
+                        listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
+                        projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory }
                     )
             )
         }
@@ -1269,7 +1273,8 @@ abstract class SourceProviderInput {
     internal fun initialize(
         sources: InternalSources,
         lintMode: LintMode,
-        directoryPropertyCreator: () -> DirectoryProperty,
+        listPropertyCreator: () -> ListProperty<Directory>,
+        projectDir: Provider<Directory>,
         unitTestOnly: Boolean = false,
         instrumentationTestOnly: Boolean = false
     ): SourceProviderInput {
@@ -1282,8 +1287,8 @@ abstract class SourceProviderInput {
         fun FlatSourceDirectoriesImpl.getFilteredSourceProviders(): Provider<List<Directory>> {
             return getVariantSources().map { dirs ->
                 dirs.filter { dir -> !dir.isGenerated }.map { dir ->
-                    dir.asFiles(directoryPropertyCreator).get()
-                }
+                    dir.asFiles(projectDir).get()
+                }.flatten()
             }
         }
 
@@ -1293,8 +1298,8 @@ abstract class SourceProviderInput {
                     dirs.directoryEntries.filter { dir ->
                         !dir.isGenerated
                     }.map {
-                        it.asFiles(directoryPropertyCreator).get()
-                    }
+                        it.asFiles(projectDir).get()
+                    }.flatten()
                 }
             }
         }

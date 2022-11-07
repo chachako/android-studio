@@ -73,7 +73,7 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
     abstract val librarySourceSets: ConfigurableFileCollection
 
     @get:Input
-    abstract val allGeneratedRes: ListProperty<Collection<String>>
+    abstract val allGeneratedRes: ListProperty<Provider<List<String>>>
 
     @get:Input
     @get:Optional
@@ -90,7 +90,9 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
             mergeResourcesOutputDir.orNull,
             mergedNotCompiledDir.orNull
         )
-        val generatedSourceSets = allGeneratedRes.get().flatten()
+        val generatedSourceSets = allGeneratedRes.get().map {
+            it.get()
+        }.flatten()
 
         writeIdentifiedSourceSetsFile(
             resourceSourceSets = listConfigurationSourceSets(uncreatedSourceSets, generatedSourceSets),
@@ -195,16 +197,24 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
                     ).artifactFiles
                 )
             }
+
+            val generatedRes: Provider<List<Provider<List<String>>>>? =
+                creationConfig.sources.res?.getVariantSources()?.map { allRes ->
+                    allRes.map { directoryEntries ->
+                        directoryEntries.directoryEntries
+                            .filter { it.isGenerated }
+                            .map { directoryEntry -> directoryEntry.asFiles(
+                              task.project.provider { task.project.layout.projectDirectory })
+                                    .map { directories ->
+                                        directories.map { directory -> directory.asFile.absolutePath }
+                                    }
+                            }
+                    }.flatten()
+                }
+
             creationConfig.sources.res { resSources ->
                 task.allGeneratedRes.set(
-                    resSources.getVariantSources().map { allRes ->
-                        allRes.map { directoryEntries ->
-                            directoryEntries.directoryEntries
-                                .filter { it.isGenerated }
-                                .map { it.asFiles(task.project.objects::directoryProperty) }
-                                .map { it.get().asFile.absolutePath }
-                        }
-                    }
+                    generatedRes
                 )
                 task.localResources.set(
                     resSources.getLocalSourcesAsFileCollection()

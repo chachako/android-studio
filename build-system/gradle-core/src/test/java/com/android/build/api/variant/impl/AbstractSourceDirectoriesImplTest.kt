@@ -53,20 +53,21 @@ internal class AbstractSourceDirectoriesImplTest {
         Truth.assertThat(createTestTarget().name).isEqualTo("_for_test")
     }
 
-    @Test
-    fun testAddSrcDir() {
-        val testTarget = createTestTarget()
-        val addedSource = temporaryFolder.newFolder("somewhere/safe")
-        testTarget.addStaticSourceDirectory(
-            addedSource.absolutePath
-        )
+   @Test
+   fun testAddSrcDir() {
+       val testTarget = createTestTarget()
+       val addedSource = temporaryFolder.newFolder("somewhere/safe")
+       testTarget.addStaticSourceDirectory(
+           addedSource.absolutePath
+       )
 
-        Truth.assertThat(listOfSources.size).isEqualTo(1)
-        val directoryProperty = listOfSources.single().asFiles { project.objects.directoryProperty() }
-        Truth.assertThat(directoryProperty.get().asFile.absolutePath).isEqualTo(
-            addedSource.absolutePath
-        )
-    }
+       Truth.assertThat(listOfSources.size).isEqualTo(1)
+       val directoryProperty = listOfSources.single().asFiles(
+         project.provider { project.layout.projectDirectory })
+       Truth.assertThat(directoryProperty.get().single().asFile.absolutePath).isEqualTo(
+           addedSource.absolutePath
+       )
+   }
 
     @Test(expected = IllegalArgumentException::class)
     fun testAddIllegalSrcDir() {
@@ -86,24 +87,24 @@ internal class AbstractSourceDirectoriesImplTest {
         )
     }
 
-    @Test
-    fun testAddSrcDirFromTask() {
-        abstract class AddingTask: DefaultTask() {
-            @get:OutputFiles
-            abstract val output: DirectoryProperty
-        }
+   @Test
+   fun testAddSrcDirFromTask() {
+       abstract class AddingTask: DefaultTask() {
+           @get:OutputFiles
+           abstract val output: DirectoryProperty
+       }
 
-        val addedSource = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
-        val taskProvider = project.tasks.register("srcAddingTask", AddingTask::class.java)
+       val addedSource = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
+       val taskProvider = project.tasks.register("srcAddingTask", AddingTask::class.java)
 
-        val testTarget = createTestTarget()
-        testTarget.addGeneratedSourceDirectory(taskProvider, AddingTask::output)
-        Truth.assertThat(listOfSources.size).isEqualTo(1)
-        val directoryProperty = listOfSources.single().asFiles { project.objects.directoryProperty() }
-        Truth.assertThat(directoryProperty.get().asFile.absolutePath).isEqualTo(
-            addedSource.absolutePath
-        )
-    }
+       val testTarget = createTestTarget()
+       testTarget.addGeneratedSourceDirectory(taskProvider, AddingTask::output)
+       Truth.assertThat(listOfSources.size).isEqualTo(1)
+       val directoryProperty = listOfSources.single().asFiles(
+         project.provider { project.layout.projectDirectory }
+       )
+       Truth.assertThat(directoryProperty).isNotNull()
+   }
 
     @Test
     fun testFiltering() {
@@ -127,6 +128,7 @@ internal class AbstractSourceDirectoriesImplTest {
         val variantServices = Mockito.mock(VariantServices::class.java)
         val projectInfo = Mockito.mock(ProjectInfo::class.java)
         Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
+        Mockito.`when`(variantServices.fileCollection()).then { project.files() }
         Mockito.`when`(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
         Mockito.`when`(projectInfo.buildDirectory).thenReturn(project.layout.buildDirectory)
 

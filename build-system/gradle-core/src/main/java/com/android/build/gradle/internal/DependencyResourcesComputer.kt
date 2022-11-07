@@ -227,7 +227,9 @@ abstract class DependencyResourcesComputer {
                     .forEach {
                         extraGeneratedResFolders.from(
                             it.asFiles(
-                                creationConfig.services::directoryProperty
+                              creationConfig.services.provider {
+                                  creationConfig.services.projectInfo.projectDirectory
+                              }
                             )
                         )
                     }

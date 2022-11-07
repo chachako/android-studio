@@ -59,6 +59,7 @@ abstract class SourceDirectoriesImpl(
             TaskProviderBasedDirectoryEntryImpl(
                 "$_name-${taskProvider.name}",
                 mappedValue,
+                variantServices.fileCollection(),
                 isGenerated = true,
                 isUserAdded = true,
                 shouldBeAddedToIdeModel = true
