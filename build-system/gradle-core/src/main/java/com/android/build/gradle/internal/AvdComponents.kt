@@ -40,6 +40,7 @@ import org.gradle.api.services.BuildServiceParameters
 
 // TODO(b/233249957): find a way to compute the default based on resources.
 private const val DEFAULT_MAX_GMDS = 4
+private const val SECONDS_PER_MINUTE = 60L
 
 /**
  * Build Service for loading and creating Android Virtual Devices.
@@ -69,6 +70,11 @@ abstract class AvdComponentsBuildService @Inject constructor(
             it.sdkLoader(parameters.compileSdkVersion, parameters.buildToolsRevision)
         }
         val adbHelper = AdbHelper(versionedSdkLoader)
+        val snapshotTimeoutSecs = if (parameters.deviceSetupTimeoutMinutes.isPresent()) {
+            parameters.deviceSetupTimeoutMinutes.get() * SECONDS_PER_MINUTE
+        } else {
+            null
+        }
         AvdManager(
             parameters.avdLocation.get().asFile,
             versionedSdkLoader,
@@ -79,7 +85,7 @@ abstract class AvdComponentsBuildService @Inject constructor(
             locationsService,
             AvdSnapshotHandler(
                 parameters.showEmulatorKernelLogging.get(),
-                parameters.deviceSetupTimeoutMinutes.getOrNull(),
+                snapshotTimeoutSecs,
                 adbHelper
             ),
             ManagedVirtualDeviceLockManager(

@@ -46,7 +46,7 @@ private const val MINIMUM_MICRO_VERSION = 4
  */
 class AvdSnapshotHandler(
     private val showEmulatorKernelLogging: Boolean,
-    private val deviceBootAndSnapshotCheckTimeoutSec: Int?,
+    private val deviceBootAndSnapshotCheckTimeoutSec: Long?,
     private val adbHelper: AdbHelper,
     private val processFactory: (List<String>) -> ProcessBuilder = { ProcessBuilder(it) }) {
     /**
@@ -135,7 +135,7 @@ class AvdSnapshotHandler(
 
     private fun Process.waitUntilTimeout(logger: ILogger, onTimeout: () -> Unit) {
         val timeoutSec =
-            deviceBootAndSnapshotCheckTimeoutSec?.toLong() ?:
+            deviceBootAndSnapshotCheckTimeoutSec ?:
             DEFAULT_DEVICE_BOOT_AND_SNAPSHOT_CHECK_TIMEOUT_SEC
         if (timeoutSec > 0) {
             logger.verbose("Waiting for a process to complete (timeout $timeoutSec seconds)")
