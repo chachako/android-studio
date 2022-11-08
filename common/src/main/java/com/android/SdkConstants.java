@@ -1343,6 +1343,8 @@ public final class SdkConstants {
     public static final String ATTR_PADDING_LEFT = "paddingLeft";
     public static final String ATTR_PADDING_START = "paddingStart";
     public static final String ATTR_PADDING_END = "paddingEnd";
+    public static final String ATTR_PADDING_HORIZONTAL = "paddingHorizontal";
+    public static final String ATTR_PADDING_VERTICAL = "paddingVertical";
     public static final String ATTR_FOREGROUND = "foreground";
     public static final String ATTR_BACKGROUND = "background";
     public static final String ATTR_ORIENTATION = "orientation";
@@ -1483,8 +1485,8 @@ public final class SdkConstants {
     // android.view.ViewGroup
     public static final String ATTR_LAYOUT_MARGIN_HORIZONTAL = "layout_marginHorizontal";
     public static final String ATTR_LAYOUT_MARGIN_VERTICAL = "layout_marginVertical";
-    public static final String ATTR_PADDING_HORIZONTAL = "layout_paddingHorizontal";
-    public static final String ATTR_PADDING_VERTICAL = "layout_paddingVertical";
+    public static final String ATTR_LAYOUT_PADDING_HORIZONTAL = "layout_paddingHorizontal";
+    public static final String ATTR_LAYOUT_PADDING_VERTICAL = "layout_paddingVertical";
 
     // AutoCompleteTextView
     public static final String ATTR_DROP_DOWN_ANCHOR = "dropDownAnchor";
