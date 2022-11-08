@@ -15,7 +15,9 @@
  */
 package com.android.utils
 
+import com.android.utils.sleep.ThreadSleeper
 import com.android.utils.time.TimeSource
+import kotlin.Pair
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -39,8 +41,12 @@ inline fun <reified E: Throwable, T> executeWithRetries(maxRetries: Int, block: 
 /** Executes [block] at least once, retrying if it throws [E] and [duration] has not elapsed. */
 @OptIn(ExperimentalTime::class) // For Duration which is no longer experimental
 inline fun <reified E: Throwable> executeWithRetries(
-    duration: Duration, timeSource: TimeSource = TimeSource.Monotonic, block: () -> Unit) {
-    executeWithRetries<E, Unit>(duration, timeSource, block)
+    duration: Duration,
+    sleepBetweenRetries: Duration = Duration.ZERO,
+    timeSource: TimeSource = TimeSource.Monotonic,
+    threadSleeper: ThreadSleeper = ThreadSleeper.INSTANCE,
+    block: () -> Unit) {
+    executeWithRetries<E, Unit>(duration, sleepBetweenRetries, timeSource, threadSleeper, block)
 }
 
 /**
@@ -49,9 +55,20 @@ inline fun <reified E: Throwable> executeWithRetries(
  */
 @OptIn(ExperimentalTime::class) // For Duration which is no longer experimental
 inline fun <reified E: Throwable, T> executeWithRetries(
-    duration: Duration, timeSource: TimeSource = TimeSource.Monotonic, block: () -> T): T {
+    duration: Duration,
+    sleepBetweenRetries: Duration = Duration.ZERO,
+    timeSource: TimeSource = TimeSource.Monotonic,
+    threadSleeper: ThreadSleeper = ThreadSleeper.INSTANCE,
+    block: () -> T): T {
+    require(sleepBetweenRetries >= Duration.ZERO) { "Cannot specify negative sleep!" }
     val start = timeSource.markNow()
-    return executeWithRetries<E, T>({ start.elapsedNow() < duration }, block)
+    val condition = {
+        val retry = duration - start.elapsedNow() > sleepBetweenRetries
+        if (retry) threadSleeper.sleep(sleepBetweenRetries)
+        retry
+    }
+
+    return executeWithRetries<E, T>(condition, block)
 }
 
 /** Executes [block] at least once, retrying if it throws [E] and [retryCondition] returns true. */
@@ -70,7 +87,8 @@ inline fun <reified E: Throwable, T> executeWithRetries(
         try {
             return block()
         } catch (t: Throwable) {
-            if (!retryCondition() || t !is E) throw t
+            // Check exception type first so we don't sleep if that's rolled into the condition.
+            if (t !is E || !retryCondition()) throw t
         }
     }
 }

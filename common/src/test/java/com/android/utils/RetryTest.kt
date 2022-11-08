@@ -15,6 +15,7 @@
  */
 package com.android.utils
 
+import com.android.utils.sleep.TestThreadSleeper
 import com.android.utils.time.TestTimeSource
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -28,6 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 @RunWith(JUnit4::class)
 class RetryTest {
     private val testTimeSource = TestTimeSource()
+    private val testThreadSleeper = TestThreadSleeper()
 
     @Test
     fun runsAtLeastOnce() {
@@ -57,6 +59,27 @@ class RetryTest {
         timesRun = 0
         executeWithRetries<Throwable>({ false }) { ++timesRun }
         assertThat(timesRun).isEqualTo(1)
+    }
+
+    @Test
+    fun sleepDuration_notUsedIfDoesNotRetry() {
+        executeWithRetries<Throwable, Unit>(
+            duration = 100.seconds,
+            sleepBetweenRetries = 5.seconds,
+            timeSource = testTimeSource,
+            threadSleeper = testThreadSleeper,
+        ) { }
+        assertThat(testThreadSleeper.sleepDurations).isEmpty()
+
+        testThreadSleeper.reset()
+
+        executeWithRetries<Throwable>(
+            duration = 100.seconds,
+            sleepBetweenRetries = 5.seconds,
+            timeSource = testTimeSource,
+            threadSleeper = testThreadSleeper,
+        ) { }
+        assertThat(testThreadSleeper.sleepDurations).isEmpty()
     }
 
     @Test
@@ -92,7 +115,7 @@ class RetryTest {
         val msg = "No cloning!"
 
         var thrown = assertFailsWith<CloneNotSupportedException> {
-            executeWithRetries<CloneNotSupportedException>(duration, testTimeSource) {
+            executeWithRetries<CloneNotSupportedException>(duration, timeSource = testTimeSource) {
                 testTimeSource += 6.seconds
                 throw CloneNotSupportedException(msg)
             }
@@ -100,12 +123,51 @@ class RetryTest {
         assertThat(thrown).hasMessageThat().isEqualTo(msg)
 
         thrown = assertFailsWith<CloneNotSupportedException> {
-            executeWithRetries<CloneNotSupportedException, Nothing>(duration, testTimeSource) {
+            executeWithRetries<CloneNotSupportedException, Nothing>(duration, timeSource = testTimeSource) {
                 testTimeSource += 6.seconds
                 throw CloneNotSupportedException(msg)
             }
         }
         assertThat(thrown).hasMessageThat().isEqualTo(msg)
+    }
+
+    @Test
+    fun doesNotSleepIfNotEnoughTimeLeft() {
+        val duration = 30.seconds
+        val msg = "No cloning!"
+
+        assertFailsWith<CloneNotSupportedException> {
+            executeWithRetries<CloneNotSupportedException>(
+                duration = duration,
+                sleepBetweenRetries = 10.seconds,
+                timeSource = testTimeSource,
+                threadSleeper = testThreadSleeper,
+            ) {
+                testTimeSource += 6.seconds
+                throw CloneNotSupportedException(msg)
+            }
+        }
+
+        // After the 4th invocation we only have 6 seconds remaining which is not enough to
+        // sleep 10 seconds, so it shouldn't sleep again.
+        assertThat(testThreadSleeper.sleepDurations).containsExactly(10.seconds, 10.seconds, 10.seconds)
+
+        testThreadSleeper.reset()
+
+        assertFailsWith<CloneNotSupportedException> {
+            executeWithRetries<CloneNotSupportedException, Nothing>(
+                duration = duration,
+                sleepBetweenRetries = 10.seconds,
+                timeSource = testTimeSource,
+                threadSleeper = testThreadSleeper,
+            ) {
+                testTimeSource += 6.seconds
+                throw CloneNotSupportedException(msg)
+            }
+        }
+        // After the 4th invocation we only have 6 seconds remaining which is not enough to
+        // sleep 10 seconds, so it shouldn't sleep again.
+        assertThat(testThreadSleeper.sleepDurations).containsExactly(10.seconds, 10.seconds, 10.seconds)
     }
 
     @Test
@@ -163,7 +225,7 @@ class RetryTest {
         val duration = 30.seconds
         var startTime = testTimeSource.markNow()
 
-        executeWithRetries<IllegalArgumentException>(duration, testTimeSource) {
+        executeWithRetries<IllegalArgumentException>(duration, timeSource = testTimeSource) {
             testTimeSource += 6.seconds
             if (startTime.elapsedNow() < duration) throw IllegalArgumentException("Boom!")
         }
@@ -174,7 +236,7 @@ class RetryTest {
         val msg = "Woohoo!"
 
         val returned =
-            executeWithRetries<IllegalArgumentException, String>(duration, testTimeSource) {
+            executeWithRetries<IllegalArgumentException, String>(duration, timeSource = testTimeSource) {
                 testTimeSource += 6.seconds
                 if (startTime.elapsedNow() < duration) throw IllegalArgumentException("Boom!")
                 msg
@@ -182,6 +244,45 @@ class RetryTest {
 
         assertThat(startTime.elapsedNow()).isAtLeast(duration)
         assertThat(returned).isEqualTo(msg)
+    }
+
+    @Test
+    fun sleepsBetweenRetries() {
+        val duration = 30.seconds
+        var startTime = testTimeSource.markNow()
+
+        executeWithRetries<IllegalArgumentException>(
+            duration = duration,
+            sleepBetweenRetries = 2.seconds,
+            timeSource = testTimeSource,
+            threadSleeper = testThreadSleeper,
+        ) {
+            testTimeSource += 6.seconds
+            if (startTime.elapsedNow() < duration) throw IllegalArgumentException("Boom!")
+        }
+
+        // Should not sleep the last time, so even though the block executes 5 times, we should
+        // only sleep 4 times.
+        assertThat(testThreadSleeper.sleepDurations).containsExactly(2.seconds, 2.seconds, 2.seconds, 2.seconds)
+
+        testThreadSleeper.reset()
+        startTime = testTimeSource.markNow()
+
+        val returned =
+            executeWithRetries<IllegalArgumentException, Unit>(
+                duration = duration,
+                sleepBetweenRetries = 2.seconds,
+                timeSource = testTimeSource,
+                threadSleeper = testThreadSleeper,
+            ) {
+                testTimeSource += 6.seconds
+                if (startTime.elapsedNow() < duration) throw IllegalArgumentException("Boom!")
+            }
+
+        // Should not sleep the last time, so even though the block executes 5 times, we should
+        // only sleep 4 times.
+        assertThat(testThreadSleeper.sleepDurations).containsExactly(2.seconds, 2.seconds, 2.seconds, 2.seconds)
+
     }
 
     @Test
@@ -241,7 +342,7 @@ class RetryTest {
         val msg = "kaboom!"
         var timesRun = 0
         var thrown = assertFailsWith<IllegalArgumentException> {
-            executeWithRetries<IllegalStateException>(duration, testTimeSource) {
+            executeWithRetries<IllegalStateException>(duration, timeSource = testTimeSource) {
                 ++timesRun
                 throw IllegalArgumentException(msg)
             }
@@ -252,7 +353,7 @@ class RetryTest {
 
         timesRun = 0
         thrown = assertFailsWith<IllegalArgumentException> {
-            executeWithRetries<IllegalStateException, Nothing>(duration, testTimeSource) {
+            executeWithRetries<IllegalStateException, Nothing>(duration, timeSource = testTimeSource) {
                 ++timesRun
                 throw IllegalArgumentException(msg)
             }
