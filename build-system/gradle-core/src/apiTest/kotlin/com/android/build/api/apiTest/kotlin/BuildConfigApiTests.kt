@@ -48,6 +48,9 @@ class BuildConfigApiTests: VariantApiBaseTest(
             }
             android {
                 ${testingElements.addCommonAndroidBuildLogic()}
+                buildFeatures {
+                  buildConfig = true
+                }
             }
 
             androidComponents {
@@ -143,6 +146,9 @@ The added field is used in the MainActivity.kt file.
 
             android {
                 ${testingElements.addCommonAndroidBuildLogic()}
+                buildFeatures {
+                  buildConfig = true
+                }
             }
             androidComponents {
                 onVariants {

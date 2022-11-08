@@ -42,6 +42,7 @@ class AddCustomSourceTest: VariantApiBaseTest(TestType.Script) {
                 }
 
                 android {
+                    namespace = "com.example.customSource"
                     compileSdkVersion(29)
                     defaultConfig {
                         minSdkVersion(21)
@@ -130,6 +131,7 @@ To register the custom sources, you just need to use
                 }
 
                 android {
+                    namespace = "com.example.customSource"
                     compileSdkVersion(29)
                     defaultConfig {
                         minSdkVersion(21)
@@ -256,6 +258,7 @@ where source files will be generated and added to the compilation task.
                 }
 
                 android {
+                    namespace = "com.example.customSource"
                     compileSdkVersion(29)
                     defaultConfig {
                         minSdkVersion(21)
@@ -358,6 +361,7 @@ where source files will be generated and added to the compilation task.
                     }
 
                     android {
+                        namespace = "com.example.customSource"
                         compileSdkVersion(29)
                         defaultConfig {
                             minSdkVersion(21)
