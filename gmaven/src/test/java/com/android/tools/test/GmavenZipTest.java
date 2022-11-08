@@ -526,7 +526,7 @@ public class GmavenZipTest {
     }
 
     private static Path getRepo() throws IOException {
-        return FileSystems.newFileSystem(TestUtils.resolveWorkspacePath(GMAVEN_ZIP), null)
+        return FileSystems.newFileSystem(TestUtils.resolveWorkspacePath(GMAVEN_ZIP), (ClassLoader)null)
                 .getPath("/");
     }
 

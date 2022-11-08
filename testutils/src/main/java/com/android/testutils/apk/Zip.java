@@ -70,7 +70,7 @@ public class Zip implements AutoCloseable {
                     "Cannot create zip from non default fs, use getEntryAsZip() instead");
         } else {
             this.exists = true;
-            this.zip = FileSystems.newFileSystem(file, null);
+            this.zip = FileSystems.newFileSystem(file, (ClassLoader)null);
         }
         this.innerZips = new HashMap<>();
         this.innerZipFiles = new HashMap<>();
