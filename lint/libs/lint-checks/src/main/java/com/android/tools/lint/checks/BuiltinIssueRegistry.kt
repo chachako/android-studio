@@ -350,6 +350,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           PropertyFileDetector.ESCAPE,
           PropertyFileDetector.HTTP,
           PropertyFileDetector.PROXY_PASSWORD,
+          ProviderPermissionDetector.PROVIDER_READ_PERMISSION_ONLY,
           PxUsageDetector.DP_ISSUE,
           PxUsageDetector.IN_MM_ISSUE,
           PxUsageDetector.PX_ISSUE,
