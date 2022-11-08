@@ -126,7 +126,7 @@ public class LiveUpdateDeployer {
      * agreed "best effort" nature of LL updates.
      */
     public static class UpdateLiveEditError {
-        private static final String APP_RESTART_STR = "\nApplication must be restarted.";
+        private static final String APP_RESTART_STR = "\nPlease Re-Run your application.";
         private static final String ADDED_CLASS_STR =
                 "Unsupported addition of new class '%s' in file '%s'.";
         private static final String ADDED_METHOD_STR =
