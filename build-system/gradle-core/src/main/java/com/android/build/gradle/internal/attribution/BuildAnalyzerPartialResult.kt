@@ -25,7 +25,7 @@ import java.io.File
 import java.util.UUID
 
 /**
- * Contains the partial results of a [BuildAttributionService]. Each service should combine all
+ * Contains the partial results of a [BuildAnalyzerService]. Each service should combine all
  * partial results into a single result which is used to generate the build analyzer report file.
  */
 class BuildAnalyzerPartialResult(issues: Iterable<TaskCategoryIssue>) {

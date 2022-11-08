@@ -236,6 +236,9 @@ class GlobalTaskCreationConfigImpl(
 
     override val buildAnalyzerIssueReporter: BuildAnalyzerIssueReporter? =
         services.projectOptions.get(StringOption.IDE_ATTRIBUTION_FILE_LOCATION)?.let {
-            BuildAnalyzerIssueReporter(services.projectOptions)
+            BuildAnalyzerIssueReporter(
+                services.projectOptions,
+                services.buildServiceRegistry
+            )
         }
 }

@@ -16,13 +16,22 @@
 
 package com.android.build.gradle.internal.attribution
 
+import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
 import com.android.buildanalyzer.common.TaskCategoryIssue
+import org.gradle.api.services.BuildServiceParameters
+import org.gradle.api.services.BuildServiceRegistry
 
 class BuildAnalyzerIssueReporter(
-    projectOptions: ProjectOptions
+    projectOptions: ProjectOptions,
+    buildServiceRegistry: BuildServiceRegistry
 ) {
+
+    private val buildAnalyzerConfiguratorService =
+        getBuildService<BuildAnalyzerConfiguratorService, BuildServiceParameters.None>(
+            buildServiceRegistry
+        ).get()
 
     companion object {
         private val booleanOptionBasedIssues = mapOf(
@@ -32,11 +41,13 @@ class BuildAnalyzerIssueReporter(
         )
     }
 
-    val issues = mutableListOf<TaskCategoryIssue>().also {
-        it.addAll(
-            booleanOptionBasedIssues.mapNotNull { (issue, booleanOption) ->
-                issue.takeIf { !projectOptions.get(booleanOption) }
-            }
-        )
+    init {
+        booleanOptionBasedIssues.mapNotNull { (issue, booleanOption) ->
+            issue.takeIf { !projectOptions.get(booleanOption) }
+        }.forEach(::reportIssue)
+    }
+
+    fun reportIssue(issue: TaskCategoryIssue) {
+        buildAnalyzerConfiguratorService.reportBuildAnalyzerIssue(issue)
     }
 }

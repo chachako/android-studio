@@ -16,22 +16,14 @@
 
 package com.android.build.gradle.internal.attribution
 
-import com.android.Version
-import com.android.build.gradle.internal.isConfigurationCache
 import com.android.build.gradle.internal.services.ServiceRegistrationAction
-import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.utils.getBuildSrcPlugins
-import com.android.build.gradle.internal.utils.getBuildscriptDependencies
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.BuildInfo
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.JavaInfo
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskInfo
-import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskCategoryInfo
-import com.android.buildanalyzer.common.TaskCategory
 import com.android.buildanalyzer.common.TaskCategoryIssue
 import com.android.builder.utils.SynchronizedFile
-import com.android.utils.HelpfulEnumConverter
-import com.android.tools.analytics.HostData
 import org.gradle.api.Project
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -54,82 +46,11 @@ import java.util.Collections
  * DO NOT instantiate eagerly, this build service relies on
  * [org.gradle.api.execution.TaskExecutionGraph.whenReady] to configure itself.
  */
-abstract class BuildAttributionService : BuildService<BuildAttributionService.Parameters>,
+abstract class BuildAnalyzerService : BuildService<BuildAnalyzerService.Parameters>,
         OperationCompletionListener,
         AutoCloseable {
 
     companion object {
-        private var initialized = false
-
-        private fun init(project: Project,
-                        attributionFileLocation: String,
-                        parameters: Parameters) {
-            if (initialized) {
-                return
-            }
-
-            initialized = true
-            val taskCategoryConverter = HelpfulEnumConverter(TaskCategory::class.java)
-            project.gradle.taskGraph.whenReady { taskGraph ->
-                val outputFileToTasksMap = mutableMapOf<String, MutableList<String>>()
-                val taskNameToTaskInfoMap = mutableMapOf<String, TaskInfo>()
-                taskGraph.allTasks.forEach { task ->
-
-                    task.outputs.files.forEach { outputFile ->
-                        outputFileToTasksMap.computeIfAbsent(outputFile.absolutePath) {
-                            ArrayList()
-                        }.add(task.path)
-                    }
-
-                    val taskCategoryInfo =
-                        if (task::class.java.isAnnotationPresent(BuildAnalyzer::class.java)) {
-                            val annotation =
-                                task::class.java.getAnnotation(BuildAnalyzer::class.java)
-                            val primaryTaskCategory =
-                                taskCategoryConverter.convert(annotation.primaryTaskCategory.toString())!!
-                            val secondaryTaskCategories =
-                                annotation.secondaryTaskCategories.map {
-                                    taskCategoryConverter.convert(
-                                        it.toString()
-                                    )!!
-                                }
-                            TaskCategoryInfo(
-                                primaryTaskCategory = primaryTaskCategory,
-                                secondaryTaskCategories = secondaryTaskCategories
-                            )
-                        } else TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN)
-
-                    taskNameToTaskInfoMap[task.name] = TaskInfo(
-                        className = getTaskClassName(task.javaClass.name),
-                        taskCategoryInfo = taskCategoryInfo
-                    )
-                }
-
-                val buildscriptDependenciesInfo = getBuildscriptDependencies(project.rootProject)
-                    .map { "${it.group}:${it.module}:${it.version}" }
-
-                parameters.attributionFileLocation.set(attributionFileLocation)
-                parameters.tasksSharingOutputs.set(
-                    outputFileToTasksMap.filter { it.value.size > 1 }
-                )
-                parameters.javaInfo.set(
-                    JavaInfo(
-                        version = System.getProperty("java.version") ?: "",
-                        vendor = System.getProperty("java.vendor") ?: "",
-                        home = System.getProperty("java.home") ?: "",
-                        vmArguments = HostData.runtimeBean?.inputArguments ?: emptyList()
-                    )
-                )
-                parameters.buildscriptDependenciesInfo.set(buildscriptDependenciesInfo)
-                parameters.buildInfo.set(
-                    BuildInfo(
-                        agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION,
-                        configurationCacheIsOn = project.gradle.startParameter.isConfigurationCache
-                    )
-                )
-                parameters.taskNameToTaskInfoMap.set(taskNameToTaskInfoMap)
-            }
-        }
 
         private fun saveAttributionData(
             outputDir: File,
@@ -156,26 +77,19 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
             }
         }
 
-        private fun getTaskClassName(className: String): String {
-            if (className.endsWith("_Decorated")) {
-                return className.substring(0, className.length - "_Decorated".length)
-            }
-            return className
-        }
+
     }
 
     private val initialGarbageCollectionData: Map<String, Long> =
         ManagementFactory.getGarbageCollectorMXBeans().associate { it.name to it.collectionTime }
 
-    private val taskCategoryIssues = Collections.synchronizedSet(mutableSetOf<TaskCategoryIssue>())
+    private val executionTimeTaskCategoryIssues = Collections.synchronizedSet(mutableSetOf<TaskCategoryIssue>())
 
     fun reportBuildAnalyzerIssue(issue: TaskCategoryIssue) {
-        taskCategoryIssues.add(issue)
+        executionTimeTaskCategoryIssues.add(issue)
     }
 
     override fun close() {
-        initialized = false
-
         if (!parameters.attributionFileLocation.isPresent) {
             // There were no tasks in this build, so avoid recording info
             return
@@ -192,6 +106,8 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         saveAttributionData(
             File(parameters.attributionFileLocation.get()),
         ) {
+            val taskCategoryIssues =
+                executionTimeTaskCategoryIssues + parameters.taskCategoryIssues.get()
             val partialResults = BuildAnalyzerPartialResult(taskCategoryIssues)
 
             val partialResultsOutputDir = AndroidGradlePluginAttributionData.getPartialResultsDir(
@@ -238,23 +154,30 @@ abstract class BuildAttributionService : BuildService<BuildAttributionService.Pa
         val buildInfo: Property<BuildInfo>
 
         val taskNameToTaskInfoMap: MapProperty<String, TaskInfo>
+
+        val taskCategoryIssues: SetProperty<TaskCategoryIssue>
     }
 
     @Suppress("UnstableApiUsage")
     class RegistrationAction(
         project: Project,
         private val attributionFileLocation: String,
-        private val listenersRegistry: BuildEventsListenerRegistry
-    ) : ServiceRegistrationAction<BuildAttributionService, Parameters>(
+        private val listenersRegistry: BuildEventsListenerRegistry,
+        private val buildAnalyzerConfiguratorService: BuildAnalyzerConfiguratorService
+    ) : ServiceRegistrationAction<BuildAnalyzerService, Parameters>(
         project,
-        BuildAttributionService::class.java
+        BuildAnalyzerService::class.java
     ) {
 
         override fun configure(parameters: Parameters) {
-            init(project, attributionFileLocation, parameters)
+            buildAnalyzerConfiguratorService.initBuildAnalyzerService(
+                project,
+                attributionFileLocation,
+                parameters
+            )
         }
 
-        override fun execute(): Provider<BuildAttributionService> {
+        override fun execute(): Provider<BuildAnalyzerService> {
             return super.execute().also {
                 listenersRegistry.onTaskCompletion(it)
             }
