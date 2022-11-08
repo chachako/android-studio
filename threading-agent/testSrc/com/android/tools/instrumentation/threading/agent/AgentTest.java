@@ -320,10 +320,11 @@ public class AgentTest {
 
         ArrayList<Class<?>> transformedClasses =
                 loadAndTransformMultiple(
+                        SampleClasses.class,
                         SampleClasses.AnnotatedClassWithInnerClass.class,
                         SampleClasses.AnnotatedClassWithInnerClass.InnerClass.class);
-        Class<?> transformedParentClass = transformedClasses.get(0);
-        Class<?> transformedChildClass = transformedClasses.get(1);
+        Class<?> transformedParentClass = transformedClasses.get(1);
+        Class<?> transformedChildClass = transformedClasses.get(2);
         Object parentClassInstance = transformedParentClass.getDeclaredConstructor().newInstance();
         // Reset mock after AnnotatedClassWithInnerClass's constructor has called it
         reset(mockThreadingCheckerHook);
@@ -346,10 +347,11 @@ public class AgentTest {
 
         ArrayList<Class<?>> transformedClasses =
                 loadAndTransformMultiple(
+                        SampleClasses.class,
                         SampleClasses.AnnotatedClassWithInnerClass.class,
                         SampleClasses.AnnotatedClassWithInnerClass.InnerClass.class);
-        Class<?> transformedParentClass = transformedClasses.get(0);
-        Class<?> transformedChildClass = transformedClasses.get(1);
+        Class<?> transformedParentClass = transformedClasses.get(1);
+        Class<?> transformedChildClass = transformedClasses.get(2);
         Object parentClassInstance = transformedParentClass.getDeclaredConstructor().newInstance();
         // Reset mock after AnnotatedClassWithInnerClass's constructor has called it
         reset(mockThreadingCheckerHook);
