@@ -2594,6 +2594,7 @@ com/android/tools/sdk-common
   com/android/ide/common/build/filebasedproperties/variant/
   com/android/ide/common/caching/
   com/android/ide/common/fonts/
+  com/android/ide/common/gradle/
   com/android/ide/common/internal/
   com/android/ide/common/process/
   com/android/ide/common/rendering/
