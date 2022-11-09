@@ -108,7 +108,6 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
@@ -496,15 +495,10 @@ abstract class LintOptionsInput {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val lintConfig: RegularFileProperty
-    /** The baseline file is an input for lint reporting tasks */
     @get:Optional
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
-    abstract val inputBaselineFile: RegularFileProperty
-    /** The baseline file is an output for updateLintBaseline task */
-    @get:Optional
-    @get:OutputFile
-    abstract val outputBaselineFile: RegularFileProperty
+    abstract val baseline: RegularFileProperty
     @get:Input
     abstract val severityOverrides: MapProperty<String, LintModelSeverity>
 
@@ -526,15 +520,11 @@ abstract class LintOptionsInput {
         checkDependencies.setDisallowChanges(lintOptions.checkDependencies)
         lintOptions.lintConfig?.let { lintConfig.set(it) }
         lintConfig.disallowChanges()
-        // The baseline file does not affect analysis, is an output for the updateLintBaseline task,
-        // and otherwise is an input.
-        when (lintMode) {
-            LintMode.ANALYSIS -> {}
-            LintMode.UPDATE_BASELINE -> lintOptions.baseline?.let { outputBaselineFile.set(it) }
-            else -> lintOptions.baseline?.let { inputBaselineFile.set(it) }
+        // The baseline file does not affect analysis, but otherwise it is an input.
+        if (lintMode != LintMode.ANALYSIS) {
+            lintOptions.baseline?.let { baseline.set(it) }
         }
-        inputBaselineFile.disallowChanges()
-        outputBaselineFile.disallowChanges()
+        baseline.disallowChanges()
         severityOverrides.setDisallowChanges((lintOptions as LintImpl).severityOverridesMap)
     }
 
@@ -568,7 +558,7 @@ abstract class LintOptionsInput {
             sarifOutput=null,
             checkReleaseBuilds=true, // Handled in LintTaskManager & LintPlugin
             checkDependencies=checkDependencies.get(),
-            baselineFile = inputBaselineFile.orNull?.asFile ?: outputBaselineFile.orNull?.asFile,
+            baselineFile = baseline.orNull?.asFile,
             severityOverrides=severityOverrides.get(),
         )
     }

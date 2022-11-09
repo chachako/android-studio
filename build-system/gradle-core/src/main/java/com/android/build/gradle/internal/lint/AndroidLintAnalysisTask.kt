@@ -130,7 +130,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             fatalOnly = fatalOnly.get(),
             await = false,
             lintMode = LintMode.ANALYSIS,
-            hasBaseline = projectInputs.lintOptions.inputBaselineFile.orNull != null
+            hasBaseline = projectInputs.lintOptions.baseline.orNull != null
         )
     }
 

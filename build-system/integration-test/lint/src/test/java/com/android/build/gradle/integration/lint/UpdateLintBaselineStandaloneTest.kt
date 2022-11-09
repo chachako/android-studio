@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.truth.GradleTaskSubject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
+import com.android.Version
 import com.android.testutils.truth.PathSubject
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -36,13 +37,16 @@ class UpdateLintBaselineStandaloneTest {
 
     @Test
     fun checkUpdateLintBaseline() {
-        // This test runs updateLintBaseline in 6 scenarios:
+        // This test runs updateLintBaseline in 7 scenarios:
         //   (1)  when there is no existing baseline,
-        //   (2)  when the task is UP-TO-DATE,
-        //   (3)  when there is already a correct existing baseline,
-        //   (4)  when there is already an incorrect existing baseline,
-        //   (5)  when a user runs updateLintBase and lint at the same time.
-        //   (6)  when there is no baseline file specified.
+        //   (2)  when there is already a correct existing baseline, and there are no changes since
+        //        the last run,
+        //   (3)  when there is already a correct existing baseline, and there was a clean since the
+        //        last run,
+        //   (4)  when there is already a correct existing baseline with old lint/AGP versions,
+        //   (5)  when there is already an incorrect existing baseline,
+        //   (6)  when a user runs updateLintBase and lint at the same time.
+        //   (7)  when there is no baseline file specified.
 
         TestFileUtils.appendToFile(
             project.buildFile,
@@ -63,14 +67,17 @@ class UpdateLintBaselineStandaloneTest {
 
         val baselineFileContents = baselineFile.readBytes()
 
-        // Then test the case when the task is UP-TO-DATE.
+        // Then test the case when there is already a correct existing baseline, and there are no
+        // changes since the last run. updateLintBaseline should still do work because it is never
+        // UP-TO-DATE.
         val result2 = project.executor().run("updateLintBaseline")
         GradleTaskSubject.assertThat(result2.getTask(":lintAnalyze")).wasUpToDate()
-        GradleTaskSubject.assertThat(result2.getTask(":updateLintBaseline")).wasUpToDate()
+        GradleTaskSubject.assertThat(result2.getTask(":updateLintBaseline")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
 
-        // Then test the case when there is already a correct existing baseline.
+        // Then test the case when there is already a correct existing baseline, and there was a
+        // clean since the last run.
         project.executor().run("clean")
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
@@ -80,20 +87,31 @@ class UpdateLintBaselineStandaloneTest {
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
 
-        // Then test the case when there is already an incorrect existing baseline.
-        baselineFile.writeText("invalid")
-        assertThat(baselineFile.readBytes()).isNotEqualTo(baselineFileContents)
+        // Then test the case when there is already a correct existing baseline from a previous
+        // AGP/lint version. In this case, the new baseline file should not change (b/248338457).
+        TestFileUtils.searchAndReplace(baselineFile, Version.ANDROID_GRADLE_PLUGIN_VERSION, "7.3.0")
+        val previousVersionsBaselineFileContents = baselineFile.readBytes()
+        assertThat(previousVersionsBaselineFileContents).isNotEqualTo(baselineFileContents)
         val result4 = project.executor().run("updateLintBaseline")
         GradleTaskSubject.assertThat(result4.getTask(":lintAnalyze")).wasUpToDate()
         GradleTaskSubject.assertThat(result4.getTask(":updateLintBaseline")).didWork()
         PathSubject.assertThat(baselineFile).exists()
+        assertThat(baselineFile.readBytes()).isEqualTo(previousVersionsBaselineFileContents)
+
+        // Then test the case when there is already an incorrect existing baseline.
+        baselineFile.writeText("invalid")
+        assertThat(baselineFile.readBytes()).isNotEqualTo(baselineFileContents)
+        val result5 = project.executor().run("updateLintBaseline")
+        GradleTaskSubject.assertThat(result5.getTask(":lintAnalyze")).wasUpToDate()
+        GradleTaskSubject.assertThat(result5.getTask(":updateLintBaseline")).didWork()
+        PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
 
         // Then test the case when a user runs updateLintBaseline and lint at the same time.
-        val result5 = project.executor().run("updateLintBaseline", "lint")
-        ScannerSubject.assertThat(result5.stdout).doesNotContain("Gradle detected a problem")
-        GradleTaskSubject.assertThat(result5.getTask(":lintAnalyze")).wasUpToDate()
-        GradleTaskSubject.assertThat(result5.getTask(":updateLintBaseline")).wasUpToDate()
+        val result6 = project.executor().run("updateLintBaseline", "lint")
+        ScannerSubject.assertThat(result6.stdout).doesNotContain("Gradle detected a problem")
+        GradleTaskSubject.assertThat(result6.getTask(":lintAnalyze")).wasUpToDate()
+        GradleTaskSubject.assertThat(result6.getTask(":updateLintBaseline")).didWork()
         PathSubject.assertThat(baselineFile).exists()
         assertThat(baselineFile.readBytes()).isEqualTo(baselineFileContents)
 
@@ -104,11 +122,11 @@ class UpdateLintBaselineStandaloneTest {
             "baseline = file('lint-baseline.xml')",
             ""
         )
-        val result6 = project.executor().run(":updateLintBaseline")
-        GradleTaskSubject.assertThat(result6.getTask(":lintAnalyze")).wasUpToDate()
-        GradleTaskSubject.assertThat(result6.getTask(":updateLintBaseline")).didWork()
+        val result7 = project.executor().run(":updateLintBaseline")
+        GradleTaskSubject.assertThat(result7.getTask(":lintAnalyze")).wasUpToDate()
+        GradleTaskSubject.assertThat(result7.getTask(":updateLintBaseline")).didWork()
         PathSubject.assertThat(baselineFile).doesNotExist()
-        ScannerSubject.assertThat(result6.stdout)
+        ScannerSubject.assertThat(result7.stdout)
             .contains(
                 """
                 No baseline file is specified, so no baseline file will be created.
