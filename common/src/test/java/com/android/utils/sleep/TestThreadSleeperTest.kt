@@ -86,4 +86,22 @@ class TestThreadSleeperTest {
         assertThat(testThreadSleeper.totalMillisecondsSlept).isEqualTo(0L)
         assertThat(testThreadSleeper.totalTimeSlept).isEqualTo(0.nanoseconds)
     }
+
+    @Test
+    fun nanosecondsInBounds() {
+        // Thread.sleep only accepts nanoseconds in [0,999_999] so make sure we don't inadvertently
+        // call it with illegal arguments.
+        testThreadSleeper.sleep(200.milliseconds)
+        testThreadSleeper.sleep(1_999_999.nanoseconds)
+        testThreadSleeper.sleep(2_000_000.nanoseconds)
+        testThreadSleeper.sleep(2_000_001.nanoseconds)
+
+        assertThat(testThreadSleeper.sleepArguments).containsExactly(
+            200L to 0,
+            1L to 999_999,
+            2L to 0,
+            2L to 1,
+        ).inOrder()
+    }
+
 }

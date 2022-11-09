@@ -53,5 +53,8 @@ sealed class ThreadSleeper {
 }
 
 @OptIn(ExperimentalTime::class)  // For Duration which is no longer experimental
-private fun Duration.toMillisAndNanos(): Pair<Long, Int> = inWholeMilliseconds to toComponents {_, n -> n }
+private fun Duration.toMillisAndNanos(): Pair<Long, Int> =
+    // toComponents returns SECONDS and nanoseconds, so we need to use modulus to ignore
+    // the portion of the nanoseconds value that is >= 1 millisecond.
+    inWholeMilliseconds to toComponents {_, n -> n % 1_000_000 }
 
