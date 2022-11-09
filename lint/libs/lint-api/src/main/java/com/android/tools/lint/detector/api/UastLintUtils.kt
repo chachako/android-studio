@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
+import org.jetbrains.kotlin.psi.psiUtil.parameterIndex
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBlockExpression
@@ -71,6 +72,7 @@ import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.internal.acceptList
+import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.visitor.UastVisitor
@@ -179,6 +181,34 @@ class UastLintUtils {
 
             return if (lastAssignment is UExpression) lastAssignment
             else null
+        }
+
+        /**
+         * Finds the first argument of a method that matches the given parameter type and name.
+         * @param node      the call expression.
+         * @param method    the method this call expression resolves to. It is expected the call expression and the method match.
+         *                  Otherwise, the result will be wrong.
+         * @param type:     the type of the parameter to be found.
+         * @param name:     the parameter name to be found.
+         * @return The expression representing the argument used in the call expression for the specific parameter.
+         */
+        @JvmStatic
+        fun findArgument(
+            node: UCallExpression,
+            method: PsiMethod,
+            type: String,
+            name: String
+        ): UExpression? {
+            val psiParameter = method.parameterList.parameters.firstOrNull {
+                it.type.canonicalText == type && it.name == name
+            } ?: return null
+            val argument = node.getArgumentForParameter(psiParameter.parameterIndex())
+            return argument?.skipParenthesizedExprDown()
+        }
+
+        @JvmStatic
+        fun findArgument(node: UCallExpression, type: String, name: String): UExpression? {
+            return findArgument(node, node.resolve() ?: return null, type, name)
         }
 
         @JvmStatic
