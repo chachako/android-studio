@@ -141,7 +141,7 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
             taskProvider,
             from,
             currentProvider,
-            artifactContainer.get(),
+            into,
             builtArtifactsReference
         )
 
@@ -202,9 +202,8 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
 
         val builtArtifactsReference = AtomicReference<BuiltArtifactsImpl>()
         val inputProvider = artifacts.get(sourceType)
-        val targetProvider = artifacts.get(targetType)
 
-        initializeInput(taskProvider, inputLocation, inputProvider, targetProvider, builtArtifactsReference)
+        initializeInput(taskProvider, inputLocation, inputProvider, outputLocation, builtArtifactsReference)
 
         return ArtifactTransformationRequestImpl(
             builtArtifactsReference,
@@ -238,13 +237,13 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
             taskProvider: TaskProvider<T>,
             inputLocation: (T) -> FileSystemLocationProperty<Directory>,
             inputProvider: Provider<Directory>,
-            targetProvider: Provider<Directory>,
+            buildMetadataFileLocation: (T) -> FileSystemLocationProperty<Directory>,
             builtArtifactsReference: AtomicReference<BuiltArtifactsImpl>
         ) {
             taskProvider.configure { task: T ->
                 inputLocation(task).set(inputProvider)
                 task.doLast {
-                    builtArtifactsReference.get().save(targetProvider.get())
+                    builtArtifactsReference.get().save(buildMetadataFileLocation(task).get())
                 }
             }
         }
