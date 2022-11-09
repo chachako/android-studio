@@ -51,6 +51,7 @@ import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBlockExpression
+import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UDeclaration
 import org.jetbrains.uast.UElement
@@ -475,6 +476,55 @@ class UastLintUtils {
             return annotations
         }
     }
+}
+
+/**
+ * Returns true if the given call represents a Kotlin
+ * scope function where the object reference is this. See
+ * https://kotlinlang.org/docs/scope-functions.html#function-selection
+ */
+fun isScopingThis(node: UCallExpression): Boolean {
+    val name = getMethodName(node)
+    if (name == "run" || name == "with" || name == "apply") {
+        return isScopingFunction(node)
+    }
+    return false
+}
+
+/**
+ * Returns true if the given call represents a Kotlin scope function
+ * where the object reference is the lambda variable `it`; see
+ * https://kotlinlang.org/docs/scope-functions.html#function-selection
+ */
+fun isScopingIt(node: UCallExpression): Boolean {
+    val name = getMethodName(node)
+    if (name == "let" || name == "also") {
+        return isScopingFunction(node)
+    }
+    return false
+}
+
+/**
+ * Returns true if the given call represents a Kotlin scope
+ * function where the return value is the context object; see
+ * https://kotlinlang.org/docs/scope-functions.html#function-selection
+ */
+fun isReturningContext(node: UCallExpression): Boolean {
+    val name = getMethodName(node)
+    if (name == "apply" || name == "also") {
+        return isScopingFunction(node)
+    }
+    return false
+}
+
+/**
+ * Returns true if the given node appears to be one of the scope functions. Only checks parent
+ * class; caller should intend that it's actually one of let, with, apply, etc.
+ */
+fun isScopingFunction(node: UCallExpression): Boolean {
+    val called = node.resolve() ?: return true
+    // See libraries/stdlib/jvm/build/stdlib-declarations.json
+    return called.containingClass?.qualifiedName == "kotlin.StandardKt__StandardKt"
 }
 
 fun PsiParameter.isReceiver(): Boolean {

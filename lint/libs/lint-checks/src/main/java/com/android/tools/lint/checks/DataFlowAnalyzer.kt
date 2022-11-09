@@ -20,6 +20,9 @@ import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.getReceiverOrContainingClass
 import com.android.tools.lint.detector.api.isBelow
 import com.android.tools.lint.detector.api.isJava
+import com.android.tools.lint.detector.api.isReturningContext
+import com.android.tools.lint.detector.api.isScopingIt
+import com.android.tools.lint.detector.api.isScopingThis
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -859,56 +862,6 @@ abstract class DataFlowAnalyzer(
 
             return null
         }
-    }
-
-    /**
-     * Returns true if the given call represents a Kotlin
-     * scope function where the object reference is this. See
-     * https://kotlinlang.org/docs/scope-functions.html#function-selection
-     */
-    private fun isScopingThis(node: UCallExpression): Boolean {
-        val name = getMethodName(node)
-        if (name == "run" || name == "with" || name == "apply") {
-            return isScopingFunction(node)
-        }
-        return false
-    }
-
-    /**
-     * Returns true if the given call represents a Kotlin scope function
-     * where the object reference is the lambda variable `it`; see
-     * https://kotlinlang.org/docs/scope-functions.html#function-selection
-     */
-    private fun isScopingIt(node: UCallExpression): Boolean {
-        val name = getMethodName(node)
-        if (name == "let" || name == "also") {
-            return isScopingFunction(node)
-        }
-        return false
-    }
-
-    /**
-     * Returns true if the given call represents a Kotlin scope
-     * function where the return value is the context object; see
-     * https://kotlinlang.org/docs/scope-functions.html#function-selection
-     */
-    private fun isReturningContext(node: UCallExpression): Boolean {
-        val name = getMethodName(node)
-        if (name == "apply" || name == "also") {
-            return isScopingFunction(node)
-        }
-        return false
-    }
-
-    /**
-     * Returns true if the given node appears to be one of the scope
-     * functions. Only checks parent class; caller should intend that
-     * it's actually one of let, with, apply, etc.
-     */
-    private fun isScopingFunction(node: UCallExpression): Boolean {
-        val called = node.resolve() ?: return true
-        // See libraries/stdlib/jvm/build/stdlib-declarations.json
-        return called.containingClass?.qualifiedName == "kotlin.StandardKt__StandardKt"
     }
 }
 
