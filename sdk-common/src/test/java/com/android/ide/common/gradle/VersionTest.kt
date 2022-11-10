@@ -182,4 +182,68 @@ class VersionTest {
             assertThat(Version.parse(it)).isNotEqualTo(it)
         }
     }
+
+    @Test
+    fun testPrefixInfimum() {
+        assertThat(Version.prefixInfimum("1").toString())
+            .isEqualTo("prefix infimum version for \"1\"")
+    }
+
+    @Test
+    fun testPrefixInfimumEquality() {
+        assertThat(Version.prefixInfimum("1")).isEqualTo(Version.prefixInfimum("1"))
+        assertThat(Version.prefixInfimum("1").hashCode()).isEqualTo(Version.prefixInfimum("1").hashCode())
+        assertThat(Version.prefixInfimum("1")).isNotEqualTo(Version.parse("1"))
+        assertThat(Version.parse("1")).isNotEqualTo(Version.prefixInfimum("1"))
+        assertThat(Version.parse("1-dev")).isNotEqualTo(Version.prefixInfimum("1"))
+        assertThat(Version.prefixInfimum("1")).isNotEqualTo(Version.parse("1-dev"))
+
+        // prefixInfimum of a dev version is equivalent to prefixInfimum of the base version
+        assertThat(Version.prefixInfimum("1-dev")).isEqualTo(Version.prefixInfimum("1"))
+        assertThat(Version.prefixInfimum("1")).isEqualTo(Version.prefixInfimum("1-dev"))
+    }
+
+    @Test
+    fun testPrefixInfimumEquivalence() {
+        listOf("1+dev-dev_dev", "1.dev-dev", "1+dev", "1").let { vss ->
+            vss.forEach { v1s ->
+                val v1 = Version.prefixInfimum(v1s)
+                vss.forEach { v2s ->
+                    val v2 = Version.prefixInfimum(v2s)
+                    assertThat(v1).isEquivalentAccordingToCompareTo(v2)
+                    assertThat(v2).isEquivalentAccordingToCompareTo(v1)
+                    assertThat(v1).isEqualTo(v2)
+                    assertThat(v2).isEqualTo(v1)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testPrefixInfimumComparison() {
+        listOf("1+dev-dev_dev", "1.dev-dev", "1+dev", "1").let { vss ->
+            vss.forEachIndexed { i1, v1s ->
+                val v1 = Version.parse(v1s)
+                vss.forEachIndexed { i2, v2s ->
+                    val v2 = Version.prefixInfimum(v2s)
+                    assertThat(v1).isGreaterThan(v2)
+                    assertThat(v2).isLessThan(v1)
+                    assertThat(v1).isNotEqualTo(v2)
+                    assertThat(v2).isNotEqualTo(v1)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testLeastPrefixInfimum() {
+        val zero = Version.prefixInfimum("dev")
+        // Why this assertion (and why `zero`)?  The version denoted by the empty string is, in
+        // practice, an ordinary non-numeric part that sorts lexicographically before all other
+        // non-special non-numeric parts; its prefix infimum is the earliest version starting with
+        // any non-special non-numeric part.  However, since it is a non-special non-numeric part,
+        // there is one part that compares less than it: the special non-numeric part denoted by
+        // "dev", and consequently the least prefix infimum of all is the prefix infimum of "dev".
+        assertThat(zero).isLessThan(Version.prefixInfimum(""))
+    }
 }

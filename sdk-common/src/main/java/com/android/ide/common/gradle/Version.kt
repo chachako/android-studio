@@ -19,6 +19,7 @@ import com.google.common.annotations.Beta
 import java.lang.IllegalArgumentException
 import java.util.Locale
 import java.util.Objects
+import kotlin.math.max
 
 /**
  * This class represents a single version with the semantics of version comparison as
@@ -33,39 +34,69 @@ import java.util.Objects
 @Beta
 class Version: Comparable<Version> {
     // TODO:
-    // - sentinel least-prefix version for prefix excludes (to allow range representation)
     // - restartable parser (for re-use in parsing version ranges etc.)
     // - base version extraction (for conflict resolution)
     private val parts: List<Part>
     private val separators: List<Separator>
+    private val isPrefixInfimum: Boolean
 
-    private constructor(parts: List<Part>, separators: List<Separator>) {
+    private constructor(parts: List<Part>, separators: List<Separator>, isPrefixInfimum: Boolean) {
         if (parts.size != separators.size) throw IllegalArgumentException()
         this.parts = parts
         this.separators = separators
+        this.isPrefixInfimum = isPrefixInfimum
+    }
+
+    private fun extendedParts(atLeast: Int): List<Part> = DEV("dev").let { dev ->
+        parts.let {
+            if (isPrefixInfimum) it + List(max(0, atLeast - it.size)) { dev } else it
+        }
     }
 
     override fun compareTo(other: Version): Int {
-        val partsComparisons = parts.zip(other.parts).map { it.first.compareTo(it.second) }
+        val thisParts = this.extendedParts(other.parts.size + 1)
+        val otherParts = other.extendedParts(this.parts.size + 1)
+        val partsComparisons = thisParts.zip(otherParts).map { it.first.compareTo(it.second) }
         partsComparisons.firstOrNull { it != 0 }?.let { return it }
+
+        // by extending (above), if both are prefix infima we have compared all the parts of the
+        // longer prefix with the implicit DEVs in the shortest; if one is a prefix infimum,
+        // we have exhausted the explicit parts of the non-infimum.
+        if (this.isPrefixInfimum && other.isPrefixInfimum) return 0
+        if (this.isPrefixInfimum) return -1
+        if (other.isPrefixInfimum) return 1
+
         if (parts.size == other.parts.size) return 0
-        return if (parts.size > other.parts.size) when (parts[other.parts.size]) {
-            is Numeric -> 1
-            else -> -1
+        return if (parts.size > other.parts.size) {
+            when (parts[other.parts.size]) {
+                is Numeric -> 1
+                else -> -1
+            }
         }
-        else when (other.parts[parts.size]) {
-            is Numeric -> -1
-            else -> 1
+        else {
+            when (other.parts[parts.size]) {
+                is Numeric -> -1
+                else -> 1
+            }
         }
     }
     override fun equals(other: Any?) = when(other) {
-        is Version -> this.parts == other.parts
+        is Version -> (1 + max(this.parts.size, other.parts.size)).let { size ->
+            this.extendedParts(size) == other.extendedParts(size)
+        }
         else -> false
     }
-    override fun hashCode() = Objects.hash(this.parts)
+    override fun hashCode() = Objects.hash(this.parts, this.isPrefixInfimum)
 
-    override fun toString() =
-        parts.zip(separators) { part, separator -> "$part$separator" }.joinToString(separator = "")
+    override fun toString() = parts
+        .zip(separators) { part, separator -> "$part$separator" }
+        .joinToString(separator = "")
+        .let { versionString ->
+            when {
+                isPrefixInfimum -> "prefix infimum version for \"$versionString\""
+                else -> versionString
+            }
+        }
 
     companion object {
         sealed interface ParseState {
@@ -97,14 +128,7 @@ class Version: Comparable<Version> {
                 }
             }
         }
-        /**
-         * Parse a string corresponding to an exact version (as defined by Gradle).  The result
-         * is Comparable, implementing the ordering described in the Gradle user guide under
-         * "Version ordering", compatible with determining whether a particular version is
-         * included in a range (but not, directly, implementing the concept of "base version"
-         * used in conflict resolution).
-         */
-        fun parse(string: String): Version {
+        private fun doParse(string: String, prefixInfimum: Boolean): Version {
             val sb = StringBuffer()
             val parts = mutableListOf<Part>()
             val separators = mutableListOf<Separator>()
@@ -135,8 +159,25 @@ class Version: Comparable<Version> {
             }
             parts.add(parseState.createPart(sb))
             separators.add(Separator.EMPTY)
-            return Version(parts, separators)
+            return Version(parts, separators, prefixInfimum)
         }
+
+        /**
+         * Parse a string corresponding to an exact version (as defined by Gradle).  The result
+         * is Comparable, implementing the ordering described in the Gradle user guide under
+         * "Version ordering", compatible with determining whether a particular version is
+         * included in a range (but not, directly, implementing the concept of "base version"
+         * used in conflict resolution).
+         */
+        fun parse(string: String): Version = doParse(string, false)
+
+        /**
+         * Parse a string corresponding to a version, and return a [Version] which represents
+         * the least possible version with the given string as a prefix (including an implicit
+         * separator).  Conceptually, this is the same as the version denoted by [string] followed
+         * by an infinite sequence of `dev` parts.
+         */
+        fun prefixInfimum(string: String): Version = doParse(string, true)
     }
 }
 
