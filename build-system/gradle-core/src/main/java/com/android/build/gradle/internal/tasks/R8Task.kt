@@ -584,7 +584,7 @@ abstract class R8Task @Inject constructor(
         if (executionOptions.get().runInSeparateProcess) {
             workerExecutor.processIsolation { spec ->
                 spec.forkOptions { forkOptions ->
-                    forkOptions.jvmArgs?.addAll(executionOptions.get().jvmArgs)
+                    forkOptions.jvmArgs(executionOptions.get().jvmArgs)
                 }
             }.submit(R8Runnable::class.java, workerAction)
         } else {
