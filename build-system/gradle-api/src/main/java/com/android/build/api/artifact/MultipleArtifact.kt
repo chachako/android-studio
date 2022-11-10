@@ -20,6 +20,7 @@ import org.gradle.api.Incubating
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.RegularFile
+import java.lang.Appendable
 
 /**
  * Public [Artifact] for Android Gradle plugin.
@@ -47,5 +48,31 @@ sealed class MultipleArtifact<FileTypeT : FileSystemLocation>(
             MultipleArtifact<RegularFile>(FILE, Category.SOURCES),
             Replaceable,
             Transformable
-    
+
+    /**
+     * Directories with native debug metadata
+     *
+     * If set, the debug metadata files(with extension .dbg) are combined with extracted debug
+     * metadata and packaged together.
+     *
+     */
+    object NATIVE_DEBUG_METADATA:
+            MultipleArtifact<Directory>(DIRECTORY),
+            Replaceable,
+            Appendable,
+            Transformable
+
+    /**
+     * Directories with debug symbol table
+     *
+     * If set, the debug symbol table files(with extension .sym) are combined with extracted
+     * debug symbol tables and packaged together.
+     *
+     */
+    object NATIVE_SYMBOL_TABLES:
+            MultipleArtifact<Directory>(DIRECTORY),
+            Replaceable,
+            Appendable,
+            Transformable
+
 }

@@ -135,6 +135,63 @@ class ArtifactsImplTest {
     }
 
     @Test
+    fun testAddDirectoryArtifacts() {
+        artifacts.add(TEST_DIRECTORIES, project.layout.buildDirectory.get())
+        artifacts.add(TEST_DIRECTORIES, project.layout.projectDirectory)
+        Truth.assertThat(artifacts.getAll(TEST_DIRECTORIES).get())
+                .containsExactly(
+                        project.layout.buildDirectory.get(), project.layout.projectDirectory)
+    }
+
+    @Test
+    fun testAddExternalFileArtifactsWithTask() {
+        abstract class AGPTask: DefaultTask() {
+            @get:OutputFile abstract val outputFile: RegularFileProperty
+        }
+        val agpTaskProvider = project.tasks.register("agpTaskProvider", AGPTask::class.java)
+        artifacts.addInitialProvider(
+                MultipleArtifact.MULTIDEX_KEEP_PROGUARD, agpTaskProvider, AGPTask::outputFile)
+        artifacts.add(
+                MultipleArtifact.MULTIDEX_KEEP_PROGUARD,
+                project.layout.buildDirectory.get().file("test.txt"))
+        verifyTestAddFileArtifactWithTask(
+                MultipleArtifact.MULTIDEX_KEEP_PROGUARD,
+                listOf<String>(FileUtils.join(
+                        Artifact.Category.SOURCES.name.lowercase(Locale.getDefault()),
+                        MultipleArtifact.MULTIDEX_KEEP_PROGUARD.getFolderName(),
+                        "debug",
+                        "agpTaskProvider"),
+                        "test.txt")
+        )
+    }
+
+    @Test
+    fun testAddInternalFileArtifactsWithTask() {
+        abstract class AGPTask: DefaultTask() {
+            @get:OutputFile abstract val outputFile: RegularFileProperty
+        }
+        val agpTaskProvider = project.tasks.register("agpTaskProvider", AGPTask::class.java)
+        artifacts.addInitialProvider(TEST_FILES, agpTaskProvider, AGPTask::outputFile)
+        artifacts.add(TEST_FILES, project.layout.buildDirectory.get().file("test.txt"))
+        verifyTestAddFileArtifactWithTask(
+                TEST_FILES,
+                listOf<String>(FileUtils.join(
+                        Artifact.Category.INTERMEDIATES.name.lowercase(Locale.getDefault()),
+                        TEST_FILES.getFolderName(),
+                        "debug",
+                        "agpTaskProvider"),
+                        "test.txt")
+        )
+    }
+
+    private fun <T: Artifact.Multiple<RegularFile>> verifyTestAddFileArtifactWithTask(
+            type: T, expectedFiles: List<String>) {
+        val actualFiles: List<String> = artifacts.getAll(type).get()
+                .map { it.asFile.relativeTo(project.buildDir).path }
+        Truth.assertThat(actualFiles).containsExactlyElementsIn(expectedFiles)
+    }
+
+    @Test
     fun testEarlyDirectoryLookup() {
         val finalVersion = artifacts.get(TEST_DIRECTORY)
         // no-one has provided it so far, so it's not present.

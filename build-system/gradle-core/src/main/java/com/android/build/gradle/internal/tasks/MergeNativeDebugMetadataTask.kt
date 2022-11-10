@@ -18,6 +18,8 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.DOT_DBG
 import com.android.SdkConstants.DOT_SYM
+import com.android.build.api.artifact.Artifact
+import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.dsl.NdkOptions.DebugSymbolLevel
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
@@ -30,6 +32,7 @@ import com.android.builder.packaging.JarFlinger
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.IgnoreEmptyDirectories
@@ -100,37 +103,52 @@ abstract class MergeNativeDebugMetadataTask : NonIncrementalTask() {
             }
         }
 
+        private fun collectDebugSymbols(
+                variant: ApplicationCreationConfig,
+                nativeDebugMetadataDirs: ConfigurableFileCollection,
+                extractedDebugSymbolsArtifact: Artifact.Single<Directory>,
+                externalDebugSymbolArtifacts: Artifact.Multiple<Directory>,
+                reverseMetadataDebugSymbolArtifactType: AndroidArtifacts.ArtifactType
+        ) {
+            nativeDebugMetadataDirs.from(
+                    variant.artifacts.get(
+                            extractedDebugSymbolsArtifact
+                    )
+            )
+            nativeDebugMetadataDirs.from(
+                    variant.artifacts
+                            .getAll(externalDebugSymbolArtifacts)
+            )
+            nativeDebugMetadataDirs.from(
+                    variant.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            AndroidArtifacts.ArtifactScope.PROJECT,
+                            reverseMetadataDebugSymbolArtifactType
+                    )
+            )
+        }
+
         fun getNativeDebugMetadataFiles(
             variant: ApplicationCreationConfig
         ): FileCollection {
             val nativeDebugMetadataDirs = variant.services.fileCollection()
             when (variant.nativeBuildCreationConfig?.nativeDebugSymbolLevel) {
                 DebugSymbolLevel.FULL -> {
-                    nativeDebugMetadataDirs.from(
-                        variant.artifacts.get(
-                            InternalArtifactType.NATIVE_DEBUG_METADATA
-                        )
-                    )
-                    nativeDebugMetadataDirs.from(
-                        variant.variantDependencies.getArtifactFileCollection(
-                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
-                            AndroidArtifacts.ArtifactScope.PROJECT,
+                    collectDebugSymbols(
+                            variant,
+                            nativeDebugMetadataDirs,
+                            InternalArtifactType.NATIVE_DEBUG_METADATA,
+                            MultipleArtifact.NATIVE_DEBUG_METADATA,
                             AndroidArtifacts.ArtifactType.REVERSE_METADATA_NATIVE_DEBUG_METADATA
                         )
-                    )
                 }
                 DebugSymbolLevel.SYMBOL_TABLE -> {
-                    nativeDebugMetadataDirs.from(
-                        variant.artifacts.get(
-                            InternalArtifactType.NATIVE_SYMBOL_TABLES
-                        )
-                    )
-                    nativeDebugMetadataDirs.from(
-                        variant.variantDependencies.getArtifactFileCollection(
-                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
-                            AndroidArtifacts.ArtifactScope.PROJECT,
+                    collectDebugSymbols(
+                            variant,
+                            nativeDebugMetadataDirs,
+                            InternalArtifactType.NATIVE_SYMBOL_TABLES,
+                            MultipleArtifact.NATIVE_SYMBOL_TABLES,
                             AndroidArtifacts.ArtifactType.REVERSE_METADATA_NATIVE_SYMBOL_TABLES
-                        )
                     )
                 }
                 DebugSymbolLevel.NONE -> { }

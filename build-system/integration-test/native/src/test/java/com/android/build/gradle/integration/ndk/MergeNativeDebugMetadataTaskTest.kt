@@ -39,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
+import java.util.zip.ZipFile
 import kotlin.test.fail
 
 /** Test behavior of [MergeNativeDebugMetadataTask]*/
@@ -71,8 +72,129 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
         project.getSubproject(":app").buildFile.appendText(
             """
                 android.buildTypes.debug.ndk.debugSymbolLevel '$debugSymbolLevel'
+
                 """.trimIndent()
         )
+    }
+    data class TestSetup(
+            val app: GradleTestProject,
+            val expectedFullEntries: List<String>,
+            val expectedSymbolTableEntries: List<String>
+    )
+    private fun setupExternalNativeDebugSymbolTest(): TestSetup {
+        val app = project.getSubproject(":app")
+        app.buildFile.appendText(
+                """
+                import com.android.build.api.artifact.MultipleArtifact
+
+                androidComponents {
+                    onVariants(selector().all(), {
+                        artifacts.add(
+                            MultipleArtifact.${if (debugSymbolLevel == FULL)
+                    "NATIVE_DEBUG_METADATA"
+                else "NATIVE_SYMBOL_TABLES"}.INSTANCE,
+                                project.layout.projectDirectory.dir("symbols/app"))
+                    })
+                }
+
+                """.trimIndent()
+        )
+        createUnstrippedAbiFile(app, ABI_ARMEABI_V7A, "app.so")
+        createUnstrippedAbiFile(app, ABI_INTEL_ATOM, "app.so")
+        createUnstrippedAbiFile(app, ABI_INTEL_ATOM64, "app.so")
+        createDebugMetadataFile(app, ABI_ARMEABI_V7A, "app", debugSymbolLevel == FULL)
+        createDebugMetadataFile(app, ABI_INTEL_ATOM, "app", debugSymbolLevel == FULL)
+        createDebugMetadataFile(app, ABI_INTEL_ATOM64, "app", debugSymbolLevel == FULL)
+        val expectedFullEntries = listOf(
+                "/$ABI_ARMEABI_V7A/app.so.dbg",
+                "/$ABI_INTEL_ATOM/app.so.dbg",
+                "/$ABI_INTEL_ATOM64/app.so.dbg",
+                "/$ABI_ARMEABI_V7A/app-extra.so.dbg",
+                "/$ABI_INTEL_ATOM/app-extra.so.dbg",
+                "/$ABI_INTEL_ATOM64/app-extra.so.dbg",
+        )
+
+        val expectedSymbolTableEntries = listOf(
+                "/$ABI_ARMEABI_V7A/app.so.sym",
+                "/$ABI_INTEL_ATOM/app.so.sym",
+                "/$ABI_INTEL_ATOM64/app.so.sym",
+                "/$ABI_ARMEABI_V7A/app-extra.so.sym",
+                "/$ABI_INTEL_ATOM/app-extra.so.sym",
+                "/$ABI_INTEL_ATOM64/app-extra.so.sym",
+        )
+        return TestSetup(app, expectedFullEntries, expectedSymbolTableEntries)
+    }
+
+    @Test
+    fun testBundleExternalNativeDebugSymbolsOutput() {
+        val testSetup = setupExternalNativeDebugSymbolTest()
+        val output = getNativeDebugSymbolsOutput("debug")
+        project.executor().run("app:bundleDebug")
+        if (debugSymbolLevel == null || debugSymbolLevel == NONE) {
+            assertThat(output).doesNotExist()
+            return
+        }
+        val bundleFile = testSetup.app.getBundle(GradleTestProject.ApkType.DEBUG).file.toFile()
+        assertThat(bundleFile).exists()
+        val bundleEntryPrefix = "/BUNDLE-METADATA/com.android.tools.build.debugsymbols"
+        val expectedFullEntries = testSetup.expectedFullEntries.map { "$bundleEntryPrefix$it" }
+        val expectedSymbolTableEntries = testSetup.expectedSymbolTableEntries
+                .map { "$bundleEntryPrefix$it" }
+        Zip(bundleFile).use { zip ->
+            when (debugSymbolLevel) {
+                SYMBOL_TABLE -> {
+                    assertThat(zip.entries.map { it.toString() })
+                            .containsNoneIn(expectedFullEntries)
+                    assertThat(zip.entries.map { it.toString() })
+                            .containsAtLeastElementsIn(expectedSymbolTableEntries)
+                }
+                FULL -> {
+                    assertThat(zip.entries.map { it.toString() })
+                            .containsAtLeastElementsIn(expectedFullEntries)
+                    assertThat(zip.entries.map { it.toString() })
+                            .containsNoneIn(expectedSymbolTableEntries)
+                }
+                else -> fail("Test should return early if not SYMBOL_TABLE or FULL")
+            }
+        }
+    }
+
+        @Test
+    fun testExternalNativeDebugSymbolsOutput() {
+        val testSetup = setupExternalNativeDebugSymbolTest()
+        val output = getNativeDebugSymbolsOutput("debug")
+        project.executor().run("app:assembleDebug")
+        if (debugSymbolLevel == null || debugSymbolLevel == NONE) {
+            assertThat(output).doesNotExist()
+            return
+        }
+
+        assertThat(output).exists()
+        Zip(output).use {
+            verifyAllZipEntries(
+                    it,
+                    testSetup.expectedFullEntries,
+                    testSetup.expectedSymbolTableEntries)
+        }
+    }
+
+    private fun verifyAllZipEntries(
+            zip: Zip, expectedFullEntries: List<String>, expectedSymbolTableEntries: List<String>) {
+        when (debugSymbolLevel) {
+            SYMBOL_TABLE -> {
+                assertThat(zip.entries.map { it.toString() })
+                        .containsNoneIn(expectedFullEntries)
+                assertThat(zip.entries.map { it.toString() })
+                        .containsExactlyElementsIn(expectedSymbolTableEntries)
+            }
+            FULL -> {
+                assertThat(zip.entries.map { it.toString() })
+                        .containsExactlyElementsIn(expectedFullEntries)
+                assertThat(zip.entries.map { it.toString() })
+                        .containsNoneIn(expectedSymbolTableEntries)
+            }
+            else -> fail("Test should return early if not SYMBOL_TABLE or FULL")
+        }
     }
 
     @Test
@@ -257,6 +379,25 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
             project.getSubproject("app").buildDir,
             "/outputs/native-debug-symbols/$variantName/native-debug-symbols.zip"
         )
+    }
+
+    private fun createDebugMetadataFile(
+            project: GradleTestProject,
+            abiName: String,
+            libName: String,
+            full: Boolean
+    ) {
+        val abiFolder = FileUtils.join(project.projectDir, "symbols", libName, abiName)
+        FileUtils.mkdirs(abiFolder)
+        val symFolder = if (full) "full" else "sym"
+        val extension = if (full) "dbg" else "sym"
+        MergeNativeDebugMetadataTaskTest::class.java.getResourceAsStream(
+                "/nativeDebugSymbols/$symFolder/$abiName/extra.so.$extension"
+        ).use { inputStream ->
+            File(abiFolder, "$libName-extra.so.$extension").outputStream().use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
     }
 
     private fun createUnstrippedAbiFile(

@@ -128,6 +128,18 @@ class ArtifactsImpl(
     ): Provider<List<FILE_TYPE>>
             = getArtifactContainer(type).get()
 
+    fun <FileTypeT: FileSystemLocation> add(
+            type: Multiple<FileTypeT>,
+            artifact: FileTypeT) {
+        storageProvider.getStorage(type.kind).add(objects, type, artifact)
+    }
+
+    override fun <FileTypeT : FileSystemLocation> add(
+            type: MultipleArtifact<FileTypeT>,
+            artifact: FileTypeT) {
+        storageProvider.getStorage(type.kind).add(objects, type, artifact)
+    }
+
     override fun <TaskT : Task> use(taskProvider: TaskProvider<TaskT>): TaskBasedOperationImpl<TaskT> {
         return TaskBasedOperationImpl(objects, this, taskProvider).also {
             outstandingRequests.add(it)
