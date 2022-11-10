@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//tools/base/bazel:proto.bzl", "java_proto_library", "cc_grpc_proto_library")
+load("//tools/base/bazel:proto.bzl", "cc_grpc_proto_library", "java_proto_library")
 
 cc_grpc_proto_library(
     name = "cc_trace_processor_service_proto",

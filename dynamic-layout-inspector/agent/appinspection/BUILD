@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test", "kotlin_library")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 

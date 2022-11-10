@@ -1,4 +1,4 @@
-load("//tools/base/bazel:android.bzl", "dex_library", "jni_library", "ANDROID_COPTS", "ANDROID_LINKOPTS", "android_cc_binary")
+load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "android_cc_binary", "dex_library", "jni_library")
 load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
 
 java_library(

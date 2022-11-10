@@ -1,4 +1,4 @@
-load("//tools/base/bazel:android.bzl", "select_android", "ANDROID_COPTS", "ANDROID_LINKOPTS")
+load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "select_android")
 
 cc_library(
     name = "fakes_lib",

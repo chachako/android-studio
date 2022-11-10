@@ -21,6 +21,10 @@ cc_library(
     hdrs = glob([
         "export/slicer/*.h",
     ]),
+    copts = select({
+        "@//tools/base/bazel:windows": [],
+        "//conditions:default": ["-std=c++11"],
+    }),
     includes = ["export"],
     tags = [
         "no_windows",
@@ -29,8 +33,4 @@ cc_library(
     deps = [
         "@zlib_repo//:zlib",
     ],
-    copts = select({
-        "@//tools/base/bazel:windows": [],
-        "//conditions:default": ["-std=c++11"],
-    }),
 )

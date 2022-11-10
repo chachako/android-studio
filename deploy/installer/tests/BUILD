@@ -1,4 +1,4 @@
-load("//tools/base/bazel:proto.bzl", "cc_grpc_proto_library", "android_java_proto_library")
+load("//tools/base/bazel:proto.bzl", "android_java_proto_library", "cc_grpc_proto_library")
 
 filegroup(
     name = "artifacts",

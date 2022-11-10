@@ -1,4 +1,4 @@
-load("//tools/base/bazel:proto.bzl", "maven_proto_library", "android_java_proto_library", "java_proto_library")
+load("//tools/base/bazel:proto.bzl", "android_java_proto_library", "java_proto_library", "maven_proto_library")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 
 maven_proto_library(
