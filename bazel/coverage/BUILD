@@ -736,13 +736,13 @@ coverage_report(
 
 # Coverage report for Embedded Emulator and device mirroring.
 coverage_report(
-    name = "emulator",
+    name = "streaming",
     srcpath_include = [
-        "tools/adt/idea/emulator/src/com/android/tools/idea/device",
-        "tools/adt/idea/emulator/src/com/android/tools/idea/emulator",
+        "tools/adt/idea/streaming/src/com/android/tools/idea/device",
+        "tools/adt/idea/streaming/src/com/android/tools/idea/emulator",
     ],
     tests = [
-        "//tools/adt/idea/emulator:intellij.android.emulator.tests_tests",
+        "//tools/adt/idea/streaming:intellij.android.streaming.tests_tests",
     ],
 )
 
@@ -871,7 +871,6 @@ combine_report_definitions(
         "device-manager",
         "dsl",
         "dynamic-layout-inspector",
-        "emulator",
         "fullscreen-heapdump-ui",
         "gradle-managed-virtual-device",
         "layouteditor",
@@ -894,6 +893,7 @@ combine_report_definitions(
         "retention",
         "simpleperf-collapse-ui",
         "spliteditor",
+        "streaming",
         "suggested-import",
         "systrace-jank-ui",
         "systracev2",
@@ -951,7 +951,7 @@ coverage_report(
         "//tools/adt/idea/designer/customview:intellij.android.designer.customview.tests_tests",
         "//tools/adt/idea/device-file-explorer-toolwindow:intellij.android.device-file-explorer-toolwindow.tests_tests",
         "//tools/adt/idea/device-manager:intellij.android.device-manager.tests_tests",
-        "//tools/adt/idea/emulator:intellij.android.emulator.tests_tests",
+        "//tools/adt/idea/streaming:intellij.android.streaming.tests_tests",
         "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
         "//tools/adt/idea/kotlin-integration:kotlin-integration-tests_tests",
         "//tools/adt/idea/layout-inspector:intellij.android.layout-inspector.tests_tests",

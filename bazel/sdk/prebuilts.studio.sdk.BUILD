@@ -185,7 +185,7 @@ java_import(
     jars = sdk_path(["platforms/android-33/android.jar"]),
     neverlink = 1,
     visibility = [
-        "//tools/adt/idea/emulator/screen-sharing-agent:__pkg__",
+        "//tools/adt/idea/streaming/screen-sharing-agent:__pkg__",
         "//tools/base/adb-proxy/reverse-daemon:__pkg__",
         "//tools/base/app-inspection/agent:__pkg__",
         "//tools/base/app-inspection/inspectors:__subpackages__",
