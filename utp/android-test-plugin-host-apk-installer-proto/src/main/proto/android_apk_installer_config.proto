@@ -1,0 +1,50 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+package com.android.tools.utp.plugins.host.apkinstaller.proto;
+
+option java_package = 'com.android.tools.utp.plugins.host.apkinstaller.proto';
+option java_outer_classname = 'AndroidApkInstallerConfigProto';
+
+// Provides information for an APK to be installed.
+message InstallableApk {
+    // Paths to all APK(s) to install.
+    repeated string apk_paths = 1;
+
+    // Provides information about install option.
+    message InstallOption {
+        // A command line parameter to be passed into "adb install" command.
+        repeated string command_line_parameter = 1;
+
+        // If true, APK(s) in apk_paths will be installed as split APKs
+        bool install_as_split_apk = 2;
+    }
+
+    // The APK package manager install options to be used to install the APK.
+    InstallOption install_options = 2;
+
+    // If true, the installed APK(s) are uninstalled after test execution.
+    bool uninstall_after_test = 3;
+
+    // Package name of APKs installed during test
+    repeated string apks_package_name = 4;
+}
+
+message AndroidApkInstallerConfig {
+    repeated InstallableApk apks_to_install = 1;
+}

@@ -770,6 +770,12 @@ com.android.tools.utp:android-test-plugin-host-additional-test-output-proto
   dependencies:
     com.google.protobuf:protobuf-java (runtime)
 
+com.android.tools.utp:android-test-plugin-host-apk-installer-proto
+  pomName=com.android.tools.utp.android-test-plugin-host-apk-installer-proto
+  description=A protobuf messages used in a UTP plugin to install APKs
+  dependencies:
+    com.google.protobuf:protobuf-java (runtime)
+
 com.android.tools.utp:android-test-plugin-host-coverage
   pomName=com.android.tools.utp.android-test-plugin-host-coverage
   description=A UTP plugin to export test coverage data

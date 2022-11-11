@@ -30,20 +30,23 @@ import com.google.testing.platform.api.device.CommandHandle
 import com.google.testing.platform.core.error.UtpException
 import com.google.testing.platform.proto.api.core.PathProto
 import com.google.testing.platform.proto.api.core.TestArtifactProto
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.anyBoolean
+import org.mockito.Mockito.anyList
 import org.mockito.Mockito.anyLong
 import org.mockito.Mockito.anyString
+import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * Unit tests for [DdmlibAndroidDeviceController].
@@ -72,6 +75,8 @@ class DdmlibAndroidDeviceControllerTest {
     private lateinit var properArtifact: TestArtifactProto.Artifact
 
     private var uninstallIncompatibleApks: Boolean = false
+    private val SPLIT_APK_INSTALL_ARG =
+            listOf("install-multiple", "-r", "-t", "base.apk", "feature1.apk")
 
     private val controller: DdmlibAndroidDeviceController by lazy {
         DdmlibAndroidDeviceController(
@@ -287,6 +292,109 @@ class DdmlibAndroidDeviceControllerTest {
             .isEqualTo(DdmlibAndroidDeviceControllerErrorCode.ERROR_APK_INSTALL.errorCode)
     }
 
+    @Test
+    fun executeInstallSplitCommandSuccess() {
+        doNothing().`when`(mockDevice).installPackages(anyList(), anyBoolean(), anyList())
+        val ret = controller.execute(SPLIT_APK_INSTALL_ARG)
+        assertThat(ret.statusCode).isEqualTo(0)
+
+        verify(mockDevice).installPackages(
+            eq(listOf("base.apk", "feature1.apk").map { File(it) }),
+            eq(true),
+            eq(listOf("-r", "-t")))
+    }
+
+    @Test
+    fun executeInstallSplitCommandFailed() {
+        `when`(mockDevice.installPackages(anyList(), anyBoolean(), anyList()))
+            .thenThrow(InstallException("error", "INSTALL_FAILED_UPDATE_INCOMPATIBLE"))
+        val exception = assertThrows(UtpException::class.java) {
+            controller.execute(SPLIT_APK_INSTALL_ARG)
+        }
+        assertThat(exception.message).contains("Failed to install split APK(s): [base.apk, feature1.apk]")
+        assertThat(exception.errorSummary.errorName)
+            .isEqualTo("INSTALL_FAILED_UPDATE_INCOMPATIBLE")
+        assertThat(exception.errorSummary.errorCode)
+            .isEqualTo(DdmlibAndroidDeviceControllerErrorCode.ERROR_APK_INSTALL.errorCode)
+    }
+
+    @Test
+    fun executeInstallCommandWithUninstallIncompatibleSplitApks() {
+        uninstallIncompatibleApks = true
+        var installAttempt = 0
+        `when`(mockDevice.installPackages(anyList(), anyBoolean(), anyList())).then {
+            installAttempt++
+            if (installAttempt == 1) {
+                throw InstallException("error", "INSTALL_FAILED_UPDATE_INCOMPATIBLE")
+            }
+        }
+
+        val ret = controller.execute(SPLIT_APK_INSTALL_ARG)
+        assertThat(ret.statusCode).isEqualTo(0)
+        inOrder(mockDevice).apply {
+            verify(mockDevice).installPackages(
+                eq(listOf("base.apk", "feature1.apk").map { File(it) }),
+                eq(true),
+                eq(listOf("-r", "-t")))
+            verify(mockDevice).uninstallPackage(eq("packageName"))
+            verify(mockDevice).installPackages(
+                eq(listOf("base.apk", "feature1.apk").map { File(it) }),
+                eq(true),
+                eq(listOf("-r", "-t")))
+        }
+    }
+
+    @Test
+    fun executeInstallCommandWithUninstallIncompatibleSplitApks_retryFailedAfterUninstall() {
+        uninstallIncompatibleApks = true
+
+        `when`(mockDevice.installPackages(anyList(), anyBoolean(), anyList()))
+            .thenThrow(InstallException("error", "INSTALL_FAILED_UPDATE_INCOMPATIBLE"))
+
+        val exception = assertThrows(UtpException::class.java) {
+            controller.execute(SPLIT_APK_INSTALL_ARG)
+        }
+        assertThat(exception.message).contains("Failed to install split APK(s): [base.apk, feature1.apk]")
+        assertThat(exception.errorSummary.errorName)
+            .isEqualTo("INSTALL_FAILED_UPDATE_INCOMPATIBLE")
+        assertThat(exception.errorSummary.errorCode)
+            .isEqualTo(DdmlibAndroidDeviceControllerErrorCode.ERROR_APK_INSTALL.errorCode)
+
+        inOrder(mockDevice).apply {
+            verify(mockDevice).installPackages(
+                eq(listOf("base.apk", "feature1.apk").map { File(it) }),
+                eq(true),
+                eq(listOf("-r", "-t")))
+            verify(mockDevice).uninstallPackage(eq("packageName"))
+            verify(mockDevice).installPackages(
+                eq(listOf("base.apk", "feature1.apk").map { File(it) }),
+                eq(true),
+                eq(listOf("-r", "-t")))
+        }
+    }
+
+    @Test
+    fun executeInstallCommandWithUninstallIncompatibleSplitApksFailedByUnsupportedErrorName() {
+        uninstallIncompatibleApks = true
+
+        var installAttempt = 0
+        `when`(mockDevice.installPackages(anyList(), anyBoolean(), anyList())).then {
+            installAttempt++
+            if (installAttempt == 1) {
+                throw InstallException("error", "UNKNOWN")
+            }
+        }
+
+        val exception = assertThrows(UtpException::class.java) {
+            controller.execute(SPLIT_APK_INSTALL_ARG)
+        }
+        assertThat(exception.message).contains("Failed to install split APK(s): [base.apk, feature1.apk]")
+        assertThat(exception.errorSummary.errorName)
+            .isEqualTo("UNKNOWN")
+        assertThat(exception.errorSummary.errorCode)
+            .isEqualTo(DdmlibAndroidDeviceControllerErrorCode.ERROR_APK_INSTALL.errorCode)
+    }
+
     @Test(expected = UnsupportedOperationException::class)
     fun executeUnsupportedCommand() {
         controller.execute(listOf("unknownCommand"))
@@ -297,7 +405,7 @@ class DdmlibAndroidDeviceControllerTest {
         val handlerInitialized = CountDownLatch(1)
         lateinit var handler: CommandHandle
         `when`(mockDevice.executeShellCommand(
-            eq("am instrument ${EXIT_CODE_REPORT}"), any(), eq(0L), eq(0L), any())
+                eq("am instrument ${EXIT_CODE_REPORT}"), any(), eq(0L), eq(0L), any())
         ).then {
             handlerInitialized.await(1, TimeUnit.MINUTES)
             handler.stop()
@@ -307,7 +415,7 @@ class DdmlibAndroidDeviceControllerTest {
         handler.waitFor()
         assertThat(handler.exitCode()).isEqualTo(-1)
         verify(mockDevice).executeShellCommand(
-            eq("am instrument ${EXIT_CODE_REPORT}"), any(), eq(0L), eq(0L), any())
+                eq("am instrument ${EXIT_CODE_REPORT}"), any(), eq(0L), eq(0L), any())
     }
 
     @Test
@@ -325,7 +433,7 @@ class DdmlibAndroidDeviceControllerTest {
         assertThat(handler.exitCode()).isEqualTo(0)
         assertThat(processedOutputMessage).isEqualTo("This is test output message.")
         verify(mockDevice).executeShellCommand(
-            eq("am instrument ${EXIT_CODE_REPORT}"), any(), eq(0L), eq(0L), any())
+                eq("am instrument ${EXIT_CODE_REPORT}"), any(), eq(0L), eq(0L), any())
     }
 
     @Test

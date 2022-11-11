@@ -3305,6 +3305,20 @@ com/android/tools/utp/android-test-plugin-host-additional-test-output-proto
   com/android/tools/utp/plugins/host/additionaltestoutput/
   com/android/tools/utp/plugins/host/additionaltestoutput/proto/
 
+com/android/tools/utp/android-test-plugin-host-apk-installer-proto
+  META-INF/
+  META-INF/MANIFEST.MF
+  NOTICE
+  android_apk_installer_config.proto
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/utp/
+  com/android/tools/utp/plugins/
+  com/android/tools/utp/plugins/host/
+  com/android/tools/utp/plugins/host/apkinstaller/
+  com/android/tools/utp/plugins/host/apkinstaller/proto/
+
 com/android/tools/utp/android-test-plugin-host-coverage
   META-INF/
   META-INF/MANIFEST.MF

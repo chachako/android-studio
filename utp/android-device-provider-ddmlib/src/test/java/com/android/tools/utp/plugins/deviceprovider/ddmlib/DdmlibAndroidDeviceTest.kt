@@ -28,6 +28,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.Mockito.doNothing
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 
@@ -109,5 +112,16 @@ class DdmlibAndroidDeviceTest {
                 "dalvik.vm.dex2oat-Xms", "64m",
                 "dalvik.vm.dex2oat-Xmx", "512m",
         )
+    }
+
+    @Test
+    fun testInstallPackages() {
+        doNothing(). `when`(mockIDevice).installPackages(
+            Mockito.anyList(),
+            Mockito.anyBoolean(),
+            Mockito.anyList())
+        val device = DdmlibAndroidDevice(mockIDevice)
+        device.installPackages(listOf(), true, listOf())
+        verify(mockIDevice).installPackages(listOf(), true, listOf())
     }
 }

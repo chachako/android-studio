@@ -31,8 +31,6 @@ import com.google.testing.platform.proto.api.core.LogMessageProto
 import com.google.testing.platform.proto.api.core.TestArtifactProto.Artifact
 import com.google.testing.platform.proto.api.core.TestArtifactProto.ArtifactType.ANDROID_APK
 import com.google.testing.platform.runtime.android.device.AndroidDevice
-import java.util.concurrent.TimeUnit
-import java.util.logging.Logger
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
@@ -40,6 +38,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import java.io.File
+import java.util.concurrent.TimeUnit
+import java.util.logging.Logger
 
 /**
  * Android specific implementation of [DeviceController] using DDMLIB.
@@ -124,6 +125,17 @@ class DdmlibAndroidDeviceController(
             handler.stop()
         }
         return CommandResult(handler.exitCode(), output)
+    }
+
+    // If there's no apk to install this function would not be called in the first place
+    private fun getInstallOptionsIndex (args: List<String>): Int {
+        var index = 0
+        for (arg in args) {
+            if(arg.endsWith(".apk"))
+                return index
+            index++
+        }
+        return index
     }
 
     override fun executeAsync(args: List<String>, processor: (String) -> Unit): CommandHandle {
@@ -212,6 +224,67 @@ class DdmlibAndroidDeviceController(
                                     errorSummary,
                                     "Failed to install APK(s): $apkPath",
                                     e
+                                )
+                            }
+                        }
+                    }
+                    receiver
+                }
+                "install-multiple" -> {
+                    val divideIndex = getInstallOptionsIndex(commandArgs)
+
+                    val additionalInstallOptions = commandArgs.subList(0, divideIndex)
+                    val apkPaths = commandArgs.subList(divideIndex, commandArgs.size)
+
+                    var installAttempts = 0
+                    var retryInstall = true
+                    lateinit var receiver: InstallReceiver
+                    while (retryInstall) {
+                        installAttempts++
+                        retryInstall = false
+                        receiver = object : InstallReceiver() {
+                            override fun isCancelled(): Boolean = isCancelled
+                            override fun processNewLines(lines: Array<out String>) {
+                                super.processNewLines(lines)
+                                lines.forEach(processor)
+                            }
+                        }
+                        try {
+                            controlledDevice.installPackages(
+                                apkPaths.map { File(it) },
+                                /*reinstall=*/true,
+                                additionalInstallOptions
+                            )
+                        } catch (e: InstallException) {
+                            val errorSummary = object : ErrorSummary {
+                                override val errorCode: Int =
+                                        DdmlibAndroidDeviceControllerErrorCode.ERROR_APK_INSTALL.errorCode
+                                override val errorName: String = e.errorCode ?: "UNKNOWN"
+                                override val errorType: Enum<*> = ErrorType.TEST
+                                override val namespace: String = "DdmlibAndroidDeviceController"
+                            }
+
+                            if (uninstallIncompatibleApks &&
+                                    INCOMPATIBLE_APK_INSTALLATION_ERROR_NAMES.contains(errorSummary.errorName)
+                            ) {
+                                // All split APKs are installed under the same package name
+                                apkPackageNameResolver.getPackageNameFromApk(apkPaths[0])
+                                        ?.let { uninstallPackageName ->
+                                            logger.warning("Uninstalling package: $uninstallPackageName")
+                                            controlledDevice.uninstallPackage(
+                                                    uninstallPackageName)
+                                            // Only retry installation after initial failure, otherwise
+                                            // it potentially goes into an infinite loop.
+                                            retryInstall = installAttempts == 1
+
+                                }
+                            }
+
+                            if (!retryInstall) {
+                                throw UtpException(
+                                        errorSummary,
+                                        "Failed to install split APK(s): $apkPaths",
+                                        e
                                 )
                             }
                         }

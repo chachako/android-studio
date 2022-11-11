@@ -17,9 +17,11 @@
 package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
 import com.android.ddmlib.IDevice
+import com.android.ddmlib.InstallException
 import com.android.ddmlib.MultiLineReceiver
 import com.google.testing.platform.api.device.Device
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
+import java.io.File
 
 /**
  * An implementation of [Device] using DDMLIB [IDevice].
@@ -63,4 +65,11 @@ class DdmlibAndroidDevice(val ddmlibDevice: IDevice) : Device, IDevice by ddmlib
         } else {
             Device.DeviceType.PHYSICAL
         }
+
+    // Due to Kotlin delegation related bug https://youtrack.jetbrains.com/issue/KT-18324 , we have
+    // to override this method in order for the mock object in Mockito to function properly
+    @Throws(InstallException::class)
+    override fun installPackages(
+            apks: List<File?>, reinstall: Boolean, installOptions: List<String?>)
+    = ddmlibDevice.installPackages(apks, reinstall, installOptions)
 }
