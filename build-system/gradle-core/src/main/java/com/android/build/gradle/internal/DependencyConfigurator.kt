@@ -73,6 +73,7 @@ import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AsarToApksTransform
+import com.android.build.gradle.internal.tasks.AsarToManifestSnippetTransform
 import com.android.build.gradle.internal.tasks.AsarTransform
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.utils.ATTR_ENABLE_CORE_LIBRARY_DESUGARING
@@ -95,7 +96,6 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
@@ -455,22 +455,29 @@ class DependencyConfigurator(
     fun configurePrivacySandboxSdkConsumerTransforms(
             compileSdkHashString: String, buildToolsRevision: Revision, bootstrapCreationConfig : BootClasspathConfig) : DependencyConfigurator {
         if (projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+            val defaultDebugSigning = getBuildService(
+                    projectServices.buildServiceRegistry,
+                    AndroidLocationsBuildService::class.java
+            ).map { it.getDefaultDebugKeystoreSigningConfig() }
             registerTransform(
                     AsarToApksTransform::class.java,
                     AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
                     AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS
             ) { params ->
                 projectServices.initializeAapt2Input(params.aapt2)
-                params.signingConfigData.set(
-                        getBuildService(
-                                projectServices.buildServiceRegistry,
-                                AndroidLocationsBuildService::class.java
-                        ).map { it.getDefaultDebugKeystoreSigningConfig() }
-                )
+
+                params.signingConfigData.set(defaultDebugSigning)
                 params.signingConfigValidationResultDir.set(
                         ArtifactsImpl(project,
                                 "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
                 )
+            }
+            registerTransform(
+                    AsarToManifestSnippetTransform::class.java,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_USES_SDK_LIBRARY_MANIFEST_SNIPPET
+            ) {
+                it.signingConfigData.set(defaultDebugSigning)
             }
             for (from in AsarTransform.supportedAsarTransformTypes) {
                 registerTransform(
