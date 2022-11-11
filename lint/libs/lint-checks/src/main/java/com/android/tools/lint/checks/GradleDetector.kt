@@ -3215,7 +3215,7 @@ open class GradleDetector : Detector(), GradleScanner {
 
                 val revisions = ArrayList<GradleVersion>()
                 when (major) {
-                    267 -> revisions.add(GradleVersion(27, 0, 3))
+                    27 -> revisions.add(GradleVersion(27, 0, 3))
                     26 -> revisions.add(GradleVersion(26, 0, 3))
                     25 -> revisions.add(GradleVersion(25, 0, 3))
                     24 -> revisions.add(GradleVersion(24, 0, 3))
