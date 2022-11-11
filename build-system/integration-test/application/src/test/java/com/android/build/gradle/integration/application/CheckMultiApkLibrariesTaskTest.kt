@@ -34,7 +34,8 @@ class CheckMultiApkLibrariesTaskTest {
         .appendToBuild(
             """
                             android {
-                                dynamicFeatures = [':otherFeature1', ':otherFeature2']
+                                dynamicFeatures =
+                                    [':otherFeature1', ':otherFeature2', ':otherFeature3']
                                 defaultConfig.minSdkVersion 14
                             }
                             """)
@@ -43,16 +44,21 @@ class CheckMultiApkLibrariesTaskTest {
 
     private val otherFeature2 = createFeatureSplit("com.example.otherFeature2")
 
+    private val otherFeature3 = createFeatureSplit("com.example.otherFeature3")
+
     private val testApp =
         MultiModuleTestProject.builder()
             .subproject(":lib", lib)
             .subproject(":baseModule", baseModule)
             .subproject(":otherFeature1", otherFeature1)
             .subproject(":otherFeature2", otherFeature2)
+            .subproject(":otherFeature3", otherFeature3)
             .dependency(otherFeature1, lib)
             .dependency(otherFeature2, lib)
+            .dependency(otherFeature3, lib)
             .dependency(otherFeature1, baseModule)
             .dependency(otherFeature2, baseModule)
+            .dependency(otherFeature3, baseModule)
             .build()
 
     @get:Rule
@@ -63,9 +69,9 @@ class CheckMultiApkLibrariesTaskTest {
         val result = project.executor().expectFailure().run("assembleDebug")
 
         assertThat(result.failureMessage).contains(
-            "[:otherFeature1, :otherFeature2] all package the same library [:lib;Capability: group='project', name='lib'].")
+            "[:otherFeature1, :otherFeature2, :otherFeature3] all package the same library [:lib;Capability: group='project', name='lib'].")
         assertThat(result.failureMessage).contains(
-            "[:otherFeature1, :otherFeature2] all package the same library [com.android.support:support-core-utils;Capability: group='com.android.support', name='support-core-utils'].")
+            "[:otherFeature1, :otherFeature2, :otherFeature3] all package the same library [com.android.support:support-core-utils;Capability: group='com.android.support', name='support-core-utils'].")
         assertThat(result.failureMessage).contains(
             "Multiple APKs packaging the same library can cause runtime errors."
         )

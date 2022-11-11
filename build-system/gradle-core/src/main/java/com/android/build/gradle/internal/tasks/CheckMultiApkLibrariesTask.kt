@@ -68,7 +68,8 @@ abstract class CheckMultiApkLibrariesTask : NonIncrementalTask() {
             val projectPath =
                     (artifact.id.componentIdentifier as ProjectComponentIdentifier).projectPath
             if (artifact.file.isFile) {
-                found = found || updateLibraryMap(artifact.file, projectPath, map)
+                val newlyFound = checkAndUpdateLibraryMap(artifact.file, projectPath, map)
+                found = found || newlyFound
             }
         }
 
@@ -128,7 +129,7 @@ abstract class CheckMultiApkLibrariesTask : NonIncrementalTask() {
         }
     }
 
-    private fun updateLibraryMap(
+    private fun checkAndUpdateLibraryMap(
         file: File,
         projectPath: String,
         map: MutableMap<String, MutableList<String>>
