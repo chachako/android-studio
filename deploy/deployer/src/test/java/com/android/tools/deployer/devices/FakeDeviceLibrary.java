@@ -18,6 +18,7 @@ package com.android.tools.deployer.devices;
 import com.android.tools.deployer.devices.shell.Am;
 import com.android.tools.deployer.devices.shell.BasicPm;
 import com.android.tools.deployer.devices.shell.Chmod;
+import com.android.tools.deployer.devices.shell.Chown;
 import com.android.tools.deployer.devices.shell.Cmd;
 import com.android.tools.deployer.devices.shell.Cp;
 import com.android.tools.deployer.devices.shell.Echo;
@@ -28,6 +29,7 @@ import com.android.tools.deployer.devices.shell.Mkdir;
 import com.android.tools.deployer.devices.shell.Rm;
 import com.android.tools.deployer.devices.shell.SessionPm;
 import com.android.tools.deployer.devices.shell.Stat;
+import com.android.tools.deployer.devices.shell.Su;
 import com.android.tools.deployer.devices.shell.Xargs;
 import java.io.IOException;
 
@@ -74,11 +76,13 @@ public class FakeDeviceLibrary {
         device.getShell().addCommand(new GetProp());
         device.getShell().addCommand(new Mkdir());
         device.getShell().addCommand(new Chmod());
+        device.getShell().addCommand(new Chown());
         device.getShell().addCommand(new Rm());
         device.getShell().addCommand(new Id());
         device.getShell().addCommand(new Cp());
         device.getShell().addCommand(new Ls());
         device.getShell().addCommand(new Stat());
+        device.getShell().addCommand(new Su());
         device.getShell().addCommand(new Xargs());
         device.getShell().addCommand(new Echo());
     }

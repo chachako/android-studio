@@ -51,6 +51,7 @@ public class AdbInstallerTest {
     public static final String RM_DIR = "rm -fr " + INSTALLER_WORKSPACE;
     public static final String MK_DIR = "mkdir -p " + INSTALLER_WORKSPACE;
     public static final String CHMOD_DIR = "chmod -R 775 " + Deployer.BASE_DIRECTORY;
+    public static final String CHOWN_DIR = "chown -R shell:shell " + Deployer.BASE_DIRECTORY;
     public static final String CHMOD_INSTALLER = "chmod +x " + AdbInstaller.INSTALLER_PATH;
 
     @Rule @ApiLevel.Init public FakeDeviceConnection connection;
@@ -90,7 +91,7 @@ public class AdbInstallerTest {
         }
 
         String[] expectedHistory = {
-            "getprop", INVOCATION, RM_DIR, MK_DIR, CHMOD_DIR, CHMOD_INSTALLER, INVOCATION
+            "getprop", INVOCATION, RM_DIR, MK_DIR, CHMOD_DIR, CHOWN_DIR, CHMOD_INSTALLER, INVOCATION
         };
 
         assertHistory(device, expectedHistory);

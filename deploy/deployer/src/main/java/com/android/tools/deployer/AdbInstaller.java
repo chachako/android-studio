@@ -256,7 +256,19 @@ public class AdbInstaller extends Installer {
             throw new IOException("Unsupported abis: " + Arrays.toString(abis.toArray()));
         }
 
-        cleanAndPushInstaller(installerFile);
+        try {
+            cleanAndPushInstaller(installerFile);
+        } catch (IOException io) {
+            // If the setup fails, it might be because the .studio directory was created by the root
+            // user, and we're running as the shell user. Since this implies the device allows
+            // escalating to root, try to sudo chown the .studio directory back to the shell user.
+            runShell(
+                    new String[] {
+                        "su", "root", "chown", "-R", "shell:shell", Deployer.BASE_DIRECTORY
+                    },
+                    Timeouts.SHELL_CHOWN);
+            cleanAndPushInstaller(installerFile);
+        }
         installerFile.delete();
     }
 
@@ -278,6 +290,11 @@ public class AdbInstaller extends Installer {
         // cp command with run-as. 0005 allows for rx by others.
         runShell(
                 new String[] {"chmod", "-R", "775", Deployer.BASE_DIRECTORY}, Timeouts.SHELL_CHMOD);
+
+        // Make sure that the shell user owns the deployer base directory.
+        runShell(
+                new String[] {"chown", "-R", "shell:shell", Deployer.BASE_DIRECTORY},
+                Timeouts.SHELL_CHOWN);
 
         // No need to check result here. If something wrong happens, an IOException is thrown.
         adb.push(installerFile.getAbsolutePath(), INSTALLER_PATH);

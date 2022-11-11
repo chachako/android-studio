@@ -41,6 +41,7 @@ public class Timeouts {
     static final long SHELL_MKDIR = T_5_SECONDS;
     static final long SHELL_RMFR = T_5_SECONDS;
     static final long SHELL_CHMOD = T_5_SECONDS;
+    static final long SHELL_CHOWN = T_5_SECONDS;
     static final long SHELL_AM_STOP = T_5_SECONDS;
     static final long SHELL_ABORT_INSTALL_MS = T_5_SECONDS;
 }
