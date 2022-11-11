@@ -25,6 +25,8 @@ import static org.junit.Assert.assertTrue;
 
 import com.android.ide.common.resources.BaseTestCase;
 import com.google.common.collect.Lists;
+
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 
@@ -43,20 +45,24 @@ public class GradleCoordinateTest extends BaseTestCase {
         assertEquals(5, actual.getVersion().getMajor());
         assertEquals(4, actual.getVersion().getMinor());
         assertEquals(GradleVersion.tryParse("5.4.2"), actual.getVersion());
+        assertFalse(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", 5, 4, GradleCoordinate.PLUS_REV_VALUE);
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:5.4.+");
         assertNotNull(actual);
         assertEquals(expected, actual);
         assertEquals(GradleVersion.tryParse("5.4.+"), actual.getVersion());
+        assertTrue(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", 5, GradleCoordinate.PLUS_REV_VALUE);
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:5.+");
         assertEquals(expected, actual);
+        assertTrue(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", GradleCoordinate.PLUS_REV);
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:+");
         assertEquals(expected, actual);
+        assertTrue(actual.acceptsGreaterRevisions());
 
         List<GradleCoordinate.RevisionComponent> revisionList =
                 Lists.newArrayList(GradleCoordinate.PLUS_REV);
@@ -64,6 +70,7 @@ public class GradleCoordinateTest extends BaseTestCase {
                 GradleCoordinate.ArtifactType.JAR);
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:+@jar");
         assertEquals(expected, actual);
+        assertTrue(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", revisionList,
                 GradleCoordinate.ArtifactType.AAR);
@@ -71,12 +78,14 @@ public class GradleCoordinateTest extends BaseTestCase {
         assertNotNull(actual);
         assertEquals(expected, actual);
         assertEquals(GradleCoordinate.ArtifactType.AAR, actual.getArtifactType());
+        assertTrue(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package",
                 new GradleCoordinate.StringComponent("v1"),
                 new GradleCoordinate.StringComponent("v2"));
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:v1.v2");
         assertEquals(expected, actual);
+        assertFalse(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package",
                 GradleCoordinate.ListComponent.of(
@@ -84,6 +93,7 @@ public class GradleCoordinateTest extends BaseTestCase {
                         new GradleCoordinate.NumberComponent(1)));
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:v1-1");
         assertEquals(expected, actual);
+        assertFalse(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package",
                 GradleCoordinate.ListComponent.of(
@@ -98,10 +108,12 @@ public class GradleCoordinateTest extends BaseTestCase {
         assertEquals(expected, actual);
         assertNotNull(actual);
         assertTrue(actual.isPreview());
+        assertFalse(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", 5, 0, GradleCoordinate.PLUS_REV_VALUE);
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:5.0+");
         assertEquals(expected, actual);
+        assertTrue(actual.acceptsGreaterRevisions());
     }
 
     @Test
@@ -424,5 +436,18 @@ public class GradleCoordinateTest extends BaseTestCase {
         actual = new GradleCoordinate("a.b.c", "foo", 1, 0);
         test = new GradleCoordinate("a.b.c", "foo", 1);
         assertTrue(actual.matches(test));
+    }
+
+    @Test
+    public void testEmptyRevision() {
+        GradleCoordinate empty =
+                new GradleCoordinate("a.b.c", "foo", Collections.emptyList(), null);
+        assertFalse(empty.isPreview());
+        assertFalse(empty.acceptsGreaterRevisions());
+        assertEquals("", empty.getRevision());
+        assertEquals(Integer.MIN_VALUE, empty.getMajorVersion());
+        assertEquals(Integer.MIN_VALUE, empty.getMicroVersion());
+        assertEquals(Integer.MIN_VALUE, empty.getMinorVersion());
+
     }
 }
