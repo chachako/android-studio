@@ -393,6 +393,7 @@ message UnsupportedChange {
     MODIFIED_SUPER = 7;
     ADDED_INTERFACE = 8;
     REMOVED_INTERFACE = 9;
+    UNSUPPORTED_COMPOSE_VERSION = 10;
   }
   Type type = 1;
   // Name of the class that contains the change.

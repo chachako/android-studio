@@ -146,6 +146,10 @@ public class LiveUpdateDeployer {
         private static final String REMOVED_INTERFACE_STR =
                 "Unsupported change to interfaces of class '%s' in file '%s'.";
 
+        private static final String UNSUPPORTED_COMPOSE_VERSION =
+                "Update Compose runtime and compiler versions 1.3.0 or higher "
+                        + "in order to view the latest Live Edit changes.";
+
         private final String msg;
         private final Deploy.UnsupportedChange.Type type;
 
@@ -240,12 +244,18 @@ public class LiveUpdateDeployer {
                                     error.getClassName(),
                                     error.getFileName());
                     break;
+                case UNSUPPORTED_COMPOSE_VERSION:
+                    msg = UNSUPPORTED_COMPOSE_VERSION;
+                    break;
                 default:
                     msg = "Unknown error";
             }
         }
 
         public String getMessage() {
+            if (type == Deploy.UnsupportedChange.Type.UNSUPPORTED_COMPOSE_VERSION) {
+                return msg;
+            }
             return msg + APP_RESTART_STR;
         }
 

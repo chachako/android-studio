@@ -200,4 +200,30 @@ bool Recompose::getCurrentErrors(jobject reloader,
   return true;
 }
 
+bool Recompose::VersionCheck(jobject reloader, std::string* error) const {
+  JniClass support(jni_, Recompose::kComposeSupportClass);
+  JniObject reloader_jnio(jni_, reloader);
+
+  jstring jresult = (jstring)support.CallStaticObjectMethod(
+      "versionCheck", "(Ljava/lang/Object;I)Ljava/lang/String;", reloader,
+      MIN_COMPOSE_RUNTIME_VERSION);
+
+  if (jni_->ExceptionCheck()) {
+    jni_->ExceptionDescribe();
+    jni_->ExceptionClear();
+    *error = "Exception During versionCheck";
+    return false;
+  }
+
+  const char* cresult = jni_->GetStringUTFChars(jresult, JNI_FALSE);
+  std::string result(cresult);
+  jni_->ReleaseStringUTFChars(jresult, cresult);
+
+  if (!result.empty()) {
+    *error = result;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace deploy

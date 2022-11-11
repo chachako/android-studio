@@ -28,6 +28,9 @@
 #define HOT_RELOADER_CLASS "androidx/compose/runtime/HotReloader"
 #define HOT_RELOADER_VMTYPE "Landroidx/compose/runtime/HotReloader$Companion;"
 
+// 1.3.0 (see runtimeVersionToMavenVersionTable in runtime's VersionChecker.kt)
+#define MIN_COMPOSE_RUNTIME_VERSION 8602
+
 namespace deploy {
 
 class Recompose {
@@ -50,6 +53,8 @@ class Recompose {
   bool getCurrentErrors(jobject reloader, std::vector<bool>* recoverable,
                         std::vector<std::string>* exceptions,
                         std::string& error) const;
+
+  bool VersionCheck(jobject reloader, std::string* error) const;
 
   // Create ComposeHotReload object if needed.
   jobject GetComposeHotReload() const;

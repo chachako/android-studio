@@ -112,6 +112,24 @@ void SetDebugMode(JNIEnv* jni, bool debugMode) {
     jni->ExceptionClear();
   }
 }
+
+// Perform a version check before using any Compose API.
+// After that we can assume a certain level of runtime support is available.
+bool CheckVersion(Recompose& recompose, jobject& reloader,
+                  proto::AgentLiveEditResponse& resp) {
+  std::string error = "";
+  bool versionCheck = recompose.VersionCheck(reloader, &error);
+  if (!versionCheck) {
+    Log::V("Failed Error Check %s", error.c_str());
+    resp.set_status(proto::AgentLiveEditResponse::UNSUPPORTED_CHANGE);
+    resp.add_errors()->set_type(
+        proto::UnsupportedChange::UNSUPPORTED_COMPOSE_VERSION);
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
@@ -201,6 +219,10 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
   Recompose recompose(jvmti, jni);
   jobject reloader = recompose.GetComposeHotReload();
   if (reloader) {
+    if (!CheckVersion(recompose, reloader, resp)) {
+      return resp;
+    }
+
     // This is a temp solution. If the new compose flag is set, we would
     // use the new recompose API. Otherwise we just recompose everything.
 
@@ -215,7 +237,7 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
         resp.set_recompose_type(proto::AgentLiveEditResponse::INIT_RESET);
         jobject state = recompose.SaveStateAndDispose(reloader);
         recompose.LoadStateAndCompose(reloader, state);
-        InfoEvent("Recomposed after priming (likely automatic modde");
+        InfoEvent("Recomposed after priming (likely automatic mode)");
       } else {
         resp.set_recompose_type(proto::AgentLiveEditResponse::RESET_SKIPPED);
         InfoEvent("Skipped Recompose as requested (likely manual mode)");

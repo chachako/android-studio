@@ -132,4 +132,39 @@ public class ComposeSupport {
 
         return result;
     }
+
+    /**
+     * Given a Compose Runtime Version number, check if the current runtime is equal or newer.
+     *
+     * @return Empty String if version check passes, otherwise error message.
+     */
+    public static String versionCheck(Object reloader, int expected) {
+        ClassLoader cl = reloader.getClass().getClassLoader();
+        Class composeVersionClass = null;
+        int current = -1;
+
+        try {
+            composeVersionClass =
+                    Class.forName("androidx.compose.runtime.ComposeVersion", true, cl);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return "ClassNotFoundException: androidx.compose.runtime.ComposeVersion";
+        }
+
+        try {
+            current = composeVersionClass.getField("version").getInt(null);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            return "NoSuchFieldException: androidx.compose.runtime.ComposeVersion.version";
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return "IllegalAccessException: androidx.compose.runtime.ComposeVersion.version";
+        }
+
+        if (current < expected) {
+            return "Current version number: " + current;
+        }
+
+        return "";
+    }
 }
