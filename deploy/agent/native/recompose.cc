@@ -133,6 +133,16 @@ bool Recompose::getCurrentErrors(jobject reloader,
                                  std::vector<std::string>* exceptions,
                                  std::string& error) const {
   JniClass support(jni_, Recompose::kComposeSupportClass);
+
+  // If this method is called after the app is restarted - which can happen
+  // because studio repeatedly attaches the agent after every LiveEdit - the
+  // agent may not have set up the instrumentation jar yet, which can cause this
+  // class to be missing.
+  if (!support.isValid()) {
+    jni_->ExceptionClear();
+    return true;
+  }
+
   JniObject reloader_jnio(jni_, reloader);
 
   jobjectArray jresult = (jobjectArray)support.CallStaticObjectMethod(
