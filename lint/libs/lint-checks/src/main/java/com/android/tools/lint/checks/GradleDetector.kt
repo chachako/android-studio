@@ -465,6 +465,7 @@ open class GradleDetector : Detector(), GradleScanner {
                 // If the dependency is a GString (i.e. it uses Groovy variable substitution,
                 // with a $variable_name syntax) then don't try to parse it.
                 if (dependency != null) {
+                    dependency = dependency.removeSuffix("!!") // Strip Gradle 'strict' version syntax (see b/257726238 and b/259279612).
                     var gc = GradleCoordinate.parseCoordinateString(dependency)
                     var isResolved = false
                     if (gc != null && dependency.contains("$")) {

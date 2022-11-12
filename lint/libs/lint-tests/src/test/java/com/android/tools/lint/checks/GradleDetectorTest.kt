@@ -339,6 +339,43 @@ class GradleDetectorTest : AbstractCheckTest() {
             )
     }
 
+    fun testGradleStrictVersionSyntax() {
+        // Regression test for 257726238
+        lint().files(
+            gradle(
+                """
+                buildscript {
+                    repositories {
+                        jcenter()
+                    }
+                }
+                dependencies {
+                    implementation("com.google.firebase:firebase-messaging:10.2.1!!") // expect 11.0.0
+                    implementation("com.google.firebase:firebase-messaging:11.0.0!!") // OK
+                }
+                """
+            ).indented()
+        )
+            .issues(DEPENDENCY)
+            .run()
+            .expect(
+                """
+                build.gradle:7: Warning: A newer version of com.google.firebase:firebase-messaging than 10.2.1 is available: 11.0.0 [GradleDependency]
+                    implementation("com.google.firebase:firebase-messaging:10.2.1!!") // expect 11.0.0
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for build.gradle line 7: Change to 11.0.0:
+                @@ -7 +7
+                -     implementation("com.google.firebase:firebase-messaging:10.2.1!!") // expect 11.0.0
+                +     implementation("com.google.firebase:firebase-messaging:11.0.0!!") // expect 11.0.0
+                """
+            )
+    }
+
     fun testDependenciesWithOtherArtifacts() {
         // Regression test for b/124415929
 

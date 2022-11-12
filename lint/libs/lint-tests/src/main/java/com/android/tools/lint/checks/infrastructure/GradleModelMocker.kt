@@ -937,6 +937,7 @@ class GradleModelMocker @JvmOverloads constructor(
             m.matches() -> {
                 val artifactName = m.group(1)
                 var declaration = getUnquotedValue(key)
+                declaration = declaration.removeSuffix("!!") // Strip Gradle 'strict' version syntax (see b/257726238 and b/259279612).
                 if (GradleCoordinate.parseCoordinateString(declaration) != null) {
                     addDependency(declaration, artifactName, false)
                     return
