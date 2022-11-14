@@ -266,6 +266,7 @@ DATA = [
     "androidx.wear.tiles:tiles:1.1.0",
     "androidx.wear.tiles:tiles-material:1.1.0",
     "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1",
+    "androidx.wear.watchface:watchface-guava:1.1.0",
     "com.google.android.horologist:horologist-compose-tools:0.1.5",
     "com.google.android.horologist:horologist-tiles:0.1.5",
     "com.android.application:com.android.application.gradle.plugin:7.2.0",
