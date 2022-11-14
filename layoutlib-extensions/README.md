@@ -5,6 +5,8 @@ of user or standard Android framework code. Instead of making changes in layoutl
 code here because because one wants to:
 * Use Kotlin (layoutlib currently does not support Kotlin)
 * Rely on the code to be loaded by ModuleClassLoader (layoutlib is loaded with intellij plugin classloader)
+* Ensuring that the BuiltInsLoader service loads the service from the new namespace (as it is repackaged) to
+  work with Layoutlib from `kotlin.*` to `_layoutlib_._internal_.*`
 
 ## Build and update
 
