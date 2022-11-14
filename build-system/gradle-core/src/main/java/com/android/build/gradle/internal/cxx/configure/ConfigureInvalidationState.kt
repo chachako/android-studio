@@ -125,7 +125,8 @@ fun createConfigurationInvalidationState(
         if (firstCompareToCurrent != secondCompareToCurrent) {
             bugln(
                 CONFIGURE_INVALIDATION_STATE_RACE,
-                "File '${filename}' was modified during checks for C/C++ configuration invalidation.")
+                "File '${filename}' was modified during checks for C/C++ configuration invalidation. " +
+                        "Before [${firstCompareToCurrent?.type}], after [${secondCompareToCurrent?.type}].")
             return result
                 .setConfigureType(HARD_CONFIGURE)
                 .build()

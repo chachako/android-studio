@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.ModelBuilderV2
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.model.cartesianOf
+import com.android.build.gradle.integration.common.fixture.model.deleteExistingStructuredLogs
 import com.android.build.gradle.integration.common.fixture.model.enableCxxStructuredLogging
 import com.android.build.gradle.integration.common.fixture.model.minimizeUsingTupleCoverage
 import com.android.build.gradle.integration.common.fixture.model.readStructuredLogs
@@ -47,6 +48,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.io.File
 import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
+import com.android.build.gradle.internal.cxx.configure.decodeConfigureInvalidationState
+import com.android.build.gradle.internal.cxx.configure.shouldConfigure
 
 /**
  * CMake lib<-app project where lib is published as Prefab
@@ -489,7 +492,7 @@ class ModuleToModuleDepsTest(
             .named("$libOutput")
             .isFalse()
 
-        // Check that export libraries informations winds up in the final prefab structure
+        // Check that export libraries information winds up in the final prefab structure
         var sawAtleastOneModule = false
         appOutputRoot.walkTopDown().forEach { file ->
             if (file.name == "module.json") {
@@ -501,6 +504,19 @@ class ModuleToModuleDepsTest(
         assertThat(sawAtleastOneModule)
             .named("Expected at least one Prefab module")
             .isTrue()
+    }
+
+    @Test
+    fun `app second configure should be nop`() {
+        Assume.assumeFalse(expectGradleConfigureError())
+        val executor = project.executor()
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
+        deleteExistingStructuredLogs(project)
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
+        val secondConfigure = project.readStructuredLogs(::decodeConfigureInvalidationState)
+            .filter { it.inputFilesList.any { it.contains("prefab_publication.json" ) } }
+        assertThat(secondConfigure).hasSize(1)
+        assertThat(secondConfigure[0].shouldConfigure).isFalse()
     }
 
     @Test

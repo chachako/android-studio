@@ -114,7 +114,10 @@ val CxxVariantModel.prefabClassPath : File?
 val CxxVariantModel.prefabPackageDirectoryList : List<File>
     get() = prefabPackages?.toList()?:listOf()
 
-val CxxVariantModel.prefabPackageConfigurationDirectoryList : List<File>
+/**
+ * List of prefab_publication.json from Prefab sources such as AAR or module-to-module reference.
+ */
+val CxxVariantModel.prefabPackageConfigurationList : List<File>
     get() = (prefabPackageConfigurations?.toList()?:listOf())
 
 
