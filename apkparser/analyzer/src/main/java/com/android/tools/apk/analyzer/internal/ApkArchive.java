@@ -31,6 +31,19 @@ import java.nio.file.Path;
  * called.
  */
 public class ApkArchive extends ZipArchive {
+
+    public static final String APK_BASELINE_PROFILE_PATH =
+            String.format(
+                    "/%s/%s",
+                    SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK,
+                    SdkConstants.FN_BINARY_ART_PROFILE);
+
+    public static final String APK_BASELINE_PROFILE_METADATA_PATH =
+            String.format(
+                    "/%s/%s",
+                    SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_APK,
+                    SdkConstants.FN_BINARY_ART_PROFILE_METADATA);
+
     public ApkArchive(@NonNull Path artifact) throws IOException {
         super(artifact);
     }
@@ -64,7 +77,8 @@ public class ApkArchive extends ZipArchive {
     @Override
     public boolean isBaselineProfile(@NonNull Path p, @NonNull byte[] content) {
         String path = p.toString();
-        return path.equals("/assets/dexopt/baseline.prof") ||
-               path.equals("/assets/dexopt/baseline.profm");
+
+        return path.equals(APK_BASELINE_PROFILE_PATH)
+                || path.equals(APK_BASELINE_PROFILE_METADATA_PATH);
     }
 }

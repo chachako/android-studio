@@ -32,6 +32,19 @@ import java.nio.file.Path;
  * method is called.
  */
 public class AppBundleArchive extends AbstractArchive {
+
+    public static String BUNDLE_BASELINE_PROFILE_PATH =
+            String.format(
+                    "/BUNDLE-METADATA/%s/%s",
+                    SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_AAB,
+                    SdkConstants.FN_BINARY_ART_PROFILE);
+
+    public static String BUNDLE_BASELINE_PROFILE_METADATA_PATH =
+            String.format(
+                    "/BUNDLE-METADATA/%s/%s",
+                    SdkConstants.FN_BINART_ART_PROFILE_FOLDER_IN_AAB,
+                    SdkConstants.FN_BINARY_ART_PROFILE_METADATA);
+
     @NonNull private final FileSystem zipFileSystem;
 
     private AppBundleArchive(@NonNull Path path) throws IOException {
@@ -77,6 +90,14 @@ public class AppBundleArchive extends AbstractArchive {
         return XmlUtils.isProtoXml(content);
     }
 
+    @Override
+    public boolean isBaselineProfile(@NonNull Path p, @NonNull byte[] content) {
+        String path = p.toString();
+
+        return path.equals(BUNDLE_BASELINE_PROFILE_PATH)
+                || path.equals(BUNDLE_BASELINE_PROFILE_METADATA_PATH);
+    }
+
     private static boolean isManifestFile(@NonNull Path p) {
         return matchPathPrefix(
                 p, PathEntry.any(), PathEntry.FD_MANIFEST, PathEntry.FN_ANDROID_MANIFEST_XML);
@@ -103,6 +124,7 @@ public class AppBundleArchive extends AbstractArchive {
     }
 
     public abstract static class PathEntry {
+
         public abstract boolean matches(@NonNull Path name);
 
         @NonNull
@@ -116,6 +138,7 @@ public class AppBundleArchive extends AbstractArchive {
         }
 
         @NonNull public static final PathEntry FD_RES = name(SdkConstants.FD_RES);
+
         @NonNull public static final PathEntry FD_RES_RAW = name(SdkConstants.FD_RES_RAW);
 
         @NonNull
@@ -126,6 +149,7 @@ public class AppBundleArchive extends AbstractArchive {
     }
 
     public static class AnyPathEntry extends PathEntry {
+
         @NonNull public static AnyPathEntry instance = new AnyPathEntry();
 
         @Override
@@ -135,6 +159,7 @@ public class AppBundleArchive extends AbstractArchive {
     }
 
     public static class NamePathEntry extends PathEntry {
+
         private final String name;
 
         public NamePathEntry(@NonNull String name) {
