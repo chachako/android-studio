@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,10 @@
 
 package com.android.build.gradle.internal.component
 
-import com.android.build.api.variant.Component
-import com.google.wireless.android.sdk.stats.GradleBuildVariant
-import org.gradle.api.provider.MapProperty
-
-interface VariantCreationConfig: ConsumableCreationConfig {
-    val maxSdkVersion: Int?
-
-    val experimentalProperties: MapProperty<String, Any>
-
-    val nestedComponents: List<ComponentCreationConfig>
-
-    fun <T: Component> createUserVisibleVariantObject(
-        stats: GradleBuildVariant.Builder?
-    ): T
+/**
+ * Represents the main variant of the kotlin multiplatform plugin.
+ */
+interface KmpCreationConfig: KmpComponentCreationConfig, VariantCreationConfig, AarCreationConfig {
+    val unitTest: UnitTestCreationConfig?
+    val androidTest: AndroidTestCreationConfig?
 }

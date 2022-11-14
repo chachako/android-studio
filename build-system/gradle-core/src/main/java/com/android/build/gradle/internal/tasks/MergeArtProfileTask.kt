@@ -111,9 +111,10 @@ abstract class MergeArtProfileTask: MergeFileTask() {
             task.inputFiles.fromDisallowChanges(aarProfilesArtifactCollection.artifactFiles)
 
             // for backwards compat we need to keep reading the old location for baseline profile
-            val artProfile = creationConfig.sources.artProfile
+            creationConfig.sources.artProfile?.let { artProfile ->
+                task.profileSource.fileProvider(artProfile)
+            }
 
-            task.profileSource.fileProvider(artProfile)
             task.profileSource.disallowChanges()
 
             creationConfig.sources.baselineProfiles {

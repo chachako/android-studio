@@ -33,6 +33,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactTyp
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.PACKAGED_DEPENDENCIES
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
 import com.android.build.gradle.internal.publishing.PublishedConfigSpec
+import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
 import com.android.builder.core.ComponentType
@@ -44,6 +45,8 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -58,7 +61,9 @@ import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
 import org.gradle.api.file.FileCollection
 import org.gradle.api.specs.Spec
-
+import java.io.File
+import java.util.concurrent.Callable
+import java.util.function.Predicate
 
 interface ResolutionResultProvider {
     fun getResolutionResult(configType: ConsumedConfigType): ResolutionResult
@@ -320,6 +325,30 @@ class VariantDependencies internal constructor(
                 config.lenient(lenientMode)
             }
             .artifacts
+    }
+
+    fun computeLocalFileDependencies(
+        services: VariantServices,
+        filePredicate: Predicate<File>
+    ): FileCollection {
+        // Get a list of local file dependencies. There is currently no API to filter the
+        // files here, so we need to filter it in the return statement below. That means that if,
+        // for example, filePredicate filters out all files but jars in the return statement, but an
+        // AarProducerTask produces an aar, then the returned FileCollection contains only jars but
+        // still has AarProducerTask as a dependency.
+        val dependencies = Callable {
+                runtimeClasspath
+                    .allDependencies
+                    .filterIsInstance<SelfResolvingDependency>()
+                    .filter { it !is ProjectDependency }
+            }
+
+        // Create a file collection builtBy the dependencies.  The files are resolved later.
+        return services.fileCollection(Callable {
+            dependencies.call()
+                .flatMap { it.resolve() }
+                .filter { filePredicate.test(it) }
+        }).builtBy(dependencies)
     }
 
     companion object {

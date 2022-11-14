@@ -135,7 +135,7 @@ interface ComponentCreationConfig : ComponentIdentity {
     // ---------------------------------------------------------------------------------------------
 
     @Deprecated("DO NOT USE, this is just for model v1 legacy support")
-    val modelV1LegacySupport: ModelV1LegacySupport
+    val modelV1LegacySupport: ModelV1LegacySupport?
 
     @Deprecated("DO NOT USE, this is just for old variant API legacy support")
     val oldVariantApiLegacySupport: OldVariantApiLegacySupport?

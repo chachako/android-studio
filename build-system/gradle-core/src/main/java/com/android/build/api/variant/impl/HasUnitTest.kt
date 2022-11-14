@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.component
+package com.android.build.api.variant.impl
 
-import com.android.build.api.variant.Component
-import com.google.wireless.android.sdk.stats.GradleBuildVariant
-import org.gradle.api.provider.MapProperty
+import com.android.build.api.component.impl.UnitTestImpl
 
-interface VariantCreationConfig: ConsumableCreationConfig {
-    val maxSdkVersion: Int?
+/**
+ * Internal marker interface for [VariantImpl] that potentially has associated unit tests.
+ */
+interface HasUnitTest {
 
-    val experimentalProperties: MapProperty<String, Any>
-
-    val nestedComponents: List<ComponentCreationConfig>
-
-    fun <T: Component> createUserVisibleVariantObject(
-        stats: GradleBuildVariant.Builder?
-    ): T
+    var unitTest: UnitTestImpl?
 }

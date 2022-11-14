@@ -57,7 +57,6 @@ import com.android.build.gradle.internal.publishing.PublishingSpecs.Companion.ge
 import com.android.build.gradle.internal.scope.BuildArtifactSpec.Companion.get
 import com.android.build.gradle.internal.scope.BuildArtifactSpec.Companion.has
 import com.android.build.gradle.internal.scope.BuildFeatureValues
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.scope.publishArtifactToConfiguration
 import com.android.build.gradle.internal.scope.publishArtifactToDefaultVariant
@@ -67,13 +66,8 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.testFixtures.testFixturesClassifier
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
-import com.google.common.collect.ImmutableList
-import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.artifacts.SelfResolvingDependency
 import com.google.common.base.Preconditions
 import org.gradle.api.attributes.DocsType
 import org.gradle.api.attributes.LibraryElements
@@ -82,9 +76,7 @@ import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
 import java.io.File
 import java.util.Locale
-import java.util.concurrent.Callable
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
     open val componentIdentity: ComponentIdentity,
@@ -209,32 +201,9 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
         configType: ConsumedConfigType,
         classesType: AndroidArtifacts.ArtifactType,
         generatedBytecodeKey: Any?
-    ): FileCollection {
-        var mainCollection = variantDependencies
-            .getArtifactFileCollection(configType, ArtifactScope.ALL, classesType)
-        oldVariantApiLegacySupport?.let {
-            mainCollection = mainCollection.plus(
-                it.variantData.getGeneratedBytecode(generatedBytecodeKey)
-            )
-        }
-        // Add R class jars to the front of the classpath as libraries might also export
-        // compile-only classes. This behavior is verified in CompileRClassFlowTest
-        // While relying on this order seems brittle, it avoids doubling the number of
-        // files on the compilation classpath by exporting the R class separately or
-        // and is much simpler than having two different outputs from each library, with
-        // and without the R class, as AGP publishing code assumes there is exactly one
-        // artifact for each publication.
-        mainCollection =
-            internalServices.fileCollection(
-                *listOfNotNull(
-                    androidResourcesCreationConfig?.getCompiledRClasses(configType),
-                    buildConfigCreationConfig?.compiledBuildConfig,
-                    getCompiledManifest(),
-                    mainCollection
-                ).toTypedArray()
-            )
-        return mainCollection
-    }
+    ): FileCollection = getJavaClasspath(
+        this, configType, classesType, generatedBytecodeKey
+    )
 
     override val providedOnlyClasspath: FileCollection by lazy {
         getProvidedClasspath(
@@ -296,18 +265,6 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
         }
     }
 
-    private fun getCompiledManifest(): FileCollection {
-        val manifestClassRequired = dslInfo.componentType.requiresManifest &&
-                services.projectOptions[BooleanOption.GENERATE_MANIFEST_CLASS]
-        val isTest = dslInfo.componentType.isForTesting
-        val isAar = dslInfo.componentType.isAar
-        return if (manifestClassRequired && !isAar && !isTest) {
-            internalServices.fileCollection(artifacts.get(InternalArtifactType.COMPILE_MANIFEST_JAR))
-        } else {
-            internalServices.fileCollection()
-        }
-    }
-
     override val modelV1LegacySupport = ModelV1LegacySupportImpl(dslInfo, variantSources)
 
     override val oldVariantApiLegacySupport: OldVariantApiLegacySupport? by lazy {
@@ -365,41 +322,11 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
      * @return a non null, but possibly empty FileCollection
      * @param filePredicate the file predicate used to filter the local file dependencies
      */
-    override fun computeLocalFileDependencies(filePredicate: Predicate<File>): FileCollection {
-        val configuration = variantDependencies.runtimeClasspath
-
-        // Get a list of local file dependencies. There is currently no API to filter the
-        // files here, so we need to filter it in the return statement below. That means that if,
-        // for example, filePredicate filters out all files but jars in the return statement, but an
-        // AarProducerTask produces an aar, then the returned FileCollection contains only jars but
-        // still has AarProducerTask as a dependency.
-        val dependencies =
-            Callable<Collection<SelfResolvingDependency>> {
-                configuration
-                    .allDependencies
-                    .stream()
-                    .filter { it: Dependency? -> it is SelfResolvingDependency }
-                    .filter { it: Dependency? -> it !is ProjectDependency }
-                    .map { it: Dependency -> it as SelfResolvingDependency }
-                    .collect(
-                        ImmutableList.toImmutableList()
-                    )
-            }
-
-        // Create a file collection builtBy the dependencies.  The files are resolved later.
-        return internalServices.fileCollection(
-            Callable<Collection<File>> {
-                dependencies.call().stream()
-                    .flatMap { it: SelfResolvingDependency ->
-                        it
-                            .resolve()
-                            .stream()
-                    }
-                    .filter(filePredicate)
-                    .collect(Collectors.toList())
-            })
-            .builtBy(dependencies)
-    }
+    override fun computeLocalFileDependencies(filePredicate: Predicate<File>): FileCollection =
+        variantDependencies.computeLocalFileDependencies(
+            internalServices,
+            filePredicate
+        )
 
     /**
      * Returns the packaged local Jars

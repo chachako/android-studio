@@ -251,6 +251,15 @@ enum class ComponentTypeImpl(
         artifactName = AndroidProject.ARTIFACT_TEST_FIXTURES,
         artifactType = ArtifactMetaData.TYPE_ANDROID,
         analyticsVariantType = GradleBuildVariant.VariantType.TEST_FIXTURES
+    ), KMP_ANDROID(
+        isAar = true,
+        publishToRepository = true,
+        publishToOtherModules = true,
+        prefix = "",
+        suffix = "",
+        artifactName = AndroidProject.ARTIFACT_MAIN,
+        artifactType = ArtifactMetaData.TYPE_ANDROID,
+        analyticsVariantType = GradleBuildVariant.VariantType.LIBRARY, //TODO(b/243387425): Support Analytics
     );
 
     override val isTestComponent: Boolean

@@ -35,8 +35,6 @@ import com.android.build.api.variant.Packaging
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.internal.component.ApkCreationConfig
-import com.android.build.gradle.internal.component.TestComponentCreationConfig
-import com.android.build.gradle.internal.component.TestFixturesCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.FeatureNames
@@ -57,7 +55,6 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
 import com.android.utils.capitalizeAndAppend
 import org.gradle.api.file.RegularFile
@@ -92,7 +89,7 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     variantServices,
     taskCreationServices,
     global
-), Variant, VariantCreationConfig {
+), Variant, VariantCreationConfig, HasUnitTest {
 
     override val description: String
         get() = if (componentIdentity.productFlavors.isNotEmpty()) {
@@ -194,9 +191,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
             internalServices
         )
     }
-
-    override val testComponents = mutableMapOf<ComponentType, TestComponentCreationConfig>()
-    override var testFixturesComponent: TestFixturesCreationConfig? = null
 
     private val externalExtensions: Map<Class<*>, Any>? by lazy {
         variantBuilder.getRegisteredExtensions()

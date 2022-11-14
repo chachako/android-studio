@@ -304,6 +304,8 @@ class PublishingSpecs {
                 output(LOCAL_AAR_FOR_LINT, ArtifactType.LOCAL_AAR_FOR_LINT)
             }
 
+            variantSpec(ComponentTypeImpl.KMP_ANDROID)
+
             // Publishing will be done manually from the lint standalone plugin for now.
             // Eventually we should just unify the infrastructure to declare the publications here.
             variantSpec(ComponentTypeImpl.JAVA_LIBRARY)

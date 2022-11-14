@@ -34,6 +34,7 @@ import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
 import com.android.build.api.variant.impl.HasAndroidTest
 import com.android.build.api.variant.impl.HasTestFixtures
+import com.android.build.api.variant.impl.HasUnitTest
 import com.android.build.api.variant.impl.InternalVariantBuilder
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
@@ -547,10 +548,7 @@ class VariantManager<
             variantPropertiesApiServices,
             taskCreationServices,
             globalTaskCreationConfig
-        ).also {
-            // register testFixtures component to the main variant
-            mainComponentInfo.variant.testFixturesComponent = it
-        }
+        )
     }
 
     /** Create a TestVariantData for the specified testedVariantData.  */
@@ -734,10 +732,6 @@ class VariantManager<
             unitTest
         }
 
-        // register
-        testedComponentInfo
-                .variant
-                .testComponents[variantDslInfo.componentType] = testComponent
         return testComponent
     }
 
@@ -852,7 +846,7 @@ class VariantManager<
                     )
                     unitTest?.let {
                         addTestComponent(it)
-                        variant.unitTest = it as UnitTestImpl
+                        (variant as HasUnitTest).unitTest = it as UnitTestImpl
                     }
                 }
 
@@ -903,7 +897,7 @@ class VariantManager<
                         .setVariantType(variant.componentType.analyticsVariantType)
                         .setDexBuilder(GradleBuildVariant.DexBuilderTool.D8_DEXER)
                         .setDexMerger(GradleBuildVariant.DexMergerTool.D8_MERGER)
-                        .setHasUnitTest(variant.unitTest != null)
+                        .setHasUnitTest((variant as? HasUnitTest)?.unitTest != null)
                         .setHasAndroidTest((variant as? HasAndroidTest)?.androidTest != null)
                         .setHasTestFixtures((variant as? HasTestFixtures)?.testFixtures != null)
 

@@ -25,8 +25,9 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.DefaultConfig
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.dsl.TestExtension
-import com.android.build.api.variant.HasTestFixtures
 import com.android.build.api.variant.impl.HasAndroidTest
+import com.android.build.api.variant.impl.HasTestFixtures
+import com.android.build.api.variant.impl.HasUnitTest
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
@@ -239,7 +240,7 @@ class ModelBuilder<
         val variantDimensionInfo = DimensionInformation.createFrom(variants)
         val androidTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<AndroidTestCreationConfig>())
         val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<UnitTestCreationConfig>())
-        val testFixtures = DimensionInformation.createFrom(variants.mapNotNull { it.testFixturesComponent })
+        val testFixtures = DimensionInformation.createFrom(variants.mapNotNull { (it as? HasTestFixtures)?.testFixtures })
 
         // for now grab the first buildFeatureValues as they cannot be different.
         val buildFeatures = variantModel.buildFeatures
@@ -541,13 +542,13 @@ class ModelBuilder<
         return VariantDependenciesImpl(
             name = variantName,
             mainArtifact = createDependencies(variant, buildMapping, libraryService),
-            androidTestArtifact = variant.testComponents[ComponentTypeImpl.ANDROID_TEST]?.let {
+            androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
                 createDependencies(it, buildMapping, libraryService)
             },
-            unitTestArtifact = variant.testComponents[ComponentTypeImpl.UNIT_TEST]?.let {
+            unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                 createDependencies(it, buildMapping, libraryService)
             },
-            testFixturesArtifact = variant.testFixturesComponent?.let {
+            testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                 createDependencies(it, buildMapping, libraryService)
             },
             libraryService.getAllLibraries().associateBy { it.key }
@@ -561,13 +562,13 @@ class ModelBuilder<
         return BasicVariantImpl(
             name = variant.name,
             mainArtifact = createBasicArtifact(variant, features),
-            androidTestArtifact = variant.testComponents[ComponentTypeImpl.ANDROID_TEST]?.let {
+            androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
                 createBasicArtifact(it, features)
             },
-            unitTestArtifact = variant.testComponents[ComponentTypeImpl.UNIT_TEST]?.let {
+            unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                 createBasicArtifact(it, features)
             },
-            testFixturesArtifact = variant.testFixturesComponent?.let {
+            testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                 createBasicArtifact(it, features)
             },
             buildType = variant.buildType,
@@ -597,13 +598,13 @@ class ModelBuilder<
             name = variant.name,
             displayName = variant.baseName,
             mainArtifact = createAndroidArtifact(variant),
-            androidTestArtifact = variant.testComponents[ComponentTypeImpl.ANDROID_TEST]?.let {
+            androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
                 createAndroidArtifact(it)
             },
-            unitTestArtifact = variant.testComponents[ComponentTypeImpl.UNIT_TEST]?.let {
+            unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
                 createJavaArtifact(it)
             },
-            testFixturesArtifact = variant.testFixturesComponent?.let {
+            testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
                 createAndroidArtifact(it)
             },
             testedTargetVariant = getTestTargetVariant(variant),
