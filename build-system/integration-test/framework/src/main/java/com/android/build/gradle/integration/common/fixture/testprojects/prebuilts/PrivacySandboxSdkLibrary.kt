@@ -22,7 +22,6 @@ import com.android.build.gradle.integration.common.fixture.testprojects.TestProj
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.options.BooleanOption
 
-
 fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -> Unit) = createGradleProjectBuilder {
     subProject(":privacy-sandbox-sdk") {
         plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
@@ -50,12 +49,14 @@ fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -
         plugins.add(PluginType.ANDROID_LIB)
         android {
             defaultCompileSdk()
-            namespace = "com.example.privacysandboxsdk.impl"
+            namespace = "com.example.privacysandboxsdk"
             minSdk = 33
         }
     }
     action(this)
 }.addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
+    .addGradleProperties("android.privacySandboxSdk.apiGenerator=androidx.privacysandbox.tools:tools-apigenerator:1.0.0-SNAPSHOT")
+    .addGradleProperties("android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies=org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC,org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
     .create()
 
 

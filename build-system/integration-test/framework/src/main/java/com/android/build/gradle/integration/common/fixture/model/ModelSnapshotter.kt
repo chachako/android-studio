@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.model.SnapshotItemWriter.Companion.NULL_STRING
 import com.android.build.gradle.internal.ide.dependencies.LOCAL_AAR_GROUPID
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
+import com.android.build.gradle.internal.ide.dependencies.LOCAL_ASAR_GROUPID
 import java.io.File
 
 
@@ -149,20 +150,16 @@ class ModelSnapshotter<ModelT>(
         }
     }
 
-    fun pathAsAString(name: String, onlyIfPresent: Boolean, propertyAction: ModelT.() -> String?) {
-        // use the modifyAction to convert the String to a file so that the normalizer
-        // can normalize it. Only do this if the file actually exist, otherwise, keep as
-        // as string so that it does not get normalized
+    fun pathAsAString(name: String, propertyAction: ModelT.() -> String?) {
+        // Use the modifyAction to convert the String to a file so that the normalizer
+        // can normalize it. Only do this if the path actually points to a file, which
+        // may or may not exist. Otherwise, keep as string so that it does not get normalized
         basicProperty(propertyAction, { it?.let {
             val f = File(it)
-            if (onlyIfPresent) {
-                if (f.exists()) {
-                    f
-                } else {
-                    it
-                }
-            } else {
+            if (f.isAbsolute) {
                 f
+            } else {
+                it
             }
         } }) {
             registrar.item(name, it)
@@ -191,6 +188,15 @@ class ModelSnapshotter<ModelT>(
 
             // reformat the address with the normalized path
             "$LOCAL_JAR_PREFIX${path.toNormalizedStrings(normalizer)}${address.subSequence(IntRange(secondPipe, address.length - 1))}"
+        } else if (address.startsWith(LOCAL_ASAR_PREFIX)) {
+            // extract the path. The format is __local_asars__|PATH|...
+            // so we search for the 2nd | char
+            val secondPipe = address.indexOf('|', LOCAL_ASAR_PREFIX_LENGTH)
+
+            val path = File(address.subSequence(LOCAL_ASAR_PREFIX_LENGTH, secondPipe).toString())
+
+            // reformat the address with the normalized path
+            "$LOCAL_ASAR_PREFIX${path.toNormalizedStrings(normalizer)}${address.subSequence(IntRange(secondPipe, address.length - 1))}"
         } else {
             address
         }.normalizeAgpVersion()
@@ -319,6 +325,8 @@ class ModelSnapshotter<ModelT>(
 
 private const val LOCAL_JAR_PREFIX = "$LOCAL_AAR_GROUPID|"
 private const val LOCAL_JAR_PREFIX_LENGTH = LOCAL_JAR_PREFIX.length
+private const val LOCAL_ASAR_PREFIX = "$LOCAL_ASAR_GROUPID|"
+private const val LOCAL_ASAR_PREFIX_LENGTH = LOCAL_ASAR_PREFIX.length
 
 /**
  * Converts a value into a single String depending on its type (null, File, String, Collection, Any)

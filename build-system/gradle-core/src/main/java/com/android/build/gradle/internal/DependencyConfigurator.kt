@@ -529,49 +529,49 @@ class DependencyConfigurator(
                 }
 
                 project.dependencies.registerTransform(
-                        ExtractCompileSdkShimTransform::class.java,
+                    ExtractCompileSdkShimTransform::class.java,
                 ) { reg ->
                     val compileUsage: Usage =
-                            project.objects.named(Usage::class.java, Usage.JAVA_API)
+                        project.objects.named(Usage::class.java, Usage.JAVA_API)
 
                     reg.from.attribute(
-                            ArtifactAttributes.ARTIFACT_FORMAT,
-                            AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
+                        ArtifactAttributes.ARTIFACT_FORMAT,
+                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
                     )
                     reg.from.attribute(
-                            Usage.USAGE_ATTRIBUTE,
-                            compileUsage
+                        Usage.USAGE_ATTRIBUTE,
+                        compileUsage
                     )
                     reg.to.attribute(
-                            ArtifactAttributes.ARTIFACT_FORMAT,
-                            AndroidArtifacts.ArtifactType.CLASSES_JAR.type
+                        ArtifactAttributes.ARTIFACT_FORMAT,
+                        AndroidArtifacts.ArtifactType.CLASSES_JAR.type
                     )
                     reg.to.attribute(
-                            Usage.USAGE_ATTRIBUTE,
-                            compileUsage
+                        Usage.USAGE_ATTRIBUTE,
+                        compileUsage
                     )
                     extractSdkShimTransformParamConfig(reg)
                 }
                 project.dependencies.registerTransform(
-                        ExtractRuntimeSdkShimTransform::class.java,
+                    ExtractRuntimeSdkShimTransform::class.java,
                 ) { reg ->
                     val runtimeUsage: Usage = project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
 
                     reg.from.attribute(
-                            ArtifactAttributes.ARTIFACT_FORMAT,
-                            AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
+                        ArtifactAttributes.ARTIFACT_FORMAT,
+                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
                     )
                     reg.from.attribute(
-                            Usage.USAGE_ATTRIBUTE,
-                            runtimeUsage
+                        Usage.USAGE_ATTRIBUTE,
+                        runtimeUsage
                     )
                     reg.to.attribute(
-                            ArtifactAttributes.ARTIFACT_FORMAT,
-                            AndroidArtifacts.ArtifactType.CLASSES_JAR.type
+                        ArtifactAttributes.ARTIFACT_FORMAT,
+                        AndroidArtifacts.ArtifactType.CLASSES_JAR.type
                     )
                     reg.to.attribute(
-                            Usage.USAGE_ATTRIBUTE,
-                            runtimeUsage
+                        Usage.USAGE_ATTRIBUTE,
+                        runtimeUsage
                     )
                     extractSdkShimTransformParamConfig(reg)
                 }

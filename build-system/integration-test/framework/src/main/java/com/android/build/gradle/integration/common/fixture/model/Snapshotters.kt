@@ -599,7 +599,7 @@ internal fun ModelSnapshotter<VariantDependencies>.snapshotVariantDependencies()
         }
         dataObject("libraryInfo", Library::libraryInfo) {
             item("group", LibraryInfo::group)
-            pathAsAString(name = "name", onlyIfPresent = true, propertyAction = LibraryInfo::name)
+            pathAsAString(name = "name", propertyAction = LibraryInfo::name)
             item("version", LibraryInfo::version)
             item("isTestFixtures", ComponentInfo::isTestFixtures)
             item("buildType", ComponentInfo::buildType)

@@ -28,7 +28,7 @@ android {
 
 dependencies {
     implementation project(':ads-sdk')
-    implementation project(':ads-sdk-implementation')
+
     implementation 'androidx.appcompat:appcompat:1.4.1'
 
     // This is implementation because of https://github.com/android/android-test/issues/1412

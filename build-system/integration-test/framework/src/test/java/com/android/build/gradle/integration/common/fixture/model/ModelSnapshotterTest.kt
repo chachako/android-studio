@@ -158,31 +158,39 @@ class ModelSnapshotterTest {
     }
 
     @Test
-    fun `pathAsAString with file check`() {
+    fun `pathAsAString with a valid unix based path`() {
         val smallObject = SmallObject("/some/important/path/with/some/leaf", null)
 
         val snapshot = snapshot(smallObject) {
-            pathAsAString("property1", true, SmallObject::property1)
+            pathAsAString("property1", SmallObject::property1)
         }
 
-        Truth.assertThat(snapshot).isEqualTo("""
+        if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_WINDOWS) {
+            Truth.assertThat(snapshot).isEqualTo("""
             - SmallObject:
                - property1 = "/some/important/path/with/some/leaf"
 
         """.trimIndent())
+        } else {
+            Truth.assertThat(snapshot).isEqualTo("""
+            - SmallObject:
+               - property1 = {IMPORTANT_PATH1}/with/some/leaf
+
+        """.trimIndent())
+        }
     }
 
     @Test
-    fun `pathAsAString with no file check`() {
-        val smallObject = SmallObject("/some/important/path/with/some/leaf", null)
+    fun `pathAsAString without a valid path`() {
+        val smallObject = SmallObject("aar", null)
 
         val snapshot = snapshot(smallObject) {
-            pathAsAString("property1", false, SmallObject::property1)
+            pathAsAString("property1", SmallObject::property1)
         }
 
         Truth.assertThat(snapshot).isEqualTo("""
             - SmallObject:
-               - property1 = {IMPORTANT_PATH1}/with/some/leaf
+               - property1 = "aar"
 
         """.trimIndent())
     }
@@ -192,7 +200,7 @@ class ModelSnapshotterTest {
         val smallObject = SmallObject(null, null)
 
         val snapshot = snapshot(smallObject) {
-            pathAsAString("property1", true, SmallObject::property1)
+            pathAsAString("property1", SmallObject::property1)
         }
 
         Truth.assertThat(snapshot).isEqualTo("""
