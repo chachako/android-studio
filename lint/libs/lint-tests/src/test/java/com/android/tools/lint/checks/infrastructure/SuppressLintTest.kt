@@ -537,7 +537,9 @@ class SuppressLintTest {
             .files(
                 kotlin(
                     """
-                    class Test {
+                    class Test(
+                        @Suppress("_PropertyIssue") var forbidden0: String = ""
+                    ) {
                         @Suppress("_PropertyIssue") var forbidden1: String = ""
                         @Suppress("_PropertyIssue") val forbidden2: String
                           get() = ""

@@ -692,4 +692,83 @@ class SuppressibleTestModeTest {
             """
         )
     }
+
+    @Test
+    fun testLambda() {
+        // b/258962911
+        val testFiles = listOf(
+            java(
+                """
+                package test.pkg;
+                class Bar {
+                    public void test() {
+                        Bar.create(param -> null);
+                        Bar.create(param -> null);
+                    }
+
+                    public static void create(Foo foo) {
+                    }
+
+                    @FunctionalInterface
+                    interface Foo {
+                        public Object run(Object param);
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg
+
+                class Bar2 {
+                    fun test() {
+                        create { param: Any? -> null }
+                        create { param: Any? -> null }
+                    }
+
+                    internal fun interface Foo {
+                        fun run(param: Any?): Any?
+                    }
+
+                    companion object {
+                        fun create(foo: Foo?) {}
+                    }
+                }
+                """
+            ).indented()
+        )
+        val output = """
+            src/test/pkg/Bar.java:4: Warning: Warning message here [TestId]
+                    Bar.create(param -> null);
+                               ~~~~~~~~~~~~~
+            src/test/pkg/Bar.java:5: Warning: Warning message here [TestId]
+                    Bar.create(param -> null);
+                               ~~~~~
+            src/test/pkg/Bar2.kt:5: Warning: Warning message here [TestId]
+                    create { param: Any? -> null }
+                             ~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/Bar2.kt:6: Warning: Warning message here [TestId]
+                    create { param: Any? -> null }
+                             ~~~~~
+            0 errors, 4 warnings
+        """.trimIndent()
+        check(
+            output,
+            testFiles,
+            """
+            test/pkg/Bar.java:
+            @@ -3 +3
+              class Bar {
+            -     public void test() {
+            +     @SuppressWarnings("TestId") public void test() {
+                      Bar.create(param -> null);
+            test/pkg/Bar2.kt:
+            @@ -4 +4
+              class Bar2 {
+            -     fun test() {
+            +     @Suppress("TestId") fun test() {
+                      create { param: Any? -> null }
+            """
+        )
+    }
 }

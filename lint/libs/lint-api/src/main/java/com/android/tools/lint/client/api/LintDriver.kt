@@ -2606,6 +2606,18 @@ class LintDriver(
                 }
             }
 
+            // Scope has type Any, to allow passing in things like UAST, PSI, DOM, etc.
+            // But this means users may also put in something totally unrelated and
+            // not realize it's not going to work (see for example b/257336973) so
+            // warn if we encounter an unknown scope type from tests, or if we know
+            // it's definitely wrong (like a Location).
+            if (scope != null && (scope is Location || isUnitTest)) {
+                error(
+                    "Unexpected type of incident scope class: ${scope.javaClass}. This is usually an UAST element, " +
+                        "a PSI element, a DOM node, or an ASM node. It should *not* be a location"
+                )
+            }
+
             return false
         }
 
@@ -4211,9 +4223,6 @@ class LintDriver(
         fun isSuppressed(issue: Issue, annotated: UAnnotated): Boolean {
             //noinspection ExternalAnnotations
             val annotations = annotated.uAnnotations
-            if (annotations.isEmpty()) {
-                return false
-            }
 
             for (annotation in annotations) {
                 val fqcn = annotation.qualifiedName
@@ -4269,7 +4278,8 @@ class LintDriver(
                 }
             }
 
-            return false
+            val defaultAnnotations = getDefaultUseSiteAnnotations(annotated) ?: return false
+            return isAnnotatedWithSuppress(issue, defaultAnnotations)
         }
 
         @JvmStatic

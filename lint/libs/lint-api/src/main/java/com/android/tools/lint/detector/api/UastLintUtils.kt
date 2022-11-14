@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
+import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UClass
@@ -431,19 +432,29 @@ class UastLintUtils {
             if (owner is KtLightMember<*>) {
                 val origin = owner.unwrapped
                 if (origin is KtProperty) {
-                    return getDefaultUseSiteAnnotations(owner, origin.annotationEntries)
+                    return getDefaultUseSiteAnnotations(origin.annotationEntries)
                 }
             } else if (owner is KtLightParameter) {
                 val origin = owner.method.unwrapped as? KtDeclaration
                 if (origin is KtProperty || origin is KtParameter) {
-                    return getDefaultUseSiteAnnotations(owner, origin.annotationEntries)
+                    return getDefaultUseSiteAnnotations(origin.annotationEntries)
                 }
             }
 
             return null
         }
 
-        private fun getDefaultUseSiteAnnotations(owner: PsiModifierListOwner, entries: List<KtAnnotationEntry>): List<UAnnotation>? {
+        @JvmStatic
+        fun getDefaultUseSiteAnnotations(annotated: UAnnotated): List<UAnnotation>? {
+            val entries = when (val origin = annotated.sourcePsi) {
+                is KtParameter -> origin.annotationEntries
+                is KtProperty -> origin.annotationEntries
+                else -> return null
+            }
+            return getDefaultUseSiteAnnotations(entries)
+        }
+
+        private fun getDefaultUseSiteAnnotations(entries: List<KtAnnotationEntry>): List<UAnnotation>? {
             var annotations: MutableList<UAnnotation>? = null
             for (ktAnnotation in entries) {
                 val site = ktAnnotation.useSiteTarget?.getAnnotationUseSiteTarget()

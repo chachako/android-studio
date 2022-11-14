@@ -37,8 +37,11 @@ import com.intellij.psi.PsiClassInitializer
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiImportStatementBase
+import com.intellij.psi.PsiLambdaExpression
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPackageStatement
+import com.intellij.psi.PsiParameter
+import com.intellij.psi.PsiParameterList
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtAnnotated
 import org.jetbrains.kotlin.psi.KtClassInitializer
@@ -468,10 +471,17 @@ class SuppressibleTestMode : SourceTransformationTestMode(
 
     private fun findJavaAnnotationTarget(element: PsiElement?): PsiModifierListOwner? {
         val modifier = PsiTreeUtil.getParentOfType(element, PsiModifierListOwner::class.java, false)
-        return if (modifier is PsiClassInitializer || modifier is PsiAnonymousClass) {
+        return if (modifier is PsiClassInitializer || modifier is PsiAnonymousClass ||
+            modifier is PsiParameter && modifier.isLambdaParameter()
+        ) {
             findJavaAnnotationTarget(modifier.parent)
         } else {
             modifier
         }
+    }
+
+    private fun PsiParameter.isLambdaParameter(): Boolean {
+        val parent = parent
+        return parent is PsiParameterList && parent.getParent() is PsiLambdaExpression
     }
 }
