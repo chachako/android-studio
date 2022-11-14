@@ -68,8 +68,8 @@ class MissingCompileSdkVersionTest {
     @Throws(Exception::class)
     fun testSyncIsSuccessful() {
         // Sync should complete successfully
-        val modelContainer = project.model().ignoreSyncIssues().fetchAndroidProjects()
-        val syncIssues = modelContainer.onlyModelSyncIssues
+        val modelContainer = project.modelV2().ignoreSyncIssues().fetchModels().container.getProject()
+        val syncIssues = modelContainer.issues?.syncIssues!!
 
         val compileSdkNotSetSyncIssues = syncIssues.filter { it.type == SyncIssue.TYPE_COMPILE_SDK_VERSION_NOT_SET }
         assertThat(compileSdkNotSetSyncIssues).hasSize(1)
@@ -83,7 +83,7 @@ class MissingCompileSdkVersionTest {
         assertThat(missingSdkIssue.message).contains(
             "Failed to find target with hash string 'android-${SdkVersionInfo.HIGHEST_KNOWN_STABLE_API}'")
 
-        assertThat(modelContainer.onlyModel.compileTarget).isEqualTo(
+        assertThat(modelContainer.androidDsl?.compileTarget).isEqualTo(
             "android-${SdkVersionInfo.HIGHEST_KNOWN_STABLE_API}")
     }
 

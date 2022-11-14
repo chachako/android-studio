@@ -20,8 +20,8 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
-import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.builder.model.AppBundleProjectBuildOutput
+import com.android.build.gradle.integration.common.utils.getBundleLocation
+import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.testutils.truth.PathSubject
 import com.android.tools.build.bundletool.model.AppBundle
 import com.google.common.truth.Truth
@@ -30,6 +30,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.io.File
+import kotlin.test.fail
 
 @RunWith(FilterableParameterized::class)
 class StoreArchivePackageBundleTaskTest(
@@ -41,12 +43,7 @@ class StoreArchivePackageBundleTaskTest(
     companion object {
         @Parameterized.Parameters(name = "storeArchiveEnabled_{0}")
         @JvmStatic
-        fun params() =
-            listOf(
-                arrayOf(true),
-                arrayOf(false),
-                arrayOfNulls<Boolean?>(1)
-            )
+        fun params() = listOf(true, false, null)
     }
 
     @get:Rule
@@ -55,7 +52,7 @@ class StoreArchivePackageBundleTaskTest(
             .fromTestApp(MultiModuleTestProject.builder().subproject(":app", app).build())
             .create()
 
-    @Test()
+    @Test
     fun testStoreArchiveFlag() {
         storeArchiveEnabled?.let {
             project.getSubproject(":app")
@@ -64,15 +61,12 @@ class StoreArchivePackageBundleTaskTest(
                 )
         }
         project.executor().run(":app:bundleDebug")
-        val bundleFile =
-            project.model()
-                .fetchContainer(AppBundleProjectBuildOutput::class.java)
-                .rootBuildModelMap[":app"]
-                ?.getOutputByName("debug")
-                ?.bundleFile
+
+        val bundleFile = getBundleFileOutput("debug")
+
         PathSubject.assertThat(bundleFile).isNotNull()
         PathSubject.assertThat(bundleFile).exists()
-        ZipFile(bundleFile!!).use { zip ->
+        ZipFile(bundleFile).use { zip ->
             val appBundle = AppBundle.buildFromZip(zip)
             if (storeArchiveEnabled == null) {
                 Truth.assertThat(appBundle.bundleConfig.optimizations.hasStoreArchive())
@@ -82,5 +76,13 @@ class StoreArchivePackageBundleTaskTest(
                     .isEqualTo(storeArchiveEnabled)
             }
         }
+    }
+
+    private fun getBundleFileOutput(variantName: String): File {
+        val outputModels = project.modelV2().fetchModels()
+        val outputAppModel = outputModels.container.getProject(":app").androidProject
+            ?: fail("Failed to get output model for :app module")
+
+        return outputAppModel.getVariantByName(variantName).getBundleLocation()
     }
 }
