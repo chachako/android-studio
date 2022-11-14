@@ -16,12 +16,8 @@
 
 package com.android.build.gradle.internal.api
 
-import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
-import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
-import com.android.build.api.variant.impl.SourceDirectoriesImpl
 import com.android.build.gradle.api.AndroidSourceDirectorySet
 import com.android.build.gradle.internal.api.artifact.SourceArtifactType
-import com.android.build.gradle.internal.scope.getDirectories
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Lists
@@ -50,13 +46,6 @@ class DefaultAndroidSourceDirectorySet(
     : AndroidSourceDirectorySet {
     private val source = Lists.newArrayList<Any>()
     override val filter = PatternSet()
-    /**
-     * Set once the sourceset is read to produce the android components, so that subsequent
-     * additions (e.g. during the applicationVariants API) are not ignored.
-     *
-     * This ends up being the list of variant source directories this source set feeds into.
-     */
-    private val lateAdditionsDelegates = mutableListOf<SourceDirectoriesImpl>()
 
     override fun getName(): String {
         return "$sourceSetName $name"
@@ -72,14 +61,6 @@ class DefaultAndroidSourceDirectorySet(
             return this
         }
         source.add(srcDir)
-        if (lateAdditionsDelegates.isNotEmpty()) {
-            val directoryEntry = ProviderBasedDirectoryEntryImpl(
-                name,
-                project.files(srcDir).getDirectories(project.layout.projectDirectory),
-                filter
-            )
-            lateAdditionsDelegates.forEach { it.addSource(directoryEntry) }
-        }
         return this
     }
 
@@ -91,33 +72,6 @@ class DefaultAndroidSourceDirectorySet(
     }
 
     override fun setSrcDirs(srcDirs: Iterable<*>): AndroidSourceDirectorySet {
-        if (lateAdditionsDelegates.isNotEmpty()) {
-            /**
-             * Filter out potential duplicates to avoid re-registering things that have already
-             * been registered. (Note that actually removing things that have already been added
-             * is not supported after AGP DSL finalization)
-             *
-             *  If a build author writes in groovy `srcDirs += "othersrc"`
-             *  this becomes something like
-             *  setSrcDirs(mutableSetOf().also {addAll(getSrcDirs()); add("otherSrc") })
-             *
-             *  So if this sourceDirectorySet contained ["src/main/java"], `srcDirs += "othersrc"` will
-             *  call setSrcDirs(listOf(File("/absolute/path/src/main/java"), "othersrc")).
-             *
-             *  And we want to avoid registering src/main/java twice to avoid duplicate definition
-             *  errors when compiling.
-             */
-            val previousFiles = this.srcDirs
-            val newFiles = project.files(srcDirs).files
-            for (newFile in (newFiles - previousFiles)) {
-                val directoryEntry = ProviderBasedDirectoryEntryImpl(
-                    name,
-                    project.files(newFile).getDirectories(project.layout.projectDirectory),
-                    filter
-                )
-                lateAdditionsDelegates.forEach { it.addSource(directoryEntry) }
-            }
-        }
         source.clear()
         for (dir in srcDirs) {
             source.add(dir)
@@ -221,10 +175,6 @@ class DefaultAndroidSourceDirectorySet(
 
     override fun getBuildableArtifact() : FileCollection {
         return project.files(Callable<Collection<File>> { srcDirs })
-    }
-
-    internal fun addLateAdditionDelegate(lateAdditionDelegate: SourceDirectoriesImpl) {
-        lateAdditionsDelegates += lateAdditionDelegate
     }
 }
 

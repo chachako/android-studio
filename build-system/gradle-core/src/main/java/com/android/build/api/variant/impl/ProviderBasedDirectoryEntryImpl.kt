@@ -24,13 +24,12 @@ import org.gradle.api.tasks.util.PatternSet
 
 class ProviderBasedDirectoryEntryImpl(
     override val name: String,
-    val elements: Provider<List<Directory>>,
-    override val filter: PatternFilterable?
-): DirectoryEntry  {
-
-    override val isGenerated: Boolean = true
-    override val isUserAdded: Boolean = true
+    val elements: Provider<out Collection<Directory>>,
+    override val filter: PatternFilterable?,
+    override val isGenerated: Boolean = true,
+    override val isUserAdded: Boolean = true,
     override val shouldBeAddedToIdeModel: Boolean = true
+): DirectoryEntry  {
 
     override fun asFiles(
         projectDir: Provider<Directory>

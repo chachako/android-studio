@@ -19,9 +19,7 @@ package com.android.build.api.component.impl
 import com.android.build.api.variant.impl.DirectoryEntries
 import com.android.build.api.variant.impl.DirectoryEntry
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
-import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
-import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
-import com.android.build.api.variant.impl.SourceDirectoriesImpl
+import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.api.AndroidSourceDirectorySet
 import com.android.build.gradle.api.AndroidSourceSet
@@ -44,48 +42,48 @@ class DefaultSourcesProviderImpl(
     val variantSources: VariantSources,
 ) : DefaultSourcesProvider {
 
-    override fun getJava(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry> =
-        component.defaultJavaSources(lateAdditionsDelegate)
+    override fun getJava(): List<DirectoryEntry> =
+        component.defaultJavaSources()
 
-    override fun getKotlin(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry> =
-        flattenSourceProviders(lateAdditionsDelegate, AndroidSourceSet::kotlin)
+    override fun getKotlin(): List<DirectoryEntry> =
+        flattenSourceProviders(AndroidSourceSet::kotlin)
 
-    override fun getRes(lateAdditionsDelegate: LayeredSourceDirectoriesImpl): List<DirectoryEntries>? =
+    override fun getRes(): List<DirectoryEntries>? =
         if (component.buildFeatures.androidResources) {
-            component.defaultResSources(lateAdditionsDelegate)
+            component.defaultResSources()
         } else null
 
-    override fun getResources(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry> =
-        flattenSourceProviders(lateAdditionsDelegate) { sourceSet -> sourceSet.resources }
+    override fun getResources(): List<DirectoryEntry> =
+        flattenSourceProviders { sourceSet -> sourceSet.resources }
 
-    override fun getAssets(lateAdditionsDelegate: LayeredSourceDirectoriesImpl): List<DirectoryEntries> =
-        defaultAssetsSources(lateAdditionsDelegate)
+    override fun getAssets(): List<DirectoryEntries> =
+        defaultAssetsSources()
 
-    override fun getJniLibs(lateAdditionsDelegate: LayeredSourceDirectoriesImpl): List<DirectoryEntries> =
-        getSourceList(lateAdditionsDelegate, DefaultAndroidSourceSet::jniLibs)
+    override fun getJniLibs(): List<DirectoryEntries> =
+        getSourceList(DefaultAndroidSourceSet::jniLibs)
 
-    override fun getShaders(lateAdditionsDelegate: LayeredSourceDirectoriesImpl): List<DirectoryEntries>? =
-        if (component.buildFeatures.shaders) getSourceList(lateAdditionsDelegate) { sourceProvider ->
+    override fun getShaders(): List<DirectoryEntries>? =
+        if (component.buildFeatures.shaders) getSourceList() { sourceProvider ->
             sourceProvider.shaders
         } else null
 
-    override fun getAidl(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry>? =
+    override fun getAidl(): List<DirectoryEntry>? =
         if (component.buildFeatures.aidl) {
-            flattenSourceProviders(lateAdditionsDelegate) { sourceSet -> sourceSet.aidl }
+            flattenSourceProviders { sourceSet -> sourceSet.aidl }
         } else null
 
-    override fun getMlModels(lateAdditionsDelegate: LayeredSourceDirectoriesImpl): List<DirectoryEntries>? =
+    override fun getMlModels(): List<DirectoryEntries>? =
         if (component.buildFeatures.mlModelBinding) {
-            getSourceList(lateAdditionsDelegate) { sourceProvider -> sourceProvider.mlModels }
+            getSourceList() { sourceProvider -> sourceProvider.mlModels }
         } else null
 
-    override fun getRenderscript(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry>? =
+    override fun getRenderscript(): List<DirectoryEntry>? =
         if (component.buildFeatures.renderScript) {
-            flattenSourceProviders(lateAdditionsDelegate) { sourceSet -> sourceSet.renderscript }
+            flattenSourceProviders { sourceSet -> sourceSet.renderscript }
         } else null
 
-    override fun getBaselineProfiles(lateAdditionsDelegate: FlatSourceDirectoriesImpl): List<DirectoryEntry> =
-        flattenSourceProviders(lateAdditionsDelegate, AndroidSourceSet::baselineProfiles )
+    override fun getBaselineProfiles(): List<DirectoryEntry> =
+        flattenSourceProviders(AndroidSourceSet::baselineProfiles )
 
     override val artProfile: File
         get() = variantSources.artProfile
@@ -101,7 +99,6 @@ class DefaultSourcesProviderImpl(
 
 
     private fun flattenSourceProviders(
-        lateAdditionsDelegate: SourceDirectoriesImpl,
         sourceDirectory: (sourceSet: AndroidSourceSet) -> com.android.build.api.dsl.AndroidSourceDirectorySet
     ): List<DirectoryEntry> {
         val sourceSets = mutableListOf<DirectoryEntry>()
@@ -110,16 +107,24 @@ class DefaultSourcesProviderImpl(
             val sourceSet = sourceProvider as AndroidSourceSet
             val androidSourceDirectorySet =
                 sourceDirectory(sourceSet) as DefaultAndroidSourceDirectorySet
-            androidSourceDirectorySet.addLateAdditionDelegate(lateAdditionsDelegate)
-            for (srcDir in androidSourceDirectorySet.srcDirs) {
-                sourceSets.add(
-                    FileBasedDirectoryEntryImpl(
-                        name = sourceSet.name,
-                        directory = srcDir,
-                        filter = androidSourceDirectorySet.filter,
-                    )
+            sourceSets.add(
+                ProviderBasedDirectoryEntryImpl(
+                    sourceSet.name,
+                    // It's ok to use a provider here since androidSourceDirectorySet.srcDirs is
+                    // Collection<File> which therefore does not need to carry task dependencies.
+                    component.services.provider {
+                        androidSourceDirectorySet.srcDirs.map {
+                            component.services.projectInfo.projectDirectory.dir(
+                                it.absolutePath
+                            )
+                        }
+                    },
+                    filter = androidSourceDirectorySet.filter,
+                    isGenerated = false,
+                    isUserAdded = false,
+                    shouldBeAddedToIdeModel = false,
                 )
-            }
+            )
         }
         return sourceSets
     }
@@ -130,13 +135,13 @@ class DefaultSourcesProviderImpl(
      *
      * Every entry is a ConfigurableFileTree instance to enable incremental java compilation.
      */
-    private fun ComponentCreationConfig.defaultJavaSources(lateAdditionsDelegate: SourceDirectoriesImpl): List<DirectoryEntry> {
+    private fun ComponentCreationConfig.defaultJavaSources(): List<DirectoryEntry> {
         // Build the list of source folders.
         val sourceSets = mutableListOf<DirectoryEntry>()
 
         // First the actual source folders.
         sourceSets.addAll(
-            flattenSourceProviders(lateAdditionsDelegate) { sourceSet -> sourceSet.java }
+            flattenSourceProviders { sourceSet -> sourceSet.java }
         )
 
         // for the other, there's no duplicate so no issue.
@@ -181,11 +186,11 @@ class DefaultSourcesProviderImpl(
         return sourceSets
     }
 
-    private fun ComponentCreationConfig.defaultResSources(lateAdditionsDelegate: SourceDirectoriesImpl): List<DirectoryEntries> {
+    private fun ComponentCreationConfig.defaultResSources(): List<DirectoryEntries> {
         val sourceDirectories = mutableListOf<DirectoryEntries>()
 
         sourceDirectories.addAll(
-            getSourceList(lateAdditionsDelegate) { sourceProvider -> sourceProvider.res }
+            getSourceList() { sourceProvider -> sourceProvider.res }
         )
 
         val generatedFolders = mutableListOf<DirectoryEntry>()
@@ -214,11 +219,10 @@ class DefaultSourcesProviderImpl(
         return Collections.unmodifiableList(sourceDirectories)
     }
 
-    private fun defaultAssetsSources(lateAdditionsDelegate: SourceDirectoriesImpl): List<DirectoryEntries> =
-        getSourceList(lateAdditionsDelegate) { sourceProvider -> sourceProvider.assets }
+    private fun defaultAssetsSources(): List<DirectoryEntries> =
+        getSourceList() { sourceProvider -> sourceProvider.assets }
 
     private fun getSourceList(
-        lateAdditionsDelegate: SourceDirectoriesImpl,
         action: (sourceProvider: DefaultAndroidSourceSet) -> AndroidSourceDirectorySet
     ): List<DirectoryEntries> {
         // Variant sources are added independently later so that they can be added to the model
@@ -226,7 +230,6 @@ class DefaultSourcesProviderImpl(
             sourceProvider as DefaultAndroidSourceSet
             val androidSourceDirectorySet =
                 action(sourceProvider) as DefaultAndroidSourceDirectorySet
-            androidSourceDirectorySet.addLateAdditionDelegate(lateAdditionsDelegate)
             DirectoryEntries(
                 sourceProvider.name,
                 androidSourceDirectorySet.srcDirs.map { directory ->
