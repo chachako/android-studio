@@ -26,6 +26,7 @@ import com.android.SdkConstants.ATTR_PATH_PATTERN
 import com.android.SdkConstants.ATTR_PATH_PREFIX
 import com.android.SdkConstants.ATTR_PORT
 import com.android.SdkConstants.ATTR_SCHEME
+import com.android.SdkConstants.ATTR_MIMETYPE;
 import com.android.SdkConstants.TAG_ACTION
 import com.android.SdkConstants.TAG_CATEGORY
 import com.android.SdkConstants.TAG_DATA
@@ -158,15 +159,16 @@ object NavGraphExpander {
             if (deepLink.isAutoVerify) {
                 addAttribute(ANDROID_URI, ATTR_AUTO_VERIFY, "true", intentFilterElement)
             }
+            val childElementDataList = mutableListOf<ChildElementData>()
             // then add children elements to <intent-filter> element
-            val childElementDataList: MutableList<ChildElementData> =
-                    mutableListOf(
-                            ChildElementData(
-                                    TAG_ACTION, ATTR_NAME, "android.intent.action.VIEW"),
-                            ChildElementData(
-                                    TAG_CATEGORY, ATTR_NAME, "android.intent.category.DEFAULT"),
-                            ChildElementData(
-                                    TAG_CATEGORY, ATTR_NAME, "android.intent.category.BROWSABLE"))
+            if (deepLink.action.isNotBlank()) {
+                childElementDataList.add(
+                    ChildElementData(TAG_ACTION, ATTR_NAME, deepLink.action))
+            }
+            childElementDataList.add(ChildElementData(
+                TAG_CATEGORY, ATTR_NAME, "android.intent.category.DEFAULT"))
+            childElementDataList.add(ChildElementData(
+                TAG_CATEGORY, ATTR_NAME, "android.intent.category.BROWSABLE"))
             for (scheme in deepLinkGroup.flatMap { it.schemes }.toSet()) {
                 childElementDataList.add(ChildElementData(TAG_DATA, ATTR_SCHEME, scheme))
             }
@@ -175,7 +177,7 @@ object NavGraphExpander {
             }
             if (deepLink.port != -1) {
                 childElementDataList.add(
-                        ChildElementData(TAG_DATA, ATTR_PORT, deepLink.port.toString()))
+                    ChildElementData(TAG_DATA, ATTR_PORT, deepLink.port.toString()))
             }
             val path = deepLink.path
             when {
@@ -186,6 +188,9 @@ object NavGraphExpander {
                     childElementDataList.add(
                         ChildElementData(TAG_DATA, ATTR_PATH_PATTERN, path))
                 else -> childElementDataList.add(ChildElementData(TAG_DATA, ATTR_PATH, path))
+            }
+            if (deepLink.mimeType != null) {
+                childElementDataList.add(ChildElementData(TAG_DATA, ATTR_MIMETYPE, deepLink.mimeType))
             }
             childElementDataList.forEach {
                 addChildElementWithSingleAttribute(
@@ -224,6 +229,15 @@ object NavGraphExpander {
     }
 
     /**
+     * This class is used to hold uri, action, and mimeType of a deep link and is used in
+     * [findDeepLinks] below to check for duplicate elements.
+     */
+    private data class DeepLinkComparisonObject(
+        private val uri: String,
+        private val action: String,
+        private val mimeType: String?)
+
+    /**
      * Find [DeepLink]s from referenced [NavigationXmlDocument]s and add them
      * to the deepLinkList.
      *
@@ -236,7 +250,7 @@ object NavGraphExpander {
         deepLinkList: MutableList<DeepLink>,
         mergingReportBuilder: MergingReport.Builder,
         sourceFilePosition: SourceFilePosition,
-        deepLinkUriMap: MutableMap<String, DeepLink> = mutableMapOf(),
+        deepLinkComparisonObjects: MutableSet<DeepLinkComparisonObject> = mutableSetOf(),
         visitedNavigationFiles: MutableSet<String> = mutableSetOf(),
         navigationFileAncestors: TreeSet<String> = sortedSetOf()
     ) {
@@ -267,11 +281,25 @@ object NavGraphExpander {
                 "Referenced navigation file with navigationXmlId = $navigationXmlId not found")
         for (deepLink in navigationXmlDocument.deepLinks) {
             for (deepLinkUri in getDeepLinkUris(deepLink)) {
-                if (deepLinkUriMap.containsKey(deepLinkUri)) {
+                val deepLinkComparisonObject =
+                    DeepLinkComparisonObject(
+                        uri = deepLinkUri,
+                        action = deepLink.action,
+                        mimeType = deepLink.mimeType
+                    )
+                if (deepLinkComparisonObjects.contains(deepLinkComparisonObject)) {
+                    val comparisonString = StringBuilder("uri:$deepLinkUri")
+                    if (deepLink.action.isNotBlank()) {
+                        comparisonString.append(", action:${deepLink.action}")
+                    }
+                    if (deepLink.mimeType != null) {
+                        comparisonString.append(", mimeType:${deepLink.mimeType}")
+                    }
                     throw NavGraphException(
-                            "Multiple destinations found with a deep link to $deepLinkUri")
+                        "Multiple destinations found with a deep link containing $comparisonString."
+                    )
                 }
-                deepLinkUriMap[deepLinkUri] = deepLink
+                deepLinkComparisonObjects.add(deepLinkComparisonObject)
             }
             deepLinkList.add(deepLink)
         }
@@ -282,7 +310,7 @@ object NavGraphExpander {
                 deepLinkList,
                 mergingReportBuilder,
                 sourceFilePosition,
-                deepLinkUriMap,
+                deepLinkComparisonObjects,
                 visitedNavigationFiles,
                 navigationFileAncestors
             )

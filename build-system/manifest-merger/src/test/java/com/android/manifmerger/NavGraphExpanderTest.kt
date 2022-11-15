@@ -71,7 +71,8 @@ class NavGraphExpanderTest {
                     |<navigation
                     |    xmlns:android="http://schemas.android.com/apk/res/android"
                     |    xmlns:app="http://schemas.android.com/apk/res-auto">
-                    |    <deepLink app:uri="https://.*.example.com/.*/{placeholder}" />
+                    |    <deepLink app:uri="https://.*.example.com/.*/{placeholder}"
+                    |              app:action="" />
                     |</navigation>""".trimMargin()
 
         val inputManifestString =
@@ -111,7 +112,6 @@ class NavGraphExpanderTest {
                     |                <data android:pathPrefix="/foo/" />
                     |            </intent-filter>
                     |            <intent-filter>
-                    |                <action android:name="android.intent.action.VIEW" />
                     |                <category android:name="android.intent.category.DEFAULT" />
                     |                <category android:name="android.intent.category.BROWSABLE" />
                     |                <data android:scheme="https" />
@@ -362,7 +362,9 @@ class NavGraphExpanderTest {
                     |    xmlns:android="http://schemas.android.com/apk/res/android"
                     |    xmlns:app="http://schemas.android.com/apk/res-auto">
                     |    <include app:graph="@navigation/nav2" />
-                    |    <deepLink app:uri="http://www.example.com" />
+                    |    <deepLink app:uri="http://www.example.com"
+                    |        app:action="android.intent.action.APP_ACTION"
+                    |        app:mimeType="app/image/jpg" />
                     |</navigation>""".trimMargin()
 
         val navigationId2 = "nav2"
@@ -371,7 +373,9 @@ class NavGraphExpanderTest {
                     |<navigation
                     |    xmlns:android="http://schemas.android.com/apk/res/android"
                     |    xmlns:app="http://schemas.android.com/apk/res-auto">
-                    |    <deepLink app:uri="www.example.com" />
+                    |    <deepLink app:uri="http://www.example.com"
+                    |        app:action="android.intent.action.APP_ACTION"
+                    |        app:mimeType="app/image/jpg" />
                     |</navigation>""".trimMargin()
 
         val inputManifestString =
@@ -396,12 +400,14 @@ class NavGraphExpanderTest {
         expandNavGraphs(xmlDocument, loadedNavigationMap, mergingReportBuilder)
 
         // verify the error was recorded.
-        Mockito.verify(mergingReportBuilder).addMessage(
+        verify(mergingReportBuilder).addMessage(
                 Mockito.any<SourceFilePosition>(),
                 Mockito.eq(MergingReport.Record.Severity.ERROR),
                 Mockito.eq(
-                        "Multiple destinations found with a deep link to " +
-                                "http://www.example.com/"))
+                        "Multiple destinations found with a deep link containing " +
+                                "uri:http://www.example.com/, " +
+                                "action:android.intent.action.APP_ACTION, " +
+                                "mimeType:app/image/jpg."))
     }
 
     @Test
@@ -526,8 +532,8 @@ class NavGraphExpanderTest {
             Mockito.any<SourceFilePosition>(),
             Mockito.eq(MergingReport.Record.Severity.ERROR),
             Mockito.eq(
-                "Multiple destinations found with a deep link to " +
-                        "http://www.example.com/?foo=.*"))
+                "Multiple destinations found with a deep link containing " +
+                        "uri:http://www.example.com/?foo=.*, action:android.intent.action.VIEW."))
     }
 
     @Test

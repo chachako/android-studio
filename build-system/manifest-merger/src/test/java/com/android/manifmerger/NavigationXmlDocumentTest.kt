@@ -29,7 +29,7 @@ class NavigationXmlDocumentTest {
     fun testGetNavigationXmlIds() {
 
         val input =
-                """"|<navigation
+                """|<navigation
                     |    xmlns:android="http://schemas.android.com/apk/res/android"
                     |    xmlns:app="http://schemas.android.com/apk/res-auto">
                     |    <include app:graph="@navigation/foo" />
@@ -50,7 +50,7 @@ class NavigationXmlDocumentTest {
     fun testGetDeepLinks() {
 
         val input =
-                """"|<navigation
+                """|<navigation
                     |    xmlns:android="http://schemas.android.com/apk/res/android"
                     |    xmlns:app="http://schemas.android.com/apk/res-auto">
                     |    <include app:graph="@navigation/foo" />
@@ -92,7 +92,7 @@ class NavigationXmlDocumentTest {
     fun testCustomNamespacePrefix() {
 
         val input =
-                """"|<navigation
+                """|<navigation
                     |    xmlns:custom1="http://schemas.android.com/apk/res/android"
                     |    xmlns:custom2="http://schemas.android.com/apk/res-auto">
                     |    <include custom2:graph="@navigation/foo" />
@@ -115,7 +115,7 @@ class NavigationXmlDocumentTest {
     fun testEmptyElementExceptions() {
 
         val input =
-                """"|<navigation
+                """|<navigation
                     |    xmlns:android="http://schemas.android.com/apk/res/android"
                     |    xmlns:app="http://schemas.android.com/apk/res-auto">
                     |    <include />
@@ -136,6 +136,33 @@ class NavigationXmlDocumentTest {
             fail("Expecting NavigationXmlDocumentException")
         } catch (e: NavigationXmlDocument.NavigationXmlDocumentException) {
             // should throw NavigationXmlDocumentException because of empty <deepLink> element
+        }
+    }
+
+    @Test
+    fun testEmptyMimeType() {
+
+        val input =
+                """|<navigation
+                    |    xmlns:android="http://schemas.android.com/apk/res/android"
+                    |    xmlns:app="http://schemas.android.com/apk/res-auto">
+                    |    <include app:graph="@navigation/foo" />
+                    |    <include app:graph="@navigation/bar" />
+                    |    <deepLink app:uri="www.example1.com"
+                    |            app:mimeType="" />
+                    |    <navigation>
+                    |        <include app:graph="@navigation/bar" />
+                    |        <deepLink app:uri="www.example2.com" />
+                    |    </navigation>
+                    |</navigation>""".trimMargin()
+
+        val navigationXmlDocument = NavigationXmlLoader.load(UNKNOWN, input)
+
+        try {
+            navigationXmlDocument.deepLinks
+            fail("Expecting NavigationXmlDocumentException")
+        } catch (e: NavigationXmlDocument.NavigationXmlDocumentException) {
+            // should throw NavigationXmlDocumentException because of empty mimeType
         }
     }
 }

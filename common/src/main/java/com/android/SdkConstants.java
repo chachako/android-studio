@@ -1294,6 +1294,7 @@ public final class SdkConstants {
     public static final String ATTR_ON_DEMAND = "onDemand";
     public static final String MANIFEST_ATTR_TITLE = "title";
     public static final String ATTR_TARGET_ACTIVITY = "targetActivity";
+    public static final String ATTR_MIMETYPE = "mimeType";
 
     // Attributes: Resources
     public static final String ATTR_ATTR = "attr";

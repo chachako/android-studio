@@ -188,7 +188,6 @@ class DeepLinkTest {
         } catch (e: DeepLinkException) {
             // should throw DeepLinkException because of invalid URI syntax
         }
-
     }
 
     @Test
@@ -206,6 +205,27 @@ class DeepLinkTest {
     }
 
     @Test
+    fun testAction() {
+        assertThat(DeepLink.fromUri("http://www.example.com", UNKNOWN, false).action)
+                .isEqualTo("android.intent.action.VIEW")
+        assertThat(DeepLink.fromUri(
+            "http://www.example.com", UNKNOWN, false, "testAction").action)
+            .isEqualTo("testAction")
+        assertThat(DeepLink.fromUri(
+            "http://www.example.com", UNKNOWN, false, "").action)
+            .isEqualTo("")
+    }
+
+    @Test
+    fun testMimeType() {
+        assertThat(DeepLink.fromUri(
+            "http://www.example.com", UNKNOWN, false, mimeType = "testMimeType").mimeType)
+            .isEqualTo("testMimeType")
+        assertThat(DeepLink.fromUri("http://www.example.com", UNKNOWN, false).mimeType)
+            .isNull()
+    }
+
+    @Test
     fun testChooseEncoder() {
         val encoder = DeepLink.DeepLinkUri
                 .chooseEncoder("http://www.example.com", 'w', 'x')
@@ -220,6 +240,5 @@ class DeepLinkTest {
         } catch (e: IllegalArgumentException) {
             // should throw IllegalArgumentException because char1 and char2 must be different
         }
-
     }
 }

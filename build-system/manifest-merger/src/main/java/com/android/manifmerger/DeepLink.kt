@@ -35,6 +35,8 @@ import java.util.regex.Pattern
  * @property sourceFilePosition the source file position of the deep link element in the
  *                              navigation xml file.
  * @property isAutoVerify true if the <deepLink> element has an android:autoVerify="true" attribute.
+ * @property action a custom action defined in source file; if not specified, defaults to "VIEW"
+ * @property mimeType a mime type specified in source file; this is an optional label
  */
 data class DeepLink(
         val schemes: List<String>,
@@ -43,18 +45,33 @@ data class DeepLink(
         val path: String,
         val query: String?,
         val sourceFilePosition: SourceFilePosition,
-        val isAutoVerify: Boolean) {
+        val isAutoVerify: Boolean,
+        val action: String = "android.intent.action.VIEW",
+        val mimeType: String? = null) {
 
     companion object {
         /** factory method to generate DeepLink from uri String */
         fun fromUri(
                 uri: String,
                 sourceFilePosition: SourceFilePosition,
-                isAutoVerify: Boolean): DeepLink {
+                isAutoVerify: Boolean,
+                action: String? = null,
+                mimeType: String? = null): DeepLink {
             val deepLinkUri = try {
                 DeepLinkUri.fromUri(uri)
             } catch (e: URISyntaxException) {
                 throw DeepLinkException(e)
+            }
+            if (action == null) {
+                return DeepLink(
+                    deepLinkUri.schemes,
+                    deepLinkUri.host,
+                    deepLinkUri.port,
+                    deepLinkUri.path,
+                    deepLinkUri.query,
+                    sourceFilePosition,
+                    isAutoVerify,
+                    mimeType = mimeType)
             }
             return DeepLink(
                     deepLinkUri.schemes,
@@ -63,7 +80,9 @@ data class DeepLink(
                     deepLinkUri.path,
                     deepLinkUri.query,
                     sourceFilePosition,
-                    isAutoVerify)
+                    isAutoVerify,
+                    action,
+                    mimeType)
         }
     }
 

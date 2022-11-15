@@ -192,6 +192,20 @@ public class PathSubject extends Subject<PathSubject, Path> {
         }
     }
 
+    public void containsExactlyOnce(@NonNull String expectedContent) {
+        isFile();
+
+        try {
+            String contents = new String(Files.readAllBytes(actual()), UTF_8);
+            if (contents.split(expectedContent).length != 2) {
+                failWithBadResults(
+                        "contains exactly one occurrence of ", expectedContent, "is", contents);
+            }
+        } catch (IOException e) {
+            failWithoutActual(simpleFact("Unable to read " + actual()));
+        }
+    }
+
     public void wasModifiedAt(@NonNull FileTime expectedTime) {
         exists();
 
