@@ -85,9 +85,8 @@ class RenderscriptDeprecationTest {
         )
 
         val expectedWarning =
-            "The RenderScript APIs are deprecated. They will be removed in Android Gradle plugin " +
-                    "${Version.VERSION_9_0.versionString}. See the following link for a guide to " +
-                    "migrate from RenderScript: " +
+            "RenderScript APIs are deprecated starting in Android 12. See the following link for " +
+                    "a guide to migrate from RenderScript: " +
                     "https://developer.android.com/guide/topics/renderscript/migrate"
 
         // We expect a deprecation warning if renderscript is enabled and there is a renderscript
