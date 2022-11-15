@@ -447,6 +447,10 @@ open class JavaContext(
     val uastContext: UastContext
         get() = uastFile?.getUastContext()!!
 
+    override fun toString(): String {
+        return javaClass.simpleName + ':' + file.name + ':' + file.parent
+    }
+
     companion object {
         // TODO: Move to LintUtils etc
         @JvmStatic

@@ -2330,6 +2330,67 @@ class ProjectInitializerTest {
         checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/c/lint_partial_results"))
     }
 
+    @Test
+    fun testOverlappingInferred() {
+        // Regression test for b/248054901
+        val root = temp.newFolder().canonicalFile.absoluteFile
+        val projects = lint().files(
+            xml(
+                "project.xml",
+                """
+                <project>
+                <module name="test" android="true" library="false">
+                <src file="com/google/b244342092repro/ToBeChecked.java" test="true"/>
+                <src file="com/google/b244342092repro/gen/com/google/b244342092repro/ToBeIgnored.java" generated="true"/>
+                </module>
+                </project>
+                """
+            ).indented(),
+            java(
+                "com/google/b244342092repro/ToBeChecked.java",
+                """
+                package com.google.b244342092repro;
+                final class ToBeChecked {
+                  final ToBeIgnored ref = new ToBeIgnored();
+                  private ToBeChecked() {
+                  }
+                }
+                """
+            ).indented(),
+            java(
+                "com/google/b244342092repro/gen/com/google/b244342092repro/ToBeIgnored.java",
+                """
+                package com.google.b244342092repro;
+                final class ToBeIgnored {
+                  @org.junit.Ignore
+                  @org.junit.Test
+                  public void testFoo() {
+                  }
+                }
+                """
+            ).indented()
+        ).createProjects(root)
+        val descriptorFile = File(projects[0], "project.xml")
+
+        MainTest.checkDriver(
+            "No issues found.",
+            "",
+
+            // Expected exit code
+            ERRNO_SUCCESS,
+
+            // Args
+            arrayOf(
+                "--check",
+                "IgnoreWithoutReason",
+                "--project",
+                descriptorFile.path
+            ),
+
+            null, null
+        )
+    }
+
     companion object {
         @ClassRule
         @JvmField

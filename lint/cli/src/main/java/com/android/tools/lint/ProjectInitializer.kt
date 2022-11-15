@@ -36,11 +36,15 @@ import com.android.sdklib.AndroidTargetHash.PLATFORM_HASH_PREFIX
 import com.android.sdklib.SdkVersionInfo
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.client.api.UastParser
 import com.android.tools.lint.detector.api.Desugaring
+import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Platform
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.SourceSetType
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.tools.lint.model.LintModelVariant
 import com.android.utils.XmlUtils.getFirstSubTag
@@ -66,6 +70,7 @@ import java.io.File.separatorChar
 import java.io.IOException
 import java.util.EnumSet
 import java.util.HashSet
+import java.util.Locale
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlin.math.max
@@ -113,7 +118,7 @@ private const val DOT_SRCJAR = ".srcjar"
  * Compute a list of lint [Project] instances from the given XML
  * descriptor files. Each descriptor is considered completely separate
  * from the other (e.g. you can't have library definitions in one
- * referenced from another descriptor.
+ * referenced from another descriptor.)
  */
 fun computeMetadata(client: LintClient, descriptor: File): ProjectMetadata {
     val initializer = ProjectInitializer(
@@ -307,8 +312,7 @@ private class ProjectInitializer(
         var baseline: File? = null
         val jdkBootClasspath = mutableListOf<File>()
         while (child != null) {
-            val tag = child.tagName
-            when (tag) {
+            when (val tag = child.tagName) {
                 TAG_MODULE -> {
                     parseModule(child)
                 }
@@ -376,7 +380,7 @@ private class ProjectInitializer(
         // included by other projects (e.g. because they are library projects)
         val roots = HashSet(allModules)
         for (project in allModules) {
-            roots.removeAll(project.allLibraries)
+            roots.removeAll(project.allLibraries.toSet())
         }
 
         val sortedModules = roots.toMutableList()
@@ -384,7 +388,7 @@ private class ProjectInitializer(
 
         // Initialize the classpath. We have a single massive jar for all
         // modules instead of individual folders...
-        if (!globalClasspath.isEmpty()) {
+        if (globalClasspath.isNotEmpty()) {
             var useForAnalysis = true
             for (module in sortedModules) {
                 if (module.getJavaLibraries(true).isEmpty()) {
@@ -427,7 +431,7 @@ private class ProjectInitializer(
         }
 
         val s = element.getAttribute(ATTR_DESUGAR)
-        if (!s.isEmpty()) {
+        if (s.isNotEmpty()) {
             for (option in s.split(",")) {
                 var found = false
                 for (v in Desugaring.values()) {
@@ -444,7 +448,7 @@ private class ProjectInitializer(
                 if (!found) {
                     // One of the built-in constants? Desugaring.FULL etc
                     try {
-                        val fieldName = option.toUpperCase()
+                        val fieldName = option.uppercase(Locale.ROOT)
                         val cls = Desugaring::class.java
 
                         @Suppress("UNCHECKED_CAST")
@@ -567,7 +571,9 @@ private class ProjectInitializer(
             null
         }
 
-        val module = ManualProject(client, dir, name, library, android, partialResultsDir)
+        val generatedSources = mutableListOf<File>()
+        val testSources = mutableListOf<File>()
+        val module = ManualProject(client, dir, name, library, android, partialResultsDir, testSources, generatedSources)
         modules[name] = module
 
         val model = if (moduleElement.hasAttribute(ATTR_MODEL)) {
@@ -577,8 +583,6 @@ private class ProjectInitializer(
         }
 
         val sources = mutableListOf<File>()
-        val generatedSources = mutableListOf<File>()
-        val testSources = mutableListOf<File>()
         val resources = mutableListOf<File>()
         val manifests = mutableListOf<File>()
         val classes = mutableListOf<File>()
@@ -809,7 +813,7 @@ private class ProjectInitializer(
         }
 
         // Create module wrapper
-        val project = ManualProject(client, expanded, name, true, true, partialResultsDir)
+        val project = ManualProject(client, expanded, name, true, true, partialResultsDir, emptyList(), emptyList())
         project.reportIssues = false
         val manifest = File(expanded, ANDROID_MANIFEST_XML)
         if (manifest.isFile) {
@@ -863,7 +867,7 @@ private class ProjectInitializer(
         }
 
         // Create module wrapper
-        val project = ManualProject(client, jarFile, name, true, false, partialResultsDir)
+        val project = ManualProject(client, jarFile, name, true, false, partialResultsDir, emptyList(), emptyList())
         project.reportIssues = false
         project.setClasspath(listOf(jarFile), false)
         jarAarMap[jarFile] = name
@@ -919,7 +923,7 @@ private class ProjectInitializer(
 
     private fun computeSourceRoots(sources: List<File>): MutableList<File> {
         val sourceRoots = mutableListOf<File>()
-        if (!sources.isEmpty()) {
+        if (sources.isNotEmpty()) {
             // Cache for each directory since computing root for a source file is
             // expensive
             val dirToRootCache = mutableMapOf<String, File>()
@@ -1082,7 +1086,7 @@ fun findPackage(source: String, file: File): String? {
     // Don't use LintClient.readFile; this will attempt to use VFS in some cases
     // (for example, when encountering Windows file line endings, in order to make
     // sure that lint's text offsets matches PSI's text offsets), but since this
-    // is still early in the initialization sequence and we haven't set up the
+    // is still early in the initialization sequence, and we haven't set up the
     // IntelliJ environment yet, we're not ready. And for the purposes of this file
     // read, we don't actually care about line offsets at all.
 
@@ -1169,14 +1173,15 @@ fun findPackage(source: String, file: File): String? {
  * A special subclass of lint's [Project] class which can be manually
  * configured with custom source locations, custom library types, etc.
  */
-private class ManualProject
-constructor(
+private class ManualProject constructor(
     client: LintClient,
     dir: File,
     name: String,
     library: Boolean,
     private var android: Boolean,
-    partialResultsDir: File?
+    partialResultsDir: File?,
+    private val testFiles: List<File>,
+    private val generatedFiles: List<File>
 ) : Project(client, dir, dir, partialResultsDir) {
 
     var variant: LintModelVariant? = null
@@ -1277,7 +1282,7 @@ constructor(
      * these specific files.
      */
     private fun addFilteredFiles(sources: List<File>) {
-        if (!sources.isEmpty()) {
+        if (sources.isNotEmpty()) {
             if (files == null) {
                 files = mutableListOf()
             }
@@ -1294,7 +1299,7 @@ constructor(
         }
 
     fun setCompileSdkVersion(buildApi: String) {
-        if (!buildApi.isEmpty()) {
+        if (buildApi.isNotEmpty()) {
             buildTargetHash = if (Character.isDigit(buildApi[0]))
                 PLATFORM_HASH_PREFIX + buildApi
             else buildApi
@@ -1325,4 +1330,57 @@ constructor(
     }
 
     override fun getBuildVariant(): LintModelVariant? = variant
+
+    override fun getUastSourceList(driver: LintDriver, main: Project?): UastParser.UastSourceList? {
+        val files = files ?: return null
+        val initialCapacity = files.size
+        val contexts = ArrayList<JavaContext>(initialCapacity)
+        val testContexts = ArrayList<JavaContext>(initialCapacity)
+        val generatedContexts = ArrayList<JavaContext>(initialCapacity)
+        val gradleKtsContexts = ArrayList<JavaContext>(2)
+        val testSet = testFiles.toSet()
+        val generatedSet = generatedFiles.toSet()
+        for (file in files) {
+            val path = file.path
+            if (path.endsWith(DOT_JAVA) || path.endsWith(DOT_KT) || path.endsWith(SdkConstants.DOT_KTS)) {
+                val context = JavaContext(driver, this, main, file)
+
+                when {
+                    // Figure out if this file is a Gradle .kts context
+                    path.endsWith(SdkConstants.DOT_KTS) -> {
+                        gradleKtsContexts.add(context)
+                    }
+                    testSet.contains(file) -> {
+                        context.sourceSetType = SourceSetType.UNIT_TESTS
+                        context.isTestSource = true
+                        if (generatedSet.contains(file)) { // files can be both tests and generated
+                            context.isGeneratedSource = true
+                        }
+                        testContexts.add(context)
+                    }
+                    generatedSet.contains(file) -> {
+                        context.sourceSetType = SourceSetType.MAIN
+                        context.isGeneratedSource = true
+                        generatedContexts.add(context)
+                    }
+                    else -> {
+                        context.sourceSetType = SourceSetType.MAIN
+                        contexts.add(context)
+                    }
+                }
+            }
+        }
+
+        val capacity = contexts.size + testContexts.size + generatedContexts.size + gradleKtsContexts.size
+        val allContexts = ArrayList<JavaContext>(capacity)
+        allContexts.addAll(contexts)
+        allContexts.addAll(testContexts)
+        allContexts.addAll(generatedContexts)
+        allContexts.addAll(gradleKtsContexts)
+
+        val parser = client.getUastParser(this)
+        return UastParser.UastSourceList(
+            parser, allContexts, contexts, testContexts, emptyList(), generatedContexts, gradleKtsContexts
+        )
+    }
 }

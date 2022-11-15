@@ -183,4 +183,18 @@ abstract class UastParser {
     abstract fun getNameLocation(context: JavaContext, element: PsiElement): Location
 
     abstract fun getNameLocation(context: JavaContext, element: UElement): Location
+
+    /**
+     * The lists of production and test files for Kotlin and Java to
+     * parse and process.
+     */
+    class UastSourceList(
+        val parser: UastParser,
+        val allContexts: List<JavaContext>,
+        val srcContexts: List<JavaContext>,
+        val testContexts: List<JavaContext>,
+        val testFixturesContexts: List<JavaContext>,
+        val generatedContexts: List<JavaContext>,
+        val gradleKtsContexts: List<JavaContext>
+    )
 }

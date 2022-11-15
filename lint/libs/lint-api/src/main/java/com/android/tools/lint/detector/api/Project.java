@@ -516,6 +516,17 @@ public class Project {
     }
 
     /**
+     * Returns the {@link UastParser.UastSourceList} for this project if the project provides a
+     * specific definition for it; if not, lint will iterate the project folders on its own to
+     * discover the source list.
+     */
+    @Nullable
+    public UastParser.UastSourceList getUastSourceList(
+            @NonNull LintDriver driver, @Nullable Project main) {
+        return null;
+    }
+
+    /**
      * Returns the list of source folders for Java and Kotlin source files
      *
      * @return a list of source folders to search for .java and .kt files
