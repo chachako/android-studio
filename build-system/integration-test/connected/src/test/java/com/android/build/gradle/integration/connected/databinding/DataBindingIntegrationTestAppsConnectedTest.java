@@ -99,6 +99,10 @@ public class DataBindingIntegrationTestAppsConnectedTest {
 
     @Test
     public void connectedCheck() throws Exception {
-        project.executor().run("connectedCheck");
+        project.executor()
+                .with(
+                        BooleanOption.USE_NON_FINAL_RES_IDS,
+                        !"ProguardedAppWithTest".equals(projectName))
+                .run("connectedCheck");
     }
 }
