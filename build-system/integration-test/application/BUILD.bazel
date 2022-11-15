@@ -611,6 +611,7 @@ maven_repository(
         "@maven//:com.google.auto.service.auto-service_1.0-rc2",
         "@maven//:com.google.guava.guava_20.0",
         "@maven//:com.google.guava.listenablefuture_1.0",
+        "@maven//:com.google.protobuf.protobuf-java_3.21.8",
         "@maven//:com.google.truth.truth_0.44",
         "@maven//:com.googlecode.jarjar.jarjar_1.3",
         "@maven//:com.jakewharton.butterknife-gradle-plugin_9.0.0-rc1",
