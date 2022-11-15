@@ -2297,6 +2297,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
             if (SDK_INT == name && "android.os.Build.VERSION" == owner) {
                 checkObsoleteSdkVersion(context, node)
+                return
             }
 
             var api = apiDatabase.getFieldVersions(owner, name)

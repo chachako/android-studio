@@ -1785,22 +1785,22 @@ fun isString(type: PsiType): Boolean {
 fun isInlined(field: PsiField, evaluator: JavaEvaluator): Boolean {
     val type = field.type
     return if (type is PsiPrimitiveType || isString(type)) {
-        evaluator.isStatic(field) && evaluator.isFinal(field)
+        evaluator.isStatic(field) && evaluator.isFinal(field) && PsiUtil.isConstantExpression(field.initializer)
     } else {
         false
     }
 }
 
 fun getAutoBoxedType(primitive: String): String? {
-    return when {
-        TYPE_INT == primitive -> TYPE_INTEGER_WRAPPER
-        TYPE_LONG == primitive -> TYPE_LONG_WRAPPER
-        TYPE_CHAR == primitive -> TYPE_CHARACTER_WRAPPER
-        TYPE_FLOAT == primitive -> TYPE_FLOAT_WRAPPER
-        TYPE_DOUBLE == primitive -> TYPE_DOUBLE_WRAPPER
-        TYPE_BOOLEAN == primitive -> TYPE_BOOLEAN_WRAPPER
-        TYPE_SHORT == primitive -> TYPE_SHORT_WRAPPER
-        TYPE_BYTE == primitive -> TYPE_BYTE_WRAPPER
+    return when (primitive) {
+        TYPE_INT -> TYPE_INTEGER_WRAPPER
+        TYPE_LONG -> TYPE_LONG_WRAPPER
+        TYPE_CHAR -> TYPE_CHARACTER_WRAPPER
+        TYPE_FLOAT -> TYPE_FLOAT_WRAPPER
+        TYPE_DOUBLE -> TYPE_DOUBLE_WRAPPER
+        TYPE_BOOLEAN -> TYPE_BOOLEAN_WRAPPER
+        TYPE_SHORT -> TYPE_SHORT_WRAPPER
+        TYPE_BYTE -> TYPE_BYTE_WRAPPER
         else -> null
     }
 }

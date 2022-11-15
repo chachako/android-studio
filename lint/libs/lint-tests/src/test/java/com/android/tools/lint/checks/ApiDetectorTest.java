@@ -785,7 +785,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testUnusedLevelListAttribute() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=214143
+        // Regression test for https://issuetracker.google.com/37107090
         String expected =
                 ""
                         + "res/drawable/my_layer.xml:4: Warning: Attribute width is only used in API level 23 and higher (current min is 15) [UnusedAttribute]\n"
@@ -1092,9 +1092,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
         //noinspection all // Sample code
         String expected =
                 ""
-                        + "src/foo/bar/ApiCallTest.java:33: Warning: Field requires API level 11 (current min is 1): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [InlinedApi]\n"
-                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
-                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:20: Error: Call requires API level 11 (current min is 1): android.app.Activity#getActionBar [NewApi]\n"
                         + "  getActionBar(); // API 11\n"
                         + "  ~~~~~~~~~~~~\n"
@@ -1107,13 +1104,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/foo/bar/ApiCallTest.java:30: Error: Call requires API level 11 (current min is 1): android.widget.TextView#setTextIsSelectable [NewApi]\n"
                         + "  chronometer.setTextIsSelectable(true); // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/foo/bar/ApiCallTest.java:33: Error: Field requires API level 11 (current min is 1): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [NewApi]\n"
+                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
+                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:38: Error: Field requires API level 14 (current min is 1): android.app.ApplicationErrorReport#batteryInfo [NewApi]\n"
                         + "  BatteryInfo batteryInfo = getReport().batteryInfo;\n"
                         + "                            ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:41: Error: Field requires API level 11 (current min is 1): android.graphics.PorterDuff.Mode#OVERLAY [NewApi]\n"
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "6 errors, 1 warnings\n";
+                        + "7 errors, 0 warnings";
         lint().files(manifest().minSdk(1), mApiCallTest)
                 .checkMessage(this::checkReportedError)
                 .run()
@@ -1124,9 +1124,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
         //noinspection all // Sample code
         String expected =
                 ""
-                        + "src/foo/bar/ApiCallTest.java:33: Warning: Field requires API level 11 (current min is 2): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [InlinedApi]\n"
-                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
-                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:20: Error: Call requires API level 11 (current min is 2): android.app.Activity#getActionBar [NewApi]\n"
                         + "  getActionBar(); // API 11\n"
                         + "  ~~~~~~~~~~~~\n"
@@ -1139,13 +1136,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/foo/bar/ApiCallTest.java:30: Error: Call requires API level 11 (current min is 2): android.widget.TextView#setTextIsSelectable [NewApi]\n"
                         + "  chronometer.setTextIsSelectable(true); // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/foo/bar/ApiCallTest.java:33: Error: Field requires API level 11 (current min is 2): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [NewApi]\n"
+                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
+                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:38: Error: Field requires API level 14 (current min is 2): android.app.ApplicationErrorReport#batteryInfo [NewApi]\n"
                         + "  BatteryInfo batteryInfo = getReport().batteryInfo;\n"
                         + "                            ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:41: Error: Field requires API level 11 (current min is 2): android.graphics.PorterDuff.Mode#OVERLAY [NewApi]\n"
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "6 errors, 1 warnings\n";
+                        + "7 errors, 0 warnings";
         lint().files(manifest().minSdk(2), mApiCallTest)
                 .checkMessage(this::checkReportedError)
                 .run()
@@ -1156,9 +1156,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
         //noinspection all // Sample code
         String expected =
                 ""
-                        + "src/foo/bar/ApiCallTest.java:33: Warning: Field requires API level 11 (current min is 4): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [InlinedApi]\n"
-                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
-                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:20: Error: Call requires API level 11 (current min is 4): android.app.Activity#getActionBar [NewApi]\n"
                         + "  getActionBar(); // API 11\n"
                         + "  ~~~~~~~~~~~~\n"
@@ -1168,13 +1165,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/foo/bar/ApiCallTest.java:30: Error: Call requires API level 11 (current min is 4): android.widget.TextView#setTextIsSelectable [NewApi]\n"
                         + "  chronometer.setTextIsSelectable(true); // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/foo/bar/ApiCallTest.java:33: Error: Field requires API level 11 (current min is 4): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [NewApi]\n"
+                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
+                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:38: Error: Field requires API level 14 (current min is 4): android.app.ApplicationErrorReport#batteryInfo [NewApi]\n"
                         + "  BatteryInfo batteryInfo = getReport().batteryInfo;\n"
                         + "                            ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:41: Error: Field requires API level 11 (current min is 4): android.graphics.PorterDuff.Mode#OVERLAY [NewApi]\n"
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "5 errors, 1 warnings\n";
+                        + "6 errors, 0 warnings";
         lint().files(manifest().minSdk(4), mApiCallTest)
                 .checkMessage(this::checkReportedError)
                 .run()
@@ -1185,22 +1185,22 @@ public class ApiDetectorTest extends AbstractCheckTest {
         //noinspection all // Sample code
         String expected =
                 ""
-                        + "src/foo/bar/ApiCallTest.java:33: Warning: Field requires API level 11 (current min is 10): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [InlinedApi]\n"
-                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
-                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:20: Error: Call requires API level 11 (current min is 10): android.app.Activity#getActionBar [NewApi]\n"
                         + "  getActionBar(); // API 11\n"
                         + "  ~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:30: Error: Call requires API level 11 (current min is 10): android.widget.TextView#setTextIsSelectable [NewApi]\n"
                         + "  chronometer.setTextIsSelectable(true); // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/foo/bar/ApiCallTest.java:33: Error: Field requires API level 11 (current min is 10): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [NewApi]\n"
+                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
+                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:38: Error: Field requires API level 14 (current min is 10): android.app.ApplicationErrorReport#batteryInfo [NewApi]\n"
                         + "  BatteryInfo batteryInfo = getReport().batteryInfo;\n"
                         + "                            ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/ApiCallTest.java:41: Error: Field requires API level 11 (current min is 10): android.graphics.PorterDuff.Mode#OVERLAY [NewApi]\n"
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "4 errors, 1 warnings\n";
+                        + "5 errors, 0 warnings";
         lint().files(manifest().minSdk(10), mApiCallTest)
                 .checkMessage(this::checkReportedError)
                 .run()
@@ -1385,7 +1385,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testIOException() {
-        // See http://code.google.com/p/android/issues/detail?id=35190
+        // See https://issuetracker.google.com/36951557
         String expected =
                 ""
                         + "src/test/pkg/ApiCallTest6.java:8: Error: Call requires API level 9 (current min is 1): new java.io.IOException [NewApi]\n"
@@ -1418,9 +1418,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
     public void testSuppress() {
         String expected =
                 ""
-                        + "src/foo/bar/SuppressTest1.java:89: Warning: Field requires API level 11 (current min is 1): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [InlinedApi]\n"
-                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
-                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/SuppressTest1.java:76: Error: Call requires API level 11 (current min is 1): android.app.Activity#getActionBar [NewApi]\n"
                         + "  getActionBar(); // API 11\n"
                         + "  ~~~~~~~~~~~~\n"
@@ -1433,13 +1430,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/foo/bar/SuppressTest1.java:86: Error: Call requires API level 11 (current min is 1): android.widget.TextView#setTextIsSelectable [NewApi]\n"
                         + "  chronometer.setTextIsSelectable(true); // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~\n"
+                        + "src/foo/bar/SuppressTest1.java:89: Error: Field requires API level 11 (current min is 1): dalvik.bytecode.OpcodeInfo#MAXIMUM_VALUE [NewApi]\n"
+                        + "  int field = OpcodeInfo.MAXIMUM_VALUE; // API 11\n"
+                        + "              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/SuppressTest1.java:94: Error: Field requires API level 14 (current min is 1): android.app.ApplicationErrorReport#batteryInfo [NewApi]\n"
                         + "  BatteryInfo batteryInfo = getReport().batteryInfo;\n"
                         + "                            ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "src/foo/bar/SuppressTest1.java:97: Error: Field requires API level 11 (current min is 1): android.graphics.PorterDuff.Mode#OVERLAY [NewApi]\n"
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "6 errors, 1 warnings\n";
+                        + "7 errors, 0 warnings";
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(1),
@@ -1879,7 +1879,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testSuper() {
-        // See http://code.google.com/p/android/issues/detail?id=36384
+        // See https://issuetracker.google.com/36953148
         String expected =
                 ""
                         + "src/test/pkg/ApiCallTest7.java:8: Error: Call requires API level 9 (current min is 4): new java.io.IOException [NewApi]\n"
@@ -1914,7 +1914,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testEnums() {
-        // See http://code.google.com/p/android/issues/detail?id=36951
+        // See https://issuetracker.google.com/36954202
         String expected =
                 ""
                         + "src/test/pkg/TestEnum.java:61: Error: Enum for switch requires API level 11 (current min is 4): android.renderscript.Element.DataType [NewApi]\n"
@@ -2014,7 +2014,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testInterfaceInheritance() {
-        // See http://code.google.com/p/android/issues/detail?id=38004
+        // See https://issuetracker.google.com/36956125
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(4),
@@ -2035,7 +2035,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testInnerClassPositions() {
-        // See http://code.google.com/p/android/issues/detail?id=38113
+        // See https://issuetracker.google.com/36956233
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(4),
@@ -2098,7 +2098,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testSuppressFieldAnnotations() {
-        // See http://code.google.com/p/android/issues/detail?id=38626
+        // See https://issuetracker.google.com/36956984
         String expected =
                 ""
                         + "src/test/pkg/ApiCallTest9.java:9: Error: Call requires API level 14 (current min is 4): new android.widget.GridLayout [NewApi]\n"
@@ -2243,7 +2243,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void test38195() {
-        // See http://code.google.com/p/android/issues/detail?id=38195
+        // See https://issuetracker.google.com/36956365
         String expected =
                 ""
                         + "src/test/pkg/ApiCallTest9.java:7: Error: Call requires API level 9 (current min is 4): java.lang.String#isEmpty [NewApi]\n"
@@ -2280,7 +2280,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testAllowLocalMethodsImplementingInaccessible() {
-        // See http://code.google.com/p/android/issues/detail?id=39030
+        // See https://issuetracker.google.com/36957582
         String expected =
                 ""
                         + "src/test/pkg/ApiCallTest10.java:40: Error: Call requires API level 14 (current min is 4): android.view.View#dispatchHoverEvent [NewApi]\n"
@@ -2373,7 +2373,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testDateFormat() {
-        // See http://code.google.com/p/android/issues/detail?id=40876
+        // See https://issuetracker.google.com/36960097
         String expected =
                 ""
                         + "src/test/pkg/ApiCallTest12.java:18: Error: Call requires API level 9 (current min is 4): java.text.DateFormatSymbols#getInstance [NewApi]\n"
@@ -2844,7 +2844,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testFieldSuppress() {
-        // See https://code.google.com/p/android/issues/detail?id=52726
+        // See https://issuetracker.google.com/36967069
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(4),
@@ -2991,7 +2991,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testAnonymousInherited() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=172621
+        // Regression test for https://issuetracker.google.com/37045361
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(1),
@@ -3403,7 +3403,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testThisCall() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=93158
+        // Regression test for https://issuetracker.google.com/37017289
         // Make sure we properly resolve super classes in Class.this.call()
         String expected =
                 ""
@@ -3806,7 +3806,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testSuperClassInLibrary() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=97006
+        // Regression test for https://issuetracker.google.com/37018001
         // 97006: Gradle lint does not recognize Context.getDrawable() as API 21+
         String expected =
                 ""
@@ -3976,9 +3976,9 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testConditionalAroundException() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=220968
+        // Regression test for https://issuetracker.google.com/37117342
         // 220968: Build version check not work on exception
-        // (and https://code.google.com/p/android/issues/detail?id=209129)
+        // (and https://issuetracker.google.com/37097190)
 
         //noinspection all // Sample code
         lint().files(
@@ -4080,7 +4080,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testMethodReferences() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=219413
+        // Regression test for https://issuetracker.google.com/37115086
         String expected =
                 ""
                         + "src/test/pkg/Class.java:7: Error: Method reference requires API level 17 (current min is 4): TextView::getCompoundPaddingEnd [NewApi]\n"
@@ -4363,7 +4363,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "@SuppressWarnings(\"unused\")\n"
                                         + "public class ImplicitCastTest {\n"
-                                        + "    // https://code.google.com/p/android/issues/detail?id=174535\n"
+                                        + "    // https://issuetracker.google.com/37047646\n"
                                         + "    @SuppressWarnings(\"UnnecessaryLocalVariable\")\n"
                                         + "    public void testImplicitCast(Cursor c) {\n"
                                         + "        Closeable closeable = c;\n"
@@ -4386,7 +4386,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "\n"
-                                        + "    // https://code.google.com/p/android/issues/detail?id=191120\n"
+                                        + "    // https://issuetracker.google.com/37067851\n"
                                         + "    public void testImplicitCast(ParcelFileDescriptor pfd) {\n"
                                         + "        safeClose(pfd);\n"
                                         + "    }\n"
@@ -5009,7 +5009,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
 
     public void testDrawableThemeReferences() {
         // Regression test for
-        // https://code.google.com/p/android/issues/detail?id=199597
+        // https://issuetracker.google.com/37078972
         // Make sure that theme references in drawable XML files are checked
         String expected =
                 ""
@@ -5045,7 +5045,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testNonAndroidProjects() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=228481
+        // Regression test for https://issuetracker.google.com/37127693
         // Don't flag API violations in plain java modules if there are no dependent
         // Android modules pointing to it
         //noinspection all // Sample code
@@ -5110,7 +5110,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testMethodInvocationWithGenericTypeArgs() {
-        // Test case for https://code.google.com/p/android/issues/detail?id=198439
+        // Test case for https://issuetracker.google.com/37076797
         //noinspection all // Sample code
         lint().files(
                         java(
@@ -5166,7 +5166,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
 
     @SuppressWarnings("all") // sample code
     public void testInlinedConstantConditional() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=205925
+        // Regression test for https://issuetracker.google.com/37092234
         //noinspection all // Sample code
         lint().files(
                         java(
@@ -5235,7 +5235,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testMultiCatch() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=198854
+        // Regression test for https://issuetracker.google.com/37077694
         // Check disjointed exception types
 
         String expected =
@@ -5710,7 +5710,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testMapGetOrDefault() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=235665
+        // Regression test for https://issuetracker.google.com/37137282
         String expected =
                 ""
                         + "src/test/pkg/MapApiTest.java:8: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
@@ -5807,7 +5807,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testObsoleteFolder() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=236018
+        // Regression test for https://issuetracker.google.com/37137462
         @Language("XML")
         String stringsXml =
                 ""
@@ -5840,7 +5840,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testVectorDrawableCompat() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=222654
+        // Regression test for https://issuetracker.google.com/37119932
         String expected =
                 ""
                         + "src/test/pkg/VectorTest.java:17: Error: Call requires API level 21 (current min is 15): android.graphics.drawable.Drawable#setTint [NewApi]\n"
@@ -5880,7 +5880,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
 
     public void testInnerClassAccess() {
         // "Calling new methods on older version" doesn't work with inner classes
-        // Regression test for https://code.google.com/p/android/issues/detail?id=228035
+        // Regression test for https://issuetracker.google.com/37127271
         String expected =
                 ""
                         + "src/pkg/my/myapplication/Fragment.java:8: Error: Call requires API level 23 (current min is 15): android.app.Fragment#getContext [NewApi]\n"
@@ -8665,6 +8665,38 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "    state.label      // WARN 2\n"
                                 + "          ~~~~~\n"
                                 + "2 errors, 0 warnings");
+    }
+
+    public void testNonConstantExpression() {
+        lint().files(
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import androidx.annotation.RequiresApi;\n"
+                                        + "\n"
+                                        + "public class BuildCompat {\n"
+                                        + "    public static final int FOO = Test.FOO; // NewApi error\n"
+                                        + "    public static final int BAR = Test.BAR; // InlinedApi warning\n"
+                                        + "\n"
+                                        + "    @RequiresApi(32)\n"
+                                        + "    private static class Test {\n"
+                                        + "        static final int FOO = v32Method();\n"
+                                        + "        static final int BAR = 1 + 2;\n"
+                                        + "        static int v32Method() { return 5; }\n"
+                                        + "    }\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/BuildCompat.java:7: Warning: Field requires API level 32 (current min is 1): BAR [InlinedApi]\n"
+                                + "    public static final int BAR = Test.BAR; // InlinedApi warning\n"
+                                + "                                       ~~~\n"
+                                + "src/test/pkg/BuildCompat.java:6: Error: Field requires API level 32 (current min is 1): FOO [NewApi]\n"
+                                + "    public static final int FOO = Test.FOO; // NewApi error\n"
+                                + "                                       ~~~\n"
+                                + "1 errors, 1 warnings");
     }
 
     @Override
