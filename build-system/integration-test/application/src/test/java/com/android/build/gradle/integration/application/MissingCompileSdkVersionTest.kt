@@ -51,7 +51,8 @@ class MissingCompileSdkVersionTest {
             System.lineSeparator()
                     + SdkConstants.SDK_DIR_PROPERTY
                     + " = "
-                    + sdkHome.absolutePath.replace("\\", "\\\\"))
+                    + sdkHome.absolutePath.replace("\\", "\\\\")
+        )
 
         TestFileUtils.searchAndReplace(
             project.buildFile,
@@ -68,23 +69,29 @@ class MissingCompileSdkVersionTest {
     @Throws(Exception::class)
     fun testSyncIsSuccessful() {
         // Sync should complete successfully
-        val modelContainer = project.modelV2().ignoreSyncIssues().fetchModels().container.getProject()
+        val modelContainer =
+            project.modelV2().ignoreSyncIssues().fetchModels().container.getProject()
         val syncIssues = modelContainer.issues?.syncIssues!!
 
-        val compileSdkNotSetSyncIssues = syncIssues.filter { it.type == SyncIssue.TYPE_COMPILE_SDK_VERSION_NOT_SET }
+        val compileSdkNotSetSyncIssues =
+            syncIssues.filter { it.type == SyncIssue.TYPE_COMPILE_SDK_VERSION_NOT_SET }
         assertThat(compileSdkNotSetSyncIssues).hasSize(1)
         val compileSdkIssue = compileSdkNotSetSyncIssues.elementAt(0)
         assertThat(compileSdkIssue.message).isEqualTo(
-            "compileSdkVersion is not specified. Please add it to build.gradle")
+            "compileSdkVersion is not specified. Please add it to build.gradle"
+        )
 
-        val missingSdkPackageSyncIssues = syncIssues.filter { it.type == SyncIssue.TYPE_MISSING_SDK_PACKAGE }
+        val missingSdkPackageSyncIssues =
+            syncIssues.filter { it.type == SyncIssue.TYPE_MISSING_SDK_PACKAGE }
         assertThat(missingSdkPackageSyncIssues).hasSize(1)
         val missingSdkIssue = missingSdkPackageSyncIssues.elementAt(0)
         assertThat(missingSdkIssue.message).contains(
-            "Failed to find target with hash string 'android-${SdkVersionInfo.HIGHEST_KNOWN_STABLE_API}'")
+            "Failed to find target with hash string 'android-${SdkVersionInfo.HIGHEST_KNOWN_STABLE_API}'"
+        )
 
         assertThat(modelContainer.androidDsl?.compileTarget).isEqualTo(
-            "android-${SdkVersionInfo.HIGHEST_KNOWN_STABLE_API}")
+            "android-${SdkVersionInfo.HIGHEST_KNOWN_STABLE_API}"
+        )
     }
 
     /**
@@ -96,11 +103,9 @@ class MissingCompileSdkVersionTest {
         installPlatform("24")
         installPlatform("23")
 
-        val model = project.model().ignoreSyncIssues().fetchAndroidProjects().onlyModel
-
-        assertThat(model.compileTarget).isEqualTo("android-24")
+        val model = project.modelV2().ignoreSyncIssues().fetchModels().container.getProject()
+        assertThat(model.androidDsl?.compileTarget).isEqualTo("android-24")
     }
-
 
     /** Tests that missing compileSdkVersion breaks the regular build. */
     @Test
@@ -112,7 +117,7 @@ class MissingCompileSdkVersionTest {
     private fun installPlatform(version: String) {
         FileUtils.copyDirectoryToDirectory(
             TestUtils.getSdk().resolve(SdkConstants.FD_PLATFORMS).resolve("android-$version")
-                    .toFile(),
+                .toFile(),
             FileUtils.join(sdkHome, SdkConstants.FD_PLATFORMS)
         )
     }

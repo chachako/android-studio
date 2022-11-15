@@ -27,6 +27,7 @@ import org.junit.Test
 import java.io.File
 
 class MissingSdkTest {
+
     @Rule
     @JvmField
     val testProject =
@@ -46,7 +47,10 @@ class MissingSdkTest {
         )
 
         val syncIssues =
-            testProject.model().ignoreSyncIssues().fetchAndroidProjects().onlyModelSyncIssues
+            testProject.modelV2()
+                .ignoreSyncIssues()
+                .fetchModels().container.getProject().issues?.syncIssues!!
+
         assertThat(syncIssues.size).isEqualTo(1)
         val syncIssue = syncIssues.first()
         assertThat(syncIssue.type).isEqualTo(SyncIssue.TYPE_SDK_NOT_SET)

@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.SyncIssue
+import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 
@@ -33,16 +34,20 @@ class DynamicAppMultidexTest {
     @Test
     fun testSyncWarning() {
         project.getSubproject("feature1").buildFile.appendText(
-            "android.buildTypes.debug.multiDexEnabled true")
-        val container = project.model().ignoreSyncIssues().fetchAndroidProjects()
+            "android.buildTypes.debug.multiDexEnabled true"
+        )
 
-        assertThat(container).rootBuild().project(":feature1")
-            .hasSingleIssue(
-                IssueReporter.Severity.WARNING.severity,
-                SyncIssue.TYPE_GENERIC,
-                null,
-                "Native multidex is always used for dynamic features. Please remove " +
-                        "'multiDexEnabled true|false' from your build.gradle file."
-            )
+        val container = project.modelV2().ignoreSyncIssues().fetchModels().container
+        val syncIssues = container.getProject(":feature1").issues?.syncIssues!!
+
+        Truth.assertThat(syncIssues.size).isEqualTo(1)
+        Truth.assertThat(syncIssues.first().severity)
+            .isEqualTo(IssueReporter.Severity.WARNING.severity)
+        Truth.assertThat(syncIssues.first().type).isEqualTo(SyncIssue.TYPE_GENERIC)
+        Truth.assertThat(syncIssues.first().data).isNull()
+        Truth.assertThat(syncIssues.first().message).isEqualTo(
+            "Native multidex is always used for dynamic features. Please remove " +
+                    "'multiDexEnabled true|false' from your build.gradle file."
+        )
     }
 }

@@ -18,11 +18,10 @@ package com.android.build.gradle.integration.application;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 
-import com.android.AndroidProjectTypes;
 import com.android.build.gradle.integration.common.category.SmokeTests;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.builder.model.AndroidProject;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.builder.model.v2.ide.ProjectType;
 import com.android.testutils.apk.Apk;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -35,11 +34,10 @@ import org.junit.experimental.categories.Category;
 /** Assemble tests for kotlin. */
 @Category(SmokeTests.class)
 public class KotlinAppTest {
+
     @Rule
     public GradleTestProject project =
-            GradleTestProject.builder()
-                    .fromTestProject("kotlinApp")
-                    .create();
+            GradleTestProject.builder().fromTestProject("kotlinApp").create();
 
     @After
     public void cleanUp() {
@@ -48,14 +46,13 @@ public class KotlinAppTest {
 
     @Test
     public void projectModel() throws IOException {
-        ModelContainer<AndroidProject> models = project.model().fetchAndroidProjects();
+        ModelContainerV2 models = project.modelV2().fetchModels().getContainer();
+        ModelContainerV2.ModelInfo appModel = models.getProject(":app");
 
-        AndroidProject appModel = models.getOnlyModelMap().get(":app");
-
-        assertThat(appModel.getProjectType())
+        assertThat(appModel.getBasicAndroidProject().getProjectType())
                 .named("Project Type")
-                .isEqualTo(AndroidProjectTypes.PROJECT_TYPE_APP);
-        assertThat(appModel.getCompileTarget())
+                .isEqualTo(ProjectType.APPLICATION);
+        assertThat(appModel.getAndroidDsl().getCompileTarget())
                 .named("Compile Target")
                 .isEqualTo(GradleTestProject.getCompileSdkHash());
     }
@@ -64,6 +61,7 @@ public class KotlinAppTest {
     public void apkContents() throws Exception {
         project.executor().run("clean", "app:assembleDebug");
         Apk apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.DEBUG);
+
         assertThat(apk).isNotNull();
         assertThat(apk).containsResource("layout/activity_layout.xml");
         assertThat(apk).containsResource("layout/lib_activity_layout.xml");

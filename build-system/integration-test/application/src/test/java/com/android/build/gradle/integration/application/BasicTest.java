@@ -20,11 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.category.SmokeTests;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.SyncIssue;
-import java.util.stream.Collectors;
+import com.android.builder.model.v2.ide.SyncIssue;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -35,13 +33,14 @@ import org.junit.experimental.categories.Category;
  */
 @Category(SmokeTests.class)
 public class BasicTest {
+
     @ClassRule
     public static GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("basic")
                     .create();
 
-   @AfterClass
+    @AfterClass
     public static void cleanUp() {
         project = null;
     }
@@ -52,7 +51,7 @@ public class BasicTest {
     }
 
     @Test
-    public void weDontFailOnLicenceDotTxtWhenPackagingDependencies() throws Exception {
+    public void weDontFailOnLicenceDotTxtWhenPackagingDependencies() {
         project.execute("assembleAndroidTest");
     }
 
@@ -75,14 +74,17 @@ public class BasicTest {
         TestFileUtils.appendToFile(
                 project.getBuildFile(), "repositories { flatDir { dirs \"libs\" } }");
         project.executor().run("clean", "assembleDebug");
-        ModelContainer<AndroidProject> onlyModel =
-                project.model().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING).fetchAndroidProjects();
+        ModelContainerV2 onlyModel =
+                project.modelV2()
+                        .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+                        .fetchModels()
+                        .getContainer();
         assertThat(
-                        onlyModel.getOnlyModelSyncIssues().stream()
-                                .map(syncIssue -> syncIssue.getMessage())
-                                .filter(syncIssues -> syncIssues.contains("flatDir"))
-                                .collect(Collectors.toList())
-                                .size())
+                        (int)
+                                onlyModel.getProject().getIssues().getSyncIssues().stream()
+                                        .map(SyncIssue::getMessage)
+                                        .filter(syncIssues -> syncIssues.contains("flatDir"))
+                                        .count())
                 .isEqualTo(1);
     }
 }
