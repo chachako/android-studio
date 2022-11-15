@@ -238,6 +238,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             parameters.lintFixBuildService.set(lintFixBuildService)
             parameters.returnValueOutputFile.set(returnValueOutputFile)
             parameters.lintMode.set(lintMode)
+            parameters.hasBaseline.set(projectInputs.lintOptions.inputBaselineFile.orNull != null)
         }
     }
 
@@ -257,6 +258,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             abstract val lintFixBuildService: Property<LintFixBuildService>
             abstract val returnValueOutputFile: RegularFileProperty
             abstract val lintMode: Property<LintMode>
+            abstract val hasBaseline: Property<Boolean>
         }
 
         @get:Inject
@@ -272,6 +274,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 fatalOnly = parameters.fatalOnly.get(),
                 await = lintFixBuildService != null, // Allow only one lintFix to execute at a time.
                 lintMode = parameters.lintMode.get(),
+                hasBaseline = parameters.hasBaseline.get(),
                 returnValueOutputFile = parameters.returnValueOutputFile.orNull?.asFile
             )
         }

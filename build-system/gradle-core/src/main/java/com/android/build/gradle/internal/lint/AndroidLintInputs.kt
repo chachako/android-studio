@@ -239,6 +239,7 @@ abstract class LintTool {
             android = true,
             fatalOnly = false,
             await = false,
+            hasBaseline = false,
             lintMode = lintMode
         )
     }
@@ -251,6 +252,7 @@ abstract class LintTool {
         fatalOnly: Boolean,
         await: Boolean,
         lintMode: LintMode,
+        hasBaseline: Boolean,
         returnValueOutputFile: File? = null
     ) {
         val workQueue = if (runInProcess.get()) {
@@ -277,6 +279,7 @@ abstract class LintTool {
             parameters.runInProcess.set(runInProcess.get())
             parameters.returnValueOutputFile.set(returnValueOutputFile)
             parameters.lintMode.set(lintMode)
+            parameters.hasBaseline.set(hasBaseline)
         }
         if (await) {
             workQueue.await()

@@ -72,6 +72,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         task.taskAction()
         assertThat((task as TaskForTest).testLogger.lifeCycles).contains("Foo")
         assertThat((task as TaskForTest).testLogger.errors).isEmpty()
@@ -87,6 +88,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         task.taskAction()
         assertThat((task as TaskForTest).testLogger.lifeCycles).isEmpty()
         assertThat((task as TaskForTest).testLogger.errors).isEmpty()
@@ -102,6 +104,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         task.taskAction()
         assertThat((task as TaskForTest).testLogger.lifeCycles).isEmpty()
         assertThat((task as TaskForTest).testLogger.errors).isEmpty()
@@ -115,6 +118,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         task.taskAction()
         assertThat((task as TaskForTest).testLogger.lifeCycles).isEmpty()
         assertThat((task as TaskForTest).testLogger.errors).contains("Foo")
@@ -128,6 +132,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         task.taskAction()
         assertThat((task as TaskForTest).testLogger.lifeCycles).isEmpty()
         assertThat((task as TaskForTest).testLogger.errors).isEmpty()
@@ -143,6 +148,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         try {
             task.taskAction()
             fail("expected RuntimeException")
@@ -165,6 +171,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(false)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         try {
             task.taskAction()
             fail("expected RuntimeException")
@@ -187,6 +194,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(true)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         try {
             task.taskAction()
             fail("expected RuntimeException")
@@ -211,6 +219,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(false)
+        task.hasBaseline.set(false)
         task.taskAction()
         assertThat((task as TaskForTest).testLogger.lifeCycles).contains("Foo")
         assertThat((task as TaskForTest).testLogger.errors).isEmpty()
@@ -226,6 +235,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(false)
+        task.hasBaseline.set(false)
         try {
             task.taskAction()
             fail("expected RuntimeException")
@@ -330,6 +340,7 @@ class AndroidLintTextOutputTaskTest {
         task.fatalOnly.set(false)
         task.android.set(true)
         task.abortOnError.set(true)
+        task.hasBaseline.set(false)
         val e = assertFailsWith<RuntimeException> { task.taskAction() }
         assertThat(e.message).contains("Lint found errors in the project")
         assertThat(e.message).contains("android {")
@@ -354,6 +365,32 @@ class AndroidLintTextOutputTaskTest {
             |  ${textReportFile.absolutePath}
         """.trimMargin()
         assertThat((task as TaskForTest).testLogger.lifeCycles.single()).isEqualTo(expected)
+        assertThat((task as TaskForTest).testLogger.errors).isEmpty()
+    }
+
+    @Test
+    fun testHasBaselineFailure() {
+        task.textReportInputFile.set(temporaryFolder.newFile().also { it.writeText("Foo") })
+        task.returnValueInputFile.set(
+            temporaryFolder.newFile().also { it.writeText("$ERRNO_ERRORS") }
+        )
+        task.outputStream.set(AndroidLintTextOutputTask.OutputStream.STDOUT)
+        task.fatalOnly.set(false)
+        task.android.set(true)
+        task.abortOnError.set(true)
+        task.hasBaseline.set(true)
+        try {
+            task.taskAction()
+            fail("expected RuntimeException")
+        } catch (e: RuntimeException) {
+            assertThat(e.message).contains("Lint found errors in the project")
+            assertThat(e.message).contains(
+                "Fix the issues identified by lint, or add the issues to the lint baseline via `gradlew updateLintBaseline`."
+            )
+            assertThat(e.message).doesNotContain("android {")
+            assertThat(e.message).contains("Foo")
+        }
+        assertThat((task as TaskForTest).testLogger.lifeCycles).contains("Foo")
         assertThat((task as TaskForTest).testLogger.errors).isEmpty()
     }
 }
