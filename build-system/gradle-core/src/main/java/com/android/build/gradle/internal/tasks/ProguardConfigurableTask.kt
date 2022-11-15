@@ -121,6 +121,10 @@ abstract class ProguardConfigurableTask(
     lateinit var libraryKeepRules: ArtifactCollection
         private set
 
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val libraryKeepRulesFileCollection: ConfigurableFileCollection
+
     @get:Input
     abstract val ignoredLibraryKeepRules: SetProperty<String>
 
@@ -444,6 +448,7 @@ abstract class ProguardConfigurableTask(
                             ALL,
                             FILTERED_PROGUARD_RULES
                     )
+            task.libraryKeepRulesFileCollection.from(task.libraryKeepRules.artifactFiles)
             task.ignoredLibraryKeepRules.set(optimizationCreationConfig.ignoredLibraryKeepRules)
             task.ignoreAllLibraryKeepRules.set(optimizationCreationConfig.ignoreAllLibraryKeepRules)
 
@@ -455,7 +460,7 @@ abstract class ProguardConfigurableTask(
                     // All -dontwarn rules for test dependencies should go in here:
                     val configurationFiles = task.project.files(
                         optimizationCreationConfig.proguardFiles,
-                        task.libraryKeepRules.artifactFiles
+                        task.libraryKeepRulesFileCollection
                     )
                     task.configurationFiles.from(configurationFiles)
                 }
@@ -466,7 +471,7 @@ abstract class ProguardConfigurableTask(
                     // All -dontwarn rules for test dependen]cies should go in here:
                     val configurationFiles = task.project.files(
                         optimizationCreationConfig.proguardFiles,
-                        task.libraryKeepRules.artifactFiles
+                        task.libraryKeepRulesFileCollection
                     )
                     task.configurationFiles.from(configurationFiles)
                 }
@@ -515,7 +520,7 @@ abstract class ProguardConfigurableTask(
             val configurationFiles = task.project.files(
                 optimizationCreationConfig.proguardFiles,
                 aaptProguardFile,
-                task.libraryKeepRules.artifactFiles
+                task.libraryKeepRulesFileCollection
             )
 
             if (task.includeFeaturesInScopes.get()) {
