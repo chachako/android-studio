@@ -3,6 +3,7 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:utils.bzl", "dir_archive", "fileset")
 load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
 fileset(
     name = "TestData",
@@ -17,30 +18,19 @@ iml_module(
     jvm_target = "8",
     lint_baseline = "lint_baseline.xml",
     # do not sort: must match IML order
-    resources = [
-        "src/main/resources",
-        "version",
-    ],
+    resources = ["src/main/resources"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
-    exports = ["//tools/base/annotations:studio.android.sdktools.android-annotations"],
+    exports = [
+        "//tools/base/annotations:studio.android.sdktools.android-annotations",
+        "//tools/base/common:version",
+    ],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
+        "//tools/base/common:version",
     ],
-)
-
-java_test(
-    name = "latest_version",
-    data = ["//tools/buildSrc/base:version.properties"],
-    jvm_flags = [
-        "-Dtest.version.properties=$(location //tools/buildSrc/base:version.properties)",
-        "-Dtest.version.baseVersion=" + BASE_VERSION,
-        "-Dtest.version.buildVersion=" + BUILD_VERSION,
-    ],
-    test_class = "com.android.VersionTest",
-    runtime_deps = ["studio.android.sdktools.common.tests_testlib"],
 )
 
 fileset(
@@ -63,6 +53,9 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
+    bundled_deps = [
+        "//tools/base/common/version:without_resources",
+    ],
     coordinates = "com.android.tools:common:" + BASE_VERSION,
     description = "common library used by other Android tools libraries.",
     module_name = "common",
@@ -159,4 +152,11 @@ iml_module(
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//tools/base/common:studio.android.sdktools.common[module]",
     ],
+)
+
+# managed by go/iml_to_build
+jvm_import(
+    name = "version",
+    jars = ["//tools/base/common/version:libversion.jar"],
+    visibility = ["//visibility:public"],
 )
