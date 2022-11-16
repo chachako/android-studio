@@ -188,7 +188,6 @@ fun runR8(
         featureDexDir = featureDexDir,
         featureJavaResourceOutputDir = featureJavaResourceOutputDir,
         libConfiguration = null,
-        outputKeepRulesDir = null,
         inputArtProfile = null,
         outputArtProfile = null,
     )

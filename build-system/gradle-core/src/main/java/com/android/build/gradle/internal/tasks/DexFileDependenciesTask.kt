@@ -47,7 +47,6 @@ import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
@@ -57,10 +56,6 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
 
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
-
-    @get:Optional
-    @get:OutputFile
-    abstract val outputKeepRules: DirectoryProperty
 
     @get:Optional
     @get:OutputDirectory
@@ -104,7 +99,6 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
                 it.outputFile.set(outputDirectory.dir("${index}_${input.name}"))
                 it.errorFormatMode.set(errorFormatMode)
                 it.libConfiguration.set(libConfiguration)
-                it.outputKeepRules.set(outputKeepRules.dir("${index}_${input.name}"))
                 it.outputGlobalSynthetics.set(outputGlobalSynthetics.dir("${index}_${input.name}"))
             }
         }
@@ -119,7 +113,6 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
         abstract val outputFile: DirectoryProperty
         abstract val errorFormatMode: Property<SyncOptions.ErrorFormatMode>
         abstract val libConfiguration: Property<String>
-        abstract val outputKeepRules: DirectoryProperty
         abstract val outputGlobalSynthetics: DirectoryProperty
     }
 
@@ -142,7 +135,6 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
                             closer.register(it)
                         },
                         coreLibDesugarConfig = parameters.libConfiguration.orNull,
-                        coreLibDesugarOutputKeepRuleFile = parameters.outputKeepRules.asFile.orNull,
                         messageReceiver = MessageReceiverImpl(
                             errorFormatMode = parameters.errorFormatMode.get(),
                             logger = Logging.getLogger(DexFileDependenciesWorkerAction::class.java)
@@ -182,11 +174,6 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
                 DexFileDependenciesTask::outputDirectory
             ).on(InternalArtifactType.EXTERNAL_FILE_LIB_DEX_ARCHIVES)
 
-            if (dexingCreationConfig.needsShrinkDesugarLibrary) {
-                creationConfig.artifacts
-                    .setInitialProvider(taskProvider, DexFileDependenciesTask::outputKeepRules)
-                    .on(InternalArtifactType.DESUGAR_LIB_EXTERNAL_FILE_LIB_KEEP_RULES)
-            }
             if (creationConfig.services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS]) {
                 creationConfig.artifacts
                     .setInitialProvider(taskProvider, DexFileDependenciesTask::outputGlobalSynthetics)
@@ -246,7 +233,6 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
 
             if (dexingCreationConfig.isCoreLibraryDesugaringEnabled) {
                 task.libConfiguration.set(getDesugarLibConfig(creationConfig.services))
-                task.bootClasspath.from(creationConfig.global.bootClasspath)
             }
 
             task.classpath.disallowChanges()

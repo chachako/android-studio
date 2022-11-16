@@ -20,7 +20,6 @@ import com.android.build.gradle.internal.scope.Java8LangSupport
 import com.android.build.gradle.internal.transforms.testdata.Animal
 import com.android.build.gradle.internal.transforms.testdata.CarbonForm
 import com.android.build.gradle.internal.transforms.testdata.Cat
-import com.android.build.gradle.internal.transforms.testdata.ClassWithDesugarApi
 import com.android.build.gradle.internal.transforms.testdata.Toy
 import com.android.build.gradle.options.SyncOptions
 import com.android.builder.core.ComponentTypeImpl
@@ -36,7 +35,6 @@ import com.android.testutils.truth.DexSubject.assertThat
 
 import com.android.utils.Pair
 import com.android.zipflinger.ZipArchive
-import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.file.RegularFile
 import org.junit.Assume
@@ -611,31 +609,6 @@ class R8Test(val r8OutputType: R8OutputType) {
         }
     }
 
-    @Test
-    fun testKeepRulesGeneration() {
-        Assume.assumeTrue(r8OutputType == R8OutputType.DEX)
-        val classes = tmp.root.toPath().resolve("classes.jar")
-        TestInputsGenerator.pathWithClasses(
-            classes,
-            ImmutableList.of<Class<*>>(ClassWithDesugarApi::class.java)
-        )
-        val libConfiguration =  TestUtils.getDesugarLibConfigContent()
-        val outputKeepRulesDir = tmp.newFolder()
-        runR8(
-            classes = listOf(classes.toFile()),
-            resources = listOf(),
-            disableMinification = false,
-            java8Support = Java8LangSupport.R8,
-            r8Keep = "class " + ClassWithDesugarApi::class.java.name + "{*;}",
-            libConfiguration = libConfiguration,
-            outputKeepRulesDir = outputKeepRulesDir
-        )
-        val expectedKeepRules = "-keep class j\$.time.LocalTime {$lineSeparator" +
-                "    j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
-                "}$lineSeparator"
-        assertThat(outputKeepRulesDir.resolve("output")).contains(expectedKeepRules)
-    }
-
     /** Regression test for b/151605314. */
     @Test
     fun testNonExistingFileAsInput() {
@@ -747,7 +720,6 @@ class R8Test(val r8OutputType: R8OutputType) {
             featureDexDir = featureDexDir,
             featureJavaResourceOutputDir = featureJavaResourceOutputDir,
             libConfiguration = libConfiguration,
-            outputKeepRulesDir = outputKeepRulesDir,
             inputArtProfile = null,
             outputArtProfile = null,
         )

@@ -41,7 +41,6 @@ abstract class DexingOutputSplitTransform : TransformAction<DexingOutputSplitTra
 
     enum class DexOutput {
         DEX,
-        KEEP_RULES,
         GLOBAL_SYNTHETICS,
     }
 
@@ -60,13 +59,6 @@ abstract class DexingOutputSplitTransform : TransformAction<DexingOutputSplitTra
             DexOutput.DEX -> {
                 outputs.dir(File(inputDir, computeDexDirName(inputDir)))
             }
-            DexOutput.KEEP_RULES -> {
-                val keepRulesFile = File(inputDir, computeKeepRulesFileName(inputDir))
-                if (!keepRulesFile.exists()) {
-                    keepRulesFile.createNewFile()
-                }
-                outputs.file(keepRulesFile)
-            }
             DexOutput.GLOBAL_SYNTHETICS -> {
                 outputs.dir(File(inputDir, computeGlobalSyntheticsDirName(inputDir)))
             }
@@ -78,7 +70,6 @@ fun registerDexingOutputSplitTransform(dependencyHandler: DependencyHandler) {
     // In release builds we can shrink the core java libraries as part of the D8 pipeline,
     // even if R8 is not used.
     registerTransformWithOutputType(dependencyHandler, DexingOutputSplitTransform.DexOutput.DEX)
-    registerTransformWithOutputType(dependencyHandler, DexingOutputSplitTransform.DexOutput.KEEP_RULES)
     registerTransformWithOutputType(dependencyHandler, DexingOutputSplitTransform.DexOutput.GLOBAL_SYNTHETICS)
 }
 
@@ -94,9 +85,6 @@ private fun registerTransformWithOutputType(
         when (dexOutput) {
             DexingOutputSplitTransform.DexOutput.DEX -> {
                 spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.DEX.type)
-            }
-            DexingOutputSplitTransform.DexOutput.KEEP_RULES -> {
-                spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.KEEP_RULES.type)
             }
             DexingOutputSplitTransform.DexOutput.GLOBAL_SYNTHETICS -> {
                 spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, AndroidArtifacts.ArtifactType.GLOBAL_SYNTHETICS.type)

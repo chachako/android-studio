@@ -99,7 +99,6 @@ fun runR8(
     featureDexDir: Path?,
     featureJavaResourceOutputDir: Path?,
     libConfiguration: String? = null,
-    outputKeepRules: Path? = null,
     inputArtProfile: Path? = null,
     outputArtProfile: Path? = null,
 ) {
@@ -113,7 +112,6 @@ fun runR8(
         logger.fine("Java resources: $inputJavaResources")
         logger.fine("Library classes: $libraries")
         logger.fine("Classpath classes: $classpath")
-        outputKeepRules?.let{ logger.fine("Keep rules for shrinking desugar lib: $it") }
     }
     val r8CommandBuilder =
             R8Command.builder(
@@ -142,9 +140,7 @@ fun runR8(
             }
         }
         if (libConfiguration != null) {
-            r8CommandBuilder
-                .addSpecialLibraryConfiguration(libConfiguration)
-                .setDesugaredLibraryKeepRuleConsumer(StringConsumer.FileConsumer(outputKeepRules!!))
+            r8CommandBuilder.addSpecialLibraryConfiguration(libConfiguration)
         }
         if (toolConfig.isDebuggable) {
             r8CommandBuilder.addAssertionsConfiguration(

@@ -108,11 +108,9 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
     }
 
     private fun doTransform(inputFile: File, outputDir: File) {
-        val outputKeepRulesEnabled =
-            parameters.libConfiguration.isPresent && !parameters.debuggable.get()
-        val provideIncrementalSupport = !isJarFile(inputFile) && !outputKeepRulesEnabled
+        val provideIncrementalSupport = !isJarFile(inputFile)
 
-        val dexOutputDir = if (outputKeepRulesEnabled || parameters.enableGlobalSynthetics.get()) {
+        val dexOutputDir = if (parameters.enableGlobalSynthetics.get()) {
             outputDir.resolve(computeDexDirName(outputDir))
         } else {
             outputDir
@@ -121,10 +119,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
             outputDir.resolve(computeGlobalSyntheticsDirName(outputDir))
         } else null
 
-        val keepRulesOutputFile =
-            if (outputKeepRulesEnabled) {
-                outputDir.resolve(computeKeepRulesFileName(outputDir))
-            } else null
         // desugarGraphFile != null iff provideIncrementalSupport == true
         val desugarGraphFile =
             if (provideIncrementalSupport) {
@@ -140,7 +134,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
             // TODO(132615827): Update this code once Gradle provides classpath changes
             // (https://github.com/gradle/gradle/issues/11794)
             val classpathChanges = emptyList<FileChange>()
-            check(keepRulesOutputFile == null)
             processIncrementally(
                 inputFile,
                 inputChanges.getFileChanges(primaryInput).toSerializable(),
@@ -153,7 +146,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
             processNonIncrementally(
                 inputFile,
                 dexOutputDir,
-                keepRulesOutputFile,
                 globalSyntheticsDir,
                 provideIncrementalSupport,
                 desugarGraphFile
@@ -180,7 +172,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
             processNonIncrementally(
                 input,
                 dexOutputDir,
-                null,
                 globalSyntheticsOutput,
                 true,
                 desugarGraphFile
@@ -237,7 +228,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
             input,
             filter,
             dexOutputDir,
-            null,
             globalSyntheticsOutput,
             true,
             desugarGraph
@@ -252,7 +242,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
     private fun processNonIncrementally(
         input: File,
         dexOutputDir: File,
-        keepRulesOutputFile: File?,
         globalSyntheticsOutput: File?,
         provideIncrementalSupport: Boolean,
         desugarGraphFile: File? // desugarGraphFile != null iff provideIncrementalSupport == true
@@ -262,10 +251,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
         globalSyntheticsOutput?.let {
             FileUtils.deleteRecursivelyIfExists(it)
             FileUtils.mkdirs(it)
-        }
-        keepRulesOutputFile?.let {
-            FileUtils.deleteIfExists(it)
-            FileUtils.mkdirs(it.parentFile)
         }
         desugarGraphFile?.let {
             FileUtils.deleteIfExists(it)
@@ -280,7 +265,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
             input,
             { _, _ -> true },
             dexOutputDir,
-            keepRulesOutputFile,
             globalSyntheticsOutput,
             provideIncrementalSupport,
             desugarGraph
@@ -298,7 +282,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
         input: File,
         inputFilter: (File, String) -> Boolean,
         dexOutputDir: File,
-        keepRulesOutputFile: File?,
         globalSyntheticsOutput: File?,
         provideIncrementalSupport: Boolean,
         // desugarGraphUpdater != null iff provideIncrementalSupport == true
@@ -319,7 +302,6 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
                         closer.register(it)
                     },
                     coreLibDesugarConfig = parameters.libConfiguration.orNull,
-                    coreLibDesugarOutputKeepRuleFile = keepRulesOutputFile,
                     messageReceiver = MessageReceiverImpl(
                         parameters.errorFormat.get(),
                         LoggerFactory.getLogger(BaseDexingTransform::class.java)
@@ -375,7 +357,6 @@ fun getDexingArtifactConfiguration(creationConfig: ApkCreationConfig): DexingArt
         enableDesugaring =
             creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8,
         enableCoreLibraryDesugaring = creationConfig.dexingCreationConfig.isCoreLibraryDesugaringEnabled,
-        needsShrinkDesugarLibrary = creationConfig.dexingCreationConfig.needsShrinkDesugarLibrary,
         asmTransformedVariant =
             if (creationConfig.instrumentationCreationConfig?.dependenciesClassesAreInstrumented == true) {
                 creationConfig.name
@@ -392,7 +373,6 @@ data class DexingArtifactConfiguration(
     private val isDebuggable: Boolean,
     private val enableDesugaring: Boolean,
     private val enableCoreLibraryDesugaring: Boolean,
-    private val needsShrinkDesugarLibrary: Boolean,
     private val asmTransformedVariant: String?,
     private val useJacocoTransformInstrumentation: Boolean,
     private val enableGlobalSynthetics: Boolean,
@@ -475,7 +455,7 @@ data class DexingArtifactConfiguration(
                 inputArtifact.type
             )
 
-            if (enableGlobalSynthetics || needsShrinkDesugarLibrary) {
+            if (enableGlobalSynthetics) {
                 spec.to.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.D8_OUTPUTS.type)
             } else {
                 spec.to.attribute(ARTIFACT_FORMAT, AndroidArtifacts.ArtifactType.DEX.type)

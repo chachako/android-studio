@@ -300,59 +300,33 @@ class DexArchiveBuilderDelegateTest {
     }
 
     /**
-     * Check bucket number is based on relative path for directory input or package name for jar
-     * input.
-     *
-     * When java api desugaring is enabled in release build, d8 is dexing in DexIndexed mode only
-     * and the dex archive output location is determined by bucket number. The bucket number
-     * should not rely on the absolute path of input so that dex archive task can be relocatable
-     * across machines.
+     * Check bucket number is based on package name for jar input.
      */
     @Test
     fun testBucketingStrategy() {
-        val outputKeepRule = tmpDir.root.toPath().resolve("outputKeepRule")
-        Files.createDirectories(outputKeepRule)
         val numberOfBuckets = 3
-
-        val dirInput1 = tmpDir.root.toPath().resolve("dir_input1")
-        dirWithEmptyClasses(dirInput1, ImmutableList.of("$PACKAGE/Cat"))
 
         val jarInput1 = tmpDir.root.toPath().resolve("input1.jar")
         jarWithEmptyClasses(jarInput1, ImmutableList.of("$PACKAGE/Dog"))
 
         getDelegate(
-            projectClasses = setOf(dirInput1.toFile(), jarInput1.toFile()),
+            projectClasses = setOf(jarInput1.toFile()),
             projectOutput = out.toFile(),
-            projectOutputKeepRules = outputKeepRule.toFile(),
             numberOfBuckets = numberOfBuckets
         ).doProcess()
 
-        val dirBucket = findOutputBucketForDirInput(numberOfBuckets)
         val jarBucket = findOutputBucketForJarInput(numberOfBuckets)
 
         FileUtils.cleanOutputDir(out.toFile())
-        FileUtils.cleanOutputDir(outputKeepRule.toFile())
-
-        val dirInput2 = tmpDir.root.toPath().resolve("dir_input2")
-        dirWithEmptyClasses(dirInput2, ImmutableList.of("$PACKAGE/Dog"))
 
         val jarInput2 = tmpDir.root.toPath().resolve("input2.jar")
         jarWithEmptyClasses(jarInput2, ImmutableList.of("$PACKAGE/Cat"))
 
         getDelegate(
-            projectClasses = setOf(dirInput2.toFile(), jarInput2.toFile()),
+            projectClasses = setOf(jarInput2.toFile()),
             projectOutput = out.toFile(),
-            projectOutputKeepRules = outputKeepRule.toFile(),
             numberOfBuckets = numberOfBuckets
         ).doProcess()
-
-        // Check that dir bucket location can change as the relative paths of the input classes are
-        // different.
-        val newDirBucket = findOutputBucketForDirInput(numberOfBuckets)
-        assertThat(FileUtils.find(out.resolve(dirBucket).toFile(), Pattern.compile(".*\\.dex")))
-            .hasSize(0)
-        assertThat(FileUtils.find(out.resolve(newDirBucket).toFile(), Pattern.compile(".*\\.dex")))
-                .hasSize(1)
 
         // Check that jar bucket location does not change as the package names of the input classes
         // are the same.
@@ -414,11 +388,8 @@ class DexArchiveBuilderDelegateTest {
         java8Desugaring: Java8LangSupport = Java8LangSupport.UNUSED,
         desugaringClasspath: Set<File> = emptySet(),
         libConfiguration: String? = null,
-        projectOutputKeepRules: File? = null,
-        externalLibsOutputKeepRules: File? = null,
         numberOfBuckets: Int = 1,
         inputJarHashesFile: File = tmpDir.newFile(),
-        enableGlobalSynthetics: Boolean = true,
     ): DexArchiveBuilderTaskDelegate {
         return DexArchiveBuilderTaskDelegate(
             isIncremental = isIncremental,
@@ -430,10 +401,10 @@ class DexArchiveBuilderDelegateTest {
             externalLibChangedClasses = externalLibChanges,
             mixedScopeClasses = emptySet(),
             mixedScopeChangedClasses = emptySet(),
-            projectOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(projectOutput, projectOutputKeepRules, tmpDir.newFolder()),
-            subProjectOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(tmpDir.newFolder(), null, tmpDir.newFolder()),
-            externalLibsOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(externalLibsOutput, externalLibsOutputKeepRules, tmpDir.newFolder()),
-            mixedScopeOutputs =  DexArchiveBuilderTaskDelegate.DexingOutputs(tmpDir.newFolder(), null, tmpDir.newFolder()),
+            projectOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(projectOutput, null),
+            subProjectOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(tmpDir.newFolder(), null),
+            externalLibsOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(externalLibsOutput, null),
+            mixedScopeOutputs =  DexArchiveBuilderTaskDelegate.DexingOutputs(tmpDir.newFolder(), null),
             inputJarHashesFile = inputJarHashesFile,
             desugarClasspathChangedClasses = emptySet(),
             desugarGraphDir =  tmpDir.newFolder().takeIf { java8Desugaring == Java8LangSupport.D8 },

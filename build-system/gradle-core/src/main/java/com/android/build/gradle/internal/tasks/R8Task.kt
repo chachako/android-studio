@@ -172,10 +172,6 @@ abstract class R8Task @Inject constructor(
 
     @get:Optional
     @get:OutputDirectory
-    abstract val projectOutputKeepRules: DirectoryProperty
-
-    @get:Optional
-    @get:OutputDirectory
     abstract val baseDexDir: DirectoryProperty
 
     @get:Optional
@@ -273,22 +269,11 @@ abstract class R8Task @Inject constructor(
                         taskProvider,
                         R8Task::featureJavaResourceOutputDir
                     ).on(InternalArtifactType.FEATURE_SHRUNK_JAVA_RES)
-
-                    if (creationConfig.dexingCreationConfig.needsShrinkDesugarLibrary) {
-                        creationConfig.artifacts
-                            .setInitialProvider(taskProvider, R8Task::projectOutputKeepRules)
-                            .on(InternalArtifactType.DESUGAR_LIB_PROJECT_KEEP_RULES)
-                    }
                 }
                 creationConfig is ApkCreationConfig -> {
                     creationConfig.artifacts.use(taskProvider)
                         .wiredWith(R8Task::outputDex)
                         .toAppendTo(InternalMultipleArtifactType.DEX)
-                    if (creationConfig.dexingCreationConfig.needsShrinkDesugarLibrary) {
-                        creationConfig.artifacts
-                            .setInitialProvider(taskProvider, R8Task::projectOutputKeepRules)
-                            .on(InternalArtifactType.DESUGAR_LIB_PROJECT_KEEP_RULES)
-                    }
                 }
                 else -> {
                     throw RuntimeException("Unrecognized type")
@@ -579,7 +564,6 @@ abstract class R8Task @Inject constructor(
             it.featureDexDir.set(featureDexDir.asFile.orNull)
             it.featureJavaResourceOutputDir.set(featureJavaResourceOutputDir.asFile.orNull)
             it.libConfiguration.set(coreLibDesugarConfig.orNull)
-            it.outputKeepRulesDir.set(projectOutputKeepRules.asFile.orNull)
             it.errorFormatMode.set(errorFormatMode.get())
             if (artProfileRewriting.get()) {
                 it.inputArtProfile.set(inputArtProfile)
@@ -629,7 +613,6 @@ abstract class R8Task @Inject constructor(
             featureDexDir: File?,
             featureJavaResourceOutputDir: File?,
             libConfiguration: String?,
-            outputKeepRulesDir: File?,
             errorFormatMode: SyncOptions.ErrorFormatMode,
             inputArtProfile: File?,
             outputArtProfile: File?
@@ -652,7 +635,6 @@ abstract class R8Task @Inject constructor(
                     FileUtils.cleanOutputDir(output)
                     featureDexDir?.let { FileUtils.cleanOutputDir(it) }
                     featureJavaResourceOutputDir?.let { FileUtils.cleanOutputDir(it) }
-                    outputKeepRulesDir?.let { FileUtils.cleanOutputDir(it) }
                 }
                 Format.JAR -> FileUtils.deleteIfExists(output)
             }
@@ -692,8 +674,6 @@ abstract class R8Task @Inject constructor(
                 r8OutputType = r8OutputType,
             )
 
-            val outputKeepRulesFile = outputKeepRulesDir?.resolve("output")
-
             // When invoking R8 we filter out missing files. E.g. javac output may not exist if
             // there are no Java sources. See b/151605314 for details.
             runR8(
@@ -713,7 +693,6 @@ abstract class R8Task @Inject constructor(
                 featureDexDir?.toPath(),
                 featureJavaResourceOutputDir?.toPath(),
                 libConfiguration,
-                outputKeepRulesFile?.toPath(),
                 inputArtProfile?.toPath(),
                 outputArtProfile?.toPath(),
             )
@@ -763,7 +742,6 @@ abstract class R8Task @Inject constructor(
             abstract val featureDexDir: DirectoryProperty
             abstract val featureJavaResourceOutputDir: DirectoryProperty
             abstract val libConfiguration: Property<String>
-            abstract val outputKeepRulesDir: DirectoryProperty
             abstract val errorFormatMode: Property<SyncOptions.ErrorFormatMode>
             abstract val inputArtProfile: RegularFileProperty
             abstract val outputArtProfile: RegularFileProperty
@@ -801,7 +779,6 @@ abstract class R8Task @Inject constructor(
                 parameters.featureDexDir.orNull?.asFile,
                 parameters.featureJavaResourceOutputDir.orNull?.asFile,
                 parameters.libConfiguration.orNull,
-                parameters.outputKeepRulesDir.orNull?.asFile,
                 parameters.errorFormatMode.get(),
                 parameters.inputArtProfile.orNull?.asFile,
                 parameters.outputArtProfile.orNull?.asFile,

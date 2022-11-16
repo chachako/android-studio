@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.internal.dependency.computeKeepRulesFileName
+import com.android.build.gradle.internal.dependency.computeGlobalSyntheticsDirName
 import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
@@ -28,7 +28,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-/** Testing [CopyDexOutput] worker action which copies input dex files and keep rules to output. */
+/** Testing [CopyDexOutput] worker action which copies input dex files and global synthetics to output. */
 class CopyDexOutputTest {
 
     @JvmField
@@ -53,7 +53,6 @@ class CopyDexOutputTest {
                 return object: Params() {
                     override val inputDirs = FakeConfigurableFileCollection(inputA, inputB)
                     override val outputDexDir = FakeObjectFactory.factory.directoryProperty().fileValue(output)
-                    override val outputKeepRules = FakeObjectFactory.factory.directoryProperty()
                     override val outputGlobalSynthetics = FakeObjectFactory.factory.directoryProperty().fileValue(tmp.newFolder())
                     override val projectPath = FakeGradleProperty("projectName")
                     override val taskOwner = FakeGradleProperty("taskOwner")
@@ -68,24 +67,23 @@ class CopyDexOutputTest {
     }
 
     @Test
-    fun testDexAndKeepRulesCopyOnly() {
+    fun testDexAndGlobalSyntheticsCopyOnly() {
         val inputA = tmp.newFolder().also {
             it.resolve("classes.dex").createNewFile()
             it.resolve("do_not_copy").createNewFile()
         }
         val inputB = tmp.newFolder().also { dir ->
-            dir.resolve(computeKeepRulesFileName(dir)).createNewFile()
+            dir.resolve(computeGlobalSyntheticsDirName(dir)).createNewFile()
             dir.resolve("classes.dex").createNewFile()
         }
         val outputDex = tmp.newFolder()
-        val outputKeepRules = tmp.newFolder()
+        val globalSynthetic = tmp.newFolder()
         object: CopyDexOutput() {
             override fun getParameters(): Params {
                 return object: Params() {
                     override val inputDirs = FakeConfigurableFileCollection(inputA, inputB)
                     override val outputDexDir = FakeObjectFactory.factory.directoryProperty().fileValue(outputDex)
-                    override val outputKeepRules = FakeObjectFactory.factory.directoryProperty().fileValue(outputKeepRules)
-                    override val outputGlobalSynthetics = FakeObjectFactory.factory.directoryProperty().fileValue(tmp.newFolder())
+                    override val outputGlobalSynthetics = FakeObjectFactory.factory.directoryProperty().fileValue(globalSynthetic)
                     override val projectPath = FakeGradleProperty("projectName")
                     override val taskOwner = FakeGradleProperty("taskOwner")
                     override val workerKey = FakeGradleProperty("workerKey")
@@ -94,6 +92,6 @@ class CopyDexOutputTest {
             }
         }.execute()
         assertThat(outputDex.list()).asList().containsExactly("classes_ext_0.dex", "classes_ext_1.dex")
-        assertThat(outputKeepRules.list()).asList().containsExactly("core_lib_keep_rules_0.txt")
+        assertThat(globalSynthetic.list()).asList().containsExactly("global_synthetics_0")
     }
 }

@@ -785,7 +785,7 @@ class DependencyConfigurator(
             val services = allComponents.first().services
             if (projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]) {
                 for (artifactConfiguration in getDexingArtifactConfigurations(
-                    allComponents
+                        allComponents
                 )) {
                     artifactConfiguration.registerTransform(
                         project.name,

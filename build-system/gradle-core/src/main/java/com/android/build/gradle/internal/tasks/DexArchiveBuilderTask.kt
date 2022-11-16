@@ -189,7 +189,6 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
                 it.initializeFromAndroidVariantTask(this)
                 it.inputDirs.from(externalLibDexFiles.files)
                 it.outputDexDir.set(externalLibsFromArtifactTransformsOutputs.dex)
-                it.outputKeepRules.set(externalLibsFromArtifactTransformsOutputs.keepRules)
                 it.outputGlobalSynthetics.set(externalLibsFromArtifactTransformsOutputs.globalSynthetics)
             }
         }
@@ -299,28 +298,6 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
                 taskProvider,
                 DexArchiveBuilderTask::previousRunNumberOfBucketsFile
             ).withName("out").on(InternalArtifactType.DEX_NUMBER_OF_BUCKETS_FILE)
-            if (dexingCreationConfig.needsShrinkDesugarLibrary) {
-                creationConfig.artifacts.setInitialProvider(
-                    taskProvider
-                ) { it.projectOutputs.keepRules }
-                    .withName("out").on(InternalArtifactType.DESUGAR_LIB_PROJECT_KEEP_RULES)
-                creationConfig.artifacts.setInitialProvider(
-                    taskProvider
-                ) { it.subProjectOutputs.keepRules }
-                    .withName("out").on(InternalArtifactType.DESUGAR_LIB_SUBPROJECT_KEEP_RULES)
-                creationConfig.artifacts.setInitialProvider(
-                    taskProvider
-                ) { it.externalLibsOutputs.keepRules }
-                    .withName("out").on(InternalArtifactType.DESUGAR_LIB_EXTERNAL_LIBS_KEEP_RULES)
-                creationConfig.artifacts.setInitialProvider(
-                    taskProvider
-                ) { it.externalLibsFromArtifactTransformsOutputs.keepRules }
-                    .withName("out").on(InternalArtifactType.DESUGAR_LIB_EXTERNAL_LIBS_ARTIFACT_TRANSFORM_KEEP_RULES)
-                creationConfig.artifacts.setInitialProvider(
-                    taskProvider
-                ) { it.mixedScopeOutputs.keepRules }
-                    .withName("out").on(InternalArtifactType.DESUGAR_LIB_MIXED_SCOPE_KEEP_RULES)
-            }
             if (creationConfig.services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS]) {
                 creationConfig.artifacts.setInitialProvider(
                     taskProvider
@@ -419,9 +396,8 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
                     this.debuggable.set(task.dexParams.debuggable)
                     this.bootClasspath.from(task.dexParams.desugarBootclasspath)
                     this.desugaringClasspath.from(desugaringClasspathForArtifactTransforms)
-                    this.enableDesugaring.set(task.dexParams.withDesugaring)
-                    this.libConfiguration.set(task.dexParams.coreLibDesugarConfig)
                     this.errorFormat.set(task.dexParams.errorFormatMode)
+                    this.enableDesugaring.set(task.dexParams.withDesugaring)
                     this.enableGlobalSynthetics.set(
                         services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS])
                 }
@@ -452,11 +428,6 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
 
         @get:OutputDirectory
         abstract val dex: DirectoryProperty
-
-        /** Core library desugaring keep rules */
-        @get:Optional
-        @get:OutputDirectory
-        abstract val keepRules: DirectoryProperty
 
         @get:Optional
         @get:OutputDirectory
@@ -551,33 +522,25 @@ abstract class DexingExternalLibArtifactTransform: BaseDexingTransform<DexingExt
 }
 
 /**
- * Implementation of the worker action that copies dex files and core library desugaring keep rules
+ * Implementation of the worker action that copies dex files and global synthetics
  * to the final output locations. Originating files are output of [DexingExternalLibArtifactTransform]
  * transform.
  */
 abstract class CopyDexOutput : ProfileAwareWorkAction<CopyDexOutput.Params>() {
-    abstract class Params : ProfileAwareWorkAction.Parameters() {
+    abstract class Params : Parameters() {
         abstract val inputDirs: ConfigurableFileCollection
         abstract val outputDexDir: DirectoryProperty
-        abstract val outputKeepRules: DirectoryProperty
         abstract val outputGlobalSynthetics: DirectoryProperty
     }
     override fun run() {
         FileUtils.cleanOutputDir(parameters.outputDexDir.asFile.get())
-        parameters.outputKeepRules.asFile.orNull?.let { FileUtils.cleanOutputDir(it) }
         parameters.outputGlobalSynthetics.asFile.orNull?.let { FileUtils.cleanOutputDir(it) }
 
         var dexId = 0
-        var keepRulesId = 0
         var syntheticsId = 0
         parameters.inputDirs.files.forEach { inputDir ->
             inputDir.walk().filter { it.extension == SdkConstants.EXT_DEX }.forEach { dexFile ->
                 dexFile.copyTo(parameters.outputDexDir.asFile.get().resolve("classes_ext_${dexId++}.dex"))
-            }
-            parameters.outputKeepRules.asFile.orNull?.let {
-                inputDir.resolve(computeKeepRulesFileName(inputDir)).let {rules ->
-                    if (rules.isFile) rules.copyTo(it.resolve("core_lib_keep_rules_${keepRulesId++}.txt"))
-                }
             }
             parameters.outputGlobalSynthetics.asFile.orNull?.let {
                 inputDir.resolve(computeGlobalSyntheticsDirName(inputDir)).let { dir ->

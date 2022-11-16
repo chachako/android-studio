@@ -444,7 +444,6 @@ class DexMergingTaskTest {
                         desugarBootclasspath = ClassFileProviderFactory(emptyList()),
                         desugarClasspath = ClassFileProviderFactory(emptyList()),
                         coreLibDesugarConfig = null,
-                        coreLibDesugarOutputKeepRuleFile = null,
                         messageReceiver = NoOpMessageReceiver()
                 )
         )

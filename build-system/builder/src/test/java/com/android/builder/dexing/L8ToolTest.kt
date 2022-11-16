@@ -17,7 +17,9 @@
 package com.android.builder.dexing
 
 import com.android.testutils.TestUtils
+import com.android.testutils.truth.DexSubject
 import com.android.testutils.truth.PathSubject.assertThat
+import com.android.tools.r8.OutputMode
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -42,10 +44,48 @@ class L8ToolTest {
             bootClasspath,
             20,
             KeepRulesConfig(emptyList(), emptyList()),
-            true
+            true,
+            OutputMode.DexIndexed
         )
         assertThat(getDexFileCount(output)).isEqualTo(1)
         assertThat(output.resolve("classes1000.dex")).exists()
+    }
+
+    @Test
+    fun testShrinking() {
+        val output = tmp.newFolder().resolve("out")
+        val input = tmp.newFolder().toPath()
+
+        val keepRulesFile1 = input.toFile().resolve("keep_rules").also { file ->
+            file.bufferedWriter().use {
+                it.write("-keep class j$.util.stream.Stream {*;}")
+            }
+        }
+        val keepRulesFile2 = input.toFile().resolve("dir/keep_rules").also { file ->
+            file.parentFile.mkdirs()
+            file.bufferedWriter().use {
+                it.write("-keep class j$.util.Optional {*;}")
+            }
+        }
+        runL8(
+            desugarJar,
+            output.toPath(),
+            desugarConfig,
+            bootClasspath,
+            20,
+            KeepRulesConfig(
+                listOf(keepRulesFile1.toPath(), keepRulesFile2.toPath()),
+                emptyList()
+            ),
+            true,
+            OutputMode.DexIndexed
+        )
+        val dexFile = output.resolve("classes1000.dex")
+        DexSubject.assertThatDex(dexFile).containsClass("Lj$/util/stream/Stream;")
+        DexSubject.assertThatDex(dexFile).containsClass("Lj$/util/Optional;")
+        // check unused API classes are removed from the from desugar lib dex.
+        DexSubject.assertThatDex(dexFile).doesNotContainClasses("Lj$/time/LocalTime;")
+
     }
 
     private fun getDexFileCount(dir: Path): Long =

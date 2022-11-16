@@ -50,7 +50,6 @@ import java.io.File
 import java.nio.file.Files
 import java.util.zip.ZipFile
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class CoreLibraryDesugarTest {
@@ -265,19 +264,37 @@ class CoreLibraryDesugarTest {
     }
 
     /**
-     * Check if Java 8 API(e.g. Stream) is rewritten properly by D8
+     * Check if Java 8 API(e.g. Stream) is rewritten properly by D8 and R8
      */
     @Test
     fun testApiRewriting() {
         executor().run("app:assembleDebug")
-        val apk = app.getApk(GradleTestProject.ApkType.DEBUG)
-        val dex = getDexWithSpecificClass(programClass, apk.allDexes)
+        var apk = app.getApk(GradleTestProject.ApkType.DEBUG)
+        var dex = getDexWithSpecificClass(programClass, apk.allDexes)
             ?: fail("Failed to find the dex with class name $programClass")
         DexClassSubject.assertThat(dex.classes[programClass])
             .hasMethodThatInvokes("getText", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
         val desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)!!
         assertThat(getAllStartLocals(desugarLibDex)).named("debug locals info").isNotEmpty()
         assertThat(getAllDexWithJDollarTypes(apk.allDexes)).named("all dex files with desugar jdk lib classes").hasSize(1)
+
+        app.buildFile.appendText("""
+
+            android.buildTypes.release.minifyEnabled = true
+        """.trimIndent())
+
+        TestFileUtils.searchAndReplace(
+                FileUtils.join(app.mainSrcDir, "com/example/helloworld/HelloWorld.java"),
+                "// onCreate",
+                "getText();"
+        )
+
+        executor().run("app:assembleRelease")
+        apk = app.getApk(GradleTestProject.ApkType.RELEASE)
+        dex = getDexWithSpecificClass(programClass, apk.allDexes)
+            ?: fail("Failed to find the dex with class name $programClass")
+        DexClassSubject.assertThat(dex.classes[programClass])
+            .hasMethodThatInvokes("a", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
     }
 
     @Test
@@ -332,40 +349,32 @@ class CoreLibraryDesugarTest {
     }
 
     @Test
-    fun testKeepRulesGenerationFromAppProject() {
+    fun testKeepRulesGenerationForNonMinifiedRelease() {
+        addFileDependencies(app)
         executor().run("app:assembleRelease")
-        val out = InternalArtifactType.DESUGAR_LIB_PROJECT_KEEP_RULES.getOutputDir(app.buildDir)
-        val expectedKeepRules = "-keep class j\$.util.Collection\$-EL {$lineSeparator" +
-                "    j\$.util.stream.Stream stream(java.util.Collection);$lineSeparator" +
-                "}$lineSeparator" +
-                "-keep class j\$.util.Optional {$lineSeparator" +
-                "    java.lang.Object get();$lineSeparator" +
-                "}$lineSeparator" +
-                "-keep class j\$.util.stream.Stream {$lineSeparator" +
-                "    j\$.util.Optional findFirst();$lineSeparator" +
-                "}$lineSeparator"
+        val out = InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
+        val expectedKeepRules =
+            "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
+                    "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
+                    "  j\$.time.LocalTime NOON;$lineSeparator" +
+                    "}$lineSeparator" +
+                    "-keep,allowobfuscation enum j\$.time.Month {$lineSeparator" +
+                    "  j\$.time.Month JUNE;$lineSeparator" +
+                    "}$lineSeparator" +
+                    "-keep,allowobfuscation class j\$.util.Collection\$-EL {$lineSeparator" +
+                    "  public static j\$.util.stream.Stream stream(java.util.Collection);$lineSeparator" +
+                    "}$lineSeparator" +
+                    "-keep,allowobfuscation class j\$.util.Optional {$lineSeparator" +
+                    "  public java.lang.Object get();$lineSeparator" +
+                    "}$lineSeparator" +
+                    "-keep,allowobfuscation interface j\$.util.stream.Stream {$lineSeparator" +
+                    "  public j\$.util.Optional findFirst();$lineSeparator" +
+                    "}$lineSeparator"
         Truth.assertThat(collectKeepRulesUnderDirectory(out)).isEqualTo(expectedKeepRules)
     }
 
     @Test
-    fun testKeepRulesGenerationFromFileDependencies() {
-        addFileDependencies(app)
-
-        executor().run("app:assembleRelease")
-        val out = InternalArtifactType.DESUGAR_LIB_EXTERNAL_FILE_LIB_KEEP_RULES
-            .getOutputDir(app.buildDir)
-        val expectedKeepRule1 = "-keep class j\$.time.LocalTime {$lineSeparator" +
-                "    j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
-                "}$lineSeparator"
-        val expectedKeepRule2 = "-keep class j\$.time.LocalTime {$lineSeparator" +
-                "    j\$.time.LocalTime NOON;$lineSeparator" +
-                "}$lineSeparator"
-        assertTrue { collectKeepRulesUnderDirectory(out).contains(expectedKeepRule1) }
-        assertTrue { collectKeepRulesUnderDirectory(out).contains(expectedKeepRule2) }
-    }
-
-    @Test
-    fun testKeepRulesConsumption() {
+    fun testKeepRulesConsumptionForNonMinifiedRelease() {
         addFileDependencies(app)
 
         executor().run("app:assembleRelease")
@@ -427,23 +436,21 @@ class CoreLibraryDesugarTest {
         executor().run("app:assembleRelease")
 
         val keepRulesOutputDir =
-            InternalArtifactType.DESUGAR_LIB_PROJECT_KEEP_RULES.getOutputDir(app.buildDir)
-        val expectedKeepRules = "-keep class j\$.util.Collection\$-EL {$lineSeparator" +
-                "    j\$.util.stream.Stream stream(java.util.Collection);$lineSeparator" +
-                "}$lineSeparator" +
-                "-keep class j\$.util.Optional {$lineSeparator" +
-                "    java.lang.Object get();$lineSeparator" +
-                "}$lineSeparator" +
-                "-keep class j\$.util.stream.Stream {$lineSeparator" +
-                "    j\$.util.Optional findFirst();$lineSeparator" +
-                "}$lineSeparator"
+            InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
+        val expectedKeepRules =
+            "-keep,allowobfuscation class j\$.util.Collection\$-EL {$lineSeparator" +
+                    "  public static j\$.util.stream.Stream stream(java.util.Collection);$lineSeparator" +
+                    "}$lineSeparator" +
+                    "-keep,allowobfuscation class j\$.util.Optional {$lineSeparator" +
+                    "  public java.lang.Object get();$lineSeparator" +
+                    "}$lineSeparator" +
+                    "-keep,allowobfuscation interface j\$.util.stream.Stream {$lineSeparator" +
+                    "  public j\$.util.Optional findFirst();$lineSeparator" +
+                    "}$lineSeparator"
         Truth.assertThat(collectKeepRulesUnderDirectory(keepRulesOutputDir)).isEqualTo(expectedKeepRules)
 
         val apk = app.getApk(GradleTestProject.ApkType.RELEASE)
-        val desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)
-            ?: fail("Failed to find the dex with class name $usedDesugarClass")
-        // check unused API classes are removed from the from desugar lib dex.
-        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(unusedDesugarClass)
+        assertThat(apk.allDexes.size).isAtLeast(2)
     }
 
     @Test
@@ -561,7 +568,7 @@ class CoreLibraryDesugarTest {
         DexSubject.assertThat(desugarConfigLibDex).doesNotContainClasses(programClass)
 
         // Invoke a Android API taking a java.time class as argument. This will
-        // require conversion, a the API will not be able to take a j$.time class.
+        // require conversion, the API will not be able to take a j$.time class.
         TestFileUtils.addMethod(
             FileUtils.join(app.mainSrcDir,"com/example/helloworld/HelloWorld.java"),
             """

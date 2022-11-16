@@ -41,7 +41,6 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.COMPILE_SYMB
 import com.android.build.gradle.internal.scope.InternalArtifactType.CONSUMER_PROGUARD_DIR
 import com.android.build.gradle.internal.scope.InternalArtifactType.DATA_BINDING_ARTIFACT
 import com.android.build.gradle.internal.scope.InternalArtifactType.DATA_BINDING_BASE_CLASS_LOG_ARTIFACT
-import com.android.build.gradle.internal.scope.InternalArtifactType.DESUGAR_LIB_MERGED_KEEP_RULES
 import com.android.build.gradle.internal.scope.InternalArtifactType.FEATURE_PUBLISHED_DEX
 import com.android.build.gradle.internal.scope.InternalArtifactType.FEATURE_NAME
 import com.android.build.gradle.internal.scope.InternalArtifactType.FEATURE_RESOURCE_PKG
@@ -202,7 +201,6 @@ class PublishingSpecs {
                 reverseMetadata(PACKAGED_DEPENDENCIES, ArtifactType.PACKAGED_DEPENDENCIES)
                 reverseMetadata(NATIVE_DEBUG_METADATA, ArtifactType.REVERSE_METADATA_NATIVE_DEBUG_METADATA)
                 reverseMetadata(NATIVE_SYMBOL_TABLES, ArtifactType.REVERSE_METADATA_NATIVE_SYMBOL_TABLES)
-                reverseMetadata(DESUGAR_LIB_MERGED_KEEP_RULES, ArtifactType.DESUGAR_LIB_MERGED_KEEP_RULES)
                 reverseMetadata(GLOBAL_SYNTHETICS_MERGED, ArtifactType.GLOBAL_SYNTHETICS_MERGED)
                 reverseMetadata(FEATURE_PUBLISHED_DEX, ArtifactType.FEATURE_PUBLISHED_DEX)
                 reverseMetadata(LINT_MODEL, ArtifactType.LINT_MODEL)

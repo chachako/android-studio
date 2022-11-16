@@ -88,7 +88,6 @@ abstract class PrivacySandboxSdkDexTask: NewIncrementalTask() {
             mixedScopeChangedClasses = emptySet(),
             projectOutputs = DexArchiveBuilderTaskDelegate.DexingOutputs(
                 output.asFile.get(),
-                null,
                 globalSyntheticsOutput.asFile.get()
             ),
             subProjectOutputs = null,

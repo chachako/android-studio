@@ -84,8 +84,7 @@ public final class DexArchiveTestUtil {
                                     true, // withDesugaring
                                     new ClassFileProviderFactory(Collections.emptyList()), // bootcp
                                     new ClassFileProviderFactory(Collections.emptyList()), // cp
-                                    null, // coreLibDesugarConfig
-                                    null, // coreLibDesugarOutputKeepRuleFile
+                                    null,
                                     new StandardOutErrMessageReceiver() // messageReceiver
                                     ));
 

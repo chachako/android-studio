@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.TestProject
@@ -24,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
@@ -114,17 +114,10 @@ class CoreLibraryDesugarDynamicFeatureTest {
         """.trimIndent())
         project.executor().run(":app:assembleDebug")
         var appApk = app.getApk(GradleTestProject.ApkType.DEBUG)
-        var desugarLibDex = getDexWithSpecificClass(streamClass, appApk.allDexes)
-            ?: fail("Failed to find the dex with class name $streamClass")
-        DexSubject.assertThat(desugarLibDex).containsClasses(monthClass)
-        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(yearClass)
-
+        assertThat(appApk.allDexes.size).isAtLeast(2)
         project.executor().run("clean", ":app:assembleRelease")
         appApk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.RELEASE)
-        desugarLibDex = getDexWithSpecificClass(streamClass, appApk.allDexes)
-            ?: fail("Failed to find the dex with class name $streamClass")
-        DexSubject.assertThat(desugarLibDex).containsClasses(monthClass)
-        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(yearClass)
+        assertThat(appApk.allDexes.size).isAtLeast(2)
     }
 
     @Test
