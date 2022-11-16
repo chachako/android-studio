@@ -67,11 +67,11 @@ bool ForegroundProcessTracker::hasSleepingActivities() {
     // SUPPORTED
     return true;
   } else if (has_sleeping_activity_command_runner_count == 2) {
-    // NOT_SUPPORTED
-    return false;
-  } else if (has_sleeping_activity_command_runner_count == 3) {
     // UNKNOWN
     return true;
+  } else {
+    // NOT_SUPPORTED
+    return false;
   }
 
   has_sleeping_activity_command_runner_count += 1;
@@ -88,10 +88,10 @@ bool ForegroundProcessTracker::hasAwakeActivities() {
     // SUPPORTED
     return true;
   } else if (has_awake_activity_command_runner_count == 2) {
-    // NOT_SUPPORTED
-    return false;
-  } else if (has_awake_activity_command_runner_count == 3) {
     // UNKNOWN
+    return false;
+  } else {
+    // NOT_SUPPORTED
     return false;
   }
 

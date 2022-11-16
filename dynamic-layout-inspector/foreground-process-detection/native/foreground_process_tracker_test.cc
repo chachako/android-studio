@@ -413,10 +413,7 @@ TEST_F(ForegroundProcessTrackerTest, Handshake) {
               TrackingForegroundProcessSupported::SUPPORTED);
   EXPECT_THAT(support_info3.reason_not_supported(), false);
   EXPECT_THAT(support_info4.support_type(),
-              TrackingForegroundProcessSupported::NOT_SUPPORTED);
-  EXPECT_THAT(support_info4.reason_not_supported(),
-              TrackingForegroundProcessSupported::
-                  DUMPSYS_NO_TOP_ACTIVITY_NO_SLEEPING_ACTIVITIES);
+              TrackingForegroundProcessSupported::UNKNOWN);
 }
 
 TEST_F(ForegroundProcessTrackerTest,
@@ -441,12 +438,73 @@ TEST_F(ForegroundProcessTrackerTest,
       new NotEmptyMockBashCommandRunner(), new EmptyMockBashCommandRunner(),
       new EmptyMockBashCommandRunner(), new NotEmptyMockBashCommandRunner());
 
-  TrackingForegroundProcessSupported support_info =
+  // the first 10 failed attempts should return UNKNOWN
+  TrackingForegroundProcessSupported support_info0 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info1 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info2 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info3 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info4 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info5 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info6 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info7 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info8 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info9 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info10 =
       process_tracker->IsTrackingForegroundProcessSupported();
 
-  EXPECT_THAT(support_info.support_type(),
+  EXPECT_THAT(support_info0.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info0.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info1.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info1.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info2.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info2.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info3.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info3.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info4.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info4.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info5.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info5.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info6.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info6.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info7.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info7.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info8.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info8.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info9.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info9.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info10.support_type(),
               TrackingForegroundProcessSupported::NOT_SUPPORTED);
-  EXPECT_THAT(support_info.reason_not_supported(),
+  EXPECT_THAT(support_info10.reason_not_supported(),
               TrackingForegroundProcessSupported::
                   DUMPSYS_NO_TOP_ACTIVITY_NO_SLEEPING_ACTIVITIES);
 }
@@ -458,12 +516,73 @@ TEST_F(ForegroundProcessTrackerTest,
       new NotEmptyMockBashCommandRunner(), new EmptyMockBashCommandRunner(),
       new NotEmptyMockBashCommandRunner(), new NotEmptyMockBashCommandRunner());
 
-  TrackingForegroundProcessSupported support_info =
+  // the first 10 failed attempts should return UNKNOWN
+  TrackingForegroundProcessSupported support_info0 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info1 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info2 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info3 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info4 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info5 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info6 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info7 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info8 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info9 =
+      process_tracker->IsTrackingForegroundProcessSupported();
+  TrackingForegroundProcessSupported support_info10 =
       process_tracker->IsTrackingForegroundProcessSupported();
 
-  EXPECT_THAT(support_info.support_type(),
+  EXPECT_THAT(support_info0.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info0.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info1.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info1.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info2.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info2.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info3.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info3.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info4.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info4.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info5.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info5.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info6.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info6.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info7.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info7.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info8.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info8.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info9.support_type(),
+              TrackingForegroundProcessSupported::UNKNOWN);
+  EXPECT_THAT(support_info9.reason_not_supported(), false);
+
+  EXPECT_THAT(support_info10.support_type(),
               TrackingForegroundProcessSupported::NOT_SUPPORTED);
-  EXPECT_THAT(support_info.reason_not_supported(),
+  EXPECT_THAT(support_info10.reason_not_supported(),
               TrackingForegroundProcessSupported::
                   DUMPSYS_NO_TOP_ACTIVITY_BUT_HAS_AWAKE_ACTIVITIES);
 }

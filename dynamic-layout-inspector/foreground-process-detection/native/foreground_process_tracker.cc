@@ -48,6 +48,7 @@ ForegroundProcessTracker::IsTrackingForegroundProcessSupported() {
   ProcessInfo processInfo = runDumpsysTopActivityCommand();
 
   if (!processInfo.isEmpty) {
+    handshake_retry_count = 0;
     // a top-activity was found
     layoutInspectorForegroundProcessSupported.set_support_type(
         TrackingForegroundProcessSupported::SUPPORTED);
@@ -62,6 +63,18 @@ ForegroundProcessTracker::IsTrackingForegroundProcessSupported() {
   bool has_awake_activities = hasAwakeActivities();
 
   if (has_sleeping_activities && !has_awake_activities) {
+    handshake_retry_count = 0;
+    layoutInspectorForegroundProcessSupported.set_support_type(
+        TrackingForegroundProcessSupported::UNKNOWN);
+    return layoutInspectorForegroundProcessSupported;
+  }
+
+  // Instead of returning NOT_SUPPORTED the first time we get should reuturn
+  // NOT_SUPPORTED, retry a few times to avoid false negatives. For example when
+  // the device is unlocked there can be a brief moment when there is no
+  // top-activity but there are awake activities.
+  if (handshake_retry_count < maxHandshakeAttempts) {
+    handshake_retry_count += 1;
     layoutInspectorForegroundProcessSupported.set_support_type(
         TrackingForegroundProcessSupported::UNKNOWN);
     return layoutInspectorForegroundProcessSupported;
@@ -86,6 +99,7 @@ ForegroundProcessTracker::IsTrackingForegroundProcessSupported() {
   }
 
   layoutInspectorForegroundProcessSupported.set_reason_not_supported(reason);
+  handshake_retry_count = 0;
   return layoutInspectorForegroundProcessSupported;
 }
 

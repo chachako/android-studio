@@ -146,6 +146,9 @@ public class ForegroundProcessTrackerTest {
         sendStartHandShakeCommand(transportStub);
 
         final int[] count = {0};
+        final boolean[] seenSupported = {false};
+        final boolean[] seenNotSupported = {false};
+        final boolean[] seenUnknownSupported = {false};
 
         transportWrapper.getEvents(
                 event -> {
@@ -157,28 +160,40 @@ public class ForegroundProcessTrackerTest {
                                         .getSupportType();
 
                         if (count[0] == 0 || count[0] == 1) {
+                            seenSupported[0] = true;
                             assertThat(supportType)
                                     .isEqualTo(
                                             LayoutInspector.TrackingForegroundProcessSupported
                                                     .SupportType.SUPPORTED);
                             sendStartHandShakeCommand(transportStub);
                         } else if (count[0] == 2) {
-                            assertThat(supportType)
-                                    .isEqualTo(
-                                            LayoutInspector.TrackingForegroundProcessSupported
-                                                    .SupportType.NOT_SUPPORTED);
-                            sendStartHandShakeCommand(transportStub);
-                        } else if (count[0] == 3) {
+                            seenUnknownSupported[0] = true;
                             assertThat(supportType)
                                     .isEqualTo(
                                             LayoutInspector.TrackingForegroundProcessSupported
                                                     .SupportType.UNKNOWN);
+                            sendStartHandShakeCommand(transportStub);
+                        }
+                        // we go up to 12 because when the handshake is attempted 10 times before
+                        // failing.
+                        else if (count[0] < 12) {
+                            assertThat(supportType)
+                                    .isEqualTo(
+                                            LayoutInspector.TrackingForegroundProcessSupported
+                                                    .SupportType.UNKNOWN);
+                            sendStartHandShakeCommand(transportStub);
+                        } else {
+                            seenNotSupported[0] = true;
+                            assertThat(supportType)
+                                    .isEqualTo(
+                                            LayoutInspector.TrackingForegroundProcessSupported
+                                                    .SupportType.NOT_SUPPORTED);
                         }
 
                         count[0] += 1;
                     }
 
-                    return count[0] == 3;
+                    return count[0] == 13;
                 },
                 event ->
                         (event.getKind()
@@ -186,7 +201,10 @@ public class ForegroundProcessTrackerTest {
                                         .LAYOUT_INSPECTOR_TRACKING_FOREGROUND_PROCESS_SUPPORTED),
                 () -> {});
 
-        assertThat(count[0]).isEqualTo(3);
+        assertThat(count[0]).isEqualTo(13);
+        assertThat(seenSupported[0]).isEqualTo(true);
+        assertThat(seenUnknownSupported[0]).isEqualTo(true);
+        assertThat(seenNotSupported[0]).isEqualTo(true);
     }
 
     private void sendStartHandShakeCommand(

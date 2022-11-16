@@ -163,6 +163,10 @@ class ForegroundProcessTracker {
   std::thread workerThread_;
   std::atomic_bool shouldDoPolling_;
   std::atomic_bool isThreadRunning_;
+
+  static constexpr int maxHandshakeAttempts = 10;
+  // counter used to retry the handshake
+  int handshake_retry_count = 0;
 };
 
 }  // namespace layout_inspector
