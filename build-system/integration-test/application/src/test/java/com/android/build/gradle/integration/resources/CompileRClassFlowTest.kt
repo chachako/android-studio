@@ -113,14 +113,16 @@ class CompileRClassFlowTest {
         // When compiled with the COMPILE_CLASSPATH_LIBRARY_R_CLASSES flag disabled
         // then everything should work:
         project.executor()
-            .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, false)
+                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, false)
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
 
         // When compiled with the flag is enabled,
         // then the build should fail:
         val result = project.executor()
-            .expectFailure()
-            .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
+                .expectFailure()
+                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
         assertThat(result.stderr)
             .contains("public static final int SUPPORT_LIB_STRING = android.support.design.R.string.appbar_scrolling_view_behavior;\n")
@@ -129,15 +131,49 @@ class CompileRClassFlowTest {
         // (Done by having an 'api' rather than 'implementation' dependency in lib1, so lib2
         // has the library on the compile classpath.)
         TestFileUtils.searchAndReplace(
-            project.file("lib1/build.gradle"),
-            "implementation '",
-            "api '"
+                project.file("lib1/build.gradle"),
+                "implementation '",
+                "api '"
         )
         // When compiled with the flag is enabled,
         // then the build should succeed:
         project.executor()
-            .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
-            .run(tasks)
+                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
+                .run(tasks)
+
+        // Ids should be used as constants though
+        val result2 = project.executor()
+                .expectFailure()
+                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
+                .run(tasks)
+        assertThat(result2.stderr)
+                .contains("Example.java:10: error: constant expression required")
+
+        TestFileUtils.searchAndReplace(
+                project.file("app/src/main/java/com/example/app/Example.java"),
+                """
+                    switch(x) {
+                        // These must be constant expressions.
+                        case com.example.lib1.R.string.lib1String:
+                        case com.example.lib2.R.string.lib2String:
+                    }
+                    """.replaceIndent(" ".repeat(28)),
+                """
+                    if(x == com.example.lib1.R.string.lib1String) {
+                        // Not constant expressions.
+                    } else if (x == com.example.lib2.R.string.lib2String) {
+                    }
+                    """.replaceIndent(" ".repeat(28))
+        )
+
+        // Non-constant use should be OK though
+        project.executor()
+                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
+                .run(tasks)
+
     }
 }
 
