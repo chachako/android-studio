@@ -63,21 +63,20 @@ class AvdManager(
 
     private val logger: ILogger = LoggerWrapper.getLogger(AvdManager::class.java)
 
-    private val avdManager: com.android.sdklib.internal.avd.AvdManager by lazy {
-        com.android.sdklib.internal.avd.AvdManager.getInstance(
-            sdkHandler,
-            sdkHandler.toCompatiblePath(avdFolder),
-            logger
-        ) ?: throw RuntimeException("Failed to initialize AvdManager.")
-    }
-
-    private val deviceManager: DeviceManager by lazy {
-        DeviceManager.createInstance(androidLocationsProvider, sdkDirectory.toPath(), logger)
-    }
-
     init {
         FileUtils.mkdirs(avdFolder)
     }
+
+    private val deviceManager =
+        DeviceManager.createInstance(androidLocationsProvider, sdkDirectory.toPath(), logger)
+
+    private val avdManager =
+        com.android.sdklib.internal.avd.AvdManager.createInstance(
+            sdkHandler,
+            sdkHandler.toCompatiblePath(avdFolder),
+            deviceManager,
+            logger
+        )
 
     fun createOrRetrieveAvd(
         imageProvider: Provider<Directory>,

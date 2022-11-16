@@ -288,14 +288,6 @@
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization">
         <location
-            file="src/main/java/com/android/build/gradle/internal/AvdManager.kt"
-            line="74"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
-        <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
             line="171"/>
     </issue>

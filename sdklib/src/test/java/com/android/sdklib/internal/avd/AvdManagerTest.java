@@ -95,18 +95,20 @@ public final class AvdManagerTest {
         Path prefsRoot = root.resolve(ANDROID_PREFS_ROOT);
         mAndroidSdkHandler = new AndroidSdkHandler(root.resolve("sdk"), prefsRoot);
         mAvdManager =
-                AvdManager.getInstance(
+                AvdManager.createInstance(
                         mAndroidSdkHandler,
                         prefsRoot.resolve(AbstractAndroidLocations.FOLDER_AVD),
-                        new NullLogger());
+                        DeviceManager.createInstance(mAndroidSdkHandler, NullLogger.getLogger()),
+                        NullLogger.getLogger());
         mAvdFolder = AvdInfo.getDefaultAvdFolder(mAvdManager, name.getMethodName(), false);
         mGradleManagedDeviceAvdManager =
-                AvdManager.getInstance(
+                AvdManager.createInstance(
                         mAndroidSdkHandler,
                         prefsRoot
                                 .resolve(AbstractAndroidLocations.FOLDER_AVD)
                                 .resolve(AbstractAndroidLocations.FOLDER_GRADLE_AVD),
-                        new NullLogger());
+                        DeviceManager.createInstance(mAndroidSdkHandler, NullLogger.getLogger()),
+                        NullLogger.getLogger());
         mGradleManagedDeviceAvdFolder =
                 AvdInfo.getDefaultAvdFolder(
                         mGradleManagedDeviceAvdManager, name.getMethodName(), false);

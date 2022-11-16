@@ -33,6 +33,7 @@ import com.android.repository.testframework.FakeRepoManager;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.PathFileWrapper;
+import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.devices.Storage;
 import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
@@ -136,10 +137,20 @@ public class AvdManagerCliTest {
 
         mSdkHandler = new AndroidSdkHandler(sdkPath, avdPath, mgr);
         mLogger = new MockLog();
+        mAvdManager =
+                AvdManager.createInstance(
+                        mSdkHandler,
+                        avdPath,
+                        DeviceManager.createInstance(mSdkHandler, mLogger),
+                        mLogger);
         mCli =
                 new AvdManagerCli(
-                        mLogger, mSdkHandler, sdkPath.toString(), avdPath.toString(), null);
-        mAvdManager = AvdManager.getInstance(mSdkHandler, avdPath, mLogger);
+                        mLogger,
+                        mSdkHandler,
+                        mAvdManager,
+                        sdkPath.toString(),
+                        avdPath.toString(),
+                        null);
 
         FakeProgressIndicator progress = new FakeProgressIndicator();
         SystemImageManager systemImageManager = mSdkHandler.getSystemImageManager(progress);
@@ -454,7 +465,12 @@ public class AvdManagerCliTest {
         mLogger.clear();
         mCli =
                 new AvdManagerCli(
-                        mLogger, mSdkHandler, sdkPath.toString(), avdPath.toString(), null);
+                        mLogger,
+                        mSdkHandler,
+                        mAvdManager,
+                        sdkPath.toString(),
+                        avdPath.toString(),
+                        null);
         mCli.run(new String[] {"list", "devices"});
         assertTrue(
                 Joiner.on("")

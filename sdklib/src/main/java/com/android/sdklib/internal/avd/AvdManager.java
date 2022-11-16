@@ -27,7 +27,6 @@ import com.android.io.IAbstractFile;
 import com.android.io.StreamException;
 import com.android.prefs.AbstractAndroidLocations;
 import com.android.prefs.AndroidLocationsException;
-import com.android.prefs.AndroidLocationsSingleton;
 import com.android.repository.api.ConsoleProgressIndicator;
 import com.android.repository.api.LocalPackage;
 import com.android.repository.api.ProgressIndicator;
@@ -67,7 +66,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
@@ -81,7 +79,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -408,52 +405,6 @@ public class AvdManager {
 
     private static class AvdMgrException extends Exception {}
 
-    /** A key containing all the values that will make an AvdManager unique. */
-    protected static final class AvdManagerCacheKey {
-        /**
-         * The location of the user's Android SDK. Something like /home/user/Android/Sdk on Linux.
-         */
-        @NonNull private final Path mSdkLocation;
-        /**
-         * The location of the user's AVD folder. Something like /home/user/.android/avd on Linux.
-         */
-        @NonNull private final Path mAvdHomeFolder;
-
-        @NonNull private final ILogger mLog;
-
-        protected AvdManagerCacheKey(
-                @NonNull Path sdkLocation, @NonNull Path avdHomeFolder, ILogger log) {
-            mSdkLocation = sdkLocation;
-            mAvdHomeFolder = avdHomeFolder;
-            mLog = log;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(mSdkLocation, mAvdHomeFolder, mLog);
-        }
-
-        @Override
-        public boolean equals(@Nullable Object other) {
-            if (!(other instanceof AvdManagerCacheKey)) {
-                return false;
-            }
-
-            AvdManagerCacheKey otherKey = (AvdManagerCacheKey) other;
-            return mSdkLocation.equals(otherKey.mSdkLocation)
-                    && mAvdHomeFolder.equals(otherKey.mAvdHomeFolder)
-                    && mLog.equals(otherKey.mLog);
-        }
-    }
-
-    /**
-     * A map for caching AvdManagers based on the AvdHomeFolder and SdkHandler. This prevents us
-     * from creating multiple AvdManagers for the same SDK and AVD which could have them get out of
-     * sync.
-     */
-    private static final Map<AvdManagerCacheKey, WeakReference<AvdManager>> mManagers =
-            new HashMap<>();
-
     @NonNull private final AndroidSdkHandler mSdkHandler;
 
     @NonNull private final Path mBaseAvdFolder;
@@ -468,66 +419,32 @@ public class AvdManager {
     @GuardedBy("mAllAvdList")
     private ImmutableList<AvdInfo> mValidAvdList;
 
-    protected AvdManager(
+    private AvdManager(
             @NonNull AndroidSdkHandler sdkHandler,
             @NonNull Path baseAvdFolder,
-            @NonNull ILogger log)
-            throws AndroidLocationsException {
-        mSdkHandler = sdkHandler;
-        mBaseAvdFolder = baseAvdFolder;
-        mLog = log;
-        mDeviceManager = DeviceManager.createInstance(mSdkHandler, mLog);
-        buildAvdList(mAllAvdList);
-    }
-
-    /**
-     * Returns an AVD Manager for a given SDK represented by {@code sdkHandler}. One AVD Manager
-     * instance is created by SDK location and then cached and reused.
-     *
-     * @param sdkHandler The SDK handler.
-     * @param log The log object to receive the log of the initial loading of the AVDs. This log
-     *     object is not kept by this instance of AvdManager and each method takes its own logger.
-     *     The rationale is that the AvdManager might be called from a variety of context, each with
-     *     different logging needs. Cannot be null.
-     * @return The AVD Manager instance.
-     * @throws AndroidLocationsException if {@code sdkHandler} does not have a local path set.
-     */
-    @Nullable
-    public static AvdManager getInstance(
-            @NonNull AndroidSdkHandler sdkHandler, @NonNull ILogger log)
-            throws AndroidLocationsException {
-        return getInstance(sdkHandler, AndroidLocationsSingleton.INSTANCE.getAvdLocation(), log);
-    }
-
-    @Nullable
-    public static AvdManager getInstance(
-            @NonNull AndroidSdkHandler sdkHandler,
-            @NonNull Path avdHomeFolder,
+            @NonNull DeviceManager deviceManager,
             @NonNull ILogger log)
             throws AndroidLocationsException {
         if (sdkHandler.getLocation() == null) {
             throw new AndroidLocationsException("Local SDK path not set!");
         }
-        synchronized(mManagers) {
-            AvdManager manager;
-            AvdManagerCacheKey key =
-                    new AvdManagerCacheKey(sdkHandler.getLocation(), avdHomeFolder, log);
-            WeakReference<AvdManager> ref = mManagers.get(key);
-            if (ref != null && (manager = ref.get()) != null) {
-                return manager;
-            }
-            try {
-                manager = new AvdManager(sdkHandler, avdHomeFolder, log);
-            } catch (AndroidLocationsException e) {
-                throw e;
-            } catch (Exception e) {
-                log.error(e, "Exception during AvdManager initialization");
-                return null;
-            }
-            mManagers.put(key, new WeakReference<>(manager));
-            return manager;
-        }
+        mSdkHandler = sdkHandler;
+        mBaseAvdFolder = baseAvdFolder;
+        mLog = log;
+        mDeviceManager = deviceManager;
+        buildAvdList(mAllAvdList);
     }
+
+    @NonNull
+    public static AvdManager createInstance(
+            @NonNull AndroidSdkHandler sdkHandler,
+            @NonNull Path baseAvdFolder,
+            @NonNull DeviceManager deviceManager,
+            @NonNull ILogger log)
+            throws AndroidLocationsException {
+        return new AvdManager(sdkHandler, baseAvdFolder, deviceManager, log);
+    }
+
 
     /** Returns the base folder where AVDs are created. */
     @NonNull
