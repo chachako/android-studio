@@ -165,8 +165,9 @@ abstract class RenderscriptCompile : NdkTask() {
 
     override fun doTaskAction() {
         logger.warn(
-            "RenderScript APIs are deprecated starting in Android 12. See the following link for " +
-                    "a guide to migrate from RenderScript: " +
+            "RenderScript APIs are deprecated starting in Android 12. RenderScript support will " +
+                    "be removed in a future version of the Android Gradle plugin. See the " +
+                    "following link for a guide to migrate from RenderScript: " +
                     "https://developer.android.com/guide/topics/renderscript/migrate"
         )
         // this is full run (always), clean the previous outputs
