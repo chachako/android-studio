@@ -23,6 +23,18 @@ def swap_test(name, srcs):
             # Location of the dex files to be swapped in.
             "-Dapp.swap.dex.location=$(location :swapped_dex)",
 
+            # Location of the original Java classes.
+            "-Djava.original.class.location=$(location :original_java)",
+
+            # Location of the original Kotlin classes.
+            "-Dkotlin.original.class.location=$(location :original_kotlin)",
+
+            # Location of the swapped Java classes.
+            "-Djava.swapped.class.location=$(location :swapped_java)",
+
+            # Location of the swapped Kotlin classes.
+            "-Dkotlin.swapped.class.location=$(location :swapped_kotlin)",
+
             # JVMTI Agent for the host.
             "-Dswap.agent.location=$(location //tools/base/deploy/agent/native:libswap.so)",
 
@@ -36,6 +48,8 @@ def swap_test(name, srcs):
         deps = [
             ":original_java",
             ":original_kotlin",
+            ":swapped_java",
+            ":swapped_kotlin",
             "//tools/base/bazel:langtools",
             "//tools/base/bazel:studio-proto",
             "//tools/base/deploy/deployer:tools.deployer",

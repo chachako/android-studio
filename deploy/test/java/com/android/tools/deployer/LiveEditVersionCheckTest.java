@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,38 +17,39 @@ package com.android.tools.deployer;
 
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.idea.protobuf.ByteString;
+import java.io.IOException;
 import java.util.Collection;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-public class LiveEditInstrumentationTest extends LiveEditTestBase {
+public class LiveEditVersionCheckTest extends LiveEditTestBase {
     @Parameterized.Parameters
     public static Collection<String> artFlags() {
         return ALL_ART_FLAGS;
     }
 
-    public LiveEditInstrumentationTest(String artFlag) {
+    public LiveEditVersionCheckTest(String artFlag) {
         super(artFlag);
     }
 
     @Test
-    public void testTransformSucceeds() throws Exception {
+    public void testVersionChecksPass() throws IOException {
         android.loadDex(DEX_LOCATION);
         android.launchActivity(ACTIVITY_CLASS);
 
         Deploy.LiveEditClass clazz =
                 Deploy.LiveEditClass.newBuilder()
-                        .setClassName("app/StubTarget")
+                        .setClassName("pkg/LiveEditSimpleKt")
                         .setClassData(
                                 ByteString.copyFrom(
                                         getClassBytes(
-                                                "app/StubTarget.class",
-                                                CompileClassLocation.JAVA_ORIGINAL_LOCATION)))
+                                                "pkg/LiveEditSimpleKt.class",
+                                                CompileClassLocation.KOTLIN_ORIGINAL_LOCATION)))
                         .build();
+
         Deploy.LiveEditRequest request =
                 Deploy.LiveEditRequest.newBuilder()
                         .addTargetClasses(clazz)
@@ -60,31 +61,37 @@ public class LiveEditInstrumentationTest extends LiveEditTestBase {
         Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
     }
 
-    // TODO: This test is pretty updated in terms of how invalidateGroupsWithKeys works.
-    @Ignore
-    public void testFunctionRecompose() throws Exception {
+    @Test
+    public void testVersionChecksFail() throws IOException {
         android.loadDex(DEX_LOCATION);
         android.launchActivity(ACTIVITY_CLASS);
 
+        // Make it look like Compose Runtime is the lowest version possible.
+        android.triggerMethod(ACTIVITY_CLASS, "downgradeComposeRuntime");
+
         Deploy.LiveEditClass clazz =
                 Deploy.LiveEditClass.newBuilder()
-                        .setClassName("pkg/LiveEditRecomposeTarget")
+                        .setClassName("pkg/LiveEditSimpleKt")
+                        .setClassData(
+                                ByteString.copyFrom(
+                                        getClassBytes(
+                                                "pkg/LiveEditSimpleKt.class",
+                                                CompileClassLocation.KOTLIN_ORIGINAL_LOCATION)))
                         .build();
+
         Deploy.LiveEditRequest request =
                 Deploy.LiveEditRequest.newBuilder()
                         .addTargetClasses(clazz)
-                        .setComposable(true)
                         .setPackageName(PACKAGE)
                         .build();
 
         installer.update(request);
         Deploy.AgentLiveEditResponse response = installer.getLiveEditResponse();
         Assert.assertEquals(
-                "Got Status: " + response.getStatus(),
-                Deploy.LiveEditResponse.Status.OK,
-                response.getStatus());
-
-        Assert.assertTrue(
-                android.waitForInput("invalidateGroupsWithKey(1122)", RETURN_VALUE_TIMEOUT));
+                Deploy.AgentLiveEditResponse.Status.UNSUPPORTED_CHANGE, response.getStatus());
+        Assert.assertEquals(1, response.getErrorsList().size());
+        Assert.assertEquals(
+                Deploy.UnsupportedChange.Type.UNSUPPORTED_COMPOSE_VERSION,
+                response.getErrors(0).getType());
     }
 }

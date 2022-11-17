@@ -215,4 +215,8 @@ public class TestActivity extends Activity {
         StubTarget.staticObjectMethod();
         StubTarget.staticIntMethod();
     }
+
+    public void downgradeComposeRuntime() {
+        androidx.compose.runtime.ComposeVersion.version = 1;
+    }
 }
