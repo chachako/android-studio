@@ -109,6 +109,7 @@ class NonNamespacedCompileRClassTest {
         val build = project.executor()
             .with(BooleanOption.ENABLE_APP_COMPILE_TIME_R_CLASS, true)
             .with(BooleanOption.NON_TRANSITIVE_R_CLASS, nonTransitiveRClass)
+            .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
             .run(":app:assembleDebug")
 
         Truth.assertThat(build.didWorkTasks).containsAtLeastElementsIn(
@@ -155,19 +156,19 @@ class NonNamespacedCompileRClassTest {
         if (nonTransitiveRClass) {
             // It should only contain the app string.
             Truth.assertThat(runtimeRStrings.printFields())
-                    .contains("public static final I app_string")
+                    .contains("public static I app_string")
             Truth.assertThat(runtimeRStrings.printFields())
-                    .doesNotContain("public static final I lib_string")
+                    .doesNotContain("public static I lib_string")
             Truth.assertThat(runtimeRStrings.printFields())
-                    .doesNotContain("public static final I abc_action_bar_home_description")
+                    .doesNotContain("public static I abc_action_bar_home_description")
         } else {
             Truth.assertThat(runtimeRStrings.printFields())
                     .containsAtLeastElementsIn(
                             listOf(
                                     // The runtime R has final fields (while compile time R has non-final fields)
-                                    "public static final I app_string", // string from app
-                                    "public static final I lib_string", // string from lib
-                                    "public static final I abc_action_bar_home_description")) // string from transitive dep
+                                    "public static I app_string", // string from app
+                                    "public static I lib_string", // string from lib
+                                    "public static I abc_action_bar_home_description")) // string from transitive dep
         }
 
         // Make sure all the fields have correct values (the compile R class has fake values of 0).

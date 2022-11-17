@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.TEST_SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -124,7 +125,9 @@ class NonNamespacedApplicationLightRClassesTest {
 
     @Test
     fun testResourcesCompiled() {
-        project.executor().run(":app:assembleDebug")
+        project.executor()
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
+                .run(":app:assembleDebug")
 
         // Check library resources
         val libFiles = project.getSubproject("lib")
@@ -184,7 +187,8 @@ class NonNamespacedApplicationLightRClassesTest {
     @Test
     fun testAndroidTestResourcesCompiled() {
         project.executor()
-            .run(":app:assembleDebugAndroidTest")
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
+                .run(":app:assembleDebugAndroidTest")
 
         // Application resources
         val appFiles = project.getSubproject("app")
