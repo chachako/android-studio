@@ -62,7 +62,7 @@ class AndroidGradlePluginAttributionDataTest {
                     TaskCategory.COMPILATION,
                     TaskCategory.SOURCE_PROCESSING
                 ))),
-            "c" to TaskInfo(className = "d", taskCategoryInfo = TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNKNOWN))
+            "c" to TaskInfo(className = "d", taskCategoryInfo = TaskCategoryInfo(primaryTaskCategory = TaskCategory.UNCATEGORIZED))
         ),
         taskCategoryIssues = listOf(
             TaskCategoryIssue.MINIFICATION_ENABLED_IN_DEBUG_BUILD,
@@ -112,7 +112,7 @@ class AndroidGradlePluginAttributionDataTest {
 |},
 |"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
                 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
-                |{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
+                |{"taskName":"c","className":"d","primaryTaskCategory":"UNCATEGORIZED","secondaryTaskCategories":[]}
 |],
 |"taskCategoryIssues":["MINIFICATION_ENABLED_IN_DEBUG_BUILD","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
@@ -147,7 +147,7 @@ class AndroidGradlePluginAttributionDataTest {
                 it.key to TaskInfo(
                     className = it.value.className,
                     // This data isn't available in older AGP versions
-                    taskCategoryInfo = TaskCategoryInfo(TaskCategory.UNKNOWN)
+                    taskCategoryInfo = TaskCategoryInfo(TaskCategory.UNCATEGORIZED)
                 )
             }.toMap()
         }
@@ -201,7 +201,7 @@ class AndroidGradlePluginAttributionDataTest {
 |},
 |"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
 |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
-|{"taskName":"c","className":"d","primaryTaskCategory":"UNKNOWN","secondaryTaskCategories":[]}
+|{"taskName":"c","className":"d","primaryTaskCategory":"UNCATEGORIZED","secondaryTaskCategories":[]}
 |],
 |"taskCategoryIssues":["MINIFICATION_ENABLED_IN_DEBUG_BUILD","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}

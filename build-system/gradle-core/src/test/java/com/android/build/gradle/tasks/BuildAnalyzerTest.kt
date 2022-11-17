@@ -72,7 +72,7 @@ class BuildAnalyzerTest {
     @Test
     fun `BuildAnalyzer annotated tasks does not have unallowed categories`() {
         val allTasks = getAllTasks()
-        val unallowedCategories = listOf(TaskCategory.GRADLE, TaskCategory.UNKNOWN)
+        val unallowedCategories = listOf(TaskCategory.GRADLE, TaskCategory.UNCATEGORIZED)
         val tasksWithUnallowedCategories = allTasks.filter {
             it.isAnnotationPresent(BuildAnalyzer::class.java)
         }.map {

@@ -284,6 +284,22 @@ data class AndroidGradlePluginAttributionData(
             endObject()
         }
 
+        private fun String.readTaskCategory(): TaskCategory? {
+            return try {
+                TaskCategory.valueOf(this)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+
+        private fun String.readTaskCategoryIssue(): TaskCategoryIssue? {
+            return try {
+                TaskCategoryIssue.valueOf(this)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+
         private fun JsonReader.readTaskToTaskInfoEntry(): Pair<String, TaskInfo> {
             beginObject()
             var taskName: String? = null
@@ -294,11 +310,14 @@ data class AndroidGradlePluginAttributionData(
                 when (nextName()) {
                     "taskName" -> taskName = nextString()
                     "className" -> className = nextString()
-                    "primaryTaskCategory" -> primaryTaskCategory = TaskCategory.valueOf(nextString())
+                    "primaryTaskCategory" -> primaryTaskCategory =
+                        nextString().readTaskCategory() ?: TaskCategory.UNCATEGORIZED
                     "secondaryTaskCategories" -> {
                         beginArray()
                         while(hasNext()) {
-                            secondaryTaskCategories.add(TaskCategory.valueOf(nextString()))
+                            nextString().readTaskCategory()?.let {
+                                secondaryTaskCategories.add(it)
+                            }
                         }
                         endArray()
                     }
@@ -326,7 +345,9 @@ data class AndroidGradlePluginAttributionData(
             val taskCategoryIssues = ArrayList<TaskCategoryIssue>()
             beginArray()
             while (hasNext()) {
-                taskCategoryIssues.add(TaskCategoryIssue.valueOf(nextString()))
+                nextString().readTaskCategoryIssue()?.let {
+                    taskCategoryIssues.add(it)
+                }
             }
             endArray()
             return taskCategoryIssues
@@ -416,7 +437,7 @@ data class AndroidGradlePluginAttributionData(
             reader.endObject()
 
             if (taskNameToTaskInfoMap.isEmpty()) {
-                val unsupportedTaskCategoryInfo = TaskCategoryInfo(TaskCategory.UNKNOWN)
+                val unsupportedTaskCategoryInfo = TaskCategoryInfo(TaskCategory.UNCATEGORIZED)
                 taskNameToClassNameMapFromOldAgpVersions.forEach { (taskName, className) ->
                     taskNameToTaskInfoMap[taskName] = TaskInfo(
                         className,

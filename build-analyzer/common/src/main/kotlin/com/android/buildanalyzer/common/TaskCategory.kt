@@ -57,7 +57,7 @@ enum class TaskCategory(val isPrimary: Boolean = false, val description: String 
     MISC(isPrimary = true, description = "Miscellaneous Android Gradle Plugin tasks."),
     BUILD_SCRIPT(isPrimary = true, description = "Tasks defined in the build script."),
     BUILD_SOURCE(isPrimary = true, description = "Tasks created by plugins defined in the buildSrc."),
-    UNKNOWN(isPrimary = true, description = "Third-Party plugin tasks."),
+    UNCATEGORIZED(isPrimary = true, description = "Uncategorized tasks."),
 
     // ---------------------------------------------------------------------------------------------
     // SECONDARY CATEGORIES

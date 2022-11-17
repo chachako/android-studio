@@ -101,7 +101,7 @@ abstract class BuildAnalyzerConfiguratorService: BuildService<BuildServiceParame
                             secondaryTaskCategories = secondaryTaskCategories
                         )
                     } else AndroidGradlePluginAttributionData.TaskCategoryInfo(
-                        primaryTaskCategory = TaskCategory.UNKNOWN
+                        primaryTaskCategory = TaskCategory.UNCATEGORIZED
                     )
 
                 taskNameToTaskInfoMap[task.name] =
