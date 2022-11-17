@@ -290,7 +290,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                         if (isGreaterOrEquals) apiOperand else null
                     )
                     val location = context.getNameLocation(method).withOriginalSource(method)
-                    val args = "api=$buildCode${if (lambda != -1) ", lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", sdk=${getSdkConstant(context, sdkId)}" else ""}"
+                    val args = "api=$buildCode${if (lambda != -1) ", lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=${getSdkConstant(context, sdkId)}" else ""}"
                     val message =
                         "This method should be annotated with `@ChecksSdkIntAtLeast($args)`"
                     val fix = createAnnotationFix(context, args)
@@ -303,7 +303,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                         // See VersionChecks#isKnownVersionCheck
                         map.put(
                             methodDesc,
-                            "api=$apiAtLeast${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", sdk=$sdkId" else ""}"
+                            "api=$apiAtLeast${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}"
                         )
                     }
                 }
@@ -312,7 +312,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                 if (parameter is PsiParameter) {
                     val index = getParameterIndex(parameter)
                     if (index != -1 && !annotated(context, method, -1)) {
-                        val args = "parameter=$index${if (lambda != -1) ", lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", sdk=${getSdkConstant(context, sdkId)}" else ""}"
+                        val args = "parameter=$index${if (lambda != -1) ", lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=${getSdkConstant(context, sdkId)}" else ""}"
                         val message =
                             "This method should be annotated with `@ChecksSdkIntAtLeast($args)`"
                         val location = context.getNameLocation(method).withOriginalSource(method)
@@ -325,7 +325,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                             val map = context.getPartialResults(SDK_INT_VERSION_DATA).map()
                             map.put(
                                 methodDesc,
-                                "parameter=$index${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", sdk=$sdkId" else ""}"
+                                "parameter=$index${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}"
                             )
                         }
                     }
@@ -375,7 +375,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
             val atLeast = if (isGreaterOrEquals) api else api + 1
             if (!annotated(context, field, atLeast)) {
                 val buildCode = getBuildCode(atLeast, sdkId, if (isGreaterOrEquals) apiOperand else null)
-                val args = "api=$buildCode${if (sdkId != ANDROID_SDK_ID)", sdk=${getSdkConstant(context, sdkId)}" else ""}"
+                val args = "api=$buildCode${if (sdkId != ANDROID_SDK_ID)", extension=${getSdkConstant(context, sdkId)}" else ""}"
                 val message = "This field should be annotated with `ChecksSdkIntAtLeast($args)`"
                 val location = context.getNameLocation(field).withOriginalSource(field)
                 val fix = createAnnotationFix(context, args)
@@ -385,7 +385,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                     // Store data for VersionChecks used by for example ApiDetector
                     val fieldDesc = getFieldKey(context.evaluator, field)
                     val map = context.getPartialResults(SDK_INT_VERSION_DATA).map()
-                    map.put(fieldDesc, "api=$atLeast${if (sdkId != ANDROID_SDK_ID)", sdk=$sdkId" else ""}")
+                    map.put(fieldDesc, "api=$atLeast${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}")
                 }
             }
         }
@@ -396,7 +396,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
             sdkId: Int
         ) {
             if (!annotated(context, field, -1)) {
-                val args = "sdk=${getSdkConstant(context, sdkId)}"
+                val args = "extension=${getSdkConstant(context, sdkId)}"
                 val message = "This field should be annotated with `ChecksSdkIntAtLeast($args)`"
                 val location = context.getNameLocation(field).withOriginalSource(field)
                 val fix = createAnnotationFix(context, args)
@@ -406,7 +406,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
                     // Store data for VersionChecks used by for example ApiDetector
                     val fieldDesc = getFieldKey(context.evaluator, field)
                     val map = context.getPartialResults(SDK_INT_VERSION_DATA).map()
-                    map.put(fieldDesc, "sdk=$sdkId")
+                    map.put(fieldDesc, "extension=$sdkId")
                 }
             }
         }

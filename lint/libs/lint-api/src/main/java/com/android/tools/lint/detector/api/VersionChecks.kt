@@ -136,7 +136,7 @@ class VersionChecks(
 
         @JvmField
         val REQUIRES_API_ANNOTATION = AndroidxName.of(AndroidXConstants.SUPPORT_ANNOTATIONS_PREFIX, "RequiresApi")
-        const val REQUIRES_EXTENSION_ANNOTATION = "androidx.annotation.RequiresSdkVersion"
+        const val REQUIRES_EXTENSION_ANNOTATION = "androidx.annotation.RequiresExtension"
 
         /** SDK int method used by the data binding compiler. */
         private const val GET_BUILD_SDK_INT = "getBuildSdkInt"
@@ -221,7 +221,7 @@ class VersionChecks(
             val fqcn = annotation.qualifiedName
             if (fqcn != null && isApiLevelAnnotation(fqcn)) {
                 if (fqcn == REQUIRES_EXTENSION_ANNOTATION) {
-                    val sdkId = UastLintUtils.getAnnotationLongValue(annotation, "sdk", ANDROID_SDK_ID.toLong()).toInt()
+                    val sdkId = UastLintUtils.getAnnotationLongValue(annotation, "extension", ANDROID_SDK_ID.toLong()).toInt()
                     val value = UastLintUtils.getAnnotationLongValue(annotation, "version", 0).toInt()
                     return ApiConstraint.get(value, sdkId)
                 }
@@ -1577,7 +1577,7 @@ class VersionChecks(
             annotation.getAnnotationStringValue("codename"),
             annotation.getAnnotationIntValue("parameter"),
             annotation.getAnnotationIntValue("lambda"),
-            annotation.getAnnotationIntValue("sdk", ANDROID_SDK_ID)
+            annotation.getAnnotationIntValue("extension", ANDROID_SDK_ID)
         )
 
         /**
@@ -1712,7 +1712,7 @@ class VersionChecks(
                 val codename = findAttribute(args, "codename")
                 val parameter = findAttribute(args, "parameter")?.toIntOrNull()
                 val lambda = findAttribute(args, "lambda")?.toIntOrNull()
-                val sdkId = findAttribute(args, "sdk")?.toIntOrNull() ?: ANDROID_SDK_ID
+                val sdkId = findAttribute(args, "extension")?.toIntOrNull() ?: ANDROID_SDK_ID
                 return SdkIntAnnotation(api, codename, parameter, lambda, sdkId)
             }
 

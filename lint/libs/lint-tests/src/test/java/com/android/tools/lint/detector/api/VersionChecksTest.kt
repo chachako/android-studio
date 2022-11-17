@@ -4467,7 +4467,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 import android.os.ext.SdkExtensions;
 
                 import androidx.annotation.RequiresApi;
-                import androidx.annotation.RequiresSdkVersion;
+                import androidx.annotation.RequiresExtension;
 
                 @RequiresApi(api = Build.VERSION_CODES.R) // for SdkExtensions.getExtensionVersion
                 public class SdkExtensionsTest {
@@ -4500,12 +4500,12 @@ class VersionChecksTest : AbstractCheckTest() {
                         requiresExtRv4(); // ERROR 3 (wrong id check)
                     }
 
-                    @RequiresSdkVersion(sdk=Build.VERSION_CODES.R, version=4)
+                    @RequiresExtension(extension=Build.VERSION_CODES.R, version=4)
                     public static void requiresExtRv4() {
                     }
 
                     // Test combinations of SDKs
-                    @RequiresSdkVersion(sdk=Build.VERSION_CODES.R, version=4)
+                    @RequiresExtension(extension=Build.VERSION_CODES.R, version=4)
                     @RequiresApi(api = Build.VERSION_CODES.S)
                     public static void requiresExtRv4OrS() {
                         requiresExtRv4(); // OK (because we treat multiple annotations as *all* required/available)
@@ -4541,7 +4541,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
             ).indented(),
-            requiresSdkVersionStub,
+            requiresExtensionStub,
             SUPPORT_ANNOTATIONS_JAR
         ).run().expect(
             """
@@ -4586,14 +4586,14 @@ class VersionChecksTest : AbstractCheckTest() {
                         import android.provider.MediaStore
 
                         import androidx.annotation.RequiresApi
-                        import androidx.annotation.RequiresSdkVersion
+                        import androidx.annotation.RequiresExtension
 
                         class Test {
                             @RequiresApi(R)
                             fun testViaIfs() {
                                 /* Instead of
-                                @RequiresSdkVersion.AnyOf(
-                                    RequiresSdkVersion(sdk = R, 4),
+                                @RequiresExtension.AnyOf(
+                                    RequiresExtension(extension = R, 4),
                                     RequiresApi(34)
                                 )
                                 */
@@ -4623,7 +4623,7 @@ class VersionChecksTest : AbstractCheckTest() {
                                 }
                             }
 
-                            @RequiresSdkVersion(R, 4)
+                            @RequiresExtension(R, 4)
                             fun rOnly() {
                             }
 
@@ -4633,7 +4633,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         }
                         """
                     ),
-                    requiresSdkVersionStub,
+                    requiresExtensionStub,
                     SUPPORT_ANNOTATIONS_JAR
                 )
             }.expect(
@@ -4662,14 +4662,14 @@ class VersionChecksTest : AbstractCheckTest() {
                     import android.os.Build.VERSION_CODES.R
                     import android.os.ext.SdkExtensions
                     import androidx.annotation.RequiresApi
-                    import androidx.annotation.RequiresSdkVersion
+                    import androidx.annotation.RequiresExtension
 
                     class Test {
                         @RequiresApi(R)
                         fun testViaIfs() {
                             /* Instead of
-                            @RequiresSdkVersion.AnyOf(
-                                RequiresSdkVersion(sdk = R, 4),
+                            @RequiresExtension.AnyOf(
+                                RequiresExtension(extension = R, 4),
                                 RequiresApi(34)
                             )
                             */
@@ -4699,10 +4699,10 @@ class VersionChecksTest : AbstractCheckTest() {
                         @RequiresApi(R)
                         fun test2() {
                             /* Instead of
-                            @RequiresSdkVersion.AnyOf(
+                            @RequiresExtension.AnyOf(
                                 @RequiresApi(34),
-                                @RequiresSdkVersion(R, 4),
-                                @RequiresSdkVersion(1000000, 4)
+                                @RequiresExtension(R, 4),
+                                @RequiresExtension(1000000, 4)
                             )
                             */
                             if (SDK_INT >= 34 ||
@@ -4714,18 +4714,18 @@ class VersionChecksTest : AbstractCheckTest() {
 
                         fun test3() {
                             // Instead of
-                            //   @RequiresSdkVersion(1000000, 4)
+                            //   @RequiresExtension(1000000, 4)
                             if (SdkExtensions.getExtensionVersion(1000000) >= 4) { // ERROR 8: getExtensionVersion requires 30
                                 other() // OK 7
                             }
                         }
 
-                        @RequiresSdkVersion(R, 4)
+                        @RequiresExtension(R, 4)
                         @RequiresApi(34)
                         fun either() {
                         }
 
-                        @RequiresSdkVersion(R, 4)
+                        @RequiresExtension(R, 4)
                         fun rOnly() {
                         }
 
@@ -4733,14 +4733,14 @@ class VersionChecksTest : AbstractCheckTest() {
                         fun uOnly() {
                         }
 
-                        @RequiresSdkVersion(R, 4)
-                        @RequiresSdkVersion(1000000, 4)
+                        @RequiresExtension(R, 4)
+                        @RequiresExtension(1000000, 4)
                         fun other() {
                         }
                     }
                     """
                 ).indented(),
-                requiresSdkVersionStub,
+                requiresExtensionStub,
                 SUPPORT_ANNOTATIONS_JAR
             ).run().expect(
                 """
@@ -4786,7 +4786,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 import static android.os.Build.VERSION_CODES.TIRAMISU;
                 import android.os.ext.SdkExtensions;
                 import android.annotation.TargetApi;
-                import androidx.annotation.RequiresSdkVersion;
+                import androidx.annotation.RequiresExtension;
 
                 @TargetApi(33) // For SdkExtensions.getExtensionVersion
                 public class SdkExtensionsTest {
@@ -4826,7 +4826,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         });
                     }
 
-                    @RequiresSdkVersion(sdk=Build.VERSION_CODES.R, version=4)
+                    @RequiresExtension(extension=Build.VERSION_CODES.R, version=4)
                     public void requiresExtRv4() {
                     }
 
@@ -4851,7 +4851,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
             ).indented(),
-            requiresSdkVersionStub,
+            requiresExtensionStub,
             checksSdkIntWithSdkStub
         ).run().expect(
             """
@@ -4928,40 +4928,40 @@ class VersionChecksTest : AbstractCheckTest() {
 
                 import android.annotation.TargetApi;
                 import android.os.Build;
-                import androidx.annotation.RequiresSdkVersion;
+                import androidx.annotation.RequiresExtension;
                 import androidx.annotation.ChecksSdkIntAtLeast;
 
                 @TargetApi(33) // For SdkExtensions.getExtensionVersion
                 class Utils {
-                    @RequiresSdkVersion(sdk=Build.VERSION_CODES.R, version=4)
+                    @RequiresExtension(extension=Build.VERSION_CODES.R, version=4)
                     public static void requiresExtRv4() {
                     }
 
-                    @ChecksSdkIntAtLeast(api = 4, sdk = Build.VERSION_CODES.R)
+                    @ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
                     public static boolean HAS_R_4;
 
-                    @ChecksSdkIntAtLeast(sdk = Build.VERSION_CODES.R)
+                    @ChecksSdkIntAtLeast(extension = Build.VERSION_CODES.R)
                     public static boolean R_VERSION;
 
-                    @ChecksSdkIntAtLeast(api = 4, sdk = Build.VERSION_CODES.R)
+                    @ChecksSdkIntAtLeast(api = 4, extension = Build.VERSION_CODES.R)
                     public static boolean hasR4() {
                         return false;
                     }
 
-                    @ChecksSdkIntAtLeast(parameter=0, sdk = Build.VERSION_CODES.R)
+                    @ChecksSdkIntAtLeast(parameter=0, extension = Build.VERSION_CODES.R)
                     public static boolean hasR(int rev) {
                         return false;
                     }
 
-                    @ChecksSdkIntAtLeast(api=4, lambda=0, sdk=Build.VERSION_CODES.R)
+                    @ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
                     public static void runOnR4(Runnable runnable) {
                     }
                 }
                 """
             ).indented(),
-            requiresSdkVersionStub,
+            requiresExtensionStub,
             checksSdkIntWithSdkStub,
-            requiresSdkVersionStub.to("../lib/androidx/annotation/RequiresSdkVersion.kt"),
+            requiresExtensionStub.to("../lib/androidx/annotation/RequiresExtension.kt"),
             checksSdkIntWithSdkStub.to("../lib/androidx/annotation/ChecksSdkIntAtLeast.java"),
         )
             .run().expect(
@@ -5138,7 +5138,7 @@ class VersionChecksTest : AbstractCheckTest() {
     }
 }
 
-// Stub; can't use SUPPORT_ANNOTATIONS_JAR because it doesn't yet have the sdk= field
+// Stub; can't use SUPPORT_ANNOTATIONS_JAR because it doesn't yet have the extension= field
 private val checksSdkIntWithSdkStub: TestFile = java(
     """
     package androidx.annotation;
@@ -5156,12 +5156,12 @@ private val checksSdkIntWithSdkStub: TestFile = java(
         String codename() default "";
         int parameter() default -1;
         int lambda() default -1;
-        int sdk() default 0;
+        int extension() default 0;
     }
     """
 ).indented()
 
-val requiresSdkVersionStub: TestFile = kotlin(
+val requiresExtensionStub: TestFile = kotlin(
     """
     package androidx.annotation
     import java.lang.annotation.ElementType.CONSTRUCTOR
@@ -5184,8 +5184,8 @@ val requiresSdkVersionStub: TestFile = kotlin(
     @Suppress("DEPRECATED_JAVA_ANNOTATION", "SupportAnnotationUsage")
     @java.lang.annotation.Target(TYPE, METHOD, CONSTRUCTOR, FIELD, PACKAGE)
     @Repeatable
-    public annotation class RequiresSdkVersion(
-        @IntRange(from = 1) val sdk: Int,
+    public annotation class RequiresExtension(
+        @IntRange(from = 1) val extension: Int,
         @IntRange(from = 1) val version: Int
     )
     """

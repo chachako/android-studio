@@ -22,7 +22,7 @@ import static com.android.tools.lint.checks.ApiDetector.REPEATED_API_ANNOTATION_
 import static com.android.tools.lint.checks.ApiDetector.UNSUPPORTED;
 import static com.android.tools.lint.checks.infrastructure.TestFiles.rClass;
 import static com.android.tools.lint.checks.infrastructure.TestMode.PARTIAL;
-import static com.android.tools.lint.detector.api.VersionChecksTestKt.getRequiresSdkVersionStub;
+import static com.android.tools.lint.detector.api.VersionChecksTestKt.getRequiresExtensionStub;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -8218,19 +8218,19 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "import android.os.Build\n"
                                         + "import androidx.annotation.RequiresApi\n"
-                                        + "import androidx.annotation.RequiresSdkVersion\n"
+                                        + "import androidx.annotation.RequiresExtension\n"
                                         + "\n"
                                         + "internal class SdkExtensionsTest {\n"
                                         + "    fun test() {\n"
                                         + "        requiresExtRv4() // ERROR 1\n"
                                         + "    }\n"
                                         + "\n"
-                                        + "    @RequiresSdkVersion(sdk = Build.VERSION_CODES.R, version = 4)\n"
+                                        + "    @RequiresExtension(extension = Build.VERSION_CODES.R, version = 4)\n"
                                         + "    fun test2() {\n"
                                         + "        requiresExtRv4() // OK 1\n"
                                         + "    }\n"
                                         + "\n"
-                                        + "    @RequiresSdkVersion(sdk = Build.VERSION_CODES.S, version = 5)\n"
+                                        + "    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 5)\n"
                                         + "    fun test3() {\n"
                                         + "        requiresExtRv4() // OK 2\n"
                                         + "    }\n"
@@ -8240,20 +8240,20 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        requiresExtRv4() // OK 3\n"
                                         + "    }\n"
                                         + "\n"
-                                        + "    @RequiresSdkVersion(sdk = Build.VERSION_CODES.R, version = 3)\n"
-                                        + "    @RequiresSdkVersion(sdk = Build.VERSION_CODES.S, version = 4)\n"
+                                        + "    @RequiresExtension(extension = Build.VERSION_CODES.R, version = 3)\n"
+                                        + "    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 4)\n"
                                         + "    @RequiresApi(32)\n"
                                         + "    fun test5() {\n"
                                         + "        requiresExtRv4() // ERROR 2\n"
                                         + "    }\n"
                                         + "\n"
-                                        + "    @RequiresSdkVersion(sdk = Build.VERSION_CODES.R, version = 4)\n"
-                                        + "    @RequiresSdkVersion(sdk = Build.VERSION_CODES.S, version = 5)\n"
+                                        + "    @RequiresExtension(extension = Build.VERSION_CODES.R, version = 4)\n"
+                                        + "    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 5)\n"
                                         + "    @RequiresApi(33)\n"
                                         + "    fun requiresExtRv4() {\n"
                                         + "    }\n"
                                         + "}"),
-                        getRequiresSdkVersionStub(),
+                        getRequiresExtensionStub(),
                         SUPPORT_ANNOTATIONS_JAR)
                 .run()
                 .expect(
@@ -8275,18 +8275,18 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "package test.pkg\n"
                                         + "\n"
                                         + "import androidx.annotation.RequiresApi\n"
-                                        + "import androidx.annotation.RequiresSdkVersion\n"
+                                        + "import androidx.annotation.RequiresExtension\n"
                                         + "\n"
                                         + "fun test() {\n"
                                         + "    method()\n"
                                         + "}\n"
                                         + "\n"
-                                        + "@RequiresSdkVersion(sdk = 33, version = 2)\n"
-                                        + "@RequiresSdkVersion(sdk = 34, version = 1)\n"
+                                        + "@RequiresExtension(extension = 33, version = 2)\n"
+                                        + "@RequiresExtension(extension = 34, version = 1)\n"
                                         + "@RequiresApi(34)\n"
                                         + "fun method() { }\n"
                                         + "\n"),
-                        getRequiresSdkVersionStub(),
+                        getRequiresExtensionStub(),
                         SUPPORT_ANNOTATIONS_JAR)
                 .run()
                 .expect(
@@ -8306,18 +8306,18 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "package test.pkg\n"
                                         + "\n"
                                         + "import androidx.annotation.RequiresApi\n"
-                                        + "import androidx.annotation.RequiresSdkVersion\n"
+                                        + "import androidx.annotation.RequiresExtension\n"
                                         + "\n"
                                         + "fun test() {\n"
                                         + "    method()\n"
                                         + "}\n"
                                         + "\n"
                                         + "@RequiresApi(34)\n"
-                                        + "@RequiresSdkVersion(sdk = 33, version = 2)\n"
-                                        + "@RequiresSdkVersion(sdk = 34, version = 1)\n"
+                                        + "@RequiresExtension(extension = 33, version = 2)\n"
+                                        + "@RequiresExtension(extension = 34, version = 1)\n"
                                         + "fun method() { }\n"
                                         + "\n"),
-                        getRequiresSdkVersionStub(),
+                        getRequiresExtensionStub(),
                         SUPPORT_ANNOTATIONS_JAR)
                 .run()
                 .expect(
@@ -8339,10 +8339,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "import android.os.Build.VERSION_CODES.R\n"
                                             + "import android.os.ext.SdkExtensions\n"
                                             + "import androidx.annotation.RequiresApi\n"
-                                            + "import androidx.annotation.RequiresSdkVersion\n"
+                                            + "import androidx.annotation.RequiresExtension\n"
                                             + "\n"
                                             + "class Test2 {\n"
-                                            + "    @RequiresSdkVersion(sdk = R, 4)\n"
+                                            + "    @RequiresExtension(extension = R, 4)\n"
                                             + "    @RequiresApi(34)\n"
                                             + "    fun test() {\n"
                                             + "        either() // OK 1\n"
@@ -8352,13 +8352,13 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "    }\n"
                                             + "\n"
                                             + "    @RequiresApi(34)\n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
-                                            + "    @RequiresSdkVersion(1000000, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
+                                            + "    @RequiresExtension(1000000, 4)\n"
                                             + "    fun test2() {\n"
                                             + "        rAndRb() // OK 4\n"
                                             + "    }\n"
                                             + "\n"
-                                            + "    @RequiresSdkVersion(1000000, 4)\n"
+                                            + "    @RequiresExtension(1000000, 4)\n"
                                             + "    fun test3() {\n"
                                             + "        rAndRb() // ERROR 2: We need R\n"
                                             + "    }\n"
@@ -8379,12 +8379,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "        }\n"
                                             + "    }\n"
                                             + "    \n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
                                             + "    @RequiresApi(34)\n"
                                             + "    fun either() {\n"
                                             + "    }\n"
                                             + "\n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
                                             + "    fun rOnly() {\n"
                                             + "    }\n"
                                             + "\n"
@@ -8392,12 +8392,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "    fun uOnly() {\n"
                                             + "    }\n"
                                             + "\n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
-                                            + "    @RequiresSdkVersion(1000000, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
+                                            + "    @RequiresExtension(1000000, 4)\n"
                                             + "    fun rAndRb() {\n"
                                             + "    }\n"
                                             + "}"),
-                            getRequiresSdkVersionStub(),
+                            getRequiresExtensionStub(),
                             SUPPORT_ANNOTATIONS_JAR)
                     .run()
                     .expect(
@@ -8428,10 +8428,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "import android.os.Build.VERSION_CODES.R\n"
                                             + "import android.os.ext.SdkExtensions\n"
                                             + "import androidx.annotation.RequiresApi\n"
-                                            + "import androidx.annotation.RequiresSdkVersion\n"
+                                            + "import androidx.annotation.RequiresExtension\n"
                                             + "\n"
                                             + "class Test {\n"
-                                            + "    @RequiresSdkVersion(sdk = R, 4)\n"
+                                            + "    @RequiresExtension(extension = R, 4)\n"
                                             + "    @RequiresApi(34)\n"
                                             + "    fun test() {\n"
                                             + "        either() // OK 1\n"
@@ -8441,13 +8441,13 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "    }\n"
                                             + "\n"
                                             + "    @RequiresApi(34)\n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
-                                            + "    @RequiresSdkVersion(1000000, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
+                                            + "    @RequiresExtension(1000000, 4)\n"
                                             + "    fun test2() {\n"
                                             + "        other() // ERROR 4\n"
                                             + "    }\n"
                                             + "\n"
-                                            + "    @RequiresSdkVersion(1000000, 4)\n"
+                                            + "    @RequiresExtension(1000000, 4)\n"
                                             + "    fun test3() {\n"
                                             + "        other() // OK 2\n"
                                             + "    }\n"
@@ -8465,12 +8465,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "        }\n"
                                             + "    }\n"
                                             + "    \n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
                                             + "    @RequiresApi(34)\n"
                                             + "    fun either() {\n"
                                             + "    }\n"
                                             + "\n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
                                             + "    fun rOnly() {\n"
                                             + "    }\n"
                                             + "\n"
@@ -8478,12 +8478,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                             + "    fun uOnly() {\n"
                                             + "    }\n"
                                             + "\n"
-                                            + "    @RequiresSdkVersion(R, 4)\n"
-                                            + "    @RequiresSdkVersion(1000000, 4)\n"
+                                            + "    @RequiresExtension(R, 4)\n"
+                                            + "    @RequiresExtension(1000000, 4)\n"
                                             + "    fun other() {\n"
                                             + "    }\n"
                                             + "}"),
-                            getRequiresSdkVersionStub(),
+                            getRequiresExtensionStub(),
                             SUPPORT_ANNOTATIONS_JAR)
                     .run()
                     .expect(

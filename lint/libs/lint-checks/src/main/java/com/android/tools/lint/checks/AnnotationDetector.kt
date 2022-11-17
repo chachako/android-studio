@@ -444,7 +444,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                         foundFirst = true
                     }
 
-                    val sdkVersion = UastLintUtils.getAnnotationLongValue(a, "sdk", -1).toInt()
+                    val sdkVersion = UastLintUtils.getAnnotationLongValue(a, "extension", -1).toInt()
                     if (sdkVersion == -1) {
                         val location = context.getLocation(a)
                         context.report(ANNOTATION_USAGE, a, location, "Must specify an extension `sdk` id attribute")
@@ -480,16 +480,16 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                 if (prev != null) {
                     if (prev.second - triple.second > 1 && WARN_ABOUT_EXTENSION_LEVEL_GAPS) {
                         // Report gap
-                        val location = getAttributeValueLocation(context, triple.first, "sdk") ?: context.getLocation(triple.first)
-                        location.secondary = getAttributeValueLocation(context, prev.first, "sdk") ?: context.getLocation(prev.first)
+                        val location = getAttributeValueLocation(context, triple.first, "extension") ?: context.getLocation(triple.first)
+                        location.secondary = getAttributeValueLocation(context, prev.first, "extension") ?: context.getLocation(prev.first)
                         location.secondary?.setMessage("Previous level", false)
                         context.report(ANNOTATION_USAGE, triple.first, location, "There should not be a gap in SDK extension levels; missing ${prev.second - 1}")
                         return
                     } else if (triple.second == prev.second && triple.first.qualifiedName == prev.first.qualifiedName) {
                         // Duplicate - only okay if qualified names are different (e.g. specifying
                         // both @RequiresApi and @RequiresExtension
-                        val location = getAttributeValueLocation(context, triple.first, "sdk") ?: context.getLocation(triple.first)
-                        location.secondary = getAttributeValueLocation(context, prev.first, "sdk") ?: context.getLocation(prev.first)
+                        val location = getAttributeValueLocation(context, triple.first, "extension") ?: context.getLocation(triple.first)
+                        location.secondary = getAttributeValueLocation(context, prev.first, "extension") ?: context.getLocation(prev.first)
                         location.secondary?.setMessage("Previous level", false)
                         context.report(ANNOTATION_USAGE, triple.first, location, "Repeated SDK extension level ${triple.second}")
                     } else if (prev.third > triple.third && triple.second != prev.second && triple.first.qualifiedName == REQUIRES_EXTENSION_ANNOTATION) {

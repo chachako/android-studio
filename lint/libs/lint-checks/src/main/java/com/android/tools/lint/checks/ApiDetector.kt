@@ -742,7 +742,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val evaluator = context.evaluator
         if (usageInfo.type == AnnotationUsageType.DEFINITION) {
             // This check applies only to platform SDK_INT checks.
-            // (Later we could extend it to handle nested @RequiresSdkVersion annotations,
+            // (Later we could extend it to handle nested @RequiresExtension annotations,
             // and redundant ones based on manifest-declared extensions, but that seems lower priority.)
             if (api.getSdk() != ANDROID_SDK_ID) {
                 return
@@ -2530,7 +2530,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         private const val KOTLIN_AUTO_CLOSEABLE_EXT = "kotlin.jdk7.AutoCloseableKt"
 
         /**
-         * Whether repeated @RequiresApi/@RequiresSdkVersion annotation
+         * Whether repeated @RequiresApi/@RequiresExtension annotation
          * means that *all* requirements are required instead of *any*.
          * This is a parameter rather than just deleting it because
          * we'll probably bring back the ability to also specify or
@@ -3189,8 +3189,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         // Note that we don't combine inherited ApiConstraints the way we do for an
                         // SDK_INT check. Instead, lint will warn if you have redundant inner declarations.
                         // This is deliberate such that if you for example have @RequiresApi(31) on a class
-                        // and then you put a @RequiresSdkVersion(S) on a particular method, we don't compute
-                        // a combined requirement of [@RequiresApi(31),@RequiresSdkVersion(S)] on the method.
+                        // and then you put a @RequiresExtension(S) on a particular method, we don't compute
+                        // a combined requirement of [@RequiresApi(31),@RequiresExtension(S)] on the method.
                         return targetApi
                     }
                 }
@@ -3232,7 +3232,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
                     FQCN_TARGET_API -> getLongAttribute(context, annotation, ATTR_VALUE, -1).toInt()
                     REQUIRES_EXTENSION_ANNOTATION -> {
-                        val sdkId = getLongAttribute(context, annotation, "sdk", -1).toInt()
+                        val sdkId = getLongAttribute(context, annotation, "extension", -1).toInt()
                         val version = getLongAttribute(context, annotation, "version", -1).toInt()
                         if (sdkId != -1 && version != -1) {
                             return ApiConstraint.get(version, sdkId)

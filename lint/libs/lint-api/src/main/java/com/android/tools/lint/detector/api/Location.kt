@@ -65,7 +65,7 @@ protected constructor(
     /**
      * The end position of the range
      *
-     * @return the start position of the range, may be null for an empty
+     * @return the end position of the range, may be null for an empty
      *     range
      */
     val end: Position?
