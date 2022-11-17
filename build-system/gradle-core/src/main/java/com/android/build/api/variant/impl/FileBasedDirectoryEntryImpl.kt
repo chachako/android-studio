@@ -50,15 +50,23 @@ class FileBasedDirectoryEntryImpl(
     override val isGenerated: Boolean = false
 
     override fun asFileTree(
-        fileTreeCreator: () -> ConfigurableFileTree,
-        projectDir: Provider<Directory>
+            fileTreeCreator: () -> ConfigurableFileTree
     ): Provider<List<ConfigurableFileTree>> =
-        projectDir.map {
-            listOf(fileTreeCreator().setDir(directory).also {
+        getFileTree(fileTreeCreator).run {
+            elements.map { listOf(this)}
+        }
+
+    override fun asFileTreeWithoutTaskDependency(
+            fileTreeCreator: () -> ConfigurableFileTree,
+    ): List<ConfigurableFileTree> = listOf(getFileTree(fileTreeCreator))
+
+    private fun getFileTree(
+            fileTreeCreator: () -> ConfigurableFileTree,
+    ): ConfigurableFileTree =
+            fileTreeCreator().setDir(directory).also {
                 if (filter != null) {
                     it.include((filter as PatternSet).asIncludeSpec)
                     it.exclude(filter.asExcludeSpec)
                 }
-            })
-        }
+            }
 }

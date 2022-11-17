@@ -48,8 +48,12 @@ class ConfigurableFileTreeBasedDirectoryEntryImpl(
         get() = null
 
     override fun asFileTree(
-        fileTreeCreator: () -> ConfigurableFileTree,
-        projectDir: Provider<Directory>,
-    ) = projectDir.map { listOf(configurableFileTree) }
+            fileTreeCreator: () -> ConfigurableFileTree,
+    ) = configurableFileTree.elements.map { listOf(configurableFileTree) }
+
+    override fun asFileTreeWithoutTaskDependency(
+            fileTreeCreator: () -> ConfigurableFileTree,
+    ): List<ConfigurableFileTree> = listOf(configurableFileTree)
+
 }
 

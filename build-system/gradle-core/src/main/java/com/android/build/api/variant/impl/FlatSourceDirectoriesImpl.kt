@@ -68,17 +68,28 @@ class FlatSourceDirectoriesImpl(
     }
 
 
-    internal fun getAsFileTrees(): Provider<List<ConfigurableFileTree>> =
+    internal fun getAsFileTrees(): Provider<List<Provider<List<ConfigurableFileTree>>>> =
             variantSources.map { entries: MutableList<DirectoryEntry> ->
                 entries.map { sourceDirectory ->
-                    sourceDirectory.asFileTree(
-                        variantServices::fileTree,
-                        variantServices.provider {
-                            variantServices.projectInfo.projectDirectory
-                        }
-                    ).get()
-                }.flatten()
+                    sourceDirectory.asFileTree(variantServices::fileTree)
+                }
             }
+
+    /**
+     * version of the [getAsFileTrees] for consumers that are resolving the content during
+     * configuration time, see b/259343260
+     *
+     * New code MUST NOT call this method.
+     *
+     */
+    internal fun getAsFileTreesForOldVariantAPI(): Provider<List<ConfigurableFileTree>> =
+        variantSources.map { entries: MutableList<DirectoryEntry> ->
+            entries.map { sourceDirectory ->
+                sourceDirectory.asFileTreeWithoutTaskDependency(
+                        variantServices::fileTree
+                )
+            }.flatten()
+        }
 
     internal fun getVariantSources(): Provider<List<DirectoryEntry>> = variantSources
 

@@ -60,9 +60,20 @@ interface DirectoryEntry {
      * [org.gradle.api.Task] input.
      */
     fun asFileTree(
-        fileTreeCreator: () -> ConfigurableFileTree,
-        projectDir: Provider<Directory>
+            fileTreeCreator: () -> ConfigurableFileTree
     ): Provider<List<ConfigurableFileTree>>
+
+    /**
+     * Return the source folders as a [List] of [ConfigurableFileTree] which CANNOT be used as
+     * [org.gradle.api.Task] input. This method must only be called by
+     * [FlatSourceDirectoriesImpl.getAsFileTreesForOldVariantAPI], all new usages should use
+     * [asFiles] or [asFileTree]
+     *
+     * Remove once b/260920355 is fixed.
+     */
+    fun asFileTreeWithoutTaskDependency(
+            fileTreeCreator: () -> ConfigurableFileTree
+    ): List<ConfigurableFileTree>
 
     /**
      * Optional filter associated with this source folder.

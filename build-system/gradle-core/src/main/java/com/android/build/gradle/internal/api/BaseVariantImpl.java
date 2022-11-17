@@ -195,7 +195,11 @@ public abstract class BaseVariantImpl implements BaseVariant, InternalBaseVarian
     public List<ConfigurableFileTree> getSourceFolders(@NonNull SourceKind folderType) {
         if (folderType == SourceKind.JAVA) {
             if (component.getSources().getJava() != null) {
-                return component.getSources().getJava().getAsFileTrees$gradle_core().get();
+                return component
+                        .getSources()
+                        .getJava()
+                        .getAsFileTreesForOldVariantAPI$gradle_core()
+                        .get();
             }
         } else {
             services.getIssueReporter()
@@ -625,7 +629,6 @@ public abstract class BaseVariantImpl implements BaseVariant, InternalBaseVarian
                                         new TaskProviderBasedDirectoryEntryImpl(
                                                 "legacy_" + taskProvider.getName(),
                                                 mappedDirectory,
-                                                component.getServices().fileCollection(),
                                                 true, /* isGenerated */
                                                 true, /*isUserProvided */
                                                 true /* shouldBeAddedToIdeModel */));

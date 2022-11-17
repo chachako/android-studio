@@ -127,7 +127,7 @@ class JavaCompileCreationAction(
         // Lombok want to run via JavaCompile (see https://youtrack.jetbrains.com/issue/KT-7112).
         task.configurePropertiesForAnnotationProcessing(creationConfig)
 
-        task.source = computeJavaSource(creationConfig)
+        task.source = computeJavaSourceWithoutDependencies(creationConfig)
 
         task.options.compilerArgumentProviders.add(
             JavaCompileOptionsForRoom(
@@ -259,14 +259,31 @@ private fun JavaCompile.recordAnnotationProcessors(
     }
 }
 
-fun computeJavaSource(creationConfig: ComponentCreationConfig): FileTree {
+fun computeJavaSourceWithoutDependencies(creationConfig: ComponentCreationConfig): FileTree {
     // Include only java sources, otherwise we hit b/144249620.
     val javaSourcesFilter = PatternSet().include("**/*.java")
     return creationConfig.services.fileCollection().also { fileCollection ->
         // do not resolve the provider before execution phase, b/117161463.
        creationConfig.sources.java { javaSources ->
-           fileCollection.from(javaSources.getAsFileTrees())
+           // the KAPT plugin is looking up the JavaCompile.sources and resolving it at
+           // configuration time which requires us to pass the old variant API version.
+           // see b/259343260
+           fileCollection.from(javaSources.getAsFileTreesForOldVariantAPI())
        }
+    }.asFileTree.matching(javaSourcesFilter)
+}
+
+fun computeJavaSource(creationConfig: ComponentCreationConfig): FileTree {
+    // Include only java sources, otherwise we hit b/144249620.
+    val javaSourcesFilter = PatternSet().include("**/*.java")
+    return creationConfig.services.fileCollection().also { fileCollection ->
+        // do not resolve the provider before execution phase, b/117161463.
+        creationConfig.sources.java { javaSources ->
+            // the KAPT plugin is looking up the JavaCompile.sources and resolving it at
+            // configuration time which requires us to pass the old variant API version.
+            // see b/259343260
+            fileCollection.from(javaSources.getAsFileTrees())
+        }
     }.asFileTree.matching(javaSourcesFilter)
 }
 

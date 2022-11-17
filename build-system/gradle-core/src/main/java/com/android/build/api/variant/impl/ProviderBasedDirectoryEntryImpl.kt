@@ -38,20 +38,32 @@ class ProviderBasedDirectoryEntryImpl(
     }
 
     override fun asFileTree(
-        fileTreeCreator: () -> ConfigurableFileTree,
-        projectDir: Provider<Directory>
+            fileTreeCreator: () -> ConfigurableFileTree
     ): Provider<List<ConfigurableFileTree>> {
-        return elements.map { directories ->
-            directories.map { directory ->
-                fileTreeCreator()
-                    .from(directory)
-                    .also { configurableFileTree ->
-                        if (filter != null) {
-                            configurableFileTree.include((filter as PatternSet).asIncludeSpec)
-                            configurableFileTree.exclude(filter.asExcludeSpec)
-                        }
-                    }
-            }
+        return elements.map {
+            asConfigurableFileTrees(fileTreeCreator, it)
         }
+    }
+
+    override fun asFileTreeWithoutTaskDependency(
+            fileTreeCreator: () -> ConfigurableFileTree,
+    ): List<ConfigurableFileTree> =
+            asConfigurableFileTrees(
+                    fileTreeCreator,
+                    elements.get(),
+            )
+
+    private fun asConfigurableFileTrees(
+            fileTreeCreator: () -> ConfigurableFileTree,
+            directories: Collection<Directory>
+    ) = directories.map { directory ->
+        fileTreeCreator()
+                .from(directory)
+                .also { configurableFileTree ->
+                    if (filter != null) {
+                        configurableFileTree.include((filter as PatternSet).asIncludeSpec)
+                        configurableFileTree.exclude(filter.asExcludeSpec)
+                    }
+                }
     }
 }

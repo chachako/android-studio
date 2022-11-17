@@ -84,7 +84,7 @@ internal class SourceDirectoriesImplTest {
         val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
         val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
         val testTarget = createTestTarget(addedSrcDir)
-        val fileTrees = testTarget.getAsFileTrees().get()
+        val fileTrees = testTarget.getAsFileTreesForOldVariantAPI().get()
         Truth.assertThat(fileTrees).hasSize(2)
         Truth.assertThat(fileTrees.map { it.dir.absolutePath }).containsExactly(
             addedSourceFromTask.absolutePath,
@@ -137,7 +137,6 @@ internal class SourceDirectoriesImplTest {
         }
 
         val taskProvider = project.tasks.register("srcAddingTask", AddingTask::class.java)
-        Mockito.`when`(variantServices.fileCollection()).thenReturn(project.files())
         Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer(
             Answer() {
                 project.provider(callableCaptor.value)

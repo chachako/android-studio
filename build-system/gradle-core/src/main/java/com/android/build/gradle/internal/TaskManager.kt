@@ -960,8 +960,7 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                             directoryProvider = creationConfig.artifacts.get(
                                 InternalArtifactType.RENDERSCRIPT_SOURCE_OUTPUT_DIR
                             ),
-                            creationConfig.services.fileCollection(),
-                            )
+                        )
                     )
                 }
             }
@@ -2391,7 +2390,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
                         directoryProvider = creationConfig.artifacts.get(
                             InternalArtifactType.DATA_BINDING_TRIGGER
                         ),
-                        creationConfig.services.fileCollection(),
                     )
                 )
             }
