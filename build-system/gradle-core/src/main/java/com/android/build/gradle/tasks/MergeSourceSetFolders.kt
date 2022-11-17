@@ -67,7 +67,6 @@ import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
 import java.io.IOException
-import org.gradle.api.provider.Provider
 
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.MISC, secondaryTaskCategories = [TaskCategory.SOURCE_PROCESSING, TaskCategory.MERGING])
@@ -81,7 +80,7 @@ abstract class MergeSourceSetFolders : NewIncrementalTask() {
 
     // supplier of the assets set, for execution only.
     @get:Internal("for testing")
-    internal abstract val assetSets: ListProperty<Provider<AssetSet>>
+    internal abstract val assetSets: ListProperty<AssetSet>
 
     // for the dependencies
     @get:Internal("for testing")
@@ -280,24 +279,18 @@ abstract class MergeSourceSetFolders : NewIncrementalTask() {
      */
     @VisibleForTesting
     internal fun computeAssetSetList(): List<AssetSet> {
-        var assetSetList= mutableListOf<AssetSet>()
+        val assetSetList: List<AssetSet>
 
-        val assetSetsMap = mutableMapOf<String, AssetSet>()
-        assetSets.get().forEach { assetSet ->
-            val combinedAssetSet = assetSetsMap.getOrPut(
-                assetSet.get().configName
-            ) { AssetSet(assetSet.get().configName, aaptEnv.orNull) }
-            combinedAssetSet.addSources(assetSet.get().sourceFiles)
+        val assetSets = mutableListOf<AssetSet>().also {
+            it.addAll(assetSets.get())
         }
-
-        val assetSets =  mutableListOf<AssetSet>().also { it.addAll(assetSetsMap.values) }
         val ignoreAssetsPatternsList = ignoreAssetsPatterns.orNull
         if (!shadersOutputDir.isPresent
             && !mlModelsOutputDir.isPresent
             && ignoreAssetsPatternsList.isNullOrEmpty()
             && libraryCollection == null
         ) {
-            assetSetList.addAll(assetSets)
+            assetSetList = assetSets
         } else {
             var size = assetSets.size + 3
             libraryCollection?.let {

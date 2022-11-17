@@ -16,12 +16,10 @@
 
 package com.android.build.gradle.internal.api
 
-import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.SourceDirectoriesImpl
 import com.android.build.gradle.api.AndroidSourceDirectorySet
 import com.android.build.gradle.internal.api.artifact.SourceArtifactType
-import com.android.build.gradle.internal.scope.getDirectories
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Lists
@@ -75,7 +73,7 @@ class DefaultAndroidSourceDirectorySet(
         if (lateAdditionsDelegates.isNotEmpty()) {
             val directoryEntry = ProviderBasedDirectoryEntryImpl(
                 name,
-                project.files(srcDir).getDirectories(project.layout.projectDirectory),
+                project.files(srcDir).elements,
                 filter
             )
             lateAdditionsDelegates.forEach { it.addSource(directoryEntry) }
@@ -112,7 +110,7 @@ class DefaultAndroidSourceDirectorySet(
             for (newFile in (newFiles - previousFiles)) {
                 val directoryEntry = ProviderBasedDirectoryEntryImpl(
                     name,
-                    project.files(newFile).getDirectories(project.layout.projectDirectory),
+                    project.files(newFile).elements,
                     filter
                 )
                 lateAdditionsDelegates.forEach { it.addSource(directoryEntry) }

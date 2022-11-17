@@ -19,7 +19,6 @@ package com.android.build.api.variant.impl
 import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.services.VariantServices
 import com.google.common.truth.Truth
-import java.util.concurrent.Callable
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.testfixtures.ProjectBuilder
@@ -27,14 +26,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
-import org.mockito.stubbing.Answer
 
 internal class LayeredSourceDirectoriesImplTest {
     @get:Rule
@@ -46,12 +42,7 @@ internal class LayeredSourceDirectoriesImplTest {
     @Mock
     lateinit var variantServices: VariantServices
 
-    @Captor
-    lateinit var callableCaptor: ArgumentCaptor<Callable<*>>
-
     private lateinit var project: Project
-
-    fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
     @Before
     fun setup() {
@@ -59,11 +50,12 @@ internal class LayeredSourceDirectoriesImplTest {
             .withProjectDir(temporaryFolder.newFolder())
             .build()
 
-        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer(
-            Answer() {
-                project.provider(callableCaptor.value)
+        Mockito.`when`(variantServices.directoryProperty()).also {
+            var stub = it
+            repeat(11) {
+                stub = stub.thenReturn(project.objects.directoryProperty())
             }
-        )
+        }
 
         val projectInfo = Mockito.mock(ProjectInfo::class.java)
         Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)

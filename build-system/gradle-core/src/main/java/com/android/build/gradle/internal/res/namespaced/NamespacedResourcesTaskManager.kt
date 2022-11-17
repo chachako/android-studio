@@ -119,15 +119,11 @@ class NamespacedResourcesTaskManager(
         creationConfig.sources.res { resSources ->
             resSources.getVariantSources().get().forEach { dimensionSources ->
 
-                val artifacts = creationConfig.services.fileCollection().also { fileCollection ->
-                    fileCollection.from(dimensionSources.directoryEntries
-                        .filter { !it.isGenerated }
-                        .map { it.asFiles(
-                          creationConfig.services.provider {
-                          creationConfig.services.projectInfo.projectDirectory
-                      }) }
-                    )
-                }
+                val providerList: List<Provider<Directory>> = dimensionSources.directoryEntries
+                    .filter { !it.isGenerated }
+                    .map { it.asFiles(creationConfig.services::directoryProperty) }
+
+                val artifacts = creationConfig.services.fileCollection().from(providerList)
 
                 val sourceSetName = dimensionSources.name
 

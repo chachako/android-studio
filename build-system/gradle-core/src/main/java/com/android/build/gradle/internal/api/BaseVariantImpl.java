@@ -625,7 +625,6 @@ public abstract class BaseVariantImpl implements BaseVariant, InternalBaseVarian
                                         new TaskProviderBasedDirectoryEntryImpl(
                                                 "legacy_" + taskProvider.getName(),
                                                 mappedDirectory,
-                                                component.getServices().fileCollection(),
                                                 true, /* isGenerated */
                                                 true, /*isUserProvided */
                                                 true /* shouldBeAddedToIdeModel */));

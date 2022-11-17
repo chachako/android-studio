@@ -169,7 +169,6 @@ abstract class AidlCompile : NonIncrementalTask() {
                 AidlCompile::sourceOutputDir
             ).withName("out").on(InternalArtifactType.AIDL_SOURCE_OUTPUT_DIR)
 
-
             if (creationConfig.componentType.isAar) {
                 creationConfig.artifacts.setInitialProvider(
                     taskProvider,

@@ -19,8 +19,6 @@ package com.android.build.api.variant.impl
 import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.services.VariantServices
 import com.google.common.truth.Truth
-import java.io.File
-import java.util.concurrent.Callable
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
@@ -32,17 +30,14 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
-import org.mockito.stubbing.Answer
+import java.io.File
 
 internal class SourceDirectoriesImplTest {
-
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
@@ -52,9 +47,6 @@ internal class SourceDirectoriesImplTest {
     @Mock
     lateinit var variantServices: VariantServices
 
-    @Captor
-    lateinit var callableCaptor: ArgumentCaptor<Callable<*>>
-
     private lateinit var project: Project
 
     @Before
@@ -62,6 +54,10 @@ internal class SourceDirectoriesImplTest {
         project = ProjectBuilder.builder()
             .withProjectDir(temporaryFolder.newFolder())
             .build()
+
+        Mockito.`when`(variantServices.directoryProperty()).thenReturn(
+            project.objects.directoryProperty()
+        )
 
         val projectInfo = Mockito.mock(ProjectInfo::class.java)
         Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
@@ -73,6 +69,19 @@ internal class SourceDirectoriesImplTest {
         Mockito.`when`(variantServices.newListPropertyForInternalUse(Directory::class.java))
             .thenReturn(project.objects.listProperty(Directory::class.java))
 
+    }
+
+    @Test
+    fun testGetAll() {
+        val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
+        val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
+        val testTarget = createTestTarget(addedSrcDir)
+        val directories = testTarget.all.get()
+        Truth.assertThat(directories).hasSize(2)
+        Truth.assertThat(directories.map { it.asFile.absolutePath }).containsExactly(
+            addedSourceFromTask.absolutePath,
+            addedSrcDir.absolutePath
+        )
     }
 
     @Test
@@ -119,11 +128,9 @@ internal class SourceDirectoriesImplTest {
         )
     }
 
-    fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
-
     private fun createTestTarget(
         addedSrcDir: File,
-        patternFilterable: PatternFilterable? = null,
+        patternFilterable: PatternFilterable? = null
     ): FlatSourceDirectoriesImpl {
 
         val testTarget = FlatSourceDirectoriesImpl(
@@ -137,13 +144,6 @@ internal class SourceDirectoriesImplTest {
         }
 
         val taskProvider = project.tasks.register("srcAddingTask", AddingTask::class.java)
-        Mockito.`when`(variantServices.fileCollection()).thenReturn(project.files())
-        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer(
-            Answer() {
-                project.provider(callableCaptor.value)
-            }
-        )
-
         testTarget.addGeneratedSourceDirectory(taskProvider, AddingTask::output)
 
         testTarget.addStaticSourceDirectory(addedSrcDir.absolutePath)

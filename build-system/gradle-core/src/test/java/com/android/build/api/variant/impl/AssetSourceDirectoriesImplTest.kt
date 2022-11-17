@@ -17,10 +17,8 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
-import com.android.build.gradle.internal.scope.ProjectInfo
 import com.android.build.gradle.internal.services.VariantServices
 import com.google.common.truth.Truth
-import java.util.concurrent.Callable
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.testfixtures.ProjectBuilder
@@ -28,14 +26,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
-import org.mockito.stubbing.Answer
 
 internal class AssetSourceDirectoriesImplTest {
 
@@ -48,12 +43,7 @@ internal class AssetSourceDirectoriesImplTest {
     @Mock
     lateinit var variantServices: VariantServices
 
-    @Captor
-    lateinit var callableCaptor: ArgumentCaptor<Callable<*>>
-
     private lateinit var project: Project
-
-    fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
     @Before
     fun setup() {
@@ -82,19 +72,16 @@ internal class AssetSourceDirectoriesImplTest {
 
     @Test
     fun asAssetSetTest() {
-        val projectInfo = Mockito.mock(ProjectInfo::class.java)
-        Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
-        Mockito.`when`(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
-
-        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer(
-            Answer() {
-                project.provider(callableCaptor.value)
-            }
-        )
         Mockito.`when`(variantServices.newListPropertyForInternalUse(Directory::class.java)).also {
             var stub = it
             repeat(5) {
                 stub = stub.thenReturn(project.objects.listProperty(Directory::class.java))
+            }
+        }
+        Mockito.`when`(variantServices.directoryProperty()).also {
+            var stub = it
+            repeat(9) {
+                stub = stub.thenReturn(project.objects.directoryProperty())
             }
         }
 
@@ -124,16 +111,10 @@ internal class AssetSourceDirectoriesImplTest {
         )))
 
         Truth.assertThat(testTarget.getAscendingOrderAssetSets(FakeGradleProvider("aapt_env"))).isNotNull()
-        val assetSets = testTarget.getAscendingOrderAssetSets(FakeGradleProvider("aapt_env")).get().map { it.get() }
-        Truth.assertThat(assetSets).hasSize(9)
+        val assetSets = testTarget.getAscendingOrderAssetSets(FakeGradleProvider("aapt_env")).get()
+        Truth.assertThat(assetSets).hasSize(3)
         Truth.assertThat(assetSets[0].configName).isEqualTo("lowest")
-        Truth.assertThat(assetSets[1].configName).isEqualTo("lowest")
-        Truth.assertThat(assetSets[2].configName).isEqualTo("lowest")
-        Truth.assertThat(assetSets[3].configName).isEqualTo("lower")
-        Truth.assertThat(assetSets[4].configName).isEqualTo("lower")
-        Truth.assertThat(assetSets[5].configName).isEqualTo("lower")
-        Truth.assertThat(assetSets[6].configName).isEqualTo("higher")
-        Truth.assertThat(assetSets[7].configName).isEqualTo("higher")
-        Truth.assertThat(assetSets[8].configName).isEqualTo("higher")
+        Truth.assertThat(assetSets[1].configName).isEqualTo("lower")
+        Truth.assertThat(assetSets[2].configName).isEqualTo("higher")
     }
 }

@@ -58,13 +58,7 @@ open class LayeredSourceDirectoriesImpl(
     override fun addSource(directoryEntry: DirectoryEntry) {
         variantSources.add(DirectoryEntries(directoryEntry.name, listOf(directoryEntry)))
         variantServices.newListPropertyForInternalUse(Directory::class.java).also {
-            it.addAll(
-                directoryEntry.asFiles(
-                    variantServices.provider {
-                        variantServices.projectInfo.projectDirectory
-                    }
-                )
-            )
+            it.add(directoryEntry.asFiles(variantServices::directoryProperty))
             directories.add(it)
         }
     }
@@ -73,13 +67,7 @@ open class LayeredSourceDirectoriesImpl(
         variantSources.add(sources)
         variantServices.newListPropertyForInternalUse(Directory::class.java).also {
             sources.directoryEntries.forEach { directoryEntry ->
-                it.addAll(
-                    directoryEntry.asFiles(
-                        variantServices.provider {
-                            variantServices.projectInfo.projectDirectory
-                        }
-                    )
-                )
+                it.add(directoryEntry.asFiles(variantServices::directoryProperty))
             }
             directories.add(it)
         }
@@ -97,11 +85,7 @@ open class LayeredSourceDirectoriesImpl(
                 directoryEntries.name to
                         variantServices.fileCollection(directoryEntries.directoryEntries
                             .filterNot { it.isUserAdded || it.isGenerated}
-                            .map { it.asFiles(
-                                variantServices.provider {
-                                    variantServices.projectInfo.projectDirectory
-                                })
-                            }
+                            .map { it.asFiles(variantServices::directoryProperty) }
                         )
             }
         }
@@ -116,19 +100,9 @@ open class LayeredSourceDirectoriesImpl(
             .flatten()
             .filter { filter.invoke(it) }
             .forEach {
-                if (it is TaskProviderBasedDirectoryEntryImpl) {
-                    files.add(it.directoryProvider.get().asFile)
-                } else {
-                    val asDirectoriesProperty = it.asFiles(
-                        variantServices.provider {
-                            variantServices.projectInfo.projectDirectory
-                        }
-                    )
-                    if (asDirectoriesProperty.isPresent) {
-                        files.addAll(asDirectoriesProperty.get().map { directory ->
-                            directory.asFile
-                        })
-                    }
+                val asDirectoryProperty = it.asFiles(variantServices::directoryProperty)
+                if (asDirectoryProperty.isPresent) {
+                    files.add(asDirectoryProperty.get().asFile)
                 }
             }
         return files
@@ -142,29 +116,24 @@ open class LayeredSourceDirectoriesImpl(
      * asset merger
      *
      * @param aaptEnv the value of "ANDROID_AAPT_IGNORE" environment variable.
-     * @return a [Provider] of a [List] of [Provider] of [AssetSet].
+     * @return a [Provider] of a [List] of [AssetSet].
      */
     fun getAscendingOrderAssetSets(
         aaptEnv: Provider<String>
-    ): Provider<List<Provider<AssetSet>>> {
+    ): Provider<List<AssetSet>> {
 
         return variantSources.map { allDirectories ->
             allDirectories.map { directoryEntries ->
                 val assetName = if (directoryEntries.name == SdkConstants.FD_MAIN)
                     BuilderConstants.MAIN else directoryEntries.name
 
-                directoryEntries.directoryEntries.map { directoryEntry ->
-                    directoryEntry.asFiles(
-                        variantServices.provider {
-                            variantServices.projectInfo.projectDirectory
-                        }
-                    ).map {
-                        AssetSet(assetName, aaptEnv.orNull).also { assetSet ->
-                            assetSet.addSources(it.map { it.asFile })
-                        }
-                    }
+                AssetSet(assetName, aaptEnv.orNull).also {
+                    it.addSources(directoryEntries.directoryEntries.map { directoryEntry ->
+                        directoryEntry.asFiles(variantServices::directoryProperty).get().asFile
+                    })
                 }
-            }.flatten()
+            }
         }
     }
+
 }
