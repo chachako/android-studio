@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
+import com.android.build.gradle.options.BooleanOption
 import com.android.utils.FileUtils
 import com.google.common.io.Resources
 import org.junit.Before
@@ -159,7 +160,9 @@ class CoreLibraryDesugarConversionConnectedTest(minSdkVersion: Int) {
     @Test
     fun testFunctionWithDesugaredLibraryParam() {
         // check non-minified debug build (d8 without keep rules)
-        project.executor().run("connectedDebugAndroidTest")
+        project.executor()
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
+                .run("connectedDebugAndroidTest")
 
         // check minified debug build (r8 with keep rules)
         project.buildFile.appendText("\n\nandroid.buildTypes.debug.minifyEnabled = true\n\n")
@@ -168,7 +171,19 @@ class CoreLibraryDesugarConversionConnectedTest(minSdkVersion: Int) {
             "// onCreate",
             "getNumbers(); getTime();"
         )
-        project.executor().run("connectedDebugAndroidTest")
+        // R.id can get shrunk away now, remove the test reference to it
+        TestFileUtils.searchAndReplace(
+                FileUtils.join(project.projectDir, "src/androidTest/java/com/example/helloworld/HelloWorldTest.java"),
+                "mTextView = (TextView) a.findViewById(R.id.text)",
+                "// R.id will get shrunk away // mTextView = (TextView) a.findViewById(R.id.text)")
+        TestFileUtils.searchAndReplace(
+                FileUtils.join(project.projectDir, "src/androidTest/java/com/example/helloworld/HelloWorldTest.java"),
+                "Assert.assertNotNull(mTextView)",
+                "// R.id will get shrunk away // Assert.assertNotNull(mTextView)")
+
+        project.executor()
+                .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
+                .run("connectedDebugAndroidTest")
     }
 
     // TODO(bingran) This test is temporarily disabled because of b/126429384. For more details,
