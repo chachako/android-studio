@@ -15,6 +15,7 @@
  */
 package com.android.ide.common.gradle
 
+import com.android.ide.common.repository.GradleVersionRange
 import com.google.common.annotations.Beta
 import java.lang.IllegalArgumentException
 import java.util.Locale
@@ -38,7 +39,13 @@ class Version: Comparable<Version> {
     // - base version extraction (for conflict resolution)
     private val parts: List<Part>
     private val separators: List<Separator>
-    private val isPrefixInfimum: Boolean
+    /**
+     * this is only non-private in order to provide error-checking in [GradleVersionRange]
+     * constructors; it should not be generally used.  If true, this represents the infimum of
+     * the set of versions with the specified parts as a prefix ("infimum" because there is no
+     * finite representation of such a version).
+     */
+    val isPrefixInfimum: Boolean
 
     private constructor(parts: List<Part>, separators: List<Separator>, isPrefixInfimum: Boolean) {
         if (parts.size != separators.size) throw IllegalArgumentException()
@@ -52,6 +59,63 @@ class Version: Comparable<Version> {
             if (isPrefixInfimum) it + List(max(0, atLeast - it.size)) { dev } else it
         }
     }
+
+    // This is a reasonably well-defined concept.
+    val isPreview
+        get() = parts.any { it !is Numeric } || isPrefixInfimum
+    // This is not very well-defined:
+    // - why is SNAPSHOT special, compared with all the other Special components?
+    // - we check only check the last part because this is what the GradleVersion class did
+    // (It is used in places to check whether this version should be offered as an upgrade to
+    // an existing version; in practice versions with -dev or -snapshot parts anywhere should
+    // probably not usually be offered.)
+    val isSnapshot
+        get() = parts.lastOrNull().let { it is SNAPSHOT || it is DEV }
+    // These are reasonably well-defined concepts, and convenient for users of this class wanting
+    // to layer e.g. pragmatic semantic versioning on top.
+    val major
+        get() = (parts.takeIf { it.isNotEmpty() }?.get(0) as? Numeric)?.number
+    val minor
+        get() = (parts.takeIf { it.size > 1 && it[0] is Numeric }?.get(1) as? Numeric)?.number
+    val micro
+        get() = (parts.takeIf { it.size > 2 && it[0] is Numeric && it[1] is Numeric }
+            ?.get(2) as? Numeric)?.number
+
+    /**
+     * Return a Version suitable as an exclusive upper bound from considering the parts
+     * of this version up to [prefixSize] as a prefix.
+     */
+    fun nextPrefix(prefixSize: Int): Version {
+        if (parts.size < prefixSize) {
+            return Version(
+                parts + List(prefixSize - parts.size) { Numeric("0", 0) },
+                separators.let {
+                    it.dropLast(1) + List(prefixSize - parts.size) { Separator.DOT } + it.last()
+                },
+                true
+            )
+        }
+        else {
+            return Version(
+                parts.subList(0, prefixSize-1) + parts[prefixSize-1].next(),
+                separators.subList(0, prefixSize-1) + Separator.EMPTY,
+                true
+            )
+        }
+    }
+
+    /**
+     * Return a Version suitable as an exclusive upper bound from considering this version as
+     * a prefix.
+     */
+    fun nextPrefix(): Version = nextPrefix(parts.size)
+
+    /**
+     * Return a [Version] corresponding to the prefix of this version: if it is not an infimum,
+     * the return value is equal to this version; if it is an infimum, the return value is the
+     * specified prefix.
+     */
+    fun prefixVersion(): Version = Version(parts, separators, false)
 
     override fun compareTo(other: Version): Int {
         val thisParts = this.extendedParts(other.parts.size + 1)
@@ -128,6 +192,7 @@ class Version: Comparable<Version> {
                 }
             }
         }
+
         private fun doParse(string: String, prefixInfimum: Boolean): Version {
             val sb = StringBuffer()
             val parts = mutableListOf<Part>()
@@ -193,16 +258,19 @@ enum class Separator(val char: Char?) {
 }
 
 sealed class Part(protected val string: String) : Comparable<Part> {
+    abstract fun next(): Part
     override fun toString() = string
 }
 
 class DEV(string: String) : Part(string) {
+    override fun next() = NonNumeric("")
     override fun compareTo(other: Part) = if (other is DEV) 0 else -1
     override fun equals(other: Any?) = other is DEV
     override fun hashCode() = Objects.hashCode("dev")
 }
 
 class NonNumeric(string: String) : Part(string) {
+    override fun next() = NonNumeric("$string\u0000")
     override fun compareTo(other: Part) = when (other) {
         is DEV -> 1
         is Special, is Numeric -> -1
@@ -228,14 +296,27 @@ sealed class Special(string: String, val ordinal: Int) : Part(string) {
     override fun hashCode() = Objects.hash(this.ordinal)
 }
 
-class RC(string: String): Special(string, 0)
-class SNAPSHOT(string: String): Special(string, 1)
-class FINAL(string: String): Special(string, 2)
-class GA(string: String): Special(string, 3)
-class RELEASE(string: String): Special(string, 4)
-class SP(string: String): Special(string, 5)
+class RC(string: String): Special(string, 0) {
+    override fun next() = SNAPSHOT("snapshot")
+}
+class SNAPSHOT(string: String): Special(string, 1) {
+    override fun next() = FINAL("final")
+}
+class FINAL(string: String): Special(string, 2) {
+    override fun next() = GA("ga")
+}
+class GA(string: String): Special(string, 3) {
+    override fun next() = RELEASE("release")
+}
+class RELEASE(string: String): Special(string, 4) {
+    override fun next() = SP("sp")
+}
+class SP(string: String): Special(string, 5) {
+    override fun next() = Numeric("0", 0)
+}
 
 class Numeric(string: String, val number: Int) : Part(string) {
+    override fun next() = Numeric("${number+1}", number+1) // TODO(xof): contemplate overflow
     override fun compareTo(other: Part) = when (other) {
         is Numeric -> this.number.compareTo(other.number)
         is DEV, is NonNumeric, is Special -> 1
