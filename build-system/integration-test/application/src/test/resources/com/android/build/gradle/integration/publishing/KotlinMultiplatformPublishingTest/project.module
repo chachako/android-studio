@@ -21,6 +21,15 @@
         "org.gradle.usage": "kotlin-metadata",
         "org.jetbrains.kotlin.platform.type": "common"
       },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-common",
+          "version": {
+            "requires": "{KOTLIN_VERSION}"
+          }
+        }
+      ],
       "files": [
         {
           "name": "project-metadata-0.1.2.jar",

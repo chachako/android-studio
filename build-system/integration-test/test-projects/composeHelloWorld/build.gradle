@@ -1,6 +1,9 @@
 apply from: "../commonHeader.gradle"
+ext {
+    kotlinVersionForCompose = "1.7.20"
+}
 buildscript {
-    apply from: "../commonHeader.gradle"  // for $kotlinVersion
+    apply from: "../commonHeader.gradle"
     apply from: "../commonBuildScript.gradle"
 
     dependencies {
