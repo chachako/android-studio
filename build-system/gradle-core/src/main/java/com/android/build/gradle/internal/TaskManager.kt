@@ -140,7 +140,6 @@ import com.android.build.gradle.internal.tasks.PrepareLintJarForPublish
 import com.android.build.gradle.internal.tasks.ProcessJavaResTask
 import com.android.build.gradle.internal.tasks.R8Task
 import com.android.build.gradle.internal.tasks.RecalculateStackFramesTask
-import com.android.build.gradle.internal.tasks.ShrinkResourcesOldShrinkerTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
 import com.android.build.gradle.internal.tasks.SigningReportTask
@@ -169,7 +168,6 @@ import com.android.build.gradle.internal.test.BundleTestDataImpl
 import com.android.build.gradle.internal.test.TestDataImpl
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
 import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
-import com.android.build.gradle.internal.transforms.LegacyShrinkBundleModuleResourcesTask
 import com.android.build.gradle.internal.transforms.ShrinkAppBundleResourcesTask
 import com.android.build.gradle.internal.transforms.ShrinkResourcesNewShrinkerTask
 import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
@@ -2819,19 +2817,11 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
             // for base module only.
             return
         }
-        if (creationConfig.services.projectOptions.get(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER)) {
-            // Shrink resources in APK with a new resource shrinker and produce stripped res
-            // package.
-            taskFactory.register(ShrinkResourcesNewShrinkerTask.CreationAction(creationConfig))
-            // Shrink resources in bundles with new resource shrinker.
-            taskFactory.register(ShrinkAppBundleResourcesTask.CreationAction(creationConfig))
-        } else {
-            // Shrink resources in APK with old resource shrinker and produce stripped res package.
-            taskFactory.register(ShrinkResourcesOldShrinkerTask.CreationAction(creationConfig))
-            // Shrink base module resources in proto format to be packaged to bundle.
-            taskFactory.register(
-                    LegacyShrinkBundleModuleResourcesTask.CreationAction(creationConfig))
-        }
+        // Shrink resources in APK with a new resource shrinker and produce stripped res
+        // package.
+        taskFactory.register(ShrinkResourcesNewShrinkerTask.CreationAction(creationConfig))
+        // Shrink resources in bundles with new resource shrinker.
+        taskFactory.register(ShrinkAppBundleResourcesTask.CreationAction(creationConfig))
     }
 
     private fun createReportTasks() {

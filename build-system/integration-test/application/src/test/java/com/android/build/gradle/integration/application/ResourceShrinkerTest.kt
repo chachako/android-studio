@@ -25,7 +25,6 @@ import com.android.build.shrinker.DummyContent.TINY_9PNG
 import com.android.build.shrinker.DummyContent.TINY_PNG
 import com.android.build.shrinker.DummyContent.TINY_PROTO_CONVERTED_TO_BINARY_XML
 import com.android.build.shrinker.DummyContent.TINY_PROTO_XML
-import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject.assertThat
@@ -42,7 +41,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlin.streams.toList
 
-class ShrinkResourcesNewShrinkerTest {
+class ResourceShrinkerTest {
 
     @get:Rule
     var project = builder().fromTestProject("shrink")
@@ -56,9 +55,7 @@ class ShrinkResourcesNewShrinkerTest {
 
     @Test
     fun `shrink resources for APKs with R8`() {
-        project.executor()
-                .with(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER, true)
-                .run("clean", "assembleDebug", "assembleRelease")
+        project.executor().run("clean", "assembleDebug", "assembleRelease")
         val debugApk = project.getApk(DEBUG)
         val releaseApk = project.getApk(RELEASE)
         // Check that unused resources are replaced in shrunk apk.
@@ -213,9 +210,7 @@ class ShrinkResourcesNewShrinkerTest {
 
     @Test
     fun `optimize shrinked resources`() {
-        project.executor()
-                .with(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER, true)
-                .run(":webview:assembleRelease")
+        project.executor().run(":webview:assembleRelease")
 
         val releaseApk = project.getSubproject("webview").getApk(RELEASE).file.toFile()
 
@@ -265,7 +260,6 @@ class ShrinkResourcesNewShrinkerTest {
     @Test
     fun `shrink resources in single module bundles`() {
         project.executor()
-                .with(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER, true)
                 .run(
                         "clean",
                         "packageDebugUniversalApk",
@@ -385,9 +379,7 @@ class ShrinkResourcesNewShrinkerTest {
 
     @Test
     fun `shrink resources in bundles with dynamic feature module`() {
-        projectWithDynamicFeatureModules.executor()
-                .with(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER, true)
-                .run("signReleaseBundle")
+        projectWithDynamicFeatureModules.executor().run("signReleaseBundle")
 
         // Check that unused resources are replaced in shrunk bundle.
         val originalBundle =
@@ -510,9 +502,7 @@ class ShrinkResourcesNewShrinkerTest {
         )
 
 
-        project.executor()
-                .with(BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER, true)
-                .run("clean", "abisplits:assembleRelease")
+        project.executor().run("clean", "abisplits:assembleRelease")
         val shrunkUniversalApk =
                 FileUtils.join(abiSplitsSubproject.outputDir,
                         "apk",

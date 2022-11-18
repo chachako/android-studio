@@ -323,15 +323,7 @@ abstract class PerModuleBundleTask @Inject constructor(objects: ObjectFactory) :
                 creationConfig.artifacts.get(SingleArtifact.ASSETS)
             )
 
-            val legacyShrinkerEnabled = creationConfig.androidResourcesCreationConfig?.useResourceShrinker == true &&
-                !creationConfig.services.projectOptions[BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER]
-            task.resFiles.set(
-                if (legacyShrinkerEnabled){
-                    artifacts.get(InternalArtifactType.LEGACY_SHRUNK_LINKED_RES_FOR_BUNDLE)
-                } else {
-                    artifacts.get(InternalArtifactType.LINKED_RES_FOR_BUNDLE)
-                }
-            )
+            task.resFiles.set(artifacts.get(InternalArtifactType.LINKED_RES_FOR_BUNDLE))
             task.resFiles.disallowChanges()
 
             task.dexFiles.from(

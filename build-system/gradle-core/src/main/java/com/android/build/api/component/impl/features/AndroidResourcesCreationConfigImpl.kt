@@ -90,18 +90,6 @@ class AndroidResourcesCreationConfigImpl(
                 dslInfo.componentType.isForTesting) {
                 return false
             }
-            val newResourceShrinker =
-                component.services.projectOptions[BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER]
-            if (!newResourceShrinker && component.global.hasDynamicFeatures) {
-                val message = String.format(
-                    "Resource shrinker for multi-apk applications can be enabled via " +
-                            "experimental flag: '%s'.",
-                    BooleanOption.ENABLE_NEW_RESOURCE_SHRINKER.propertyName)
-                internalServices
-                    .issueReporter
-                    .reportError(IssueReporter.Type.GENERIC, message)
-                return false
-            }
             if (!component.optimizationCreationConfig.minifiedEnabled) {
                 internalServices
                     .issueReporter
