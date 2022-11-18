@@ -58,6 +58,9 @@ class CmdSet {
     }
 
     void add(int cmdID, @NonNull String name) {
+        if (cmds.containsKey(cmdID)) {
+            throw new IllegalStateException("CmdSet " + id + " is already registered");
+        }
         cmds.put(
                 cmdID,
                 new Cmd(cmdID, name, Message::defaultMessageParser, Message::defaultMessageParser));

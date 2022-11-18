@@ -26,26 +26,29 @@ class CmdSets {
         add(new CmdSetVM()); // 1
         add(new CmdSetReferenceType()); // 2
         add(new CmdSetClassType()); // 3
-        // 4 ArrayType TODO
-        // 5 InterfaceType TODO
+        add(new CmdSetArrayType()); // 4
+        add(new CmdSetInterfaceType()); // 5
         add(new CmdSetMethod()); // 6
         // 7 Unused
-        // 8 Field TODO
-        // 9 ObjectReference TODO
-        // 10 StringReference TODO
+        add(new CmdSetField()); // 8
+        add(new CmdSetObjectReference()); // 9
+        add(new CmdSetStringReference()); // 10
         add(new CmdSetThreadReference()); // 11
-        // 12 ThreadGroupReference TODO
-        // 13 ArrayReference TODO
-        // 14 ClassLoaderReference TODO
+        add(new CmdSetThreadGroupReference()); // 12
+        add(new CmdSetArrayReference()); // 13
+        add(new CmdSetClassLoaderReference()); // 14
         add(new CmdSetEventRequest()); // 15
         add(new CmdSetStackFrame()); // 16
-        // 17ClassObjectReference TODO
+        add(new CmdSetClassObjectReference()); // 17
         add(new CmdSetEvent()); // 64
 
         add(new CmdSetDdm()); // 199
     }
 
     private static void add(@NonNull CmdSet cmdSet) {
+        if (sets.containsKey(cmdSet.id)) {
+            throw new IllegalStateException("CmdSet " + cmdSet.id + " is already registered");
+        }
         sets.put(cmdSet.id(), cmdSet);
     }
 
