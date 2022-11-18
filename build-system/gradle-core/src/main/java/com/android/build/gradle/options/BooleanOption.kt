@@ -221,8 +221,6 @@ enum class BooleanOption(
 
     ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
-    ENABLE_NEW_RESOURCE_SHRINKER("android.enableNewResourceShrinker", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-
     ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE(
         "android.bundle.enableUncompressedNativeLibs",
         true,
@@ -529,6 +527,10 @@ enum class BooleanOption(
     true,
     FeatureStage.Enforced(Version.VERSION_8_0)
     ),
+
+    ENABLE_NEW_RESOURCE_SHRINKER("android.enableNewResourceShrinker",
+            true,
+            FeatureStage.Enforced(Version.VERSION_8_0)),
 
     /* ----------------
      * REMOVED FEATURES

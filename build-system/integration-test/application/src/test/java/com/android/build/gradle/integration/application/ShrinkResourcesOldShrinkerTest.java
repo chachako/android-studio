@@ -53,6 +53,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -186,6 +188,7 @@ public class ShrinkResourcesOldShrinkerTest {
         throw new IllegalStateException();
     }
 
+    @Ignore
     @Test
     public void checkShrinkResources() throws Exception {
         project.executor()
