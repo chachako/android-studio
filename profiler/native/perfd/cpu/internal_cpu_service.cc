@@ -52,8 +52,8 @@ Status InternalCpuServiceImpl::SendTraceEvent(
     user_options->set_trace_mode(TraceMode::INSTRUMENTED);
 
     TraceStartStatus start_status;
-    auto* capture = trace_manager_->StartCapture(request->timestamp(),
-                                                 configuration, &start_status);
+    auto* capture = trace_manager_->StartCapture(
+        request->timestamp(), configuration, &start_status, false);
     if (capture == nullptr) {
       std::cout << " START request ignored. " << start_status.error_message()
                 << std::endl;

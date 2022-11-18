@@ -176,7 +176,7 @@ grpc::Status CpuServiceImpl::StartProfilingApp(
   Trace trace("CPU:StartProfilingApp");
   auto* status = response->mutable_status();
   trace_manager_->StartCapture(clock_->GetCurrentTime(),
-                               request->configuration(), status);
+                               request->configuration(), status, false);
   return Status::OK;
 }
 
@@ -230,7 +230,7 @@ grpc::Status CpuServiceImpl::StartStartupProfiling(
     profiler::proto::StartupProfilingResponse* response) {
   TraceStartStatus start_status;
   CaptureInfo* capture = trace_manager_->StartCapture(
-      clock_->GetCurrentTime(), request->configuration(), &start_status);
+      clock_->GetCurrentTime(), request->configuration(), &start_status, false);
 
   if (capture != nullptr) {
     response->set_status(proto::StartupProfilingResponse::SUCCESS);
