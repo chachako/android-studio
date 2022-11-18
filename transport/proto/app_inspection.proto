@@ -53,7 +53,8 @@ message CreateInspectorCommand {
 message ArtifactCoordinate {
   string group_id = 1;
   string artifact_id = 2;
-  // This adheres to the gradle version format.
+  // This follows the {major}.{minor}.{patch} format. It can also be set
+  // to '+' to match any versions when used in the context of compatibility checks.
   string version = 3;
 }
 

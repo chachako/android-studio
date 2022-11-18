@@ -38,7 +38,6 @@ public final class CompatibilityChecker {
      * <p>The version of the library is found inside a version file in the APK's META-INF directory.
      *
      * @param coordinate represents the minimum supported library artifact.
-     * @param expectedLibraryClassNames names of classes expected in the targeted library artifact
      * @return a VersionChecker.Result object containing the result of the check and any errors.
      */
     public CompatibilityCheckerResult checkCompatibility(LibraryCompatibility coordinate) {
@@ -48,11 +47,19 @@ public final class CompatibilityChecker {
         switch (readResult.status) {
             case NOT_FOUND:
                 if (anyExpectedClassesExists(coordinate.expectedClassNames)) {
-                    return new CompatibilityCheckerResult(
-                            CompatibilityCheckerResult.Status.NOT_FOUND,
-                            "Failed to find version file " + versionFile,
-                            coordinate.artifact,
-                            null);
+                    if ("+".equals(coordinate.artifact.version)) {
+                        return new CompatibilityCheckerResult(
+                                CompatibilityCheckerResult.Status.COMPATIBLE,
+                                null,
+                                coordinate.artifact,
+                                "+");
+                    } else {
+                        return new CompatibilityCheckerResult(
+                                CompatibilityCheckerResult.Status.NOT_FOUND,
+                                "Failed to find version file " + versionFile,
+                                coordinate.artifact,
+                                null);
+                    }
                 } else {
                     return new CompatibilityCheckerResult(
                             CompatibilityCheckerResult.Status.LIBRARY_NOT_FOUND,

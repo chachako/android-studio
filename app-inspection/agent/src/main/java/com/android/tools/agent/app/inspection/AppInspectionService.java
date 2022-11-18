@@ -228,10 +228,6 @@ public class AppInspectionService {
      * @param commandId the id of the command
      * @param libraryCoordinate represents the minimum supported library artifact. Null if the
      *     inspector is not targeting any particular library.
-     * @param expectedLibraryClassNames names of classes expected in the targeted library artifact.
-     *     If the library version cannot be found, but one of the classes is found a version missing
-     *     error is sent. If the library version cannot be found, and non of the classes are found a
-     *     library missing error is sent.
      * @return true if check passed. false if check failed for any reason.
      */
     private boolean doCheckVersion(int commandId, LibraryCompatibility libraryCoordinate) {

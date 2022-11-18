@@ -506,6 +506,36 @@ public final class AppInspectionTest {
     }
 
     @Test
+    public void createInspectorWithSkipVersionCheckButFailedLibraryDetection() throws Exception {
+        String onDevicePath = injectInspectorDex();
+        AppInspectionResponse response =
+                appInspectionRule.sendCommandAndGetResponse(
+                        createLibraryInspector(
+                                "test.inspector",
+                                onDevicePath,
+                                artifactCoordinate("non", "existent", "+"),
+                                Collections.singletonList(
+                                        "com.activity.todo.NonExistingActivity")));
+        assertThat(response.getStatus()).isEqualTo(ERROR);
+        assertThat(response.getErrorMessage())
+                .startsWith("Failed to find library non_existent.version");
+        assertThat(response.getCreateInspectorResponse().getStatus()).isEqualTo(LIBRARY_MISSING);
+    }
+
+    @Test
+    public void createInspectorWithSkipVersionCheck() throws Exception {
+        String onDevicePath = injectInspectorDex();
+        AppInspectionResponse response =
+                appInspectionRule.sendCommandAndGetResponse(
+                        createLibraryInspector(
+                                "test.inspector",
+                                onDevicePath,
+                                artifactCoordinate("non", "existent", "+"),
+                                Collections.singletonList("com.activity.todo.TodoActivity")));
+        assertThat(response.getCreateInspectorResponse().getStatus()).isEqualTo(SUCCESS);
+    }
+
+    @Test
     public void getLibraryCompatibilityInfoCommand() throws Exception {
         List<AppInspection.LibraryCompatibility> compatibilities = new ArrayList<>();
         // SUCCESS
