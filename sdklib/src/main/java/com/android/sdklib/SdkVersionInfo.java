@@ -98,6 +98,12 @@ public class SdkVersionInfo {
     public static final int HIGHEST_KNOWN_API_TV = 24;
 
     /**
+     * The highest known API level for Android Auto. To find out if this value needs to be updated,
+     * check the downloadable system images for Auto to see if there are more recent versions.
+     */
+    public static final int HIGHEST_KNOWN_API_AUTO = 32;
+
+    /**
      * The lowest active api for TV. This number will change over time
      * as the distribution of older platforms decreases.
      */
