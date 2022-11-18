@@ -122,6 +122,7 @@ class NonTransitiveCompileRClassFlowTest {
         project.executor()
             .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
             .with(BooleanOption.NON_TRANSITIVE_R_CLASS, true)
+            .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
         assertThat(lib2RJar) {
             // It shouldn't contain any other R classes other than the local one
@@ -135,6 +136,7 @@ class NonTransitiveCompileRClassFlowTest {
         project.executor()
             .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
             .with(BooleanOption.NON_TRANSITIVE_R_CLASS, false)
+            .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
         assertThat(lib2RJar) {
             // It shouldn't contain any other R classes other than the local one
@@ -148,6 +150,7 @@ class NonTransitiveCompileRClassFlowTest {
         project.executor()
             .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, false)
             .with(BooleanOption.NON_TRANSITIVE_R_CLASS, true)
+            .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
         assertThat(lib2RJar) {
             // It contain all R classes
@@ -161,6 +164,7 @@ class NonTransitiveCompileRClassFlowTest {
         project.executor()
             .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, false)
             .with(BooleanOption.NON_TRANSITIVE_R_CLASS, false)
+            .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
         assertThat(lib2RJar) {
             // It contain all R
