@@ -16,8 +16,8 @@
 
 package com.android.tools.lint.checks
 
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleVersion
 import com.android.tools.lint.checks.GradleDetector.Companion.DEPENDENCY
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.Category
@@ -114,7 +114,7 @@ class PropertyFileDetector : Detector() {
         if (versionString.isEmpty()) {
             return
         }
-        val version = GradleVersion.tryParse(versionString) ?: return
+        val version = Version.parse(versionString) ?: return
         val repository = GradleDetector().getGoogleMavenRepository(context.client)
         // Lint uses the same version as AGP
         val gc = GradleCoordinate("com.android.tools.build", "gradle", versionString)

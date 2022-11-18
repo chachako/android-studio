@@ -31,8 +31,8 @@ import com.android.SdkConstants.LIBS_FOLDER
 import com.android.SdkConstants.PLATFORM_LINUX
 import com.android.SdkConstants.RES_FOLDER
 import com.android.SdkConstants.SRC_FOLDER
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleVersion
 import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
@@ -1593,8 +1593,8 @@ abstract class LintClient {
      */
     open fun getHighestKnownVersion(
         coordinate: GradleCoordinate,
-        filter: Predicate<GradleVersion>?
-    ): GradleVersion? {
+        filter: Predicate<Version>?
+    ): Version? {
         // Overridden in Studio to consult SDK manager's cache
         return null
     }

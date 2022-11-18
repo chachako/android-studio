@@ -1766,7 +1766,7 @@ class UastTest : TestCase() {
 
                     assertTrue(
                         node.sourcePsi is KtConstructor<*> ||
-                                (node.sourcePsi is KtClassOrObject && node.name == "Boo")
+                            (node.sourcePsi is KtClassOrObject && node.name == "Boo")
                     )
                     return super.visitMethod(node)
                 }
@@ -1779,7 +1779,7 @@ class UastTest : TestCase() {
                     // the reference will be resolved to the class itself.
                     assertTrue(
                         (resolved as? PsiMethod)?.isConstructor == true ||
-                                (resolved as? PsiClass)?.constructors?.single()?.isPhysical == false
+                            (resolved as? PsiClass)?.constructors?.single()?.isPhysical == false
                     )
 
                     return super.visitCallableReferenceExpression(node)

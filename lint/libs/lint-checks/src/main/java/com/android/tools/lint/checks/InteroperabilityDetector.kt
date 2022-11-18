@@ -302,7 +302,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
                         val ktType = expression.getKtType() ?: return
                         if (ktType is KtDynamicType) return
 
-                        if (!ktType.isFlexibleRecursive())  return
+                        if (!ktType.isFlexibleRecursive()) return
                         val typeString = if (ktType is KtFlexibleType) null else ktType.toString().replace("..", " or ")
                         reportMissingExplicitType(node, typeString)
                     }

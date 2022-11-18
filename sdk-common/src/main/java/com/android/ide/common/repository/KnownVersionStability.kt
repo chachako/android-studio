@@ -18,6 +18,7 @@ package com.android.ide.common.repository
 import com.android.SdkConstants.ANNOTATIONS_LIB_ARTIFACT_ID
 import com.android.SdkConstants.MATERIAL2_PKG
 import com.android.SdkConstants.SUPPORT_LIB_GROUP_ID
+import com.android.ide.common.gradle.Version
 
 private const val FIREBASE_GROUP_ID = "com.google.firebase"
 private const val GOOGLE_MOBILE_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -69,12 +70,12 @@ enum class KnownVersionStability {
    * dependency with a given stability. This is used to generate the exclusive upper
    * bound in a [GradleVersionRange].
    */
-  fun expiration(version: GradleVersion): GradleVersion =
+  fun expiration(version: Version): Version =
         when (this) {
-            INCOMPATIBLE -> GradleVersion(version.major, version.minor, version.micro + 1)
-            INCREMENTAL -> GradleVersion(version.major, version.minor + 1, 0)
-            SEMANTIC -> GradleVersion(version.major + 1, 0, 0)
-            STABLE -> GradleVersion(Int.MAX_VALUE, 0, 0)
+            INCOMPATIBLE -> version.nextPrefix(3)
+            INCREMENTAL -> version.nextPrefix(2)
+            SEMANTIC -> version.nextPrefix(1)
+            STABLE -> Version.prefixInfimum("${Int.MAX_VALUE}")
         }
 }
 

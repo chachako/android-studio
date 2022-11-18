@@ -33,8 +33,8 @@ import com.android.SdkConstants.SUPPRESS_ALL
 import com.android.SdkConstants.SUPPRESS_LINT
 import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.VALUE_TRUE
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleVersion
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
 import com.android.ide.common.resources.configuration.FolderConfiguration.QUALIFIER_SPLITTER
@@ -2975,8 +2975,8 @@ class LintDriver(
 
         override fun getHighestKnownVersion(
             coordinate: GradleCoordinate,
-            filter: Predicate<GradleVersion>?
-        ): GradleVersion? {
+            filter: Predicate<Version>?
+        ): Version? {
             return delegate.getHighestKnownVersion(coordinate, filter)
         }
 

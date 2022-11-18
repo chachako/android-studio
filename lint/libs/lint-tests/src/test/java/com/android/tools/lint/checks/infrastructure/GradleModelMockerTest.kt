@@ -678,14 +678,14 @@ dependencies {
         coordinates = library.getResolvedCoordinates();
         assertThat(coordinates.getGroupId()).isEqualTo("com.android.support");
         assertThat(coordinates.getArtifactId()).isEqualTo("appcompat-v7");
-        assertThat(coordinates.getVersion()).isEqualTo("25.0.1");
+        assertThat(coordinates.getRevision()).isEqualTo("25.0.1");
         assertThat(coordinates.getPackaging()).isEqualTo("aar");
 
         library = androidLibraries.get(1);
         coordinates = library.getResolvedCoordinates();
         assertThat(coordinates.getGroupId()).isEqualTo("com.android.support.constraint");
         assertThat(coordinates.getArtifactId()).isEqualTo("constraint-layout");
-        assertThat(coordinates.getVersion()).isEqualTo("1.0.0-beta3");
+        assertThat(coordinates.getRevision()).isEqualTo("1.0.0-beta3");
         assertThat(coordinates.getPackaging()).isEqualTo("aar");
 
         // Check recursive dependencies
@@ -696,7 +696,7 @@ dependencies {
         coordinates = library.getResolvedCoordinates();
         assertThat(coordinates.getGroupId()).isEqualTo("com.android.support");
         assertThat(coordinates.getArtifactId()).isEqualTo("support-v4");
-        assertThat(coordinates.getVersion()).isEqualTo("25.0.1");
+        assertThat(coordinates.getRevision()).isEqualTo("25.0.1");
         assertThat(coordinates.getPackaging()).isEqualTo("aar");
 
         androidLibraries = Lists.newArrayList(library.getLibraryDependencies());
@@ -705,14 +705,14 @@ dependencies {
         coordinates = library.getResolvedCoordinates();
         assertThat(coordinates.getGroupId()).isEqualTo("com.android.support");
         assertThat(coordinates.getArtifactId()).isEqualTo("support-compat");
-        assertThat(coordinates.getVersion()).isEqualTo("25.0.1");
+        assertThat(coordinates.getRevision()).isEqualTo("25.0.1");
         assertThat(coordinates.getPackaging()).isEqualTo("aar");
 
         //JavaLibrary javaLibrary = library.getJavaDependencies().iterator().next();
         //coordinates = javaLibrary.getResolvedCoordinates();
         //assertThat(coordinates.getGroupId()).isEqualTo("com.android.support");
         //assertThat(coordinates.getArtifactId()).isEqualTo("support-annotations");
-        //assertThat(coordinates.getVersion()).isEqualTo("25.0.1");
+        //assertThat(coordinates.getRevision()).isEqualTo("25.0.1");
         //assertThat(coordinates.getPackaging()).isEqualTo("jar");
         */
     }

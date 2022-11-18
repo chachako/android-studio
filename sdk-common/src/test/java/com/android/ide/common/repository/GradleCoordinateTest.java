@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.android.ide.common.gradle.Version;
 import com.android.ide.common.resources.BaseTestCase;
 import com.google.common.collect.Lists;
 
@@ -42,16 +43,15 @@ public class GradleCoordinateTest extends BaseTestCase {
         assertNotNull(actual);
         assertEquals(expected, actual);
         assertNull(actual.getArtifactType());
-        assertEquals(5, actual.getVersion().getMajor());
-        assertEquals(4, actual.getVersion().getMinor());
-        assertEquals(GradleVersion.tryParse("5.4.2"), actual.getVersion());
+        assertEquals(5, actual.getLowerBoundVersion().getMajor().intValue());
+        assertEquals(4, actual.getLowerBoundVersion().getMinor().intValue());
+        assertEquals(Version.Companion.parse("5.4.2"), actual.getLowerBoundVersion());
         assertFalse(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", 5, 4, GradleCoordinate.PLUS_REV_VALUE);
         actual = GradleCoordinate.parseCoordinateString("a.b.c:package:5.4.+");
         assertNotNull(actual);
         assertEquals(expected, actual);
-        assertEquals(GradleVersion.tryParse("5.4.+"), actual.getVersion());
         assertTrue(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", 5, GradleCoordinate.PLUS_REV_VALUE);

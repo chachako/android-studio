@@ -15,6 +15,7 @@
  */
 package com.android.ide.common.repository
 
+import com.android.ide.common.gradle.Version
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -60,13 +61,13 @@ class KnownVersionStabilityTest {
 
     @Test
     fun testExpiration() {
-        assertThat(KnownVersionStability.INCOMPATIBLE.expiration(GradleVersion(3, 4, 5)))
-            .isEqualTo(GradleVersion(3, 4, 6))
-        assertThat(KnownVersionStability.INCREMENTAL.expiration(GradleVersion(3, 4, 5)))
-            .isEqualTo(GradleVersion(3, 5, 0))
-        assertThat(KnownVersionStability.SEMANTIC.expiration(GradleVersion(3, 4, 5)))
-            .isEqualTo(GradleVersion(4, 0, 0))
-        assertThat(KnownVersionStability.STABLE.expiration(GradleVersion(3, 4, 5)))
-            .isEqualTo(GradleVersion(Int.MAX_VALUE, 0, 0))
+        assertThat(KnownVersionStability.INCOMPATIBLE.expiration(Version.parse("3.4.5")))
+            .isEqualTo(Version.prefixInfimum("3.4.6"))
+        assertThat(KnownVersionStability.INCREMENTAL.expiration(Version.parse("3.4.5")))
+            .isEqualTo(Version.prefixInfimum("3.5"))
+        assertThat(KnownVersionStability.SEMANTIC.expiration(Version.parse("3.4.5")))
+            .isEqualTo(Version.prefixInfimum("4"))
+        assertThat(KnownVersionStability.STABLE.expiration(Version.parse("3.4.5")))
+            .isEqualTo(Version.prefixInfimum("${Int.MAX_VALUE}"))
     }
 }

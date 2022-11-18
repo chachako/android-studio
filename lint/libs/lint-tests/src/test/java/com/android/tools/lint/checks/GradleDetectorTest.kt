@@ -17,9 +17,9 @@ package com.android.tools.lint.checks
 
 import com.android.SdkConstants.GRADLE_PLUGIN_MINIMUM_VERSION
 import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
 import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleVersion
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_STABLE_API
@@ -1245,7 +1245,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                     "}\n" +
                     "\n" +
                     "dependencies {\n" +
-                    "    compile 'androidx.slidingpanelayout:slidingpanelayout:1.2'\n" +
+                    "    compile 'androidx.slidingpanelayout:slidingpanelayout:1.2.0'\n" +
                     "    compile 'androidx.compose.foundation:foundation:1.2.1'\n" +
                     "}\n"
             )
@@ -4657,7 +4657,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 <?xml version='1.0' encoding='UTF-8'?>
                 <com.android.support>
                   <support-compat versions="19.1.0,25.3.1,26.0.0-beta1"/>
-                  <appcompat-v7 versions="19.1.0, 19.1.0,25.3.1,26.0.0-beta1"/>
+                  <appcompat-v7 versions="19.1.0,19.1.0,25.3.1,26.0.0-beta1"/>
                   <multidex versions="1.0.1,1.0.1"/>
                   <support-v4 versions="19.1.0,21.0.2,25.3.1,26.0.0-beta1"/>
                 </com.android.support>
@@ -4894,14 +4894,14 @@ class GradleDetectorTest : AbstractCheckTest() {
 
                     override fun getHighestKnownVersion(
                         coordinate: GradleCoordinate,
-                        filter: Predicate<GradleVersion>?
-                    ): GradleVersion? {
+                        filter: Predicate<Version>?
+                    ): Version? {
                         // Hardcoded for unit test to ensure stable data
                         return if ("com.android.support.constraint" == coordinate.groupId && "constraint-layout" == coordinate.artifactId) {
                             if (coordinate.isPreview) {
-                                GradleVersion.tryParse("1.0.3-alpha8")
+                                Version.parse("1.0.3-alpha8")
                             } else {
-                                GradleVersion.tryParse("1.0.2")
+                                Version.parse("1.0.2")
                             }
                         } else null
                     }

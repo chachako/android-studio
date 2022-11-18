@@ -16,6 +16,7 @@
 
 package com.android.ide.common.repository
 
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.resources.BaseTestCase
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
@@ -228,12 +229,12 @@ class GoogleMavenRepositoryTest : BaseTestCase() {
             GradleCoordinate.parseCoordinateString("com.android.support:support-fragment:25.3.1"),
             GradleCoordinate.parseCoordinateString("com.android.support:recyclerview-v7:[25.3.1.4.5,25.4.0)"),
             GradleCoordinate.parseCoordinateString("androidx.recyclerview:recyclerview:2.0.0"))
-        assertThat(dependencies[3].versionRange?.min).isEqualTo(GradleVersion.parse("25.3.1"))
-        assertThat(dependencies[3].versionRange?.max).isEqualTo(GradleVersion.parse("25.3.2"))
-        assertThat(dependencies[4].versionRange?.min).isEqualTo(GradleVersion.parse("25.3.1.4.5"))
-        assertThat(dependencies[4].versionRange?.max).isEqualTo(GradleVersion.parse("25.4.0"))
-        assertThat(dependencies[5].versionRange?.min).isEqualTo(GradleVersion.parse("2.0.0"))
-        assertThat(dependencies[5].versionRange?.max).isEqualTo(GradleVersion.parse("3.0.0"))
+        assertThat(dependencies[3].versionRange?.min).isEqualTo(Version.parse("25.3.1"))
+        assertThat(dependencies[3].versionRange?.max).isEqualTo(Version.prefixInfimum("25.3.2"))
+        assertThat(dependencies[4].versionRange?.min).isEqualTo(Version.parse("25.3.1.4.5"))
+        assertThat(dependencies[4].versionRange?.max).isEqualTo(Version.prefixInfimum("25.4.0"))
+        assertThat(dependencies[5].versionRange?.min).isEqualTo(Version.parse("2.0.0"))
+        assertThat(dependencies[5].versionRange?.max).isEqualTo(Version.prefixInfimum("3"))
     }
 
     @Test
@@ -268,7 +269,7 @@ class GoogleMavenRepositoryTest : BaseTestCase() {
 
         assertEquals(setOf("foo.bar", "foo.bar.baz"), repo.getGroups())
         assertEquals(setOf("my-artifact", "another-artifact"), repo.getArtifacts("foo.bar"))
-        assertEquals(setOf(GradleVersion.parse("2.5.0"), GradleVersion.parse("2.6.0-rc1")), repo.getVersions("foo.bar", "another-artifact"))
+        assertEquals(setOf(Version.parse("2.5.0"), Version.parse("2.6.0-rc1")), repo.getVersions("foo.bar", "another-artifact"))
     }
 
     @Test
