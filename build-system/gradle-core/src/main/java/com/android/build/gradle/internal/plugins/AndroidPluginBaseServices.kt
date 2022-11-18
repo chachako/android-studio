@@ -195,7 +195,7 @@ abstract class AndroidPluginBaseServices(
 
     protected open fun checkMinJvmVersion() {
         val current: JavaVersion = JavaVersion.current()
-        val minRequired: JavaVersion = JavaVersion.VERSION_11
+        val minRequired: JavaVersion = JavaVersion.VERSION_17
         if (!current.isCompatibleWith(minRequired)) {
             syncIssueReporter.reportError(
                 Type.AGP_USED_JAVA_VERSION_TOO_LOW,

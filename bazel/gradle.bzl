@@ -98,7 +98,7 @@ def gradle_build(
         max_workers = 0,
         gradle_properties = {},
         tags = [],
-        java_version = 11,
+        java_version = 17,
         **kwargs):
     output_file_destinations = []
     output_file_sources = []
@@ -203,7 +203,7 @@ def gradle_test(
         name = None,
         build_file = None,
         gradle_version = None,
-        java_version = 11,
+        java_version = 17,
         repos = [],
         repo_zips = [],
         test_output_dir = None,
