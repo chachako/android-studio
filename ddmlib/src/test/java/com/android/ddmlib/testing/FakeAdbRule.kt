@@ -162,7 +162,7 @@ class FakeAdbRule : ExternalResource() {
     DdmPreferences.enableJdwpProxyService(isJdwpProxyEnabledDefault)
     if (closeFakeAdbServerDuringCleanUp) {
       fakeAdbServer.close()
-      if (fakeAdbServer.awaitServerTermination(30, TimeUnit.SECONDS) == false) {
+      if (!fakeAdbServer.awaitServerTermination(30, TimeUnit.SECONDS)) {
         error("The adbServer didn't terminate in 30 seconds")
       }
     }
@@ -188,7 +188,7 @@ class FakeEmulatorConsole(
     private val _avdPath: String
 ) : EmulatorConsole() {
 
-    override fun getAvdName(): String? {
+    override fun getAvdName(): String {
         return _avdName
     }
 
