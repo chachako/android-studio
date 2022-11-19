@@ -26,6 +26,7 @@ import org.objectweb.asm.ClassReader.SKIP_DEBUG
 import org.objectweb.asm.ClassReader.SKIP_FRAMES
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.ASM9
 import org.objectweb.asm.Type
 import java.io.File
@@ -178,7 +179,19 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
             descriptor: String,
             isInterface: Boolean
         ) {
-            checkMethod(owner, name, descriptor)
+            if (opcode == Opcodes.INVOKEVIRTUAL &&
+                owner == "org/jetbrains/uast/kotlin/KotlinUClass" &&
+                name == "getKtClass"
+            ) {
+                // See https://issuetracker.google.com/237567009
+                // This API is available via reflection, but not valid.
+                // This will trigger in androidx.fragment:fragment from version 1.4.0-alpha01 until 1.5.0 (inclusive).
+                apiCount++
+                incompatibleReference = "$owner#$name$descriptor"
+                incompatibleReferencer = currentClassFile
+            } else {
+                checkMethod(owner, name, descriptor)
+            }
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
         }
 

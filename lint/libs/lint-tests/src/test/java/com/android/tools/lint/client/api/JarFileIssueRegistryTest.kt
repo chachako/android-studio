@@ -470,7 +470,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                     import java.util.EnumSet
 
                     class MyIssueRegistry : IssueRegistry() {
-                        override val issues: List<Issue> = emptyList()
+                        override val issues: List<Issue> = listOf(issue)
                         override val api: Int = 10000
                         override val minApi: Int = 7
                         override val vendor: Vendor = Vendor(
@@ -478,39 +478,81 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                             contact = "/dev/null"
                         )
                     }
+
+                    class MyDetector : Detector()
+                    private val issue =
+                        Issue.create(id = "_TestIssueId", briefDescription = "Desc", explanation = "Desc", implementation = Implementation(
+                              MyDetector::class.java,
+                              Scope.JAVA_FILE_SCOPE
+                            )
+                        )
                     """
                 ).indented(),
-                0x4f058bc1,
+                0x402ebf07,
                 """
-                    test/pkg/MyIssueRegistry.class:
-                    H4sIAAAAAAAAAJ1UW08bRxT+Zn1bb0xYHELAhMYkbWKckDX0HhNSAkm7qqEV
-                    pFYrnhZ76o693kU7Y1f0iV/RH1D1sQ+tVJSqlSqUx/yoqmfXSwEDEunDzplz
-                    +c75Zs6cff3Pn38DWITNMKm4VNZup2Wt79lS9vgmbwmpgr0MGIPV8LuW4zUD
-                    XzQt5fuutFzhKavhCk7C2RXWECjBkBahSTKYtbbTd6yeEq5VI3+V4fGQaal2
-                    QYUmV7yh/OC4RnWZ8HdqftCy2lztBI7wJCE9XzlK+LTf8NVGz3UpKtviyo5J
-                    5EtzZ2k8OWN8MyI5pJDOQkOOIam+E1SnULvoJqlegsAMjO47TdRWQiVRmrNz
-                    MDEWphknR1d4kSMkvx7tc5gYuCfJ3ede0w8YyhcRPdGTehQbX0Q9Bj6gM18a
-                    mkMB02Hpt6j0kvCEWo4o13MoYtZAErcZih1fEZ4eievSHUVNWD3ef64yeJs4
-                    8O6u2gvvOIe7MAy8g3sMpctSyWCOuK8MIotf7HKvuOX3ggYvfhn4bSr1qFgj
-                    YPEr4lh8QS2QOu5TVWpc3/LoPeiYZ/ihNOi363gta0sFwmtV/5/FrsWnbve7
-                    FhXmgee41hr/1um5apWOrYJe+F7WnaDDg+rgxiwDZVQYxo7A61w5TUc51COt
-                    20/QNLJwSYaLRradyIZwoYliHTI1Fxh+PtwvGdqkNvh0+kydZIJkMbaljnyT
-                    h/uLWoU9Tb36Ka2Z2ua4mSholeTXr35cI4tuHO4XknrKTG8WzExBzyfzWiVb
-                    0cmdPHYb5hXC5c7iRgg3bl4lx+hphGmOhVwXGRYu8dqG5wQM999gEGm6h2bt
-                    YUdR77dEy3NUL+AM05s9T4kut72+kGLH5SvHfwya3VW/SUGj9IL4Rq+7w4MX
-                    DsVQ3prfcNy6E4hQj43G4OE9F6EyFSeun0mLBZqbZNhN5MP/BGlPw7Yig1WS
-                    aTqkTjIfDn8kJ2JJI0e+kzEpklkY9A7WSLNIY6G1/DtGfo1SPouDQcmf05ob
-                    BOAqRkkOyl45lZLOhmu0Die8/stQQv2chAw3zgVPDYOz54JvYoaihsG3ho9i
-                    nAM+fQT6B8UsvqdSYdx8+SXulP9A6QAj5bF75gGul83MAabKf6H8Tf4BY/mH
-                    Zpq9xMIBbv32X8G7BB8kTlO7MnRXOt1PFpNEYoa0WUQ/rROE5mNCGj6N1hV8
-                    RrJNvkUi++42Ejbes/G+jQ/w4ZH2kY2P8Yi2qG6DSSzh8TbyEqMSyxKzEqbE
-                    Exlarkmkov0nElkJQ2JC4oZEQWJa4qbEzL/b/KBivgcAAA==
-                    """,
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJ2KM3AZcylmJyfq5eYl1KUn5miV5Kfn1Os
+                l5OZV6KXnJOZCqQSCzKF+JzB7PjiktKkYu8SLlkujpLU4hK9gux0IUHfSs/i
+                4tLUoNT0zOKSokrvEiUGLQYAcc+hwWwAAAA=
+                """,
                 """
-                    META-INF/main.kotlin_module:
-                    H4sIAAAAAAAAAGNgYGBmYGBgBGIWIGYCYgYuYy7F5PxcvcS8lKL8zBS9kvz8
-                    nGK9nMy8Er3knMxUIJVYkCnE5wxmxxeXlCYVe5coMWgxAAANsEImTQAAAA==
-                    """
+                test/pkg/MyDetector.class:
+                H4sIAAAAAAAA/5VRy04CMRQ9HWDQEeWhKL72agwF405j4iMmJIMLNWxYFabB
+                BpiSaTGy41v8A1cmLgxx6UcZ74wkbtzYpCf3nHt7X/38ensHcIwdhlUrjeWj
+                fo83J1fSyq7VURaM4bCrh1yEQaRVwK3WA8MHKrQ8mAdxMVL890WKwT1VobJn
+                DKm9/VYOGbge0sgypO2DMgxl/49aJwxFv68t5eZNaUUgrCDNGT6mqEUWA2Vg
+                fZKeVMxqZAV1ht3Z1POcipPc2bQymx45NXaR+Xh2nYITBx0xVP3/TEF1S81J
+                w5ixvJU9ZWw0qfYt9X+pA8mQ91Uob8bDjozuRWdASsnXXTFoiUjFfC56d3oc
+                deW1isnm7Ti0aihbyijynoehtsIqHRrU4dB64kPzxdsi3CDGEw5kDl6x8EKG
+                gwqhm4gFbBLmfgKwCC/xbyW4ju3kVxmWyJdrI9XAcgMrhMjHUGigiFIbzGAV
+                a+Q38AzKBu43siYapRICAAA=
+                """,
+                """
+                test/pkg/MyIssueRegistry.class:
+                H4sIAAAAAAAA/6VVW28bRRT+Zn1bu26yNikkTkPd1rS2m2ad9AZ1mpImFEzt
+                BCXFAuVpY0/NxOvdaGdsUR5QfgU/APHIA0hErUBCUR/5UYizXoekdiwoPOyc
+                OWfO/Xwz+8efv/4O4DY2GKYVl8rcb7fM2vOKlF2+xVtCKu95DIzBbLgd03Ka
+                niuapnJdW5q2cJTZsAUnYu0Lc8goxBBdFo5QKwyhfKGeRATRBMKIMWTGxXqi
+                YogzpKxGg0uZa3HVP87tM9zMF6pjkmhyxRvK9U7SKCdxDskEEjjPkG27ivSo
+                BNsmPeE60lw72fsxJylZmzLYfMaQy1f3rJ5l2pbTMjd390itXAhEXSVss0p6
+                5D+FdAIG3iJL4YeUDMao1gW8HYeGd6gHlBwDqyQxg4wvmyXLjnBW90USc4Ho
+                XYb8Pze6zp2m68WQZZhfDTSzm/vcyW67Xa/Bs595rp/0/WyVDLOf0wiyT6nf
+                UscVhjh1q2c6XdvWkWP45nSx28oTTqv83ySV6qDNe72OSYG551i2uc6fWV1b
+                rVGfldf1h1SzvDb3ygEgriVwGdepEb1+TQzFcTMeqZ+aW0DR79oNhrD6StAA
+                MtVxwCpT5cdoIsV0fmSiDA9HhMtvgLgV8nC16notc4+rXc8ShDLLcVxlBYjb
+                cNUGdZ20opTIqg8GuhaVIK9aHwfBvj5oxfx4wI82g+HB/8w9dTy/GldW01IW
+                ybROL0TvA/MXurasTaKvhc+VaNdcZPjh6CCf0Ka14NPpM3SiIaLZgSxyfDZ9
+                dLCkldijyKvvo5qhbU0ZoYxWCn/x6rt1kuiJo4NMWI8Y0a2MEcvo6XBaK8VL
+                Oh2HT44TxjmyS47anSe7KWOCDiZftzCMlJ/rEsPiv2jnMGjAcOMNGknIGgLe
+                QlvRWLdFy7FU1+MMs1tdR4kOrzg9IcWuzVdPQEJAXnObpDRJV5dvdDu73Htq
+                kQ75rboNy65bnvD5gTAR3PjHwmdmBo7rI26xSLckTFMLI+2/SMR9TJyG9/EJ
+                0SgVuUQ07b9MfTo3oHTB6Oy0ToRopM9ViPsWcdoRGoovoBdfYuIlpg4xXUxd
+                Nw5xsWjEDnGp+Bsuf5m+ylj6PSPKXiB/iPmf+9E/pbVIT7TvnX4LmIBO2cUx
+                S7Isvd9XiOaQxDWiJuk8Ic1kEA83seADk+QlhPq5mMT5Z5HiL5j+6e8A0b4w
+                dso4MjAOWrD4WnkMt+hvyEYcXvxxyKF+hkOGO2caXxo2jp9pfBf3SGvYeH64
+                lMQZxqdL0FDtr49RI2qR9APSu7+DUAXlCpZpxQN/WangIT7cAZNYxaMdpCUW
+                JNYkohIzEusStyRuS1zo7z+SMCVKEnMSdyQKEkWJuxL3/gKjcYhbRAgAAA==
+                """,
+                """
+                test/pkg/MyIssueRegistryKt.class:
+                H4sIAAAAAAAA/51UW08TQRT+TlvoxQqlKkJFvFVtVVxA8FY0wQJxtaKxplF5
+                INPt2Axsd5vdKbFvxFf/hb9A8UGjiSE8+mv8BcaztRGiPhRmkzlnzn7n23PZ
+                Od9/fvkGYAZ3CBktfW001+vGo7bp+y35VNaVr732Qx0FEVJrYkMYtnDqxuPq
+                mrTYGiYMCcuSvp+tS91xyjYJE7l8yXIbhnBqnqtqhnZd2zds5WijJjV7up4h
+                msroOBQIfSpQCJf34ZVEFLE4QogTYnMWw5S+Swjn8hVCvmeeKA4T4kW30RSO
+                ch3CbO8xZP+4cTSDSMUxgCFCcvUZF7KDMGsxHCFEFqRvxXCMMN0TeaNpy4Z0
+                tNDMHcVxwpE9vVnoYqMY7THTsuU2OdMThMEH85X51SWztLhaLj5+ssjMpU5b
+                W1rZxqLTapSl5mxOYjyOMZwi9M91K3sxV9r9AYq28P3Cf1zzlSTO4GwCIzhH
+                uHaAWkZxnjBgeVJoma3JV6Jla6K3uQP1ZU/IZe0pp96bZf9dOihLkbOsu167
+                YPYEL8sN6SndLrzc8717DJbC+V879piKrm0zURCrWfr7Khf2c2GTuIhcAheQ
+                J5wruV7dWJO66gnl+MzguL8r4hvLrl5u2TZf8KHSuquZzngktagJLdgWamyE
+                efRQsEUJtB4oIba/VoE2yVptijC+vdmf2N5MhEZCZwdS25uZ0CQ933kT2XnX
+                H2J7gJompP8aWVfXNeHE05ajVUOazobyVdWW87vB8aUsujWeOYMl5cjlVqMq
+                vWeCMYRE2W15llxSwWG0y1H5hwFTPHwiQQbIBLOI5U0+9bO8HGSSGkVf53SL
+                T2MsgxXZQuJ9x+d2FxvoMRxCsou8z5MkWLktpNNH08Pp4a8YeZHObOH0J2SJ
+                wvwQDQ3+oM+49BGJD3/YBhDULc3+R3lPc3SFIA7cwBzLKUZd4YgmVhA2cdWE
+                wTsmTX4xbeIaZlZAPmZxfQUhH1EfsV8QdIFtHAYAAA==
+                """
             ),
             bytecode(
                 "lint.jar",
@@ -575,7 +617,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
 
                 Therefore, this lint check library is not included
                 in analysis. This affects the following lint checks:
-
+                _TestIssueId
 
                 To use this lint check, upgrade to a more recent version
                 of lint.
@@ -583,6 +625,335 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 Version of Lint API this lint check is using is 10000.
                 The Lint API version currently running is $CURRENT_API (${describeApi(CURRENT_API)}). [ObsoleteLintCustomCheck]
                 0 errors, 1 warnings"""
+            )
+    }
+
+    fun testFragment150Broken() {
+        // Tests what happens when we have a lint check that (a) has the
+        // same API level as the current API level, but (b) contains a
+        // validation error, and (c) that is the known fragment library
+        // error where we suggest a specific solution.
+
+        val root = Files.createTempDirectory("lintjar-current").toFile()
+
+        lint().files(
+            jar(
+                "lint.jar",
+                source(
+                    "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
+                    "androidx.fragment.lint.FragmentIssueRegistry"
+                ),
+                bytes(
+                    "androidx/fragment/lint/FragmentIssueRegistry.class",
+                    byteArrayOf(
+                        /*
+                        This class file was created using the following sources, and
+                        then afterwards identifying the byte which sets the API level
+                        and then dynamically referencing CURRENT_API instead such that
+                        this test continues to use the same API level whenever that version
+                        changes.
+                            *lintApiStubs,
+                            kotlin(
+                                """
+                                // Just a stub
+                                package org.jetbrains.uast
+                                open class UClass
+                                """
+                            ).indented(),
+                            kotlin(
+                                """
+                                // Just a stub
+                                package org.jetbrains.uast.kotlin
+                                import org.jetbrains.kotlin.psi.KtClassOrObject
+                                import org.jetbrains.uast.UClass
+                                class KotlinUClass : UClass() {
+                                    val ktClass: KtClassOrObject
+                                        get() = TODO()
+                                }
+                                """
+                            ).indented(),
+                            kotlin(
+                                """
+                                // Just a stub
+                                package org.jetbrains.kotlin.psi
+                                class KtClassOrObject
+                                """
+                            ).indented(),
+                            bytecode(
+                                "lint.jar",
+                                source(
+                                    "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
+                                    "androidx.fragment.lint.FragmentIssueRegistry"
+                                ),
+                                0x6be562c7
+                            ),
+                            bytecode(
+                                "lint.jar",
+                                kotlin(
+                                    """
+                                    package androidx.fragment.lint
+                                    import com.android.tools.lint.client.api.*
+                                    import com.android.tools.lint.detector.api.*
+                                    import java.util.EnumSet
+                                    import org.jetbrains.uast.kotlin.KotlinUClass
+                                    import org.jetbrains.uast.UClass
+
+                                    class FragmentIssueRegistry : IssueRegistry() {
+                                        override val issues: List<Issue> = emptyList()
+                                        //override val api: Int = $CURRENT_API
+                                        override val api: Int = 0x12345678
+                                        override val minApi: Int = 10
+                                        override val vendor: Vendor = Vendor(
+                                            vendorName = "Android Open Source Project: Lint Unit Tests",
+                                            contact = "/dev/null"
+                                        )
+                                        fun visitClass(node: UClass) {
+                                            val ktClass = (node as? KotlinUClass)?.ktClass
+                                        }
+                                    }
+                                    """
+                                ).indented(),
+
+                         */
+                        -54, -2, -70, -66, 0, 0, 0, 52, 0, 95, 1, 0, 44, 97,
+                        110, 100, 114, 111, 105, 100, 120, 47, 102, 114, 97, 103, 109, 101,
+                        110, 116, 47, 108, 105, 110, 116, 47, 70, 114, 97, 103, 109, 101,
+                        110, 116, 73, 115, 115, 117, 101, 82, 101, 103, 105, 115, 116, 114,
+                        121, 7, 0, 1, 1, 0, 47, 99, 111, 109, 47, 97, 110, 100,
+                        114, 111, 105, 100, 47, 116, 111, 111, 108, 115, 47, 108, 105, 110,
+                        116, 47, 99, 108, 105, 101, 110, 116, 47, 97, 112, 105, 47, 73,
+                        115, 115, 117, 101, 82, 101, 103, 105, 115, 116, 114, 121, 7, 0,
+                        3, 1, 0, 6, 60, 105, 110, 105, 116, 62, 1, 0, 3, 40,
+                        41, 86, 12, 0, 5, 0, 6, 10, 0, 4, 0, 7, 1, 0,
+                        32, 107, 111, 116, 108, 105, 110, 47, 99, 111, 108, 108, 101, 99,
+                        116, 105, 111, 110, 115, 47, 67, 111, 108, 108, 101, 99, 116, 105,
+                        111, 110, 115, 75, 116, 7, 0, 9, 1, 0, 9, 101, 109, 112,
+                        116, 121, 76, 105, 115, 116, 1, 0, 18, 40, 41, 76, 106, 97,
+                        118, 97, 47, 117, 116, 105, 108, 47, 76, 105, 115, 116, 59, 12,
+                        0, 11, 0, 12, 10, 0, 10, 0, 13, 1, 0, 6, 105, 115,
+                        115, 117, 101, 115, 1, 0, 16, 76, 106, 97, 118, 97, 47, 117,
+                        116, 105, 108, 47, 76, 105, 115, 116, 59, 12, 0, 15, 0, 16,
+                        9, 0, 2, 0, 17, 3, 0, 0, 0, CURRENT_API.toByte(), 1, 0, 3, 97,
+                        112, 105, 1, 0, 1, 73, 12, 0, 20, 0, 21, 9, 0, 2,
+                        0, 22, 1, 0, 6, 109, 105, 110, 65, 112, 105, 12, 0, 24,
+                        0, 21, 9, 0, 2, 0, 25, 1, 0, 40, 99, 111, 109, 47,
+                        97, 110, 100, 114, 111, 105, 100, 47, 116, 111, 111, 108, 115, 47,
+                        108, 105, 110, 116, 47, 99, 108, 105, 101, 110, 116, 47, 97, 112,
+                        105, 47, 86, 101, 110, 100, 111, 114, 7, 0, 27, 1, 0, 44,
+                        65, 110, 100, 114, 111, 105, 100, 32, 79, 112, 101, 110, 32, 83,
+                        111, 117, 114, 99, 101, 32, 80, 114, 111, 106, 101, 99, 116, 58,
+                        32, 76, 105, 110, 116, 32, 85, 110, 105, 116, 32, 84, 101, 115,
+                        116, 115, 8, 0, 29, 1, 0, 9, 47, 100, 101, 118, 47, 110,
+                        117, 108, 108, 8, 0, 31, 1, 0, 122, 40, 76, 106, 97, 118,
+                        97, 47, 108, 97, 110, 103, 47, 83, 116, 114, 105, 110, 103, 59,
+                        76, 106, 97, 118, 97, 47, 108, 97, 110, 103, 47, 83, 116, 114,
+                        105, 110, 103, 59, 76, 106, 97, 118, 97, 47, 108, 97, 110, 103,
+                        47, 83, 116, 114, 105, 110, 103, 59, 76, 106, 97, 118, 97, 47,
+                        108, 97, 110, 103, 47, 83, 116, 114, 105, 110, 103, 59, 73, 76,
+                        107, 111, 116, 108, 105, 110, 47, 106, 118, 109, 47, 105, 110, 116,
+                        101, 114, 110, 97, 108, 47, 68, 101, 102, 97, 117, 108, 116, 67,
+                        111, 110, 115, 116, 114, 117, 99, 116, 111, 114, 77, 97, 114, 107,
+                        101, 114, 59, 41, 86, 12, 0, 5, 0, 33, 10, 0, 28, 0,
+                        34, 1, 0, 6, 118, 101, 110, 100, 111, 114, 1, 0, 42, 76,
+                        99, 111, 109, 47, 97, 110, 100, 114, 111, 105, 100, 47, 116, 111,
+                        111, 108, 115, 47, 108, 105, 110, 116, 47, 99, 108, 105, 101, 110,
+                        116, 47, 97, 112, 105, 47, 86, 101, 110, 100, 111, 114, 59, 12,
+                        0, 36, 0, 37, 9, 0, 2, 0, 38, 1, 0, 4, 116, 104,
+                        105, 115, 1, 0, 46, 76, 97, 110, 100, 114, 111, 105, 100, 120,
+                        47, 102, 114, 97, 103, 109, 101, 110, 116, 47, 108, 105, 110, 116,
+                        47, 70, 114, 97, 103, 109, 101, 110, 116, 73, 115, 115, 117, 101,
+                        82, 101, 103, 105, 115, 116, 114, 121, 59, 1, 0, 9, 103, 101,
+                        116, 73, 115, 115, 117, 101, 115, 1, 0, 63, 40, 41, 76, 106,
+                        97, 118, 97, 47, 117, 116, 105, 108, 47, 76, 105, 115, 116, 60,
+                        76, 99, 111, 109, 47, 97, 110, 100, 114, 111, 105, 100, 47, 116,
+                        111, 111, 108, 115, 47, 108, 105, 110, 116, 47, 100, 101, 116, 101,
+                        99, 116, 111, 114, 47, 97, 112, 105, 47, 73, 115, 115, 117, 101,
+                        59, 62, 59, 1, 0, 35, 76, 111, 114, 103, 47, 106, 101, 116,
+                        98, 114, 97, 105, 110, 115, 47, 97, 110, 110, 111, 116, 97, 116,
+                        105, 111, 110, 115, 47, 78, 111, 116, 78, 117, 108, 108, 59, 1,
+                        0, 6, 103, 101, 116, 65, 112, 105, 1, 0, 3, 40, 41, 73,
+                        1, 0, 9, 103, 101, 116, 77, 105, 110, 65, 112, 105, 1, 0,
+                        9, 103, 101, 116, 86, 101, 110, 100, 111, 114, 1, 0, 44, 40,
+                        41, 76, 99, 111, 109, 47, 97, 110, 100, 114, 111, 105, 100, 47,
+                        116, 111, 111, 108, 115, 47, 108, 105, 110, 116, 47, 99, 108, 105,
+                        101, 110, 116, 47, 97, 112, 105, 47, 86, 101, 110, 100, 111, 114,
+                        59, 1, 0, 10, 118, 105, 115, 105, 116, 67, 108, 97, 115, 115,
+                        1, 0, 30, 40, 76, 111, 114, 103, 47, 106, 101, 116, 98, 114,
+                        97, 105, 110, 115, 47, 117, 97, 115, 116, 47, 85, 67, 108, 97,
+                        115, 115, 59, 41, 86, 1, 0, 4, 110, 111, 100, 101, 8, 0,
+                        52, 1, 0, 30, 107, 111, 116, 108, 105, 110, 47, 106, 118, 109,
+                        47, 105, 110, 116, 101, 114, 110, 97, 108, 47, 73, 110, 116, 114,
+                        105, 110, 115, 105, 99, 115, 7, 0, 54, 1, 0, 21, 99, 104,
+                        101, 99, 107, 78, 111, 116, 78, 117, 108, 108, 80, 97, 114, 97,
+                        109, 101, 116, 101, 114, 1, 0, 39, 40, 76, 106, 97, 118, 97,
+                        47, 108, 97, 110, 103, 47, 79, 98, 106, 101, 99, 116, 59, 76,
+                        106, 97, 118, 97, 47, 108, 97, 110, 103, 47, 83, 116, 114, 105,
+                        110, 103, 59, 41, 86, 12, 0, 56, 0, 57, 10, 0, 55, 0,
+                        58, 1, 0, 38, 111, 114, 103, 47, 106, 101, 116, 98, 114, 97,
+                        105, 110, 115, 47, 117, 97, 115, 116, 47, 107, 111, 116, 108, 105,
+                        110, 47, 75, 111, 116, 108, 105, 110, 85, 67, 108, 97, 115, 115,
+                        7, 0, 60, 1, 0, 10, 103, 101, 116, 75, 116, 67, 108, 97,
+                        115, 115, 1, 0, 44, 40, 41, 76, 111, 114, 103, 47, 106, 101,
+                        116, 98, 114, 97, 105, 110, 115, 47, 107, 111, 116, 108, 105, 110,
+                        47, 112, 115, 105, 47, 75, 116, 67, 108, 97, 115, 115, 79, 114,
+                        79, 98, 106, 101, 99, 116, 59, 12, 0, 62, 0, 63, 10, 0,
+                        61, 0, 64, 1, 0, 7, 107, 116, 67, 108, 97, 115, 115, 1,
+                        0, 42, 76, 111, 114, 103, 47, 106, 101, 116, 98, 114, 97, 105,
+                        110, 115, 47, 107, 111, 116, 108, 105, 110, 47, 112, 115, 105, 47,
+                        75, 116, 67, 108, 97, 115, 115, 79, 114, 79, 98, 106, 101, 99,
+                        116, 59, 1, 0, 27, 76, 111, 114, 103, 47, 106, 101, 116, 98,
+                        114, 97, 105, 110, 115, 47, 117, 97, 115, 116, 47, 85, 67, 108,
+                        97, 115, 115, 59, 1, 0, 40, 111, 114, 103, 47, 106, 101, 116,
+                        98, 114, 97, 105, 110, 115, 47, 107, 111, 116, 108, 105, 110, 47,
+                        112, 115, 105, 47, 75, 116, 67, 108, 97, 115, 115, 79, 114, 79,
+                        98, 106, 101, 99, 116, 7, 0, 69, 1, 0, 61, 76, 106, 97,
+                        118, 97, 47, 117, 116, 105, 108, 47, 76, 105, 115, 116, 60, 76,
+                        99, 111, 109, 47, 97, 110, 100, 114, 111, 105, 100, 47, 116, 111,
+                        111, 108, 115, 47, 108, 105, 110, 116, 47, 100, 101, 116, 101, 99,
+                        116, 111, 114, 47, 97, 112, 105, 47, 73, 115, 115, 117, 101, 59,
+                        62, 59, 1, 0, 17, 76, 107, 111, 116, 108, 105, 110, 47, 77,
+                        101, 116, 97, 100, 97, 116, 97, 59, 1, 0, 2, 109, 118, 3,
+                        0, 0, 0, 1, 3, 0, 0, 0, 7, 1, 0, 1, 107, 1,
+                        0, 2, 120, 105, 3, 0, 0, 0, 48, 1, 0, 2, 100, 49,
+                        1, 0, -65, -64, -128, 50, 10, 2, 24, 2, 10, 2, 24, 2,
+                        10, 2, 8, 2, 10, 2, 16, 8, 10, 2, 8, 3, 10, 2,
+                        16, 32, 10, 2, 24, 2, 10, 2, 8, 5, 10, 2, 24, 2,
+                        10, 2, 8, 3, 10, 2, 16, 2, 10, -64, -128, 10, 2, 24,
+                        2, 24, -64, -128, 50, 2, 48, 1, 66, 5, -62, -94, 6, 2,
+                        16, 2, 74, 14, 16, 18, 26, 2, 48, 19, 50, 6, 16, 20,
+                        26, 2, 48, 21, 82, 20, 16, 3, 26, 2, 48, 4, 88, -62,
+                        -106, 68, -62, -94, 6, 8, 10, -64, -128, 26, 4, 8, 5, 16,
+                        6, 82, 26, 16, 7, 26, 8, 18, 4, 18, 2, 48, 9, 48,
+                        8, 88, -62, -106, 4, -62, -94, 6, 8, 10, -64, -128, 26, 4,
+                        8, 10, 16, 11, 82, 20, 16, 12, 26, 2, 48, 4, 88, -62,
+                        -106, 68, -62, -94, 6, 8, 10, -64, -128, 26, 4, 8, 13, 16,
+                        6, 82, 20, 16, 14, 26, 2, 48, 15, 88, -62, -106, 4, -62,
+                        -94, 6, 8, 10, -64, -128, 26, 4, 8, 16, 16, 17, 1, 0,
+                        2, 100, 50, 1, 0, 49, 76, 99, 111, 109, 47, 97, 110, 100,
+                        114, 111, 105, 100, 47, 116, 111, 111, 108, 115, 47, 108, 105, 110,
+                        116, 47, 99, 108, 105, 101, 110, 116, 47, 97, 112, 105, 47, 73,
+                        115, 115, 117, 101, 82, 101, 103, 105, 115, 116, 114, 121, 59, 1,
+                        0, 0, 1, 0, 43, 76, 99, 111, 109, 47, 97, 110, 100, 114,
+                        111, 105, 100, 47, 116, 111, 111, 108, 115, 47, 108, 105, 110, 116,
+                        47, 100, 101, 116, 101, 99, 116, 111, 114, 47, 97, 112, 105, 47,
+                        73, 115, 115, 117, 101, 59, 1, 0, 24, 70, 114, 97, 103, 109,
+                        101, 110, 116, 73, 115, 115, 117, 101, 82, 101, 103, 105, 115, 116,
+                        114, 121, 46, 107, 116, 1, 0, 9, 83, 105, 103, 110, 97, 116,
+                        117, 114, 101, 1, 0, 27, 82, 117, 110, 116, 105, 109, 101, 73,
+                        110, 118, 105, 115, 105, 98, 108, 101, 65, 110, 110, 111, 116, 97,
+                        116, 105, 111, 110, 115, 1, 0, 4, 67, 111, 100, 101, 1, 0,
+                        15, 76, 105, 110, 101, 78, 117, 109, 98, 101, 114, 84, 97, 98,
+                        108, 101, 1, 0, 18, 76, 111, 99, 97, 108, 86, 97, 114, 105,
+                        97, 98, 108, 101, 84, 97, 98, 108, 101, 1, 0, 13, 83, 116,
+                        97, 99, 107, 77, 97, 112, 84, 97, 98, 108, 101, 1, 0, 36,
+                        82, 117, 110, 116, 105, 109, 101, 73, 110, 118, 105, 115, 105, 98,
+                        108, 101, 80, 97, 114, 97, 109, 101, 116, 101, 114, 65, 110, 110,
+                        111, 116, 97, 116, 105, 111, 110, 115, 1, 0, 10, 83, 111, 117,
+                        114, 99, 101, 70, 105, 108, 101, 1, 0, 25, 82, 117, 110, 116,
+                        105, 109, 101, 86, 105, 115, 105, 98, 108, 101, 65, 110, 110, 111,
+                        116, 97, 116, 105, 111, 110, 115, 0, 49, 0, 2, 0, 4, 0,
+                        0, 0, 4, 0, 18, 0, 15, 0, 16, 0, 2, 0, 86, 0,
+                        0, 0, 2, 0, 71, 0, 87, 0, 0, 0, 6, 0, 1, 0,
+                        44, 0, 0, 0, 18, 0, 20, 0, 21, 0, 0, 0, 18, 0,
+                        24, 0, 21, 0, 0, 0, 18, 0, 36, 0, 37, 0, 1, 0,
+                        87, 0, 0, 0, 6, 0, 1, 0, 44, 0, 0, 0, 6, 0,
+                        1, 0, 5, 0, 6, 0, 1, 0, 88, 0, 0, 0, 122, 0,
+                        9, 0, 1, 0, 0, 0, 44, 42, -73, 0, 8, 42, -72, 0,
+                        14, -75, 0, 18, 42, 18, 19, -75, 0, 23, 42, 16, 10, -75,
+                        0, 26, 42, -69, 0, 28, 89, 18, 30, 1, 1, 18, 32, 16,
+                        6, 1, -73, 0, 35, -75, 0, 39, -79, 0, 0, 0, 2, 0,
+                        89, 0, 0, 0, 42, 0, 10, 0, 0, 0, 8, 0, 4, 0,
+                        9, 0, 11, 0, 11, 0, 17, 0, 12, 0, 23, 0, 13, 0,
+                        28, 0, 14, 0, 30, 0, 13, 0, 32, 0, 15, 0, 34, 0,
+                        13, 0, 43, 0, 8, 0, 90, 0, 0, 0, 12, 0, 1, 0,
+                        0, 0, 44, 0, 40, 0, 41, 0, 0, 0, 1, 0, 42, 0,
+                        12, 0, 3, 0, 88, 0, 0, 0, 47, 0, 1, 0, 1, 0,
+                        0, 0, 5, 42, -76, 0, 18, -80, 0, 0, 0, 2, 0, 89,
+                        0, 0, 0, 6, 0, 1, 0, 0, 0, 9, 0, 90, 0, 0,
+                        0, 12, 0, 1, 0, 0, 0, 5, 0, 40, 0, 41, 0, 0,
+                        0, 86, 0, 0, 0, 2, 0, 43, 0, 87, 0, 0, 0, 6,
+                        0, 1, 0, 44, 0, 0, 0, 1, 0, 45, 0, 46, 0, 1,
+                        0, 88, 0, 0, 0, 47, 0, 1, 0, 1, 0, 0, 0, 5,
+                        42, -76, 0, 23, -84, 0, 0, 0, 2, 0, 89, 0, 0, 0,
+                        6, 0, 1, 0, 0, 0, 11, 0, 90, 0, 0, 0, 12, 0,
+                        1, 0, 0, 0, 5, 0, 40, 0, 41, 0, 0, 0, 1, 0,
+                        47, 0, 46, 0, 1, 0, 88, 0, 0, 0, 47, 0, 1, 0,
+                        1, 0, 0, 0, 5, 42, -76, 0, 26, -84, 0, 0, 0, 2,
+                        0, 89, 0, 0, 0, 6, 0, 1, 0, 0, 0, 12, 0, 90,
+                        0, 0, 0, 12, 0, 1, 0, 0, 0, 5, 0, 40, 0, 41,
+                        0, 0, 0, 1, 0, 48, 0, 49, 0, 2, 0, 88, 0, 0,
+                        0, 47, 0, 1, 0, 1, 0, 0, 0, 5, 42, -76, 0, 39,
+                        -80, 0, 0, 0, 2, 0, 89, 0, 0, 0, 6, 0, 1, 0,
+                        0, 0, 13, 0, 90, 0, 0, 0, 12, 0, 1, 0, 0, 0,
+                        5, 0, 40, 0, 41, 0, 0, 0, 87, 0, 0, 0, 6, 0,
+                        1, 0, 44, 0, 0, 0, 17, 0, 50, 0, 51, 0, 2, 0,
+                        88, 0, 0, 0, 122, 0, 2, 0, 3, 0, 0, 0, 35, 43,
+                        18, 53, -72, 0, 59, 43, -63, 0, 61, -103, 0, 10, 43, -64,
+                        0, 61, -89, 0, 4, 1, 89, -58, 0, 9, -74, 0, 65, -89,
+                        0, 5, 87, 1, 77, -79, 0, 0, 0, 3, 0, 91, 0, 0,
+                        0, 15, 0, 4, 20, 64, 7, 0, 61, 73, 7, 0, 61, 65,
+                        7, 0, 70, 0, 89, 0, 0, 0, 10, 0, 2, 0, 6, 0,
+                        18, 0, 34, 0, 19, 0, 90, 0, 0, 0, 32, 0, 3, 0,
+                        34, 0, 1, 0, 66, 0, 67, 0, 2, 0, 0, 0, 35, 0,
+                        40, 0, 41, 0, 0, 0, 0, 0, 35, 0, 52, 0, 68, 0,
+                        1, 0, 92, 0, 0, 0, 7, 1, 0, 1, 0, 44, 0, 0,
+                        0, 2, 0, 93, 0, 0, 0, 2, 0, 85, 0, 94, 0, 0,
+                        0, 109, 0, 1, 0, 72, 0, 5, 0, 73, 91, 0, 3, 73,
+                        0, 74, 73, 0, 75, 73, 0, 74, 0, 76, 73, 0, 74, 0,
+                        77, 73, 0, 78, 0, 79, 91, 0, 1, 115, 0, 80, 0, 81,
+                        91, 0, 22, 115, 0, 41, 115, 0, 82, 115, 0, 6, 115, 0,
+                        20, 115, 0, 83, 115, 0, 45, 115, 0, 46, 115, 0, 15, 115,
+                        0, 83, 115, 0, 84, 115, 0, 42, 115, 0, 12, 115, 0, 24,
+                        115, 0, 47, 115, 0, 36, 115, 0, 37, 115, 0, 48, 115, 0,
+                        49, 115, 0, 50, 115, 0, 83, 115, 0, 52, 115, 0, 68,
+                    )
+                )
+            )
+        ).testModes(TestMode.DEFAULT).createProjects(root)
+
+        val lintJar = File(root, "app/lint.jar")
+        assertTrue(lintJar.exists())
+
+        lint().files(
+            source( // instead of xml: not valid XML below
+                "res/values/strings.xml",
+                """
+                <?xml version="1.0" encoding="utf-8"?>
+                <resources/>
+                """
+            ).indented()
+        )
+            .clientFactory { createGlobalLintJarClient(lintJar, LintClient.CLIENT_GRADLE) }
+            .testModes(TestMode.DEFAULT)
+            .allowObsoleteLintChecks(false)
+            .issueIds("MyIssueId")
+            .run()
+            // Note how the "This affects the following lint checks"
+            // list is empty below; that's because we're passing in
+            // an issue registry which doesn't actually have any valid
+            // issues for it. This won't be the case in a real issue registry.
+            // Actually listing the issue id's is tested in a different
+            // test below (search for "This affects".)
+            .expectContains(
+                """
+                Lint found an issue registry (androidx.fragment.lint.FragmentIssueRegistry)
+                which contains some references to invalid API:
+                org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()
+                (Referenced from androidx/fragment/lint/FragmentIssueRegistry.class)
+
+                Therefore, this lint check library is not included
+                in analysis. This affects the following lint checks:
+
+
+                This is a known bug which is already fixed in
+                `androidx.fragment:fragment:1.5.1` and later; update
+                to that version. If you are not directly depending
+                on this library but picking it up via a transitive
+                dependency, explicitly add
+                implementation 'androidx.fragment:fragment:1.5.1'
+                (or later) to your build.gradle dependency block. [ObsoleteLintCustomCheck]
+                0 errors, 1 warnings
+                """
             )
     }
 
@@ -1009,8 +1380,8 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
     }
 }
 
-fun createGlobalLintJarClient(lintJar: File) =
-    object : com.android.tools.lint.checks.infrastructure.TestLintClient() {
+fun createGlobalLintJarClient(lintJar: File, clientName: String? = null) =
+    object : com.android.tools.lint.checks.infrastructure.TestLintClient(clientName ?: CLIENT_UNIT_TESTS) {
         override fun findGlobalRuleJars(driver: LintDriver?, warnDeprecated: Boolean): List<File> = listOf(lintJar)
         override fun findRuleJars(project: Project): List<File> = emptyList()
     }

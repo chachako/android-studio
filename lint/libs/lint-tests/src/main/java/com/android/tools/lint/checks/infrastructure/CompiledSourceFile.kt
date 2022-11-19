@@ -448,19 +448,19 @@ internal class CompiledSourceFile(
             }
 
             if (checksum != null) {
-                val expectedCheckSum = computeCheckSum(
+                val actualChecksum = computeCheckSum(
                     source.contents,
                     classFiles.sortedBy { it.targetRelativePath }.map {
                         (it as BinaryTestFile).binaryContents
                     }.toList()
                 )
                 // We only create integer checksums to keep the fingerprints short
-                if (checksum.toInt() != expectedCheckSum) {
+                if (checksum.toInt() != actualChecksum) {
                     fail(
                         "The checksum does not match for ${source.targetRelativePath};\n" +
                             "expected " +
-                            "0x${Integer.toHexString(expectedCheckSum)} but was " +
-                            "0x${Integer.toHexString(checksum.toInt())}.\n" +
+                            "0x${Integer.toHexString(checksum.toInt())} but was " +
+                            "0x${Integer.toHexString(actualChecksum)}.\n" +
                             "Has the source file been changed without updating the binaries?\n" +
                             "Don't just update the checksum -- delete the binary file arguments and " +
                             "re-run the test first!"
