@@ -16,5 +16,5 @@
 package pkg;
 
 fun LiveEditSimple() {
-  System.out.println("pk.LiveEditSimple.unchanged")
+  System.out.println("pk.LiveEditSimple.changed")
 }

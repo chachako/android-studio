@@ -61,6 +61,11 @@ swap_test(
 )
 
 swap_test(
+    name = "LiveEditBasicTest",
+    srcs = ["java/com/android/tools/deployer/LiveEditBasicTest.java"],
+)
+
+swap_test(
     name = "LiveEditVersionCheckTest",
     srcs = ["java/com/android/tools/deployer/LiveEditVersionCheckTest.java"],
 )

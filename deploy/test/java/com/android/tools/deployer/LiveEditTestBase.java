@@ -30,6 +30,8 @@ import org.junit.rules.TemporaryFolder;
 
 public class LiveEditTestBase extends AgentTestBase {
 
+    protected static final String ACTIVITY_CLASS = "app.LiveEditActivity";
+
     protected enum CompileClassLocation {
         JAVA_ORIGINAL_LOCATION("java.original.class.location"),
         JAVA_SWAPPED_LOCATION("java.swapped.class.location"),
