@@ -683,15 +683,15 @@ class LintResourceRepositoryTest {
             .testModes(TestMode.DEFAULT)
             .run().expectMatches(
                 Pattern.quote(
-                    "build/lint-resources-all.xml: Error: Failed to deserialize cached resource repository.\n" +
+                    "build/lint-resources-all.xml: Warning: Failed to deserialize cached resource repository.\n" +
                         "This is an internal lint error which typically means that lint is being passed a\n" +
                         "serialized file that was created with an older version of lint or with a different\n" +
                         "set of path variable names. Attempting to gracefully recover.\n" +
                         "The serialized content was:\n" +
                         "http://schemas.android.com/apk/res-auto;;＄TEST_ROOT/default/app/res/values/bools.xml,＄TEST_ROOT/default/app/res/xml-mcc/backup.xml,+bool:enable_wearable_location_service,0,V\"true\";enable_wearable_location_service,1,V\"false\";+string:location_process,2,V\"Location Process\";location_process,3,V\"Location Process (English)\";+xml:backup,4,F;backup,5,F;\n" +
                         "Stack: java.lang.IndexOutOfBoundsException: Index 2 out of bounds for length 2:Preconditions.outOfBounds(Preconditions.java:"
-                ) + ".*\\) \\[LintError]\n" +
-                    "1 errors, 0 warnings"
+                ) + ".*\\) \\[LintWarning]\n" +
+                    "0 errors, 1 warnings"
             )
     }
 

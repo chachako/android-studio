@@ -478,7 +478,7 @@ open class LintResourceRepository constructor(
                         sb.append("`:")
                         LintDriver.appendStackTraceSummary(e, sb)
                         LintClient.report(
-                            client = client, issue = IssueRegistry.LINT_ERROR, message = sb.toString(),
+                            client = client, issue = IssueRegistry.LINT_WARNING, message = sb.toString(),
                             file = serializedFile, project = project
                         )
                     }
