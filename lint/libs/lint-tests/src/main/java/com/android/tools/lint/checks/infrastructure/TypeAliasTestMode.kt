@@ -155,6 +155,14 @@ class TypeAliasTestMode : UastSourceTransformationTestMode(
                 if (typeText.isBlank() || type is PsiEllipsisType || type.hasTypeParameter()) {
                     return
                 }
+                if (typeText == "@Composable () -> Unit" ||
+                    typeText == "@Composable (() -> Unit)?" ||
+                    typeText == "(@Composable () -> Unit)?"
+                ) {
+                    // Common in Compose signatures; users don't  typically typealias these so
+                    // allow detectors to be sloppy
+                    return
+                }
                 val aliasName = getTypeAlias(typeText)
                 editMap[offset] = replace(start, end, aliasName)
             }

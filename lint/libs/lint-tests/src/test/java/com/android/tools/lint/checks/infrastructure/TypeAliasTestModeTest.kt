@@ -33,13 +33,13 @@ import org.junit.Test
 
 class TypeAliasTestModeTest {
     private fun alias(@Language("kotlin") source: String): String {
-        return alias(kotlin(source))
+        return alias(listOf(kotlin(source)))
     }
 
-    private fun alias(testFile: TestFile): String {
+    private fun alias(testFiles: List<TestFile>, filter: (JavaContext) -> Boolean = { true }): String {
         val sdkHome = TestUtils.getSdk().toFile()
-        var source = testFile.contents
-        TypeAliasTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
+        var source = testFiles[0].contents
+        TypeAliasTestMode().processTestFiles(testFiles, sdkHome, filter) { _, s -> source = s }
         return source
     }
 
@@ -464,6 +464,119 @@ class TypeAliasTestModeTest {
 
         val aliased = alias(kotlin)
         assertEquals(expected, aliased.trim())
+    }
+
+    @Test
+    fun test259130471() {
+        val files = listOf(
+            kotlin(
+                """
+                package test.pkg
+
+                class SomeNamedClass {
+                    fun someMethod() {
+                        val anonymous = ArgumentLiveData.create(object : Function<Any, LiveData<Any>> {
+                            override fun apply(input: Any?): LiveData<Any> {
+                                return MutableLiveData()
+                            }
+                        })
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                // Stubs
+                class ArgumentLiveData {
+                    companion object {
+                        fun create(creator: Function<Any, LiveData<Any>>) {
+                        }
+                    }
+                }
+                interface Function<A,B> {
+                    fun apply(input: Any?): B
+                }
+                open class LiveData<T>
+                class MutableLiveData<T> : LiveData<T>()
+                """
+            ).indented()
+        )
+
+        val aliased = alias(files) { context -> !context.getContents()!!.contains("Stubs") }
+        assertEquals(
+            """
+            package test.pkg
+
+            class SomeNamedClass {
+                fun someMethod() {
+                    val anonymous = ArgumentLiveData.create(object : TYPE_ALIAS_1 {
+                        override fun apply(input: TYPE_ALIAS_3): TYPE_ALIAS_2 {
+                            return MutableLiveData()
+                        }
+                    })
+                }
+            }
+            typealias TYPE_ALIAS_1 = Function<Any, LiveData<Any>>
+            typealias TYPE_ALIAS_2 = LiveData<Any>
+            typealias TYPE_ALIAS_3 = Any?
+            """.trimIndent(),
+            aliased.trim()
+        )
+    }
+
+    @Test
+    fun testComposable() {
+        val files = listOf(
+            kotlin(
+                """
+                package test.pkg
+
+                import androidx.compose.runtime.Composable
+
+                @Composable
+                fun Button(
+                 text: @Composable (() -> Unit)?,
+                 foo: Int
+                ) {}
+
+                @Composable
+                fun Button2(
+                 text: (@Composable () -> Unit)?,
+                 foo: Int
+                ) {}
+                """
+            ).indented(),
+            kotlin(
+                """
+                // Stubs
+                package androidx.compose.runtime
+                annotation class Composeable
+                """
+            ).indented()
+        )
+
+        val aliased = alias(files) { context -> !context.getContents()!!.contains("Stubs") }
+        assertEquals(
+            """
+            package test.pkg
+
+            import androidx.compose.runtime.Composable
+
+            @Composable
+            fun Button(
+             text: @Composable (() -> Unit)?,
+             foo: TYPE_ALIAS_1
+            ) {}
+
+            @Composable
+            fun Button2(
+             text: (@Composable () -> Unit)?,
+             foo: TYPE_ALIAS_1
+            ) {}
+            typealias TYPE_ALIAS_1 = Int
+            """.trimIndent(),
+            aliased.trim()
+        )
     }
 
     @Test

@@ -107,25 +107,31 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
     open fun processTestFiles(
         testFiles: List<TestFile>,
         sdkHome: File?,
-        changeCallback: (JavaContext, String) -> Unit = { _, _ -> }
+        // Whether a particular context should be transformed. This allows
+        // you to include stub files as well (for type resolution etc) without
+        // also getting those files transformed
+        contextFilter: (JavaContext) -> Boolean = { true },
+        changeCallback: (JavaContext, String) -> Unit = { _, _ -> },
     ): Boolean {
-        return processTestFiles(testFiles, sdkHome, null, changeCallback)
+        return processTestFiles(testFiles, sdkHome, null, contextFilter, changeCallback)
     }
 
     // For unit tests only
     open fun processTestFiles(
         testFiles: List<TestFile>,
         sdkHome: File?,
-        testModeContext: TestModeContext? = null,
-        changeCallback: (JavaContext, String) -> Unit = { _, _ -> }
+        testModeContext: TestModeContext?,
+        contextFilter: (JavaContext) -> Boolean,
+        changeCallback: (JavaContext, String) -> Unit
     ): Boolean {
         val temporaryFolder = TemporaryFolder().apply { create() }
         try {
-            val (contexts, disposable) = parse(
+            val (allContexts, disposable) = parse(
                 temporaryFolder = temporaryFolder,
                 sdkHome = sdkHome,
                 testFiles = testFiles.toTypedArray()
             )
+            val contexts = allContexts.filter { contextFilter(it) }
             try {
                 val context = testModeContext
                     ?: TestModeContext(TestLintTask(), temporaryFolder.root, emptyList(), listOf(contexts.first().project.dir), null)
