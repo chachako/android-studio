@@ -62,8 +62,10 @@ public class AccessibilityDetector extends LayoutDetector {
                                     + "\n"
                                     + "Note that elements in application screens that are purely decorative "
                                     + "and do not provide any content or enable a user action should not "
-                                    + "have accessibility content descriptions. In this case, just suppress the "
-                                    + "lint warning with a tools:ignore=\"ContentDescription\" attribute.\n"
+                                    + "have accessibility content descriptions. In this case, set their "
+                                    + "descriptions to `@null`. If your app's minSdkVersion is 16 or higher, "
+                                    + "you can instead set these graphical elements' "
+                                    + "`android:importantForAccessibility` attributes to `no`.\n"
                                     + "\n"
                                     + "Note that for text fields, you should not set both the `hint` and the "
                                     + "`contentDescription` attributes since the hint will never be shown. Just "
@@ -112,29 +114,39 @@ public class AccessibilityDetector extends LayoutDetector {
     public void visitElement(@NonNull XmlContext context, @NonNull Element element) {
         if (!element.hasAttributeNS(ANDROID_URI, ATTR_CONTENT_DESCRIPTION)) {
             // Ignore views that are explicitly not important for accessibility
-            if (VALUE_NO.equals(
-                    element.getAttributeNS(ANDROID_URI, ATTR_IMPORTANT_FOR_ACCESSIBILITY))) {
+            String importantForAccessibility =
+                    element.getAttributeNS(ANDROID_URI, ATTR_IMPORTANT_FOR_ACCESSIBILITY);
+            if (VALUE_NO.equals(importantForAccessibility)) {
                 return;
             }
-            LintFix fix = fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build();
             context.report(
                     ISSUE,
                     element,
                     context.getNameLocation(element),
                     "Missing `contentDescription` attribute on image",
-                    fix);
+                    createFix(!importantForAccessibility.isEmpty()));
         } else {
             Attr attributeNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_CONTENT_DESCRIPTION);
             String attribute = attributeNode.getValue();
             if (attribute.isEmpty() || attribute.equals(TODO)) {
-                LintFix fix = fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build();
                 context.report(
                         ISSUE,
                         attributeNode,
                         context.getLocation(attributeNode),
                         "Empty `contentDescription` attribute on image",
-                        fix);
+                        createFix(true));
             }
+        }
+    }
+
+    private LintFix createFix(boolean setContentFixOnly) {
+        LintFix setFix = fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build();
+        if (setContentFixOnly) {
+            return setFix;
+        } else {
+            LintFix notImportant =
+                    fix().set(ANDROID_URI, ATTR_IMPORTANT_FOR_ACCESSIBILITY, "no").build();
+            return fix().alternatives(setFix, notImportant);
         }
     }
 }
