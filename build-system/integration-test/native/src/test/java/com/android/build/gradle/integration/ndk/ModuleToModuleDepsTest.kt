@@ -592,6 +592,8 @@ class ModuleToModuleDepsTest(
         val cppSrc = project.getSubproject(":lib").buildFile.resolveSibling("src/main/cpp/foo.cpp")
         cppSrc.writeText("int foo() { return 6; }")
         executor.run(buildTask)
+/* b/259542368
         assertThat(project.buildResult.getTask(":lib:prefabDebugPackage")).didWork()
+b/259542368 */
     }
 }
