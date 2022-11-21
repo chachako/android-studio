@@ -3224,4 +3224,32 @@ class CleanupDetectorTest : AbstractCheckTest() {
             ).indented()
         ).run().expectClean()
     }
+
+    fun test254222461() {
+        // Regression test for https://issuetracker.google.com/254222461
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+
+                import android.animation.ObjectAnimator
+                import android.util.Property
+                import android.view.View
+
+                class Test {
+                    private fun test(view: View) {
+                        ObjectAnimatorEx.ofFloat(view, View.ALPHA, 1f).setDuration(500).start()
+                    }
+
+                    object ObjectAnimatorEx {
+                        @JvmStatic
+                        fun <T> ofFloat(target: T, property: Property<T, Float>, vararg values: Float): ObjectAnimator {
+                            return ObjectAnimator.ofFloat(target, property, *values)
+                        }
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
 }

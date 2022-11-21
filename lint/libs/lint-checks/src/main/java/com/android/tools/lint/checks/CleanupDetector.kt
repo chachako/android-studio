@@ -257,8 +257,11 @@ class CleanupDetector : Detector(), SourceCodeScanner {
 
             OF_INT, OF_ARGB, OF_FLOAT, OF_OBJECT, OF_PROPERTY_VALUES_HOLDER -> {
                 // ObjectAnimator, ValueAnimator, AnimatorSet
-                val type = containingClass.qualifiedName ?: return
-                checkRecycled(context, node, type, START)
+                val returnType = method.returnType
+                if (returnType is PsiClassType) {
+                    val type = returnType.canonicalText
+                    checkRecycled(context, node, type, START)
+                }
             }
         }
     }
