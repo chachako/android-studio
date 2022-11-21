@@ -2673,6 +2673,13 @@ package com.android.build.api.variant {
 
 package com.android.build.gradle {
 
+  public final class AppPlugin extends com.android.build.gradle.BasePlugin {
+    ctor public AppPlugin();
+  }
+
+  public final class AppPluginKt {
+  }
+
   public final class AssetPackBundlePlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
     ctor public AssetPackBundlePlugin();
     method public void apply(org.gradle.api.Project project);
@@ -2687,6 +2694,32 @@ package com.android.build.gradle {
   }
 
   public final class AssetPackPluginKt {
+  }
+
+  public class BasePlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
+    ctor public BasePlugin();
+    method public void apply(org.gradle.api.Project project);
+  }
+
+  public final class DynamicFeaturePlugin extends com.android.build.gradle.BasePlugin {
+    ctor public DynamicFeaturePlugin();
+  }
+
+  public final class DynamicFeaturePluginKt {
+  }
+
+  public final class LibraryPlugin extends com.android.build.gradle.BasePlugin {
+    ctor public LibraryPlugin();
+  }
+
+  public final class LibraryPluginKt {
+  }
+
+  public final class TestPlugin extends com.android.build.gradle.BasePlugin {
+    ctor public TestPlugin();
+  }
+
+  public final class TestPluginKt {
   }
 
 }

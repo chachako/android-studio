@@ -61,3 +61,9 @@ def updateApi = tasks.register('updateApi') {
     dependsOn('updateMetalavaApi')
     dependsOn(updateDeprecatedApi)
 }
+
+tasks.jar {
+    // Set the version of the plugin in the manifest. This is used by the kotlin-android-extensions
+    // plugin (and maybe other 3rd party plugins).
+    manifest.attributes("Plugin-Version": version)
+}

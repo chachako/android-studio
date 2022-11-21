@@ -25,25 +25,7 @@ import org.gradle.api.Project
  * @Deprecated Use the plugin classes directly
  */
 open class BasePlugin: Plugin<Project> {
-    private lateinit var project: Project
-
     override fun apply(project: Project) {
-        this.project = project
-
         project.apply(VERSION_CHECK_PLUGIN_ID)
     }
-
-    /**
-     * Returns the Android extension.
-     *
-     * @deprecated Directly call project.extensions.getByName("android") instead. This will be removed in 8.0
-     */
-    @Deprecated("Use project.extensions.getByName(\"android\"). This method will be removed in 8.0")
-    fun getExtension(): BaseExtension {
-        // TODO(227795139)
-        project.logger.warn("Calls to BasePlugin.getExtension() are deprecated and will be removed in AGP 8.0")
-        return project.extensions.getByName("android") as BaseExtension
-    }
 }
-
-internal val VERSION_CHECK_PLUGIN_ID = mapOf("plugin" to "com.android.internal.version-check")

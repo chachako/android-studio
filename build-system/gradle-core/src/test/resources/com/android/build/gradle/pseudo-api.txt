@@ -166,9 +166,6 @@ com.android.build.gradle.BasePlugin implements org.gradle.api.Plugin
 com.android.build.gradle.BasePlugin.<init>: com.android.build.gradle.BasePlugin ()
 com.android.build.gradle.BasePlugin.apply: void (java.lang.Object)
 com.android.build.gradle.BasePlugin.apply: void (org.gradle.api.Project)
-com.android.build.gradle.BasePlugin.getExtension: com.android.build.gradle.BaseExtension ()
-com.android.build.gradle.BasePluginKt
-com.android.build.gradle.BasePluginKt.getVERSION_CHECK_PLUGIN_ID: java.util.Map<java.lang.String, java.lang.String> ()
 com.android.build.gradle.DynamicFeaturePlugin extends com.android.build.gradle.BasePlugin
 com.android.build.gradle.DynamicFeaturePlugin.<init>: com.android.build.gradle.DynamicFeaturePlugin ()
 com.android.build.gradle.DynamicFeaturePlugin.apply: void (java.lang.Object)
@@ -358,6 +355,7 @@ com.android.build.gradle.ReportingPlugin.apply: void (java.lang.Object)
 com.android.build.gradle.ReportingPlugin.apply: void (org.gradle.api.Project)
 com.android.build.gradle.ReportingPluginKt
 com.android.build.gradle.ReportingPluginKt.access$getINTERNAL_PLUGIN_ID$p: java.util.Map ()
+com.android.build.gradle.ReportingPluginKt.getVERSION_CHECK_PLUGIN_ID: java.util.Map<java.lang.String, java.lang.String> ()
 com.android.build.gradle.SettingsPlugin implements org.gradle.api.Plugin
 com.android.build.gradle.SettingsPlugin.<init>: com.android.build.gradle.SettingsPlugin ()
 com.android.build.gradle.SettingsPlugin.apply: void (java.lang.Object)
