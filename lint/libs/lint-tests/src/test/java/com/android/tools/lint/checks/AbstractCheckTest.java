@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks;
 
 import static com.android.SdkConstants.PLATFORM_WINDOWS;
+import static com.android.SdkConstants.VALUE_TRUE;
 import static com.android.SdkConstants.currentPlatform;
 
 import com.android.annotations.NonNull;
@@ -102,9 +103,8 @@ public abstract class AbstractCheckTest extends LintDetectorTest {
         // Our Windows CI machines are slower than Linux and with many test modes
         // running sometimes get killed for taking too long. The test modes are not
         // OS sensitive, so let's just not run these extra test modes on Windows;
-        // the default test mode is good enough.
-        // If windows and bazel, only use default test mode
-        if (isWindows() && TestUtils.runningFromBazel()) {
+        // the default test mode is good enough. (Ditto for code coverage builds.)
+        if ((isWindows() || isCoverageBuild()) && TestUtils.runningFromBazel()) {
             task.testModes(TestMode.DEFAULT);
         } else {
             task.addTestModes(PLATFORM_ANNOTATIONS_TEST_MODE);
@@ -524,5 +524,9 @@ public abstract class AbstractCheckTest extends LintDetectorTest {
 
     public static boolean isWindows() {
         return currentPlatform() == PLATFORM_WINDOWS;
+    }
+
+    public static boolean isCoverageBuild() {
+        return VALUE_TRUE.equals(System.getProperty("studio.is.coverage.build"));
     }
 }

@@ -75,6 +75,7 @@ fi
   --build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/${invocation_id}" \
   --build_metadata=ab_build_id="${build_number}" \
   --build_metadata=ab_target=studio-coverage \
+  --jvmopt="-Dstudio.is.coverage.build=true" \
   ${auth_options} \
   --test_tag_filters=-no_linux,-no_test_linux,-perfgate \
   --define agent_coverage=true \
