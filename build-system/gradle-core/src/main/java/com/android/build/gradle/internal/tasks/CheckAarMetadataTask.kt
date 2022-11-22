@@ -378,11 +378,10 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
                         }
                     }
                 if (minCompileSdkInt > compileSdkVersionInt) {
-                    // TODO(b/199900566) - change compileSdkVersion to compileSdk for AGP 8.0.
                     val maxRecommendedCompileSdk = parameters.maxRecommendedStableCompileSdkVersionForThisAgp.get()
                     val recommendation = if (minCompileSdkInt <= maxRecommendedCompileSdk) {
                         """
-                            Recommended action: Update this project to use a newer compileSdkVersion
+                            Recommended action: Update this project to use a newer compileSdk
                             of at least $minCompileSdk, for example $maxRecommendedCompileSdk.
                         """.trimIndent()
                     } else {
@@ -392,7 +391,7 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
 
                             Recommended action: Update this project's version of the Android Gradle
                             plugin to one that supports $minCompileSdk, then update this project to use
-                            compileSdkVerion of at least $minCompileSdk.
+                            compileSdk of at least $minCompileSdk.
                         """.trimIndent()
                     }
                     errorMessages.add(
@@ -403,10 +402,10 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
 
                             ${parameters.projectPath.get()} is currently compiled against $compileSdkVersion.
                         """.trimIndent() + "\n\n" + recommendation + "\n\n" + """
-                            Note that updating a library or application's compileSdkVersion (which
+                            Note that updating a library or application's compileSdk (which
                             allows newer APIs to be used) can be done separately from updating
-                            targetSdkVersion (which opts the app in to new runtime behavior) and
-                            minSdkVersion (which determines which devices the app can be installed
+                            targetSdk (which opts the app in to new runtime behavior) and
+                            minSdk (which determines which devices the app can be installed
                             on).
                         """.trimIndent()
                     )

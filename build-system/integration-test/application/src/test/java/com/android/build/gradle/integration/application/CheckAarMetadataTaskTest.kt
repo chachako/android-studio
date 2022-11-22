@@ -119,13 +119,13 @@ class CheckAarMetadataTaskTest {
 
                               :app is currently compiled against android-24.
 
-                              Recommended action: Update this project to use a newer compileSdkVersion
+                              Recommended action: Update this project to use a newer compileSdk
                               of at least 28, for example ${ToolsRevisionUtils.MAX_RECOMMENDED_COMPILE_SDK_VERSION.apiLevel}.
 
-                              Note that updating a library or application's compileSdkVersion (which
+                              Note that updating a library or application's compileSdk (which
                               allows newer APIs to be used) can be done separately from updating
-                              targetSdkVersion (which opts the app in to new runtime behavior) and
-                              minSdkVersion (which determines which devices the app can be installed
+                              targetSdk (which opts the app in to new runtime behavior) and
+                              minSdk (which determines which devices the app can be installed
                               on).
                 """.trimIndent())
 
@@ -198,13 +198,13 @@ class CheckAarMetadataTaskTest {
 
                           :app is currently compiled against android-24.
 
-                          Recommended action: Update this project to use a newer compileSdkVersion
+                          Recommended action: Update this project to use a newer compileSdk
                           of at least 28, for example ${ToolsRevisionUtils.MAX_RECOMMENDED_COMPILE_SDK_VERSION.apiLevel}.
 
-                          Note that updating a library or application's compileSdkVersion (which
+                          Note that updating a library or application's compileSdk (which
                           allows newer APIs to be used) can be done separately from updating
-                          targetSdkVersion (which opts the app in to new runtime behavior) and
-                          minSdkVersion (which determines which devices the app can be installed
+                          targetSdk (which opts the app in to new runtime behavior) and
+                          minSdk (which determines which devices the app can be installed
                           on).
                 """.trimIndent())
         }

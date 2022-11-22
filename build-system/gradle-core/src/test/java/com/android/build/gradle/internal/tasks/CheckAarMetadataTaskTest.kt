@@ -210,13 +210,13 @@ class CheckAarMetadataTaskTest {
 
                           :app is currently compiled against android-27.
 
-                          Recommended action: Update this project to use a newer compileSdkVersion
+                          Recommended action: Update this project to use a newer compileSdk
                           of at least 28, for example 30.
 
-                          Note that updating a library or application's compileSdkVersion (which
+                          Note that updating a library or application's compileSdk (which
                           allows newer APIs to be used) can be done separately from updating
-                          targetSdkVersion (which opts the app in to new runtime behavior) and
-                          minSdkVersion (which determines which devices the app can be installed
+                          targetSdk (which opts the app in to new runtime behavior) and
+                          minSdk (which determines which devices the app can be installed
                           on).
                 """.trimIndent()
             )
@@ -268,12 +268,12 @@ class CheckAarMetadataTaskTest {
 
                       Recommended action: Update this project's version of the Android Gradle
                       plugin to one that supports 47, then update this project to use
-                      compileSdkVerion of at least 47.
+                      compileSdk of at least 47.
 
-                      Note that updating a library or application's compileSdkVersion (which
+                      Note that updating a library or application's compileSdk (which
                       allows newer APIs to be used) can be done separately from updating
-                      targetSdkVersion (which opts the app in to new runtime behavior) and
-                      minSdkVersion (which determines which devices the app can be installed
+                      targetSdk (which opts the app in to new runtime behavior) and
+                      minSdk (which determines which devices the app can be installed
                       on).
             """.trimIndent())
         }
@@ -324,12 +324,12 @@ class CheckAarMetadataTaskTest {
 
                       Recommended action: Update this project's version of the Android Gradle
                       plugin to one that supports 47, then update this project to use
-                      compileSdkVerion of at least 47.
+                      compileSdk of at least 47.
 
-                      Note that updating a library or application's compileSdkVersion (which
+                      Note that updating a library or application's compileSdk (which
                       allows newer APIs to be used) can be done separately from updating
-                      targetSdkVersion (which opts the app in to new runtime behavior) and
-                      minSdkVersion (which determines which devices the app can be installed
+                      targetSdk (which opts the app in to new runtime behavior) and
+                      minSdk (which determines which devices the app can be installed
                       on).
             """.trimIndent())
         }
@@ -633,13 +633,13 @@ class CheckAarMetadataTaskTest {
 
                       :app is currently compiled against android-27.
 
-                      Recommended action: Update this project to use a newer compileSdkVersion
+                      Recommended action: Update this project to use a newer compileSdk
                       of at least 28, for example 30.
 
-                      Note that updating a library or application's compileSdkVersion (which
+                      Note that updating a library or application's compileSdk (which
                       allows newer APIs to be used) can be done separately from updating
-                      targetSdkVersion (which opts the app in to new runtime behavior) and
-                      minSdkVersion (which determines which devices the app can be installed
+                      targetSdk (which opts the app in to new runtime behavior) and
+                      minSdk (which determines which devices the app can be installed
                       on).
 
                   4.  Dependency 'displayName' requires Android Gradle plugin 3.0.0 or higher.
