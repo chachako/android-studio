@@ -479,35 +479,35 @@ package com.android.build.api.dsl {
 
   public interface AssetPackBundleExtension {
     method @org.gradle.api.Incubating public void deviceTier(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public String getApplicationId();
-    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getAssetPacks();
-    method @org.gradle.api.Incubating public int getCompileSdk();
+    method public String getApplicationId();
+    method public java.util.Set<java.lang.String> getAssetPacks();
+    method public int getCompileSdk();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleDeviceTier getDeviceTier();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.SigningConfig getSigningConfig();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleTexture getTexture();
-    method @org.gradle.api.Incubating public java.util.Set<java.lang.Integer> getVersionCodes();
-    method @org.gradle.api.Incubating public String getVersionTag();
-    method @org.gradle.api.Incubating public void setApplicationId(String applicationId);
-    method @org.gradle.api.Incubating public void setCompileSdk(int compileSdk);
-    method @org.gradle.api.Incubating public void setVersionTag(String versionTag);
-    method @org.gradle.api.Incubating public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void texture(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleTexture,kotlin.Unit> action);
-    property @org.gradle.api.Incubating public abstract String applicationId;
-    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> assetPacks;
-    property @org.gradle.api.Incubating public abstract int compileSdk;
+    method public com.android.build.api.dsl.SigningConfig getSigningConfig();
+    method public com.android.build.api.dsl.BundleTexture getTexture();
+    method public java.util.Set<java.lang.Integer> getVersionCodes();
+    method public String getVersionTag();
+    method public void setApplicationId(String applicationId);
+    method public void setCompileSdk(int compileSdk);
+    method public void setVersionTag(String versionTag);
+    method public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
+    method public void texture(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleTexture,kotlin.Unit> action);
+    property public abstract String applicationId;
+    property public abstract java.util.Set<java.lang.String> assetPacks;
+    property public abstract int compileSdk;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleDeviceTier deviceTier;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.SigningConfig signingConfig;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleTexture texture;
-    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.Integer> versionCodes;
-    property @org.gradle.api.Incubating public abstract String versionTag;
+    property public abstract com.android.build.api.dsl.SigningConfig signingConfig;
+    property public abstract com.android.build.api.dsl.BundleTexture texture;
+    property public abstract java.util.Set<java.lang.Integer> versionCodes;
+    property public abstract String versionTag;
   }
 
   public interface AssetPackExtension {
-    method @org.gradle.api.Incubating public void dynamicDelivery(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DynamicDelivery,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.DynamicDelivery getDynamicDelivery();
-    method @org.gradle.api.Incubating public org.gradle.api.provider.Property<java.lang.String> getPackName();
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.DynamicDelivery dynamicDelivery;
-    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.String> packName;
+    method public void dynamicDelivery(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DynamicDelivery,kotlin.Unit> action);
+    method public com.android.build.api.dsl.DynamicDelivery getDynamicDelivery();
+    method public org.gradle.api.provider.Property<java.lang.String> getPackName();
+    property public abstract com.android.build.api.dsl.DynamicDelivery dynamicDelivery;
+    property public abstract org.gradle.api.provider.Property<java.lang.String> packName;
   }
 
   public interface BaseFlavor extends com.android.build.api.dsl.VariantDimension com.android.build.api.dsl.HasInitWith<com.android.build.api.dsl.BaseFlavor> {
@@ -923,7 +923,7 @@ package com.android.build.api.dsl {
     property public abstract Boolean? useLegacyPackaging;
   }
 
-  @org.gradle.api.Incubating public interface DynamicDelivery {
+  public interface DynamicDelivery {
     method public org.gradle.api.provider.Property<java.lang.String> getDeliveryType();
     method public org.gradle.api.provider.Property<java.lang.String> getInstantDeliveryType();
     property public abstract org.gradle.api.provider.Property<java.lang.String> deliveryType;
