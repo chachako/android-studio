@@ -102,7 +102,7 @@ class AppKotlinUnitTest {
             assertEquals(RuntimeException::class.java, e.javaClass)
             assertTrue(e.message!!.contains("isEmpty"))
             assertTrue(e.message!!.contains("not mocked"))
-            assertTrue(e.message!!.contains("local-tests#mocking-dependencies"))
+            assertTrue(e.message!!.contains("r/studio-ui/build/not-mocked"))
         }
 
         try {
@@ -113,7 +113,7 @@ class AppKotlinUnitTest {
             assertEquals(RuntimeException::class.java, e.javaClass)
             assertTrue(e.message!!.contains("getThreadAllocCount"))
             assertTrue(e.message!!.contains("not mocked"))
-            assertTrue(e.message!!.contains("local-tests#mocking-dependencies"))
+            assertTrue(e.message!!.contains("r/studio-ui/build/not-mocked"))
         }
 
     }

@@ -77,7 +77,7 @@ public class UnitTest {
             assertEquals(RuntimeException.class, e.getClass());
             assertTrue(e.getMessage().contains("isEmpty"));
             assertTrue(e.getMessage().contains("not mocked"));
-            assertTrue(e.getMessage().contains("local-tests#mocking-dependencies"));
+            assertTrue(e.getMessage().contains("r/studio-ui/build/not-mocked"));
         }
 
         try {
@@ -87,7 +87,7 @@ public class UnitTest {
             assertEquals(RuntimeException.class, e.getClass());
             assertTrue(e.getMessage().contains("getThreadAllocCount"));
             assertTrue(e.getMessage().contains("not mocked"));
-            assertTrue(e.getMessage().contains("local-tests#mocking-dependencies"));
+            assertTrue(e.getMessage().contains("r/studio-ui/build/not-mocked"));
         }
 
     }

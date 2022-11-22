@@ -251,7 +251,7 @@ public class MockableJarGenerator {
                                     + " in "
                                     + className
                                     + " not mocked. "
-                                    + "See https://developer.android.com/training/testing/local-tests#mocking-dependencies for details."));
+                                    + "See https://developer.android.com/r/studio-ui/build/not-mocked for details."));
             instructions.add(new MethodInsnNode(
                     Opcodes.INVOKESPECIAL,
                     runtimeException,
