@@ -16,13 +16,14 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.workers.WorkerExecutor
 import org.junit.Before
@@ -42,7 +43,7 @@ internal class MergeArtProfileTaskTest {
     private lateinit var project: Project
     private lateinit var inputFiles: ConfigurableFileCollection
     private lateinit var artProfileSourceFile: RegularFileProperty
-    private lateinit var baselineProfileSourceFiles: ConfigurableFileCollection
+    private lateinit var baselineProfileSourceDirs: ListProperty<Directory>
 
     abstract class MergeArtProfileTaskForTest @Inject constructor(
         testWorkerExecutor: WorkerExecutor,
@@ -57,15 +58,15 @@ internal class MergeArtProfileTaskTest {
         inputFiles = project.files()
         artProfileSourceFile =
             project.objects.fileProperty().also { it.set(File("/does/not/exist")) }
-        baselineProfileSourceFiles = FakeConfigurableFileCollection()
+        baselineProfileSourceDirs = project.objects.listProperty(Directory::class.java).empty()
         task = project.tasks.register(
             "appMetadataTask",
             MergeArtProfileTaskForTest::class.java,
             FakeGradleWorkExecutor(project.objects, temporaryFolder.newFolder()),
         ).get()
         task.inputFiles.from(inputFiles)
-        task.profileSources.from(baselineProfileSourceFiles)
-        task.profileSources.from(artProfileSourceFile)
+        task.profileSourceDirectories.set(baselineProfileSourceDirs)
+        task.profileSource.set(artProfileSourceFile)
         task.analyticsService.set(FakeNoOpAnalyticsService())
         outputFile = temporaryFolder.newFile()
         task.outputFile.set(outputFile)
@@ -128,11 +129,13 @@ internal class MergeArtProfileTaskTest {
         }
         inputFiles.from(singleFile)
 
-        baselineProfileSourceFiles.from(
-            mutableListOf<File>().apply {
-                repeat(5) { this.add(createTestFile(it)) }
-            }
-        )
+        repeat(5) {
+            val dir = project.objects.directoryProperty().fileValue(
+                createTestFile(it)
+            )
+            baselineProfileSourceDirs.add(dir)
+        }
+
         artProfileSourceFile.set(
             temporaryFolder.newFile().also {
                 it.writeText("art-profile-source-file 1 - line 1")
