@@ -275,13 +275,13 @@ package com.android.build.api.dsl {
   }
 
   public interface AndroidSourceDirectorySet extends org.gradle.api.Named {
-    method @org.gradle.api.Incubating public Object setSrcDirs(Iterable<?> srcDirs);
-    method @org.gradle.api.Incubating public Object srcDir(Object srcDir);
-    method @org.gradle.api.Incubating public Object srcDirs(java.lang.Object... srcDirs);
+    method public Object setSrcDirs(Iterable<?> srcDirs);
+    method public Object srcDir(Object srcDir);
+    method public Object srcDirs(java.lang.Object... srcDirs);
   }
 
   public interface AndroidSourceFile extends org.gradle.api.Named {
-    method @org.gradle.api.Incubating public Object srcFile(Object srcPath);
+    method public Object srcFile(Object srcPath);
   }
 
   public interface AndroidSourceSet extends org.gradle.api.Named {
@@ -289,12 +289,12 @@ package com.android.build.api.dsl {
     method public void assets(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void baselineProfiles(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getAidl();
-    method @org.gradle.api.Incubating public String getAnnotationProcessorConfigurationName();
-    method @org.gradle.api.Incubating public String getApiConfigurationName();
+    method public String getAnnotationProcessorConfigurationName();
+    method public String getApiConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getAssets();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.AndroidSourceDirectorySet getBaselineProfiles();
-    method @org.gradle.api.Incubating public String getCompileOnlyConfigurationName();
-    method @org.gradle.api.Incubating public String getImplementationConfigurationName();
+    method public String getCompileOnlyConfigurationName();
+    method public String getImplementationConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getJava();
     method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.AndroidSourceDirectorySet getJni();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getJniLibs();
@@ -304,9 +304,9 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getRenderscript();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getRes();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getResources();
-    method @org.gradle.api.Incubating public String getRuntimeOnlyConfigurationName();
+    method public String getRuntimeOnlyConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getShaders();
-    method @org.gradle.api.Incubating public String getWearAppConfigurationName();
+    method public String getWearAppConfigurationName();
     method public void java(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void jni(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public void jniLibs(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
@@ -316,15 +316,15 @@ package com.android.build.api.dsl {
     method public void renderscript(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public void res(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public void resources(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public Object setRoot(String path);
+    method public Object setRoot(String path);
     method public void shaders(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet aidl;
-    property @org.gradle.api.Incubating public abstract String annotationProcessorConfigurationName;
-    property @org.gradle.api.Incubating public abstract String apiConfigurationName;
+    property public abstract String annotationProcessorConfigurationName;
+    property public abstract String apiConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet assets;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AndroidSourceDirectorySet baselineProfiles;
-    property @org.gradle.api.Incubating public abstract String compileOnlyConfigurationName;
-    property @org.gradle.api.Incubating public abstract String implementationConfigurationName;
+    property public abstract String compileOnlyConfigurationName;
+    property public abstract String implementationConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet java;
     property @Deprecated @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AndroidSourceDirectorySet jni;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet jniLibs;
@@ -334,9 +334,9 @@ package com.android.build.api.dsl {
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet renderscript;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet res;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet resources;
-    property @org.gradle.api.Incubating public abstract String runtimeOnlyConfigurationName;
+    property public abstract String runtimeOnlyConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet shaders;
-    property @org.gradle.api.Incubating public abstract String wearAppConfigurationName;
+    property public abstract String wearAppConfigurationName;
   }
 
   public interface AnnotationProcessorOptions {
