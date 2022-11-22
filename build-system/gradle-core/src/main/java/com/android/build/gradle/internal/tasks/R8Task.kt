@@ -223,7 +223,7 @@ abstract class R8Task @Inject constructor(
     abstract val artProfileRewriting: Property<Boolean>
 
     @get:Optional
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:InputFiles
     abstract val inputArtProfile: RegularFileProperty
 

@@ -91,7 +91,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
     abstract val originalResources: DirectoryProperty
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     abstract val originalResourcesForBundle: RegularFileProperty
 
@@ -102,7 +102,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
     abstract val variantOutputs: ListProperty<VariantOutputImpl>
 
     @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     abstract val mappingFileSrc: RegularFileProperty
 

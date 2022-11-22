@@ -69,7 +69,7 @@ abstract class ShrinkAppBundleResourcesTask : NonIncrementalTask() {
     abstract val shrunkBundle: RegularFileProperty
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val originalBundle: RegularFileProperty
 
     @get:Input
@@ -83,7 +83,7 @@ abstract class ShrinkAppBundleResourcesTask : NonIncrementalTask() {
     abstract val featureSetMetadata: RegularFileProperty
 
     @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     abstract val mappingFileSrc: RegularFileProperty
 

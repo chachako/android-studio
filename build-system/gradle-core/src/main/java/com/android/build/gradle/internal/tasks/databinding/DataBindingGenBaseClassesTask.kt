@@ -106,7 +106,7 @@ abstract class DataBindingGenBaseClassesTask : AndroidVariantTask() {
     // See [com.android.ide.common.symbols.SymbolIo] for read/write instructions.
     @get:InputFile
     @get:Optional
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val localResourcesFile: RegularFileProperty
 
     @get:Internal

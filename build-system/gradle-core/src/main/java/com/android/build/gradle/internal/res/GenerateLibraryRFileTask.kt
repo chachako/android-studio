@@ -95,7 +95,7 @@ abstract class GenerateLibraryRFileTask : ProcessAndroidResources() {
     abstract val platformAttrRTxt: ConfigurableFileCollection
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val localResourcesFile: RegularFileProperty
 
     @get:Input

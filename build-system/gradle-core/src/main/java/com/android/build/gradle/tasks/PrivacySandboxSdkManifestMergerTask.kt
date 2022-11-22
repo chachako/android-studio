@@ -41,7 +41,7 @@ import org.gradle.api.tasks.TaskProvider
 abstract class PrivacySandboxSdkManifestMergerTask: FusedLibraryManifestMergerTask() {
 
     @get: InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val mainManifestFile: RegularFileProperty
 
     override fun doTaskAction() {

@@ -93,7 +93,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
     var dependencyFeatureNameArtifacts: FileCollection? = null
         private set
 
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     @get:InputFiles
     abstract val microApkManifest: RegularFileProperty

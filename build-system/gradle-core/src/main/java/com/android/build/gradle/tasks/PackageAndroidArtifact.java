@@ -175,13 +175,13 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
     @InputFiles
     @Incremental
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.NAME_ONLY)
     @Optional
     public abstract RegularFileProperty getMergedArtProfile();
 
     @InputFiles
     @Incremental
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.NAME_ONLY)
     @Optional
     public abstract RegularFileProperty getMergedArtProfileMetadata();
 
@@ -234,7 +234,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
     @InputFile
     @Nullable
     @Optional
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.NAME_ONLY)
     public abstract RegularFileProperty getDependencyDataFile();
 
     @Input

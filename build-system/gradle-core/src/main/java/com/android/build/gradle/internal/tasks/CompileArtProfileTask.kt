@@ -53,7 +53,7 @@ import java.lang.RuntimeException
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ART_PROFILE, secondaryTaskCategories = [TaskCategory.COMPILATION])
 abstract class CompileArtProfileTask: NonIncrementalTask() {
 
-    @get: [InputFiles Optional PathSensitive(PathSensitivity.RELATIVE)]
+    @get: [InputFiles Optional PathSensitive(PathSensitivity.NAME_ONLY)]
     abstract val mergedArtProfile: RegularFileProperty
 
     @get: [InputFiles PathSensitive(PathSensitivity.RELATIVE)]
@@ -62,7 +62,7 @@ abstract class CompileArtProfileTask: NonIncrementalTask() {
     @get: [InputFiles Optional PathSensitive(PathSensitivity.RELATIVE)]
     abstract val featuresDexFolders: ConfigurableFileCollection
 
-    @get: [InputFiles Optional PathSensitive(PathSensitivity.RELATIVE)]
+    @get: [InputFiles Optional PathSensitive(PathSensitivity.NAME_ONLY)]
     abstract val obfuscationMappingFile: RegularFileProperty
 
     @get: OutputFile

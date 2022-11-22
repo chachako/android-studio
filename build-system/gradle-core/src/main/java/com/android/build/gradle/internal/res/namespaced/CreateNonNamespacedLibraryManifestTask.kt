@@ -45,7 +45,7 @@ abstract class CreateNonNamespacedLibraryManifestTask : NonIncrementalTask() {
     abstract val outputStrippedManifestFile: RegularFileProperty
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val libraryManifest: RegularFileProperty
 
     override fun doTaskAction() {

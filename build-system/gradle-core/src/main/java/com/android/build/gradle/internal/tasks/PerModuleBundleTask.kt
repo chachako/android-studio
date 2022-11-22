@@ -99,7 +99,7 @@ abstract class PerModuleBundleTask @Inject constructor(objects: ObjectFactory) :
     abstract val featureDexFiles: ConfigurableFileCollection
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val resFiles: RegularFileProperty
 
     @get:InputFiles

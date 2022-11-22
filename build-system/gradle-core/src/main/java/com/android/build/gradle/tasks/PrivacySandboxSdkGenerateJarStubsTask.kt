@@ -57,7 +57,7 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
     abstract val mergedClasses: ConfigurableFileCollection
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val mergedJavaResources: RegularFileProperty
 
     @get:InputFiles

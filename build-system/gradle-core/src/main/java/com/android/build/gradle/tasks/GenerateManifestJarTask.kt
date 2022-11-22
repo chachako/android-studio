@@ -47,7 +47,7 @@ import org.gradle.api.tasks.TaskProvider
 abstract class GenerateManifestJarTask : NonIncrementalTask() {
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val mergedManifests: RegularFileProperty
 
     @get:Input

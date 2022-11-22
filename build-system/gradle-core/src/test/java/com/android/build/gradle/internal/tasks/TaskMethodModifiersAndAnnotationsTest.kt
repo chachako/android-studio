@@ -25,6 +25,8 @@ import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.gradle.api.Task
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.CompileClasspath
 import org.gradle.api.tasks.Console
@@ -41,6 +43,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.work.Incremental
 import org.junit.Test
@@ -54,15 +57,7 @@ class TaskMethodModifiersAndAnnotationsTest {
 
     @Test
     fun `check for non-public methods with gradle input or output annotations`() {
-        val classPath = ClassPath.from(this.javaClass.classLoader)
-        val nonPublicMethods =
-            classPath
-                .getTopLevelClassesRecursive("com.android.build")
-                .map { classInfo -> classInfo.load() as Class<*> }
-                .flatMap { it.declaredMethods.asIterable() }
-                .filter {
-                    it.hasGradleInputOrOutputAnnotation() && !Modifier.isPublic(it.modifiers)
-                }
+        val nonPublicMethods = taskInputOutputMethods.filter { !Modifier.isPublic(it.modifiers) }
 
         if (nonPublicMethods.isEmpty()) {
             return
@@ -79,8 +74,26 @@ class TaskMethodModifiersAndAnnotationsTest {
     }
 
     @Test
+    fun `check for relative path sensitivity on files`() {
+        val relativePathSensitivityOnFiles = taskInputOutputMethods.filter {
+            (it.returnType == RegularFile::class.java || it.returnType == RegularFileProperty::class.java) &&
+                    it.getAnnotation(PathSensitive::class.java)?.value == PathSensitivity.RELATIVE
+        }.map {
+            "${it.declaringClass.toString().substringAfter(" ")}::${it.name}"
+        }
+        if (relativePathSensitivityOnFiles.isEmpty()) {
+            return
+        }
+        throw AssertionError(
+                "The following file inputs are annotated as PathSensitive(PathSensitivity.RELATIVE).\n" +
+                        "This is misleading as for file inputs it is equivalent to PathSensitivity.NAME_ONLY\n  " +
+                        relativePathSensitivityOnFiles.joinToString("\n  ")
+        )
+    }
+
+
+    @Test
     fun `check for fields with gradle input or output annotations`() {
-        val classPath = ClassPath.from(this.javaClass.classLoader)
         val annotatedFields =
             classPath
                 .getTopLevelClassesRecursive("com.android.build")
@@ -146,7 +159,6 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.tasks.JavaDocJarTask::setVariantName",
             )
 
-        val classPath = ClassPath.from(this.javaClass.classLoader)
         val taskInterface = TypeToken.of(Task::class.java)
         val publicSetters =
             classPath
@@ -203,7 +215,7 @@ class TaskMethodModifiersAndAnnotationsTest {
     @Test
     fun checkIncrementalPackagingInputs() {
         val incrementalInputs =
-            ClassPath.from(this.javaClass.classLoader)
+            classPath
                 .getTopLevelClasses("com.android.build.gradle.tasks")
                 .filter { it.simpleName == "PackageAndroidArtifact" }
                 .map { classInfo -> classInfo.load() as Class<*> }
@@ -229,8 +241,8 @@ class TaskMethodModifiersAndAnnotationsTest {
             "getJavaResourceFiles  @org.gradle.api.tasks.Classpath()",
             "getJniFolders  @org.gradle.api.tasks.Classpath()",
             "getManifests  @org.gradle.api.tasks.PathSensitive(RELATIVE)",
-            "getMergedArtProfile  @org.gradle.api.tasks.PathSensitive(RELATIVE)",
-            "getMergedArtProfileMetadata  @org.gradle.api.tasks.PathSensitive(RELATIVE)",
+            "getMergedArtProfile  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)",
+            "getMergedArtProfileMetadata  @org.gradle.api.tasks.PathSensitive(NAME_ONLY)",
             "getResourceFiles  @org.gradle.api.tasks.PathSensitive(RELATIVE)"
         )
     }
@@ -246,7 +258,6 @@ class TaskMethodModifiersAndAnnotationsTest {
     }
 
     private fun findTaskFieldsOfType(ofType: Class<*>): List<Field> {
-        val classPath = ClassPath.from(this.javaClass.classLoader)
         val taskInterface = TypeToken.of(Task::class.java)
         val fieldType = TypeToken.of(ofType)
         return classPath
@@ -257,25 +268,41 @@ class TaskMethodModifiersAndAnnotationsTest {
             .filter { TypeToken.of(it.type).isSubtypeOf(fieldType) }
     }
 
-    private fun AnnotatedElement.hasGradleInputOrOutputAnnotation(): Boolean {
-        // look for all org.gradle.api.tasks annotations, except @CacheableTask, @Internal, and
-        // @TaskAction.
-        return getAnnotation(Classpath::class.java) != null
-                || getAnnotation(CompileClasspath::class.java) != null
-                || getAnnotation(Console::class.java) != null
-                || getAnnotation(Destroys::class.java) != null
-                || getAnnotation(Input::class.java) != null
-                || getAnnotation(InputDirectory::class.java) != null
-                || getAnnotation(InputFile::class.java) != null
-                || getAnnotation(InputFiles::class.java) != null
-                || getAnnotation(LocalState::class.java) != null
-                || getAnnotation(Nested::class.java) != null
-                || getAnnotation(Optional::class.java) != null
-                || getAnnotation(OutputDirectories::class.java) != null
-                || getAnnotation(OutputDirectory::class.java) != null
-                || getAnnotation(OutputFile::class.java) != null
-                || getAnnotation(OutputFiles::class.java) != null
-                || getAnnotation(PathSensitive::class.java) != null
-                || getAnnotation(SkipWhenEmpty::class.java) != null
+    companion object {
+
+        private val classPath: ClassPath by lazy(LazyThreadSafetyMode.PUBLICATION) {
+            ClassPath.from(this.javaClass.classLoader)
+        }
+
+
+        private fun AnnotatedElement.hasGradleInputOrOutputAnnotation(): Boolean {
+            // look for all org.gradle.api.tasks annotations, except @CacheableTask, @Internal, and
+            // @TaskAction.
+            return getAnnotation(Classpath::class.java) != null
+                    || getAnnotation(CompileClasspath::class.java) != null
+                    || getAnnotation(Console::class.java) != null
+                    || getAnnotation(Destroys::class.java) != null
+                    || getAnnotation(Input::class.java) != null
+                    || getAnnotation(InputDirectory::class.java) != null
+                    || getAnnotation(InputFile::class.java) != null
+                    || getAnnotation(InputFiles::class.java) != null
+                    || getAnnotation(LocalState::class.java) != null
+                    || getAnnotation(Nested::class.java) != null
+                    || getAnnotation(Optional::class.java) != null
+                    || getAnnotation(OutputDirectories::class.java) != null
+                    || getAnnotation(OutputDirectory::class.java) != null
+                    || getAnnotation(OutputFile::class.java) != null
+                    || getAnnotation(OutputFiles::class.java) != null
+                    || getAnnotation(PathSensitive::class.java) != null
+                    || getAnnotation(SkipWhenEmpty::class.java) != null
+        }
+
+        private val taskInputOutputMethods: List<Method> by lazy(LazyThreadSafetyMode.PUBLICATION) {
+            classPath
+                    .getTopLevelClassesRecursive("com.android.build")
+                    .map { classInfo -> classInfo.load() as Class<*> }
+                    .flatMap { it.declaredMethods.asIterable() }
+                    .filter { it.hasGradleInputOrOutputAnnotation() }
+        }
     }
 }

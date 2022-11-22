@@ -60,7 +60,7 @@ import java.io.File
 abstract class LinkLibraryAndroidResourcesTask : NonIncrementalTask() {
 
     @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val manifestFile: RegularFileProperty
 
     @get:InputFiles

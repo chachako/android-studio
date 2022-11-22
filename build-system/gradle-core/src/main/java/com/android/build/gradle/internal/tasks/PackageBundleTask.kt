@@ -150,12 +150,12 @@ abstract class PackageBundleTask : NonIncrementalTask() {
     abstract val bundleNeedsFusedStandaloneConfig: Property<Boolean>
 
     @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     abstract val binaryArtProfile: RegularFileProperty
 
     @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     abstract val binaryArtProfileMetadata: RegularFileProperty
 

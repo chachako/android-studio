@@ -87,7 +87,7 @@ abstract class JacocoReportTask : NonIncrementalTask() {
     abstract val jacocoConnectedTestsCoverageDir: DirectoryProperty
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:Optional
     abstract val jacocoUnitTestCoverageFile: RegularFileProperty
 

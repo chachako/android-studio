@@ -69,7 +69,7 @@ abstract class ProcessMultiApkApplicationManifest: ManifestProcessorTask() {
     @get:Input
     abstract val namespace: Property<String>
 
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:InputFile
     abstract val mainMergedManifest: RegularFileProperty
 

@@ -44,7 +44,7 @@ import java.lang.RuntimeException
 abstract class ProcessLibraryArtProfileTask: NonIncrementalTask() {
 
     // Use InputFiles rather than InputFile to allow the file not to exist
-    @get:[InputFiles PathSensitive(PathSensitivity.RELATIVE)]
+    @get:[InputFiles PathSensitive(PathSensitivity.NAME_ONLY)]
     abstract val profileSource: RegularFileProperty
 
     @get:OutputFile

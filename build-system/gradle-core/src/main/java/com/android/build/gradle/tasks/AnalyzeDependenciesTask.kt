@@ -70,7 +70,7 @@ abstract class AnalyzeDependenciesTask : NonIncrementalTask() {
 
     @get:InputFile
     @get:Optional
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val mergedManifest: RegularFileProperty
 
     @get:OutputDirectory
