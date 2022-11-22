@@ -175,4 +175,33 @@ class SettingsPluginTest {
         )
         project.execute("clean", "assembleDebug")
     }
+
+    // regression test for b/258704137
+    @Test
+    fun testJvmOptionsAreUsed() {
+        addSettingsBlock(
+            execProfile = "mid",
+            profiles = listOf(
+                Profile("mid", listOf(":pizza/foo"), true)
+            )
+        )
+
+        project.buildFile.appendText(
+            """|
+                |android.buildTypes {
+                |    debug {
+                |        minifyEnabled true
+                |    }
+                |}
+            """.trimMargin()
+        )
+
+        val result = project.executor().expectFailure().run("clean", "minifyDebugWithR8")
+
+        // If the jvm args used, r8 will be unable to create the separate process
+        // with invalid arguments
+        result.stderr.use {
+            ScannerSubject.assertThat(it).contains("Error: Could not find or load main class :pizza.foo")
+        }
+    }
 }
