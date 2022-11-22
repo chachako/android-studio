@@ -23,10 +23,12 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.IntegerOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.apk.AndroidArchive
 import com.google.common.io.Resources
 import com.google.common.truth.Truth
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -207,6 +209,16 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
             .run("assembleDebug")
 
         checkPackagedGlobal(exceptionGlobalDex, 0)
+    }
+
+    // Regression test for b/257488927
+    @Test
+    fun minSdkVersionConsistent() {
+        Assume.assumeTrue(dexType == DexType.NATIVE)
+        addFileDependencies(app)
+        executor()
+                .with(IntegerOption.IDE_TARGET_DEVICE_API, 24)
+                .run("assembleDebug")
     }
 
     private fun createExceptionGlobalSourceFile(source: File, pkg: String, name: String) {
