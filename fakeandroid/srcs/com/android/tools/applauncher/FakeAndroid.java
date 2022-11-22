@@ -64,14 +64,18 @@ public class FakeAndroid implements SimpleWebServer.RequestHandler {
             }
             Looper.prepareMainLooper();
 
-            // To simulate cmd activity attach-agent we need to call direclty into the VM and
-            // attach the agent manually.
-            Class vmDebugClazz = Class.forName("dalvik.system.VMDebug");
-            Method attachAgentMethod =
-                    vmDebugClazz.getMethod("attachAgent", String.class, ClassLoader.class);
-            attachAgentMethod.setAccessible(true);
-            attachAgentMethod.invoke(null, myAttachAgentPath, null);
-            System.out.println("attach-agent " + myAttachAgentPath);
+            // A fake message loop but it only handles attach-agent at the moment.
+            while (true) {
+                // To simulate cmd activity attach-agent we need to call directly into the VM and
+                // attach the agent manually.
+                Class vmDebugClazz = Class.forName("dalvik.system.VMDebug");
+                Method attachAgentMethod =
+                        vmDebugClazz.getMethod("attachAgent", String.class, ClassLoader.class);
+                attachAgentMethod.setAccessible(true);
+                attachAgentMethod.invoke(null, myAttachAgentPath, null);
+                System.out.println("attach-agent " + myAttachAgentPath);
+                wait();
+            }
         } catch (InterruptedException ex) {
             System.err.println("Failed to block for webrequest: " + ex);
         } catch (ClassNotFoundException

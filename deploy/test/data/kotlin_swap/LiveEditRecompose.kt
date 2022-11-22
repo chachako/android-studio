@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package pkg;
 
-package androidx.compose.runtime.internal
-
-@Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@Repeatable
-annotation class FunctionKeyMeta(
-    val key: Int,
-    val startOffset: Int,
-    val endOffset: Int
-)
-
-@Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class FunctionKeyMetaClass(
-    val file: String
-)
+fun LiveEditRecompose() {
+  System.out.println("pk.LiveEditRecompose.changed")
+}

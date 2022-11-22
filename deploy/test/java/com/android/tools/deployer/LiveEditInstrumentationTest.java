@@ -59,32 +59,4 @@ public class LiveEditInstrumentationTest extends LiveEditTestBase {
         Deploy.AgentLiveEditResponse response = installer.getLiveEditResponse();
         Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
     }
-
-    // TODO: This test is pretty updated in terms of how invalidateGroupsWithKeys works.
-    @Ignore
-    public void testFunctionRecompose() throws Exception {
-        android.loadDex(DEX_LOCATION);
-        android.launchActivity(ACTIVITY_CLASS);
-
-        Deploy.LiveEditClass clazz =
-                Deploy.LiveEditClass.newBuilder()
-                        .setClassName("pkg/LiveEditRecomposeTarget")
-                        .build();
-        Deploy.LiveEditRequest request =
-                Deploy.LiveEditRequest.newBuilder()
-                        .addTargetClasses(clazz)
-                        .setComposable(true)
-                        .setPackageName(PACKAGE)
-                        .build();
-
-        installer.update(request);
-        Deploy.AgentLiveEditResponse response = installer.getLiveEditResponse();
-        Assert.assertEquals(
-                "Got Status: " + response.getStatus(),
-                Deploy.LiveEditResponse.Status.OK,
-                response.getStatus());
-
-        Assert.assertTrue(
-                android.waitForInput("invalidateGroupsWithKey(1122)", RETURN_VALUE_TIMEOUT));
-    }
 }

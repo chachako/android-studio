@@ -28,11 +28,21 @@ public class HotReloader {
         }
 
         public void loadStateAndCompose(Object c) {
+            System.out.println("loadStateAndCompose");
             state += c;
         }
 
         public boolean invalidateGroupsWithKey(int key) {
             System.out.println("invalidateGroupsWithKey(" + key + ")");
+
+            // The Compose runtime will know exactly which composable function(s) needs
+            // to be called given an invalidation group key. In this mock, we are just
+            // going to hard code some key to Composable calls.
+            switch (key) {
+                case 1111:
+                    pkg.LiveEditRecomposeKt.LiveEditRecompose();
+                    break;
+            }
             return true;
         }
     }
