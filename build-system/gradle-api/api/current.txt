@@ -253,20 +253,20 @@ package com.android.build.api.dsl {
   }
 
   public interface AndroidResources {
-    method @org.gradle.api.Incubating public void additionalParameters(String params);
-    method @org.gradle.api.Incubating public void additionalParameters(java.lang.String... params);
-    method @org.gradle.api.Incubating public java.util.List<java.lang.String> getAdditionalParameters();
+    method @Deprecated public void additionalParameters(String params);
+    method @Deprecated public void additionalParameters(java.lang.String... params);
+    method public java.util.List<java.lang.String> getAdditionalParameters();
     method public boolean getFailOnMissingConfigEntry();
     method public String? getIgnoreAssetsPattern();
     method public java.util.Collection<java.lang.String> getIgnoreAssetsPatterns();
     method @org.gradle.api.Incubating public boolean getNamespaced();
     method public java.util.Collection<java.lang.String> getNoCompress();
-    method @org.gradle.api.Incubating public void noCompress(String noCompress);
-    method @org.gradle.api.Incubating public void noCompress(java.lang.String... noCompress);
+    method @Deprecated public void noCompress(String noCompress);
+    method @Deprecated public void noCompress(java.lang.String... noCompress);
     method public void setFailOnMissingConfigEntry(boolean failOnMissingConfigEntry);
     method public void setIgnoreAssetsPattern(String? ignoreAssetsPattern);
     method @org.gradle.api.Incubating public void setNamespaced(boolean namespaced);
-    property @org.gradle.api.Incubating public abstract java.util.List<java.lang.String> additionalParameters;
+    property public abstract java.util.List<java.lang.String> additionalParameters;
     property public abstract boolean failOnMissingConfigEntry;
     property public abstract String? ignoreAssetsPattern;
     property public abstract java.util.Collection<java.lang.String> ignoreAssetsPatterns;
