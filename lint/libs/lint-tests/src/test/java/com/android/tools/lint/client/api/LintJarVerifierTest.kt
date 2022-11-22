@@ -129,7 +129,7 @@ class LintJarVerifierTest {
         assertEquals(1, projects.size)
         val jar = File(projects[0], "lint.jar")
         assertTrue(jar.isFile)
-        val verifier = LintJarVerifier(jar)
+        val verifier = LintJarVerifier(TestLintClient(), jar)
         assertFalse(verifier.isCompatible())
         assertEquals(
             "com.android.tools.lint.client.api.ResourceReference: ResourceReference(org.jetbrains.uast.UExpression,java.lang.String,com.android.resources.ResourceType,java.lang.String)",
@@ -213,7 +213,91 @@ class LintJarVerifierTest {
         assertEquals(1, projects.size)
         val jar = File(projects[0], "lint.jar")
         assertTrue(jar.isFile)
-        val verifier = LintJarVerifier(jar)
+        val verifier = LintJarVerifier(TestLintClient(), jar)
+        assertFalse(verifier.isCompatible())
+        assertEquals(
+            "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
+            verifier.describeFirstIncompatibleReference()
+        )
+    }
+
+    @Test
+    fun testContainingClass() {
+        // Regression test for https://issuetracker.google.com/237567009
+        val projects = lint().files(
+            kotlin(
+                """
+                // Just a stub
+                package org.jetbrains.uast
+                open class UClass
+                """
+            ).indented(),
+            kotlin(
+                """
+                // Just a stub
+                package org.jetbrains.uast.kotlin
+                import org.jetbrains.kotlin.psi.KtClassOrObject
+                import org.jetbrains.uast.UClass
+                class KotlinUClass : UClass() {
+                    val ktClass: KtClassOrObject
+                        get() = TODO()
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                // Just a stub
+                package org.jetbrains.kotlin.psi
+                class KtClassOrObject
+                """
+            ).indented(),
+            compiled(
+                "lint.jar",
+                kotlin(
+                    """
+                    package test.pkg
+
+                    import org.jetbrains.uast.kotlin.KotlinUClass
+                    import org.jetbrains.uast.UClass
+
+                    class MyDetector {
+                        fun visitClass(node: UClass) {
+                            val ktClass = (node as? KotlinUClass)?.ktClass
+                        }
+                    }
+                    """
+                ).indented(),
+                0x9b58d2c3,
+                """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJ2KM2gxKDFAAAGOiFQGAAAAA==
+                """,
+                """
+                test/pkg/MyDetector.class:
+                H4sIAAAAAAAA/41Tz08TURD+3rbdLQuU8rMFFBEQWopsqZysMSDGpNKCEa0x
+                nF7Lprz+2CW7r4164t/w6oWzFzUeDHrw4B9lnLcsSggxbLIz876Z+WZm3+yv
+                31+/AVjHOsOotH1pHbUaVuXtY1vadel6BhhDssl73Gpzp2Ht1pqEG4gw6A+E
+                I+RDhkgmWx1ADLqJKAyGqDwUPsN4+Qq+IoPZE76QW23uU9BMpux6Datpy5rH
+                heNbXU45LwNvMVtlmL/k547jSi6FS/aOK3e67TZxRh33wI4jQYQtV7aFYzV7
+                HUs40vYc3rZKjvQoWdR9A0nqrH5o11th9jPu8Q515zEsZcqXJy1eQPYUSaOo
+                hh3BqIlhjDEsXtF+2MJ2oM5mMTBBkzdsuX0++Uome2m0MO3IF1YYteuFXQwg
+                jUkTKUwxGK1ziuXrEzBM/+dDM2Suy2TgFsNwOQyo2JIfcMmJQev0IrRJTAla
+                AtYi6I1QpzxZB2sM90+PJ0wtrZla8vTY1OLK0ExlprX06XFBy7NHsR8fdEKf
+                JpKRKS0fLejJGGldMRQYsWPw3y6ttiTd/BbdPMNQWTj2TrdTs70XvNYmZKTs
+                1nm7yj2hziE4uCd5vVXhR+F54XnXkaJjlxy1lAT93YbNf3tGF7fndr26/USo
+                nMkwp3qWcSEQa9DoF1CPRq3SH0HyLp0s0tQ9YsufEf8YuFdJ6gGokxsYOAtA
+                H0zSw+gnRAuS35FWn3E+NzL0BeO570i9h5k7ReoEUfb6J/o+YfoEsVesoqgj
+                yJMcQnRsw0CqRO+mgdmgnklMOuKYoyqq5iwFz1HdG7hJHqoQVldWAjPkWQsv
+                E4NB04VAruAe6Q1Cb1PDc/uIlDBfwgJJ3FFisYQlZPbBfGSxvA/Dh+kj50P3
+                0R8YCR8zfwB4GuhTewQAAA==
+                """
+            )
+        ).createProjects(temporaryFolder.newFolder())
+
+        assertEquals(1, projects.size)
+        val jar = File(projects[0], "lint.jar")
+        assertTrue(jar.isFile)
+        val verifier = LintJarVerifier(TestLintClient(), jar)
         assertFalse(verifier.isCompatible())
         assertEquals(
             "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
@@ -343,14 +427,15 @@ class LintJarVerifierTest {
                         first = false
                         distinctLibraries++
                     }
-                    val verifier = LintJarVerifier(lintTarget)
+                    val verifier = LintJarVerifier(client, lintTarget)
                     val compatible = verifier.isCompatible()
                     if (!compatible) {
                         incompatible++
                         if (version == versions.first()) {
                             lastIsIncompatible++
                         }
-                        println("$key: Not compatible\n    (${verifier.describeFirstIncompatibleReference()})")
+                        val problem = if (verifier.isInaccessible()) "Inaccessible" else "Missing"
+                        println("$key: $problem\n    (${verifier.describeFirstIncompatibleReference()})")
                     }
                     apiCount += verifier.apiCount
                 }

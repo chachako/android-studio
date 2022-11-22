@@ -219,7 +219,7 @@ private constructor(
          * Verifies that the given issue jar [jarFile] is compatible.
          */
         private fun verify(client: LintClient, jarFile: File): LintJarVerifier {
-            val verifier = LintJarVerifier(jarFile)
+            val verifier = LintJarVerifier(client, jarFile)
             verifier.getVerificationThrowable()?.let {
                 if (logJarProblems()) {
                     client.log(it, "Error verifying bytecode in $jarFile")

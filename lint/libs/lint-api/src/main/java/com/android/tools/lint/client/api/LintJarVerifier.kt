@@ -33,20 +33,20 @@ import java.io.File
 import java.lang.Byte
 import java.lang.Double
 import java.lang.Float
-import java.lang.Integer
 import java.lang.Long
 import java.lang.Short
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 /**
  * Given a lint jar file, checks to see if the jar file looks compatible
  * with the current version of lint.
  */
-class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
+class LintJarVerifier(private val client: LintClient, private val jarFile: File) : ClassVisitor(ASM9) {
     /**
      * Is the class with the given [internal] class name part of an API
      * we want to check for validity?
@@ -69,6 +69,15 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
      */
     fun isCompatible(): Boolean {
         return incompatibleReference == null
+    }
+
+    /**
+     * Returns whether the invalid reference was not accessible
+     * rather than not available. This method is only relevant if
+     * [isCompatible] returned false.
+     */
+    fun isInaccessible(): Boolean {
+        return inaccessible
     }
 
     fun getVerificationThrowable(): Throwable? = verifyProblem
@@ -100,7 +109,7 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
         }
 
         classes.forEach { (name, _) ->
-            // Note that jar file internal names always use forward slash, not File.separator
+            // Note that jar file internal names always use forward slash, not File.separator,
             // so we can compute the internal name by just dropping the .class suffix
             bundledClasses.add(name.removeSuffix(DOT_CLASS))
         }
@@ -110,9 +119,11 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
             val reader = ClassReader(bytes)
             reader.accept(this, SKIP_DEBUG or SKIP_FRAMES)
             if (incompatibleReference != null) {
-                return
+                break
             }
         }
+
+        (classLoader as? URLClassLoader)?.close()
     }
 
     /** Returns a message describing the incompatibility */
@@ -171,6 +182,12 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
      */
     private var incompatibleReferencer: String? = null
 
+    /**
+     * Whether the incompatible reference was not accessible rather than
+     * not available
+     */
+    private var inaccessible = false
+
     private val methodVisitor = object : MethodVisitor(ASM9) {
         override fun visitMethodInsn(
             opcode: Int,
@@ -179,19 +196,7 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
             descriptor: String,
             isInterface: Boolean
         ) {
-            if (opcode == Opcodes.INVOKEVIRTUAL &&
-                owner == "org/jetbrains/uast/kotlin/KotlinUClass" &&
-                name == "getKtClass"
-            ) {
-                // See https://issuetracker.google.com/237567009
-                // This API is available via reflection, but not valid.
-                // This will trigger in androidx.fragment:fragment from version 1.4.0-alpha01 until 1.5.0 (inclusive).
-                apiCount++
-                incompatibleReference = "$owner#$name$descriptor"
-                incompatibleReferencer = currentClassFile
-            } else {
-                checkMethod(owner, name, descriptor)
-            }
+            checkMethod(owner, name, descriptor)
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
         }
 
@@ -226,6 +231,16 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
 
     /** Current class file being visited */
     private var currentClassFile: String? = null
+    /** The current class being visited */
+    private var currentClass: String? = null
+    /** The super class of the current class */
+    private var currentSuperClass: String? = null
+    /**
+     * A class loader for the current jar file (initialized lazily if
+     * needed; we only do this if we have to check whether a call to a
+     * protected API method is valid.
+     */
+    private var classLoader: ClassLoader? = null
 
     /**
      * Checks that the method for the given containing class [owner]
@@ -237,8 +252,8 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
         if (isRelevantApi(owner)) {
             try {
                 apiCount++
-                // Ignoring return value: what we're looking for here is a throw
-                getMethod(owner, name, descriptor)
+                val method = getMethod(owner, name, descriptor) // expected side effect: throws if invalid
+                checkModifiers(owner, method.modifiers)
             } catch (e: Throwable) {
                 incompatibleReference = "$owner#$name$descriptor"
                 incompatibleReferencer = currentClassFile
@@ -256,13 +271,67 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
         if (isRelevantApi(owner)) {
             try {
                 apiCount++
-                // Ignoring return value: what we're looking for here is a throw
-                getField(owner, name)
+                val field = getField(owner, name) // expected side effect: throws if invalid
+                checkModifiers(owner, field.modifiers)
             } catch (e: Throwable) {
                 incompatibleReference = "$owner#$name"
                 incompatibleReferencer = currentClassFile
             }
         }
+    }
+
+    /**
+     * Given a call into a method or field in class [owner], where the
+     * field or method has access level [modifiers], with a reference
+     * coming from [currentClass], checks whether the access is valid
+     * (e.g. the API is public, or protected if we're coming from a
+     * subclass). If not, it throws an exception.
+     */
+    private fun checkModifiers(owner: String, modifiers: Int) {
+        if ((modifiers and Opcodes.ACC_PUBLIC) != 0 ||
+            (modifiers and Opcodes.ACC_PROTECTED) != 0 && isCalledFromSubClass(owner)
+        ) {
+            return
+        }
+        inaccessible = true
+        throw IllegalAccessException(owner)
+    }
+
+    private fun isCalledFromSubClass(owner: String): Boolean {
+        // From direct subclass? Then we know protected is okay.
+        if (currentSuperClass == owner) {
+            return true
+        }
+        // Not from a direct subclass; let's check whether it's indirect. This is slower; we have to use
+        // reflection etc. Thankfully this is rare.
+        return try {
+            val loader = classLoader
+                ?: client.createUrlClassLoader(listOf(jarFile), this.javaClass.classLoader)
+                    .also { classLoader = it }
+            val currentClass = currentClass ?: return false
+            val cls = Class.forName(currentClass.replace('/', '.'), false, loader)
+            return isSubClass(cls, owner.replace('/', '.'), loader)
+        } catch (ignore: Throwable) {
+            // Class loading problem: we're unsure, assume it's okay
+            true
+        }
+    }
+
+    private fun isSubClass(currentClass: Class<*>?, target: String, loader: ClassLoader): Boolean {
+        currentClass ?: return false
+        if (currentClass.name == target) {
+            return true
+        }
+        val superClass = currentClass.superclass
+        if (isSubClass(superClass, target, loader)) {
+            return true
+        }
+        for (itf in currentClass.interfaces) {
+            if (isSubClass(itf, target, loader)) {
+                return true
+            }
+        }
+        return false
     }
 
     /** Loads the class of the given [internal] name */
@@ -326,6 +395,8 @@ class LintJarVerifier(jarFile: File) : ClassVisitor(ASM9) {
         superName: String?,
         interfaces: Array<out String>?
     ) {
+        currentClass = name
+        currentSuperClass = superName
         superName?.let { checkClass(it) }
         interfaces?.let { it.forEach { internal -> checkClass(internal) } }
         super.visit(version, access, name, signature, superName, interfaces)
