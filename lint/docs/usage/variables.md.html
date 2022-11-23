@@ -87,6 +87,10 @@ what they are seems useful.
 : Point lint to an alternative API database XML file instead of the
   normally used `$SDK/platforms/android-?/data/api-versions.xml` file.
 
+`ANDROID_LINT_SKIP_BYTECODE_VERIFIER`
+: If set to `true`, lint will *not* perform bytecode verification of custom
+  lint check jars from libraries or passed in via command line flags.
+
 ### Lint Development Variables
 
 `LINT_PRINT_STACKTRACE`

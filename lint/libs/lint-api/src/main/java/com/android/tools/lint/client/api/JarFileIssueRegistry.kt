@@ -19,6 +19,7 @@ package com.android.tools.lint.client.api
 import com.android.SdkConstants
 import com.android.SdkConstants.DOT_CLASS
 import com.android.SdkConstants.VALUE_FALSE
+import com.android.SdkConstants.VALUE_TRUE
 import com.android.tools.lint.detector.api.CURRENT_API
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Project
@@ -29,7 +30,6 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.lang.ref.SoftReference
 import java.net.URLClassLoader
-import java.util.HashMap
 import java.util.Locale
 import java.util.jar.Attributes
 import java.util.jar.JarFile
@@ -219,7 +219,8 @@ private constructor(
          * Verifies that the given issue jar [jarFile] is compatible.
          */
         private fun verify(client: LintClient, jarFile: File): LintJarVerifier {
-            val verifier = LintJarVerifier(client, jarFile)
+            val skip = System.getenv("ANDROID_LINT_SKIP_BYTECODE_VERIFIER") == VALUE_TRUE
+            val verifier = LintJarVerifier(client, jarFile, skip)
             verifier.getVerificationThrowable()?.let {
                 if (logJarProblems()) {
                     client.log(it, "Error verifying bytecode in $jarFile")

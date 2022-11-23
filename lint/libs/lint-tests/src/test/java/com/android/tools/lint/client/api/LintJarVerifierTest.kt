@@ -219,6 +219,10 @@ class LintJarVerifierTest {
             "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
             verifier.describeFirstIncompatibleReference()
         )
+
+        // Test SKIP
+        val noOpVerifier = LintJarVerifier(TestLintClient(), jar, skip = true)
+        assertTrue(noOpVerifier.isCompatible())
     }
 
     @Test

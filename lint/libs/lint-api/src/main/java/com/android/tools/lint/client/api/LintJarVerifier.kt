@@ -46,7 +46,7 @@ import java.util.jar.JarFile
  * Given a lint jar file, checks to see if the jar file looks compatible
  * with the current version of lint.
  */
-class LintJarVerifier(private val client: LintClient, private val jarFile: File) : ClassVisitor(ASM9) {
+class LintJarVerifier(private val client: LintClient, private val jarFile: File, private val skip: Boolean = false) : ClassVisitor(ASM9) {
     /**
      * Is the class with the given [internal] class name part of an API
      * we want to check for validity?
@@ -87,6 +87,9 @@ class LintJarVerifier(private val client: LintClient, private val jarFile: File)
      * various result properties
      */
     private fun verify(lintJar: File) {
+        if (skip) {
+            return
+        }
         // Scans through the bytecode for all the classes in lint.jar, and
         // checks any class, method or field reference accessing the Lint API
         // and makes sure that API is found in the bytecode
