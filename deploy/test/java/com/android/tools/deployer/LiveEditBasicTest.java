@@ -60,8 +60,7 @@ public class LiveEditBasicTest extends LiveEditTestBase {
                         .setPackageName(PACKAGE)
                         .build();
 
-        installer.update(request);
-        Deploy.AgentLiveEditResponse response = installer.getLiveEditResponse();
+        Deploy.AgentLiveEditResponse response = sendUpdateRequest(request);
         Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
 
         android.triggerMethod(ACTIVITY_CLASS, "invokeLiveEditSimple");

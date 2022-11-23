@@ -25,13 +25,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-public class LiveEditRecomposeTest extends LiveEditTestBase {
+public class LiveEditRecomposeCrashTest extends LiveEditTestBase {
     @Parameterized.Parameters
     public static Collection<String> artFlags() {
         return ALL_ART_FLAGS;
     }
 
-    public LiveEditRecomposeTest(String artFlag) {
+    public LiveEditRecomposeCrashTest(String artFlag) {
         super(artFlag);
     }
 
@@ -42,11 +42,11 @@ public class LiveEditRecomposeTest extends LiveEditTestBase {
 
         Deploy.LiveEditClass clazz =
                 Deploy.LiveEditClass.newBuilder()
-                        .setClassName("pkg/LiveEditRecomposeKt")
+                        .setClassName("pkg/LiveEditRecomposeCrashKt")
                         .setClassData(
                                 ByteString.copyFrom(
                                         getClassBytes(
-                                                "pkg/LiveEditRecomposeKt.class",
+                                                "pkg/LiveEditRecomposeCrashKt.class",
                                                 CompileClassLocation.KOTLIN_SWAPPED_LOCATION)))
                         .build();
 
@@ -65,13 +65,24 @@ public class LiveEditRecomposeTest extends LiveEditTestBase {
         // First time we Live Edit LiveEditRecomposeKt. The class get primed and we trigger
         // a full loadStateAndCompose.
         Assert.assertTrue(android.waitForInput("loadStateAndCompose", RETURN_VALUE_TIMEOUT));
+
+        Deploy.AgentComposeStatusResponse composeStatusRes = sendPollRequest();
+        Assert.assertEquals(
+                Deploy.AgentComposeStatusResponse.Status.OK, composeStatusRes.getStatus());
+        Assert.assertEquals(0, composeStatusRes.getExceptionsCount());
+
+        composeStatusRes = sendPollRequest();
+        Assert.assertEquals(
+                Deploy.AgentComposeStatusResponse.Status.OK, composeStatusRes.getStatus());
+        Assert.assertEquals(0, composeStatusRes.getExceptionsCount());
+
         clazz =
                 Deploy.LiveEditClass.newBuilder()
-                        .setClassName("pkg/LiveEditRecomposeKt")
+                        .setClassName("pkg/LiveEditRecomposeCrashKt")
                         .setClassData(
                                 ByteString.copyFrom(
                                         getClassBytes(
-                                                "pkg/LiveEditRecomposeKt.class",
+                                                "pkg/LiveEditRecomposeCrashKt.class",
                                                 CompileClassLocation.KOTLIN_SWAPPED_LOCATION)))
                         .build();
 
@@ -81,7 +92,7 @@ public class LiveEditRecomposeTest extends LiveEditTestBase {
                         .setPackageName(PACKAGE)
                         .setComposable(true)
                         .setRecomposeAfterPriming(true)
-                        .setGroupId(1111)
+                        .setGroupId(1112)
                         .build();
 
         response = sendUpdateRequest(request);
@@ -90,8 +101,21 @@ public class LiveEditRecomposeTest extends LiveEditTestBase {
         // We don't need to call anything. LiveEditRecompose should be triggered automatically
         // by the (mocked) Compose runtime when it needs to recompose.
         Assert.assertTrue(
-                android.waitForInput("invalidateGroupsWithKey(1111)", RETURN_VALUE_TIMEOUT));
+                android.waitForInput("invalidateGroupsWithKey(1112)", RETURN_VALUE_TIMEOUT));
         Assert.assertTrue(
-                android.waitForInput("pk.LiveEditRecompose.changed", RETURN_VALUE_TIMEOUT));
+                android.waitForInput("pk.LiveEditRecomposeCrash.changed", RETURN_VALUE_TIMEOUT));
+
+        composeStatusRes = sendPollRequest();
+        Assert.assertEquals(
+                Deploy.AgentComposeStatusResponse.Status.OK, composeStatusRes.getStatus());
+        Assert.assertEquals(1, composeStatusRes.getExceptionsCount());
+        Assert.assertEquals(
+                "java.lang.RuntimeException: LiveEditRecomposeCrash() has crashed",
+                composeStatusRes.getExceptions(0).getMessage());
+
+        composeStatusRes = sendPollRequest();
+        Assert.assertEquals(
+                Deploy.AgentComposeStatusResponse.Status.OK, composeStatusRes.getStatus());
+        Assert.assertEquals(0, composeStatusRes.getExceptionsCount());
     }
 }

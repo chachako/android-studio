@@ -19,7 +19,6 @@ import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.idea.protobuf.ByteString;
 import java.util.Collection;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -55,8 +54,7 @@ public class LiveEditInstrumentationTest extends LiveEditTestBase {
                         .setPackageName(PACKAGE)
                         .build();
 
-        installer.update(request);
-        Deploy.AgentLiveEditResponse response = installer.getLiveEditResponse();
+        Deploy.AgentLiveEditResponse response = sendUpdateRequest(request);
         Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
     }
 }

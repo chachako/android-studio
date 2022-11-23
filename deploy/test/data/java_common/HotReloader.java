@@ -15,11 +15,32 @@
  */
 package androidx.compose.runtime;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // TODO: Should probably translate this to Kotlin instead.
 /** Mock the Jet Pack Compose Runtime */
 public class HotReloader {
     public static String state = "";
     public static Companion Companion = new Companion();
+
+    public static class RecomposerErrorInfo {
+        private final Exception cause;
+
+        public RecomposerErrorInfo(Exception cause) {
+            this.cause = cause;
+        }
+
+        public Exception getCause() {
+            return cause;
+        }
+
+        public boolean getRecoverable() {
+            return true;
+        }
+    }
+
+    public static List<RecomposerErrorInfo> exceptions = new ArrayList<>();
 
     public static class Companion {
         public Object saveStateAndDispose(Object c) {
@@ -35,15 +56,31 @@ public class HotReloader {
         public boolean invalidateGroupsWithKey(int key) {
             System.out.println("invalidateGroupsWithKey(" + key + ")");
 
-            // The Compose runtime will know exactly which composable function(s) needs
-            // to be called given an invalidation group key. In this mock, we are just
-            // going to hard code some key to Composable calls.
-            switch (key) {
-                case 1111:
-                    pkg.LiveEditRecomposeKt.LiveEditRecompose();
-                    break;
+            try {
+                // The Compose runtime will know exactly which composable function(s) needs
+                // to be called given an invalidation group key. In this mock, we are just
+                // going to hard code some key to Composable calls.
+                switch (key) {
+                    case 1111:
+                        pkg.LiveEditRecomposeKt.LiveEditRecompose();
+                        break;
+                    case 1112:
+                        pkg.LiveEditRecomposeCrashKt.LiveEditRecomposeCrash();
+                        break;
+                }
+            } catch (Exception e) {
+                exceptions.add(new RecomposerErrorInfo(e));
             }
+
             return true;
+        }
+
+        public List<RecomposerErrorInfo> getCurrentErrors() {
+            return exceptions;
+        }
+
+        public void clearErrors() {
+            exceptions.clear();
         }
     }
 }

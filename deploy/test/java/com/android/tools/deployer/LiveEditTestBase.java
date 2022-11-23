@@ -45,8 +45,6 @@ public class LiveEditTestBase extends AgentTestBase {
         }
     }
 
-    protected LiveEditClient installer;
-
     public LiveEditTestBase(String artFlag) {
         super(artFlag);
     }
@@ -55,15 +53,32 @@ public class LiveEditTestBase extends AgentTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        installer = new LiveEditClient(android, dexLocation);
-        installer.startServer();
     }
 
     @After
     @Override
     public void tearDown() {
         super.tearDown();
-        installer.stopServer();
+    }
+
+    protected Deploy.AgentLiveEditResponse sendUpdateRequest(Deploy.LiveEditRequest request) {
+        try (LiveEditClient installer = new LiveEditClient(android, dexLocation)) {
+            installer.startServer();
+            installer.update(request);
+            return installer.getLiveEditResponse();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected Deploy.AgentComposeStatusResponse sendPollRequest() {
+        try (LiveEditClient installer = new LiveEditClient(android, dexLocation)) {
+            installer.startServer();
+            installer.poll(Deploy.ComposeStatusRequest.newBuilder().build());
+            return installer.getComposeStatusResponse();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected static byte[] getClassBytes(String name, CompileClassLocation location)
@@ -88,7 +103,7 @@ public class LiveEditTestBase extends AgentTestBase {
         }
     }
 
-    protected static class LiveEditClient extends InstallServerTestClient {
+    protected static class LiveEditClient extends InstallServerTestClient implements AutoCloseable {
         protected LiveEditClient(FakeAndroidDriver android, TemporaryFolder messageDir) {
             super(android, messageDir);
         }
@@ -99,6 +114,20 @@ public class LiveEditTestBase extends AgentTestBase {
                             .setAgentCount(1)
                             .setAgentRequest(
                                     Deploy.AgentRequest.newBuilder().setLeRequest(request).build())
+                            .build();
+            Deploy.InstallServerRequest serverRequest =
+                    Deploy.InstallServerRequest.newBuilder().setSendRequest(agentRequest).build();
+            callInstaller(serverRequest.toByteArray());
+        }
+
+        protected void poll(Deploy.ComposeStatusRequest request) {
+            Deploy.SendAgentMessageRequest agentRequest =
+                    Deploy.SendAgentMessageRequest.newBuilder()
+                            .setAgentCount(1)
+                            .setAgentRequest(
+                                    Deploy.AgentRequest.newBuilder()
+                                            .setComposeStatusRequest(request)
+                                            .build())
                             .build();
             Deploy.InstallServerRequest serverRequest =
                     Deploy.InstallServerRequest.newBuilder().setSendRequest(agentRequest).build();
@@ -116,6 +145,15 @@ public class LiveEditTestBase extends AgentTestBase {
 
         protected Deploy.AgentLiveEditResponse getLiveEditResponse() throws IOException {
             return getAgentResponse().getLeResponse();
+        }
+
+        protected Deploy.AgentComposeStatusResponse getComposeStatusResponse() throws IOException {
+            return getAgentResponse().getComposeStatusResponse();
+        }
+
+        @Override
+        public void close() {
+            stopServer();
         }
     }
 }
