@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.fakeadbserver;
 
 import com.android.annotations.NonNull;
@@ -411,6 +410,7 @@ public class DeviceState {
     }
 
     public List<String> getPmLogs() {
+        //noinspection unchecked
         return (List<String>) mPmLogs.clone();
     }
 
@@ -419,6 +419,7 @@ public class DeviceState {
     }
 
     public List<String> getCmdLogs() {
+        //noinspection unchecked
         return (List<String>) mCmdLogs.clone();
     }
 
@@ -427,6 +428,7 @@ public class DeviceState {
     }
 
     public List<String> getAbbLogs() {
+        //noinspection unchecked
         return (List<String>) mAbbLogs.clone();
     }
 
