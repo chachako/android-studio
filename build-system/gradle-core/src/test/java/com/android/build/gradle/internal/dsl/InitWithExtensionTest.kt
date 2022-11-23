@@ -17,7 +17,6 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.api.dsl.HasInitWith
 import com.android.build.gradle.internal.services.createDslServices
-import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
@@ -29,12 +28,10 @@ class InitWithExtensionTest {
 
     /** An Example extension from a third-party plugin */
     interface MyExtension : HasInitWith<MyExtension> {
-
         var enableFoo: Boolean
     }
 
     abstract class MyExtensionImpl : MyExtension {
-
         override fun initWith(that: MyExtension) {
             enableFoo = that.enableFoo
         }
@@ -56,6 +53,7 @@ class InitWithExtensionTest {
             .that(orangeFlavor.my.enableFoo).named("orangeFlavor.my.enableBar").isTrue()
         assertWithMessage("Lemon flavor custom extension should be the default")
             .that(lemonFlavor.my.enableFoo).named("lemonFlavor.my.enableBar").isFalse()
+
         lemonFlavor.initWith(orangeFlavor)
         assertWithMessage("Orange flavor custom extension is configured by the build author")
             .that(orangeFlavor.my.enableFoo).named("orangeFlavor.my.enableBar").isTrue()
@@ -83,12 +81,11 @@ class InitWithExtensionTest {
             .that(debugBuildType.my.enableFoo).named("buildTypes.debug.my.enableFoo").isTrue()
         assertWithMessage("qa build type custom extension should be the default")
             .that(qaBuildType.my.enableFoo).named("buildTypes.qa.my.enableFoo").isFalse()
+
         qaBuildType.initWith(debugBuildType)
         assertWithMessage("debug build type custom extension is configured by the build author")
             .that(debugBuildType.my.enableFoo).named("buildTypes.debug.my.enableFoo").isTrue()
         assertWithMessage("qa build type custom extension should be initialized by initWith")
             .that(qaBuildType.my.enableFoo).named("buildTypes.qa.my.enableFoo").isTrue()
     }
-
-
 }

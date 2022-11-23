@@ -510,7 +510,7 @@ package com.android.build.api.dsl {
     property public abstract org.gradle.api.provider.Property<java.lang.String> packName;
   }
 
-  public interface BaseFlavor extends com.android.build.api.dsl.VariantDimension com.android.build.api.dsl.HasInitWith<com.android.build.api.dsl.BaseFlavor> {
+  public interface BaseFlavor extends com.android.build.api.dsl.VariantDimension {
     method public Integer? getMinSdk();
     method public String? getMinSdkPreview();
     method public String getName();
@@ -526,7 +526,7 @@ package com.android.build.api.dsl {
     method public java.util.Map<java.lang.String,java.lang.String> getTestInstrumentationRunnerArguments();
     method public com.android.build.api.dsl.VectorDrawables getVectorDrawables();
     method public Boolean? getWearAppUnbundled();
-    method @org.gradle.api.Incubating public void initWith(com.android.build.api.dsl.BaseFlavor that);
+    method public void initWith(com.android.build.api.dsl.BaseFlavor that);
     method @Deprecated public void minSdkVersion(int minSdkVersion);
     method @Deprecated public void minSdkVersion(String? minSdkVersion);
     method public void missingDimensionStrategy(String dimension, String requestedValue);
@@ -597,7 +597,7 @@ package com.android.build.api.dsl {
     property public abstract Boolean? viewBinding;
   }
 
-  public interface BuildType extends org.gradle.api.Named org.gradle.api.plugins.ExtensionAware com.android.build.api.dsl.HasInitWith<com.android.build.api.dsl.BuildType> com.android.build.api.dsl.VariantDimension {
+  public interface BuildType extends org.gradle.api.Named org.gradle.api.plugins.ExtensionAware com.android.build.api.dsl.VariantDimension {
     method public boolean getEnableAndroidTestCoverage();
     method public boolean getEnableUnitTestCoverage();
     method public java.util.List<java.lang.String> getMatchingFallbacks();
@@ -1546,7 +1546,7 @@ package com.android.build.api.dsl {
     property @Deprecated @org.gradle.api.Incubating public abstract String? namespace;
   }
 
-  public interface ProductFlavor extends org.gradle.api.Named com.android.build.api.dsl.BaseFlavor org.gradle.api.plugins.ExtensionAware com.android.build.api.dsl.HasInitWith<com.android.build.api.dsl.BaseFlavor> {
+  public interface ProductFlavor extends org.gradle.api.Named com.android.build.api.dsl.BaseFlavor org.gradle.api.plugins.ExtensionAware {
     method public String? getDimension();
     method public java.util.List<java.lang.String> getMatchingFallbacks();
     method public void setDimension(String? dimension);
