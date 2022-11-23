@@ -382,6 +382,60 @@ public class AgentTest {
         verifyNoInteractions(mockThreadingCheckerHook);
     }
 
+    @Test
+    public void testUiMethodAnnotationKotlin()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException {
+
+        Class<?> transformedClass = loadAndTransform(SampleClassesKotlin.class);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        callMethod(transformedClass, instance, "method1", false);
+
+        verify(mockThreadingCheckerHook).verifyOnUiThread();
+    }
+
+    @Test
+    public void testUseKotlinAnnotatedLambdasAsLambdaParameter()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+
+        // Kotlin lambda is implemented as inner class
+        Class<?> lambdaImplementationClass =
+                this.getClass()
+                        .getClassLoader()
+                        .loadClass(
+                                "com.android.tools.instrumentation.threading.agent.SampleClassesKotlin$callMethodAcceptingLambda$1");
+
+        Class<?> transformedClass =
+                loadAndTransformMultiple(SampleClassesKotlin.class, lambdaImplementationClass)
+                        .get(0);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        callMethod(transformedClass, instance, "callMethodAcceptingLambda", false);
+
+        verify(mockThreadingCheckerHook).verifyOnUiThread();
+    }
+
+    @Test
+    public void testUseKotlinAnnotatedLambdasAsFunctionalInterfaceImplementation()
+            throws IOException, IllegalAccessException, InstantiationException,
+                    NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+
+        // Kotlin lambda is implemented as inner class
+        Class<?> lambdaImplementationClass =
+                this.getClass()
+                        .getClassLoader()
+                        .loadClass(
+                                "com.android.tools.instrumentation.threading.agent.SampleClassesKotlin$callMethodAcceptingFunctionalInterface$1");
+
+        Class<?> transformedClass =
+                loadAndTransformMultiple(SampleClassesKotlin.class, lambdaImplementationClass)
+                        .get(0);
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+        callMethod(transformedClass, instance, "callMethodAcceptingFunctionalInterface", false);
+
+        verify(mockThreadingCheckerHook).verifyOnUiThread();
+    }
+
     private static Class<?> loadAndTransform(Class<?> clazz) throws IOException {
         return loadAndTransformMultiple(clazz).get(0);
     }
