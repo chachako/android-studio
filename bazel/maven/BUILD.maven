@@ -16190,6 +16190,28 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-SNAPSHOT",
+    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-SNAPSHOT/sdkruntime-client-1.0.0-SNAPSHOT.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-SNAPSHOT",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.privacysandbox.sdkruntime.sdkruntime-core_1.0.0-SNAPSHOT",
+    pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-SNAPSHOT/sdkruntime-core-1.0.0-SNAPSHOT.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-SNAPSHOT",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.privacysandbox.tools.tools-apicompiler_1.0.0-SNAPSHOT",
     pom = "repository/androidx/privacysandbox/tools/tools-apicompiler/1.0.0-SNAPSHOT/tools-apicompiler-1.0.0-SNAPSHOT.pom",
     repo_root_path = "repository",
@@ -16200,6 +16222,23 @@ maven_artifact(
         "com.google.devtools.ksp.symbol-processing-api_1.7.21-1.0.8",
         "com.squareup.kotlinpoet_1.12.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.privacysandbox.tools.tools-apigenerator_1.0.0-SNAPSHOT",
+    pom = "repository/androidx/privacysandbox/tools/tools-apigenerator/1.0.0-SNAPSHOT/tools-apigenerator-1.0.0-SNAPSHOT.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/tools/tools-apigenerator/1.0.0-SNAPSHOT",
+    deps = [
+        "androidx.privacysandbox.tools.tools_1.0.0-SNAPSHOT",
+        "androidx.privacysandbox.tools.tools-core_1.0.0-SNAPSHOT",
+        "com.squareup.kotlinpoet_1.12.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
+        "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.5.0",
+        "org.ow2.asm.asm_9.3",
+        "org.ow2.asm.asm-commons_9.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -16226,6 +16265,7 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "androidx/privacysandbox/tools/tools-core/1.0.0-SNAPSHOT",
     deps = [
+        "androidx.privacysandbox.tools.tools_1.0.0-SNAPSHOT",
         "com.google.protobuf.protobuf-javalite_3.21.8",
         "com.squareup.kotlinpoet_1.12.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
@@ -16239,6 +16279,7 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT",
     deps = [
+        "androidx.annotation.annotation_1.3.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
     ],
     visibility = ["//visibility:public"],
@@ -38392,6 +38433,17 @@ maven_artifact(
     repo_path = "org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.3.0",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.5.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-metadata-jvm_0.5.0",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.5.0/kotlinx-metadata-jvm-0.5.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-metadata-jvm/0.5.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.0",
     ],
     visibility = ["//visibility:public"],
 )

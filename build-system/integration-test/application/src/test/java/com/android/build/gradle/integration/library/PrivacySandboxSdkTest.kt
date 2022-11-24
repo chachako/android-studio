@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.library
 
+import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
@@ -37,6 +38,7 @@ import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
+import org.gradle.internal.impldep.com.google.common.io.Resources
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -48,16 +50,24 @@ class PrivacySandboxSdkTest {
 
     val sandboxApiCompilerLibrary =
             getPrebuiltAsMavenLib(
-                    "androidx.privacysanbox.tools:tools-apicompiler:1.0.0-SNAPSHOT",
+                    "androidx.privacysandbox.tools:tools-apicompiler:1.0.0-SNAPSHOT",
                     "androidx/privacysandbox/tools/tools-apicompiler/1.0.0-SNAPSHOT/tools-apicompiler-1.0.0-SNAPSHOT.jar")
     val sandboxToolsLibrary =
             getPrebuiltAsMavenLib(
-                    "androidx.privacysanbox.tools:tools:1.0.0-SNAPSHOT",
+                    "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT",
                     "androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT/tools-1.0.0-SNAPSHOT.jar")
     val sandboxToolsCoreLibrary =
             getPrebuiltAsMavenLib(
-                    "androidx.privacysanbox.tools:tools-core:1.0.0-SNAPSHOT",
+                    "androidx.privacysandbox.tools:tools-core:1.0.0-SNAPSHOT",
                     "androidx/privacysandbox/tools/tools-core/1.0.0-SNAPSHOT/tools-core-1.0.0-SNAPSHOT.jar")
+    val sandboxSdkRuntimeCoreLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-SNAPSHOT/sdkruntime-core-1.0.0-SNAPSHOT.aar")
+    val sandboxSdkRuntimeClientLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-SNAPSHOT/sdkruntime-client-1.0.0-SNAPSHOT.aar")
 
     private val mavenRepo = MavenRepoGenerator(
             listOf(
@@ -68,7 +78,9 @@ class PrivacySandboxSdkTest {
                             )),
                     sandboxApiCompilerLibrary,
                     sandboxToolsLibrary,
-                    sandboxToolsCoreLibrary
+                    sandboxToolsCoreLibrary,
+                    sandboxSdkRuntimeCoreLibrary,
+                    sandboxSdkRuntimeClientLibrary
             )
     )
 
@@ -85,18 +97,23 @@ class PrivacySandboxSdkTest {
             android {
                 defaultCompileSdk()
                 namespace = "com.example.androidlib1"
-                minSdk = 12
+                minSdk = 14
                 compileSdkPreview = "TiramisuPrivacySandbox"
             }
             dependencies {
                 implementation("junit:junit:4.12")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
                 implementation(sandboxToolsLibrary)
+                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
+                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
+
                 ksp("com.google.protobuf:protobuf-java:3.19.3")
                 ksp("com.squareup:kotlinpoet:1.12.0")
                 ksp(sandboxToolsCoreLibrary)
                 ksp(sandboxToolsLibrary)
                 ksp(sandboxApiCompilerLibrary)
+                ksp("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
+                ksp("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
                 ksp("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
             }
             appendToBuildFile {
@@ -138,7 +155,7 @@ class PrivacySandboxSdkTest {
             android {
                 defaultCompileSdk()
                 namespace = "com.example.androidlib2"
-                minSdk = 12
+                minSdk = 14
                 compileSdkPreview = "TiramisuPrivacySandbox"
             }
             addFile(
@@ -167,7 +184,7 @@ class PrivacySandboxSdkTest {
             plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
             android {
                 defaultCompileSdk()
-                minSdk = 12
+                minSdk = 14
                 compileSdkPreview = "TiramisuPrivacySandbox"
             }
             appendToBuildFile {
@@ -193,7 +210,7 @@ class PrivacySandboxSdkTest {
             plugins.add(PluginType.ANDROID_APP)
             android {
                 defaultCompileSdk()
-                minSdk = 12
+                minSdk = 14
                 namespace = "com.example.privacysandboxsdk.consumer"
                 compileSdkPreview = "TiramisuPrivacySandbox"
             }
