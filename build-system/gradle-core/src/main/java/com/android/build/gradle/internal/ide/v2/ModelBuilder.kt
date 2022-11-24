@@ -674,9 +674,11 @@ class ModelBuilder<
 
         val minSdkVersion =
                 ApiVersionImpl(component.minSdkVersion.apiLevel, component.minSdkVersion.codename)
-        val targetSdkVersionOverride = component.targetSdkVersionOverride?.let {
-            ApiVersionImpl(it.apiLevel, it.codename)
-        }
+        val targetSdkVersionOverride = when (component) {
+            is ApkCreationConfig -> component.targetSdkVersionOverride
+            is LibraryCreationConfig -> component.targetSdkVersionOverride
+            else -> null
+        }?.let { ApiVersionImpl(it.apiLevel, it.codename) }
         val maxSdkVersion =
                 if (component is VariantCreationConfig) component.maxSdkVersion else null
 

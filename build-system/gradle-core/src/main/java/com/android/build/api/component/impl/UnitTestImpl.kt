@@ -91,14 +91,8 @@ open class UnitTestImpl @Inject constructor(
     override val minSdkVersion: AndroidVersion
         get() = mainVariant.minSdkVersion
 
-    override val targetSdkVersion: AndroidVersion
-        get() = mainVariant.targetSdkVersion
-
     override val applicationId: Provider<String> =
         internalServices.providerOf(String::class.java, dslInfo.applicationId)
-
-    override val targetSdkVersionOverride: AndroidVersion?
-        get() = mainVariant.targetSdkVersionOverride
 
     /**
      * Return the default runner as with unit tests, there is no dexing. However aapt2 requires

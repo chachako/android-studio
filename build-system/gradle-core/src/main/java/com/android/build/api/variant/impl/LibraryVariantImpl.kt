@@ -22,6 +22,7 @@ import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.AarMetadata
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.Renderscript
@@ -79,6 +80,13 @@ open class LibraryVariantImpl @Inject constructor(
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
+
+    override val targetSdkVersion: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
+        variantBuilder.targetSdkVersion
+    }
+
+    override val targetSdkVersionOverride: AndroidVersion?
+        get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     override val applicationId: Provider<String> =
         internalServices.newProviderBackingDeprecatedApi(

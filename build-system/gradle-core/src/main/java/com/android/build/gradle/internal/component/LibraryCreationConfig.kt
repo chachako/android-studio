@@ -16,4 +16,9 @@
 
 package com.android.build.gradle.internal.component
 
-interface LibraryCreationConfig: VariantCreationConfig, AarCreationConfig, PublishableCreationConfig
+import com.android.build.api.variant.AndroidVersion
+
+interface LibraryCreationConfig: VariantCreationConfig, AarCreationConfig, PublishableCreationConfig {
+    val targetSdkVersion: AndroidVersion
+    val targetSdkVersionOverride: AndroidVersion?
+}

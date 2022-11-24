@@ -16,16 +16,18 @@
 
 package com.android.build.gradle.internal.component
 
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.impl.BundleConfigImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
-import java.io.File
 
 /**
  * Interface for properties common to all variant generating APKs
  */
 interface ApkCreationConfig: ConsumableCreationConfig {
+    val targetSdkVersion: AndroidVersion
+    val targetSdkVersionOverride: AndroidVersion?
 
     val embedsMicroApp: Boolean
 

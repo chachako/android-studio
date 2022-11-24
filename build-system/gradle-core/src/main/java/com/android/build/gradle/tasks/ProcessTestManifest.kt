@@ -22,6 +22,7 @@ import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.getApiString
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
@@ -108,7 +109,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             testApplicationId.get(),
             namespace.get(),
             minSdkVersion.get(),
-            targetSdkVersion.get(),
+            targetSdkVersion.orNull,
             testedApplicationId.get(),
             instrumentationRunner.get(),
             handleProfiling.orNull,
@@ -166,7 +167,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
         testApplicationId: String,
         namespace: String,
         minSdkVersion: String,
-        targetSdkVersion: String,
+        targetSdkVersion: String?,
         testedApplicationId: String,
         instrumentationRunner: String,
         handleProfiling: Boolean?,
@@ -206,13 +207,14 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
         var tempFile1: File? = null
         var tempFile2: File? = null
         try {
+            val targetSdkVersionOrNull = targetSdkVersion?.takeIf { targetSdkVersion != "-1" }
             FileUtils.mkdirs(tmpDir)
             var generatedTestManifest: File =
                 File.createTempFile("tempFile1ProcessTestManifest", ".xml", tmpDir)
                     .also { tempFile1 = it }
             // we are generating the manifest and if there is an existing one,
             // it will be merged with the generated one
-            logger.verbose("Generating in %1\$s", generatedTestManifest!!.absolutePath)
+            logger.verbose("Generating in %1\$s", generatedTestManifest.absolutePath)
             if (handleProfiling != null) {
                 Preconditions.checkNotNull(
                     functionalTest,
@@ -221,10 +223,10 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 generateInstrumentedTestManifest(
                     testApplicationId,
                     minSdkVersion,
-                    if (targetSdkVersion == "-1") null else targetSdkVersion,
+                    targetSdkVersionOrNull,
                     testedApplicationId,
                     instrumentationRunner,
-                    handleProfiling!!,
+                    handleProfiling,
                     functionalTest!!,
                     generatedTestManifest
                 )
@@ -232,7 +234,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 generateUnitTestManifest(
                     testApplicationId,
                     minSdkVersion,
-                    if (targetSdkVersion == "-1") null else targetSdkVersion,
+                    targetSdkVersionOrNull,
                     generatedTestManifest,
                     testApplicationId,
                     instrumentationRunner)
@@ -275,9 +277,9 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 if (testLabel != null) {
                     intermediateInvoker.setOverride(ManifestSystemProperty.Instrumentation.LABEL, testLabel)
                 }
-                if (targetSdkVersion != "-1") {
+                targetSdkVersionOrNull?.let {
                     intermediateInvoker.setOverride(
-                        ManifestSystemProperty.UsesSdk.TARGET_SDK_VERSION, targetSdkVersion
+                        ManifestSystemProperty.UsesSdk.TARGET_SDK_VERSION, it
                     )
                 }
                 tempFile2 = File.createTempFile("tempFile2ProcessTestManifest", ".xml", tmpDir)
@@ -376,6 +378,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
     abstract val minSdkVersion: Property<String>
 
     @get:Input
+    @get:Optional
     abstract val targetSdkVersion: Property<String>
 
     @get:Input
@@ -476,7 +479,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 )
             )
             task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
-            task.targetSdkVersion.setDisallowChanges(creationConfig.targetSdkVersion.getApiString())
+
 
             task.testApplicationId.setDisallowChanges(creationConfig.applicationId)
             task.testedApplicationId.setDisallowChanges(creationConfig.testedApplicationId)
@@ -484,10 +487,16 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
 
             task.instrumentationRunner.setDisallowChanges(creationConfig.instrumentationRunner)
             if (creationConfig is InstrumentedTestCreationConfig) {
-                task.handleProfiling.setDisallowChanges(creationConfig.handleProfiling)
-                task.functionalTest.setDisallowChanges(creationConfig.functionalTest)
-                task.testLabel.setDisallowChanges(creationConfig.testLabel)
+                task.targetSdkVersion.set(creationConfig.targetSdkVersion.getApiString())
+                task.handleProfiling.set(creationConfig.handleProfiling)
+                task.functionalTest.set(creationConfig.functionalTest)
+                task.testLabel.set(creationConfig.testLabel)
             }
+            task.handleProfiling.disallowChanges()
+            task.functionalTest.disallowChanges()
+            task.testLabel.disallowChanges()
+            task.targetSdkVersion.disallowChanges()
+
             task.manifests = creationConfig
                 .variantDependencies
                 .getArtifactCollection(

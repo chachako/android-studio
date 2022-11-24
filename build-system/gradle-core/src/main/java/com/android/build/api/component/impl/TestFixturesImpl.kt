@@ -111,8 +111,6 @@ open class TestFixturesImpl @Inject constructor(
         get() = mainVariant.debuggable
     override val minSdkVersion: AndroidVersion
         get() = mainVariant.minSdkVersion
-    override val targetSdkVersion: AndroidVersion
-        get() = mainVariant.targetSdkVersion
     override val publishInfo: VariantPublishingInfo?
         get() = (mainVariant as? PublishableCreationConfig)?.publishInfo
 
@@ -146,9 +144,6 @@ open class TestFixturesImpl @Inject constructor(
 
     override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig?
         get() = mainVariant.manifestPlaceholdersCreationConfig
-
-    override val targetSdkVersionOverride: AndroidVersion?
-        get() = mainVariant.targetSdkVersionOverride
 
     override fun <T : Component> createUserVisibleVariantObject(
         projectServices: ProjectServices,

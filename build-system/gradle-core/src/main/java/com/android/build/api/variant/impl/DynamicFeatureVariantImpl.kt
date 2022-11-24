@@ -27,6 +27,7 @@ import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.AndroidResources
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DynamicFeatureVariant
@@ -143,6 +144,13 @@ open class DynamicFeatureVariantImpl @Inject constructor(
             internalServices
         )
     }
+
+    override val targetSdkVersion: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
+        variantBuilder.targetSdkVersion
+    }
+
+    override val targetSdkVersionOverride: AndroidVersion?
+        get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     // always false for this type
     override val embedsMicroApp: Boolean

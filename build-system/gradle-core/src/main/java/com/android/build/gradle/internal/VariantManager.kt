@@ -41,6 +41,7 @@ import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.api.ReadOnlyObjectProvider
 import com.android.build.gradle.internal.api.VariantFilter
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
@@ -791,20 +792,24 @@ class VariantManager<
                 val variant = variantInfo.variant
                 val variantBuilder = variantInfo.variantBuilder
                 val minSdkVersion = variant.minSdkVersion
-                val targetSdkVersion = variant.targetSdkVersion
+                val targetSdkVersion = when (variant) {
+                    is ApkCreationConfig -> variant.targetSdkVersion
+                    is LibraryCreationConfig -> variant.targetSdkVersion
+                    else -> minSdkVersion
+                }
                 if (minSdkVersion.apiLevel > targetSdkVersion.apiLevel) {
                     projectServices
-                            .issueReporter
-                            .reportWarning(
-                                    IssueReporter.Type.GENERIC, String.format(
-                                    Locale.US,
-                                    "minSdkVersion (%d) is greater than targetSdkVersion"
-                                            + " (%d) for variant \"%s\". Please change the"
-                                            + " values such that minSdkVersion is less than or"
-                                            + " equal to targetSdkVersion.",
-                                    minSdkVersion.apiLevel,
-                                    targetSdkVersion.apiLevel,
-                                    variant.name))
+                        .issueReporter
+                        .reportWarning(
+                            IssueReporter.Type.GENERIC, String.format(
+                                Locale.US,
+                                "minSdkVersion (%d) is greater than targetSdkVersion"
+                                        + " (%d) for variant \"%s\". Please change the"
+                                        + " values such that minSdkVersion is less than or"
+                                        + " equal to targetSdkVersion.",
+                                minSdkVersion.apiLevel,
+                                targetSdkVersion.apiLevel,
+                                variant.name))
                 }
 
                 val testFixturesEnabledForVariant =
@@ -895,7 +900,7 @@ class VariantManager<
                 variantAnalytics?.let {
                     it
                         .setIsDebug(buildType.isDebuggable)
-                        .setMinSdkVersion(AnalyticsUtil.toProto(minSdkVersion))
+                        .setMinSdkVersion(AnalyticsUtil.toProto(variant.minSdkVersion))
                         .setMinifyEnabled(variant.optimizationCreationConfig.minifiedEnabled)
                         .setVariantType(variant.componentType.analyticsVariantType)
                         .setDexBuilder(GradleBuildVariant.DexBuilderTool.D8_DEXER)
@@ -916,13 +921,21 @@ class VariantManager<
                             && supportType != Java8LangSupport.UNUSED) {
                             variantAnalytics.java8LangSupport = AnalyticsUtil.toProto(supportType)
                         }
+                        variantAnalytics.targetSdkVersion = AnalyticsUtil.toProto(
+                            variant.targetSdkVersion
+                        )
+                    } else if (variant is LibraryCreationConfig) {
+                        // Report the targetSdkVersion in libraries so that we can track the usage
+                        // of the deprecated API.
+                        variantAnalytics.targetSdkVersion = AnalyticsUtil.toProto(
+                            variant.targetSdkVersion
+                        )
                     }
 
                     if (variant.optimizationCreationConfig.minifiedEnabled) {
                         // If code shrinker is used, it can only be R8
                         variantAnalytics.codeShrinker = GradleBuildVariant.CodeShrinkerTool.R8
                     }
-                    variantAnalytics.targetSdkVersion = AnalyticsUtil.toProto(targetSdkVersion)
                     variant.maxSdkVersion?.let { version ->
                         variantAnalytics.setMaxSdkVersion(
                             ApiVersion.newBuilder().setApiLevel(version.toLong()))

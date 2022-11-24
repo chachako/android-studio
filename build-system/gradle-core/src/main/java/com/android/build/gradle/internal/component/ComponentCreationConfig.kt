@@ -77,10 +77,7 @@ interface ComponentCreationConfig : ComponentIdentity {
     val applicationId: Provider<String>
     val namespace: Provider<String>
     val debuggable: Boolean
-
     val minSdkVersion: AndroidVersion
-    val targetSdkVersion: AndroidVersion
-    val targetSdkVersionOverride: AndroidVersion?
 
     // ---------------------------------------------------------------------------------------------
     // OPTIONAL FEATURES

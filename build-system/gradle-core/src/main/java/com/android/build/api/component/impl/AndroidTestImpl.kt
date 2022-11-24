@@ -43,6 +43,8 @@ import com.android.build.api.variant.impl.ApkPackagingImpl
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
@@ -115,7 +117,17 @@ open class AndroidTestImpl @Inject constructor(
         get() = mainVariant.minSdkVersion
 
     override val targetSdkVersion: AndroidVersion
-        get() = mainVariant.targetSdkVersion
+        get() = when (mainVariant) {
+            is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersion
+            is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkVersion
+            else -> minSdkVersion
+        }
+    override val targetSdkVersionOverride: AndroidVersion?
+        get() = when (mainVariant) {
+            is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersionOverride
+            is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkVersionOverride
+            else -> null
+        }
 
     override val applicationId: Property<String> = internalServices.propertyOf(
         String::class.java,
@@ -282,9 +294,6 @@ open class AndroidTestImpl @Inject constructor(
 
     override val nativeBuildCreationConfig: NativeBuildCreationConfig?
         get() = mainVariant.nativeBuildCreationConfig
-
-    override val targetSdkVersionOverride: AndroidVersion?
-        get() = mainVariant.targetSdkVersionOverride
 
     // always false for this type
     override val embedsMicroApp: Boolean

@@ -25,6 +25,7 @@ import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.AndroidResources
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.Component
@@ -140,6 +141,13 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val shrinkResources: Boolean
         get() = variantBuilder.shrinkResources
+
+    override val targetSdkVersion: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
+        variantBuilder.targetSdkVersion
+    }
+
+    override val targetSdkVersionOverride: AndroidVersion?
+        get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API

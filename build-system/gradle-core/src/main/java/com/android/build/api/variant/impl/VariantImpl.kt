@@ -111,10 +111,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
         variantBuilder.minSdkVersion
     }
 
-    override val targetSdkVersion: AndroidVersion by lazy {
-        variantBuilder.targetSdkVersion
-    }
-
     override val maxSdkVersion: Int?
         get() = variantBuilder.maxSdk
 
@@ -210,9 +206,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     private val externalExtensions: Map<Class<*>, Any>? by lazy {
         variantBuilder.getRegisteredExtensions()
     }
-
-    override val targetSdkVersionOverride: AndroidVersion?
-        get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     override val resValues: MapProperty<ResValue.Key, ResValue> by lazy {
         resValuesCreationConfig?.resValues

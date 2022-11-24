@@ -28,6 +28,7 @@ import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dependency.VariantDependencies
@@ -948,7 +949,11 @@ abstract class VariantInputs {
 
         minSdkVersion.initialize(creationConfig.minSdkVersion)
 
-        targetSdkVersion.initialize(creationConfig.targetSdkVersion)
+        if (creationConfig is ApkCreationConfig) {
+            targetSdkVersion.initialize(creationConfig.targetSdkVersion)
+        } else if (creationConfig is LibraryCreationConfig) {
+            targetSdkVersion.initialize(creationConfig.targetSdkVersion)
+        }
 
         resValues.setDisallowChanges(
             creationConfig.resValuesCreationConfig?.resValues,
