@@ -20,8 +20,10 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
+import com.android.build.gradle.integration.common.utils.IgnoredTests
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -46,6 +48,7 @@ class AndroidTestClasspathTest {
     ).create()
 
     /** See b/155802460 for more details. */
+    @Ignore(IgnoredTests.BUG_184038058)
     @Test
     fun testAndroidTestClasspathContainsProjectDep() {
         project.getSubproject("app").buildFile.appendText(
@@ -61,7 +64,7 @@ class AndroidTestClasspathTest {
 
         project.getSubproject("lib").buildFile.appendText(
             """
-            
+
             group = "com.test"
             version = "99.0"
         """.trimIndent()
@@ -77,8 +80,7 @@ class AndroidTestClasspathTest {
                 it.writeText("package test; public class DataTest extends Data {}")
             }
 
-            // Disable failOnWarning temporarily (bug 184038058)
-            executor().withFailOnWarning(false).run("assembleDebug", "assembleDebugAndroidTest")
+            executor().run("assembleDebug", "assembleDebugAndroidTest")
             getApk(GradleTestProject.ApkType.DEBUG).use {
                 assertThatApk(it).containsClass("Ltest/Data;")
             }

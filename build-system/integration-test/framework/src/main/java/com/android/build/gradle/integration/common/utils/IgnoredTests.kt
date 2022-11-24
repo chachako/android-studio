@@ -28,6 +28,8 @@ class IgnoredTests {
         const val BUG_23682893 = "236828934"
         // b/236828934: Custom signing not working with model v2"
         const val BUG_243127865 = "243127865"
+        // b/155802460: Project substitution applied in tested, but not in androidTest variant
+        const val BUG_184038058 = "184038058"
     }
 }
 
