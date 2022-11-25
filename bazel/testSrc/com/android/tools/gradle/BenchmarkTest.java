@@ -326,7 +326,7 @@ public class BenchmarkTest {
         if (useJdk11) {
             useJdk11ForGradle(gradleProperties);
         }
-        try (Gradle gradle = new Gradle(projectRoot, out, distribution)) {
+        try (Gradle gradle = new Gradle(projectRoot, out, distribution, /*javaHome=*/ null)) {
             for (File repo : repos) {
                 gradle.addRepo(repo);
             }

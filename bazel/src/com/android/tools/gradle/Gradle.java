@@ -52,16 +52,18 @@ public class Gradle implements Closeable {
 
     @NonNull private final File outDir;
     @NonNull private final File distribution;
+    private final File javaHome;
     @NonNull private final File project;
     @NonNull private final List<String> arguments;
     @NonNull private final File repoDir;
     @NonNull private final Set<File> usedGradleUserHomes = new HashSet<>();
 
-    public Gradle(@NonNull File project, @NonNull File outDir, @NonNull File distribution)
+    public Gradle(@NonNull File project, @NonNull File outDir, @NonNull File distribution, File javaHome)
             throws IOException {
         this.project = project;
         this.outDir = outDir;
         this.distribution = distribution;
+        this.javaHome = javaHome;
         this.arguments = new LinkedList<>();
 
         File initScript = getInitScript().getAbsoluteFile();
@@ -202,6 +204,9 @@ public class Gradle implements Closeable {
                             .setEnvironmentVariables(env)
                             .withArguments(arguments)
                             .forTasks(tasks.toArray(new String[0]));
+            if (javaHome != null) {
+                launcher.setJavaHome(canonicalizeJavaHome(javaHome));
+            }
             launcher.setStandardOutput(out);
             launcher.setStandardError(err);
             launcher.run();
@@ -210,6 +215,11 @@ public class Gradle implements Closeable {
         } finally {
             projectConnection.close();
         }
+    }
+
+    private File canonicalizeJavaHome(File javaHome) throws IOException {
+        // Bazel uses a symlink tree of files, follow a known file back to the real location
+        return javaHome.toPath().resolve("release").toRealPath().getParent().toFile();
     }
 
     /** Creates a unique jar and adds it to buildscript classpath. */

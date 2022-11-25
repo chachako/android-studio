@@ -149,6 +149,7 @@ gradle_build(
         "//tools/base/build-system:android_platform_for_tests",
     ],
     gradle_version = "6.5",  # AGP 3.5 is not supported by Gradle 7.0+
+    java_version = 11,
     output_file = "3.5.0.aar",
     output_file_source = "outputs/aar/3.5.0-release.aar",
     repos = [
@@ -182,6 +183,7 @@ gradle_build(
         "//tools/base/build-system:android_platform_for_tests",
     ],
     gradle_version = "5.5",
+    java_version = 11,
     output_file = "3.3.2.aar",
     output_file_source = "outputs/aar/3.3.2.aar",
     repos = [
@@ -215,6 +217,7 @@ gradle_build(
     name = "3.0.0_check",
     build_file = "tests/3.0.0/build.gradle",
     gradle_version = "5.5",
+    java_version = 11,
     output_file = "3.0.0_dependencies_list.txt",
     output_file_source = "dependencies_list.txt",
     repos = [

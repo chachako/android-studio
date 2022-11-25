@@ -1,5 +1,13 @@
 load(":maven.bzl", "MavenRepoInfo")
 
+def _java_runtime(java_version):
+    if java_version == 17:
+        return "//prebuilts/studio/jdk/jdk17:jdk17_runtime"
+    elif java_version == 11:
+        return "//prebuilts/studio/jdk/jdk11:jdk11_runtime"
+    else:
+        fail("unexpected java version " + java_version)
+
 def _gradle_build_impl(ctx):
     # TODO (b/182291459) --singlejar is a workaround for the Windows classpath jar bug.
     # This argument should be removed once the underlying problem is fixed.
@@ -18,6 +26,8 @@ def _gradle_build_impl(ctx):
     if ctx.attr.max_workers > 0:
         args += ["--max_workers", str(ctx.attr.max_workers)]
     args += ["-P" + key + "=" + value for key, value in ctx.attr.gradle_properties.items()]
+    java_runtime_info = ctx.attr.java_runtime[java_common.JavaRuntimeInfo]
+    args += ["--java_home", java_runtime_info.java_home]
 
     manifest_inputs = []
     for repo in ctx.attr.repos:
@@ -26,8 +36,13 @@ def _gradle_build_impl(ctx):
     for repo_zip in ctx.files.repo_zips:
         args += ["--repo", repo_zip.path]
 
+    inputs = depset(
+        direct = ctx.files.data + ctx.files.repo_zips + manifest_inputs + [ctx.file.build_file, ctx.file._gradlew_deploy, distribution],
+        transitive = [java_runtime_info.files],
+    )
+
     ctx.actions.run(
-        inputs = ctx.files.data + ctx.files.repo_zips + manifest_inputs + [ctx.file.build_file, ctx.file._gradlew_deploy, distribution],
+        inputs = inputs,
         outputs = outputs,
         mnemonic = "gradlew",
         arguments = args,
@@ -48,6 +63,7 @@ _gradle_build = rule(
         "repos": attr.label_list(providers = [MavenRepoInfo]),
         "repo_zips": attr.label_list(allow_files = [".zip"]),
         "output_log": attr.output(),
+        "java_runtime": attr.label(mandatory = True),
         "distribution": attr.label(allow_files = True),
         "max_workers": attr.int(default = 0, doc = "Max number of workers, 0 or negative means unset (Gradle will use the default: number of CPU cores)."),
         "gradle_properties": attr.string_dict(),
@@ -82,6 +98,7 @@ def gradle_build(
         max_workers = 0,
         gradle_properties = {},
         tags = [],
+        java_version = 11,
         **kwargs):
     output_file_destinations = []
     output_file_sources = []
@@ -99,6 +116,8 @@ def gradle_build(
 
     distribution = "//tools/base/build-system:gradle-distrib" + ("-" + gradle_version if (gradle_version) else "")
 
+    java_runtime = _java_runtime(java_version)
+
     _gradle_build(
         name = name,
         build_file = build_file,
@@ -108,6 +127,7 @@ def gradle_build(
         output_file_destinations = output_file_destinations,
         output_log = name + ".log",
         gradle_properties = gradle_properties,
+        java_runtime = java_runtime,
         repos = repos,
         repo_zips = repo_zips,
         tags = tags,
@@ -136,9 +156,11 @@ def _gradle_test_impl(ctx):
     for repo_zip in ctx.files.repo_zips:
         args += ["--repo", repo_zip.path]
 
+    java_runtime_info = ctx.attr.java_runtime[java_common.JavaRuntimeInfo]
+    args += ["--java_home", java_runtime_info.java_home]
     executable = ctx.actions.declare_file(ctx.label.name + ".bat")
     inputs = ctx.files.data + ctx.files.repo_zips + manifest_inputs + [ctx.file.build_file, ctx.file._gradlew_deploy, distribution, ctx.executable._gradlew]
-    runfiles = ctx.runfiles(files = inputs).merge(ctx.attr._gradlew[DefaultInfo].default_runfiles)
+    runfiles = ctx.runfiles(files = inputs, transitive_files = java_runtime_info.files).merge(ctx.attr._gradlew[DefaultInfo].default_runfiles)
 
     short_path = ctx.executable._gradlew.short_path
     short_path = short_path.replace("/", "\\") if ctx.attr.is_windows else short_path
@@ -157,6 +179,7 @@ _gradle_test = rule(
         "repos": attr.label_list(providers = [MavenRepoInfo]),
         "repo_zips": attr.label_list(allow_files = [".zip"]),
         "distribution": attr.label(allow_files = True),
+        "java_runtime": attr.label(mandatory = True),
         "max_workers": attr.int(default = 0, doc = "Max number of workers, 0 or negative means unset (Gradle will use the default: number of CPU cores)."),
         "gradle_properties": attr.string_dict(),
         "is_windows": attr.bool(),
@@ -180,6 +203,7 @@ def gradle_test(
         name = None,
         build_file = None,
         gradle_version = None,
+        java_version = 11,
         repos = [],
         repo_zips = [],
         test_output_dir = None,
@@ -187,10 +211,12 @@ def gradle_test(
         gradle_properties = {},
         **kwargs):
     distribution = "//tools/base/build-system:gradle-distrib" + ("-" + gradle_version if (gradle_version) else "")
+    java_runtime = _java_runtime(java_version)
     _gradle_test(
         name = name,
         build_file = build_file,
         distribution = distribution,
+        java_runtime = java_runtime,
         test_output_dir = test_output_dir,
         gradle_properties = gradle_properties,
         repos = repos,

@@ -41,6 +41,7 @@ class GradleW {
         LinkedList<OutputFileEntry> outputFiles = new LinkedList<>();
         List<String> gradleArgs = new ArrayList<>();
         String testOutputDir = null;
+        File javaHome = null;
 
         Iterator<String> it = args.iterator();
         while (it.hasNext()) {
@@ -69,6 +70,8 @@ class GradleW {
                 gradleArgs.add(it.next());
             } else if (arg.startsWith("-P")) {
                 gradleArgs.add(arg);
+            } else if (arg.equals("--java_home") && it.hasNext()) {
+                javaHome = new File(it.next()).getAbsoluteFile();
             } else {
                 throw new IllegalArgumentException("Unknown argument '" + arg + "'.");
             }
@@ -76,7 +79,7 @@ class GradleW {
         File outDir =
                 logFile.getParent().resolve(logFile.getFileName().toString() + ".temp").toFile();
         Files.createDirectories(outDir.toPath());
-        try (Gradle gradle = new Gradle(gradleFile.getParentFile(), outDir, distribution);
+        try (Gradle gradle = new Gradle(gradleFile.getParentFile(), outDir, distribution, javaHome);
                 OutputStream log = new BufferedOutputStream(Files.newOutputStream(logFile))) {
             for (File repo : repos) {
                 gradle.addRepo(repo);
