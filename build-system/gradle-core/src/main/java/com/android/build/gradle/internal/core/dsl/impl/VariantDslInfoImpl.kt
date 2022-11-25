@@ -20,7 +20,7 @@ import com.android.build.api.dsl.ApplicationProductFlavor
 import com.android.build.api.dsl.BuildType
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.Lint
-import com.android.build.api.dsl.PackagingOptions
+import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.impl.MutableAndroidVersion
@@ -97,7 +97,7 @@ internal abstract class VariantDslInfoImpl internal constructor(
 
     override val lintOptions: Lint
         get() = extension.lint
-    override val packaging: PackagingOptions
+    override val packaging: Packaging
         get() = extension.packagingOptions
     override val experimentalProperties: Map<String, Any>
         get() = extension.experimentalProperties

@@ -767,7 +767,7 @@ package com.android.build.api.dsl {
     method public String? getNamespace();
     method @org.gradle.api.Incubating public String? getNdkPath();
     method @org.gradle.api.Incubating public String? getNdkVersion();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.PackagingOptions getPackagingOptions();
+    method public com.android.build.api.dsl.Packaging getPackagingOptions();
     method public org.gradle.api.NamedDomainObjectContainer<? extends ProductFlavorT> getProductFlavors();
     method @org.gradle.api.Incubating public String? getResourcePrefix();
     method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.SdkComponents getSdkComponents();
@@ -781,7 +781,7 @@ package com.android.build.api.dsl {
     method @Deprecated @org.gradle.api.Incubating public void jacoco(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.JacocoOptions,kotlin.Unit> action);
     method public void lint(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void lintOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.LintOptions,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public void packagingOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PackagingOptions,kotlin.Unit> action);
+    method public void packagingOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging,kotlin.Unit> action);
     method public void productFlavors(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<ProductFlavorT>,kotlin.Unit> action);
     method public void release(org.gradle.api.NamedDomainObjectContainer<BuildTypeT>, kotlin.jvm.functions.Function1<? super BuildTypeT,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void setBuildToolsVersion(String buildToolsVersion);
@@ -823,7 +823,7 @@ package com.android.build.api.dsl {
     property public abstract String? namespace;
     property @org.gradle.api.Incubating public abstract String? ndkPath;
     property @org.gradle.api.Incubating public abstract String? ndkVersion;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PackagingOptions packagingOptions;
+    property public abstract com.android.build.api.dsl.Packaging packagingOptions;
     property public abstract org.gradle.api.NamedDomainObjectContainer<? extends ProductFlavorT> productFlavors;
     property @org.gradle.api.Incubating public abstract String? resourcePrefix;
     property @Deprecated @org.gradle.api.Incubating public abstract com.android.build.api.dsl.SdkComponents sdkComponents;
@@ -1434,7 +1434,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void keepRules(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KeepRules,kotlin.Unit> action);
   }
 
-  @org.gradle.api.Incubating public interface PackagingOptions {
+  public interface Packaging {
     method public void dex(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DexPackaging,kotlin.Unit> action);
     method @Deprecated public void doNotStrip(String pattern);
     method @Deprecated public void exclude(String pattern);

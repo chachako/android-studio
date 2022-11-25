@@ -138,10 +138,10 @@ import javax.inject.Inject
  * }
  * </pre>
  */
-abstract class PackagingOptions
+abstract class Packaging
 @Inject @WithLazyInitialization("lazyInit") constructor() :
     com.android.builder.model.PackagingOptions,
-    com.android.build.api.dsl.PackagingOptions {
+    com.android.build.api.dsl.Packaging {
 
     protected fun lazyInit() {
         setExcludes(defaultExcludes)

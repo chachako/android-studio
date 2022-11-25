@@ -16,7 +16,7 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.dsl.PackagingOptions
+import com.android.build.api.dsl.Packaging
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.createDslServices
@@ -29,73 +29,73 @@ import org.junit.Test
 
 class JniLibsPackagingImplTest {
 
-    private lateinit var dslPackagingOptions: PackagingOptions
+    private lateinit var dslPackaging: Packaging
     private val projectServices = createProjectServices()
     private val dslServices: DslServices = createDslServices(projectServices)
     private val variantPropertiesApiServices = createVariantPropertiesApiServices(projectServices)
 
     interface PackagingOptionsWrapper {
-        val packagingOptions: PackagingOptions
+        val packaging: Packaging
     }
 
     @Before
     fun setUp() {
-        dslPackagingOptions = androidPluginDslDecorator.decorate(PackagingOptionsWrapper::class.java)
+        dslPackaging = androidPluginDslDecorator.decorate(PackagingOptionsWrapper::class.java)
             .getDeclaredConstructor(DslServices::class.java)
             .newInstance(dslServices)
-            .packagingOptions
+            .packaging
     }
 
     @Test
     fun testExcludes() {
-        dslPackagingOptions.excludes.add("foo")
-        dslPackagingOptions.jniLibs.excludes.add("bar")
+        dslPackaging.excludes.add("foo")
+        dslPackaging.jniLibs.excludes.add("bar")
         // test setExcludes method too
         val dslJniLibsPackagingOptionsImpl =
-            dslPackagingOptions.jniLibs
+            dslPackaging.jniLibs
                 as com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
         dslJniLibsPackagingOptionsImpl.setExcludes(
-            Sets.union(dslPackagingOptions.jniLibs.excludes, setOf("baz"))
+            Sets.union(dslPackaging.jniLibs.excludes, setOf("baz"))
         )
 
         val jniLibsPackagingOptions =
-            JniLibsPackagingImpl(dslPackagingOptions, variantPropertiesApiServices)
+            JniLibsPackagingImpl(dslPackaging, variantPropertiesApiServices)
 
         assertThat(jniLibsPackagingOptions.excludes.get()).containsExactly("foo", "bar", "baz")
     }
 
     @Test
     fun testPickFirsts() {
-        dslPackagingOptions.pickFirsts.add("foo")
-        dslPackagingOptions.jniLibs.pickFirsts.add("bar")
+        dslPackaging.pickFirsts.add("foo")
+        dslPackaging.jniLibs.pickFirsts.add("bar")
         // test setPickFirsts method too
         val dslJniLibsPackagingOptionsImpl =
-            dslPackagingOptions.jniLibs
+            dslPackaging.jniLibs
                 as com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
         dslJniLibsPackagingOptionsImpl.setPickFirsts(
-            Sets.union(dslPackagingOptions.jniLibs.pickFirsts, setOf("baz"))
+            Sets.union(dslPackaging.jniLibs.pickFirsts, setOf("baz"))
         )
 
         val jniLibsPackagingOptions =
-            JniLibsPackagingImpl(dslPackagingOptions, variantPropertiesApiServices)
+            JniLibsPackagingImpl(dslPackaging, variantPropertiesApiServices)
 
         assertThat(jniLibsPackagingOptions.pickFirsts.get()).containsExactly("foo", "bar", "baz")
     }
 
     @Test
     fun testKeepDebugSymbols() {
-        dslPackagingOptions.doNotStrip.add("foo")
-        dslPackagingOptions.jniLibs.keepDebugSymbols.add("bar")
+        dslPackaging.doNotStrip.add("foo")
+        dslPackaging.jniLibs.keepDebugSymbols.add("bar")
         // test setKeepDebugSymbols method too
         val dslJniLibsPackagingOptionsImpl =
-            dslPackagingOptions.jniLibs
+            dslPackaging.jniLibs
                 as com.android.build.gradle.internal.dsl.JniLibsPackagingImpl
         dslJniLibsPackagingOptionsImpl.setKeepDebugSymbols(
-            Sets.union(dslPackagingOptions.jniLibs.keepDebugSymbols, setOf("baz"))
+            Sets.union(dslPackaging.jniLibs.keepDebugSymbols, setOf("baz"))
         )
 
         val jniLibsPackagingOptions =
-            JniLibsPackagingImpl(dslPackagingOptions, variantPropertiesApiServices)
+            JniLibsPackagingImpl(dslPackaging, variantPropertiesApiServices)
 
         assertThat(jniLibsPackagingOptions.keepDebugSymbols.get())
             .containsExactly("foo", "bar", "baz")

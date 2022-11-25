@@ -16,10 +16,8 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Incubating
 
-@Incubating
-interface PackagingOptions {
+interface Packaging {
     /** The set of excluded paths.*/
     @Deprecated(
         "This property is deprecated. Use resources.excludes or jniLibs.excludes instead. Use "

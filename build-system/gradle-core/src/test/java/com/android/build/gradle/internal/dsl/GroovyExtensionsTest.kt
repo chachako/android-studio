@@ -105,7 +105,7 @@ class GroovyExtensionsTest {
             "com.android.build.gradle.internal.dsl.DefaultConfig" -> "DefaultConfigT"
             "com.android.build.gradle.internal.dsl.ExternalNativeBuild" -> "com.android.build.api.dsl.ExternalNativeBuild"
             "com.android.build.gradle.internal.dsl.LintOptions" -> "com.android.build.api.dsl.LintOptions"
-            "com.android.build.gradle.internal.dsl.PackagingOptions" -> "com.android.build.api.dsl.PackagingOptions"
+            "com.android.build.gradle.internal.dsl.Packaging" -> "com.android.build.api.dsl.Packaging"
             "com.android.build.gradle.internal.dsl.Splits" -> "com.android.build.api.dsl.Splits"
             "com.android.build.gradle.internal.dsl.TestOptions" -> "com.android.build.api.dsl.TestOptions"
             "org.gradle.api.NamedDomainObjectContainer<com.android.build.gradle.api.AndroidSourceSet>" ->

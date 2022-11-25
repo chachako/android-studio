@@ -28,7 +28,7 @@ import com.android.build.gradle.internal.dsl.CoreBuildType
 import com.android.build.gradle.internal.dsl.CoreProductFlavor
 import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.dsl.LintOptions
-import com.android.build.gradle.internal.dsl.PackagingOptions
+import com.android.build.gradle.internal.dsl.Packaging
 import com.android.build.gradle.internal.dsl.Splits
 import com.android.build.gradle.internal.dsl.TestOptions
 import com.android.build.gradle.internal.model.CoreExternalNativeBuild
@@ -339,11 +339,11 @@ interface AndroidConfig {
      * ```
      *
      * To learn more about how to specify rules for packaging, merging, and excluding files, see
-     * [PackagingOptions]
+     * [Packaging]
      *
-     * @see com.android.build.gradle.internal.dsl.PackagingOptions
+     * @see com.android.build.gradle.internal.dsl.Packaging
     */// */
-    val packagingOptions: PackagingOptions
+    val packagingOptions: Packaging
 
     /**
      * Specifies configurations for

@@ -319,19 +319,17 @@ interface CommonExtension<
      * Specifies options and rules that determine which files the Android plugin packages into your
      * APK.
      *
-     * For more information about the properties you can configure in this block, see [PackagingOptions].
+     * For more information about the properties you can configure in this block, see [Packaging].
      */
-    @get:Incubating
-    val packagingOptions: PackagingOptions
+    val packagingOptions: Packaging
 
     /**
      * Specifies options and rules that determine which files the Android plugin packages into your
      * APK.
      *
-     * For more information about the properties you can configure in this block, see [PackagingOptions].
+     * For more information about the properties you can configure in this block, see [Packaging].
      */
-    @Incubating
-    fun packagingOptions(action: PackagingOptions.() -> Unit)
+    fun packagingOptions(action: Packaging.() -> Unit)
 
     /**
      * Encapsulates all product flavors configurations for this project.

@@ -16,7 +16,7 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.dsl.PackagingOptions
+import com.android.build.api.dsl.Packaging
 import com.android.build.gradle.internal.dsl.ResourcesPackagingImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.packaging.defaultExcludes
@@ -29,41 +29,41 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 
-class ResourcesApkPackagingOptionsImplTest {
+class ResourcesApkPackagingImplTest {
 
-    private lateinit var dslPackagingOptions: PackagingOptions
+    private lateinit var dslPackaging: Packaging
     private val projectServices = createProjectServices()
     private val dslServices: DslServices = createDslServices(projectServices)
     private val variantPropertiesApiServices = createVariantPropertiesApiServices(projectServices)
 
     interface PackagingOptionsWrapper {
-        val packagingOptions: PackagingOptions
+        val packaging: Packaging
     }
 
     @Before
     fun setUp() {
-        dslPackagingOptions = androidPluginDslDecorator.decorate(PackagingOptionsWrapper::class.java)
+        dslPackaging = androidPluginDslDecorator.decorate(PackagingOptionsWrapper::class.java)
             .getDeclaredConstructor(DslServices::class.java)
             .newInstance(dslServices)
-            .packagingOptions
+            .packaging
     }
 
     @Test
     fun testExcludes() {
-        dslPackagingOptions.excludes.add("foo")
-        dslPackagingOptions.excludes.remove("/META-INF/LICENSE")
-        dslPackagingOptions.resources.excludes.add("bar")
-        dslPackagingOptions.resources.excludes.remove("/META-INF/NOTICE")
+        dslPackaging.excludes.add("foo")
+        dslPackaging.excludes.remove("/META-INF/LICENSE")
+        dslPackaging.resources.excludes.add("bar")
+        dslPackaging.resources.excludes.remove("/META-INF/NOTICE")
         // test setExcludes method too
         val dslResourcesPackagingOptionsImpl =
-            dslPackagingOptions.resources
+            dslPackaging.resources
                 as ResourcesPackagingImpl
         dslResourcesPackagingOptionsImpl.setExcludes(
-            Sets.union(dslPackagingOptions.resources.excludes, setOf("baz"))
+            Sets.union(dslPackaging.resources.excludes, setOf("baz"))
         )
 
         val resourcesPackagingOptionsImpl =
-            ResourcesApkPackagingImpl(dslPackagingOptions, variantPropertiesApiServices)
+            ResourcesApkPackagingImpl(dslPackaging, variantPropertiesApiServices)
 
         val expectedExcludes = defaultExcludes.plus("/META-INF/*.kotlin_module").toMutableSet()
         expectedExcludes.addAll(listOf("foo", "bar", "baz"))

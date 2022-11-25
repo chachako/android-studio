@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.api.dsl.PackagingOptions
+import com.android.build.api.dsl.Packaging
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.createDslServices
@@ -25,26 +25,26 @@ import org.junit.Before
 import org.junit.Test
 
 /** Test for the mutablitly of Packaging Options */
-class PackagingOptionsTest {
+class PackagingTest {
 
-    private lateinit var packagingOptions: PackagingOptions
+    private lateinit var packaging: Packaging
     private val dslServices: DslServices = createDslServices()
 
     interface PackagingOptionsWrapper {
-        val packagingOptions: PackagingOptions
+        val packaging: Packaging
     }
 
     @Before
     fun init() {
-        packagingOptions  = androidPluginDslDecorator.decorate(PackagingOptionsWrapper::class.java)
+        packaging  = androidPluginDslDecorator.decorate(PackagingOptionsWrapper::class.java)
             .getDeclaredConstructor(DslServices::class.java)
             .newInstance(dslServices)
-            .packagingOptions
+            .packaging
     }
 
     @Test
     fun `test defaults`() {
-        assertThat(packagingOptions.excludes)
+        assertThat(packaging.excludes)
             .containsExactly(
                 "**/*.kotlin_metadata",
                 "**/*~",
@@ -78,68 +78,68 @@ class PackagingOptionsTest {
                 "/NOTICE",
                 "/NOTICE.txt"
             )
-        assertThat(packagingOptions.pickFirsts).isEmpty()
-        assertThat(packagingOptions.merges)
+        assertThat(packaging.pickFirsts).isEmpty()
+        assertThat(packaging.merges)
             .containsExactly(
                 "/META-INF/services/**",
                 "jacoco-agent.properties",
             )
-        assertThat(packagingOptions.doNotStrip).isEmpty()
+        assertThat(packaging.doNotStrip).isEmpty()
     }
 
     @Test
     fun `test excludes mutations are possible`() {
-        packagingOptions.excludes.clear()
-        assertThat(packagingOptions.excludes).isEmpty()
+        packaging.excludes.clear()
+        assertThat(packaging.excludes).isEmpty()
 
-        packagingOptions.exclude("example1")
-        packagingOptions.excludes.add("example2")
-        assertThat(packagingOptions.excludes).containsExactly("example1", "example2")
+        packaging.exclude("example1")
+        packaging.excludes.add("example2")
+        assertThat(packaging.excludes).containsExactly("example1", "example2")
 
-        (packagingOptions as com.android.build.gradle.internal.dsl.PackagingOptions)
-            .setExcludes(Sets.union(packagingOptions.excludes, setOf("example3")))
-        assertThat(packagingOptions.excludes).containsExactly("example1", "example2", "example3")
+        (packaging as com.android.build.gradle.internal.dsl.Packaging)
+            .setExcludes(Sets.union(packaging.excludes, setOf("example3")))
+        assertThat(packaging.excludes).containsExactly("example1", "example2", "example3")
     }
 
     @Test
     fun pickFirsts() {
-        packagingOptions.pickFirsts.clear()
-        assertThat(packagingOptions.pickFirsts).isEmpty()
+        packaging.pickFirsts.clear()
+        assertThat(packaging.pickFirsts).isEmpty()
 
-        packagingOptions.pickFirst("example1")
-        packagingOptions.pickFirsts.add("example2")
-        assertThat(packagingOptions.pickFirsts).containsExactly("example1", "example2")
+        packaging.pickFirst("example1")
+        packaging.pickFirsts.add("example2")
+        assertThat(packaging.pickFirsts).containsExactly("example1", "example2")
 
-        (packagingOptions as com.android.build.gradle.internal.dsl.PackagingOptions)
-            .setPickFirsts(Sets.union(packagingOptions.pickFirsts, setOf("example3")))
-        assertThat(packagingOptions.pickFirsts).containsExactly("example1", "example2", "example3");
+        (packaging as com.android.build.gradle.internal.dsl.Packaging)
+            .setPickFirsts(Sets.union(packaging.pickFirsts, setOf("example3")))
+        assertThat(packaging.pickFirsts).containsExactly("example1", "example2", "example3");
     }
 
     @Test
     fun merges() {
-        packagingOptions.merges.clear()
-        assertThat(packagingOptions.merges).isEmpty()
+        packaging.merges.clear()
+        assertThat(packaging.merges).isEmpty()
 
-        packagingOptions.merge("example1")
-        packagingOptions.merges.add("example2")
-        assertThat(packagingOptions.merges).containsExactly("example1", "example2")
+        packaging.merge("example1")
+        packaging.merges.add("example2")
+        assertThat(packaging.merges).containsExactly("example1", "example2")
 
-        (packagingOptions as com.android.build.gradle.internal.dsl.PackagingOptions)
-            .setMerges(Sets.union(packagingOptions.merges, setOf("example3")))
-        assertThat(packagingOptions.merges).containsExactly("example1", "example2", "example3");
+        (packaging as com.android.build.gradle.internal.dsl.Packaging)
+            .setMerges(Sets.union(packaging.merges, setOf("example3")))
+        assertThat(packaging.merges).containsExactly("example1", "example2", "example3");
     }
 
     @Test
     fun doNotStrip() {
-        packagingOptions.doNotStrip.clear()
-        assertThat(packagingOptions.doNotStrip).isEmpty()
+        packaging.doNotStrip.clear()
+        assertThat(packaging.doNotStrip).isEmpty()
 
-        packagingOptions.doNotStrip("example1")
-        packagingOptions.doNotStrip.add("example2")
-        assertThat(packagingOptions.doNotStrip).containsExactly("example1", "example2")
+        packaging.doNotStrip("example1")
+        packaging.doNotStrip.add("example2")
+        assertThat(packaging.doNotStrip).containsExactly("example1", "example2")
 
-        (packagingOptions as com.android.build.gradle.internal.dsl.PackagingOptions)
-            .setDoNotStrip(Sets.union(packagingOptions.doNotStrip, setOf("example3")))
-        assertThat(packagingOptions.doNotStrip).containsExactly("example1", "example2", "example3");
+        (packaging as com.android.build.gradle.internal.dsl.Packaging)
+            .setDoNotStrip(Sets.union(packaging.doNotStrip, setOf("example3")))
+        assertThat(packaging.doNotStrip).containsExactly("example1", "example2", "example3");
     }
 }
