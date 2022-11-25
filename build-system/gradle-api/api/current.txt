@@ -249,7 +249,7 @@ package com.android.build.api.dsl {
     property public abstract boolean isUniversalApk;
   }
 
-  @Deprecated @org.gradle.api.Incubating public interface AdbOptions extends com.android.build.api.dsl.Installation {
+  @Deprecated public interface AdbOptions extends com.android.build.api.dsl.Installation {
   }
 
   public interface AndroidResources {
@@ -746,7 +746,7 @@ package com.android.build.api.dsl {
 
   public interface CommonExtension<BuildFeaturesT extends com.android.build.api.dsl.BuildFeatures, BuildTypeT extends com.android.build.api.dsl.BuildType, DefaultConfigT extends com.android.build.api.dsl.DefaultConfig, ProductFlavorT extends com.android.build.api.dsl.ProductFlavor> {
     method @Deprecated @org.gradle.api.Incubating public void aaptOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AaptOptions,kotlin.Unit> action);
-    method @Deprecated @org.gradle.api.Incubating public void adbOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AdbOptions,kotlin.Unit> action);
+    method @Deprecated public void adbOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AdbOptions,kotlin.Unit> action);
     method public void androidResources(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidResources,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void buildFeatures(kotlin.jvm.functions.Function1<? super BuildFeaturesT,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void buildToolsVersion(String buildToolsVersion);
@@ -762,7 +762,7 @@ package com.android.build.api.dsl {
     method public void externalNativeBuild(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeBuild,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void flavorDimensions(java.lang.String... dimensions);
     method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.AaptOptions getAaptOptions();
-    method @Deprecated @org.gradle.api.Incubating public com.android.build.api.dsl.AdbOptions getAdbOptions();
+    method @Deprecated public com.android.build.api.dsl.AdbOptions getAdbOptions();
     method public com.android.build.api.dsl.AndroidResources getAndroidResources();
     method @org.gradle.api.Incubating public BuildFeaturesT getBuildFeatures();
     method @org.gradle.api.Incubating public String getBuildToolsVersion();
@@ -821,7 +821,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void useLibrary(String name, boolean required);
     method public void viewBinding(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ViewBinding,kotlin.Unit> action);
     property @Deprecated @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AaptOptions aaptOptions;
-    property @Deprecated @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AdbOptions adbOptions;
+    property @Deprecated public abstract com.android.build.api.dsl.AdbOptions adbOptions;
     property public abstract com.android.build.api.dsl.AndroidResources androidResources;
     property @org.gradle.api.Incubating public abstract BuildFeaturesT buildFeatures;
     property @org.gradle.api.Incubating public abstract String buildToolsVersion;
@@ -1039,14 +1039,13 @@ package com.android.build.api.dsl {
   }
 
   public interface Installation {
-    method @org.gradle.api.Incubating public java.util.Collection<java.lang.String>? getInstallOptions();
-    method @org.gradle.api.Incubating public int getTimeOutInMs();
-    method @org.gradle.api.Incubating public void installOptions(String option);
-    method @org.gradle.api.Incubating public void installOptions(java.lang.String... options);
-    method @org.gradle.api.Incubating public void setInstallOptions(java.util.Collection<java.lang.String>? installOptions);
-    method @org.gradle.api.Incubating public void setTimeOutInMs(int timeOutInMs);
-    property @org.gradle.api.Incubating public abstract java.util.Collection<java.lang.String>? installOptions;
-    property @org.gradle.api.Incubating public abstract int timeOutInMs;
+    method @org.gradle.api.Incubating public java.util.List<java.lang.String> getInstallOptions();
+    method public int getTimeOutInMs();
+    method @Deprecated public void installOptions(String option);
+    method @Deprecated public void installOptions(java.lang.String... options);
+    method public void setTimeOutInMs(int timeOutInMs);
+    property @org.gradle.api.Incubating public abstract java.util.List<java.lang.String> installOptions;
+    property public abstract int timeOutInMs;
   }
 
   @Deprecated @org.gradle.api.Incubating public interface JacocoOptions extends com.android.build.api.dsl.TestCoverage {

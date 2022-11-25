@@ -238,6 +238,29 @@ public class PluginDslTest {
     }
 
     @Test
+    public void testAdb() {
+        Eval.me(
+                "project",
+                project,
+                "\n"
+                        + "project.android {\n"
+                        + "    adbOptions {\n"
+                        + "        timeOutInMs 180000 \n"
+                        + "        installOptions '-d','-t' \n"
+                        + "    }\n"
+                        + "    installation {\n"
+                        + "        timeOutInMs 180000 \n"
+                        + "        installOptions '-d','-t' \n"
+                        + "    }\n"
+                        + "}\n");
+
+        assertThat(android.getAdbOptions().getTimeOutInMs()).isEqualTo(180000);
+        assertThat(android.getAdbOptions().getInstallOptions()).isEqualTo(List.of("-d", "-t"));
+        assertThat(android.getInstallation().getTimeOutInMs()).isEqualTo(180000);
+        assertThat(android.getInstallation().getInstallOptions()).isEqualTo(List.of("-d", "-t"));
+    }
+
+    @Test
     public void testMultiFlavors() {
         Eval.me(
                 "project",

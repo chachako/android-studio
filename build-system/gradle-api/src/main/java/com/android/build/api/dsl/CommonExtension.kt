@@ -74,7 +74,6 @@ interface CommonExtension<
      * For more information about the properties you can configure in this block, see [AdbOptions].
      */
     @Suppress("DEPRECATION")
-    @get:Incubating
     @Deprecated("Replaced by installation", replaceWith = ReplaceWith("installation"))
     val adbOptions: AdbOptions
 
@@ -86,7 +85,6 @@ interface CommonExtension<
      * For more information about the properties you can configure in this block, see [AdbOptions].
      */
     @Suppress("DEPRECATION")
-    @Incubating
     @Deprecated("Replaced by installation", replaceWith = ReplaceWith("installation"))
     fun adbOptions(action: AdbOptions.() -> Unit)
 

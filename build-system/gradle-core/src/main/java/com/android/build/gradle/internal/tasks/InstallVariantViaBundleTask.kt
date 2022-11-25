@@ -235,7 +235,7 @@ abstract class InstallVariantViaBundleTask : NonIncrementalTask() {
                 task.minSdkVersion = it.apiLevel
                 task.minSdkCodename = it.codename
             }
-            creationConfig.global.installationOptions.installOptions?.let {
+            creationConfig.global.installationOptions.installOptions.let {
                 task.installOptions.addAll(it)
             }
 

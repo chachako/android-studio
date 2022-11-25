@@ -95,7 +95,10 @@ abstract class CommonExtensionImpl<
         action.execute(aaptOptions)
     }
 
-    override val installation: Installation = dslServices.newInstance(AdbOptions::class.java)
+    override val installation: Installation = dslServices.newDecoratedInstance(
+        AdbOptions::class.java,
+        dslServices
+    )
 
     override fun installation(action: Installation.() -> Unit) {
         action.invoke(installation)

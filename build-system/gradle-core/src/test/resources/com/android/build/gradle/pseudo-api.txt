@@ -766,14 +766,14 @@ com.android.build.gradle.internal.dsl.AbstractPublishing.<init>: com.android.bui
 com.android.build.gradle.internal.dsl.AbstractPublishing.getDslService: com.android.build.gradle.internal.services.DslServices ()
 com.android.build.gradle.internal.dsl.AbstractPublishing.getSingleVariants: java.util.List<T> ()
 com.android.build.gradle.internal.dsl.AdbOptions implements com.android.builder.model.AdbOptions, com.android.build.api.dsl.AdbOptions, com.android.build.api.dsl.Installation
-com.android.build.gradle.internal.dsl.AdbOptions.<init>: com.android.build.gradle.internal.dsl.AdbOptions ()
-com.android.build.gradle.internal.dsl.AdbOptions.getInstallOptions: java.util.Collection<java.lang.String> ()
+com.android.build.gradle.internal.dsl.AdbOptions.<init>: com.android.build.gradle.internal.dsl.AdbOptions (com.android.build.gradle.internal.services.DslServices)
+com.android.build.gradle.internal.dsl.AdbOptions.getDslServices: com.android.build.gradle.internal.services.DslServices ()
+com.android.build.gradle.internal.dsl.AdbOptions.getInstallOptions: java.util.List<java.lang.String> ()
 com.android.build.gradle.internal.dsl.AdbOptions.getTimeOutInMs: int ()
 com.android.build.gradle.internal.dsl.AdbOptions.installOptions: void (java.lang.String)
 com.android.build.gradle.internal.dsl.AdbOptions.installOptions: void (java.lang.String[])
 com.android.build.gradle.internal.dsl.AdbOptions.setInstallOptions: void (java.lang.String)
 com.android.build.gradle.internal.dsl.AdbOptions.setInstallOptions: void (java.lang.String[])
-com.android.build.gradle.internal.dsl.AdbOptions.setInstallOptions: void (java.util.Collection<java.lang.String>)
 com.android.build.gradle.internal.dsl.AdbOptions.setTimeOutInMs: void (int)
 com.android.build.gradle.internal.dsl.AdbOptions.timeOutInMs: void (int)
 com.android.build.gradle.internal.dsl.AgpDslLockedException extends java.lang.RuntimeException
