@@ -52,6 +52,7 @@ class MergeSourceSetFoldersTest {
         project = ProjectBuilder.builder().withProjectDir(testDir).build()
 
         task = project.tasks.create("test", MergeSourceSetFolders::class.java)
+        task.aaptEnv.set("aapt")
     }
 
     @Test
@@ -59,7 +60,10 @@ class MergeSourceSetFoldersTest {
         val file = File("src/main")
         val mainSet = createAssetSet(BuilderConstants.MAIN, file)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet)
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(1)
+        assertThat(result[0].configName).isEqualTo(mainSet.configName)
+        assertThat(result[0].sourceFiles).isEqualTo(mainSet.sourceFiles)
     }
 
     @Test
@@ -68,7 +72,10 @@ class MergeSourceSetFoldersTest {
         val file2 = File("src/main2")
         val mainSet = createAssetSet(BuilderConstants.MAIN, file, file2)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet)
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(1)
+        assertThat(result[0].configName).isEqualTo(mainSet.configName)
+        assertThat(result[0].sourceFiles).isEqualTo(mainSet.sourceFiles)
     }
 
     @Test
@@ -79,7 +86,34 @@ class MergeSourceSetFoldersTest {
         val file2 = File("src/debug")
         val debugSet = createAssetSet("debug", file2)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet, debugSet)
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(2)
+        assertThat(result[0].configName).isEqualTo(mainSet.configName)
+        assertThat(result[0].sourceFiles).isEqualTo(mainSet.sourceFiles)
+        assertThat(result[1].configName).isEqualTo(debugSet.configName)
+        assertThat(result[1].sourceFiles).isEqualTo(debugSet.sourceFiles)
+    }
+
+    @Test
+    fun testMergingAssetSets() {
+        val file1 = File("src/main1")
+        val file2 = File("src/main2")
+        val file3 = File("src/main3")
+        createAssetSet(BuilderConstants.MAIN, file1)
+        createAssetSet(BuilderConstants.MAIN, file2)
+        createAssetSet(BuilderConstants.MAIN, file3)
+
+        val fileLib = File("src/debug")
+        val debugSet = createAssetSet("debug", fileLib)
+
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(2)
+        assertThat(result[0].configName).isEqualTo(BuilderConstants.MAIN)
+        assertThat(result[0].sourceFiles).containsExactly(
+            file1, file2, file3
+        )
+        assertThat(result[1].configName).isEqualTo(debugSet.configName)
+        assertThat(result[1].sourceFiles).containsExactly(fileLib)
     }
 
     @Test
@@ -91,7 +125,12 @@ class MergeSourceSetFoldersTest {
         val librarySets = setupLibraryDependencies(file2, ":path")
 
         assertThat(task.libraries.files).containsExactly(file2)
-        assertThat(task.computeAssetSetList()).containsExactly(librarySets[0], mainSet).inOrder()
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(2)
+        assertThat(result[0].configName).isEqualTo(librarySets[0].configName)
+        assertThat(result[0].sourceFiles).containsExactly(file2)
+        assertThat(result[1].configName).isEqualTo(mainSet.configName)
+        assertThat(result[1].sourceFiles).containsExactly(file)
     }
 
     @Test
@@ -104,9 +143,12 @@ class MergeSourceSetFoldersTest {
         val shaderFile = temporaryFolder.newFile("shader")
         task.shadersOutputDir.set(shaderFile)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet, generatedSet)
-        assertThat(mainSet.sourceFiles).containsExactly(file)
-        assertThat(generatedSet.sourceFiles).containsExactly(shaderFile)
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(2)
+        assertThat(result[0].configName).isEqualTo(mainSet.configName)
+        assertThat(result[0].sourceFiles).containsExactly(file)
+        assertThat(result[1].configName).isEqualTo(generatedSet.configName)
+        assertThat(result[1].sourceFiles).containsExactly(shaderFile)
     }
 
     @Test
@@ -119,9 +161,12 @@ class MergeSourceSetFoldersTest {
         val mlModelsDir = temporaryFolder.newFile("ml")
         task.mlModelsOutputDir.set(mlModelsDir)
 
-        assertThat(task.computeAssetSetList()).containsExactly(mainSet, generatedSet)
-        assertThat(mainSet.sourceFiles).containsExactly(file)
-        assertThat(generatedSet.sourceFiles).containsExactly(mlModelsDir)
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(2)
+        assertThat(result[0].configName).isEqualTo(mainSet.configName)
+        assertThat(result[0].sourceFiles).containsExactly(file)
+        assertThat(result[1].configName).isEqualTo(generatedSet.configName)
+        assertThat(result[1].sourceFiles).containsExactly(mlModelsDir)
     }
 
     @Test
@@ -152,9 +197,18 @@ class MergeSourceSetFoldersTest {
         task.shadersOutputDir.set(shaderFile)
 
         assertThat(task.libraries.files).containsExactly(libFile, libFile2)
-        assertThat(task.computeAssetSetList())
-            .containsExactly(librarySet2, librarySet, mainSet, debugSet, generatedSet)
-            .inOrder()
+        val result = task.computeAssetSetList()
+        assertThat(result).hasSize(5)
+        assertThat(result[0].configName).isEqualTo(librarySet2.configName)
+        assertThat(result[0].sourceFiles).isEqualTo(librarySet2.sourceFiles)
+        assertThat(result[1].configName).isEqualTo(librarySet.configName)
+        assertThat(result[1].sourceFiles).isEqualTo(librarySet.sourceFiles)
+        assertThat(result[2].configName).isEqualTo(mainSet.configName)
+        assertThat(result[2].sourceFiles).isEqualTo(mainSet.sourceFiles)
+        assertThat(result[3].configName).isEqualTo(debugSet.configName)
+        assertThat(result[3].sourceFiles).isEqualTo(debugSet.sourceFiles)
+        assertThat(result[4].configName).isEqualTo(generatedSet.configName)
+        assertThat(result[4].sourceFiles[0].absolutePath).contains("shader")
     }
 
     private fun createAssetSet(
@@ -163,7 +217,7 @@ class MergeSourceSetFoldersTest {
     ): AssetSet {
         val mainSet = AssetSet(name, null)
         mainSet.addSources(Arrays.asList(*files))
-        task.assetSets.add(mainSet)
+        task.assetSets.add(project.provider { mainSet })
         return mainSet
     }
 
@@ -208,6 +262,7 @@ class MergeSourceSetFoldersTest {
 
         task.libraryCollection = libraries
         task.libraries.from(files)
+        task.aaptEnv.set("aapt")
 
         return assetSets
     }

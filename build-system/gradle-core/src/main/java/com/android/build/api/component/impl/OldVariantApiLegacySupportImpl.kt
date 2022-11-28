@@ -21,6 +21,7 @@ import com.android.build.api.dsl.BuildType
 import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.variant.AnnotationProcessor
 import com.android.build.api.variant.BuildConfigField
+import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.api.AnnotationProcessorOptions
 import com.android.build.gradle.api.JavaCompileOptions
 import com.android.build.gradle.internal.DependencyConfigurator
@@ -227,7 +228,16 @@ class OldVariantApiLegacySupportImpl(
                     resSources.getVariantSources().map { allRes ->
                         allRes.map { directoryEntries ->
                             directoryEntries.directoryEntries
-                                .map { it.asFiles(component.services::directoryProperty) }
+                                .map {
+                                    if (it is TaskProviderBasedDirectoryEntryImpl) {
+                                        it.directoryProvider
+                                    } else {
+                                        it.asFiles(
+                                          component.services.provider {
+                                              component.services.projectInfo.projectDirectory
+                                          })
+                                    }
+                                }
                         }
                     }
                 )

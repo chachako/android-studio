@@ -58,7 +58,13 @@ class FlatSourceDirectoriesImpl(
 
     override fun addSource(directoryEntry: DirectoryEntry) {
         variantSources.add(directoryEntry)
-        directories.add(directoryEntry.asFiles(variantServices::directoryProperty))
+        directories.addAll(
+            directoryEntry.asFiles(
+              variantServices.provider {
+                  variantServices.projectInfo.projectDirectory
+              }
+            )
+        )
     }
 
 
@@ -67,9 +73,11 @@ class FlatSourceDirectoriesImpl(
                 entries.map { sourceDirectory ->
                     sourceDirectory.asFileTree(
                         variantServices::fileTree,
-                        variantServices::directoryProperty
-                    )
-                }
+                        variantServices.provider {
+                            variantServices.projectInfo.projectDirectory
+                        }
+                    ).get()
+                }.flatten()
             }
 
     internal fun getVariantSources(): Provider<List<DirectoryEntry>> = variantSources
@@ -86,9 +94,17 @@ class FlatSourceDirectoriesImpl(
         variantSources.get()
             .filter { filter.invoke(it) }
             .forEach {
-                val asDirectoryProperty = it.asFiles(variantServices::directoryProperty)
-                if (asDirectoryProperty.isPresent) {
-                    files.add(asDirectoryProperty.get().asFile)
+                if (it is TaskProviderBasedDirectoryEntryImpl) {
+                    files.add(it.directoryProvider.get().asFile)
+                } else {
+                    val asDirectoryProperties = it.asFiles(
+                      variantServices.provider {
+                          variantServices.projectInfo.projectDirectory
+                      }
+                    )
+                    asDirectoryProperties.get().forEach { directory ->
+                        files.add(directory.asFile)
+                    }
                 }
             }
         return files
