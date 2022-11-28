@@ -17,6 +17,7 @@ package com.android.tools.lint.checks;
 
 import static com.android.tools.lint.checks.ApiClass.USE_HASH_CODES;
 import static com.android.tools.lint.checks.ApiClass.USING_HASH_CODE_MASK;
+import static com.android.tools.lint.detector.api.ApiConstraint.SdkApiConstraint.isValidApiLevel;
 
 import com.android.annotations.NonNull;
 import com.android.tools.lint.client.api.LintClient;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import kotlin.io.FilesKt;
 import kotlin.text.Charsets;
 
 /**
@@ -242,7 +244,7 @@ public class ApiDatabase {
      * format.
      */
     protected static void writeDatabase(
-            File file, Api<? extends ApiClassBase> info, int majorBinaryFormatVersion)
+            File file, Api<? extends ApiClassBase> info, int majorBinaryFormatVersion, File xmlFile)
             throws IOException {
         Map<String, ? extends ApiClassBase> classMap = info.getClasses();
 
@@ -440,6 +442,31 @@ public class ApiDatabase {
                     assert colon != -1 : segment;
                     int sdk = Integer.parseInt(segment.substring(0, colon));
                     int version = Integer.parseInt(segment.substring(colon + 1));
+                    if (!isValidApiLevel(version)) { // Help track down b/260515648
+                        String snippet = "";
+                        try {
+                            if (xmlFile != null) {
+                                List<String> lines = FilesKt.readLines(xmlFile, Charsets.UTF_8);
+                                for (String line : lines) {
+                                    if (line.contains(encoded)) {
+                                        snippet = line;
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (Throwable ignore) {
+                        }
+                        String message =
+                                "Unsupported API level "
+                                        + version
+                                        + " in "
+                                        + encoded
+                                        + " from "
+                                        + xmlFile
+                                        + ": "
+                                        + snippet;
+                        throw new IllegalArgumentException(message);
+                    }
                     buffer.putInt(sdk);
                     buffer.putInt(version);
                 }

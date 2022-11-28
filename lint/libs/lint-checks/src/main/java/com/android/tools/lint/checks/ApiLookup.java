@@ -21,6 +21,7 @@ import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
 import static com.android.tools.lint.checks.ApiClass.STRIP_MEMBERS;
 import static com.android.tools.lint.checks.ApiClass.USE_HASH_CODES;
 import static com.android.tools.lint.checks.ApiClass.USING_HASH_CODE_MASK;
+import static com.android.tools.lint.detector.api.ApiConstraint.SdkApiConstraint.isValidApiLevel;
 import static com.android.tools.lint.detector.api.ExtensionSdk.ANDROID_SDK_ID;
 
 import com.android.annotations.NonNull;
@@ -305,7 +306,7 @@ public class ApiLookup extends ApiDatabase {
             }
 
             try {
-                writeDatabase(binaryData, info, API_LOOKUP_BINARY_FORMAT_VERSION);
+                writeDatabase(binaryData, info, API_LOOKUP_BINARY_FORMAT_VERSION, xmlFile);
                 return true;
             } catch (IOException e) {
                 client.log(e, "Can't write API cache file");
@@ -345,6 +346,20 @@ public class ApiLookup extends ApiDatabase {
                 apiConstraints.add(ApiConstraint.get(first, ANDROID_SDK_ID));
             } else {
                 // Api level vector
+                if (!isValidApiLevel(second)) { // Help track down b/260515648
+                    String message =
+                            "Unsupported API level "
+                                    + second
+                                    + " for SDK "
+                                    + first
+                                    + " (element "
+                                    + i
+                                    + "/"
+                                    + count
+                                    + ")";
+                    throw new IllegalArgumentException(message);
+                }
+
                 List<ApiConstraint.SdkApiConstraint> apis = new ArrayList<>();
                 apis.add(ApiConstraint.get(second, first));
 

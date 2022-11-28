@@ -865,6 +865,11 @@ sealed class ApiConstraint {
                 }
                 return SdkApiConstraint(rangeBits.toULong(16), sdkId)
             }
+
+            @JvmStatic
+            fun isValidApiLevel(api: Int): Boolean {
+                return api >= 0 && (api <= MAX_LEVEL || api == CUR_DEVELOPMENT)
+            }
         }
     }
 

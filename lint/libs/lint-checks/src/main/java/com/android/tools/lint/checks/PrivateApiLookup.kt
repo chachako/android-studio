@@ -171,7 +171,7 @@ class PrivateApiLookup private constructor(
             }
 
             try {
-                writeDatabase(binaryData, info, PRIVATE_API_BINARY_FORMAT_VERSION)
+                writeDatabase(binaryData, info, PRIVATE_API_BINARY_FORMAT_VERSION, null)
                 return@CacheCreator true
             } catch (t: Throwable) {
                 client.log(t, "Can't write private API cache file")
