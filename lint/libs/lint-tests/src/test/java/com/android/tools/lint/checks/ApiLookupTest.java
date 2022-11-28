@@ -707,6 +707,7 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "        <class name=\"android/adservices/adid/AdIdManager\" module=\"framework-adservices\" since=\"34\" sdks=\"0:34,1000000:4,33:4\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"
                         + "                <method name=\"getAdId(Ljava/util/concurrent/Executor;Landroid/os/OutcomeReceiver;)V\"/>\n"
+                        + "                <method name=\"hasOutcome()Z\" sdks=\"1000000:2147483647,33:2147483647\"/>\n" // Simulate b/260515648
                         + "        </class>\n"
                         + "        <class name=\"android/provider/MediaStore\" since=\"1\">\n"
                         + "                <extends name=\"java/lang/Object\"/>\n"

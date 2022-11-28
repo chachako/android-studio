@@ -20,6 +20,7 @@ import static com.android.tools.lint.checks.ApiClass.USING_HASH_CODE_MASK;
 import static com.android.tools.lint.detector.api.ApiConstraint.SdkApiConstraint.isValidApiLevel;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.google.common.io.Files;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import kotlin.io.FilesKt;
 import kotlin.text.Charsets;
 
 /**
@@ -244,7 +244,11 @@ public class ApiDatabase {
      * format.
      */
     protected static void writeDatabase(
-            File file, Api<? extends ApiClassBase> info, int majorBinaryFormatVersion, File xmlFile)
+            @NonNull LintClient client,
+            @NonNull File file,
+            @NonNull Api<? extends ApiClassBase> info,
+            int majorBinaryFormatVersion,
+            @Nullable File xmlFile)
             throws IOException {
         Map<String, ? extends ApiClassBase> classMap = info.getClasses();
 
@@ -442,30 +446,25 @@ public class ApiDatabase {
                     assert colon != -1 : segment;
                     int sdk = Integer.parseInt(segment.substring(0, colon));
                     int version = Integer.parseInt(segment.substring(colon + 1));
-                    if (!isValidApiLevel(version)) { // Help track down b/260515648
-                        String snippet = "";
-                        try {
-                            if (xmlFile != null) {
-                                List<String> lines = FilesKt.readLines(xmlFile, Charsets.UTF_8);
-                                for (String line : lines) {
-                                    if (line.contains(encoded)) {
-                                        snippet = line;
-                                        break;
-                                    }
-                                }
-                            }
-                        } catch (Throwable ignore) {
+                    if (!isValidApiLevel(version)) {
+                        if (!warnedInvalidData) {
+                            warnedInvalidData = true;
+                            String message =
+                                    "Unsupported API level "
+                                            + version
+                                            + " in "
+                                            + encoded
+                                            + " from "
+                                            + xmlFile;
+                            client.log(null, message);
                         }
-                        String message =
-                                "Unsupported API level "
-                                        + version
-                                        + " in "
-                                        + encoded
-                                        + " from "
-                                        + xmlFile
-                                        + ": "
-                                        + snippet;
-                        throw new IllegalArgumentException(message);
+                        // Coerce version to 0 to gracefully proceed instead of aborting lint; this
+                        // means if the real version is something higher than 0 we won't correctly
+                        // flag uses, but for b/260515648 it's probably the case that the API
+                        // shouldn't be present. (We can't easily back out here; we've already
+                        // written the API to the database, we've written a count of API vector
+                        // elements etc.)
+                        version = 0;
                     }
                     buffer.putInt(sdk);
                     buffer.putInt(version);
@@ -518,6 +517,8 @@ public class ApiDatabase {
             tmp.delete();
         }
     }
+
+    private static boolean warnedInvalidData = false;
 
     protected static int get4ByteInt(@NonNull byte[] data, int offset) {
         byte b1 = data[offset++];
