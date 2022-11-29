@@ -1886,6 +1886,13 @@ package com.android.build.api.instrumentation {
 
 package com.android.build.api.instrumentation.manageddevice {
 
+  @org.gradle.api.Incubating public interface DeviceTestRunConfigureAction<DeviceT extends com.android.build.api.dsl.Device, InputT extends com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput> {
+    method @org.gradle.api.Incubating public InputT configureTaskInput(DeviceT deviceDSL, org.gradle.api.Project project);
+  }
+
+  @org.gradle.api.Incubating public interface DeviceTestRunInput extends java.io.Serializable {
+  }
+
   @org.gradle.api.Incubating public final class ManagedDeviceDslRegistration<DeviceT extends com.android.build.api.dsl.Device> {
     ctor @org.gradle.api.Incubating public ManagedDeviceDslRegistration(Class<DeviceT> deviceApi, Class<? extends DeviceT> deviceImpl);
     method @org.gradle.api.Incubating public Class<DeviceT> getDeviceApi();
