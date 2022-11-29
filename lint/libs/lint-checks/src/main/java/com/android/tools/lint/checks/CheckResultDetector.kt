@@ -424,7 +424,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             briefDescription = "Ignoring results",
             explanation = """
                 Some methods have no side effects, and calling them without doing something \
-                without the result is suspicious.""",
+                with the result is suspicious.""",
             category = Category.CORRECTNESS,
             priority = 6,
             severity = Severity.WARNING,
