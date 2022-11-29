@@ -45,12 +45,11 @@ import org.w3c.dom.NodeList;
 /**
  * Converts SVG to VectorDrawable's XML.
  *
- * There are 2 major functions:
- * 1. parse(file)
- *   This include parse the .svg file and build an internal tree. The optimize this tree.
- *
- * 2. writeFile()
- *   This is traversing the whole tree, and write the group / path info into the XML.
+ * <p>There are two major functions:
+ * <ul>
+ *   <li>{@link #parse} Parses the .svg file, builds and optimizes an internal tree</li>
+ *   <li>{@link #writeFile} Traverses the internal tree and produces XML output</li>
+ * </ul>
  */
 public class Svg2Vector {
     private static final Logger logger = Logger.getLogger(Svg2Vector.class.getSimpleName());
@@ -72,19 +71,19 @@ public class Svg2Vector {
     public static final String SVG_CLIP_PATH_ELEMENT = "clipPath";
 
     public static final String SVG_D = "d";
-    public static final String SVG_PAINT_ORDER = "paint-order";
-    public static final String SVG_STROKE = "stroke";
-    public static final String SVG_STROKE_OPACITY = "stroke-opacity";
-    public static final String SVG_STROKE_LINEJOIN = "stroke-linejoin";
-    public static final String SVG_STROKE_LINECAP = "stroke-linecap";
-    public static final String SVG_STROKE_WIDTH = "stroke-width";
+    public static final String SVG_CLIP = "clip";
+    public static final String SVG_CLIP_PATH = "clip-path";
+    public static final String SVG_CLIP_RULE = "clip-rule";
     public static final String SVG_FILL = "fill";
     public static final String SVG_FILL_OPACITY = "fill-opacity";
     public static final String SVG_FILL_RULE = "fill-rule";
     public static final String SVG_OPACITY = "opacity";
-    public static final String SVG_CLIP = "clip";
-    public static final String SVG_CLIP_PATH = "clip-path";
-    public static final String SVG_CLIP_RULE = "clip-rule";
+    public static final String SVG_PAINT_ORDER = "paint-order";
+    public static final String SVG_STROKE = "stroke";
+    public static final String SVG_STROKE_LINECAP = "stroke-linecap";
+    public static final String SVG_STROKE_LINEJOIN = "stroke-linejoin";
+    public static final String SVG_STROKE_OPACITY = "stroke-opacity";
+    public static final String SVG_STROKE_WIDTH = "stroke-width";
     public static final String SVG_MASK = "mask";
     public static final String SVG_POINTS = "points";
 
@@ -93,14 +92,14 @@ public class Svg2Vector {
                     .put(SVG_CLIP, "android:clip")
                     .put(SVG_CLIP_RULE, "") // Treated individually.
                     .put(SVG_FILL, "android:fillColor")
-                    .put(SVG_FILL_RULE, "android:fillType")
                     .put(SVG_FILL_OPACITY, "android:fillAlpha")
+                    .put(SVG_FILL_RULE, "android:fillType")
                     .put(SVG_OPACITY, "") // Treated individually.
                     .put(SVG_PAINT_ORDER, "") // Treated individually.
                     .put(SVG_STROKE, "android:strokeColor")
-                    .put(SVG_STROKE_OPACITY, "android:strokeAlpha")
-                    .put(SVG_STROKE_LINEJOIN, "android:strokeLineJoin")
                     .put(SVG_STROKE_LINECAP, "android:strokeLineCap")
+                    .put(SVG_STROKE_LINEJOIN, "android:strokeLineJoin")
+                    .put(SVG_STROKE_OPACITY, "android:strokeAlpha")
                     .put(SVG_STROKE_WIDTH, "android:strokeWidth")
                     .build();
 
@@ -130,12 +129,10 @@ public class Svg2Vector {
             "set",
             // Container elements.
             "a",
-            "glyph",
             "marker",
             "missing-glyph",
             "pattern",
             "switch",
-            "symbol",
             // Filter primitive elements.
             "feBlend",
             "feColorMatrix",
@@ -172,7 +169,6 @@ public class Svg2Vector {
             // Graphics elements.
             "ellipse",
             "image",
-            "text",
             // Light source elements.
             "feDistantLight",
             "fePointLight",
@@ -180,15 +176,11 @@ public class Svg2Vector {
             // Structural elements.
             "symbol",
             // Text content elements.
-            "altGlyph",
             "altGlyphDef",
             "altGlyphItem",
             "glyph",
             "glyphRef",
-            "textPath",
             "text",
-            "tref",
-            "tspan",
             // Text content child elements.
             "altGlyph",
             "textPath",
@@ -414,7 +406,7 @@ public class Svg2Vector {
 
                 default:
                     String id = childElement.getAttribute("id");
-                    if (id != null) {
+                    if (!id.isEmpty()) {
                         svgTree.addIgnoredId(id);
                     }
                     // For other fancy tags, like <switch>, they can contain children too.
@@ -1221,7 +1213,7 @@ public class Svg2Vector {
     }
 
     /**
-     * Converts a SVG file into VectorDrawable's XML content, if no error is found.
+     * Converts an SVG file into VectorDrawable's XML content, if no error is found.
      *
      * @param inputSvg the input SVG file
      * @param outStream the converted VectorDrawable's content. This can be empty if there is any
