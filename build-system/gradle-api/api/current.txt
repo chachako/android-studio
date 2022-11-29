@@ -1884,6 +1884,18 @@ package com.android.build.api.instrumentation {
 
 }
 
+package com.android.build.api.instrumentation.manageddevice {
+
+  @org.gradle.api.Incubating public final class ManagedDeviceDslRegistration<DeviceT extends com.android.build.api.dsl.Device> {
+    ctor @org.gradle.api.Incubating public ManagedDeviceDslRegistration(Class<DeviceT> deviceApi, Class<? extends DeviceT> deviceImpl);
+    method @org.gradle.api.Incubating public Class<DeviceT> getDeviceApi();
+    method @org.gradle.api.Incubating public Class<? extends DeviceT> getDeviceImpl();
+    property @org.gradle.api.Incubating public final Class<DeviceT> deviceApi;
+    property @org.gradle.api.Incubating public final Class<? extends DeviceT> deviceImpl;
+  }
+
+}
+
 package com.android.build.api.transform {
 
   @Deprecated public interface Context {
