@@ -30,21 +30,22 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.w3c.dom.Element;
 
-/** Represents a SVG gradient that is referenced by a SvgLeafNode. */
+/** Represents an SVG gradient that is referenced by a SvgLeafNode. */
 class SvgGradientNode extends SvgNode {
     private static final Logger logger = Logger.getLogger(SvgGroupNode.class.getSimpleName());
 
-    private final ArrayList<GradientStop> myGradientStops = new ArrayList<>();
+    private final List<GradientStop> mGradientStops = new ArrayList<>();
 
     private SvgLeafNode mSvgLeafNode;
 
     // Bounding box of mSvgLeafNode.
-    private Rectangle2D boundingBox;
+    private Rectangle2D mBoundingBox;
 
     private GradientUsage mGradientUsage;
 
@@ -110,7 +111,7 @@ class SvgGradientNode extends SvgNode {
      */
     protected void copyFrom(@NonNull SvgGradientNode from) {
         super.copyFrom(from);
-        for (GradientStop g : from.myGradientStops) {
+        for (GradientStop g : from.mGradientStops) {
             addGradientStop(g.getColor(), g.getOffset(), g.getOpacity());
         }
     }
@@ -160,17 +161,17 @@ class SvgGradientNode extends SvgNode {
     @Override
     public void writeXml(@NonNull OutputStreamWriter writer, @NonNull String indent)
             throws IOException {
-        if (myGradientStops.isEmpty()) {
+        if (mGradientStops.isEmpty()) {
             logError("Gradient has no stop info");
             return;
         }
 
         // By default, the dimensions of the gradient is the bounding box of the path.
         setBoundingBox();
-        double height = boundingBox.getHeight();
-        double width = boundingBox.getWidth();
-        double startX = boundingBox.getX();
-        double startY = boundingBox.getY();
+        double height = mBoundingBox.getHeight();
+        double width = mBoundingBox.getWidth();
+        double startX = mBoundingBox.getX();
+        double startY = mBoundingBox.getY();
 
         String gradientUnit = mVdAttributesMap.get("gradientUnits");
         boolean isUserSpaceOnUse = "userSpaceOnUse".equals(gradientUnit);
@@ -330,15 +331,20 @@ class SvgGradientNode extends SvgNode {
                     double x = transformedBounds[coordinateIndex];
                     vdValue = mSvgTree.formatCoordinate(x);
                 } else if (svgAttribute.equals("spreadMethod")) {
-                    if (svgValue.equals("pad")) {
-                        vdValue = "clamp";
-                    } else if (svgValue.equals("reflect")) {
-                        vdValue = "mirror";
-                    } else if (svgValue.equals("repeat")) {
-                        vdValue = "repeat";
-                    } else {
-                        logError("Unsupported spreadMethod " + svgValue);
-                        vdValue = "clamp";
+                    switch (svgValue) {
+                        case "pad":
+                            vdValue = "clamp";
+                            break;
+                        case "reflect":
+                            vdValue = "mirror";
+                            break;
+                        case "repeat":
+                            vdValue = "repeat";
+                            break;
+                        default:
+                            logError("Unsupported spreadMethod " + svgValue);
+                            vdValue = "clamp";
+                            break;
                     }
                 } else if (svgValue.endsWith("%")) {
                     double coordinate = getGradientCoordinate(svgAttribute, 0).getValue();
@@ -372,7 +378,7 @@ class SvgGradientNode extends SvgNode {
 
     private void writeGradientStops(@NonNull OutputStreamWriter writer, @NonNull String indent)
             throws IOException {
-        for (GradientStop g : myGradientStops) {
+        for (GradientStop g : mGradientStops) {
             String color = g.getColor();
             float opacity;
             try {
@@ -393,7 +399,7 @@ class SvgGradientNode extends SvgNode {
             writer.write("\"/>");
             writer.write(System.lineSeparator());
 
-            if (myGradientStops.size() == 1) {
+            if (mGradientStops.size() == 1) {
                 logWarning("Gradient has only one color stop");
                 writer.write(indent);
                 writer.write("<item android:offset=\"1\"");
@@ -409,7 +415,7 @@ class SvgGradientNode extends SvgNode {
             @NonNull String color, @NonNull String offset, @NonNull String opacity) {
         GradientStop stop = new GradientStop(color, offset);
         stop.setOpacity(opacity);
-        myGradientStops.add(stop);
+        mGradientStops.add(stop);
     }
 
     public void setGradientUsage(@NonNull GradientUsage gradientUsage) {
@@ -424,6 +430,6 @@ class SvgGradientNode extends SvgNode {
         Path2D svgPath = new Path2D.Double();
         VdPath.Node[] nodes = PathParser.parsePath(mSvgLeafNode.getPathData(), ParseMode.SVG);
         VdNodeRender.createPath(nodes, svgPath);
-        boundingBox = svgPath.getBounds2D();
+        mBoundingBox = svgPath.getBounds2D();
     }
 }
