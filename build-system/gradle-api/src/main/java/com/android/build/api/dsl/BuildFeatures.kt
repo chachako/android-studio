@@ -30,10 +30,6 @@ interface BuildFeatures : ExtensionAware {
      * Setting the value to `null` resets to the default value.
      * Default value is `false`.
      *
-     * You can override the default for this for all projects in your build by adding the line
-     *     `android.defaults.buildfeatures.aidl=true`
-     * in the gradle.properties file at the root project of your build.
-
      * More information about this feature at: TBD
      */
     var aidl: Boolean?
@@ -53,10 +49,6 @@ interface BuildFeatures : ExtensionAware {
      *
      * Setting the value to `null` resets to the default value.
      * Default value is `false`.
-     *
-     * You can override the default for this for all projects in your build by adding the line
-     *     android.defaults.buildfeatures.buildconfig=true
-     * in the gradle.properties file at the root project of your build.
      *
      * More information about this feature at: TBD
      */
@@ -86,10 +78,6 @@ interface BuildFeatures : ExtensionAware {
      * Setting the value to `null` resets to the default value.
      * Default value is `false`.
      *
-     * You can override the default for this for all projects in your build by adding the line
-     *     `android.defaults.buildfeatures.renderscript=true`
-     * in the gradle.properties file at the root project of your build.
-
      * More information about this feature at: TBD
      */
     var renderScript: Boolean?
