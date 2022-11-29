@@ -34,6 +34,48 @@ import org.jetbrains.kotlin.psi.KtNamedDeclaration
 import org.jetbrains.uast.UCallExpression
 import java.util.EnumSet
 
+/**
+ * Reports all calls to setCommunicationDevice as issues, unless there is a call
+ * to clearCommunicationDevice.
+ *
+ * CommunicationDeviceDetector is an example of a detector that supports partial
+ * analysis by storing data in per module LintMaps. It also demonstrates how
+ * such a detector can usually immediately work in global analysis mode by
+ * simply overriding afterCheckRootProject and adding a few lines of code. So
+ * that this can serve as the "reference example" for such detectors, we include
+ * detailed comments explaining how the analysis works.
+ *
+ * Recall from the lint documentation that, in partial analysis mode, lint runs
+ * in two phases:
+ *
+ *   - analyze: where lint analyzes the source code of each module in isolation,
+ *   and stores some intermediate data for each module.
+ *   - report: where lint accesses the previously stored data for all modules
+ *   and uses this to report issues. The source code of modules cannot be
+ *   accessed at this stage.
+ *
+ * CommunicationDeviceDetector does the following: if there are no calls to
+ * clearCommunicationDevice then report all calls to setCommunicationDevice as
+ * issues. In the analysis phase, the detector can only access the source code
+ * for the current module being analyzed. Thus, so that the analysis works
+ * correctly in partial analysis mode, the detector stores, per module:
+ *
+ *   - the location of every setCommunicationDevice call
+ *   - whether the module calls clearCommunicationDevice
+ *
+ * See [visitMethodCall], below.
+ *
+ * In the report phase, the detector inspects the intermediate data of every
+ * module to check whether _any_ module called clearCommunicationDevice. If not,
+ * then the detector gets the location of every setCommunicationDevice call from
+ * the intermediate data, and reports each location as an issue. See
+ * [checkPartialResults], below.
+ *
+ * Finally, rather than specializing the check for partial and global analysis
+ * modes, the detector just overrides [afterCheckRootProject] such that if we
+ * are in global analysis mode, we call [checkPartialResults]. See
+ * [afterCheckRootProject], below.
+ */
 class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
     companion object {
         private val IMPLEMENTATION = Implementation(
@@ -41,16 +83,19 @@ class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
             EnumSet.of(Scope.ALL_JAVA_FILES)
         )
 
-        /** Calling `setCommunicationDevice()` without `clearCommunicationDevice()` */
+        /** Calling `setCommunicationDevice()` without
+         * `clearCommunicationDevice()` */
         @JvmField
         val ISSUE = Issue.create(
             id = "SetAndClearCommunicationDevice",
             briefDescription = "Clearing communication device",
             explanation = """
-                After selecting the audio device for communication use cases using `setCommunicationDevice(AudioDeviceInfo device)`, the \
-                selection is active as long as the requesting application process lives, until `clearCommunicationDevice()` is called or \
-                until the device is disconnected. It is therefore important to clear the request when a call ends or the requesting activity \
-                or service is stopped or destroyed.
+                After selecting the audio device for communication use cases using \
+                `setCommunicationDevice(AudioDeviceInfo device)`, the selection is active as long \
+                as the requesting application process lives, until `clearCommunicationDevice()` \
+                is called or until the device is disconnected. It is therefore important to clear \
+                the request when a call ends or the requesting activity or service is stopped or \
+                destroyed.
                 """,
             category = Category.CORRECTNESS,
             priority = 5,
@@ -59,56 +104,142 @@ class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
             androidSpecific = true
         )
 
-        const val FOUND_CLEARCOMMUNICATIONDEVICE = "foundClearCommunicationDevice"
-        const val MIN_TARGET_SDK = 31
+        const val FOUND_CLEAR_COMMUNICATION_DEVICE = "foundClearCommunicationDevice"
+
+        const val MIN_TARGET_SDK_FOR_SET_COMMUNICATION_DEVICE = 31
     }
 
-    // Number of calls to setCommunicationDevice() in the current project
+    /**
+     * The number of calls to setCommunicationDevice() in the current lint
+     * invocation. This is used as the next key for storing the location of a
+     * call to setCommunicationDevice in a LintMap. See [visitMethodCall].
+     *
+     * A subtlety that does not matter for this detector, but could be
+     * confusing: In partial analysis mode (in the analysis phase), there is a
+     * lint invocation (and so a new detector instance is created) per module
+     * analyzed, so [numSetCalls] will conceptually reset to 0 for each module.
+     * There is a LintMap per module and per [Issue], so keys will not collide.
+     * In global analysis mode, lint will invoke the same detector instance on
+     * each module, so [numSetCalls] will not reset to 0.
+     */
     private var numSetCalls = 0
 
-    override fun getApplicableMethodNames() = listOf("setCommunicationDevice", "clearCommunicationDevice")
-
-    override fun afterCheckRootProject(context: Context) {
-        if (context.isGlobalAnalysis()) {
-            checkPartialResults(context, context.getPartialResults(ISSUE))
-        }
-    }
+    override fun getApplicableMethodNames() =
+        listOf("setCommunicationDevice", "clearCommunicationDevice")
 
     override fun visitMethodCall(
         context: JavaContext,
         node: UCallExpression,
         method: PsiMethod
     ) {
+        // Called during the analysis phase. Store intermediate data from the
+        // module. Per module intermediate data is stored in a LintMap, with
+        // String keys mapping to values of various types.
+
+        // Get the LintMap for the current module being analyzed.
         val map = context.getPartialResults(ISSUE).map()
+
         if (method.getFqName() == "android.media.AudioManager.setCommunicationDevice") {
+            // If we see a call to setCommunicationDevice then store the
+            // location in the LintMap. We use keys "0", "1", "2", ...etc.,
+            // because we just want to store a list of locations.
+
+            // When later reporting issues in checkPartialResults, suppression
+            // via source code (e.g. via a comment or annotation) will not work
+            // because the source code is no longer available in the report
+            // phase. Thus, we must manually check if the ISSUE is suppressed in
+            // source code now and, if so, skip adding the location.
             if (!context.driver.isSuppressed(context, ISSUE, node)) {
                 map.put(numSetCalls++.toString(), context.getLocation(node))
             }
         } else if (method.getFqName() == "android.media.AudioManager.clearCommunicationDevice") {
-            map.put(FOUND_CLEARCOMMUNICATIONDEVICE, true)
+            // If we see a call to clearCommunicationDevice then we store this
+            // fact by adding to the LintMap: "foundClearCommunicationDevice" ->
+            // true
+            map.put(FOUND_CLEAR_COMMUNICATION_DEVICE, true)
         }
     }
 
     override fun checkPartialResults(context: Context, partialResults: PartialResult) {
-        if (context.mainProject.targetSdk < MIN_TARGET_SDK) return
+        // Called during the report phase. Read intermediate data from all
+        // modules and report issues.
 
-        val foundClearCommunicationDevice = partialResults.maps().any { map ->
-            map.keys().any { it == FOUND_CLEARCOMMUNICATIONDEVICE }
+        // Typically, this method is called once for the app module that is
+        // being checked, such that context.mainProject is set to the app
+        // module; the source code of the app module and dependent library
+        // modules will have already been analyzed such that their intermediate
+        // data is available via partialResults. However, it is also possible to
+        // run lint on a library module, without any app module; the specific
+        // library module and dependent library modules will be analyzed, and
+        // then this method is called during the report phase with
+        // context.mainProject set to the specific library module.
+
+        // If the main project is a library module, we don't want to report any
+        // issues. We essentially only want to process the intermediate data
+        // from modules when we are checking an app module because this is the
+        // only point where we can see intermediate data for all modules that
+        // are part of the final app, so we can see if one of the modules calls
+        // clearCommunicationDevice.
+        if (context.mainProject.isLibrary) return
+
+        // setCommunicationDevice and clearCommunicationDevice were introduced
+        // in API level 31, so don't report any issues if the app manifest
+        // target API level is lower than this.
+        if (context.mainProject.targetSdk < MIN_TARGET_SDK_FOR_SET_COMMUNICATION_DEVICE) return
+
+        // Note that this method is also a good place to read
+        // context.mainProject.mergedManifest. (If a detector does not need to
+        // override checkPartialResults, then the merged manifest can be read in
+        // checkMergedProject.) In particular, note that if the detector needs
+        // to read the app's merged manifest, there is usually no point in
+        // visiting various XML elements of each module's manifest in the
+        // analysis phase.
+
+        // If we can find the "foundClearCommunicationDevice" key in _any_ per
+        // module LintMap then return early, reporting no issues.
+        for (perModuleLintMap in partialResults.maps()) {
+            if (perModuleLintMap.containsKey(FOUND_CLEAR_COMMUNICATION_DEVICE)) {
+                return
+            }
         }
 
-        if (!foundClearCommunicationDevice) {
-            for (map in partialResults.maps()) {
-                map.forEach {
-                    if (it != FOUND_CLEARCOMMUNICATIONDEVICE) {
-                        context.report(
-                            Incident(context)
-                                .issue(ISSUE)
-                                .location(map.getLocation(it)!!)
-                                .message("Must call `clearCommunicationDevice()` after `setCommunicationDevice()`")
+        // Otherwise, every value in every per module LintMap is a location of a
+        // call to setCommunicationDevice that we need to report.
+        for (perModuleLintMap in partialResults.maps()) {
+            for (key in perModuleLintMap) {
+                context.report(
+                    Incident(context)
+                        .issue(ISSUE)
+                        .location(perModuleLintMap.getLocation(key)!!)
+                        .message(
+                            "Must call `clearCommunicationDevice()` " +
+                                "after `setCommunicationDevice()`"
                         )
-                    }
-                }
+                )
             }
+        }
+    }
+
+    override fun afterCheckRootProject(context: Context) {
+        // Called after analysis of the root/main project (usually the app
+        // project), in both partial analysis and global analysis modes.
+
+        // When lint is running in global analysis mode (e.g. via "Run
+        // Inspection by Name" from within the IDE), one detector instance is
+        // used to check all modules, and the source code of all modules is
+        // available. Thus, the check could be implemented in a different way
+        // (e.g. a boolean field could be set as soon as we visit a call to
+        // clearCommunicationDevice, and we could try to stop doing further
+        // analysis). However, such specialization is often not worthwhile and
+        // makes the detector harder to understand, especially if your analysis
+        // is already structured around LintMaps. Furthermore, per module
+        // LintMaps are still available in global analysis mode. Thus, a
+        // detector that uses LintMaps should "just work" in global analysis
+        // mode, with one caveat; checkPartialResults is not called in global
+        // analysis mode. Therefore, we call it here if we are in global
+        // analysis mode.
+        if (context.isGlobalAnalysis()) {
+            checkPartialResults(context, context.getPartialResults(ISSUE))
         }
     }
 }
