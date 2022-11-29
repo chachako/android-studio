@@ -16,4 +16,14 @@
 package com.android.jdwptracer;
 
 // An event happening during a session. Anything traced should extend this class.
-class Event {}
+class Event {
+    private final int line;
+
+    Event(int line) {
+        this.line = line;
+    }
+
+    int line() {
+        return line;
+    }
+}

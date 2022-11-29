@@ -21,11 +21,12 @@ class NamedEvent extends Event {
 
     @NonNull private final String name;
 
-    private final long time;
+    private final long time_ns;
 
-    NamedEvent(@NonNull String name, long time) {
+    NamedEvent(@NonNull String name, long time_ns, int line) {
+        super(line);
         this.name = name;
-        this.time = time;
+        this.time_ns = time_ns;
     }
 
     @NonNull
@@ -33,7 +34,7 @@ class NamedEvent extends Event {
         return name;
     }
 
-    long time() {
-        return time;
+    long time_ns() {
+        return time_ns;
     }
 }

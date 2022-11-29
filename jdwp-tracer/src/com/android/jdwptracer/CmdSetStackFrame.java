@@ -15,9 +15,9 @@
  */
 package com.android.jdwptracer;
 
+import com.android.annotations.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.nio.ByteBuffer;
 
 public class CmdSetStackFrame extends CmdSet {
 
@@ -34,20 +34,21 @@ public class CmdSetStackFrame extends CmdSet {
         add(4, "PopFrames");
     }
 
-    private static Message parseGetValuesCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseGetValuesCmd(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        long threadID = reader.getThreadID(byteBuffer);
-        long frameID = reader.getFrameID(byteBuffer);
+        long threadID = reader.getThreadID();
+        long frameID = reader.getFrameID();
 
         message.addArg("threadID", threadID);
         message.addArg("frameID", frameID);
 
-        int numSlots = reader.getInt(byteBuffer);
+        int numSlots = reader.getInt();
         JsonArray slots = new JsonArray();
         for (int i = 0; i < numSlots; i++) {
-            int slot = reader.getInt(byteBuffer);
-            byte sigbyte = reader.getByte(byteBuffer);
+            int slot = reader.getInt();
+            byte sigbyte = reader.getByte();
 
             JsonObject slotEntry = new JsonObject();
             slotEntry.addProperty("slot", slot);
@@ -61,10 +62,11 @@ public class CmdSetStackFrame extends CmdSet {
         return message;
     }
 
-    private static Message parseGetValuesReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseGetValuesReply(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int values = reader.getInt(byteBuffer);
+        int values = reader.getInt();
         message.addArg("values", values);
 
         return message;

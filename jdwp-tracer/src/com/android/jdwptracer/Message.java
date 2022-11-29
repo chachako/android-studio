@@ -19,7 +19,6 @@ import com.android.annotations.NonNull;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import java.nio.ByteBuffer;
 
 // The payload of a packet (cmd or reply). For now all fields are stored in a hashmap.
 // Some fields like payload_length are synthetic (they do not correspond to an actual field in
@@ -31,8 +30,8 @@ class Message {
 
     private final int payloadLength;
 
-    Message(@NonNull ByteBuffer byteBuffer) {
-        this.payloadLength = byteBuffer.remaining();
+    Message(@NonNull MessageReader reader) {
+        this.payloadLength = reader.remaining();
     }
 
     // A name to be diplayed in the summary UI
@@ -66,7 +65,7 @@ class Message {
     }
 
     @NonNull
-    static Message defaultMessageParser(@NonNull ByteBuffer buffer, @NonNull MessageReader unused) {
-        return new Message(buffer);
+    static Message defaultMessageParser(@NonNull MessageReader reader, @NonNull Session unused) {
+        return new Message(reader);
     }
 }

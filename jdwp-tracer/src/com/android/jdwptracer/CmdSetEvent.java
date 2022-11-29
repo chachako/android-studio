@@ -16,7 +16,6 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
-import java.nio.ByteBuffer;
 
 class CmdSetEvent extends CmdSet {
 
@@ -27,117 +26,117 @@ class CmdSetEvent extends CmdSet {
 
     @NonNull
     private static Message parseReplyComposite(
-            @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        return new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        return new Message(reader);
     }
 
     @NonNull
     private static Message parseCmdComposite(
-            @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        byte suspendPolicy = reader.getByte(byteBuffer);
+        byte suspendPolicy = reader.getByte();
         message.addArg("suspendPolicy", Byte.toString(suspendPolicy));
 
-        int numEvents = reader.getInt(byteBuffer);
+        int numEvents = reader.getInt();
         message.addArg("numEvents", Integer.toString(numEvents));
 
         for (int i = 0; i < numEvents; i++) {
-            byte eventKind = reader.getByte(byteBuffer);
+            byte eventKind = reader.getByte();
             EventKind kind = EventKind.fromID(eventKind);
             message.addArg("EventKing[" + i + "]", kind.name());
             message.setName(kind.name());
 
-            reader.getInt(byteBuffer); // requestID
+            reader.getInt(); // requestID
             switch (kind) {
                 case SINGLE_STEP:
                 case BREAKPOINT:
                 case METHOD_ENTRY:
                 case METHOD_EXIT:
                     {
-                        reader.getThreadID(byteBuffer);
-                        reader.getLocation(byteBuffer);
+                        reader.getThreadID();
+                        reader.getLocation();
                     }
                     break;
                 case METHOD_EXIT_WITH_RETURN_VALUE:
                     {
-                        reader.getThreadID(byteBuffer); // threadID
-                        reader.getLocation(byteBuffer);
-                        reader.getValue(byteBuffer);
+                        reader.getThreadID(); // threadID
+                        reader.getLocation();
+                        reader.getValue();
                     }
                     break;
                 case MONITOR_CONTENDED_ENTER:
                 case MONITOR_CONTENDED_ENTERED:
                     {
-                        reader.getThreadID(byteBuffer); // threadID
-                        reader.getTaggedObjectID(byteBuffer);
-                        reader.getLocation(byteBuffer);
+                        reader.getThreadID(); // threadID
+                        reader.getTaggedObjectID();
+                        reader.getLocation();
                     }
                     break;
                 case MONITOR_WAIT:
                     {
-                        reader.getThreadID(byteBuffer);
-                        reader.getTaggedObjectID(byteBuffer);
-                        reader.getLocation(byteBuffer);
-                        reader.getLong(byteBuffer); // timeout
+                        reader.getThreadID();
+                        reader.getTaggedObjectID();
+                        reader.getLocation();
+                        reader.getLong(); // timeout
                     }
                     break;
                 case MONITOR_WAITED:
                     {
-                        reader.getThreadID(byteBuffer);
-                        reader.getTaggedObjectID(byteBuffer);
-                        reader.getLocation(byteBuffer);
-                        reader.getBoolean(byteBuffer); // timeout
+                        reader.getThreadID();
+                        reader.getTaggedObjectID();
+                        reader.getLocation();
+                        reader.getBoolean(); // timeout
                     }
                     break;
                 case EXCEPTION:
                     {
-                        reader.getThreadID(byteBuffer); // threadID
-                        reader.getLocation(byteBuffer); // location
-                        reader.getTaggedObjectID(byteBuffer);
-                        reader.getLocation(byteBuffer); // catch location
+                        reader.getThreadID(); // threadID
+                        reader.getLocation(); // location
+                        reader.getTaggedObjectID();
+                        reader.getLocation(); // catch location
                     }
                     break;
                 case VM_START:
                 case THREAD_START:
                 case THREAD_DEATH:
                     {
-                        reader.getThreadID(byteBuffer);
+                        reader.getThreadID();
                     }
                     break;
                 case CLASS_PREPARE:
                     {
-                        message.addArg("thread", reader.getThreadID(byteBuffer));
-                        message.addArg("refTypeTag", reader.getTypeTag(byteBuffer));
-                        message.addArg("typeID", reader.getReferenceTypeID(byteBuffer));
-                        message.addArg("signature", reader.getString(byteBuffer));
-                        message.addArg("status", reader.getInt(byteBuffer));
+                        message.addArg("thread", reader.getThreadID());
+                        message.addArg("refTypeTag", reader.getTypeTag());
+                        message.addArg("typeID", reader.getReferenceTypeID());
+                        message.addArg("signature", reader.getString());
+                        message.addArg("status", reader.getInt());
                     }
                     break;
                 case CLASS_UNLOAD:
                     {
-                        reader.getString(byteBuffer); // signature
+                        reader.getString(); // signature
                     }
                     break;
                 case FIELD_ACCESS:
                     {
-                        reader.getThreadID(byteBuffer); // threadID
-                        reader.getLocation(byteBuffer);
-                        reader.getByte(byteBuffer); // refTypeTag
-                        reader.getReferenceTypeID(byteBuffer); // referenceID
-                        reader.getFieldID(byteBuffer);
-                        reader.getTaggedObjectID(byteBuffer);
+                        reader.getThreadID(); // threadID
+                        reader.getLocation();
+                        reader.getByte(); // refTypeTag
+                        reader.getReferenceTypeID(); // referenceID
+                        reader.getFieldID();
+                        reader.getTaggedObjectID();
                     }
                     break;
                 case FIELD_MODIFICATION:
                     {
-                        reader.getThreadID(byteBuffer); // threadID
-                        reader.getLocation(byteBuffer);
-                        reader.getByte(byteBuffer); // refTypeTag
-                        reader.getObjectID(byteBuffer); // referenceID
-                        reader.getFieldID(byteBuffer);
-                        reader.getTaggedObjectID(byteBuffer);
-                        reader.getValue(byteBuffer);
+                        reader.getThreadID(); // threadID
+                        reader.getLocation();
+                        reader.getByte(); // refTypeTag
+                        reader.getObjectID(); // referenceID
+                        reader.getFieldID();
+                        reader.getTaggedObjectID();
+                        reader.getValue();
                     }
                     break;
                 default:

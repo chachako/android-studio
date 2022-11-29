@@ -15,45 +15,39 @@
  */
 package com.android.jdwptracer;
 
-import com.android.annotations.NonNull;
+public class DdmJDWPTiming {
 
-abstract class Packet {
-
-    private static final int PACKET_REPLY_FLAG = 0x80;
-
-    private final long time_ns;
-    private final long length;
     private final int id;
+    private final int cmdSet;
+    private final int cmd;
+    private final long start_ns;
+    private final long duration_ns;
 
-    @NonNull private final Message message;
-
-    Packet(int id, long length, long time_ns, @NonNull Message message) {
+    public DdmJDWPTiming(int id, int cmdset, int cmd, long start_ns, long duration_ns) {
         this.id = id;
-        this.length = length;
-        this.time_ns = time_ns;
-        this.message = message;
+        this.cmdSet = cmdset;
+        this.cmd = cmd;
+        this.start_ns = start_ns;
+        this.duration_ns = duration_ns;
     }
 
-    abstract boolean isReply();
-
-    long id() {
+    public int id() {
         return id;
     }
 
-    long length() {
-        return length;
+    public int cmd() {
+        return cmd;
     }
 
-    long time_ns() {
-        return time_ns;
+    public int cmdSet() {
+        return cmdSet;
     }
 
-    static boolean isReply(byte flags) {
-        return (flags & PACKET_REPLY_FLAG) == PACKET_REPLY_FLAG;
+    public long start_ns() {
+        return start_ns;
     }
 
-    @NonNull
-    Message message() {
-        return message;
+    public long duration_ns() {
+        return duration_ns;
     }
 }

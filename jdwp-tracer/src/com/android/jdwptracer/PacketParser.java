@@ -16,9 +16,8 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
-import java.nio.ByteBuffer;
 
 interface PacketParser {
     @NonNull
-    Message parse(@NonNull ByteBuffer buffer, @NonNull MessageReader reader);
+    Message parse(@NonNull MessageReader reader, @NonNull Session session);
 }

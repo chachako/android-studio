@@ -15,9 +15,9 @@
  */
 package com.android.jdwptracer;
 
+import com.android.annotations.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.nio.ByteBuffer;
 
 class CmdSetReferenceType extends CmdSet {
 
@@ -64,85 +64,89 @@ class CmdSetReferenceType extends CmdSet {
         add(18, "ConstantPool");
     }
 
-    private static Message parseSignatureCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseSignatureCmd(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID());
 
         return message;
     }
 
-    private static Message parseSignatureReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseSignatureReply(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        message.addArg("signature", reader.getString(byteBuffer));
+        message.addArg("signature", reader.getString());
 
         return message;
     }
 
     private static Message parseSourceDebugExtensionCmd(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID());
 
         return message;
     }
 
     private static Message parseSourceDebugExtensionReply(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
         // See
         // https://docs.oracle.com/javase/8/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ReferenceType_SourceDebugExtension.
         // There is supposed to be an extension string argument; but at times I've found that the
         // message just ends. So we need to test for any remaining bytes before trying to read the
         // extension argument.
-        if (byteBuffer.hasRemaining()) {
-            message.addArg("extension", reader.getString(byteBuffer));
+        if (reader.hasRemaining()) {
+            message.addArg("extension", reader.getString());
         }
 
         return message;
     }
 
     private static Message parseSignatureWithGenericCmd(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID());
 
         return message;
     }
 
     private static Message parseSignatureWithGenericReply(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        message.addArg("signature", reader.getString(byteBuffer));
-        message.addArg("genericSignature", reader.getString(byteBuffer));
-
-        return message;
-    }
-
-    private static Message parseMethodsCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
-
-        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("signature", reader.getString());
+        message.addArg("genericSignature", reader.getString());
 
         return message;
     }
 
-    private static Message parseMethodsReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseMethodsCmd(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int declared = reader.getInt(byteBuffer);
+        message.addArg("refType", reader.getReferenceTypeID());
+
+        return message;
+    }
+
+    private static Message parseMethodsReply(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
+
+        int declared = reader.getInt();
         JsonArray methods = new JsonArray();
         for (int i = 0; i < declared; i++) {
             JsonObject method = new JsonObject();
-            method.addProperty("methodID", reader.getMethodID(byteBuffer));
-            method.addProperty("name", reader.getString(byteBuffer));
-            method.addProperty("signature", reader.getString(byteBuffer));
-            method.addProperty("modBits", reader.getInt(byteBuffer));
+            method.addProperty("methodID", reader.getMethodID());
+            method.addProperty("name", reader.getString());
+            method.addProperty("signature", reader.getString());
+            method.addProperty("modBits", reader.getInt());
 
             methods.add(method);
         }
@@ -154,27 +158,27 @@ class CmdSetReferenceType extends CmdSet {
     }
 
     private static Message parseMethodsWithGenericsCmd(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        message.addArg("refType", reader.getReferenceTypeID(byteBuffer));
+        message.addArg("refType", reader.getReferenceTypeID());
 
         return message;
     }
 
     private static Message parseMethodsWithGenericsReply(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int declared = reader.getInt(byteBuffer);
+        int declared = reader.getInt();
         JsonArray methods = new JsonArray();
         for (int i = 0; i < declared; i++) {
             JsonObject method = new JsonObject();
-            method.addProperty("methodID", reader.getMethodID(byteBuffer));
-            method.addProperty("name", reader.getString(byteBuffer));
-            method.addProperty("signature", reader.getString(byteBuffer));
-            method.addProperty("genericSignature", reader.getString(byteBuffer));
-            method.addProperty("modBits", reader.getInt(byteBuffer));
+            method.addProperty("methodID", reader.getMethodID());
+            method.addProperty("name", reader.getString());
+            method.addProperty("signature", reader.getString());
+            method.addProperty("genericSignature", reader.getString());
+            method.addProperty("modBits", reader.getInt());
 
             methods.add(method);
         }

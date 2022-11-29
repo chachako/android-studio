@@ -30,6 +30,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 class MessageReader {
+
+    @NonNull private ByteBuffer buffer = ByteBuffer.allocate(0);
     private int fieldIDSize = 8;
     private int methodIDSize = 8;
     private int objectIDSize = 8;
@@ -56,12 +58,12 @@ class MessageReader {
         this.frameIDSize = size;
     }
 
-    byte getByte(@NonNull ByteBuffer buffer) {
+    byte getByte() {
         return buffer.get();
     }
 
-    String getTypeTag(@NonNull ByteBuffer buffer) {
-        byte type = getByte(buffer);
+    String getTypeTag() {
+        byte type = getByte();
         switch (type) {
             case 1:
                 return "CLASS";
@@ -74,127 +76,127 @@ class MessageReader {
         }
     }
 
-    boolean getBoolean(@NonNull ByteBuffer buffer) {
+    boolean getBoolean() {
         return buffer.get() != 0;
     }
 
-    short getShort(@NonNull ByteBuffer buffer) {
+    short getShort() {
         return buffer.getShort();
     }
 
-    int getInt(@NonNull ByteBuffer buffer) {
+    int getInt() {
         return buffer.getInt();
     }
 
-    long getLong(@NonNull ByteBuffer buffer) {
+    long getLong() {
         return buffer.getLong();
     }
 
-    JsonObject getLocation(@NonNull ByteBuffer buffer) {
+    JsonObject getLocation() {
         JsonObject location = new JsonObject();
-        location.addProperty("type", getTypeTag(buffer));
-        location.addProperty("classID", getClassID(buffer));
-        location.addProperty("methodID", getMethodID(buffer));
-        location.addProperty("index", getLong(buffer));
+        location.addProperty("type", getTypeTag());
+        location.addProperty("classID", getClassID());
+        location.addProperty("methodID", getMethodID());
+        location.addProperty("index", getLong());
 
         return location;
     }
 
-    void getValue(@NonNull ByteBuffer buffer) {
-        byte tag = getByte(buffer); // tag
+    void getValue() {
+        byte tag = getByte(); // tag
         switch (tag) {
             case '[':
-                getObjectID(buffer);
+                getObjectID();
                 break; // Array Object
             case 'B':
-                getByte(buffer);
+                getByte();
                 break; // byte
             case 'C':
-                getShort(buffer);
+                getShort();
                 break; // Character
             case 'L':
-                getObjectID(buffer);
+                getObjectID();
                 break; // Object
             case 'F':
-                getInt(buffer);
+                getInt();
                 break; // Float
             case 'D':
-                getLong(buffer);
+                getLong();
                 break; // Double
             case 'I':
-                getInt(buffer);
+                getInt();
                 break; // Int
             case 'J':
-                getLong(buffer);
+                getLong();
                 break; // Long
             case 'S':
-                getShort(buffer);
+                getShort();
                 break; // Short
             case 'V':
                 break; // Void
             case 'Z':
-                getByte(buffer);
+                getByte();
                 break; // Boolean
             case 's':
-                getObjectID(buffer);
+                getObjectID();
                 break; // String object
             case 't':
-                getObjectID(buffer);
+                getObjectID();
                 break; // Thread object
             case 'g':
-                getObjectID(buffer);
+                getObjectID();
                 break; // Thread Group object
             case 'l':
-                getObjectID(buffer);
+                getObjectID();
                 break; // Classloader object
             case 'c':
-                getObjectID(buffer);
+                getObjectID();
                 break; // Class object
             default:
                 break;
         }
     }
 
-    long getFieldID(@NonNull ByteBuffer buffer) {
-        return getID(buffer, fieldIDSize);
+    long getFieldID() {
+        return getID(fieldIDSize);
     }
 
-    long getMethodID(@NonNull ByteBuffer buffer) {
-        return getID(buffer, methodIDSize);
+    long getMethodID() {
+        return getID(methodIDSize);
     }
 
-    long getClassID(@NonNull ByteBuffer buffer) {
-        return getReferenceTypeID(buffer);
+    long getClassID() {
+        return getReferenceTypeID();
     }
 
-    long getObjectID(@NonNull ByteBuffer buffer) {
-        return getID(buffer, objectIDSize);
+    long getObjectID() {
+        return getID(objectIDSize);
     }
 
-    long getThreadID(@NonNull ByteBuffer byteBuffer) {
-        return getObjectID(byteBuffer);
+    long getThreadID() {
+        return getObjectID();
     }
 
-    void getTaggedObjectID(@NonNull ByteBuffer buffer) {
-        getObjectID(buffer);
-        getByte(buffer);
+    void getTaggedObjectID() {
+        getObjectID();
+        getByte();
     }
 
-    long getReferenceTypeID(@NonNull ByteBuffer buffer) {
-        return getID(buffer, referenceTypeIDSize);
+    long getReferenceTypeID() {
+        return getID(referenceTypeIDSize);
     }
 
-    long getFrameID(@NonNull ByteBuffer buffer) {
-        return getID(buffer, frameIDSize);
+    long getFrameID() {
+        return getID(frameIDSize);
     }
 
-    public String getString(@NonNull ByteBuffer buffer) {
-        byte[] bytes = new byte[getInt(buffer)];
+    public String getString() {
+        byte[] bytes = new byte[getInt()];
         buffer.get(bytes);
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    private long getID(@NonNull ByteBuffer buffer, int size) {
+    private long getID(int size) {
         switch (size) {
             case 1:
                 return buffer.get();
@@ -207,5 +209,17 @@ class MessageReader {
             default:
                 throw new IllegalArgumentException("Unsupported id size: " + size);
         }
+    }
+
+    void setBuffer(@NonNull ByteBuffer buffer) {
+        this.buffer = buffer;
+    }
+
+    int remaining() {
+        return buffer.remaining();
+    }
+
+    boolean hasRemaining() {
+        return buffer.hasRemaining();
     }
 }

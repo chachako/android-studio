@@ -15,13 +15,15 @@
  */
 package com.android.jdwptracer;
 
-import java.nio.ByteBuffer;
+import com.android.annotations.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
 class CmdSetDdm extends CmdSet {
 
     private static Map<Integer, String> ddmTypes = new HashMap<>();
+
+    private static final String ART_TIMING_CHUNK = "ARTT";
 
     static {
         addType("APNM");
@@ -51,6 +53,8 @@ class CmdSetDdm extends CmdSet {
         addType("REAE");
         addType("REAQ");
         addType("REAL");
+
+        addType(ART_TIMING_CHUNK);
     }
 
     // Source debugmon.html
@@ -61,18 +65,38 @@ class CmdSetDdm extends CmdSet {
         add(1, "Packet", this::parseDdmCmd, this::parseDdmReply);
     }
 
-    private Message parseDdmReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message msg = new Message(byteBuffer);
+    private Message parseDdmReply(@NonNull MessageReader reader, @NonNull Session session) {
+        Message msg = new Message(reader);
         return msg;
     }
 
-    private Message parseDdmCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message msg = new Message(byteBuffer);
-        int type = reader.getInt(byteBuffer);
-        int length = reader.getInt(byteBuffer);
+    private Message parseDdmCmd(@NonNull MessageReader reader, @NonNull Session session) {
+        Message msg = new Message(reader);
+
+        int type = reader.getInt();
+        int length = reader.getInt();
 
         if (ddmTypes.containsKey(type)) {
             msg.setName(ddmTypes.get(type));
+            if (type == typeFromName(ART_TIMING_CHUNK)) {
+                // These are the timing from art processing on-device.
+                int version = reader.getInt(); // Not used for now. Switch parsing upon new version.
+
+                int numTimings = reader.getInt();
+                msg.addArg("numTimings", numTimings);
+
+                Map<Long, DdmJDWPTiming> timings = new HashMap<>();
+                for (int i = 0; i < numTimings; i++) {
+                    int id = reader.getInt();
+                    int cmdset = reader.getInt();
+                    int cmd = reader.getInt();
+                    long start_ns = reader.getLong();
+                    long duration_ns = reader.getLong();
+                    timings.put(
+                            (long) id, new DdmJDWPTiming(id, cmdset, cmd, start_ns, duration_ns));
+                }
+                session.addTimings(timings);
+            }
         } else {
             msg.setName("UNKNOWN(" + typeToName(type) + ")");
         }

@@ -34,7 +34,8 @@ class Transmission extends Event {
 
     private final long jdwpId;
 
-    Transmission(@NonNull Command cmd, long jdwpId) {
+    Transmission(@NonNull Command cmd, long jdwpId, int line) {
+        super(line);
         this.cmd = cmd;
         this.reply = Optional.empty();
         this.jdwpId = jdwpId;
@@ -52,5 +53,9 @@ class Transmission extends Event {
     @NonNull
     Optional<Reply> reply() {
         return reply;
+    }
+
+    long jdpwId() {
+        return jdwpId;
     }
 }

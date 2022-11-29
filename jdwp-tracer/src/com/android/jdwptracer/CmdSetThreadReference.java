@@ -15,9 +15,9 @@
  */
 package com.android.jdwptracer;
 
+import com.android.annotations.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.nio.ByteBuffer;
 
 class CmdSetThreadReference extends CmdSet {
 
@@ -44,12 +44,12 @@ class CmdSetThreadReference extends CmdSet {
         add(14, "ForceEarlyReturn");
     }
 
-    private static Message parseFramesCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseFramesCmd(@NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        long threadID = reader.getThreadID(byteBuffer);
-        int startFrame = reader.getInt(byteBuffer);
-        int length = reader.getInt(byteBuffer);
+        long threadID = reader.getThreadID();
+        int startFrame = reader.getInt();
+        int length = reader.getInt();
 
         message.addArg("threadID", threadID);
         message.addArg("startFrame", startFrame);
@@ -58,15 +58,16 @@ class CmdSetThreadReference extends CmdSet {
         return message;
     }
 
-    private static Message parseFramesReply(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+    private static Message parseFramesReply(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int frames = reader.getInt(byteBuffer);
+        int frames = reader.getInt();
 
         JsonArray framesArray = new JsonArray();
         for (int i = 0; i < frames; i++) {
-            long frameID = reader.getFrameID(byteBuffer);
-            JsonObject location = reader.getLocation(byteBuffer);
+            long frameID = reader.getFrameID();
+            JsonObject location = reader.getLocation();
 
             JsonObject frame = new JsonObject();
             frame.addProperty("frameID", frameID);

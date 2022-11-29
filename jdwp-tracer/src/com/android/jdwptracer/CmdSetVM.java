@@ -18,7 +18,6 @@ package com.android.jdwptracer;
 import com.android.annotations.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.nio.ByteBuffer;
 
 class CmdSetVM extends CmdSet {
 
@@ -98,26 +97,26 @@ class CmdSetVM extends CmdSet {
 
     @NonNull
     private static Message parseReplyIdSizes(
-            @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int fieldIDSize = reader.getInt(byteBuffer);
+        int fieldIDSize = reader.getInt();
         reader.setFieldIDSize(fieldIDSize);
         message.addArg("FieldIDSize", Integer.toString(fieldIDSize));
 
-        int methodIDSize = reader.getInt(byteBuffer);
+        int methodIDSize = reader.getInt();
         reader.setMethodIDSize(methodIDSize);
         message.addArg("methodIDSize", Integer.toString(methodIDSize));
 
-        int objectIDSize = reader.getInt(byteBuffer);
+        int objectIDSize = reader.getInt();
         reader.setObjectIDSize(objectIDSize);
         message.addArg("objectIDSize", Integer.toString(objectIDSize));
 
-        int referenceTypeIDSize = reader.getInt(byteBuffer);
+        int referenceTypeIDSize = reader.getInt();
         reader.setReferenceTypeIDSize(referenceTypeIDSize);
         message.addArg("referenceTypeID", Integer.toString(referenceTypeIDSize));
 
-        int frameIDSize = reader.getInt(byteBuffer);
+        int frameIDSize = reader.getInt();
         reader.setFrameIDSize(frameIDSize);
         message.addArg("frameIDSize", Integer.toString(frameIDSize));
 
@@ -126,32 +125,33 @@ class CmdSetVM extends CmdSet {
 
     @NonNull
     private static Message parseCmdIdSizes(
-            @NonNull ByteBuffer byteBuffer, @NonNull MessageReader reader) {
-        return Message.defaultMessageParser(byteBuffer, reader);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        return Message.defaultMessageParser(reader, session);
     }
 
-    private static Message parseClassesBySignatureCmd(ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = Message.defaultMessageParser(byteBuffer, reader);
+    private static Message parseClassesBySignatureCmd(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = Message.defaultMessageParser(reader, session);
 
-        message.addArg("signature", reader.getString(byteBuffer));
+        message.addArg("signature", reader.getString());
 
         return message;
     }
 
     private static Message parseClassesBySignatureReply(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int classes = reader.getInt(byteBuffer);
+        int classes = reader.getInt();
 
         message.addArg("classes", classes);
 
         JsonArray classList = new JsonArray();
         for (int i = 0; i < classes; i++) {
             JsonObject classEntry = new JsonObject();
-            classEntry.addProperty("refTypeTag", reader.getByte(byteBuffer));
-            classEntry.addProperty("typeID", reader.getReferenceTypeID(byteBuffer));
-            classEntry.addProperty("status", reader.getInt(byteBuffer));
+            classEntry.addProperty("refTypeTag", reader.getByte());
+            classEntry.addProperty("typeID", reader.getReferenceTypeID());
+            classEntry.addProperty("status", reader.getInt());
 
             classList.add(classEntry);
         }
@@ -162,25 +162,25 @@ class CmdSetVM extends CmdSet {
     }
 
     private static Message parseAllClassesWithGenericsCmd(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        return Message.defaultMessageParser(byteBuffer, reader);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        return Message.defaultMessageParser(reader, session);
     }
 
     private static Message parseAllClassesWithGenericsReply(
-            ByteBuffer byteBuffer, MessageReader reader) {
-        Message message = new Message(byteBuffer);
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
 
-        int classes = reader.getInt(byteBuffer);
+        int classes = reader.getInt();
         message.addArg("classes", Integer.toString(classes));
 
         JsonArray classList = new JsonArray();
         for (int i = 0; i < classes; i++) {
             JsonObject classEntry = new JsonObject();
-            classEntry.addProperty("refTypeTag", reader.getByte(byteBuffer));
-            classEntry.addProperty("typeID", reader.getReferenceTypeID(byteBuffer));
-            classEntry.addProperty("signature", reader.getString(byteBuffer));
-            classEntry.addProperty("genericSignature", reader.getString(byteBuffer));
-            classEntry.addProperty("status", reader.getInt(byteBuffer));
+            classEntry.addProperty("refTypeTag", reader.getByte());
+            classEntry.addProperty("typeID", reader.getReferenceTypeID());
+            classEntry.addProperty("signature", reader.getString());
+            classEntry.addProperty("genericSignature", reader.getString());
+            classEntry.addProperty("status", reader.getInt());
 
             classList.add(classEntry);
         }
