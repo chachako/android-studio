@@ -489,92 +489,91 @@ class DependencyConfigurator(
                 }
             }
 
-            val apiGeneratorCoordinates = projectServices.projectOptions
-                    .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
-            if (apiGeneratorCoordinates != null) {
+            val extractSdkShimTransformParamConfig = {
+                reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
+                val runtimeDependenciesForApigeneratorShim =
+                        projectServices.projectOptions
+                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
+                                ?.split(",")
+                                ?: listOf(
+                                        "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-SNAPSHOT",
+                                        "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"
+                                )
 
-                val extractSdkShimTransformParamConfig = {
-                    reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
-                    val runtimeDependenciesForShimSdk =
-                            projectServices.projectOptions
-                                    .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES)
-                                    ?.split(",") ?: emptyList()
+                val apiGeneratorAndRuntimeDependencies =
+                        project.configurations.detachedConfiguration(
+                                project.dependencies.create(runtimeDependenciesForApigeneratorShim.first()))
+                // Runtime dependencies of the sources created by the api generator
+                val apiGeneratorOutputSourceDependencies =
+                        project.configurations.detachedConfiguration(
+                                *runtimeDependenciesForApigeneratorShim.map {
+                                    project.dependencies.create(it)
+                                }.toTypedArray())
 
-                    val apiGeneratorAndRuntimeDependencies =
-                            project.configurations.detachedConfiguration(
-                                    project.dependencies.create(apiGeneratorCoordinates))
-                    // Runtime dependencies of the sources created by the api generator
-                    val apiGeneratorOutputSourceDependencies =
-                            project.configurations.detachedConfiguration(
-                                    *runtimeDependenciesForShimSdk.map {
-                                        project.dependencies.create(it)
-                                    }.toTypedArray())
+                val params = reg.parameters
+                params.apiGeneratorAndRuntimeDependenciesJars.setFrom(
+                        apiGeneratorAndRuntimeDependencies)
+                params.buildTools.initialize(
+                        projectServices.buildServiceRegistry,
+                        compileSdkHashString,
+                        buildToolsRevision)
 
-                    val params = reg.parameters
-                    params.apiGeneratorAndRuntimeDependenciesJars.setFrom(
-                            apiGeneratorAndRuntimeDependencies)
-                    params.buildTools.initialize(
-                            projectServices.buildServiceRegistry,
-                            compileSdkHashString,
-                            buildToolsRevision)
+                // For kotlin compilation
+                params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
 
-                    // For kotlin compilation
-                    params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
+                val kotlinCompiler = project.configurations.detachedConfiguration(
+                        project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
+                )
+                params.kotlinCompiler.from(kotlinCompiler)
+                params.runtimeDependencies.from(apiGeneratorOutputSourceDependencies)
+            }
 
-                    val kotlinCompiler = project.configurations.detachedConfiguration(
-                            project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
-                    )
-                    params.kotlinCompiler.from(kotlinCompiler)
-                    params.runtimeDependencies.from(apiGeneratorOutputSourceDependencies)
-                }
+            project.dependencies.registerTransform(
+                ExtractCompileSdkShimTransform::class.java,
+            ) { reg ->
+                val compileUsage: Usage =
+                    project.objects.named(Usage::class.java, Usage.JAVA_API)
 
-                project.dependencies.registerTransform(
-                    ExtractCompileSdkShimTransform::class.java,
-                ) { reg ->
-                    val compileUsage: Usage =
-                        project.objects.named(Usage::class.java, Usage.JAVA_API)
+                reg.from.attribute(
+                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
+                )
+                reg.from.attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    compileUsage
+                )
+                reg.to.attribute(
+                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    AndroidArtifacts.ArtifactType.CLASSES_JAR.type
+                )
+                reg.to.attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    compileUsage
+                )
+                extractSdkShimTransformParamConfig(reg)
+            }
+            project.dependencies.registerTransform(
+                ExtractRuntimeSdkShimTransform::class.java,
+            ) { reg ->
+                val runtimeUsage: Usage = project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
 
-                    reg.from.attribute(
-                        ArtifactAttributes.ARTIFACT_FORMAT,
-                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
-                    )
-                    reg.from.attribute(
-                        Usage.USAGE_ATTRIBUTE,
-                        compileUsage
-                    )
-                    reg.to.attribute(
-                        ArtifactAttributes.ARTIFACT_FORMAT,
-                        AndroidArtifacts.ArtifactType.CLASSES_JAR.type
-                    )
-                    reg.to.attribute(
-                        Usage.USAGE_ATTRIBUTE,
-                        compileUsage
-                    )
-                    extractSdkShimTransformParamConfig(reg)
-                }
-                project.dependencies.registerTransform(
-                    ExtractRuntimeSdkShimTransform::class.java,
-                ) { reg ->
-                    val runtimeUsage: Usage = project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
-
-                    reg.from.attribute(
-                        ArtifactAttributes.ARTIFACT_FORMAT,
-                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
-                    )
-                    reg.from.attribute(
-                        Usage.USAGE_ATTRIBUTE,
-                        runtimeUsage
-                    )
-                    reg.to.attribute(
-                        ArtifactAttributes.ARTIFACT_FORMAT,
-                        AndroidArtifacts.ArtifactType.CLASSES_JAR.type
-                    )
-                    reg.to.attribute(
-                        Usage.USAGE_ATTRIBUTE,
-                        runtimeUsage
-                    )
-                    extractSdkShimTransformParamConfig(reg)
-                }
+                reg.from.attribute(
+                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
+                )
+                reg.from.attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    runtimeUsage
+                )
+                reg.to.attribute(
+                    ArtifactAttributes.ARTIFACT_FORMAT,
+                    AndroidArtifacts.ArtifactType.CLASSES_JAR.type
+                )
+                reg.to.attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    runtimeUsage
+                )
+                extractSdkShimTransformParamConfig(reg)
             }
         }
         return this

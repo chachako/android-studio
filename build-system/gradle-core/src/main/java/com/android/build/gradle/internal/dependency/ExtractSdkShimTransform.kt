@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.dependency
 
 import com.android.SdkConstants
 import com.android.build.gradle.internal.BuildToolsExecutableInput
+import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import org.gradle.api.artifacts.transform.InputArtifact
@@ -34,6 +35,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.process.ExecOperations
 import org.gradle.work.DisableCachingByDefault
+import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.IOException
@@ -42,6 +44,8 @@ import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 import javax.tools.ToolProvider
@@ -104,6 +108,12 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
         if (!sdkInterfaceDescriptorJar.isFile) {
             throw IOException("${sdkInterfaceDescriptorJar.absolutePath} must be a file.")
         }
+        if (checkEmptyJar(sdkInterfaceDescriptorJar)) {
+            throw RuntimeException(
+                    "Unable to proceed generating shim with no provided sdk descriptor entries in: " +
+                            "${sdkInterfaceDescriptorJar.absolutePath}.  " +
+                            "Privacy Sandbox Sdk modules require at least one service declaration.")
+        }
         try {
             val kotlinOutDir = File(tempDirForApiGeneratorOutputs.toFile(), "kotlin-compiled")
             val javaOutDir = File(tempDirForApiGeneratorOutputs.toFile(), "java-compiled")
@@ -116,9 +126,8 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
                         outputDirectory = tempDirForApiGeneratorOutputs)
             }
 
-            val generatedFiles: List<Path>
-            Files.walk(tempDirForApiGeneratorOutputs).use { stream ->
-                generatedFiles = stream.filter { Files.isRegularFile(it) }.toList()
+            val generatedFiles: List<Path> = Files.walk(tempDirForApiGeneratorOutputs).use { stream ->
+                 stream.filter { Files.isRegularFile(it) }.toList()
             }
 
             // Java sources are produced by the apigenerator invoking the aidl compiler, therefore
@@ -130,8 +139,15 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
                 writeCompiledClassesToZip(kotlinOutDir, outJar)
                 writeCompiledClassesToZip(javaOutDir, outJar)
             }
-        } finally {
+        }
+        finally {
             FileUtils.cleanOutputDir(tempDirForApiGeneratorOutputs.toFile())
+        }
+    }
+
+    private fun checkEmptyJar(sdkInterfaceDescriptorJar: File): Boolean {
+        ZipInputStream(sdkInterfaceDescriptorJar?.inputStream()).use { jar ->
+            return jar.nextEntry == null
         }
     }
 
