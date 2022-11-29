@@ -72,6 +72,7 @@ public class Svg2Vector {
     public static final String SVG_CLIP_PATH_ELEMENT = "clipPath";
 
     public static final String SVG_D = "d";
+    public static final String SVG_PAINT_ORDER = "paint-order";
     public static final String SVG_STROKE = "stroke";
     public static final String SVG_STROKE_OPACITY = "stroke-opacity";
     public static final String SVG_STROKE_LINEJOIN = "stroke-linejoin";
@@ -95,6 +96,7 @@ public class Svg2Vector {
                     .put(SVG_FILL_RULE, "android:fillType")
                     .put(SVG_FILL_OPACITY, "android:fillAlpha")
                     .put(SVG_OPACITY, "") // Treated individually.
+                    .put(SVG_PAINT_ORDER, "") // Treated individually.
                     .put(SVG_STROKE, "android:strokeColor")
                     .put(SVG_STROKE_OPACITY, "android:strokeAlpha")
                     .put(SVG_STROKE_LINEJOIN, "android:strokeLineJoin")

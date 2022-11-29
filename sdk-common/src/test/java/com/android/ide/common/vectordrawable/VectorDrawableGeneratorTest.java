@@ -308,6 +308,10 @@ public class VectorDrawableGeneratorTest extends TestCase {
         checkSvgConversion("test_color_formats");
     }
 
+    public void testSvgPaintOrder() throws Exception {
+        checkSvgConversion("test_paint_order");
+    }
+
     public void testSvgTransformArcComplex1() throws Exception {
         checkSvgConversion("test_transform_arc_complex1");
     }
