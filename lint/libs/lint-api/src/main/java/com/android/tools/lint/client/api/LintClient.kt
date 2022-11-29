@@ -1046,10 +1046,10 @@ abstract class LintClient {
      *
      * @param knownProjects the list of projects
      */
-    protected open fun initializeProjects(knownProjects: Collection<Project>) = Unit
+    protected open fun initializeProjects(driver: LintDriver?, knownProjects: Collection<Project>) = Unit
 
     /**
-     * Perform any post-analysis cleaninup of the full set of projects
+     * Perform any post-analysis cleanup of the full set of projects
      * that lint was run on, if necessary.
      *
      * @param knownProjects the list of projects
@@ -1064,8 +1064,8 @@ abstract class LintClient {
     /**
      * Trampoline method to let [LintDriver] access protected method.
      */
-    internal fun performInitializeProjects(knownProjects: Collection<Project>) =
-        initializeProjects(knownProjects)
+    internal fun performInitializeProjects(driver: LintDriver, knownProjects: Collection<Project>) =
+        initializeProjects(driver, knownProjects)
 
     /**
      * Trampoline method to let [LintDriver] access protected method.

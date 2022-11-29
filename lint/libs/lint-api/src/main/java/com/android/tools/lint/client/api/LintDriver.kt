@@ -593,10 +593,8 @@ class LintDriver(
             return emptyList()
         }
 
-        if (mode != DriverMode.MERGE) { // The costly parsing environment is not required (or supported!) when merging
-            initializeTimeMs += measureTimeMillis {
-                realClient.performInitializeProjects(projects)
-            }
+        initializeTimeMs += measureTimeMillis {
+            realClient.performInitializeProjects(this, projects)
         }
 
         for (project in projects) {
@@ -1324,7 +1322,7 @@ class LintDriver(
             ) {
                 // This is a temporary workaround for b/159733104.
                 realClient.performDisposeProjects(projectRoots)
-                realClient.performInitializeProjects(projectRoots)
+                realClient.performInitializeProjects(this, projectRoots)
             }
             assert(phase == 1 || checkDependencies)
             val files = project.subset
@@ -2880,7 +2878,7 @@ class LintDriver(
             vararg args: Any
         ) = delegate.log(exception, format, *args)
 
-        override fun initializeProjects(knownProjects: Collection<Project>): Unit = unsupported()
+        override fun initializeProjects(driver: LintDriver?, knownProjects: Collection<Project>): Unit = unsupported()
 
         override fun disposeProjects(knownProjects: Collection<Project>): Unit = unsupported()
 

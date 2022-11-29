@@ -255,7 +255,7 @@ private fun createTestProjectForFiles(
     }
 
     val project = client.getProject(dir, dir)
-    client.initializeProjects(listOf(project))
+    client.initializeProjects(null, listOf(project))
     return project
 }
 
