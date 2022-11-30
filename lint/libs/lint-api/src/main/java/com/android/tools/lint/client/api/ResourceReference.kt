@@ -64,7 +64,7 @@ class ResourceReference(
     val heuristic: Boolean = false
 ) {
 
-    internal val isFramework: Boolean
+    val isFramework: Boolean
         get() = `package` == ANDROID_PKG
 
     companion object {
