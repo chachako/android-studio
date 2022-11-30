@@ -85,7 +85,7 @@ interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunI
      * @param project The Project that this test task is being created for.
      *
      * @return The cacheable inputs for the test task. This will be consumed as part of the
-     * test run action.
+     * [test run action][DeviceTestRunTaskAction].
      */
     @Incubating
     fun configureTaskInput(deviceDSL: DeviceT, project: Project): InputT
