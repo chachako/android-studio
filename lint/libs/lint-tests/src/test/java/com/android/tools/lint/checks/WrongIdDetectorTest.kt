@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.detector.api.Detector
 
 class WrongIdDetectorTest : AbstractCheckTest() {
@@ -760,6 +761,46 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                 """
             ).indented()
         ).run().expectClean()
+    }
+
+    fun testNotId() {
+        // Regression test for 258954161: not showing error on view id
+        lint().files(
+            xml(
+                "res/layout/layout4.xml",
+                """
+                <RelativeLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <View
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hello World!"
+                        android:id="@drawable/ic_launcher" /> <!-- ERROR -->
+                    <TabWidget android:id="@android:id/tabs"/> <!-- OK -->
+                </RelativeLayout>
+                """
+            ).indented(),
+            rClass("test.pkg", "@drawable/ic_launcher"),
+            xml(
+                "res/values/strings.xml",
+                """
+                    <resources
+                      xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+                      <string name="test">"Test<xliff:g id="APPLICATION_NAME">%s</xliff:g>Test"</string>
+                    </resources>
+                """
+            )
+        ).run().expect(
+            """
+            res/layout/layout4.xml:10: Error: Invalid id; ID definitions must be of the form @+id/name; did you mean @+id/ic_launcher? [InvalidId]
+                    android:id="@drawable/ic_launcher" /> <!-- ERROR -->
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            1 errors, 0 warnings
+            """
+        )
     }
 
     // Sample code

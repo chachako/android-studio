@@ -22,6 +22,7 @@ import static com.android.SdkConstants.DOT_KT;
 import static com.android.SdkConstants.DOT_XML;
 import static com.android.SdkConstants.FN_BUILD_GRADLE;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import com.android.annotations.NonNull;
 import com.android.resources.ResourceType;
@@ -146,6 +147,9 @@ public class TestFiles {
 
     @NonNull
     public static TestFile rClass(@NonNull String pkg, @NonNull String... urls) {
+        if (ResourceUrl.parse(pkg) != null) {
+            fail("The argument in rClass should be a package! (was " + pkg + ")");
+        }
         int id = 0x7f040000;
         StringBuilder sb = new StringBuilder();
         sb.append("package ").append(pkg).append(";\n");

@@ -48,6 +48,7 @@ import com.android.ide.common.resources.ResourceRepository;
 import com.android.ide.common.util.PathString;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
+import com.android.resources.ResourceUrl;
 import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
@@ -558,6 +559,9 @@ public class WrongIdDetector extends LayoutDetector {
 
     @Override
     public void visitAttribute(@NonNull XmlContext context, @NonNull Attr attribute) {
+        if (context.getResourceFolderType() != ResourceFolderType.LAYOUT) {
+            return;
+        }
         assert attribute.getName().equals(ATTR_ID) || attribute.getLocalName().equals(ATTR_ID);
         String id = attribute.getValue();
         mFileIds.add(id);
@@ -576,6 +580,15 @@ public class WrongIdDetector extends LayoutDetector {
                     String.format(
                             "ID definitions **must** be of the form `@+id/name`; try using `%1$s`",
                             suggested);
+            context.report(INVALID, attribute, context.getLocation(attribute), message);
+        } else if (!id.startsWith(NEW_ID_PREFIX)
+                && !id.startsWith(ID_PREFIX)
+                && !id.startsWith("@android:id/")) {
+            String message = "Invalid id; ID definitions **must** be of the form `@+id/name`";
+            ResourceUrl parse = ResourceUrl.parse(id);
+            if (parse != null) {
+                message += "; did you mean `@+id/" + parse.name + "`?";
+            }
             context.report(INVALID, attribute, context.getLocation(attribute), message);
         }
     }
