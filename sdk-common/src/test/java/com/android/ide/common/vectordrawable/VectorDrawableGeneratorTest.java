@@ -88,7 +88,7 @@ public class VectorDrawableGeneratorTest extends TestCase {
         String errorLog = null;
         if (type == FileType.SVG) {
             OutputStream outStream = new ByteArrayOutputStream();
-            errorLog = Svg2Vector.parseSvgToXml(incomingFile.toFile(), outStream);
+            errorLog = Svg2Vector.parseSvgToXml(incomingFile, outStream);
             if (expectedError != null) {
                 assertNotNull(errorLog);
                 assertFalse(errorLog.isEmpty());

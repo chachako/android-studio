@@ -23,9 +23,9 @@ import com.android.annotations.concurrency.Slow;
 import com.android.utils.Pair;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -196,10 +196,10 @@ public class Svg2Vector {
     private static final Pattern SPACE_OR_COMMA = Pattern.compile("[\\s,]+");
 
     @NonNull
-    private static SvgTree parse(@NonNull File f) throws IOException {
+    private static SvgTree parse(@NonNull Path file) throws IOException {
         SvgTree svgTree = new SvgTree();
         List<String> parseErrors = new ArrayList<>();
-        Document doc = svgTree.parse(f, parseErrors);
+        Document doc = svgTree.parse(file, parseErrors);
         for (String error : parseErrors) {
             svgTree.logError(error, null);
         }
@@ -1188,7 +1188,7 @@ public class Svg2Vector {
      */
     @Slow
     @NonNull
-    public static String parseSvgToXml(@NonNull File inputSvg, @NonNull OutputStream outStream)
+    public static String parseSvgToXml(@NonNull Path inputSvg, @NonNull OutputStream outStream)
             throws IOException {
         SvgTree svgTree = parse(inputSvg);
         if (svgTree.getHasLeafNode()) {
