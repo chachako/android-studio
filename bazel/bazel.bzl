@@ -587,13 +587,17 @@ def iml_module(
     srcs = split_srcs(srcs, resources, exclude)
     split_test_srcs = split_srcs(test_srcs, test_resources, exclude)
 
-    # we can't use JDK 17 and target 11, because of next restriction:
-    # "error: exporting a package from system module java.desktop is not allowed with --release"
-    # so instead use same JDK as jvm_target
-    java_toolchain = select({
-        "//tools/base/bazel:java_language_version_17": "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain",
-        "//conditions:default": "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11",
-    })
+    # if jvm_target is specified, use JDK that compiles to that target
+    # otherwise use default JDK, controlled by `java_language_version_17` flag
+    if jvm_target in ["8", "11"]:
+        java_toolchain = "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11"
+    elif jvm_target == "17":
+        java_toolchain = "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain"
+    else:
+        java_toolchain = select({
+            "//tools/base/bazel:java_language_version_17": "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain",
+            "//conditions:default": "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11",
+        })
 
     _iml_module_(
         name = name,
