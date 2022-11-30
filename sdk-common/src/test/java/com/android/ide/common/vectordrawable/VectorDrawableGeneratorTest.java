@@ -822,6 +822,10 @@ public class VectorDrawableGeneratorTest extends TestCase {
         checkSvgConversion("test_gradient_linear_x_y_numbers");
     }
 
+    public void testSvgGradientLinearHref() throws Exception {
+        checkSvgConversion("test_gradient_linear_href");
+    }
+
     public void testSvgGradientTransform() throws Exception {
         checkSvgConversion("test_gradient_transform");
     }

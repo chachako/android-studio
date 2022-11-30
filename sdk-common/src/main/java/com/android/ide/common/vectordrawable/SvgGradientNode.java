@@ -49,33 +49,6 @@ class SvgGradientNode extends SvgNode {
 
     private GradientUsage mGradientUsage;
 
-    private static class GradientCoordResult {
-        private final double mValue;
-        // When the gradientUnits is set to "userSpaceOnUse", we usually use the coordinate values
-        // as it is. But if the coordinate value is a percentage, we still need to multiply this
-        // percentage with the viewport's bounding box, in a similar way as gradientUnits is set
-        // to "objectBoundingBox".
-        private final boolean mIsPercentage;
-
-        GradientCoordResult(double value, boolean isPercentage) {
-            mValue = value;
-            mIsPercentage = isPercentage;
-        }
-
-        double getValue() {
-            return mValue;
-        }
-
-        boolean isPercentage() {
-            return mIsPercentage;
-        }
-    }
-
-    protected enum GradientUsage {
-        FILL,
-        STROKE
-    }
-
     // Maps the gradient vector's coordinate names to an int for easier array lookup.
     private static final ImmutableMap<String, Integer> vectorCoordinateMap =
             ImmutableMap.<String, Integer>builder()
@@ -111,9 +84,38 @@ class SvgGradientNode extends SvgNode {
      */
     protected void copyFrom(@NonNull SvgGradientNode from) {
         super.copyFrom(from);
-        for (GradientStop g : from.mGradientStops) {
-            addGradientStop(g.getColor(), g.getOffset(), g.getOpacity());
+        if (mGradientStops.isEmpty()) {
+            for (GradientStop g : from.mGradientStops) {
+                addGradientStop(g.getColor(), g.getOffset(), g.getOpacity());
+            }
         }
+    }
+
+    /**
+     * Resolves the 'href' reference to a template gradient element.
+     *
+     * @return true if the reference has been resolved, or false if it cannot be resolved at this
+     *     time due to a dependency on an unresolved node
+     */
+    public boolean resolveHref(@NonNull SvgTree svgTree) {
+        String id = getHrefId();
+        SvgNode referencedNode = id.isEmpty() ? null : svgTree.getSvgNodeFromId(id);
+        if (referencedNode instanceof SvgGradientNode) {
+            //noinspection SuspiciousMethodCalls
+            if (svgTree.getPendingUseSet().contains(referencedNode)) {
+                // Cannot process this node, because referencedNode it depends upon
+                // hasn't been processed yet.
+                return false;
+            }
+            copyFrom((SvgGradientNode) referencedNode);
+        } else if (referencedNode == null) {
+            if (id.isEmpty() || !svgTree.isIdIgnored(id)) {
+                svgTree.logError("Referenced id not found", mDocumentElement);
+            }
+        } else {
+            svgTree.logError("Referenced element is not a gradient", mDocumentElement);
+        }
+        return true;
     }
 
     @Override
@@ -431,5 +433,32 @@ class SvgGradientNode extends SvgNode {
         VdPath.Node[] nodes = PathParser.parsePath(mSvgLeafNode.getPathData(), ParseMode.SVG);
         VdNodeRender.createPath(nodes, svgPath);
         mBoundingBox = svgPath.getBounds2D();
+    }
+
+    private static class GradientCoordResult {
+        private final double mValue;
+        // When the gradientUnits is set to "userSpaceOnUse", we usually use the coordinate values
+        // as it is. But if the coordinate value is a percentage, we still need to multiply this
+        // percentage with the viewport's bounding box, in a similar way as gradientUnits is set
+        // to "objectBoundingBox".
+        private final boolean mIsPercentage;
+
+        GradientCoordResult(double value, boolean isPercentage) {
+            mValue = value;
+            mIsPercentage = isPercentage;
+        }
+
+        double getValue() {
+            return mValue;
+        }
+
+        boolean isPercentage() {
+            return mIsPercentage;
+        }
+    }
+
+    protected enum GradientUsage {
+        FILL,
+        STROKE
     }
 }

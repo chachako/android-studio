@@ -84,8 +84,11 @@ class SvgTree {
     /** IDs of ignored SVG nodes. */
     private final Set<String> mIgnoredIds = new HashSet<>();
 
-    /** Set of SvgGroupNodes that contain use elements. */
+    /** Set of SvgGroupNodes that contain "use" elements. */
     private final Set<SvgGroupNode> mPendingUseGroupSet = new HashSet<>();
+
+    /** Set of SvgGradientNodes that contain "href"" elements. */
+    private final Set<SvgGradientNode> mPendingGradientRefSet = new HashSet<>();
 
     /**
      * Key is SvgNode that references a clipPath. Value is SvgGroupNode that is the parent of that
@@ -389,6 +392,15 @@ class SvgTree {
     @NonNull
     public Set<SvgGroupNode> getPendingUseSet() {
         return mPendingUseGroupSet;
+    }
+
+    public void addToPendingGradientRefSet(@NonNull SvgGradientNode node) {
+        mPendingGradientRefSet.add(node);
+    }
+
+    @NonNull
+    public Set<SvgGradientNode> getPendingGradientRefSet() {
+        return mPendingGradientRefSet;
     }
 
     public void addIgnoredId(@NonNull String id) {
