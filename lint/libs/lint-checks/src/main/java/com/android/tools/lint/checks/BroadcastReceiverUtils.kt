@@ -120,7 +120,7 @@ object BroadcastReceiverUtils {
                 // We've reached the registerReceiver*() call in question.
                 call == functionCall -> finished = true
                 // The filter 'intentFilterEscapesScope' to a method which could modify it.
-                getMethodName(call)!! !in APPLICABLE_METHOD_NAMES ->
+                getMethodName(call)!! !in BROADCAST_RECEIVER_METHOD_NAMES ->
                     intentFilterEscapesScope = true
             }
         }
@@ -136,7 +136,7 @@ object BroadcastReceiverUtils {
         }
     }
 
-    val APPLICABLE_METHOD_NAMES = listOf(
+    val BROADCAST_RECEIVER_METHOD_NAMES = listOf(
         "registerReceiver",
         "registerReceiverAsUser",
         "registerReceiverForAllUsers"

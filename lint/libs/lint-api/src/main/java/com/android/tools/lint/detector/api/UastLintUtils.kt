@@ -184,31 +184,29 @@ class UastLintUtils {
         }
 
         /**
-         * Finds the first argument of a method that matches the given parameter type and name.
+         * Finds the first argument of a method that matches the given parameter type.
          * @param node      the call expression.
          * @param method    the method this call expression resolves to. It is expected the call expression and the method match.
          *                  Otherwise, the result will be wrong.
          * @param type:     the type of the parameter to be found.
-         * @param name:     the parameter name to be found.
-         * @return The expression representing the argument used in the call expression for the specific parameter.
+         * @return The FIRST expression representing the argument used in the call expression for the specific parameter.
          */
         @JvmStatic
         fun findArgument(
             node: UCallExpression,
             method: PsiMethod,
             type: String,
-            name: String
         ): UExpression? {
             val psiParameter = method.parameterList.parameters.firstOrNull {
-                it.type.canonicalText == type && it.name == name
+                it.type.canonicalText == type
             } ?: return null
             val argument = node.getArgumentForParameter(psiParameter.parameterIndex())
             return argument?.skipParenthesizedExprDown()
         }
 
         @JvmStatic
-        fun findArgument(node: UCallExpression, type: String, name: String): UExpression? {
-            return findArgument(node, node.resolve() ?: return null, type, name)
+        fun findArgument(node: UCallExpression, type: String): UExpression? {
+            return findArgument(node, node.resolve() ?: return null, type)
         }
 
         @JvmStatic
