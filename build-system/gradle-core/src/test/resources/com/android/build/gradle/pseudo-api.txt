@@ -1147,10 +1147,12 @@ com.android.build.gradle.internal.dsl.BuildTypeFactory.create: java.lang.Object 
 com.android.build.gradle.internal.dsl.BundleOptions implements com.android.build.api.dsl.Bundle
 com.android.build.gradle.internal.dsl.BundleOptions.<init>: com.android.build.gradle.internal.dsl.BundleOptions ()
 com.android.build.gradle.internal.dsl.BundleOptions.abi: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.BundleOptionsAbi>)
+com.android.build.gradle.internal.dsl.BundleOptions.countrySet: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.BundleOptionsCountrySet>)
 com.android.build.gradle.internal.dsl.BundleOptions.density: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.BundleOptionsDensity>)
 com.android.build.gradle.internal.dsl.BundleOptions.deviceTier: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.BundleOptionsDeviceTier>)
 com.android.build.gradle.internal.dsl.BundleOptions.getAbi: com.android.build.gradle.internal.dsl.BundleOptionsAbi ()
 com.android.build.gradle.internal.dsl.BundleOptions.getCodeTransparency: com.android.build.api.dsl.BundleCodeTransparency ()
+com.android.build.gradle.internal.dsl.BundleOptions.getCountrySet: com.android.build.gradle.internal.dsl.BundleOptionsCountrySet ()
 com.android.build.gradle.internal.dsl.BundleOptions.getDensity: com.android.build.gradle.internal.dsl.BundleOptionsDensity ()
 com.android.build.gradle.internal.dsl.BundleOptions.getDeviceTier: com.android.build.gradle.internal.dsl.BundleOptionsDeviceTier ()
 com.android.build.gradle.internal.dsl.BundleOptions.getIntegrityConfigDir: org.gradle.api.file.DirectoryProperty ()
@@ -1164,6 +1166,8 @@ com.android.build.gradle.internal.dsl.BundleOptionsAbi implements com.android.bu
 com.android.build.gradle.internal.dsl.BundleOptionsAbi.<init>: com.android.build.gradle.internal.dsl.BundleOptionsAbi ()
 com.android.build.gradle.internal.dsl.BundleOptionsCodeTransparency implements com.android.build.api.dsl.BundleCodeTransparency
 com.android.build.gradle.internal.dsl.BundleOptionsCodeTransparency.<init>: com.android.build.gradle.internal.dsl.BundleOptionsCodeTransparency ()
+com.android.build.gradle.internal.dsl.BundleOptionsCountrySet implements com.android.build.api.dsl.BundleCountrySet
+com.android.build.gradle.internal.dsl.BundleOptionsCountrySet.<init>: com.android.build.gradle.internal.dsl.BundleOptionsCountrySet ()
 com.android.build.gradle.internal.dsl.BundleOptionsDensity implements com.android.build.api.dsl.BundleDensity
 com.android.build.gradle.internal.dsl.BundleOptionsDensity.<init>: com.android.build.gradle.internal.dsl.BundleOptionsDensity ()
 com.android.build.gradle.internal.dsl.BundleOptionsDeviceTier implements com.android.build.api.dsl.BundleDeviceTier

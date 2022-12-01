@@ -478,10 +478,12 @@ package com.android.build.api.dsl {
   }
 
   public interface AssetPackBundleExtension {
+    method @org.gradle.api.Incubating public void countrySet(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCountrySet,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void deviceTier(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier,kotlin.Unit> action);
     method public String getApplicationId();
     method public java.util.Set<java.lang.String> getAssetPacks();
     method public int getCompileSdk();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleCountrySet getCountrySet();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleDeviceTier getDeviceTier();
     method public com.android.build.api.dsl.SigningConfig getSigningConfig();
     method public com.android.build.api.dsl.BundleTexture getTexture();
@@ -495,6 +497,7 @@ package com.android.build.api.dsl {
     property public abstract String applicationId;
     property public abstract java.util.Set<java.lang.String> assetPacks;
     property public abstract int compileSdk;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleCountrySet countrySet;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleDeviceTier deviceTier;
     property public abstract com.android.build.api.dsl.SigningConfig signingConfig;
     property public abstract com.android.build.api.dsl.BundleTexture texture;
@@ -641,10 +644,12 @@ package com.android.build.api.dsl {
   public interface Bundle {
     method public void abi(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleAbi,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void codeTransparency(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCodeTransparency,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public void countrySet(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCountrySet,kotlin.Unit> action);
     method public void density(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDensity,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void deviceTier(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier,kotlin.Unit> action);
     method public com.android.build.api.dsl.BundleAbi getAbi();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleCodeTransparency getCodeTransparency();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleCountrySet getCountrySet();
     method public com.android.build.api.dsl.BundleDensity getDensity();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.BundleDeviceTier getDeviceTier();
     method @org.gradle.api.Incubating public org.gradle.api.file.DirectoryProperty getIntegrityConfigDir();
@@ -656,6 +661,7 @@ package com.android.build.api.dsl {
     method public void texture(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleTexture,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.BundleAbi abi;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleCodeTransparency codeTransparency;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleCountrySet countrySet;
     property public abstract com.android.build.api.dsl.BundleDensity density;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.BundleDeviceTier deviceTier;
     property @org.gradle.api.Incubating public abstract org.gradle.api.file.DirectoryProperty integrityConfigDir;
@@ -674,6 +680,15 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.SigningConfig getSigning();
     method public void signing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.SigningConfig signing;
+  }
+
+  @org.gradle.api.Incubating public interface BundleCountrySet {
+    method @org.gradle.api.Incubating public String? getDefaultSet();
+    method @org.gradle.api.Incubating public Boolean? getEnableSplit();
+    method @org.gradle.api.Incubating public void setDefaultSet(String? defaultSet);
+    method @org.gradle.api.Incubating public void setEnableSplit(Boolean? enableSplit);
+    property @org.gradle.api.Incubating public abstract String? defaultSet;
+    property @org.gradle.api.Incubating public abstract Boolean? enableSplit;
   }
 
   public interface BundleDensity {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,30 +18,18 @@ package com.android.build.api.dsl
 
 import org.gradle.api.Incubating
 
-interface AssetPackBundleExtension {
-    var applicationId: String
-
-    var compileSdk: Int
-
-    var versionTag: String
-
-    val versionCodes: MutableSet<Int>
-
-    val assetPacks: MutableSet<String>
-
-    val signingConfig: SigningConfig
-    fun signingConfig(action: SigningConfig.() -> Unit)
-
-    val texture: BundleTexture
-    fun texture(action: BundleTexture.() -> Unit)
+@Incubating
+interface BundleCountrySet {
 
     @get:Incubating
-    val deviceTier: BundleDeviceTier
-    @Incubating
-    fun deviceTier(action: BundleDeviceTier.() -> Unit)
+    @set:Incubating
+    var enableSplit: Boolean?
 
+    /**
+     * Specifies the default country set value for the bundle. Used for filtering splits for
+     * standalone, system and universal APKs.
+     */
     @get:Incubating
-    val countrySet: BundleCountrySet
-    @Incubating
-    fun countrySet(action: BundleCountrySet.() -> Unit)
+    @set:Incubating
+    var defaultSet: String?
 }
