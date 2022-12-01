@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbSession
-import com.android.adblib.AdbSessionHost
 import com.android.adblib.AutoShutdown
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView

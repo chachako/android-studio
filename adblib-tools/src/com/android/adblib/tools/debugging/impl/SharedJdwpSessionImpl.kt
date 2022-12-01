@@ -20,11 +20,13 @@ import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.rethrowCancellation
+import com.android.adblib.tools.debugging.sharedJdwpSessionMonitorFactoryList
 import com.android.adblib.utils.createChildScope
 import com.android.adblib.utils.withReentrantLock
 import com.android.adblib.withPrefix
@@ -80,7 +82,7 @@ internal class SharedJdwpSessionImpl(
      * The class that ensures [sendPacket] is thread-safe and also safe
      * from coroutine cancellation.
      */
-    private val packetSender = PacketSender(scope, jdwpSession)
+    private val packetSender = PacketSender(scope, this)
 
     /**
      * The list of registered [ActiveReceiver], i.e. [JdwpPacketReceiver] that
@@ -110,6 +112,18 @@ internal class SharedJdwpSessionImpl(
      * new [JdwpPacketReceiver] has been registered.
      */
     private val receiverAddedSharedFlow = MutableSharedFlow<ActiveReceiver>()
+
+    /**
+     * The [SharedJdwpSessionMonitor] to invoke when sending or receiving [JdwpPacketView] packets,
+     * or `null` if there are no active monitors from [AdbSession.sharedJdwpSessionMonitorFactoryList].
+     *
+     * Note: We aggregate all monitors so that we can have an efficient `null` check in the common
+     * case where there are no active [SharedJdwpSessionMonitor].
+     */
+    private val jdwpMonitor = createAggregateJdwpMonitor(
+        session.sharedJdwpSessionMonitorFactoryList.mapNotNull { factory ->
+            factory.create(this)
+        })
 
     init {
         scope.launch {
@@ -148,6 +162,7 @@ internal class SharedJdwpSessionImpl(
         sessionEndResultStateFlow.value = exception
         scope.cancel(exception)
         jdwpSession.close()
+        jdwpMonitor?.close()
     }
 
     private suspend fun addActiveReceiver(name: String): ActiveReceiver {
@@ -231,6 +246,7 @@ internal class SharedJdwpSessionImpl(
 
                 // Send to each receiver
                 sendReplayPlacketsToReceivers()
+                jdwpMonitor?.onReceivePacket(localPacket)
                 activeReceivers.forEach { receiver ->
                     logger.verbose { "pid=$pid: Emitting session packet $localPacket to receiver '${receiver.name}'" }
                     sendPacketResultToReceiver(receiver, Result.success(localPacket))
@@ -472,7 +488,7 @@ internal class SharedJdwpSessionImpl(
      */
     private class PacketSender(
         private val scope: CoroutineScope,
-        private val jdwpSession: JdwpSession
+        private val sharedJdwpSession: SharedJdwpSessionImpl
     ) {
 
         suspend fun sendPacket(packet: JdwpPacketView) {
@@ -482,7 +498,8 @@ internal class SharedJdwpSessionImpl(
         private suspend fun sendPacketAsync(packet: JdwpPacketView): Deferred<Unit> {
             val deferred = CompletableDeferred<Unit>(scope.coroutineContext.job)
             scope.launch {
-                jdwpSession.sendPacket(packet)
+                sharedJdwpSession.jdwpMonitor?.onSendPacket(packet)
+                sharedJdwpSession.jdwpSession.sendPacket(packet)
                 deferred.complete(Unit)
             }.invokeOnCompletion {
                 it?.also { deferred.completeExceptionally(it) }
@@ -573,6 +590,35 @@ internal class SharedJdwpSessionImpl(
             logger.verbose { "Closing receiver" }
             scope.cancel("Active Receiver closed")
             jdwpSession.removeActiveReceiver(this)
+        }
+    }
+
+    companion object {
+
+        private fun createAggregateJdwpMonitor(jdwpMonitors: List<SharedJdwpSessionMonitor>): SharedJdwpSessionMonitor? {
+            return if (jdwpMonitors.isEmpty()) {
+                null
+            } else {
+                object : SharedJdwpSessionMonitor {
+                    override suspend fun onSendPacket(packet: JdwpPacketView) {
+                        jdwpMonitors.forEach {
+                            it.onSendPacket(packet)
+                        }
+                    }
+
+                    override suspend fun onReceivePacket(packet: JdwpPacketView) {
+                        jdwpMonitors.forEach {
+                            it.onReceivePacket(packet)
+                        }
+                    }
+
+                    override fun close() {
+                        jdwpMonitors.forEach {
+                            it.close()
+                        }
+                    }
+                }
+            }
         }
     }
 }

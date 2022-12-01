@@ -25,8 +25,12 @@ import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
+import com.android.adblib.tools.debugging.SharedJdwpSessionMonitorFactory
+import com.android.adblib.tools.debugging.addSharedJdwpSessionMonitorFactory
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
+import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
@@ -51,10 +55,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
 class SharedJdwpSessionTest : AdbLibToolsTestBase() {
@@ -509,6 +515,36 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         fail("Should not reach")
     }
 
+    @Test
+    fun sharedJdwpSessionMonitorAreInvokedIfRegistered(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+        val session = createSession(fakeAdb)
+        fakeDevice.startClient(10, 0, "a.b.c", false)
+        val testJdwpSessionMonitorFactory = TestJdwpSessionMonitorFactory()
+        session.addSharedJdwpSessionMonitorFactory(testJdwpSessionMonitorFactory)
+        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+
+        // Act
+        jdwpSession.newPacketReceiver()
+            .withName("Unit Test Receiver")
+            .onActivation {
+                val sendPacket = createHeloDdmsPacket(jdwpSession)
+                jdwpSession.sendPacket(sendPacket)
+            }.collect {
+                // We got our reply packet, terminate the process so this collector terminates.
+                jdwpSession.sendVmExit(5)
+            }
+
+        // Assert
+        assertEquals(1, testJdwpSessionMonitorFactory.createdMonitors.count())
+        val testMonitor = testJdwpSessionMonitorFactory.createdMonitors.first()
+        assertTrue(testMonitor.sentPackets.isNotEmpty())
+        assertTrue(testMonitor.receivedPackets.isNotEmpty())
+    }
+
     private suspend fun DdmsChunkView.toBufferedInputChannel(): AdbBufferedInputChannel {
         val workBuffer = ResizableBuffer()
         val outputChannel = ByteBufferAdbOutputChannel(workBuffer)
@@ -565,6 +601,34 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
                 prev.endNano <= cur.startNano
             )
             cur
+        }
+    }
+
+    class TestJdwpSessionMonitorFactory : SharedJdwpSessionMonitorFactory {
+        val createdMonitors = CopyOnWriteArrayList<TestJdwpSessionMonitor>()
+
+        override fun create(session: SharedJdwpSession): SharedJdwpSessionMonitor {
+            return TestJdwpSessionMonitor().also {
+                createdMonitors.add(it)
+            }
+        }
+
+        class TestJdwpSessionMonitor : SharedJdwpSessionMonitor {
+            val sentPackets = mutableListOf<JdwpPacketView>()
+            val receivedPackets = mutableListOf<JdwpPacketView>()
+            var closed: Boolean = false
+
+            override suspend fun onSendPacket(packet: JdwpPacketView) {
+                sentPackets.add(packet.clone())
+            }
+
+            override suspend fun onReceivePacket(packet: JdwpPacketView) {
+                receivedPackets.add(packet.clone())
+            }
+
+            override fun close() {
+                closed = true
+            }
         }
     }
 
