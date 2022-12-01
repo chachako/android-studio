@@ -1815,12 +1815,16 @@ public class TestLintClient extends LintCliClient {
     public URLConnection openConnection(@NonNull URL url, int timeout) throws IOException {
         Map<String, byte[]> mockNetworkData = task.mockNetworkData;
         Map<String, Integer> mockNetworkErrorCodes = task.mockNetworkErrorCodes;
+        Map<String, Map<String, List<String>>> mockNetworkHeaderFields =
+                task.mockNetworkHeaderFields;
         if (mockNetworkData != null || mockNetworkErrorCodes != null) {
             String query = url.toExternalForm();
             Integer response =
                     mockNetworkErrorCodes != null ? mockNetworkErrorCodes.get(query) : null;
             byte[] bytes = mockNetworkData != null ? mockNetworkData.get(query) : null;
-            if (bytes != null || response != null) {
+            Map<String, List<String>> headers =
+                    mockNetworkHeaderFields != null ? mockNetworkHeaderFields.get(query) : null;
+            if (bytes != null || response != null || headers != null) {
                 String protocol = url.getProtocol();
                 if (protocol.equals("http") || protocol.equals("https") || response != null) {
                     return new HttpURLConnection(url) {
@@ -1851,6 +1855,59 @@ public class TestLintClient extends LintCliClient {
                                 // HTTP OK status code. We assume getInputStream will succeed.
                                 return 200;
                             }
+                        }
+
+                        @Override
+                        public Map<String, List<String>> getHeaderFields() {
+                            if (headers != null) {
+                                return headers;
+                            }
+                            return super.getHeaderFields();
+                        }
+
+                        @Override
+                        public String getHeaderField(String name) {
+                            if (headers != null) {
+                                for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                                    String key = entry.getKey();
+                                    // HttpUrlConnection does case insensitive matching
+                                    if (key.equalsIgnoreCase(name)) {
+                                        List<String> values = entry.getValue();
+                                        // It looks like HttpUrlConnection just takes the first
+                                        // value
+                                        if (values.size() > 0) {
+                                            return values.get(0);
+                                        }
+                                    }
+                                }
+                            }
+                            return super.getHeaderField(name);
+                        }
+
+                        @Override
+                        public int getHeaderFieldInt(String name, int Default) {
+                            String f = getHeaderField(name);
+                            if (f != null) {
+                                try {
+                                    return Integer.parseInt(f);
+                                } catch (NumberFormatException e) {
+                                    return Default;
+                                }
+                            }
+                            return Default;
+                        }
+
+                        @Override
+                        public long getHeaderFieldLong(String name, long Default) {
+                            String f = getHeaderField(name);
+                            if (f != null) {
+                                try {
+                                    return Long.parseLong(f);
+                                } catch (NumberFormatException e) {
+                                    return Default;
+                                }
+                            }
+                            return Default;
                         }
                     };
                 }

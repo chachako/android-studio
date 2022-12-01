@@ -17,6 +17,10 @@
 package com.android.tools.lint.checks;
 
 import com.android.tools.lint.detector.api.Detector;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AppLinksAutoVerifyDetectorTest extends AbstractCheckTest {
     @Override
@@ -57,6 +61,57 @@ public class AppLinksAutoVerifyDetectorTest extends AbstractCheckTest {
                                 + "  \"target\": {\n"
                                 + "    \"namespace\": \"android_app\",\n"
                                 + "    \"package_name\": \"com.example.helloworld\",\n"
+                                + "    \"sha256_cert_fingerprints\":\n"
+                                + "    [\"14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5\"]\n"
+                                + "  }\n"
+                                + "}]")
+                .run()
+                .expectClean();
+    }
+
+    public void testRedirect() {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("date", Collections.singletonList("Thu, 01 Dec 2022 00:08:21 GMT"));
+        headers.put("content-length", Collections.singletonList("0"));
+        headers.put(
+                "location",
+                Collections.singletonList("https://links.dropbox.com/.well-known/assetlinks.json"));
+
+        // https://issuetracker.google.com/260129624
+        lint().files(
+                        xml(
+                                "AndroidManifest.xml",
+                                ""
+                                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                                        + "    package=\"com.dropbox.links\" >\n"
+                                        + "\n"
+                                        + "    <application\n"
+                                        + "        android:allowBackup=\"true\"\n"
+                                        + "        android:icon=\"@mipmap/ic_launcher\" >\n"
+                                        + "        <activity android:name=\".MainActivity\" >\n"
+                                        + "            <intent-filter android:autoVerify=\"true\">\n"
+                                        + "                <action android:name=\"android.intent.action.VIEW\" />\n"
+                                        + "                <data android:scheme=\"http\"\n"
+                                        + "                    android:host=\"links.dropbox.com\"\n"
+                                        + "                    android:pathPrefix=\"/gizmos\" />\n"
+                                        + "                <category android:name=\"android.intent.category.DEFAULT\" />\n"
+                                        + "                <category android:name=\"android.intent.category.BROWSABLE\" />\n"
+                                        + "            </intent-filter>\n"
+                                        + "        </activity>\n"
+                                        + "    </application>\n"
+                                        + "\n"
+                                        + "</manifest>\n"))
+                .networkData("http://links.dropbox.com/.well-known/assetlinks.json", 301, headers)
+                .networkData(
+                        "https://links.dropbox.com/.well-known/assetlinks.json",
+                        // Not the real data from that link!
+                        // language=JSON
+                        "[{\n"
+                                + "  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n"
+                                + "  \"target\": {\n"
+                                + "    \"namespace\": \"android_app\",\n"
+                                + "    \"package_name\": \"com.dropbox.links\",\n"
                                 + "    \"sha256_cert_fingerprints\":\n"
                                 + "    [\"14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5\"]\n"
                                 + "  }\n"

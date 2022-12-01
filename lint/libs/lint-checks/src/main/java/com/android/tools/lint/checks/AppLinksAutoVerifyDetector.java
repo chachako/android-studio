@@ -50,23 +50,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import kotlin.text.Charsets;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -102,7 +100,6 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
     @VisibleForTesting static final int STATUS_NOT_FOUND = -4;
     @VisibleForTesting static final int STATUS_WRONG_JSON_SYNTAX = -5;
     @VisibleForTesting static final int STATUS_JSON_PARSE_FAIL = -6;
-    @VisibleForTesting static final int STATUS_HTTP_OK = 200;
 
     /* Maps website host url to a future task which will send HTTP request to fetch the JSON file
      * and also return the status code during the fetching process. */
@@ -150,7 +147,7 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
             }
             String jsonPath = result.getKey() + JSON_RELATIVE_PATH;
             switch (result.getValue().mStatus) {
-                case STATUS_HTTP_OK:
+                case HttpURLConnection.HTTP_OK:
                     List<String> packageNames = getPackageNameFromJson(result.getValue().mJsonFile);
                     if (!packageNames.contains(packageName)) {
                         reportError(
@@ -211,6 +208,10 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
                             host,
                             context.getLocation(host),
                             String.format("Parsing JSON file %s fails", jsonPath));
+                    break;
+                case HttpURLConnection.HTTP_MOVED_PERM:
+                case HttpURLConnection.HTTP_MOVED_TEMP:
+                    // redirects and redirect didn't work, see b/260129624
                     break;
                 default:
                     reportWarning(
@@ -361,7 +362,7 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
         for (final Map.Entry<String, Attr> url : mJsonHost.entrySet()) {
             Future<HttpResult> future =
                     executorService.submit(
-                            () -> getJson(client, url.getKey() + JSON_RELATIVE_PATH));
+                            () -> getJson(client, url.getKey() + JSON_RELATIVE_PATH, 0));
             mFutures.put(url.getKey(), future);
         }
         executorService.shutdown();
@@ -371,6 +372,14 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
             try {
                 jsons.put(future.getKey(), future.getValue().get());
             } catch (Exception e) {
+                if (LintClient.isUnitTest()) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof Error) {
+                        throw (Error) cause;
+                    } else {
+                        throw new IllegalArgumentException("Network failure", cause);
+                    }
+                }
                 jsons.put(future.getKey(), null);
             }
         }
@@ -383,7 +392,8 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
      * @param url The URL of the host on which JSON file will be fetched.
      */
     @NonNull
-    private static HttpResult getJson(@NonNull LintClient client, @NonNull String url) {
+    private static HttpResult getJson(
+            @NonNull LintClient client, @NonNull String url, int redirectsCount) {
         try {
             URL urlObj = new URL(url);
             URLConnection urlConnection = client.openConnection(urlObj, 3000);
@@ -392,28 +402,32 @@ public class AppLinksAutoVerifyDetector extends Detector implements XmlScanner {
             }
             HttpURLConnection connection = (HttpURLConnection) urlConnection;
             try {
+                int status = connection.getResponseCode();
+                if (status == HttpURLConnection.HTTP_MOVED_PERM
+                        || status == HttpURLConnection.HTTP_MOVED_TEMP) {
+                    if (redirectsCount < 3) {
+                        String newUrl = connection.getHeaderField("Location");
+                        if (newUrl != null && !newUrl.equals(url)) {
+                            return getJson(client, newUrl, redirectsCount + 1);
+                        }
+                    }
+                    return new HttpResult(status, null);
+                }
+
                 InputStream inputStream = connection.getInputStream();
                 if (inputStream == null) {
-                    return new HttpResult(connection.getResponseCode(), null);
+                    return new HttpResult(status, null);
                 }
-                try (BufferedReader reader =
-                        new BufferedReader(
-                                new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                    String line;
-                    StringBuilder response = new StringBuilder();
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                        response.append('\n');
-                    }
-
-                    try {
-                        JsonElement jsonFile = new JsonParser().parse(response.toString());
-                        return new HttpResult(connection.getResponseCode(), jsonFile);
-                    } catch (JsonSyntaxException e) {
-                        return new HttpResult(STATUS_WRONG_JSON_SYNTAX, null);
-                    } catch (RuntimeException e) {
-                        return new HttpResult(STATUS_JSON_PARSE_FAIL, null);
-                    }
+                String response = new String(inputStream.readAllBytes(), Charsets.UTF_8);
+                inputStream.close();
+                try {
+                    @SuppressWarnings("deprecation")
+                    JsonElement jsonFile = new JsonParser().parse(response);
+                    return new HttpResult(status, jsonFile);
+                } catch (JsonSyntaxException e) {
+                    return new HttpResult(STATUS_WRONG_JSON_SYNTAX, null);
+                } catch (RuntimeException e) {
+                    return new HttpResult(STATUS_JSON_PARSE_FAIL, null);
                 }
             } finally {
                 connection.disconnect();

@@ -60,6 +60,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,6 +127,7 @@ public class TestLintTask {
     TextFormat textFormat = TextFormat.TEXT;
     Map<String, byte[]> mockNetworkData;
     Map<String, Integer> mockNetworkErrorCodes;
+    Map<String, Map<String, List<String>>> mockNetworkHeaderFields;
     boolean allowNetworkAccess;
     boolean allowDuplicates;
     boolean showSecondaryLintContent = false;
@@ -1261,6 +1263,24 @@ public class TestLintTask {
             mockNetworkErrorCodes = Maps.newHashMap();
         }
         mockNetworkErrorCodes.put(url, data);
+        return this;
+    }
+
+    /**
+     * Provides mock data to feed back to the URL connection if a detector calls {@link
+     * LintClient#openConnection(URL, int)} and then attempts to read the header fields for the
+     * connection. This corresponds to {@link HttpURLConnection#getHeaderFields()}.
+     *
+     * @return this, for constructor chaining
+     */
+    @NonNull
+    public TestLintTask networkData(
+            @NonNull String url, int status, @NonNull Map<String, List<String>> headers) {
+        networkData(url, status);
+        if (mockNetworkHeaderFields == null) {
+            mockNetworkHeaderFields = Maps.newHashMap();
+        }
+        mockNetworkHeaderFields.put(url, headers);
         return this;
     }
 
