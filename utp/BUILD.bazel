@@ -4,6 +4,7 @@ load("//tools/base/bazel:maven.bzl", "maven_repository")
 # keep sorted
 UTP_SOURCE_FILES = [
     "//tools:agp_gradle_build_files",
+    "//tools/base/common:agp_gradle_build_files",
     "//tools/base/utp/android-device-provider-ddmlib:agp_gradle_build_files",
     "//tools/base/utp/android-device-provider-gradle:agp_gradle_build_files",
     "//tools/base/utp/android-test-plugin-host-additional-test-output:agp_gradle_build_files",

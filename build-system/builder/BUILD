@@ -6,8 +6,6 @@ fileset(
     name = "resources",
     srcs = glob(["src/main/resources/**"]),
     mappings = {
-        "//tools/buildSrc/base:": "com/android/builder/",
-        "//prebuilts/tools/common/aapt/jni:": "",
         "src/main/resources/": "",
     },
 )

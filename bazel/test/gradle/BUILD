@@ -1,3 +1,4 @@
+load("//tools/base/common:version.bzl", "BUILD_VERSION")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 
@@ -9,8 +10,10 @@ gradle_build(
         "//prebuilts/studio/sdk:platforms/latest",
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:build-tools/latest",
-        "//tools/buildSrc/base:version.properties",
     ] + glob(["library/**"]),
+    gradle_properties = {
+        "androidGradlePluginVersion": BUILD_VERSION,
+    },
     output_file = "outputs/aar/library-release.aar",
     output_file_source = "outputs/aar/library-release.aar",
     repo_zips = [

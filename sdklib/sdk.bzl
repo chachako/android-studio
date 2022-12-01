@@ -165,20 +165,10 @@ package_component = rule(
 )
 
 def sdk_package(name, binaries, sourceprops, visibility):
-    version_file = "//tools/buildSrc/base:version.properties"
-    native.genrule(
-        name = "generate_source_props",
-        srcs = [sourceprops, version_file],
-        outs = ["source.properties"],
-        cmd = """
-              version=$$(sed -n '/^cmdlineToolsVersion/s/.* //p' $(location {version_file}));
-              sed "s/{{VERSION}}/$$version/" $(location {sourceprops}) > $(location source.properties)
-              """.format(version_file = version_file, sourceprops = sourceprops),
-    )
     combine_licenses(name = name + "_combined_licenses", out = "NOTICE.txt", deps = binaries)
     for platform in platforms:
         others = {
-            "source.properties": "cmdline-tools/source.properties",
+            sourceprops: "cmdline-tools/source.properties",
             name + "_combined_licenses": "cmdline-tools/NOTICE.txt",
             "README.libs": "cmdline-tools/lib/README",
         }

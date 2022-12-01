@@ -23,7 +23,6 @@ filegroup(
         "src/main/resources/**",
     ]) + [
         "build.gradle",
-        "//tools/buildSrc/base:version.properties",
         "//prebuilts/tools/common/aapt:aapt2_version.properties",
     ],
     visibility = ["//tools/base/build-system:__pkg__"],

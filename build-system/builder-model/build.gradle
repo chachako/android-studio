@@ -1,11 +1,15 @@
 apply plugin: 'com.android.tools.java-library'
 apply plugin: 'com.android.tools.kotlin'
 apply plugin: 'com.android.tools.publish'
-apply plugin: 'sdk-java-lib'
+
+configurations {
+    versionPropertiesSource
+}
 
 dependencies {
     implementation libs.com.android.tools.annotations
     implementation libs.kotlin_stdlib
+    versionPropertiesSource libs.com.android.tools.common
     testImplementation 'junit:junit:4.12'
     testImplementation libs.guava
     testImplementation libs.com.android.tools.testutils
@@ -17,8 +21,6 @@ version = rootProject.ext.buildVersion
 
 project.ext.pomName = 'Android Builder Model library'
 project.ext.pomDesc = 'Model for the Builder library.'
-
-project.ext.apiVersion = rootProject.ext.apiVersion ?: 0
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -34,12 +36,8 @@ compileKotlin {
     }
 }
 
-["Model-Version": version, "Model-Api-Version": apiVersion].each { key, value ->
-    jar.manifest.attributes((key): value)
-    sdkJar.manifest.attributes((key): value)
-}
-
 task writeVersionProperties(type: com.android.tools.internal.VersionPropertiesWriter) {
+    versionPropertiesSourceInput.from(configurations.versionPropertiesSource)
     outputFilePath = "com/android/builder/model/version.properties"
     outputDirectory = project.layout.buildDirectory.dir("generated/resources")
 }

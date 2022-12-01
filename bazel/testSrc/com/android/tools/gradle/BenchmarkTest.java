@@ -19,8 +19,8 @@ package com.android.tools.gradle;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.testutils.diff.UnifiedDiff;
 import com.android.testutils.TestUtils;
+import com.android.testutils.diff.UnifiedDiff;
 import com.android.tools.gradle.benchmarkassertions.BenchmarkProjectAssertion;
 import com.android.tools.perflogger.Benchmark;
 import com.android.tools.perflogger.PerfData;
@@ -30,12 +30,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -260,17 +261,6 @@ public class BenchmarkTest {
 
     }
 
-    private String getLocalGradleVersion() throws IOException {
-        if (agpVersion != null) {
-            return agpVersion;
-        }
-        try (FileInputStream fis = new FileInputStream("tools/buildSrc/base/version.properties")) {
-            Properties properties = new Properties();
-            properties.load(fis);
-            return properties.getProperty("buildVersion");
-        }
-    }
-
     @Test
     public void run() throws Exception {
 
@@ -331,7 +321,8 @@ public class BenchmarkTest {
                 gradle.addRepo(repo);
             }
             gradle.addRepo(new File(data, "repo.zip"));
-            gradle.addArgument("-Dcom.android.gradle.version=" + getLocalGradleVersion());
+            gradle.addArgument(
+                    "-Dcom.android.gradle.version=" + Objects.requireNonNull(agpVersion));
             gradle.addArgument("-Duser.home=" + home.getAbsolutePath());
             if (fromStudio) {
                 gradle.addArgument("-Pandroid.injected.invoked.from.ide=true");

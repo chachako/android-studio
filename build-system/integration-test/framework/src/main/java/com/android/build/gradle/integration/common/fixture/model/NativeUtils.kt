@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.common.fixture.model
 
 import com.android.SdkConstants
+import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import com.android.build.gradle.integration.BazelIntegrationTestsSuite
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2
@@ -652,7 +653,7 @@ class NativeBuildBenchmarkProject(
             initScript.absolutePath,
             "-PinjectedMavenRepo=" + repoDir.absolutePath,
             "-Dmaven.repo.local=" + localMavenRepo.absolutePath,
-            "-Dcom.android.gradle.version=" + getLocalGradleVersion()
+            "-Dcom.android.gradle.version=" + ANDROID_GRADLE_PLUGIN_VERSION
         )
         arguments.addAll(this.arguments)
 
@@ -704,15 +705,6 @@ class NativeBuildBenchmarkProject(
             current = current.parentFile
                 ?: error("Could not locate $path")
         } while(true)
-    }
-
-    private fun getLocalGradleVersion(): String {
-        val file = locate("tools/buildSrc/base/version.properties")
-        FileInputStream(file).use { fis ->
-            val properties = Properties()
-            properties.load(fis)
-            return properties.getProperty("buildVersion")!!
-        }
     }
 
     private fun getLocalRepositories() : List<Path> {

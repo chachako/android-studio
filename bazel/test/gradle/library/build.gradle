@@ -2,9 +2,7 @@ buildscript {
     repositories {
     }
     dependencies {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("$projectDir/../../../../../buildSrc/base/version.properties"))
-        classpath 'com.android.tools.build:gradle:' + properties.get("buildVersion")
+        classpath 'com.android.tools.build:gradle:' + androidGradlePluginVersion
     }
 }
 

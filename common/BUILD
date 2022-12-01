@@ -5,6 +5,21 @@ load("//tools/base/bazel:utils.bzl", "dir_archive", "fileset")
 load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
 load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
+filegroup(
+    name = "agp_gradle_build_files",
+    srcs = [
+        # As the Gradle builds need to be able to run outside of Bazel,
+        # they read the version file directly
+        "version.bzl",
+    ],
+    visibility = [
+        "//tools/base/build-system:__pkg__",
+        "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
+        "//tools/base/utp:__pkg__",
+        "//tools/data-binding:__pkg__",
+    ],
+)
+
 fileset(
     name = "TestData",
     srcs = glob(["src/test/data/**"]),
@@ -41,12 +56,6 @@ fileset(
     },
 )
 
-fileset(
-    name = "version.properties",
-    srcs = ["//tools/buildSrc/base:version.properties"],
-    mappings = {"//tools/buildSrc/base:": "com/android/"},
-)
-
 maven_library(
     name = "tools.common",
     srcs = glob([
@@ -54,7 +63,7 @@ maven_library(
         "src/main/java/**/*.java",
     ]),
     bundled_deps = [
-        "//tools/base/common/version:without_resources",
+        "//tools/base/common/version",
     ],
     coordinates = "com.android.tools:common:" + BASE_VERSION,
     description = "common library used by other Android tools libraries.",
@@ -63,7 +72,6 @@ maven_library(
     resource_strip_prefix = "tools/base/common",
     resources = [
         ":tools.common.resources",
-        ":version.properties",
     ],
     visibility = ["//visibility:public"],
     exports = [

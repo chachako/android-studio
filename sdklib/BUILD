@@ -3,7 +3,8 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load(":sdk.bzl", "combine_licenses", "sdk_java_binary", "sdk_package")
 load("//tools/base/repository:xjc.bzl", "xsd_to_java")
-load("//tools/base/common:version.bzl", "BASE_VERSION")
+load("//tools/base/common:version.bzl", "BASE_VERSION", "COMMANDLINE_TOOLS_VERSION")
+load("//tools/base/bazel:expand_template.bzl", "expand_template")
 
 # managed by go/iml_to_build
 iml_module(
@@ -177,6 +178,15 @@ sdk_java_binary(
     runtime_deps = ["//prebuilts/r8"],
 )
 
+expand_template(
+    name = "source_properties",
+    out = "source.properties",
+    substitutions = {
+        "{VERSION}": COMMANDLINE_TOOLS_VERSION,
+    },
+    template = "tools_source.properties",
+)
+
 sdk_package(
     name = "commandlinetools",
     binaries = [
@@ -191,7 +201,7 @@ sdk_package(
         "//tools/base/misc/screenshot2:screenshot2",
         "//tools/base/profgen/profgen-cli:profgen",
     ],
-    sourceprops = "tools_source.properties",
+    sourceprops = ":source.properties",
     visibility = ["//visibility:public"],
 )
 

@@ -16,7 +16,6 @@
 
 package com.android;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -34,22 +33,14 @@ public class VersionTest {
 
     @Test
     public void testBundledVersionConsistency() throws IOException {
-        String path = System.getProperty("test.version.properties");
-        if (path != null) {
-            try (InputStream bundled = Version.class.getResourceAsStream("version.properties");
-                    InputStream source = new FileInputStream(path)) {
-                Properties bundledProperties = new Properties();
-                bundledProperties.load(bundled);
+        try (InputStream bundled = Version.class.getResourceAsStream("version.properties")) {
+            Properties bundledProperties = new Properties();
+            bundledProperties.load(bundled);
 
-                Properties sourceProperties = new Properties();
-                sourceProperties.load(source);
-
-                Assert.assertEquals(sourceProperties, bundledProperties);
-                String baseVersion = System.getProperty("test.version.baseVersion");
-                Assert.assertEquals("Please update tools/base/common/version.bzl", bundledProperties.getProperty("baseVersion"), baseVersion);
-                String buildVersion = System.getProperty("test.version.buildVersion");
-                Assert.assertEquals("Please update tools/base/common/version.bzl", bundledProperties.getProperty("buildVersion"), buildVersion);
-            }
+            String baseVersion = System.getProperty("test.version.baseVersion");
+            Assert.assertEquals(bundledProperties.getProperty("baseVersion"), baseVersion);
+            String buildVersion = System.getProperty("test.version.buildVersion");
+            Assert.assertEquals(bundledProperties.getProperty("buildVersion"), buildVersion);
         }
     }
 

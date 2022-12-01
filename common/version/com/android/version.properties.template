@@ -3,6 +3,6 @@
 
 baseVersion = {BASE_VERSION}
 buildVersion = {BUILD_VERSION}
-cmdlineToolsVersion = 10.0-dev
+cmdlineToolsVersion = {COMMANDLINE_TOOLS_VERSION}
 apiVersion = 3
 nativeApiVersion = 0
