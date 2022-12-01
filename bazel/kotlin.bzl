@@ -401,7 +401,7 @@ _kotlin_library = rule(
         "_kt_java_runtime": attr.label(
             # We need this to be able to target JRE 11 in Kotlin, because
             # Kotlinc does not support the --release 11 Javac option.
-            default = Label("//prebuilts/studio/jdk:jdk11_runtime"),
+            default = Label("//prebuilts/studio/jdk/jdk11:jdk11_runtime"),
             providers = [java_common.JavaRuntimeInfo],
             cfg = "exec",
         ),

@@ -46,14 +46,6 @@ build --jvmopt='--add-exports=java.desktop/sun.swing=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED'
-build --//prebuilts/studio/jdk:embedded_jdk_version=17
-
-test --jvmopt='-Dembedded.jdk.path=prebuilts/studio/jdk/jdk17'
-
-# temporary 11 runtime config for troubleshooting after jre17 update
-build:jdk11 --//prebuilts/studio/jdk:embedded_jdk_version=11
-build:jdk11 --java_runtime_version=jdk11
-test:jdk11 --jvmopt='-Dembedded.jdk.path=prebuilts/studio/jdk/jdk11'
 
 # Local runs require longer timeouts.
 test:local --test_timeout=120,600,1800,7200
@@ -93,7 +85,6 @@ build --test_env=SHELL
 
 # Bazel will find the matching java toolchain registered in WORKSPACE.
 build --java_language_version=8
-build:java11 --java_language_version=11
 # TODO migration_java_language_version is used to selectivly migrate rules
 #      switch from migration_java_language_version to java_language_version once java 17 is fully supported
 build:java17 --//tools/base/bazel:migration_java_language_version=17
