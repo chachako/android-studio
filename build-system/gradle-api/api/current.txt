@@ -1094,15 +1094,15 @@ package com.android.build.api.dsl {
   }
 
   public interface LibraryBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.LibraryVariantDimension {
-    method @Deprecated @org.gradle.api.Incubating public Integer? getTargetSdk();
-    method @Deprecated @org.gradle.api.Incubating public String? getTargetSdkPreview();
-    method @Deprecated @org.gradle.api.Incubating public void setTargetSdk(Integer? targetSdk);
-    method @Deprecated @org.gradle.api.Incubating public void setTargetSdkPreview(String? targetSdkPreview);
-    method @Deprecated @org.gradle.api.Incubating public void setTargetSdkVersion(String? targetSdkVersion);
-    method @Deprecated @org.gradle.api.Incubating public void targetSdkVersion(int targetSdkVersion);
-    method @Deprecated @org.gradle.api.Incubating public void targetSdkVersion(String? targetSdkVersion);
-    property @Deprecated @org.gradle.api.Incubating public abstract Integer? targetSdk;
-    property @Deprecated @org.gradle.api.Incubating public abstract String? targetSdkPreview;
+    method @Deprecated public Integer? getTargetSdk();
+    method @Deprecated public String? getTargetSdkPreview();
+    method @Deprecated public void setTargetSdk(Integer? targetSdk);
+    method @Deprecated public void setTargetSdkPreview(String? targetSdkPreview);
+    method @Deprecated public void setTargetSdkVersion(String? targetSdkVersion);
+    method @Deprecated public void targetSdkVersion(int targetSdkVersion);
+    method @Deprecated public void targetSdkVersion(String? targetSdkVersion);
+    property @Deprecated public abstract Integer? targetSdk;
+    property @Deprecated public abstract String? targetSdkPreview;
   }
 
   public interface LibraryBuildFeatures extends com.android.build.api.dsl.BuildFeatures {
@@ -1155,17 +1155,17 @@ package com.android.build.api.dsl {
 
   public interface LibraryVariantDimension extends com.android.build.api.dsl.VariantDimension {
     method public void aarMetadata(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AarMetadata,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public Object consumerProguardFile(Object proguardFile);
-    method @org.gradle.api.Incubating public Object consumerProguardFiles(java.lang.Object... proguardFiles);
+    method public Object consumerProguardFile(Object proguardFile);
+    method public Object consumerProguardFiles(java.lang.Object... proguardFiles);
     method public com.android.build.api.dsl.AarMetadata getAarMetadata();
-    method @org.gradle.api.Incubating public java.util.List<java.io.File> getConsumerProguardFiles();
-    method @org.gradle.api.Incubating public Boolean? getMultiDexEnabled();
+    method public java.util.List<java.io.File> getConsumerProguardFiles();
+    method public Boolean? getMultiDexEnabled();
     method public com.android.build.api.dsl.ApkSigningConfig? getSigningConfig();
-    method @org.gradle.api.Incubating public void setMultiDexEnabled(Boolean? multiDexEnabled);
+    method public void setMultiDexEnabled(Boolean? multiDexEnabled);
     method public void setSigningConfig(com.android.build.api.dsl.ApkSigningConfig? signingConfig);
     property public abstract com.android.build.api.dsl.AarMetadata aarMetadata;
-    property @org.gradle.api.Incubating public abstract java.util.List<java.io.File> consumerProguardFiles;
-    property @org.gradle.api.Incubating public abstract Boolean? multiDexEnabled;
+    property public abstract java.util.List<java.io.File> consumerProguardFiles;
+    property public abstract Boolean? multiDexEnabled;
     property public abstract com.android.build.api.dsl.ApkSigningConfig? signingConfig;
   }
 
