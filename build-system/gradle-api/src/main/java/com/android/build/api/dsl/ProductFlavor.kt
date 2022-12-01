@@ -16,7 +16,6 @@
 
 package com.android.build.api.dsl
 
-import org.gradle.api.Incubating
 import org.gradle.api.Named
 import org.gradle.api.plugins.ExtensionAware
 
@@ -116,7 +115,6 @@ interface ProductFlavor : Named, BaseFlavor, ExtensionAware, HasInitWith<BaseFla
      */
     var dimension: String?
 
-    @Incubating
     @Deprecated("Replaced with the dimension property")
     fun setDimension(dimension: String?): Void?
 
@@ -177,14 +175,11 @@ interface ProductFlavor : Named, BaseFlavor, ExtensionAware, HasInitWith<BaseFla
      * If instead you are trying to resolve an issue in which **a library dependency includes a
      * flavor dimension that your app does not**, use [missingDimensionStrategy].
      */
-    @get:Incubating
     val matchingFallbacks: MutableList<String>
 
-    @Incubating
     @Deprecated("Replaced with property matchingFallbacks")
     fun setMatchingFallbacks(vararg fallbacks: String)
 
-    @Incubating
     @Deprecated("Replaced with property matchingFallbacks")
     fun setMatchingFallbacks(fallbacks: List<String>)
 }
