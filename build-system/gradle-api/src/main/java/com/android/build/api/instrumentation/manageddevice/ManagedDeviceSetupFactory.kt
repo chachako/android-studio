@@ -22,11 +22,18 @@ import org.gradle.api.Incubating
 import org.gradle.api.model.ObjectFactory
 
 /**
- * Test Run component of Custom Managed Device Registration.
+ * Setup component of Custom Managed Device Registration.
+ *
+ * This component is entirely optional, as some Custom Managed Devices may not
+ * need this feature.
  *
  * Consists of two parts: the configuration action, which takes information from
  * the dsl and converts it to task inputs; and the TaskAction, which actually
- * performs the device test, consuming the task inputs from the config action
+ * performs the general device setup.
+ *
+ * Setup is run only once per device (as opposed to once per test task) and should
+ * handle any redundant work for the individual test runs. See [DeviceSetupTaskAction],
+ * as well as any un-cacheable work that needs to be done to determine Test Task Inputs.
  *
  * @param DeviceT The custom device DSL associated with this Registration.
  * @param InputT The custom task input for this custom device type.
@@ -35,30 +42,28 @@ import org.gradle.api.model.ObjectFactory
  * prototype.
  */
 @Incubating
-interface ManagedDeviceTestRunFactory <DeviceT: Device, InputT: DeviceTestRunInput>: Serializable {
+interface ManagedDeviceSetupFactory <DeviceT: Device, InputT: DeviceSetupInput>: Serializable {
 
     /**
-     * Creates a Configure Action to be used during the Test Task's Configuration
+     * Creates the Configure Action to be used during the Setup Task's Configuration
      * step.
      *
-     * This action converts the DSL and other project information (properties, settings, etc.)
-     * into cacheable inputs into the task. These are then consumed by the created [taskAction]
-     * as a part of [DeviceTestRunParameters].
+     * This action converts the DSL and other project Information into task inputs. These
+     * are then consumed by the created [taskAction].
      *
      * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @Incubating
-    fun configAction(): DeviceTestRunConfigureAction<DeviceT, InputT>
+    fun configAction(): DeviceSetupConfigureAction<DeviceT, InputT>
 
     /**
-     * Returns the explicit class that will perform the test run in the test task.
+     * Returns the Explicit class that will perform the setup in the setup task.
      *
      * This class will be instantiated within the task using Gradle's [ObjectFactory.newInstance]
-     * and will then run the test based on the inputs generated from the [configAction], passed in
-     * as [DeviceTestRunParameters.deviceInput]
+     * and will then run the test based on the inputs generated from the [configAction].
      *
      * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @Incubating
-    fun taskActionClass(): Class<out DeviceTestRunTaskAction<InputT>>
+    fun taskActionClass(): Class<out DeviceSetupTaskAction<InputT>>
 }
