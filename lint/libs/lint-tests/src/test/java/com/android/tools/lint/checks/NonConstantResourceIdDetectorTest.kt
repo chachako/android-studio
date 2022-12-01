@@ -204,7 +204,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                             case R.id.text: {
                                 break;
                             }
-                            case R.id.bottom: {
+                            case resId: {
                                 break;
                             }
                         }
@@ -221,16 +221,51 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
             rClass("test.pkg", "@id/text", "@id/bottom")
         ).run().expect(
             """
-            src/test/pkg/SubActivity.java:12: Warning: Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them in switch expressions [NonConstantResourceId]
-                    switch (resId) {
-                            ~~~~~
             src/test/pkg/SubActivity.java:13: Warning: Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them in switch case statements [NonConstantResourceId]
                         case R.id.text: {
                              ~~~~~~~~~
             src/test/pkg/SubActivity.java:16: Warning: Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them in switch case statements [NonConstantResourceId]
-                        case R.id.bottom: {
-                             ~~~~~~~~~~~
-            0 errors, 3 warnings
+                        case resId: {
+                             ~~~~~
+            0 errors, 2 warnings
+            """
+        )
+    }
+
+    fun testKotlinConst() {
+        // Regression test for 260752253
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+                class MainActivity {
+                    companion object {
+                        const val resId = R.id.text // ERROR
+                        val resId2 = R.id.text // OK
+                    }
+                    val resId3 = R.id.text // OK
+                }
+                const val resId4 = R.id.text // ERROR
+                """
+            ).indented(),
+            java(
+                """
+                    package test.pkg;
+                    class Test {
+                        public int resId5 = R.id.text;
+                    }
+                """
+            ),
+            rClass("test.pkg", "@id/text")
+        ).run().expect(
+            """
+            src/test/pkg/MainActivity.kt:4: Warning: Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them in const fields [NonConstantResourceId]
+                    const val resId = R.id.text // ERROR
+                                      ~~~~~~~~~
+            src/test/pkg/MainActivity.kt:9: Warning: Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them in const fields [NonConstantResourceId]
+            const val resId4 = R.id.text // ERROR
+                               ~~~~~~~~~
+            0 errors, 2 warnings
             """
         )
     }

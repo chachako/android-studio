@@ -27,11 +27,13 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.isJava
+import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.PsiVariable
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UExpressionList
+import org.jetbrains.uast.UField
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.USwitchClauseExpression
 import org.jetbrains.uast.USwitchExpression
@@ -47,7 +49,8 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
     override fun getApplicableUastTypes(): List<Class<out UElement>> {
         return listOf(
             UAnnotation::class.java,
-            USwitchExpression::class.java
+            USwitchExpression::class.java,
+            UField::class.java
         )
     }
 
@@ -58,7 +61,6 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
     class ResourceIdVisitor(val context: JavaContext) : UElementHandler() {
         override fun visitSwitchExpression(node: USwitchExpression) {
             if (isJava(node.sourcePsi)) {
-                checkExpression(node.expression, "in switch expressions")
                 checkSwitchCasesForRClassReferences(node.body)
             }
         }
@@ -78,6 +80,13 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
         override fun visitAnnotation(node: UAnnotation) {
             for (attribute in node.attributeValues) {
                 checkExpression(attribute.expression, "as annotation attributes")
+            }
+        }
+
+        override fun visitField(node: UField) {
+            val initializer = node.uastInitializer
+            if (initializer != null && isKotlin(node) && context.evaluator.isConst(node)) {
+                checkExpression(initializer, "in const fields")
             }
         }
 
