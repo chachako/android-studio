@@ -321,6 +321,7 @@ interface CommonExtension<
      *
      * For more information about the properties you can configure in this block, see [Packaging].
      */
+    @Deprecated("Renamed to packaging", replaceWith = ReplaceWith("packaging"))
     val packagingOptions: Packaging
 
     /**
@@ -329,7 +330,24 @@ interface CommonExtension<
      *
      * For more information about the properties you can configure in this block, see [Packaging].
      */
+    @Deprecated("Renamed to packaging", replaceWith = ReplaceWith("packaging"))
     fun packagingOptions(action: Packaging.() -> Unit)
+
+    /**
+     * Specifies options and rules that determine which files the Android plugin packages into your
+     * APK.
+     *
+     * For more information about the properties you can configure in this block, see [Packaging].
+     */
+    val packaging: Packaging
+
+    /**
+     * Specifies options and rules that determine which files the Android plugin packages into your
+     * APK.
+     *
+     * For more information about the properties you can configure in this block, see [Packaging].
+     */
+    fun packaging(action: Packaging.() -> Unit)
 
     /**
      * Encapsulates all product flavors configurations for this project.

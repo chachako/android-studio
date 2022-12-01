@@ -240,6 +240,8 @@ Deprecated from AGP 8.0.0
   * com.android.build.api.dsl.AndroidResources.additionalParameters: void (java.lang.String[])
   * com.android.build.api.dsl.AndroidResources.noCompress: void (java.lang.String)
   * com.android.build.api.dsl.AndroidResources.noCompress: void (java.lang.String[])
+  * com.android.build.api.dsl.CommonExtension.getPackagingOptions: com.android.build.api.dsl.Packaging ()
+  * com.android.build.api.dsl.CommonExtension.packagingOptions: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging, kotlin.Unit>)
   * com.android.build.api.dsl.Packaging.doNotStrip: void (java.lang.String)
   * com.android.build.api.dsl.Packaging.exclude: void (java.lang.String)
   * com.android.build.api.dsl.Packaging.getDoNotStrip: java.util.Set<java.lang.String> ()

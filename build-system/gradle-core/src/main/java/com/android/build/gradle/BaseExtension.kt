@@ -206,7 +206,6 @@ abstract class BaseExtension protected constructor(
 
     abstract fun packagingOptions(action: Action<Packaging>)
 
-
     abstract fun jacoco(action: Action<JacocoOptions>)
 
     /**
