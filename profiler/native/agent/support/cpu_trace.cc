@@ -42,7 +42,6 @@ using profiler::proto::InternalCpuService;
 using profiler::proto::SendCommandRequest;
 using profiler::proto::TraceInitiationType;
 using profiler::proto::TraceMode;
-using profiler::proto::UserOptions;
 using std::string;
 
 namespace {
@@ -170,9 +169,8 @@ void TraceMonitor::SubmitStartEvent(int32_t tid, const string& fixed_path) {
           config->set_app_name(app_name_);
           config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
 
-          auto* user_option = config->mutable_user_options();
-          user_option->set_trace_type(UserOptions::ART);
-          user_option->set_trace_mode(TraceMode::INSTRUMENTED);
+          auto* art_options = config->mutable_art_options();
+          art_options->set_trace_mode(TraceMode::INSTRUMENTED);
 
           EmptyResponse response;
           return stub.SendCommand(&ctx, request, &response);
@@ -254,9 +252,8 @@ void TraceMonitor::SubmitStopEvent(int tid) {
           config->set_app_name(app_name_);
           config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
 
-          auto* user_option = config->mutable_user_options();
-          user_option->set_trace_type(UserOptions::ART);
-          user_option->set_trace_mode(TraceMode::INSTRUMENTED);
+          auto* art_options = config->mutable_art_options();
+          art_options->set_trace_mode(TraceMode::INSTRUMENTED);
 
           EmptyResponse response;
           return stub.SendCommand(&ctx, request, &response);
