@@ -18,6 +18,7 @@ package com.android.build.api.extension.impl
 
 import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.TestExtension
+import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
 import com.android.build.api.variant.TestAndroidComponentsExtension
 import com.android.build.api.variant.TestVariant
 import com.android.build.api.variant.TestVariantBuilder
@@ -26,6 +27,7 @@ import com.android.build.gradle.internal.services.DslServices
 open class TestAndroidComponentsExtensionImpl(
         dslServices: DslServices,
         sdkComponents: SdkComponents,
+        deviceRegistry: CustomManagedDeviceRegistry,
         variantApiOperationsRegistrar: VariantApiOperationsRegistrar<TestExtension, TestVariantBuilder, TestVariant>,
         testExtension: TestExtension
 ):
@@ -33,6 +35,7 @@ open class TestAndroidComponentsExtensionImpl(
         AndroidComponentsExtensionImpl<TestExtension, TestVariantBuilder, TestVariant>(
                 dslServices,
                 sdkComponents,
+                deviceRegistry,
                 variantApiOperationsRegistrar,
                 testExtension
         )

@@ -23,17 +23,18 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.SdkComponents
 import com.android.build.api.dsl.TestExtension
-import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.api.variant.DslExtension
 import com.android.build.api.extension.impl.AndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.ApplicationAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.DynamicFeatureAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.LibraryAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.TestAndroidComponentsExtensionImpl
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
+import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
 import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.ApplicationVariantBuilder
+import com.android.build.api.variant.DslExtension
 import com.android.build.api.variant.DynamicFeatureVariant
 import com.android.build.api.variant.DynamicFeatureVariantBuilder
 import com.android.build.api.variant.LibraryVariant
@@ -59,6 +60,7 @@ import java.util.regex.Pattern
 class AndroidComponentsExtensionTest {
     private lateinit var dslServices: DslServices
     private lateinit var sdkComponents: SdkComponents
+    private lateinit var managedDeviceRegistry: CustomManagedDeviceRegistry
     private lateinit var applicationExtension: ApplicationExtension
 
     @Before
@@ -66,6 +68,7 @@ class AndroidComponentsExtensionTest {
         val sdkComponentsBuildService = Mockito.mock(SdkComponentsBuildService::class.java)
         dslServices = createDslServices(sdkComponents = FakeGradleProvider(sdkComponentsBuildService))
         sdkComponents = Mockito.mock(SdkComponents::class.java)
+        managedDeviceRegistry = Mockito.mock(CustomManagedDeviceRegistry::class.java)
         applicationExtension = Mockito.mock(ApplicationExtension::class.java)
     }
 
@@ -77,6 +80,7 @@ class AndroidComponentsExtensionTest {
         val androidComponents: ApplicationAndroidComponentsExtension = ApplicationAndroidComponentsExtensionImpl(
             dslServices,
             sdkComponents,
+            managedDeviceRegistry,
             variantApiOperationsRegistrar,
             extension
         )
@@ -92,10 +96,26 @@ class AndroidComponentsExtensionTest {
         val sdkComponentsFromComponents = ApplicationAndroidComponentsExtensionImpl(
             dslServices,
             sdkComponents,
+            managedDeviceRegistry,
             variantApiOperationsRegistrar,
             extension
         ).sdkComponents
         assertThat(sdkComponentsFromComponents).isSameInstanceAs(sdkComponents)
+    }
+
+    @Test
+    fun testCustomDeviceRegistry() {
+        val extension = Mockito.mock(ApplicationExtension::class.java)
+        val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
+
+        val deviceRegistryFromComponents = ApplicationAndroidComponentsExtensionImpl(
+            dslServices,
+            sdkComponents,
+            managedDeviceRegistry,
+            variantApiOperationsRegistrar,
+            extension
+        ).customManagedDeviceRegistry
+        assertThat(deviceRegistryFromComponents).isSameInstanceAs(managedDeviceRegistry)
     }
 
     @Test
@@ -106,6 +126,7 @@ class AndroidComponentsExtensionTest {
                 ApplicationAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -121,6 +142,7 @@ class AndroidComponentsExtensionTest {
                 LibraryAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -136,6 +158,7 @@ class AndroidComponentsExtensionTest {
                 DynamicFeatureAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -151,6 +174,7 @@ class AndroidComponentsExtensionTest {
                 TestAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -166,6 +190,7 @@ class AndroidComponentsExtensionTest {
                 ApplicationAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -181,6 +206,7 @@ class AndroidComponentsExtensionTest {
                 LibraryAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -196,6 +222,7 @@ class AndroidComponentsExtensionTest {
                 DynamicFeatureAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension
                 ),
@@ -211,6 +238,7 @@ class AndroidComponentsExtensionTest {
                 TestAndroidComponentsExtensionImpl(
                         dslServices,
                         sdkComponents,
+                        managedDeviceRegistry,
                         variantApiOperationsRegistrar,
                         extension,
                 ),
@@ -225,6 +253,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
             Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(CustomManagedDeviceRegistry::class.java),
             variantApiOperationsRegistrar,
             extension
         ) as ApplicationAndroidComponentsExtension
@@ -244,6 +273,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
             Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(CustomManagedDeviceRegistry::class.java),
             variantApiOperationsRegistrar,
             extension
         )
@@ -270,6 +300,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
             Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(CustomManagedDeviceRegistry::class.java),
             variantApiOperationsRegistrar,
             extension
         )
@@ -295,6 +326,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
             Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(CustomManagedDeviceRegistry::class.java),
             variantApiOperationsRegistrar,
             extension
         )
@@ -321,6 +353,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
             Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(CustomManagedDeviceRegistry::class.java),
             variantApiOperationsRegistrar,
             extension
         )
@@ -353,6 +386,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
             Mockito.mock(SdkComponents::class.java),
+            Mockito.mock(CustomManagedDeviceRegistry::class.java),
             variantApiOperationsRegistrar,
             extension
         )
@@ -391,6 +425,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(extension)
         val appExtension = ApplicationAndroidComponentsExtensionImpl(dslServices,
                 Mockito.mock(SdkComponents::class.java),
+                Mockito.mock(CustomManagedDeviceRegistry::class.java),
                 variantApiOperationsRegistrar,
                 extension
         )
@@ -411,6 +446,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<LibraryExtension, LibraryVariantBuilder, LibraryVariant>(extension)
         val libraryExtension = LibraryAndroidComponentsExtensionImpl(dslServices,
                 Mockito.mock(SdkComponents::class.java),
+                Mockito.mock(CustomManagedDeviceRegistry::class.java),
                 variantApiOperationsRegistrar,
                 extension
         )
@@ -431,6 +467,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<com.android.build.api.dsl.DynamicFeatureExtension, DynamicFeatureVariantBuilder, DynamicFeatureVariant>(extension)
         val dynamicFeatureExtension = DynamicFeatureAndroidComponentsExtensionImpl(dslServices,
                 Mockito.mock(SdkComponents::class.java),
+                Mockito.mock(CustomManagedDeviceRegistry::class.java),
                 variantApiOperationsRegistrar,
                 extension
         )
@@ -451,6 +488,7 @@ class AndroidComponentsExtensionTest {
         val variantApiOperationsRegistrar = VariantApiOperationsRegistrar<TestExtension, TestVariantBuilder, TestVariant>(extension)
         val testExtension = TestAndroidComponentsExtensionImpl(dslServices,
                 Mockito.mock(SdkComponents::class.java),
+                Mockito.mock(CustomManagedDeviceRegistry::class.java),
                 variantApiOperationsRegistrar,
                 extension
         )

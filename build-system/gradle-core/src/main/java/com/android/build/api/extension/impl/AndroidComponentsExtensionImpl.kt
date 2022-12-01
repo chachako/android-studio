@@ -19,6 +19,7 @@ package com.android.build.api.extension.impl
 import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.SdkComponents
+import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.DslExtension
 import com.android.build.api.variant.VariantExtensionConfig
@@ -35,6 +36,7 @@ abstract class AndroidComponentsExtensionImpl<
         VariantT: Variant>(
         private val dslServices: DslServices,
         override val sdkComponents: SdkComponents,
+        override val customManagedDeviceRegistry: CustomManagedDeviceRegistry,
         private val variantApiOperations: VariantApiOperationsRegistrar<DslExtensionT, VariantBuilderT, VariantT>,
         private val commonExtension: DslExtensionT
 ): AndroidComponentsExtension<DslExtensionT, VariantBuilderT, VariantT> {

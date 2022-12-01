@@ -19,6 +19,7 @@ package com.android.build.api.variant
 import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.SdkComponents
+import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
 import org.gradle.api.Action
 import org.gradle.api.Incubating
 
@@ -56,6 +57,17 @@ interface AndroidComponentsExtension<
      */
     @get:Incubating
     val sdkComponents: SdkComponents
+
+    /**
+     * Provides access to Managed Device Registry to be able to register Custom Managed
+     * Device Types.
+     *
+     * @return [CustomManagedDeviceRegistry] to register Custom Managed Devices.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
+     */
+    @get:Incubating
+    val customManagedDeviceRegistry: CustomManagedDeviceRegistry
 
     /**
      * Creates a [VariantSelector] instance that can be configured

@@ -18,6 +18,7 @@ package com.android.build.api.extension.impl
 
 import com.android.build.api.dsl.DynamicFeatureExtension
 import com.android.build.api.dsl.SdkComponents
+import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureVariant
 import com.android.build.api.variant.DynamicFeatureVariantBuilder
@@ -26,6 +27,7 @@ import com.android.build.gradle.internal.services.DslServices
 open class DynamicFeatureAndroidComponentsExtensionImpl(
         dslServices: DslServices,
         sdkComponents: SdkComponents,
+        deviceRegistry: CustomManagedDeviceRegistry,
         variantApiOperationsRegistrar: VariantApiOperationsRegistrar<DynamicFeatureExtension, DynamicFeatureVariantBuilder, DynamicFeatureVariant>,
         dynamicFeatureExtension: DynamicFeatureExtension
 ):
@@ -33,6 +35,7 @@ open class DynamicFeatureAndroidComponentsExtensionImpl(
         AndroidComponentsExtensionImpl<DynamicFeatureExtension, DynamicFeatureVariantBuilder, DynamicFeatureVariant>(
                 dslServices,
                 sdkComponents,
+                deviceRegistry,
                 variantApiOperationsRegistrar,
                 dynamicFeatureExtension
         )

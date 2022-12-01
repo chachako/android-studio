@@ -18,6 +18,7 @@ package com.android.build.api.extension.impl
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.SdkComponents
+import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.ApplicationVariantBuilder
@@ -27,12 +28,14 @@ import javax.inject.Inject
 open class ApplicationAndroidComponentsExtensionImpl @Inject constructor(
         dslServices: DslServices,
         sdkComponents: SdkComponents,
+        deviceRegistry: CustomManagedDeviceRegistry,
         variantApiOperations: VariantApiOperationsRegistrar<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>,
         applicationExtension: ApplicationExtension
 ): ApplicationAndroidComponentsExtension,
         AndroidComponentsExtensionImpl<ApplicationExtension, ApplicationVariantBuilder, ApplicationVariant>(
                 dslServices,
                 sdkComponents,
+                deviceRegistry,
                 variantApiOperations,
                 applicationExtension
         )

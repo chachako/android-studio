@@ -46,6 +46,7 @@ import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig;
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl;
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig;
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig;
+import com.android.build.gradle.internal.testing.CustomManagedDeviceRegistry;
 import com.android.build.gradle.internal.variant.ComponentInfo;
 import com.android.build.gradle.internal.variant.LibraryVariantFactory;
 import com.android.build.gradle.options.BooleanOption;
@@ -173,12 +174,18 @@ public class LibraryPlugin
         public LibraryAndroidComponentsExtensionImplCompat(
                 @NonNull DslServices dslServices,
                 @NonNull SdkComponents sdkComponents,
+                @NonNull CustomManagedDeviceRegistry deviceRegistry,
                 @NonNull
                         VariantApiOperationsRegistrar<
                                         LibraryExtension, LibraryVariantBuilder, LibraryVariant>
                                 variantApiOperations,
                 @NonNull com.android.build.gradle.LibraryExtension libraryExtension) {
-            super(dslServices, sdkComponents, variantApiOperations, libraryExtension);
+            super(
+                    dslServices,
+                    sdkComponents,
+                    deviceRegistry,
+                    variantApiOperations,
+                    libraryExtension);
         }
     }
 
@@ -216,6 +223,7 @@ public class LibraryPlugin
                                 LibraryAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
+                                new CustomManagedDeviceRegistry(),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 
