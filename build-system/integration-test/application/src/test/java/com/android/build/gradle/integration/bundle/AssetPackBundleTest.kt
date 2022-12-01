@@ -60,6 +60,11 @@ class AssetPackBundleTest {
                         enableSplit = true
                         defaultTier = 'medium'
                       }
+
+                      countrySet {
+                        enableSplit = true
+                        defaultSet = 'latam'
+                      }
                     }
                 """.trimIndent()
             )
@@ -134,6 +139,12 @@ class AssetPackBundleTest {
                 .suffixStrippingBuilder
                 .setEnabled(true)
                 .setDefaultSuffix("medium")
+            splitsConfigBuilder
+                .addSplitDimensionBuilder()
+                .setValue(Config.SplitDimension.Value.COUNTRY_SET)
+                .suffixStrippingBuilder
+                .setEnabled(true)
+                .setDefaultSuffix("latam")
             assertThat(appBundle.bundleConfig.optimizations.splitsConfig)
                 .isEqualTo(splitsConfigBuilder.build())
 

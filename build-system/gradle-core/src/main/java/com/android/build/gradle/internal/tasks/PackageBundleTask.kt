@@ -276,6 +276,18 @@ abstract class PackageBundleTask : NonIncrementalTask() {
                         .setNegate(!it)
                 )
             }
+            parameters.bundleOptions.get().enableCountrySet?.let {
+                splitsConfig.addSplitDimension(
+                    Config.SplitDimension.newBuilder()
+                        .setValue(Config.SplitDimension.Value.COUNTRY_SET)
+                        .setSuffixStripping(
+                            Config.SuffixStripping.newBuilder()
+                                .setEnabled(true)
+                                .setDefaultSuffix(parameters.bundleOptions.get().defaultCountrySet?: "")
+                        )
+                        .setNegate(!it)
+                )
+            }
 
             val uncompressNativeLibrariesConfig = Config.UncompressNativeLibraries.newBuilder()
                 .setEnabled(!parameters.compressNativeLibs.get())
@@ -453,6 +465,12 @@ abstract class PackageBundleTask : NonIncrementalTask() {
         val defaultDeviceTier: String?,
         @get:Input
         val enableStoreArchive: Boolean,
+        @get:Input
+        @get:Optional
+        val enableCountrySet: Boolean?,
+        @get:Input
+        @get:Optional
+        val defaultCountrySet: String?,
     ) : Serializable
 
     data class AssetPackOptionsForAssetPackBundle(
@@ -649,6 +667,8 @@ private fun com.android.build.api.dsl.Bundle.convert() =
       enableDeviceTier = deviceTier.enableSplit,
       defaultDeviceTier = deviceTier.defaultTier,
       enableStoreArchive = storeArchive.enable ?: true,
+      enableCountrySet = countrySet.enableSplit,
+      defaultCountrySet = countrySet.defaultSet,
     )
 
 private fun AssetPackBundleExtension.convert() =
@@ -661,6 +681,8 @@ private fun AssetPackBundleExtension.convert() =
         enableDeviceTier = deviceTier.enableSplit,
         defaultDeviceTier = deviceTier.defaultTier,
         enableStoreArchive = false,
+        enableCountrySet = countrySet.enableSplit,
+        defaultCountrySet = countrySet.defaultSet,
     )
 
 /**
