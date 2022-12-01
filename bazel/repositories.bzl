@@ -102,6 +102,7 @@ _vendor_git = [
     # platform_specific.bazelrc)
     {
         "name": "androidsdk",
+        "build_tools_version": "30.0.3",
     },
 ]
 
