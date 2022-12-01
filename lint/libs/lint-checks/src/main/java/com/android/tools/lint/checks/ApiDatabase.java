@@ -447,6 +447,8 @@ public class ApiDatabase {
                     int sdk = Integer.parseInt(segment.substring(0, colon));
                     int version = Integer.parseInt(segment.substring(colon + 1));
                     if (!isValidApiLevel(version)) {
+                        /* Temporarily remove log warning until b/260716454 is checked in and
+                           the Integer.MAX_VALUE entries disappear from the SDK.
                         if (!warnedInvalidData) {
                             warnedInvalidData = true;
                             String message =
@@ -458,6 +460,7 @@ public class ApiDatabase {
                                             + xmlFile;
                             client.log(null, message);
                         }
+                        */
                         // Coerce version to 0 to gracefully proceed instead of aborting lint; this
                         // means if the real version is something higher than 0 we won't correctly
                         // flag uses, but for b/260515648 it's probably the case that the API
