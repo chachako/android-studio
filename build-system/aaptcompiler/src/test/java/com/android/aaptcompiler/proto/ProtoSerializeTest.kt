@@ -265,6 +265,8 @@ class ProtoSerializeTest {
     testSerializeDeserialize(parse(""))
     testSerializeDeserialize(parse("mcc123"))
 
+    testSerializeDeserialize(parse("mnc02"))
+    testSerializeDeserialize(parse("mnc002"))
     testSerializeDeserialize(parse("mnc123"))
 
     testSerializeDeserialize(parse("en"))
