@@ -37,7 +37,6 @@ fun fragmentFirstLayout(firstFragmentClass: String): String {
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@id/textview_first" />
-            />
 
         <TextView
             android:id="@+id/textview_first"
