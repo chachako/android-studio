@@ -24,7 +24,6 @@ import com.android.build.gradle.integration.library.ArtProfileSingleLibraryTest.
 import com.android.build.gradle.integration.library.ArtProfileSingleLibraryTest.Companion.aarEntryName
 import com.android.build.gradle.integration.library.ArtProfileSingleLibraryTest.Companion.apkEntryName
 import com.android.build.gradle.internal.scope.InternalArtifactType
-import com.android.builder.dexing.R8OutputType
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.HumanReadableProfile
 import com.android.utils.FileUtils
@@ -41,12 +40,22 @@ import java.util.jar.JarFile
 import java.util.zip.ZipEntry
 
 @RunWith(Parameterized::class)
-class ArtProfileMultipleLibrariesTest(val withArtProfileR8Rewriting: Boolean) {
+class ArtProfileMultipleLibrariesTest(
+    private val withArtProfileR8Rewriting: Boolean,
+    private val minifyEnabled: Boolean
+) {
 
     companion object {
-        @Parameterized.Parameters
+        @Parameterized.Parameters(
+            name = "withArtProfileR8Rewriting_{0}_minifyEnabled_{1}"
+        )
         @JvmStatic
-        fun setups() = arrayOf(true, false)
+        fun setups() =
+            listOf(
+                arrayOf(true, true),
+                arrayOf(false, true),
+                arrayOf(false, false),
+            )
     }
 
     @get:Rule
@@ -101,7 +110,7 @@ class ArtProfileMultipleLibrariesTest(val withArtProfileR8Rewriting: Boolean) {
                         androidComponents {
                             // turn on minification if we want r8 to rewrite the art-profile
                             beforeVariants(selector().withBuildType("release"), { variant ->
-                                variant.setMinifyEnabled($withArtProfileR8Rewriting);
+                                variant.setMinifyEnabled($minifyEnabled);
                             })
                             // and turn on the feature if necessary
                             onVariants(selector().withName("release"), { variant ->
@@ -186,8 +195,8 @@ class ArtProfileMultipleLibrariesTest(val withArtProfileR8Rewriting: Boolean) {
             finalFileContent = finalFileContent.plus("$applicationFileContent\n")
         }
 
-        // if the R8 art-profile rewriting is turned on, check that the merged art-profile file
-        // exist in a separate folder (as it is the input to the R8 Task)
+        // if minifyEnabled is true, check that the merged art-profile file exists in a separate
+        // folder (as it is the input to the R8 Task)
         Truth.assertThat(FileUtils.join(
             project.getSubproject(":app").buildDir,
             SdkConstants.FD_INTERMEDIATES,
@@ -195,7 +204,7 @@ class ArtProfileMultipleLibrariesTest(val withArtProfileR8Rewriting: Boolean) {
             "release",
             "mergeReleaseArtProfile",
             SdkConstants.FN_ART_PROFILE,
-        ).exists()).isEqualTo(withArtProfileR8Rewriting)
+        ).exists()).isEqualTo(minifyEnabled)
 
         val mergedFile = FileUtils.join(
                 project.getSubproject(":app").buildDir,
