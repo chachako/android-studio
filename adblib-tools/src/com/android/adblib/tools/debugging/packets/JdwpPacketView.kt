@@ -89,3 +89,5 @@ interface JdwpPacketView {
         get() = length == PACKET_HEADER_LENGTH
 }
 
+val JdwpPacketView.payloadLength
+    get() = length - PACKET_HEADER_LENGTH

@@ -79,6 +79,20 @@ fun ResizableBuffer.appendJdwpHeader(jdwpPacketView: JdwpPacketView) {
 }
 
 /**
+ * Appends the byte representation of [JdwpPacketView] at the end of the given [ResizableBuffer],
+ * i.e. from [ResizableBuffer.position] to [ResizableBuffer.position] + [JdwpPacketView.length].
+ *
+ * To access the data written to underlying [ByteBuffer], the caller should call
+ * [ResizableBuffer.afterChannelRead].
+ */
+suspend fun ResizableBuffer.appendJdwpPacket(packet: JdwpPacketView) {
+    this.appendJdwpHeader(packet)
+    val byteBuffer = forChannelRead(packet.payloadLength)
+    packet.payload.readExactly(byteBuffer)
+    packet.payload.rewind()
+}
+
+/**
  * Returns an in-memory copy of this [JdwpPacketView].
  *
  * @throws IllegalArgumentException if [JdwpPacketView.payload] does not contain exactly

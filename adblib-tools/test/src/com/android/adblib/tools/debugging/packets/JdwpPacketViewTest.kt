@@ -96,6 +96,44 @@ class JdwpPacketViewTest : AdbLibToolsTestBase() {
     }
 
     @Test
+    fun resizableBufferAppendJdwpPacketWorks() = runBlockingWithTimeout {
+        // Prepare
+        val packet = createTestCmdPacket(15)
+
+        // Act
+        val outputBuffer = ResizableBuffer()
+        outputBuffer.appendByte(90)
+        outputBuffer.appendJdwpPacket(packet)
+        val buffer = outputBuffer.afterChannelRead(0)
+
+        // Assert: Data should be from [0, buffer.position[
+        var index = 0
+
+        // First byte
+        assertEquals(90.toByte(), buffer[index++])
+
+        // Length
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(26.toByte(), buffer[index++])
+
+        // Id
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(77.toByte(), buffer[index++])
+
+        // Flag, CmdSet, Cmd
+        assertEquals(0.toByte(), buffer[index++])
+        assertEquals(15.toByte(), buffer[index++])
+        assertEquals(10.toByte(), buffer[index++])
+
+        // Contents
+        assertTestBufferContents(buffer, index)
+    }
+
+    @Test
     fun testJdwpPacketViewCloneContainsSameData() = runBlockingWithTimeout {
         // Prepare
         val packet = createTestCmdPacket(20)
@@ -156,6 +194,12 @@ class JdwpPacketViewTest : AdbLibToolsTestBase() {
 
     private fun assertTestBufferContents(buffer: ResizableBuffer, offset: Int) {
         for (i in 0 until buffer.position - offset) {
+            assertEquals((i % 127).toByte(), buffer[offset + i])
+        }
+    }
+
+    private fun assertTestBufferContents(buffer: ByteBuffer, offset: Int) {
+        for (i in 0 until buffer.position() - offset) {
             assertEquals((i % 127).toByte(), buffer[offset + i])
         }
     }
