@@ -47,6 +47,7 @@ class OptionVersionTest {
             BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM,
             BooleanOption.ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM,
             BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS,
+            BooleanOption.ENABLE_GLOBAL_SYNTHETICS, // b/261856651
         )
 
         private fun getStableAgpVersionIgnoringDotReleases(versionString: String): AgpVersion {
