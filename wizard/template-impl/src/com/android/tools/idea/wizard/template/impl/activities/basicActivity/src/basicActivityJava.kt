@@ -79,6 +79,7 @@ import android.os.Bundle;
 import ${getMaterialComponentName("android.support.design.widget.Snackbar", useAndroidX)};
 import ${getMaterialComponentName("android.support.v7.app.AppCompatActivity", useAndroidX)};
 import android.view.View;
+import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -112,6 +113,7 @@ ${renderIf(isViewBindingSupported) {"""
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.fab)
                         .setAction("Action", null).show();
             }
         });

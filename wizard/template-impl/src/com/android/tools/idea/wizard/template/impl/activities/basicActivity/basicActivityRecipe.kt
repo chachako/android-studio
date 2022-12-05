@@ -31,10 +31,11 @@ import com.android.tools.idea.wizard.template.impl.activities.basicActivity.src.
 import com.android.tools.idea.wizard.template.impl.activities.basicActivity.src.secondFragmentJava
 import com.android.tools.idea.wizard.template.impl.activities.basicActivity.src.secondFragmentKt
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
-import com.android.tools.idea.wizard.template.impl.activities.common.addMaterialDependency
+import com.android.tools.idea.wizard.template.impl.activities.common.addMaterial3Dependency
 import com.android.tools.idea.wizard.template.impl.activities.common.addViewBindingSupport
 import com.android.tools.idea.wizard.template.impl.activities.common.generateAppBar
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
+import com.android.tools.idea.wizard.template.impl.activities.common.generateMaterial3Themes
 import com.android.tools.idea.wizard.template.impl.activities.common.generateSimpleMenu
 import com.android.tools.idea.wizard.template.layoutToFragment
 
@@ -54,11 +55,21 @@ fun RecipeExecutor.generateBasicActivity(
   val appCompatVersion = moduleData.apis.appCompatVersion
   val useAndroidX = moduleData.projectTemplateData.androidXSupport
   addAllKotlinDependencies(moduleData)
-  addMaterialDependency(useAndroidX)
+  addMaterial3Dependency()
+  // Generate the themes for material3 to make sure the Activity created for a flavor has an
+  // appropriate set of themes
+  generateMaterial3Themes(moduleData.themesData.main.name, moduleData.resDir)
+
   generateManifest(
-    moduleData, activityClass, packageName, isLauncher, true, generateActivityTitle = true)
+    moduleData = moduleData,
+    activityClass = activityClass,
+    packageName = packageName,
+    isLauncher = isLauncher,
+    hasNoActionBar = true,
+    activityThemeName = moduleData.themesData.main.name,
+    generateActivityTitle = true)
   generateAppBar(
-    moduleData, activityClass, packageName, contentLayoutName, layoutName, useAndroidX = useAndroidX, isMaterial3 = false
+    moduleData, activityClass, packageName, contentLayoutName, layoutName, useAndroidX = useAndroidX, isMaterial3 = true
   )
   addViewBindingSupport(moduleData.viewBindingSupport, true)
   addDependency("com.android.support:appcompat-v7:$appCompatVersion.+")

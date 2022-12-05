@@ -18,7 +18,7 @@ package com.android.tools.idea.wizard.template.impl.activities.basicActivity.res
 import com.android.tools.idea.wizard.template.getMaterialComponentName
 
 fun fragmentFirstLayout(useAndroidX: Boolean, firstFragmentClass: String): String {
-  val layout = getMaterialComponentName("android.support.constraint.ConstraintLayout", useAndroidX)
+  val layout = getMaterialComponentName("androidx.core.widget.NestedScrollView", false)
   return  """<?xml version="1.0" encoding="utf-8"?>
 <$layout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -27,27 +27,30 @@ fun fragmentFirstLayout(useAndroidX: Boolean, firstFragmentClass: String): Strin
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".$firstFragmentClass">
-
-    <TextView
-        android:id="@+id/textview_first"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello_first_fragment"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/button_first"
-        />
-
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
     <Button
         android:id="@+id/button_first"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/next"
-        app:layout_constraintTop_toBottomOf="@id/textview_first"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/textview_first"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textview_first"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/lorem_ipsum"
         app:layout_constraintBottom_toBottomOf="parent"
-        />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_first" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </$layout>"""
 }
