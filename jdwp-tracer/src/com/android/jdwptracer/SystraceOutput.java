@@ -47,7 +47,11 @@ class SystraceOutput {
             // and send a reply. We augment our traces with it.
             addARTTimings(session, out);
 
-            out.write("{}");
+            // The Json output we generate is meant to be opened vi perfetto UI. The render usually
+            // deals with Processes and Threads with result in an awkward title "Process 0". We name
+            // the process 0 in order to get a nicer title "JDWP packets, session 0".
+            nameProcess(out, 0, "JDWP packets, session");
+
             out.write("]");
             out.flush();
             out.close();
@@ -241,6 +245,21 @@ class SystraceOutput {
         part.addProperty("ph", "M");
         part.addProperty("pid", 0);
         part.addProperty("tid", threadID);
+        part.add("args", args);
+
+        out.write(part.toString());
+        out.write(",\n");
+    }
+
+    private static void nameProcess(@NonNull FileWriter out, int pid, @NonNull String name)
+            throws IOException {
+        JsonObject args = new JsonObject();
+        args.addProperty("name", name);
+
+        JsonObject part = new JsonObject();
+        part.addProperty("name", "process_name");
+        part.addProperty("ph", "M");
+        part.addProperty("pid", 0);
         part.add("args", args);
 
         out.write(part.toString());
