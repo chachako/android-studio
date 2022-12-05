@@ -71,5 +71,9 @@ data class StaticTestData(
      * Returns extracted dependency APK files to install for privacy sandbox apps.
      */
     override val privacySandboxInstallBundlesFinder: (DeviceConfigProvider) -> List<List<Path>>
+) : com.android.build.api.instrumentation.StaticTestData,
+        com.android.build.api.instrumentation.manageddevice.StaticTestData {
 
-) : com.android.build.api.instrumentation.StaticTestData
+    override val testedDescription: String
+        get() = flavorName
+}
