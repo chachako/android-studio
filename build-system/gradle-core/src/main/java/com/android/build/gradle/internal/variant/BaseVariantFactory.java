@@ -251,10 +251,14 @@ public abstract class BaseVariantFactory<
         if (!buildConfig) {
             IssueReporter issueReporter = dslServices.getIssueReporter();
 
+            String suggestion =
+                    "To enable the feature, add the following to your module-level build.gradle:\n"
+                            + "`android.buildFeatures.buildConfig true`";
             if (!model.getDefaultConfigData().getDefaultConfig().getBuildConfigFields().isEmpty()) {
                 issueReporter.reportError(
                         Type.GENERIC,
-                        "defaultConfig contains custom BuildConfig fields, but the feature is disabled.");
+                        "defaultConfig contains custom BuildConfig fields, but the feature is disabled.\n"
+                                + suggestion);
             }
 
             for (BuildTypeData<BuildType> buildType : model.getBuildTypes().values()) {
@@ -262,7 +266,8 @@ public abstract class BaseVariantFactory<
                     issueReporter.reportError(
                             Type.GENERIC,
                             String.format(
-                                    "Build Type '%s' contains custom BuildConfig fields, but the feature is disabled.",
+                                    "Build Type '%s' contains custom BuildConfig fields, but the feature is disabled.\n"
+                                            + suggestion,
                                     buildType.getBuildType().getName()));
                 }
             }
@@ -273,7 +278,8 @@ public abstract class BaseVariantFactory<
                     issueReporter.reportError(
                             Type.GENERIC,
                             String.format(
-                                    "Product Flavor '%s' contains custom BuildConfig fields, but the feature is disabled.",
+                                    "Product Flavor '%s' contains custom BuildConfig fields, but the feature is disabled.\n"
+                                            + suggestion,
                                     productFlavor.getProductFlavor().getName()));
                 }
             }

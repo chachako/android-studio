@@ -67,7 +67,13 @@ class AppAndLibNoBuildConfigTest {
         val failure = project.executor().expectFailure().run("project")
         failure.stderr.use {
             ScannerSubject.assertThat(it)
-                .contains("defaultConfig contains custom BuildConfig fields, but the feature is disabled.")
+                .contains(
+                    """
+                        defaultConfig contains custom BuildConfig fields, but the feature is disabled.
+                        To enable the feature, add the following to your module-level build.gradle:
+                        `android.buildFeatures.buildConfig true`
+                    """.trimIndent()
+                )
         }
     }
 
@@ -78,7 +84,13 @@ class AppAndLibNoBuildConfigTest {
         val failure = project.executor().expectFailure().run("project")
         failure.stderr.use {
             ScannerSubject.assertThat(it)
-                .contains("Build Type 'debug' contains custom BuildConfig fields, but the feature is disabled.")
+                .contains(
+                    """
+                        Build Type 'debug' contains custom BuildConfig fields, but the feature is disabled.
+                        To enable the feature, add the following to your module-level build.gradle:
+                        `android.buildFeatures.buildConfig true`
+                    """.trimIndent()
+                )
         }
     }
 
