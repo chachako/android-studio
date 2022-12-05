@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.ide.dependencies
 
 import com.android.build.api.attributes.BuildTypeAttr
+import com.android.build.gradle.internal.dependency.AdditionalArtifactType
 import com.android.build.gradle.internal.dependency.ResolutionResultProvider
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.build.gradle.internal.ide.DependencyFailureHandler
@@ -31,6 +32,7 @@ import com.google.common.truth.Truth
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolutionResult
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.junit.Test
 import org.mockito.Mockito
@@ -239,15 +241,20 @@ private fun getResolutionResultProvider(
 ): ResolutionResultProvider {
     val result = Mockito.mock(ResolutionResult::class.java)
     val root = Mockito.mock(ResolvedComponentResult::class.java)
+    val additionalArtifacts = Mockito.mock(ArtifactCollection::class.java)
+    val iterator = Mockito.mock(MutableIterator::class.java)
     Mockito.`when`(result.root).thenReturn(root)
     Mockito.`when`(root.dependencies).thenReturn(compileResultsResults)
+    Mockito.`when`(additionalArtifacts.iterator()).thenReturn(iterator as MutableIterator<ResolvedArtifactResult>)
+    Mockito.`when`(iterator.hasNext()).thenReturn(false)
 
-    return ResolutionResultProviderImpl(result, result)
+    return ResolutionResultProviderImpl(result, result, additionalArtifacts)
 }
 
 private class ResolutionResultProviderImpl(
     private val compileResult: ResolutionResult,
-    private val runtimeResult: ResolutionResult
+    private val runtimeResult: ResolutionResult,
+    private val additionalArtifacts: ArtifactCollection
 ): ResolutionResultProvider {
 
     override fun getResolutionResult(
@@ -258,6 +265,13 @@ private class ResolutionResultProviderImpl(
                 AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH -> runtimeResult
                 else -> throw RuntimeException("Unsupported ConsumedConfigType value: $configType")
             }
+
+    override fun getAdditionalArtifacts(
+            configType: AndroidArtifacts.ConsumedConfigType,
+            type: AdditionalArtifactType
+    ): ArtifactCollection {
+        return additionalArtifacts
+    }
 }
 
 private class FakeArtifactCollectionsInputs(

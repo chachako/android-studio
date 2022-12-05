@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal.dependency
 
+import com.android.build.api.attributes.BuildTypeAttr
+import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
@@ -46,13 +48,22 @@ import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolutionResult
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
+import org.gradle.api.attributes.Bundling
+import org.gradle.api.attributes.Category
+import org.gradle.api.attributes.DocsType
+import org.gradle.api.attributes.LibraryElements
+import org.gradle.api.attributes.Usage
 import org.gradle.api.file.FileCollection
 import org.gradle.api.specs.Spec
 
 
 interface ResolutionResultProvider {
     fun getResolutionResult(configType: ConsumedConfigType): ResolutionResult
+
+    fun getAdditionalArtifacts(configType: ConsumedConfigType, type: AdditionalArtifactType): ArtifactCollection
 }
 /**
  * Object that represents the dependencies of variant.
@@ -109,6 +120,47 @@ class VariantDependencies internal constructor(
         ConsumedConfigType.COMPILE_CLASSPATH -> compileClasspath.incoming.resolutionResult
         ConsumedConfigType.RUNTIME_CLASSPATH -> runtimeClasspath.incoming.resolutionResult
         else -> throw RuntimeException("Unsupported ConsumedConfigType value: $configType")
+    }
+
+    override fun getAdditionalArtifacts(
+            configType: ConsumedConfigType,
+            type: AdditionalArtifactType
+    ): ArtifactCollection {
+        val configuration = when (configType) {
+            ConsumedConfigType.COMPILE_CLASSPATH -> compileClasspath
+            ConsumedConfigType.RUNTIME_CLASSPATH -> runtimeClasspath
+            else -> throw RuntimeException("Unsupported ConsumedConfigType value: $configType")
+        }
+        val docsType = when(type) {
+            AdditionalArtifactType.SOURCE -> DocsType.SOURCES
+            AdditionalArtifactType.JAVADOC -> DocsType.JAVADOC
+            AdditionalArtifactType.SAMPLE -> SAMPLE_SOURCE_TYPE
+        }
+
+        val buildType = configuration.attributes.getAttribute(BuildTypeAttr.ATTRIBUTE)
+        val flavorMap = configuration.attributes.keySet()
+                .filter { it.type == ProductFlavorAttr::class.java }
+                .associateWith { configuration.attributes.getAttribute(it) } as Map<Attribute<ProductFlavorAttr>, ProductFlavorAttr>
+
+        return configuration.incoming.artifactView { view ->
+            view.isLenient = true
+            view.withVariantReselection()
+            val objects = project.objects
+
+            view.attributes.apply {
+                attribute(BuildTypeAttr.ATTRIBUTE, buildType)
+                flavorMap.entries.forEach {
+                    attribute(it.key, it.value)
+                }
+
+                attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType::class.java, docsType))
+                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category::class.java, Category.DOCUMENTATION))
+                attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+                attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements::class.java, LibraryElements.JAR))
+                attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling::class.java, Bundling.EXTERNAL))
+                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, Usage.JAVA_RUNTIME))
+            }
+        }.artifacts
     }
 
     @JvmOverloads
@@ -288,6 +340,7 @@ class VariantDependencies internal constructor(
         const val CONFIG_NAME_LINTPUBLISH = "lintPublish"
         const val CONFIG_NAME_TESTED_APKS = "testedApks"
         const val CONFIG_NAME_CORE_LIBRARY_DESUGARING = "coreLibraryDesugaring"
+        const val SAMPLE_SOURCE_TYPE = "samplessources"
 
         @Deprecated("")
         const val CONFIG_NAME_FEATURE = "feature"
@@ -341,4 +394,10 @@ class VariantDependencies internal constructor(
             }
         }
     }
+}
+
+enum class AdditionalArtifactType {
+    JAVADOC,
+    SOURCE,
+    SAMPLE,
 }
