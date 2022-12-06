@@ -501,7 +501,6 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.20",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.21",
     "org.jetbrains.kotlin:kotlin-test-junit:1.7.10",
-    "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1",
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.6",
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.6",

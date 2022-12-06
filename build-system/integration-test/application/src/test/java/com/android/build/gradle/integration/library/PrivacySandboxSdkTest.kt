@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.library
 
+import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
@@ -28,6 +29,7 @@ import com.android.build.gradle.options.StringOption
 import com.android.sdklib.BuildToolInfo
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
+import com.android.testutils.TestUtils
 import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
@@ -36,6 +38,7 @@ import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
+import org.gradle.internal.impldep.com.google.common.io.Resources
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -45,6 +48,27 @@ import kotlin.io.path.readText
 /** Smoke integration tests for the privacy sandbox SDK production and consumption */
 class PrivacySandboxSdkTest {
 
+    val sandboxApiCompilerLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.tools:tools-apicompiler:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/tools/tools-apicompiler/1.0.0-SNAPSHOT/tools-apicompiler-1.0.0-SNAPSHOT.jar")
+    val sandboxToolsLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/tools/tools/1.0.0-SNAPSHOT/tools-1.0.0-SNAPSHOT.jar")
+    val sandboxToolsCoreLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.tools:tools-core:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/tools/tools-core/1.0.0-SNAPSHOT/tools-core-1.0.0-SNAPSHOT.jar")
+    val sandboxSdkRuntimeCoreLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/sdkruntime/sdkruntime-core/1.0.0-SNAPSHOT/sdkruntime-core-1.0.0-SNAPSHOT.aar")
+    val sandboxSdkRuntimeClientLibrary =
+            getPrebuiltAsMavenLib(
+                    "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT",
+                    "androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-SNAPSHOT/sdkruntime-client-1.0.0-SNAPSHOT.aar")
+
     private val mavenRepo = MavenRepoGenerator(
             listOf(
                     MavenRepoGenerator.Library("com.externaldep:externaljar:1",
@@ -52,6 +76,11 @@ class PrivacySandboxSdkTest {
                             TestInputsGenerator.jarWithEmptyClasses(
                                     ImmutableList.of("com/externaldep/externaljar/ExternalClass")
                             )),
+                    sandboxApiCompilerLibrary,
+                    sandboxToolsLibrary,
+                    sandboxToolsCoreLibrary,
+                    sandboxSdkRuntimeCoreLibrary,
+                    sandboxSdkRuntimeClientLibrary
             )
     )
 
@@ -74,15 +103,15 @@ class PrivacySandboxSdkTest {
             dependencies {
                 implementation("junit:junit:4.12")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-                implementation("androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT")
+                implementation(sandboxToolsLibrary)
                 implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
                 implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
 
                 ksp("com.google.protobuf:protobuf-java:3.19.3")
                 ksp("com.squareup:kotlinpoet:1.12.0")
-                ksp("androidx.privacysandbox.tools:tools-core:1.0.0-SNAPSHOT")
-                ksp("androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT")
-                ksp("androidx.privacysandbox.tools:tools-apicompiler:1.0.0-SNAPSHOT")
+                ksp(sandboxToolsCoreLibrary)
+                ksp(sandboxToolsLibrary)
+                ksp(sandboxApiCompilerLibrary)
                 ksp("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
                 ksp("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
                 ksp("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
@@ -290,21 +319,6 @@ class PrivacySandboxSdkTest {
     fun testConsumption() {
         // TODO(b/235469089) expand this to verify installation also
 
-        //Add service to android-lib1
-        val pkg = FileUtils.join(project.getSubproject("android-lib1").mainSrcDir,
-                        "com",
-                        "example",
-                        "androidlib1")
-        val mySdkFile = File(pkg, "MySdk.kt")
-        mySdkFile.writeText(
-                "package com.example.androidlib1\n" +
-                        "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
-                        "   @PrivacySandboxService\n" +
-                        "   public interface MySdk {\n" +
-                        "       suspend fun foo(bar: Int): String\n" +
-                        "   }\n"
-        )
-
         // Check building the SDK itself
         executor().run(":example-app:buildPrivacySandboxSdkApksForDebug")
 
@@ -424,18 +438,14 @@ class PrivacySandboxSdkTest {
         assertThat(kspDir.exists()).isTrue()
     }
 
-    @Test
-    fun failWhenNoServiceDefinedInModuleUsedBySdk() {
-        val failure =
-                project.executor().expectFailure().run(":example-app:assembleDebug")
-
-        assertThat(failure.failureMessage).contains(
-                "Unable to proceed generating shim with no provided sdk descriptor entries in:")
-    }
-
     private fun List<String>.normalizeManifestContent(): List<String> = map {
         certDigestPattern.replace(it, "CERT_DIGEST")
     }
+
+    private fun getPrebuiltAsMavenLib(mavenCoordinate: String, jarName: String) =
+            MavenRepoGenerator.Library(mavenCoordinate,
+                    TestUtils.getLocalMavenRepoFile(jarName).toFile().readBytes()
+            )
 
     companion object {
         private val certDigestPattern = Regex("([0-9A-F]{2}:){31}[0-9A-F]{2}")

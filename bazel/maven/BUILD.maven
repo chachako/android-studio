@@ -37983,18 +37983,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlinx.kotlinx-coroutines-android_1.0.1",
-    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.0.1/kotlinx-coroutines-android-1.0.1.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-android/1.0.1",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.3.0",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.0.1",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.jetbrains.kotlinx.kotlinx-coroutines-android_1.3.0",
     pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.3.0/kotlinx-coroutines-android-1.3.0.pom",
     repo_root_path = "repository",
@@ -38118,17 +38106,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.0.1",
-    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-common/1.0.1/kotlinx-coroutines-core-common-1.0.1.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-core-common/1.0.1",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.3.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.3.6",
     pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-common/1.3.6/kotlinx-coroutines-core-common-1.3.6.pom",
     repo_root_path = "repository",
@@ -38210,18 +38187,6 @@ maven_artifact(
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.6.21",
         "org.jetbrains.kotlin.kotlin-stdlib-common_1.6.21",
         "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.6.4",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.0.1",
-    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.0.1/kotlinx-coroutines-core-1.0.1.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-core/1.0.1",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.3.0",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.0.1",
     ],
     visibility = ["//visibility:public"],
 )
