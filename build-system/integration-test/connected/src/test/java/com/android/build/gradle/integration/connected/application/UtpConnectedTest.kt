@@ -25,7 +25,7 @@ import java.io.IOException
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
-
+import com.android.tools.perflogger.Benchmark;
 /**
  * Connected tests using UTP test executor.
  */
@@ -72,6 +72,8 @@ class UtpConnectedTest : UtpTestBase() {
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestWithUtpTestResultListener() {
+        val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtpTestResultListener").setProject("Android Studio Gradle").build()
+        val startTime: Long = java.lang.System.currentTimeMillis()
         selectModule("app")
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
@@ -108,11 +110,15 @@ class UtpConnectedTest : UtpTestBase() {
         }
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
+        val timeTaken = java.lang.System.currentTimeMillis() - startTime
+        benchmark.log("connectedAndroidTestWithUtpTestResultListener_time", timeTaken)
     }
 
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled() {
+        val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled").setProject("Android Studio Gradle").build()
+        val startTime: Long = java.lang.System.currentTimeMillis()
         selectModule("app")
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
@@ -128,5 +134,7 @@ class UtpConnectedTest : UtpTestBase() {
         }
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
+        val timeTaken = java.lang.System.currentTimeMillis() - startTime
+        benchmark.log("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled_time", timeTaken)
     }
 }

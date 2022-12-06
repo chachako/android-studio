@@ -35,6 +35,8 @@ TEST_DEPS = [
     "//tools/base/build-system/integration-test/framework/src/main/proto",
     "//tools/base/common:tools.common",
     "//tools/base/ddmlib:tools.ddmlib",
+    "//tools/base/perf-logger:studio.perf-logger",
+    "//tools/base/perf-logger:studio.perf-logger_testlib",
     "//tools/base/repository:tools.testlib",
     "//tools/base/sdk-common:tools.sdk-common",
     "//tools/base/sdklib:tools.sdklib",
