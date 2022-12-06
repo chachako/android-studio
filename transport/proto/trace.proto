@@ -140,11 +140,6 @@ message TraceConfiguration {
   // will be handled differently for the respective initiation type.
   TraceInitiationType initiation_type = 4;
 
-  // TODO (b/258709263): To be removed, only adding for backwards compatibility purposes.
-  UserOptions user_options = 9;
-  // TODO (b/258709263): To be removed, only adding for backwards compatibility purposes.
-  repeated string symbol_dirs = 10;
-
   // One option field will be set depending on the type of technology used for the trace.
   // These options have all the fields/data needed for the respective technology.
   oneof union {
