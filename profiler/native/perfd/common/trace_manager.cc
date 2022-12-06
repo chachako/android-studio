@@ -75,8 +75,9 @@ CaptureInfo* TraceManager::StartCapture(
         auto atrace_options = configuration.atrace_options();
         int acquired_buffer_size_kb = 0;
         success = atrace_manager_->StartProfiling(
-            app_name, kAtraceBufferSizeInMb, &acquired_buffer_size_kb,
-            configuration.temp_path(), &error_message);
+            app_name, atrace_options.buffer_size_in_mb(),
+            &acquired_buffer_size_kb, configuration.temp_path(),
+            &error_message);
         break;
       }
       case TraceConfiguration::kSimpleperfOptions: {
