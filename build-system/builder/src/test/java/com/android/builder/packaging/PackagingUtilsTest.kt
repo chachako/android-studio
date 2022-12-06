@@ -96,7 +96,9 @@ class PackagingUtilsTest {
             NativeLibrariesPackagingMode.COMPRESSED,
             DexPackagingMode.COMPRESSED).run {
                 assertThatTest("baseline.prof").isTrue()
+                assertThatTest("baseline.profm").isTrue()
                 assertThatTest("assets/dexopt/baseline.prof").isTrue()
+                assertThatTest("assets/dexopt/baseline.profm").isTrue()
                 assertThatTest("assets/baseline.prof/morestuff").isFalse()
                 assertThatTest("assets/baseline.profx").isFalse()
          }
