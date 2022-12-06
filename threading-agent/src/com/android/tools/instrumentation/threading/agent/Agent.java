@@ -32,6 +32,10 @@ public class Agent {
     static Instrumentation instrumentation;
 
     public static void premain(String agentArgs, Instrumentation instrumentation) {
+        agentmain(agentArgs, instrumentation);
+    }
+
+    public static void agentmain(String agentArgs, Instrumentation instrumentation) {
         if (shouldDisableThreadingAgent()) {
             LOGGER.info("Threading agent is disabled. Not instrumenting the code.");
             return;

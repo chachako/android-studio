@@ -10,6 +10,7 @@ java_binary(
     ]),
     deploy_manifest_lines = [
         "Premain-Class: com.android.tools.instrumentation.threading.agent.Agent",
+        "Agent-Class: com.android.tools.instrumentation.threading.agent.Agent",
         "Boot-Class-Path: threading_agent.jar",
     ],
     main_class = "com.android.tools.instrumentation.threading.agent.Agent",
