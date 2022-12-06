@@ -48,6 +48,13 @@ public final class InstallOptions {
         return canceller;
     }
 
+    public Builder toBuilder() {
+        Builder builder = new Builder();
+        builder.flags.addAll(this.allFlags);
+        builder.userFlags.addAll(this.userFlags);
+        return builder;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -66,6 +73,11 @@ public final class InstallOptions {
         // Allows test packages to be installed.
         public Builder setAllowDebuggable() {
             flags.add("-t");
+            return this;
+        }
+
+        public Builder setAllowDowngrade() {
+            flags.add("-d");
             return this;
         }
 

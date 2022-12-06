@@ -55,6 +55,11 @@ public class DeployerRunner {
     private static final String DEX_DB_PATH = "/tmp/studio_dex.db";
     private static final String DEPLOY_DB_PATH = "/tmp/studio_deploy.db";
 
+    private static final InstallOptions STUDIO_DEFAULTS =
+            InstallOptions.builder().setAllowDebuggable().build();
+    private static final InstallOptions MOBILE_INSTALL_DEFAULTS =
+            InstallOptions.builder().setAllowDebuggable().setAllowDowngrade().build();
+    private final InstallOptions defaultInstallOptions;
     private final DeploymentCacheDatabase cacheDb;
     private final SqlApkFileDatabase dexDb;
     private final MetricsRecorder metrics;
@@ -76,23 +81,35 @@ public class DeployerRunner {
     }
 
     public static int tracedMain(String[] args) {
-
         DeployerRunner runner =
                 new DeployerRunner(
-                        new File(DEPLOY_DB_PATH), new File(DEX_DB_PATH), new CommandLineService());
+                        MOBILE_INSTALL_DEFAULTS,
+                        new File(DEPLOY_DB_PATH),
+                        new File(DEX_DB_PATH),
+                        new CommandLineService());
         return runner.run(args);
     }
 
     public DeployerRunner(File deployCacheFile, File databaseFile, UIService service) {
-        this(
-                new DeploymentCacheDatabase(deployCacheFile),
-                new SqlApkFileDatabase(databaseFile, null),
-                service);
+        this(STUDIO_DEFAULTS, deployCacheFile, databaseFile, service);
+    }
+
+    private DeployerRunner(
+            InstallOptions defaultInstallOptions,
+            File deployCacheFile,
+            File databaseFile,
+            UIService service) {
+        this.defaultInstallOptions = defaultInstallOptions;
+        this.cacheDb = new DeploymentCacheDatabase(deployCacheFile);
+        this.dexDb = new SqlApkFileDatabase(databaseFile, null);
+        this.service = service;
+        this.metrics = new MetricsRecorder();
     }
 
     @VisibleForTesting
     public DeployerRunner(
             DeploymentCacheDatabase cacheDb, SqlApkFileDatabase dexDb, UIService service) {
+        this.defaultInstallOptions = STUDIO_DEFAULTS;
         this.cacheDb = cacheDb;
         this.dexDb = dexDb;
         this.service = service;
@@ -195,7 +212,8 @@ public class DeployerRunner {
         final Deployer.Result deployResult;
         try {
             if (parameters.getCommands().contains(DeployRunnerParameters.Command.INSTALL)) {
-                InstallOptions.Builder options = InstallOptions.builder().setAllowDebuggable();
+                InstallOptions.Builder options = defaultInstallOptions.toBuilder();
+
                 if (device.supportsFeature(IDevice.HardwareFeature.EMBEDDED)) {
                     options.setGrantAllPermissions();
                 }
