@@ -80,6 +80,11 @@ swap_test(
     srcs = ["java/com/android/tools/deployer/LiveEditVersionCheckTest.java"],
 )
 
+swap_test(
+    name = "LiveEditAccessorTest",
+    srcs = ["java/com/android/tools/deployer/LiveEditAccessorTest.java"],
+)
+
 java_test(
     name = "D8DexSplitterTest",
     srcs = ["java/com/android/tools/deployer/D8DexSplitterTest.java"],

@@ -40,4 +40,12 @@ public class LiveEditActivity extends Activity {
     public void invokeLiveEditSimple() {
         pkg.LiveEditSimpleKt.LiveEditSimple();
     }
+
+    public void invokeLiveEditUseAccessor() {
+        System.out.println("UseAccessor: " + (new pkg.UseAccessor()).accessX().invoke());
+    }
+
+    public void invokeLiveEditAddAccessor() {
+        System.out.println("AddAccessor: " + (new pkg.AddAccessor()).accessX().invoke());
+    }
 }

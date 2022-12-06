@@ -32,6 +32,15 @@ public class LiveEditTestBase extends AgentTestBase {
 
     protected static final String ACTIVITY_CLASS = "app.LiveEditActivity";
 
+    // This is a hack.
+    // The way bazel test set up the chroot jail does not work well with how the ART process
+    // handle the agent's call to
+    // addDex("/data/data/package.name/code_cache/.studio/live_edit.dex").
+    //
+    // To work around this, we'll just load the lambda super class dex as part of ART start up.
+    protected static final String LIVE_EDIT_LAMBDA_DEX_LOCATION =
+            ProcessRunner.getProcessPath("liveedit.app.dex.location");
+
     protected enum CompileClassLocation {
         JAVA_ORIGINAL_LOCATION("java.original.class.location"),
         JAVA_SWAPPED_LOCATION("java.swapped.class.location"),

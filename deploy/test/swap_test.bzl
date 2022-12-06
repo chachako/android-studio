@@ -11,6 +11,7 @@ def swap_test(name, srcs):
         data = [
             ":original_dex",
             ":swapped_dex",
+            "//tools/base/deploy/agent/runtime:live_edit_dex",
             "//tools/base/deploy/agent/native:libswap.so",
             "//tools/base/deploy/installer:install-server",
             "//tools/base/deploy/test/data/apk1:apk",
@@ -19,6 +20,9 @@ def swap_test(name, srcs):
         jvm_flags = [
             # Location of the inital test app.
             "-Dapp.dex.location=$(location :original_dex)",
+
+            # Location of the inital test app.
+            "-Dliveedit.app.dex.location=$(location //tools/base/deploy/agent/runtime:live_edit_dex)",
 
             # Location of the dex files to be swapped in.
             "-Dapp.swap.dex.location=$(location :swapped_dex)",
@@ -53,6 +57,7 @@ def swap_test(name, srcs):
             "//tools/base/bazel:langtools",
             "//tools/base/bazel:studio-proto",
             "//tools/base/deploy/deployer:tools.deployer",
+            "//tools/base/deploy/agent/runtime:live_edit_dex",
             "//tools/base/deploy/proto:deploy_java_proto",
             "//tools/base/fakeandroid",
             "@maven//:com.google.protobuf.protobuf-java",
