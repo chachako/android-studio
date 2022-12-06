@@ -11,9 +11,9 @@ register_toolchains(
     "//tools/base/bazel/toolchains/darwin:python_toolchain",
     "//tools/base/bazel/toolchains/darwin:python_toolchain_10.13",
     "//prebuilts/studio/jdk/jdk11:runtime_toolchain_definition",
-    "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java8_definition",
-    "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11_definition",
     "//prebuilts/studio/jdk/jdk17:java_runtime_toolchain",
+    "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
+    "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain_definition",
 )
 

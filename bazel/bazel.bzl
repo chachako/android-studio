@@ -101,17 +101,14 @@ def _iml_module_jar_impl(
     javac_opts = java_common.default_javac_opts(java_toolchain = java_toolchain) + ctx.attr.javacopts
     kotlinc_opts = list(ctx.attr.kotlinc_opts)
     if jvm_target == "8":
-        javac_opts += ["--release", "8"]
         kotlinc_opts += ["-jvm-target", "1.8"]
         kt_java_runtime = ctx.attr._kt_java_runtime_8[java_common.JavaRuntimeInfo]
     elif jvm_target == "11":
         # Ideally we use "--release 11" for javac too, but that is incompatible with "--add-exports".
-        # compile with JDK 11 instead
         kotlinc_opts += ["-jvm-target", "11"]
         kt_java_runtime = ctx.attr._kt_java_runtime_11[java_common.JavaRuntimeInfo]
     elif jvm_target == "17":
         # Ideally we use "--release 17" for javac too, but that is incompatible with "--add-exports".
-        # compile with JDK 17 instead
         kotlinc_opts += ["-jvm-target", "17"]
         kt_java_runtime = ctx.attr._kt_java_runtime_17[java_common.JavaRuntimeInfo]
     else:
@@ -589,14 +586,16 @@ def iml_module(
 
     # if jvm_target is specified, use JDK that compiles to that target
     # otherwise use default JDK, controlled by `java_language_version_17` flag
-    if jvm_target in ["8", "11"]:
-        java_toolchain = "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11"
+    if jvm_target == "8":
+        java_toolchain = "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain"
+    elif jvm_target == "11":
+        java_toolchain = "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain"
     elif jvm_target == "17":
         java_toolchain = "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain"
     else:
         java_toolchain = select({
             "//tools/base/bazel:java_language_version_17": "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain",
-            "//conditions:default": "//prebuilts/studio/jdk/jdk11:jdk11_toolchain_java11",
+            "//conditions:default": "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain",
         })
 
     _iml_module_(
