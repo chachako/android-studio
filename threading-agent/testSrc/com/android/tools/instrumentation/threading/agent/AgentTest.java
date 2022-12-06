@@ -411,7 +411,7 @@ public class AgentTest {
                                     classLoader.getResourceAsStream(internalClassName + ".class")));
 
             byte[] newClass =
-                    transformer.transform(classLoader, clazz.getName(), null, null, classInput);
+                    transformer.transform(classLoader, internalClassName, null, null, classInput);
 
             newClass = renameClassNames(newClass, nameMappings);
             Class<?> newClassDef =

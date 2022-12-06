@@ -26,11 +26,6 @@ class Transformer implements ClassFileTransformer {
 
     private static final Logger LOGGER = Logger.getLogger(Transformer.class.getName());
 
-    // Skip the default JRE classes.
-    // Also skip com.intellij.workspaceModel.* classes for some of which
-    // ClassReader#readVerificationTypeInfo throws IllegalArgumentException.
-    private static final String[] skipPackagePrefixes = {"java.", "com.intellij.workspaceModel."};
-
     @NonNull private final AnnotationMappings annotationMappings;
 
     public Transformer(@NonNull AnnotationMappings annotationMappings) {
@@ -50,11 +45,10 @@ class Transformer implements ClassFileTransformer {
         }
 
         String className = classJvmName.replace('/', '.');
-        for (String skipPackagePrefix : skipPackagePrefixes) {
-            if (className.startsWith(skipPackagePrefix)) {
-                LOGGER.fine("Threading agent: skip instrumenting class " + className);
-                return null;
-            }
+        // To optimize the performance skip the classes that certainly
+        // do not contain Android Studio threading annotations
+        if (!classJvmName.contains("/android/")) {
+            return null;
         }
 
         try {
