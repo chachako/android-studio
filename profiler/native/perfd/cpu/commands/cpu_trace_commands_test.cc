@@ -38,7 +38,6 @@ using google::protobuf::util::MessageDifferencer;
 using std::string;
 
 using profiler::proto::TraceConfiguration;
-using profiler::proto::UserOptions;
 
 namespace profiler {
 

@@ -100,14 +100,9 @@ class TraceManager final {
   // The third parameter is the trace start status. The value of this status
   // will be set whether or not this method is able to successfully start
   // tracing.
-  //
-  // The last parameter is a boolean flag to determine whether this method
-  // utilizes the unified config technology specific options or the
-  // old UserOptions proto field in order to configure the type of tracing.
   CaptureInfo* StartCapture(int64_t request_timestamp_ns,
                             const proto::TraceConfiguration& configuration,
-                            proto::TraceStartStatus* status,
-                            const bool use_unified_config);
+                            proto::TraceStartStatus* status);
 
   // Request to stop an ongoing trace. Returns the cached CaptureInfo with
   // the end timestamp marked if there is an existing trace, nullptr otherwise.

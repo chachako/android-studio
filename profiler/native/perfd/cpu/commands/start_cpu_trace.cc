@@ -40,7 +40,7 @@ Status StartCpuTrace::ExecuteOn(Daemon* daemon) {
 
   TraceStartStatus start_status;
   auto* capture = trace_manager_->StartCapture(
-      start_timestamp, start_command.configuration(), &start_status, true);
+      start_timestamp, start_command.configuration(), &start_status);
 
   Event status_event;
   status_event.set_pid(command().pid());

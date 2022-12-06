@@ -20,7 +20,6 @@
 using profiler::proto::TraceConfiguration;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
-using profiler::proto::UserOptions;
 
 namespace profiler {
 
@@ -29,8 +28,7 @@ static const int64_t kTraceRecordBufferSize = 10;
 
 CaptureInfo* TraceManager::StartCapture(
     int64_t request_timestamp_ns,
-    const proto::TraceConfiguration& configuration, TraceStartStatus* status,
-    const bool use_unified_config) {
+    const proto::TraceConfiguration& configuration, TraceStartStatus* status) {
   std::lock_guard<std::recursive_mutex> lock(capture_mutex_);
 
   const auto& app_name = configuration.app_name();
@@ -60,80 +58,46 @@ CaptureInfo* TraceManager::StartCapture(
     bool startup_profiling =
         configuration.initiation_type() == proto::INITIATED_BY_STARTUP;
 
-    if (use_unified_config) {
-      // Utilize technology-specific options in unified trace configuration
-      // proto.
-      switch (configuration.union_case()) {
-        case TraceConfiguration::kArtOptions: {
-          auto art_options = configuration.art_options();
-          auto mode = art_options.trace_mode() == proto::TraceMode::INSTRUMENTED
-                          ? ActivityManager::INSTRUMENTED
-                          : ActivityManager::SAMPLING;
-          success = activity_manager_->StartProfiling(
-              mode, app_name, art_options.sampling_interval_us(),
-              configuration.temp_path(), &error_message, startup_profiling);
-          break;
-        }
-        case TraceConfiguration::kAtraceOptions: {
-          auto atrace_options = configuration.atrace_options();
-          int acquired_buffer_size_kb = 0;
-          success = atrace_manager_->StartProfiling(
-              app_name, kAtraceBufferSizeInMb, &acquired_buffer_size_kb,
-              configuration.temp_path(), &error_message);
-          break;
-        }
-        case TraceConfiguration::kSimpleperfOptions: {
-          auto simpleperf_options = configuration.simpleperf_options();
-          success = simpleperf_manager_->StartProfiling(
-              app_name, configuration.abi_cpu_arch(),
-              simpleperf_options.sampling_interval_us(),
-              configuration.temp_path(), &error_message, startup_profiling);
-          break;
-        }
-        case TraceConfiguration::kPerfettoOptions: {
-          auto perfetto_options = configuration.perfetto_options();
-          success = perfetto_manager_->StartProfiling(
-              app_name, configuration.abi_cpu_arch(), perfetto_options,
-              configuration.temp_path(), &error_message);
-          break;
-        }
-        default:
-          success = false;
-          error_message = "No technology-specific tracing options set.";
-          break;
+    // Utilize technology-specific options in unified trace configuration
+    // proto.
+    switch (configuration.union_case()) {
+      case TraceConfiguration::kArtOptions: {
+        auto art_options = configuration.art_options();
+        auto mode = art_options.trace_mode() == proto::TraceMode::INSTRUMENTED
+                        ? ActivityManager::INSTRUMENTED
+                        : ActivityManager::SAMPLING;
+        success = activity_manager_->StartProfiling(
+            mode, app_name, art_options.sampling_interval_us(),
+            configuration.temp_path(), &error_message, startup_profiling);
+        break;
       }
-    } else {
-      // Utilize UserOptions based options in old trace configuration proto.
-      const auto& user_options = configuration.user_options();
-      if (user_options.trace_type() == UserOptions::SIMPLEPERF) {
-        success = simpleperf_manager_->StartProfiling(
-            app_name, configuration.abi_cpu_arch(),
-            user_options.sampling_interval_us(), configuration.temp_path(),
-            &error_message, startup_profiling);
-      } else if (user_options.trace_type() == UserOptions::ATRACE) {
+      case TraceConfiguration::kAtraceOptions: {
+        auto atrace_options = configuration.atrace_options();
         int acquired_buffer_size_kb = 0;
         success = atrace_manager_->StartProfiling(
             app_name, kAtraceBufferSizeInMb, &acquired_buffer_size_kb,
             configuration.temp_path(), &error_message);
-      } else if (user_options.trace_type() == UserOptions::PERFETTO) {
-        // Perfetto always acquires the proper buffer size.
-        int acquired_buffer_size_kb = kPerfettoBufferSizeInMb * 1024;
-        // TODO: We may want to pass this in from studio for a more flexible
-        // config.
-        perfetto::protos::TraceConfig config =
-            PerfettoManager::BuildFtraceConfig(app_name,
-                                               acquired_buffer_size_kb);
-        success = perfetto_manager_->StartProfiling(
-            app_name, configuration.abi_cpu_arch(), config,
-            configuration.temp_path(), &error_message);
-      } else {
-        auto mode = user_options.trace_mode() == proto::TraceMode::INSTRUMENTED
-                        ? ActivityManager::INSTRUMENTED
-                        : ActivityManager::SAMPLING;
-        success = activity_manager_->StartProfiling(
-            mode, app_name, user_options.sampling_interval_us(),
-            configuration.temp_path(), &error_message, startup_profiling);
+        break;
       }
+      case TraceConfiguration::kSimpleperfOptions: {
+        auto simpleperf_options = configuration.simpleperf_options();
+        success = simpleperf_manager_->StartProfiling(
+            app_name, configuration.abi_cpu_arch(),
+            simpleperf_options.sampling_interval_us(),
+            configuration.temp_path(), &error_message, startup_profiling);
+        break;
+      }
+      case TraceConfiguration::kPerfettoOptions: {
+        auto perfetto_options = configuration.perfetto_options();
+        success = perfetto_manager_->StartProfiling(
+            app_name, configuration.abi_cpu_arch(), perfetto_options,
+            configuration.temp_path(), &error_message);
+        break;
+      }
+      default:
+        success = false;
+        error_message = "No technology-specific tracing options set.";
+        break;
     }
   }
 
@@ -152,26 +116,6 @@ CaptureInfo* TraceManager::StartCapture(
     status->set_error_message(error_message);
     return nullptr;
   }
-}
-
-/**
- * TODO: (b/259745930) Delete this method.
- * This temporary method was created to accommodate for the UserOptions
- * trace type reading done in StopCapturing. Tests created for the new
- * options fields were failing without the precense of an uncessary
- * UserOptions so this method handles not having UserOptions present.
- */
-UserOptions::TraceType getTraceTypeFromCapture(TraceConfiguration config) {
-  if (config.has_art_options()) {
-    return UserOptions::ART;
-  } else if (config.has_atrace_options()) {
-    return UserOptions::ATRACE;
-  } else if (config.has_simpleperf_options()) {
-    return UserOptions::SIMPLEPERF;
-  } else if (config.has_perfetto_options()) {
-    return UserOptions::PERFETTO;
-  }
-  return config.user_options().trace_type();
 }
 
 CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
@@ -198,21 +142,34 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
     ongoing_capture->end_timestamp = request_timestamp_ns;
   } else {
     Stopwatch stopwatch;
-    auto trace_type = getTraceTypeFromCapture(ongoing_capture->configuration);
-    if (trace_type == UserOptions::SIMPLEPERF) {
-      stop_status = simpleperf_manager_->StopProfiling(app_name, need_trace,
-                                                       &error_message);
-    } else if (trace_type == UserOptions::ATRACE) {
-      stop_status =
-          atrace_manager_->StopProfiling(app_name, need_trace, &error_message);
-    } else if (trace_type == UserOptions::PERFETTO) {
-      stop_status = perfetto_manager_->StopProfiling(&error_message);
-    } else {  // Profiler is ART
-      stop_status = activity_manager_->StopProfiling(
-          app_name, need_trace, &error_message,
-          cpu_config_.art_stop_timeout_sec(),
-          ongoing_capture->configuration.initiation_type() ==
-              proto::INITIATED_BY_STARTUP);
+    switch (ongoing_capture->configuration.union_case()) {
+      case TraceConfiguration::kArtOptions: {
+        stop_status = activity_manager_->StopProfiling(
+            app_name, need_trace, &error_message,
+            cpu_config_.art_stop_timeout_sec(),
+            ongoing_capture->configuration.initiation_type() ==
+                proto::INITIATED_BY_STARTUP);
+        break;
+      }
+      case TraceConfiguration::kAtraceOptions: {
+        stop_status = atrace_manager_->StopProfiling(app_name, need_trace,
+                                                     &error_message);
+        break;
+      }
+      case TraceConfiguration::kSimpleperfOptions: {
+        stop_status = simpleperf_manager_->StopProfiling(app_name, need_trace,
+                                                         &error_message);
+        break;
+      }
+      case TraceConfiguration::kPerfettoOptions: {
+        stop_status = perfetto_manager_->StopProfiling(&error_message);
+        break;
+      }
+      default:
+        stop_status = TraceStopStatus::STOP_COMMAND_FAILED;
+        error_message =
+            "No technology-specific tracing options found on trace stoppage.";
+        break;
     }
     ongoing_capture->end_timestamp = clock_->GetCurrentTime();
     status->set_stopping_duration_ns(stopwatch.GetElapsed());

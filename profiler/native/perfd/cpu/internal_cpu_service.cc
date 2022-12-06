@@ -31,7 +31,6 @@ using profiler::proto::TraceInitiationType;
 using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
-using profiler::proto::UserOptions;
 
 namespace profiler {
 Status InternalCpuServiceImpl::SendTraceEvent(
@@ -47,13 +46,10 @@ Status InternalCpuServiceImpl::SendTraceEvent(
     TraceConfiguration configuration;
     configuration.set_app_name(app_name);
     configuration.set_initiation_type(TraceInitiationType::INITIATED_BY_API);
-    auto* user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(UserOptions::ART);
-    user_options->set_trace_mode(TraceMode::INSTRUMENTED);
 
     TraceStartStatus start_status;
-    auto* capture = trace_manager_->StartCapture(
-        request->timestamp(), configuration, &start_status, false);
+    auto* capture = trace_manager_->StartCapture(request->timestamp(),
+                                                 configuration, &start_status);
     if (capture == nullptr) {
       std::cout << " START request ignored. " << start_status.error_message()
                 << std::endl;

@@ -31,7 +31,6 @@ using profiler::proto::TraceConfiguration;
 using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
-using profiler::proto::UserOptions;
 
 using std::string;
 using testing::HasSubstr;
@@ -100,7 +99,7 @@ class TestTerminationService final : public TerminationService {
 
 // This needs to be a struct to set default visibility to public for functions /
 // members of testing::Test
-struct TraceManagerTest : testing::Test, testing::WithParamInterface<bool> {
+struct TraceManagerTest : testing::Test {
   std::unique_ptr<TraceManager> ConfigureDefaultTraceManager(
       const profiler::proto::DaemonConfig::CpuConfig& config) {
     return std::unique_ptr<TraceManager>(new TraceManager(
@@ -122,24 +121,17 @@ struct TraceManagerTest : testing::Test, testing::WithParamInterface<bool> {
     profiler::proto::DaemonConfig::CpuConfig config;
     std::unique_ptr<TraceManager> trace_manager =
         ConfigureDefaultTraceManager(config);
+
     // Start an atrace recording.
     TraceConfiguration configuration;
     configuration.set_app_name("fake_app");
+    auto atrace_options = configuration.mutable_atrace_options();
+    atrace_options->set_buffer_size_in_mb(8);
 
     TraceStartStatus start_status;
 
-    bool use_unified_config = GetParam();
-    if (use_unified_config) {
-      auto atrace_options = configuration.mutable_atrace_options();
-      atrace_options->set_buffer_size_in_mb(8);
-    } else {
-      auto user_options = configuration.mutable_user_options();
-      user_options->set_trace_type(UserOptions::ATRACE);
-      user_options->set_buffer_size_in_mb(8);
-    }
-
-    auto* capture = trace_manager->StartCapture(0, configuration, &start_status,
-                                                use_unified_config);
+    auto* capture =
+        trace_manager->StartCapture(0, configuration, &start_status);
 
     // Expect a success result.
     EXPECT_NE(capture, nullptr);
@@ -173,24 +165,17 @@ struct TraceManagerTest : testing::Test, testing::WithParamInterface<bool> {
     profiler::proto::DaemonConfig::CpuConfig config;
     std::unique_ptr<TraceManager> trace_manager =
         ConfigureDefaultTraceManager(config);
+
     // Start an atrace recording.
     TraceConfiguration configuration;
     configuration.set_app_name("fake_app");
+    auto perfetto_options = configuration.mutable_perfetto_options();
+    perfetto_options->add_buffers()->set_size_kb(8 * 1024);
 
     TraceStartStatus start_status;
 
-    bool use_unified_config = GetParam();
-    if (use_unified_config) {
-      auto perfetto_options = configuration.mutable_perfetto_options();
-      perfetto_options->add_buffers()->set_size_kb(8 * 1024);
-    } else {
-      auto user_options = configuration.mutable_user_options();
-      user_options->set_trace_type(UserOptions::PERFETTO);
-      user_options->set_buffer_size_in_mb(8);
-    }
-
-    auto* capture = trace_manager->StartCapture(0, configuration, &start_status,
-                                                use_unified_config);
+    auto* capture =
+        trace_manager->StartCapture(0, configuration, &start_status);
 
     // Expect a success result.
     EXPECT_NE(capture, nullptr);
@@ -222,7 +207,7 @@ struct TraceManagerTest : testing::Test, testing::WithParamInterface<bool> {
       new TestTerminationService()};
 };
 
-TEST_P(TraceManagerTest, StopSimpleperfTraceWhenDaemonTerminated) {
+TEST_F(TraceManagerTest, StopSimpleperfTraceWhenDaemonTerminated) {
   profiler::proto::DaemonConfig::CpuConfig config;
   std::unique_ptr<TraceManager> trace_manager =
       ConfigureDefaultTraceManager(config);
@@ -230,19 +215,11 @@ TEST_P(TraceManagerTest, StopSimpleperfTraceWhenDaemonTerminated) {
   // Start a Simpleperf recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto simpleperf_options = configuration.mutable_simpleperf_options();
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto simpleperf_options = configuration.mutable_simpleperf_options();
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(UserOptions::SIMPLEPERF);
-  }
-
-  auto* capture = trace_manager->StartCapture(0, configuration, &start_status,
-                                              use_unified_config);
+  auto* capture = trace_manager->StartCapture(0, configuration, &start_status);
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status.status(), TraceStartStatus::SUCCESS);
@@ -257,7 +234,7 @@ TEST_P(TraceManagerTest, StopSimpleperfTraceWhenDaemonTerminated) {
   EXPECT_TRUE(fake_simpleperf->GetKillSimpleperfCalled());
 }
 
-TEST_P(TraceManagerTest, StopArtTraceWhenDaemonTerminated) {
+TEST_F(TraceManagerTest, StopArtTraceWhenDaemonTerminated) {
   // Set up test Activity Manager
   string trace_path;
   string output_string;
@@ -291,21 +268,12 @@ TEST_P(TraceManagerTest, StopArtTraceWhenDaemonTerminated) {
   // Start an ART recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto art_options = configuration.mutable_art_options();
+  art_options->set_trace_mode(TraceMode::SAMPLED);
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto art_options = configuration.mutable_art_options();
-    art_options->set_trace_mode(TraceMode::SAMPLED);
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_mode(TraceMode::SAMPLED);
-    user_options->set_trace_type(UserOptions::ART);
-  }
-
-  auto* capture = trace_manager.StartCapture(0, configuration, &start_status,
-                                             use_unified_config);
+  auto* capture = trace_manager.StartCapture(0, configuration, &start_status);
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status.status(), TraceStartStatus::SUCCESS);
@@ -324,7 +292,7 @@ TEST_P(TraceManagerTest, StopArtTraceWhenDaemonTerminated) {
 // namespace scope if it is odr-used ([basic.def.odr]) in the program" according
 // to C++ standard.
 const int TraceManager::kAtraceBufferSizeInMb;
-TEST_P(TraceManagerTest, AlwaysUseFixedSizeForAtrace) {
+TEST_F(TraceManagerTest, AlwaysUseFixedSizeForAtrace) {
   // Create a mock Atrace manager to capture the input parameter.
   std::unique_ptr<AtraceManager> atrace_manager{new MockAtraceManager()};
   int captured_buffer_size_in_mb;
@@ -350,22 +318,12 @@ TEST_P(TraceManagerTest, AlwaysUseFixedSizeForAtrace) {
   // Start a System Trace recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto atrace_options = configuration.mutable_atrace_options();
+  atrace_options->set_buffer_size_in_mb(21);  // set an unexpected number.
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto atrace_options = configuration.mutable_atrace_options();
-    atrace_options->set_buffer_size_in_mb(21);  // set an unexpected number.
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_mode(TraceMode::INSTRUMENTED);
-    user_options->set_trace_type(UserOptions::ATRACE);
-    user_options->set_buffer_size_in_mb(21);  // set an unexpected number.
-  }
-
-  trace_manager.StartCapture(0, configuration, &start_status,
-                             use_unified_config);
+  trace_manager.StartCapture(0, configuration, &start_status);
 
   // Check the argument.
   EXPECT_EQ(TraceManager::kAtraceBufferSizeInMb, captured_buffer_size_in_mb);
@@ -379,7 +337,7 @@ TEST_P(TraceManagerTest, AlwaysUseFixedSizeForAtrace) {
 // namespace scope if it is odr-used ([basic.def.odr]) in the program" according
 // to C++ standard.
 const int TraceManager::kPerfettoBufferSizeInMb;
-TEST_P(TraceManagerTest, AlwaysUseFixedSizeForPerfetto) {
+TEST_F(TraceManagerTest, AlwaysUseFixedSizeForPerfetto) {
   // Create a mock Perfetto manager to capture the input parameter.
   std::unique_ptr<PerfettoManager> perfetto_manager{new MockPerfettoManager()};
   perfetto::protos::TraceConfig perfetto_config;
@@ -407,25 +365,15 @@ TEST_P(TraceManagerTest, AlwaysUseFixedSizeForPerfetto) {
   // Start a System Trace recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto perfetto_options = configuration.mutable_perfetto_options();
+  // Simulate constant buffer sizes set from studio-side TraceConfig creation.
+  int first_buffer_size_kb = TraceManager::kPerfettoBufferSizeInMb * 1024;
+  perfetto_options->add_buffers()->set_size_kb(first_buffer_size_kb);
+  perfetto_options->add_buffers()->set_size_kb(256);
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto perfetto_options = configuration.mutable_perfetto_options();
-    // Simulate constant buffer sizes set from studio-side TraceConfig creation.
-    int first_buffer_size_kb = TraceManager::kPerfettoBufferSizeInMb * 1024;
-    perfetto_options->add_buffers()->set_size_kb(first_buffer_size_kb);
-    perfetto_options->add_buffers()->set_size_kb(256);
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_mode(TraceMode::SAMPLED);
-    user_options->set_trace_type(UserOptions::PERFETTO);
-    user_options->set_buffer_size_in_mb(21);  // set an unexpected number.
-  }
-
-  trace_manager.StartCapture(0, configuration, &start_status,
-                             use_unified_config);
+  trace_manager.StartCapture(0, configuration, &start_status);
 
   // Check the argument.
   EXPECT_EQ(2, perfetto_config.buffers_size());
@@ -437,35 +385,28 @@ TEST_P(TraceManagerTest, AlwaysUseFixedSizeForPerfetto) {
   termination_service_.reset(nullptr);
 }
 
-TEST_P(TraceManagerTest, AtraceRunsOnO) { RunAtraceTest(DeviceInfo::O); }
+TEST_F(TraceManagerTest, AtraceRunsOnO) { RunAtraceTest(DeviceInfo::O); }
 
-TEST_P(TraceManagerTest, AtraceRunsOnP) { RunAtraceTest(DeviceInfo::P); }
+TEST_F(TraceManagerTest, AtraceRunsOnP) { RunAtraceTest(DeviceInfo::P); }
 
-TEST_P(TraceManagerTest, PerfettoRunsOnP) { RunPerfettoTest(DeviceInfo::P); }
+TEST_F(TraceManagerTest, PerfettoRunsOnP) { RunPerfettoTest(DeviceInfo::P); }
 
-TEST_P(TraceManagerTest, PerfettoRunsOnQ) { RunPerfettoTest(DeviceInfo::Q); }
+TEST_F(TraceManagerTest, PerfettoRunsOnQ) { RunPerfettoTest(DeviceInfo::Q); }
 
-TEST_P(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
+TEST_F(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
   profiler::proto::DaemonConfig::CpuConfig config;
   std::unique_ptr<TraceManager> trace_manager =
       ConfigureDefaultTraceManager(config);
 
+  // Start a recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto simpleperf_options = configuration.mutable_simpleperf_options();
 
   TraceStartStatus start_status1;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto simpleperf_options = configuration.mutable_simpleperf_options();
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(UserOptions::SIMPLEPERF);
-  }
-
-  // Start a recording.
-  auto* capture = trace_manager->StartCapture(10, configuration, &start_status1,
-                                              use_unified_config);
+  auto* capture =
+      trace_manager->StartCapture(10, configuration, &start_status1);
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status1.status(), TraceStartStatus::SUCCESS);
@@ -479,8 +420,7 @@ TEST_P(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
   // Starting again should fail.
   TraceStartStatus start_status2;
 
-  capture = trace_manager->StartCapture(10, configuration, &start_status2,
-                                        use_unified_config);
+  capture = trace_manager->StartCapture(10, configuration, &start_status2);
 
   EXPECT_EQ(capture, nullptr);
   EXPECT_EQ(start_status2.status(), TraceStartStatus::FAILURE);
@@ -488,10 +428,10 @@ TEST_P(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
 
   // Starting on different app is okay.
   configuration.set_app_name("fake_app2");
+
   TraceStartStatus start_status3;
 
-  capture = trace_manager->StartCapture(20, configuration, &start_status3,
-                                        use_unified_config);
+  capture = trace_manager->StartCapture(20, configuration, &start_status3);
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status3.status(), TraceStartStatus::SUCCESS);
@@ -506,7 +446,7 @@ TEST_P(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
   termination_service_.reset(nullptr);
 }
 
-TEST_P(TraceManagerTest, StopBeforeStartsDoesNothing) {
+TEST_F(TraceManagerTest, StopBeforeStartsDoesNothing) {
   profiler::proto::DaemonConfig::CpuConfig config;
   std::unique_ptr<TraceManager> trace_manager =
       ConfigureDefaultTraceManager(config);
@@ -522,29 +462,20 @@ TEST_P(TraceManagerTest, StopBeforeStartsDoesNothing) {
   termination_service_.reset(nullptr);
 }
 
-TEST_P(TraceManagerTest, StartStopSequence) {
+TEST_F(TraceManagerTest, StartStopSequence) {
   profiler::proto::DaemonConfig::CpuConfig config;
   std::unique_ptr<TraceManager> trace_manager =
       ConfigureDefaultTraceManager(config);
 
+  // Start a recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto atrace_options = configuration.mutable_atrace_options();
+  atrace_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto atrace_options = configuration.mutable_atrace_options();
-    atrace_options->set_buffer_size_in_mb(8);
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(UserOptions::ATRACE);
-    user_options->set_buffer_size_in_mb(8);
-  }
-
-  // Start a recording.
-  auto* capture = trace_manager->StartCapture(10, configuration, &start_status,
-                                              use_unified_config);
+  auto* capture = trace_manager->StartCapture(10, configuration, &start_status);
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status.status(), TraceStartStatus::SUCCESS);
@@ -571,29 +502,20 @@ TEST_P(TraceManagerTest, StartStopSequence) {
   termination_service_.reset(nullptr);
 }
 
-TEST_P(TraceManagerTest, GetOngoingCapture) {
+TEST_F(TraceManagerTest, GetOngoingCapture) {
   profiler::proto::DaemonConfig::CpuConfig config;
   std::unique_ptr<TraceManager> trace_manager =
       ConfigureDefaultTraceManager(config);
 
+  // Start a recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app");
+  auto atrace_options = configuration.mutable_atrace_options();
+  atrace_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto atrace_options = configuration.mutable_atrace_options();
-    atrace_options->set_buffer_size_in_mb(8);
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(UserOptions::ATRACE);
-    user_options->set_buffer_size_in_mb(8);
-  }
-
-  // Start a recording.
-  trace_manager->StartCapture(10, configuration, &start_status,
-                              use_unified_config);
+  trace_manager->StartCapture(10, configuration, &start_status);
 
   // Query for a different app should return null.
   auto* capture = trace_manager->GetOngoingCapture("fake_app2");
@@ -618,29 +540,20 @@ TEST_P(TraceManagerTest, GetOngoingCapture) {
   termination_service_.reset(nullptr);
 }
 
-TEST_P(TraceManagerTest, GetCaptures) {
+TEST_F(TraceManagerTest, GetCaptures) {
   profiler::proto::DaemonConfig::CpuConfig config;
   std::unique_ptr<TraceManager> trace_manager =
       ConfigureDefaultTraceManager(config);
 
+  // Start a recording.
   TraceConfiguration configuration;
   configuration.set_app_name("fake_app1");
+  auto atrace_options = configuration.mutable_atrace_options();
+  atrace_options->set_buffer_size_in_mb(8);
 
   TraceStartStatus start_status;
 
-  bool use_unified_config = GetParam();
-  if (use_unified_config) {
-    auto atrace_options = configuration.mutable_atrace_options();
-    atrace_options->set_buffer_size_in_mb(8);
-  } else {
-    auto user_options = configuration.mutable_user_options();
-    user_options->set_trace_type(UserOptions::ATRACE);
-    user_options->set_buffer_size_in_mb(8);
-  }
-
-  // Start a recording.
-  trace_manager->StartCapture(10, configuration, &start_status,
-                              use_unified_config);
+  trace_manager->StartCapture(10, configuration, &start_status);
 
   // Query for a different app should return null.
   auto captures = trace_manager->GetCaptures("fake_app2", 0, 10);
@@ -692,15 +605,5 @@ TEST_P(TraceManagerTest, GetCaptures) {
   // Simulate that daemon is killed.
   termination_service_.reset(nullptr);
 }
-
-/**
- * TODO (b/259745930): The following test suite allows us to execute the trace
- * manager tests both with the new unified trace configuration (test value set
- * to true), or the old UserOptions based configuration (test value set to
- * false). Remove this test suite, as well as the use_unified_config flag in
- * StartCapture once we fully convert to the unified trace configuration.
- */
-INSTANTIATE_TEST_SUITE_P(UnifiedTraceConfigurationTraceManagerTest,
-                         TraceManagerTest, testing::Bool());
 
 }  // namespace profiler
