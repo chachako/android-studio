@@ -138,6 +138,8 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
 
     private static final String HARDWARE_FEATURE_CAMERA = "android.hardware.camera";
 
+    private static final String HARDWARE_FEATURE_CAMERA_ANY = "android.hardware.camera.any";
+
     private static final String HARDWARE_FEATURE_CAMERA_AUTOFOCUS =
             "android.hardware.camera.autofocus";
 
@@ -197,12 +199,6 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
     /** Constructs a new {@link ChromeOsDetector} check */
     public ChromeOsDetector() {}
 
-    /** Used for {@link #PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE} */
-    private boolean usesFeatureCamera;
-
-    /** Used for {@link #PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE} */
-    private boolean usesFeatureCameraAutofocus;
-
     /** All permissions that imply unsupported Chrome OS hardware. */
     private List<String> unsupportedHardwareImpliedPermissions;
 
@@ -225,8 +221,6 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
 
     @Override
     public void beforeCheckFile(@NonNull Context context) {
-        usesFeatureCamera = false;
-        usesFeatureCameraAutofocus = false;
         unsupportedHardwareImpliedPermissions = Lists.newArrayListWithExpectedSize(2);
         unsupportedChromeOsUsesFeatures = Sets.newHashSetWithExpectedSize(2);
         allUnsupportedChromeOsUsesFeatures = Sets.newHashSetWithExpectedSize(2);
@@ -272,12 +266,6 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
                 && xmlContext.isEnabled(PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE)) {
             Predicate<String> p =
                     (String input) -> {
-                        // Special-case handling for camera permission - needs to check that
-                        // both camera and camera autofocus features are present and set to
-                        // android:required="false".
-                        if (ANDROID_PERMISSION_CAMERA.equals(input)) {
-                            return (!usesFeatureCamera || !usesFeatureCameraAutofocus);
-                        }
                         // Filter out all permissions that already have their corresponding
                         // implied hardware declared in the AndroidManifest.xml.
                         String usesFeature =
@@ -300,19 +288,21 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
                 String[] unsupportedHardwareNames = new String[2];
                 unsupportedHardwareNames[0] = getImpliedUnsupportedHardware(name);
 
-                // Special-case handling of camera permission - either or both implied features
-                // might be missing.
-                if (ANDROID_PERMISSION_CAMERA.equals(name)) {
-                    if (usesFeatureCamera) {
-                        unsupportedHardwareNames[0] = null;
-                    }
-                    if (!usesFeatureCameraAutofocus) {
-                        unsupportedHardwareNames[1] = HARDWARE_FEATURE_CAMERA_AUTOFOCUS;
-                    }
-                }
-
                 for (String unsupportedHardwareName : unsupportedHardwareNames) {
                     if (unsupportedHardwareName != null) {
+                        // Currently the permissions automatically assumes a 1 to 1 ratio between
+                        // the uses-feature android.hardware.camera to the Camera permission. This
+                        // last check looks through the entire `uses-feature` set and determines
+                        // if the developer has added either `android.hardware.camera` or
+                        // `android.hardware.camera.any` as either of these can be acceptable for
+                        // the purposes of this lint check.
+                        if (unsupportedHardwareName.equals(HARDWARE_FEATURE_CAMERA)
+                                && (allUnsupportedChromeOsUsesFeatures.contains(
+                                                HARDWARE_FEATURE_CAMERA_ANY)
+                                        || allUnsupportedChromeOsUsesFeatures.contains(
+                                                HARDWARE_FEATURE_CAMERA))) {
+                            continue;
+                        }
                         String message =
                                 String.format(
                                         "Permission exists without corresponding hardware `<uses-feature "
@@ -378,13 +368,6 @@ public class ChromeOsDetector extends Detector implements XmlScanner {
                     Attr required = element.getAttributeNodeNS(ANDROID_URI, ATTRIBUTE_REQUIRED);
                     if (required == null || Boolean.parseBoolean(required.getValue())) {
                         unsupportedChromeOsUsesFeatures.add(featureName);
-                    }
-                    // Special-case tracking of features implicitly needed by camera permission.
-                    if (HARDWARE_FEATURE_CAMERA.equals(featureName)) {
-                        usesFeatureCamera = true;
-                    }
-                    if (HARDWARE_FEATURE_CAMERA_AUTOFOCUS.equals(featureName)) {
-                        usesFeatureCameraAutofocus = true;
                     }
                 }
             }
