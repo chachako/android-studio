@@ -37,9 +37,9 @@ import java.io.File
 
 val composeWearActivityTemplate
     get() = template {
-        name = "Basic Wear App Without Associated Tile And Complication"
+        name = "Empty Wear App"
         minApi = 25
-        description = "Creates a blank activity for Wear OS"
+        description = "Creates an empty app using Compose for Wear OS"
 
         constraints = listOf(
                 TemplateConstraint.AndroidX,
@@ -118,9 +118,9 @@ val composeWearActivityTemplate
 
 val composeWearActivityWithTileAndComplicationTemplate
     get() = template {
-        name = "Basic Wear App"
+        name = "Empty Wear App With Tile And Complication"
         minApi = 25
-        description = "Creates a blank activity for Wear OS including a Tile and Complication"
+        description = "Creates an empty app using Compose for Wear OS, including a Tile and Complication"
 
         constraints = listOf(
             TemplateConstraint.AndroidX,
@@ -148,7 +148,7 @@ val composeWearActivityWithTileAndComplicationTemplate
         val complciationServiceClass = stringParameter {
             name = "Tile Service Name"
             default = "MainComplicationService"
-            help = "The name of the compliction service class to create"
+            help = "The name of the complication service class to create"
             constraints = listOf(CLASS, UNIQUE, NONEMPTY)
         }
 
