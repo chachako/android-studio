@@ -82,36 +82,6 @@ enum TraceInitiationType {
   INITIATED_BY_STARTUP = 3;
 }
 
-// Configuration information for taking a trace. This includes a union of fields
-// needed for all tracing technology configurations. A TraceType enum is included to
-// be able to differentiate which technology is used.
-// TODO (b/258515754): remove this proto and replace it with new tech-based options.
-message UserOptions {
-  enum TraceType {
-    UNSPECIFIED_TYPE = 0;
-    ART = 1;
-    SIMPLEPERF = 2;
-    ATRACE = 3;
-    PERFETTO = 4;
-  }
-
-  // Name of the configuration. For Studio-side display only.
-  string name = 1;
-
-  // The mode of tracing can be either sampled or instrumented.
-  TraceMode trace_mode = 2;
-
-  // Type of tracing technology used.
-  TraceType trace_type = 3;
-
-  // When using ATrace/Perfetto, the size of the buffer that holds tracing
-  // data.
-  int32 buffer_size_in_mb = 4;
-
-  // When using sampling, the sampling interval in microseconds.
-  int32 sampling_interval_us = 5;
-}
-
 // The configuration for taking a trace. This includes configuration information
 // specific to one tracing technology out of Art, Atrace, Simpleperf, and Perfetto.
 // Along with that comes configuration information that is agnostic of the technology
