@@ -117,7 +117,7 @@ class NamespacedResourcesTaskManager(
         // variant API has run. Eventually, it could be better to not do a get() here and instead
         // create a unique Task that uses workers for parallelization.
         creationConfig.sources.res { resSources ->
-            resSources.getVariantSources().get().forEach { dimensionSources ->
+            resSources.getVariantSources().forEach { dimensionSources ->
 
                 val artifacts = creationConfig.services.fileCollection().also { fileCollection ->
                     fileCollection.from(dimensionSources.directoryEntries

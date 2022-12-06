@@ -972,7 +972,6 @@ abstract class VariantInputs {
                 .initialize(
                     creationConfig.sources,
                     lintMode,
-                    listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
                     projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory }
                 )
         )
@@ -1000,7 +999,6 @@ abstract class VariantInputs {
                     .initialize(
                         unitTestCreationConfig.sources,
                         lintMode,
-                        listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
                         projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory },
                         unitTestOnly = true
                     )
@@ -1013,7 +1011,6 @@ abstract class VariantInputs {
                     .initialize(
                         androidTestCreationConfig.sources,
                         lintMode,
-                        listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
                         projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory },
                         instrumentationTestOnly = true
                     )
@@ -1026,7 +1023,6 @@ abstract class VariantInputs {
                     .initialize(
                         testFixturesCreationConfig.sources,
                         lintMode,
-                        listPropertyCreator = { creationConfig.services.listProperty(Directory::class.java) },
                         projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory }
                     )
             )
@@ -1266,7 +1262,6 @@ abstract class SourceProviderInput {
     internal fun initialize(
         sources: InternalSources,
         lintMode: LintMode,
-        listPropertyCreator: () -> ListProperty<Directory>,
         projectDir: Provider<Directory>,
         unitTestOnly: Boolean = false,
         instrumentationTestOnly: Boolean = false
@@ -1277,35 +1272,34 @@ abstract class SourceProviderInput {
         }
         this.manifestFiles.disallowChanges()
 
-        fun FlatSourceDirectoriesImpl.getFilteredSourceProviders(): Provider<List<Directory>> {
-            return getVariantSources().map { dirs ->
-                dirs.filter { dir -> !dir.isGenerated }.map { dir ->
-                    dir.asFiles(projectDir).get()
-                }.flatten()
-            }
+        fun FlatSourceDirectoriesImpl.getFilteredSourceProviders(into: ConfigurableFileCollection) {
+            return getVariantSources()
+                .filter { dir -> !dir.isGenerated }
+                .forEach {
+                    into.from(it.asFiles(projectDir))
+                }
         }
 
-        fun LayeredSourceDirectoriesImpl.getFilteredSourceProviders(): Provider<List<List<Directory>>> {
-            return getVariantSources().map { dirEntries ->
-                dirEntries.map { dirs ->
-                    dirs.directoryEntries.filter { dir ->
-                        !dir.isGenerated
-                    }.map {
-                        it.asFiles(projectDir).get()
-                    }.flatten()
+        fun LayeredSourceDirectoriesImpl.getFilteredSourceProviders(into: ConfigurableFileCollection) {
+            return getVariantSources().forEach { dirs ->
+                dirs.directoryEntries.filter { dir ->
+                    !dir.isGenerated
+                }.forEach {
+                    into.from(it.asFiles(projectDir))
                 }
             }
         }
 
-        sources.java?.getFilteredSourceProviders()?.let { this.javaDirectories.from(it) }
-        sources.kotlin?.getFilteredSourceProviders()?.let { this.javaDirectories.from(it) }
-        this.javaDirectories.disallowChanges()
+        sources.java?.getFilteredSourceProviders(javaDirectories)
+        sources.kotlin?.getFilteredSourceProviders(javaDirectories)
+        javaDirectories.disallowChanges()
 
-        sources.res?.getFilteredSourceProviders()?.let { this.resDirectories.from(it) }
-        this.resDirectories.disallowChanges()
+        sources.res?.getFilteredSourceProviders(this.resDirectories)
+        resDirectories.disallowChanges()
 
-        sources.assets?.getFilteredSourceProviders()?.let { this.assetsDirectories.from(it) }
-        this.assetsDirectories.disallowChanges()
+        sources.assets?.getFilteredSourceProviders(assetsDirectories)
+        assetsDirectories.disallowChanges()
+
 
         if (lintMode == LintMode.ANALYSIS) {
             this.javaDirectoriesClasspath.from(javaDirectories)

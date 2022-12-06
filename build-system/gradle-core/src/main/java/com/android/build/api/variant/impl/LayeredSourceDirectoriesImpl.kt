@@ -85,25 +85,29 @@ open class LayeredSourceDirectoriesImpl(
         }
     }
 
-    fun getVariantSources(): Provider<List<DirectoryEntries>> = variantSources
+    /**
+     * Returns the [List] of [DirectoryEntries] for these sources. This [List] can be
+     * queried at configuration time provided it is after all variant APIs ran (during
+     * task configuration basically). It is better to use this method a execution time if
+     * possible.
+     */
+    fun getVariantSources(): List<DirectoryEntries> = variantSources.get()
 
     /**
      * Returns the list of local source files which filters out the user added folders as well as
      * any generated folders.
      */
-    fun getLocalSourcesAsFileCollection(): Provider<Map<String, FileCollection>> =
-        getVariantSources().map { allSources ->
-            allSources.associate { directoryEntries ->
-                directoryEntries.name to
-                        variantServices.fileCollection(directoryEntries.directoryEntries
-                            .filterNot { it.isUserAdded || it.isGenerated}
-                            .map { it.asFiles(
-                                variantServices.provider {
-                                    variantServices.projectInfo.projectDirectory
-                                })
-                            }
-                        )
-            }
+    fun getLocalSourcesAsFileCollection(): Map<String, FileCollection> =
+        getVariantSources().associate { directoryEntries ->
+            directoryEntries.name to
+                    variantServices.fileCollection(directoryEntries.directoryEntries
+                        .filterNot { it.isUserAdded || it.isGenerated}
+                        .map { it.asFiles(
+                            variantServices.provider {
+                                variantServices.projectInfo.projectDirectory
+                            })
+                        }
+                    )
         }
 
     /*
