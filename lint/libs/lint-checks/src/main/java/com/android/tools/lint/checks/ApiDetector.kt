@@ -87,6 +87,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.LintMap
 import com.android.tools.lint.detector.api.Location
+import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.ResourceContext
 import com.android.tools.lint.detector.api.ResourceFolderScanner
 import com.android.tools.lint.detector.api.ResourceXmlDetector
@@ -904,19 +905,19 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         val desugaring = map.getInt(KEY_DESUGAR, null)?.let {
             Desugaring.fromConstant(it)
         }
-        if (desugaring != null && mainProject.isDesugaring(desugaring)) {
-            // See if library desugaring is turned on in the main project
-            if (desugaring == Desugaring.JAVA_8_LIBRARY) {
+        if ((desugaring == null || desugaring == Desugaring.JAVA_8_LIBRARY)) {
+            if (mainProject.isDesugaring(Desugaring.JAVA_8_LIBRARY)) {
+                // See if library desugaring is turned on in the main project
                 val owner = map.getString(KEY_OWNER, null)
                 owner?.let {
                     val name = map.getString(KEY_NAME)
-                    if (isLibraryDesugared(context, owner, name)) {
+                    if (isLibraryDesugared(mainProject, owner, name)) {
                         return false
                     }
                 }
-            } else {
-                return false
             }
+        } else if (mainProject.isDesugaring(desugaring)) {
+            return false
         }
 
         // The known minimum API constraints at the call site (e.g. due to SDK_INT checks etc.)
@@ -937,8 +938,11 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     }
 
     private fun isLibraryDesugared(context: Context, owner: String?, name: String?): Boolean {
-        val project = if (context.isGlobalAnalysis())
-            context.mainProject else context.project
+        val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
+        return isLibraryDesugared(project, owner, name)
+    }
+
+    private fun isLibraryDesugared(project: Project, owner: String?, name: String?): Boolean {
         if (owner != null && (owner.startsWith("java/") || owner.startsWith("java.")) &&
             project.isDesugaring(Desugaring.JAVA_8_LIBRARY) &&
             isApiDesugared(project, owner.replace('/', '.'), name)
