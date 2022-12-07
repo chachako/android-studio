@@ -70,6 +70,7 @@ enum class BooleanOption(
     ENABLE_STABLE_IDS(PROPERTY_BUILD_WITH_STABLE_IDS, false, ApiStage.Stable),
 
     // Features' default values
+    BUILD_FEATURE_BUILDCONFIG("android.defaults.buildfeatures.buildconfig", false, ApiStage.Stable),
     BUILD_FEATURE_DATABINDING("android.defaults.buildfeatures.databinding", false, ApiStage.Stable),
     BUILD_FEATURE_RESVALUES("android.defaults.buildfeatures.resvalues", true, ApiStage.Stable),
     BUILD_FEATURE_SHADERS("android.defaults.buildfeatures.shaders", true, ApiStage.Stable),
@@ -237,12 +238,6 @@ enum class BooleanOption(
 
     BUILD_FEATURE_AIDL(
         "android.defaults.buildfeatures.aidl",
-        false,
-        ApiStage.Deprecated(VERSION_9_0)
-    ),
-
-    BUILD_FEATURE_BUILDCONFIG(
-        "android.defaults.buildfeatures.buildconfig",
         false,
         ApiStage.Deprecated(VERSION_9_0)
     ),
