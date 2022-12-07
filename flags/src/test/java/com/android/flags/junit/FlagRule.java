@@ -16,10 +16,13 @@
 package com.android.flags.junit;
 
 import com.android.flags.Flag;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.junit.rules.ExternalResource;
 
 /**
- * Sets a flag to the given value before running a test and restores it to the original value
- * after the test.
+ * Sets a flag to the given value, if provided, before running a test and restores it to
+ * the original value after the test.
  *
  * <pre>
  *   public class MyTest {
@@ -27,21 +30,30 @@ import com.android.flags.Flag;
  *     public TestRule myFlagRule = new SetFlagRule&lt;&gt;(StudioFlags.MY_FLAG, true);
  *   }
  * </pre>
- *
- * <p>See also: {@link RestoreFlagRule}
  */
-public class SetFlagRule<T> extends RestoreFlagRule<T> {
-    private final Flag<T> myFlag;
-    private final T myValue;
+public class FlagRule<T> extends ExternalResource {
+    private final @NotNull Flag<T> myFlag;
+    private final @Nullable T myValue;
 
-    public SetFlagRule(Flag<T> flag, T value) {
-        super(flag);
+    public FlagRule(@NotNull Flag<T> flag, @NotNull T value) {
         myFlag = flag;
         myValue = value;
     }
 
+    public FlagRule(@NotNull Flag<T> flag) {
+        myFlag = flag;
+        myValue = null;
+    }
+
     @Override
     protected void before() {
-        myFlag.override(myValue);
+        if (myValue != null) {
+            myFlag.override(myValue);
+        }
+    }
+
+    @Override
+    protected void after() {
+        myFlag.clearOverride();
     }
 }
