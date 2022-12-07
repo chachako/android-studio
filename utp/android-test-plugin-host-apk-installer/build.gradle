@@ -29,6 +29,7 @@ dependencies {
     implementation libs.protobuf
     implementation libs.com.android.tools.utp.androidTestPluginHostApkInstallerProto
     implementation libs.unified_test_platform_device_provider
+    implementation libs.unified_test_platform
     compileOnly libs.unified_test_platform_launcher
 
     testImplementation libs.com.android.tools.testutils

@@ -33,6 +33,16 @@ message InstallableApk {
 
         // If true, APK(s) in apk_paths will be installed as split APKs
         bool install_as_split_apk = 2;
+
+        // Optional timeout for installing test APKs
+        // 0 value means that UTP uses the default install timeout.
+        // Negative value will treated the same as 0.
+        // Unit is in seconds
+        int32 install_apk_timeout = 3;
+
+        // If true, install APKs as test service
+        // Install as test service will need some additional flags depending on API level
+        bool install_as_test_service = 4;
     }
 
     // The APK package manager install options to be used to install the APK.

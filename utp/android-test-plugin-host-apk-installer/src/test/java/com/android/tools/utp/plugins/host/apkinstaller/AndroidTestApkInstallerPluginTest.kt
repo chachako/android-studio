@@ -16,17 +16,24 @@
 
 package com.android.tools.utp.plugins.host.apkinstaller
 
-import com.android.testutils.MockitoKt
+import com.android.testutils.MockitoKt.eq
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.AndroidApkInstallerConfig
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption
 import com.google.common.truth.Truth
 import com.google.protobuf.Any
-import com.google.testing.platform.api.config.ProtoConfig
+import com.google.testing.platform.api.config.ConfigBase
 import com.google.testing.platform.api.context.Context
 import com.google.testing.platform.api.device.CommandResult
 import com.google.testing.platform.api.device.DeviceController
-import com.google.testing.platform.proto.api.core.ExtensionProto
+import com.google.testing.platform.api.error.ErrorSummary
+import com.google.testing.platform.core.error.ErrorType
+import com.google.testing.platform.core.error.UtpException
+import com.google.testing.platform.proto.api.config.AndroidSdkProto
+import com.google.testing.platform.proto.api.config.FixtureProto.TestFixture
+import com.google.testing.platform.proto.api.config.FixtureProto.TestFixtureId
+import com.google.testing.platform.proto.api.config.RunnerConfigProto.RunnerConfig
+import com.google.testing.platform.proto.api.config.SetupProto
 import com.google.testing.platform.proto.api.core.TestCaseProto.TestCase
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
@@ -42,10 +49,11 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Answers
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.anyList
 import org.mockito.Mockito.anyLong
+import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.never
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
@@ -71,11 +79,78 @@ class AndroidTestApkInstallerPluginTest {
     private lateinit var mockDeviceProperties: AndroidDeviceProperties
     private lateinit var androidTestApkInstallerPlugin: AndroidTestApkInstallerPlugin
 
-    private val testApkPaths = listOf("base.apk", "feature.apk")
-    private val additionalInstallOptions = listOf("-unit", "-test")
-    private val apkPackageNames = listOf("com.test.base", "com.test.test")
-    private val mockDeviceApiLevel = "21"
-    private val mockDeviceSerial = "mock-4445"
+    companion object {
+
+        private val createTestFixture: (TestFixtureId, List<String>?) -> TestFixture = {
+            fixtureId, installablePath ->
+            TestFixture.newBuilder()
+                .apply {
+                    testFixtureId = fixtureId
+                    setup = createTestSetup(installablePath)
+                    environmentBuilder.apply {
+                        androidEnvironmentBuilder.apply {
+                            androidSdk = AndroidSdkProto.AndroidSdk.newBuilder().build()
+                        }
+                    }
+                }
+                .build()
+        }
+
+        private val createTestSetup: (List<String>?) -> SetupProto.TestSetup = { installablePath ->
+            SetupProto.TestSetup.newBuilder()
+                .apply {
+                    installablePath?.forEach {
+                        addInstallableBuilder().sourcePathBuilder.path = it
+                    }
+                }
+                .build()
+        }
+
+        private val createTestFixtureId: (String) -> TestFixtureId = { fixtureId ->
+            TestFixtureId.newBuilder().apply { id = fixtureId }.build()
+        }
+
+        private val createPluginConfig: (AndroidApkInstallerConfig?, List<String>?) -> ConfigBase =
+                { pluginConfig, installablePath ->
+                val fixture1 = createTestFixture(fixtureId1, installablePath)
+                val runnerConfig = RunnerConfig.newBuilder().apply { addTestFixture(fixture1) }.build()
+                ConfigBase(
+                    environmentProto = runnerConfig.testFixtureList.first().environment,
+                    testSetupProto = runnerConfig.testFixtureList[0].setup,
+                    androidSdkProto = runnerConfig.testFixtureList.first().environment.androidEnvironment.androidSdk,
+                    configProto = Any.pack(pluginConfig ?: AndroidApkInstallerConfig.getDefaultInstance())
+            )
+        }
+
+        private val fixtureId1 = createTestFixtureId("1")
+        private val testApkPaths = listOf("base.apk", "feature.apk")
+        private val additionalInstallOptions = listOf("-unit", "-test")
+        private val apkPackageNames = listOf("com.test.base", "com.test.test")
+        private val mockDeviceApiLevel = "21"
+        private val mockDeviceSerial = "mock-4445"
+        private val installTimeout = 1
+        private val testArtifactsPath = listOf("/data/test.apk", "/data/app.apk")
+        private val installErrorSummary = object : ErrorSummary {
+            override val errorCode: Int = 2002
+            override val errorName: String = "Test APK installation Error"
+            override val errorType: Enum<*> = ErrorType.TEST
+            override val namespace: String = "AndroidTestApkInstallerPlugin"
+        }
+    }
+
+    private fun createPlugin(
+            config: AndroidApkInstallerConfig,
+            installablePath: List<String>? = null): AndroidTestApkInstallerPlugin {
+        return AndroidTestApkInstallerPlugin(mockLogger).apply {
+            configure(object : Context {
+                override fun get(key: String) =
+                    when (key) {
+                        Context.CONFIG_KEY -> createPluginConfig(config, installablePath)
+                        else -> null
+                    }
+            })
+        }
+    }
 
     @Before
     fun setup() {
@@ -85,36 +160,30 @@ class AndroidTestApkInstallerPluginTest {
         `when`(mockDeviceController.getDevice().properties).thenReturn(mockDeviceProperties)
     }
 
-    private fun createPlugin(config: AndroidApkInstallerConfig)
-            : AndroidTestApkInstallerPlugin {
-        val packedConfig = Any.pack(config)
-        val protoConfig = object : ProtoConfig {
-            override val configProto: Any
-                get() = packedConfig
-            override val configResource: ExtensionProto.ConfigResource?
-                get() = null
-        }
-        val context = MockitoKt.mock<Context>()
-        Mockito.`when`(context[Context.CONFIG_KEY]).thenReturn(protoConfig)
-        return AndroidTestApkInstallerPlugin(mockLogger).apply {
-            configure(context)
-        }
+    @Test
+    fun configureWithNoInstallable() {
+        createPlugin(AndroidApkInstallerConfig.getDefaultInstance())
+        verify(mockLogger).info("No installables found in test fixture. Nothing to install.")
     }
 
     @Test
     fun emptyAPKInstallListTest() {
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             clearApksToInstall()
-        }.build()).apply {
+        }.build(), null).apply {
             beforeAll(mockDeviceController)
             beforeEach(TestCase.getDefaultInstance(), mockDeviceController)
             afterEach(TestResult.getDefaultInstance(), mockDeviceController, false)
         }
+        verify(mockLogger).info("No installables found in test fixture. Nothing to install.")
         verify(mockDeviceController, never()).execute(anyList(), anyLong())
+        verify(mockDeviceController, times(3)).getDevice()
     }
 
     @Test
-    fun splitAPKWithAdditionalInstallOptionTest() {
+    fun splitAPKWithAdditionalInstallOptionTestWithInstallable() {
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(0, listOf()))
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             addApksToInstall(
                     InstallableApk.newBuilder().apply {
@@ -125,17 +194,44 @@ class AndroidTestApkInstallerPluginTest {
                         }.build()
                     }.build()
             )
-        }.build()).apply {
+        }.build(), testArtifactsPath).apply {
             beforeAll(mockDeviceController)
         }
-        verify(mockDeviceController).execute(
-                listOf("install-multiple", "-t") +
+        val inOrder = inOrder(mockDeviceController, mockLogger)
+        inOrder.verify(mockDeviceController, times(4)).getDevice()
+        testArtifactsPath.forEach {
+            inOrder.verify(mockLogger).info("Installing APK: $it on device $mockDeviceSerial.")
+            inOrder.verify(mockDeviceController).execute(listOf("install", "-t", it))
+        }
+        inOrder.verify(mockDeviceController).execute(
+                eq(listOf("install-multiple", "-t") +
                         additionalInstallOptions +
-                        testApkPaths)
+                        testApkPaths), eq(null))
+        verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
+    }
+
+    @Test
+    fun failToInstallInstallable() {
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(1, listOf()))
+        val exception = assertThrows(UtpException::class.java) {
+            createPlugin(AndroidApkInstallerConfig.getDefaultInstance(), testArtifactsPath).apply {
+                beforeAll(mockDeviceController)
+            }
+        }
+        val testArtifactPath1 = testArtifactsPath[0]
+        verify(mockDeviceController, times(4)).getDevice()
+        verify(mockLogger).info("Installing APK: $testArtifactPath1 on device $mockDeviceSerial.")
+        verify(mockDeviceController).execute(listOf("install", "-t", testArtifactPath1))
+        assertEquals(UtpException(installErrorSummary,
+                "Failed to install APK: $testArtifactPath1 on device " +
+                        "$mockDeviceSerial.").message, exception.message)
     }
 
     @Test
     fun nonSplitAPKTest() {
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(0, listOf()))
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             addApksToInstall(
                     InstallableApk.newBuilder().apply {
@@ -150,11 +246,43 @@ class AndroidTestApkInstallerPluginTest {
         }.build()).apply {
             beforeAll(mockDeviceController)
         }
+
+        verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
+        verify(mockDeviceController, times(4)).getDevice()
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
                     listOf("install", "-t") +
                             additionalInstallOptions +
-                            it)
+                            it, null)
+        }
+    }
+
+    @Test
+    fun nonSplitAPKTestWithTimeout() {
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        `when`(mockDeviceController.execute(anyList(), anyLong())).thenReturn(CommandResult(0, listOf()))
+        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
+            addApksToInstall(
+                    InstallableApk.newBuilder().apply {
+                        addAllApkPaths(testApkPaths)
+                        installOptions = InstallOption.newBuilder().apply {
+                            addAllCommandLineParameter(additionalInstallOptions)
+                            installAsSplitApk = false
+                            installApkTimeout = installTimeout
+                        }.build()
+                        uninstallAfterTest = false
+                    }.build()
+            )
+        }.build()).apply {
+            beforeAll(mockDeviceController)
+        }
+        verify(mockDeviceController, times(4)).getDevice()
+        verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
+        testApkPaths.forEach {
+            verify(mockDeviceController).execute(
+                    listOf("install", "-t") +
+                            additionalInstallOptions +
+                            it, installTimeout.toLong())
         }
     }
 
@@ -165,7 +293,7 @@ class AndroidTestApkInstallerPluginTest {
         val tempDeviceProperties = AndroidDeviceProperties(mapOf(DEVICE_API_LEVEL to "20"))
         `when`(mockDeviceController.getDevice().properties).thenReturn(tempDeviceProperties)
 
-        val exception = assertThrows(InstantiationError::class.java) {
+        val exception = assertThrows(UtpException::class.java) {
             createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
                 addApksToInstall(
                         InstallableApk.newBuilder().apply {
@@ -181,8 +309,10 @@ class AndroidTestApkInstallerPluginTest {
                 beforeAll(mockDeviceController)
             }
         }
-        assertEquals("Minimum API level for installing SPLIT_APK " +
-                "feature is 21 but device $mockDeviceSerial is API level 20.", exception.message)
+        assertEquals(UtpException(installErrorSummary,
+                "Minimum API level for installing SPLIT_APK " +
+                "feature is 21 but device $mockDeviceSerial is API level 20.").message,
+                exception.message)
         verify(mockDeviceController, never()).execute(anyList(), anyLong())
     }
 
@@ -191,6 +321,7 @@ class AndroidTestApkInstallerPluginTest {
         apkPackageNames.forEach {
             `when`(mockDeviceController.uninstall(it)).thenReturn(CommandResult(0, listOf("test")))
         }
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             addApksToInstall(
                     InstallableApk.newBuilder().apply {
@@ -198,11 +329,13 @@ class AndroidTestApkInstallerPluginTest {
                         addAllApksPackageName(apkPackageNames)
                     }.build()
             )
-        }.build()).apply {
+        }.build(), testArtifactsPath).apply {
             afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(),
                     mockDeviceController)
         }
         apkPackageNames.forEach {
+            verify(mockLogger).info("Uninstalling $it for " +
+                    "device $mockDeviceSerial.")
             verify(mockDeviceController).uninstall(it)
         }
     }
@@ -220,11 +353,13 @@ class AndroidTestApkInstallerPluginTest {
                         addAllApksPackageName(apkPackageNames)
                     }.build()
             )
-        }.build()).apply {
+        }.build(), testArtifactsPath).apply {
             afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(),
                     mockDeviceController)
         }
         apkPackageNames.forEach {
+            verify(mockLogger).info("Uninstalling $it for " +
+                    "device $mockDeviceSerial.")
             verify(mockLogger).warning("Device $mockDeviceSerial " +
                     "failed to uninstall test APK $it.")
         }
