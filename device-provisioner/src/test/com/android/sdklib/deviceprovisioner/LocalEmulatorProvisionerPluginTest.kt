@@ -108,6 +108,10 @@ class LocalEmulatorProvisionerPluginTest {
       updateDevices()
     }
 
+    fun deleteAvd(avdInfo: AvdInfo) {
+      synchronized(avds) { avds.remove(avdInfo) }
+    }
+
     fun close() {
       runningDevices.forEach(FakeEmulatorConsole::close)
     }
@@ -127,11 +131,25 @@ class LocalEmulatorProvisionerPluginTest {
     avdManager.createAvd()
 
     yieldUntil { provisioner.devices.value.size == 2 }
-
     val devices = provisioner.devices.value
     assertThat(devices.map { it.state.properties.title() })
       .containsExactly("Fake Device 1", "Fake Device 2")
     checkProperties(devices[0].state.properties as LocalEmulatorProperties)
+  }
+
+  @Test
+  fun removeOfflineDevice(): Unit = runBlockingWithTimeout {
+    val n = 20
+    repeat(n) { avdManager.createAvd() }
+    val avds = avdManager.rescanAvds()
+    yieldUntil { provisioner.devices.value.size == n }
+
+    avdManager.deleteAvd(avds[0])
+
+    yieldUntil { provisioner.devices.value.size == n - 1 }
+    val displayNames = provisioner.devices.value.map { it.state.properties.title() }
+    assertThat(displayNames).doesNotContain(avds[0].displayName)
+    assertThat(displayNames).contains(avds[1].displayName)
   }
 
   @Test

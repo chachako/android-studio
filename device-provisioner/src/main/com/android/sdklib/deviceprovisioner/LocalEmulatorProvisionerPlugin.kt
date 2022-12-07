@@ -94,14 +94,11 @@ class LocalEmulatorProvisionerPlugin(
     PeriodicAction(scope, rescanPeriod) {
       val avdsOnDisk = avdManager.rescanAvds().associateBy { it.dataFolderPath }
       mutex.withLock {
-        for ((path, handle) in deviceHandles) {
-          // Remove any current DeviceHandles that are no longer present on disk, unless they are
-          // connected.
-          if (!avdsOnDisk.containsKey(path) && handle.state is Disconnected) {
-            // What if a client holds on to the device, and then it gets recreated? It will be a
-            // different device then, which is OK.
-            deviceHandles.remove(path)
-          }
+        // Remove any current DeviceHandles that are no longer present on disk, unless they are
+        // connected. (If a client holds on to the disconnected device handle, and it gets
+        // recreated with the same path, the client will get a new device handle, which is fine.)
+        deviceHandles.entries.removeIf { (path, handle) ->
+          !avdsOnDisk.containsKey(path) && handle.state is Disconnected
         }
 
         for ((path, avdInfo) in avdsOnDisk) {
