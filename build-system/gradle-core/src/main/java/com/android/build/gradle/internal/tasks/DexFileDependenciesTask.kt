@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.dependency.AsmClassesTransform
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -197,13 +198,31 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
             task: DexFileDependenciesTask
         ) {
             super.configure(task)
+
+            val classesAreInstrumentedWithAsm =
+                creationConfig.instrumentationCreationConfig?.dependenciesClassesAreInstrumented == true
+            val classesAreInstrumentedWithJacoco = creationConfig.useJacocoTransformInstrumentation
+            val inputClassesArtifact = when {
+                classesAreInstrumentedWithJacoco && classesAreInstrumentedWithAsm ->
+                    AndroidArtifacts.ArtifactType.JACOCO_ASM_INSTRUMENTED_JARS
+                classesAreInstrumentedWithJacoco && !classesAreInstrumentedWithAsm ->
+                    AndroidArtifacts.ArtifactType.JACOCO_CLASSES_JAR
+                classesAreInstrumentedWithAsm -> AndroidArtifacts.ArtifactType.ASM_INSTRUMENTED_JARS
+                else -> AndroidArtifacts.ArtifactType.CLASSES_JAR
+            }
+
             task.debuggable
                 .setDisallowChanges(creationConfig.debuggable)
             task.classes.from(
                 creationConfig.variantDependencies.getArtifactFileCollection(
                     AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                     AndroidArtifacts.ArtifactScope.FILE,
-                    AndroidArtifacts.ArtifactType.PROCESSED_JAR
+                    inputClassesArtifact,
+                    if (classesAreInstrumentedWithAsm) {
+                        AsmClassesTransform.getAttributesForConfig(creationConfig)
+                    } else {
+                        null
+                    }
                 )
             ).disallowChanges()
             val minSdkVersionForDexing = dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel()

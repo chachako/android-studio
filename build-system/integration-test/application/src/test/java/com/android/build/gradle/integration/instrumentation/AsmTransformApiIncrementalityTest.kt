@@ -84,6 +84,16 @@ class AsmTransformApiIncrementalityTest {
                 .file("src/main/java/com/example/myapplication/ClassExtendsAClassThatExtendsAnotherClassAndImplementsTwoInterfaces.kt")
                 .delete()
 
+        // remove feature class ClassExtendsAnAppClass inheritance from ClassExtendsAClassThatExtendsAnotherClassAndImplementsTwoInterfaces
+        project.getSubproject(":feature")
+            .file("src/main/java/com/example/feature/ClassExtendsAnAppClass.kt")
+            .writeText(
+                """
+                    package com.example.feature
+                    class ClassExtendsAnAppClass { }
+                """.trimIndent()
+            )
+
         val taskOutputDir = FileUtils.join(
                 project.getSubproject(":app").intermediatesDir,
             "classes", "debug", "transformDebugClassesWithAsm", "dirs"

@@ -87,6 +87,37 @@ class AsmTransformApiInstrumentationTest {
     }
 
     @Test
+    fun localAarAndJarsAreInstrumented() {
+        configureExtensionForInterfaceAddingVisitor(
+            project,
+            classesToInstrument = listOf(
+                "com.example.myaarlib.MyAARlib",
+                "com.example.myjar.MyClass"
+            )
+        )
+
+        project.executor().run(":app:assembleDebug")
+
+        val apk = project.getSubproject(":app").getApk(GradleTestProject.ApkType.DEBUG)
+
+        checkClassesAreInstrumented(
+            apk = apk,
+            classesDescriptorPackagePrefix = "Lcom/example/myaarlib/",
+            expectedClasses = listOf("MyAARlib", "R", "BuildConfig"),
+            expectedAnnotatedMethods = null,
+            expectedInstrumentedClasses = listOf("MyAARlib")
+        )
+
+        checkClassesAreInstrumented(
+            apk = apk,
+            classesDescriptorPackagePrefix = "Lcom/example/myjar/",
+            expectedClasses = listOf("MyClass"),
+            expectedAnnotatedMethods = null,
+            expectedInstrumentedClasses = listOf("MyClass")
+        )
+    }
+
+    @Test
     fun classesInExcludesAreNotInstrumented() {
         configureExtensionForAnnotationAddingVisitor(project)
         configureExtensionForInterfaceAddingVisitor(project)

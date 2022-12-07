@@ -105,8 +105,8 @@ object AsmApiApiTestUtils {
             apk: Apk,
             classesDescriptorPackagePrefix: String,
             expectedClasses: List<String>,
-            expectedAnnotatedMethods: Map<String, List<String>>,
-            expectedInstrumentedClasses: List<String>
+            expectedAnnotatedMethods: Map<String, List<String>>?,
+            expectedInstrumentedClasses: List<String>?
     ) {
         val filteredClasses = apk.allDexes.flatMap { it.classes.entries }
                 .associate { it.key to it.value }
@@ -117,14 +117,18 @@ object AsmApiApiTestUtils {
                 .containsExactlyElementsIn(expectedClasses.map { name ->
                     "$classesDescriptorPackagePrefix$name;"
                 })
-        assertExactlyTheGivenMethodsAreAnnotated(
+        expectedAnnotatedMethods?.let {
+            assertExactlyTheGivenMethodsAreAnnotated(
                 filteredClasses,
                 expectedAnnotatedMethods.mapKeys { entry -> "$classesDescriptorPackagePrefix${entry.key};" }
-        )
-        assertExactlyTheGivenClassesAreImplementingInstrumentedInterface(
+            )
+        }
+        expectedInstrumentedClasses?.let {
+            assertExactlyTheGivenClassesAreImplementingInstrumentedInterface(
                 filteredClasses,
                 expectedInstrumentedClasses.map { name -> "$classesDescriptorPackagePrefix$name;" }
-        )
+            )
+        }
     }
 
     private fun assertExactlyTheGivenMethodsAreAnnotated(
