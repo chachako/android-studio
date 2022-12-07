@@ -22,6 +22,7 @@ import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Platform
+import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.editDistance
@@ -168,7 +169,8 @@ protected constructor() {
      * @return a list of new detector instances
      */
     internal fun createDetectors(
-        client: LintClient,
+        driver: LintDriver,
+        project: Project,
         configuration: Configuration,
         scope: EnumSet<Scope>,
         platforms: EnumSet<Platform>,
@@ -232,7 +234,7 @@ protected constructor() {
                     }
                 }
             } catch (t: Throwable) {
-                client.log(t, "Can't initialize detector %1\$s", clz.name)
+                LintDriver.handleDetectorError(driver, t, "Can't initialize detector ${clz.name}.\n", null, project)
             }
         }
 

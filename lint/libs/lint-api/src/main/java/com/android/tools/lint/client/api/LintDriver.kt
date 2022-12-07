@@ -889,7 +889,7 @@ class LintDriver(
         val map = EnumMap<Scope, MutableList<Detector>>(Scope::class.java)
         scopeDetectors = map
         val platforms = if (mode == DriverMode.ANALYSIS_ONLY) Platform.UNSPECIFIED else platforms
-        applicableDetectors = registry.createDetectors(client, configuration, scope, platforms, map)
+        applicableDetectors = registry.createDetectors(this, project, configuration, scope, platforms, map)
 
         validateScopeList()
     }
@@ -3711,7 +3711,18 @@ class LintDriver(
 
         /** Handles an exception, generally by logging it. */
         @JvmStatic
-        fun handleDetectorError(context: Context?, driver: LintDriver, throwable: Throwable) {
+        fun handleDetectorError(context: Context?, driver: LintDriver, throwable: Throwable) =
+            handleDetectorError(driver, throwable, null, context)
+
+        /** Handles an exception, generally by logging it. */
+        @JvmStatic
+        fun handleDetectorError(
+            driver: LintDriver,
+            throwable: Throwable,
+            messagePrefix: String? = null,
+            context: Context? = null,
+            associatedProject: Project? = null
+        ) {
             val throwableMessage = throwable.message
             when {
                 throwable is IndexNotReadyException -> {
@@ -3758,6 +3769,9 @@ class LintDriver(
             }
 
             val sb = StringBuilder(100)
+            if (messagePrefix != null) {
+                sb.append(messagePrefix)
+            }
             sb.append("Unexpected failure during lint analysis")
             context?.file?.name?.let { sb.append(" of ").append(it) }
             sb.append(" (this is a bug in lint or one of the libraries it depends on)\n\n")
@@ -3822,7 +3836,7 @@ class LintDriver(
                 )
             }
 
-            val project = when {
+            val project = associatedProject ?: when {
                 driver.currentProject != null -> driver.currentProject
                 driver.currentProjects?.isNotEmpty() == true -> driver.currentProjects?.last()
                 else -> null

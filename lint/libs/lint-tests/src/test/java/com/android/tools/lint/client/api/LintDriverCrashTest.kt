@@ -22,6 +22,7 @@ import com.android.tools.lint.LintCliFlags
 import com.android.tools.lint.MainTest
 import com.android.tools.lint.checks.AbstractCheckTest
 import com.android.tools.lint.checks.infrastructure.TestMode
+import com.android.tools.lint.checks.infrastructure.TestResultChecker
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
@@ -373,6 +374,47 @@ class LintDriverCrashTest : AbstractCheckTest() {
         LintDriver.clearCrashCount()
     }
 
+    fun testInitializationError() {
+        // Regression test for 261757191
+        lint().files(
+            java(
+                """
+                    package test.pkg;
+                    @SuppressWarnings("ALL") class Foo {
+                    }
+                    """
+            )
+        )
+            .allowSystemErrors(true)
+            .allowExceptions(true)
+            .testModes(TestMode.DEFAULT)
+            .issues(BrokenInitializationDetector.BROKEN_INIT)
+            .run()
+            .check(
+                TestResultChecker {
+                    assertThat(it).contains("app: Error: Can't initialize detector com.android.tools.lint.client.api.LintDriverCrashTest＄BrokenInitializationDetector.")
+                    assertThat(it).contains("Unexpected failure during lint analysis (this is a bug in lint or one of the libraries it depends on)")
+                    assertThat(it).contains("Stack: InvocationTargetException:NativeConstructorAccessorImpl.newInstance0(NativeConstructorAccessorImpl.java:")
+
+                    // It's not easy to set environment variables from Java once the process is running,
+                    // so instead of attempting to set it to true and false in tests, we'll just make this
+                    // test adapt to what's set in the environment. On our CI tests, it should not be
+                    // set, so the doesNotContain() assertion will be used. For developers on the lint team
+                    // it's typically set so the contains() assertion will be used.
+                    val suggestion = "You can run with --stacktrace or set environment variable LINT_PRINT_"
+                    if (System.getenv("LINT_PRINT_STACKTRACE") == VALUE_TRUE) {
+                        assertThat(it).doesNotContain(suggestion)
+                    } else {
+                        assertThat(it).contains(suggestion)
+                    }
+
+                    assertThat(it).contains("1 errors, 0 warnings")
+                }
+            )
+
+        LintDriver.clearCrashCount()
+    }
+
     fun testUnitTestErrors() {
         // Regression test for https://issuetracker.google.com/74058591
         // Make sure the test itself fails with an error, not just an exception pretty printed
@@ -654,6 +696,30 @@ class LintDriverCrashTest : AbstractCheckTest() {
                 .create(
                     "_LinkageCrash", "test", "test", Category.LINT, 10, Severity.FATAL,
                     Implementation(LinkageErrorDetector::class.java, Scope.JAVA_FILE_SCOPE)
+                )
+        }
+    }
+
+    class BrokenInitializationDetector : Detector(), SourceCodeScanner {
+        init {
+            error("Intentional breakage")
+        }
+
+        override fun getApplicableUastTypes(): List<Class<out UElement>> =
+            listOf(UFile::class.java)
+
+        override fun createUastHandler(context: JavaContext): UElementHandler =
+            object : UElementHandler() {
+                override fun visitFile(node: UFile) {
+                }
+            }
+
+        companion object {
+            @Suppress("LintImplTextFormat")
+            val BROKEN_INIT = Issue
+                .create(
+                    "_InitCrash", "test", "test", Category.LINT, 10, Severity.FATAL,
+                    Implementation(BrokenInitializationDetector::class.java, Scope.JAVA_FILE_SCOPE)
                 )
         }
     }
