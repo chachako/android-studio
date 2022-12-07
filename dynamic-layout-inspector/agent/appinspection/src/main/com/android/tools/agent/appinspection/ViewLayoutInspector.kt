@@ -304,12 +304,9 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
     }
 
     private fun startCapturing(root: View) {
-        val params = root.layoutParams
-        if (params is WindowManager.LayoutParams) {
-            if (params.flags and WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED == 0) {
-                rootsDetector.stop()
-                throw noHardwareAcceleration()
-            }
+        if (!root.isHardwareAccelerated() && !root.hasHardwareFlagSetInLayoutParams()) {
+            rootsDetector.stop()
+            throw noHardwareAcceleration()
         }
 
         val captureOutputStream = ByteArrayOutputStream()
@@ -342,6 +339,27 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         updateCapturingCallback(root, captureExecutor, captureOutputStream)
         checkpoint = ProgressCheckpoint.STARTED
         root.invalidate() // Force a re-render so we send the current screen
+    }
+
+    /**
+     * Return true if the layout params have the hardware accelerated flag.
+     *
+     * Warning: The flag is known to return the wrong result for several OEM devices including
+     *          Samsung, Honor, ... See b/244120504
+     *          The flag is often missing on these devices when it should be present.
+     *
+     * Currently we call this because we fear that View.isHardwareAccelerated() may return false
+     * when the app is hardware accelerated. This could happen when View.mAttachInfo is null.
+     * We do not want to complain about something that is incorrect.
+     */
+    private fun View.hasHardwareFlagSetInLayoutParams(): Boolean {
+        val params = layoutParams
+        if (params is WindowManager.LayoutParams) {
+            if (params.flags and WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED != 0) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun updateAllCapturingCallbacks() {

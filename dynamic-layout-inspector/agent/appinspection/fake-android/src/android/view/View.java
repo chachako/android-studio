@@ -122,6 +122,17 @@ public class View {
         return true;
     }
 
+    private boolean myHardwareAccelerated = true;
+
+    public boolean isHardwareAccelerated() {
+        return myHardwareAccelerated;
+    }
+
+    @VisibleForTesting
+    public void setHardwareAccelerated(boolean on) {
+        myHardwareAccelerated = on;
+    }
+
     public float getZ() {
         return 0f;
     }

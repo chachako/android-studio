@@ -1741,7 +1741,10 @@ abstract class ViewLayoutInspectorTestBase {
             responseQueue.add(bytes)
         }
         val context = Context("view.inspector.test", Resources(mutableMapOf()))
-        val root = View(context).apply { setAttachInfo(View.AttachInfo())}
+        val root = View(context).apply {
+            setAttachInfo(View.AttachInfo())
+            setHardwareAccelerated(false)
+        }
         // FLAG_HARDWARE_ACCELERATED will be false
         root.layoutParams = WindowManager.LayoutParams()
         WindowManagerGlobal.getInstance().rootViews.addAll(listOf(root))
