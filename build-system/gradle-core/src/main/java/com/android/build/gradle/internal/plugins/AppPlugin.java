@@ -241,7 +241,8 @@ public class AppPlugin
                                 ApplicationAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
-                                new CustomManagedDeviceRegistry(),
+                                new CustomManagedDeviceRegistry(
+                                        project.provider(getExtension()::getTestOptions)),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 
