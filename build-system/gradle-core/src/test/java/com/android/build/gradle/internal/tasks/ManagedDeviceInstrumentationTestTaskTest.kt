@@ -19,9 +19,9 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.api.dsl.Device
 import com.android.build.api.variant.impl.TestVariantImpl
 import com.android.build.gradle.internal.AvdComponentsBuildService
+import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.SdkComponentsBuildService.VersionedSdkLoader
-import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
 import com.android.build.gradle.internal.dsl.EmulatorSnapshots
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
@@ -41,10 +41,8 @@ import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.argThat
 import com.android.testutils.MockitoKt.eq
 import com.google.common.truth.Truth.assertThat
-import java.io.File
-import java.util.logging.Level
-import org.gradle.api.Project
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
@@ -54,7 +52,6 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceRegistration
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.workers.WorkerExecutor
@@ -65,15 +62,16 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.CALLS_REAL_METHODS
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.ArgumentMatchers.startsWith
 import org.mockito.Mock
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
+import java.io.File
+import java.util.logging.Level
 
 class ManagedDeviceInstrumentationTestTaskTest {
     private lateinit var mockVersionedSdkLoader: VersionedSdkLoader
@@ -259,6 +257,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
         `when`(factory.showEmulatorKernelLoggingFlag).thenReturn(FakeGradleProperty(false))
         `when`(factory.installApkTimeout).thenReturn(FakeGradleProperty(0))
         `when`(factory.enableEmulatorDisplay).thenReturn(FakeGradleProperty(false))
+        `when`(factory.getTargetIsSplitApk).thenReturn(FakeGradleProperty(false))
 
         val testRunner = factory.createTestRunner(workerExecutor, null)
         assertThat(testRunner).isInstanceOf(ManagedDeviceTestRunner::class.java)

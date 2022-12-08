@@ -36,7 +36,7 @@ class UtpConnectedTest : UtpTestBase() {
         @JvmField
         val EMULATOR = getEmulator()
 
-        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/TEST-emulator-5554 - 10-_app-.xml"
+        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/TEST-emulator-5554 - 10-_"
         private const val LOGCAT = "build/outputs/androidTest-results/connected/emulator-5554 - 10/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
         private const val TEST_REPORT = "build/reports/androidTests/connected/com.example.android.kotlin.html"
         private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/emulator-5554 - 10/test-result.pb"
@@ -60,7 +60,7 @@ class UtpConnectedTest : UtpTestBase() {
 
     override fun selectModule(moduleName: String) {
         testTaskName = ":${moduleName}:connectedAndroidTest"
-        testResultXmlPath = "${moduleName}/$TEST_RESULT_XML"
+        testResultXmlPath = "${moduleName}/$TEST_RESULT_XML${moduleName}-.xml"
         testReportPath = "${moduleName}/$TEST_REPORT"
         testResultPbPath = "${moduleName}/$TEST_RESULT_PB"
         aggTestResultPbPath = "${moduleName}/$AGGREGATED_TEST_RESULT_PB"

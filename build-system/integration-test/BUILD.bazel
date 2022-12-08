@@ -184,6 +184,8 @@ maven_repository(
         "//tools/base/utp/android-device-provider-gradle-proto:android-device-provider-gradle-proto",
         "//tools/base/utp/android-test-plugin-host-additional-test-output:android-test-plugin-host-additional-test-output",
         "//tools/base/utp/android-test-plugin-host-additional-test-output-proto:android-test-plugin-host-additional-test-output-proto",
+        "//tools/base/utp/android-test-plugin-host-apk-installer:android-test-plugin-host-apk-installer",
+        "//tools/base/utp/android-test-plugin-host-apk-installer-proto:android-test-plugin-host-apk-installer-proto",
         "//tools/base/utp/android-test-plugin-host-coverage:android-test-plugin-host-coverage",
         "//tools/base/utp/android-test-plugin-host-device-info:android-test-plugin-host-device-info",
         "//tools/base/utp/android-test-plugin-host-logcat:android-test-plugin-host-logcat",

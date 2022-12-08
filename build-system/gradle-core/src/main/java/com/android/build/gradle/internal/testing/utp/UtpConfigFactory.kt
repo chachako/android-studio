@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_DEVICE_INFO_PLUGIN
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_LOGCAT_PLUGIN
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN
+import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_APK_INSTALLER
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_HOST_RETENTION
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_RESULT_LISTENER_GRADLE
 import com.android.builder.testing.api.DeviceConnector
@@ -33,11 +34,15 @@ import com.android.sdklib.BuildToolInfo
 import com.android.tools.utp.plugins.deviceprovider.ddmlib.proto.AndroidDeviceProviderDdmlibConfigProto.DdmlibAndroidDeviceProviderConfig
 import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAndroidDeviceProviderProto.GradleManagedAndroidDeviceProviderConfig
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto.AndroidAdditionalTestOutputConfig
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.AndroidApkInstallerConfig
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto.AndroidTestCoverageConfig
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.IceboxPlugin
 import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto.AndroidTestLogcatConfig
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerConfigProto.GradleAndroidTestResultListenerConfig
+import com.google.common.collect.Iterables
 import com.google.protobuf.Any
 import com.google.protobuf.Message
 import com.google.testing.platform.plugin.android.proto.AndroidDevicePluginProto.AndroidDevicePlugin
@@ -51,11 +56,10 @@ import com.google.testing.platform.proto.api.config.RunnerConfigProto
 import com.google.testing.platform.proto.api.core.ExtensionProto
 import com.google.testing.platform.proto.api.core.LabelProto
 import com.google.testing.platform.proto.api.core.PathProto
-import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.service.ServerConfigProto
+import org.gradle.api.logging.Logging
 import java.io.File
 import java.util.concurrent.TimeUnit
-import org.gradle.api.logging.Logging
 
 // This is an arbitrary string. This ID is used to lookup test results from UTP.
 // UTP can run multiple test fixtures at a time so we have to give a name for
@@ -87,6 +91,14 @@ class UtpConfigFactory {
     private val logger = Logging.getLogger(this.javaClass)
 
     /**
+     * Encapsulates installation configuration for app APKs
+     */
+    private data class targetApkConfigBundle (
+        val appApks: Iterable<File>,
+        val isSplitApk: Boolean
+    )
+
+    /**
      * Creates a runner config proto which you can pass into the Unified Test Platform's
      * test executor.
      *
@@ -116,6 +128,7 @@ class UtpConfigFactory {
         resultListenerClientPrivateKey: File,
         trustCertCollection: File,
         installApkTimeout: Int?,
+        targetIsSplitApk: Boolean,
         shardConfig: ShardConfig? = null
     ): RunnerConfigProto.RunnerConfig {
         return RunnerConfigProto.RunnerConfig.newBuilder().apply {
@@ -141,7 +154,9 @@ class UtpConfigFactory {
                     },
                     coverageOutputDir,
                     installApkTimeout,
-                    shardConfig
+                    targetIsSplitApk,
+                    shardConfig,
+                    false
                 )
             )
             singleDeviceExecutor = createSingleDeviceExecutor(device.serialNumber, shardConfig)
@@ -199,6 +214,7 @@ class UtpConfigFactory {
         emulatorGpuFlag: String,
         showEmulatorKernelLogging: Boolean,
         installApkTimeout: Int?,
+        targetIsSplitApk: Boolean,
         shardConfig: ShardConfig? = null
     ): RunnerConfigProto.RunnerConfig {
         return RunnerConfigProto.RunnerConfig.newBuilder().apply {
@@ -214,7 +230,7 @@ class UtpConfigFactory {
                     additionalTestOutputDir?.let {
                         findAdditionalTestOutputDirectoryOnManagedDevice(device, testData)
                     },
-                    coverageOutputDir, installApkTimeout, shardConfig
+                    coverageOutputDir, installApkTimeout, targetIsSplitApk, shardConfig, true
                 )
             )
             singleDeviceExecutor = createSingleDeviceExecutor(device.id, shardConfig)
@@ -331,7 +347,9 @@ class UtpConfigFactory {
         additionalTestOutputOnDeviceDir: String?,
         coverageOutputDir: File,
         installApkTimeout: Int?,
-        shardConfig: ShardConfig?
+        targetIsSplitApk: Boolean,
+        shardConfig: ShardConfig?,
+        isManagedDevice: Boolean,
     ): FixtureProto.TestFixture {
         return FixtureProto.TestFixture.newBuilder().apply {
             testFixtureIdBuilder.apply {
@@ -368,9 +386,18 @@ class UtpConfigFactory {
                 testDriver = createTestDriver(testData, utpDependencies, useOrchestrator,
                                               additionalTestOutputOnDeviceDir, shardConfig)
             }
-            addHostPlugin(createAndroidTestPlugin(
-                    testData, appApks, additionalInstallOptions, helperApks, installApkTimeout, utpDependencies))
-            addHostPlugin(createAndroidTestDeviceInfoPlugin(utpDependencies))
+            addHostPlugin(createApkInstallerPlugin(
+                    targetApkConfigBundle(appApks, targetIsSplitApk),
+                    helperApks,
+                    installApkTimeout,
+                    additionalInstallOptions,
+                    testData,
+                    isManagedDevice,
+                    utpDependencies))
+            // This line is required since AndroidTestPlugin sends event message to context after
+            // installing the APKs
+            addHostPlugin(createAndroidTestPlugin(utpDependencies))
+                    addHostPlugin(createAndroidTestDeviceInfoPlugin(utpDependencies))
             addHostPlugin(createAndroidTestLogcatPlugin(
                     testData.instrumentationTargetPackageId, utpDependencies))
             if (testData.isTestCoverageEnabled) {
@@ -386,6 +413,14 @@ class UtpConfigFactory {
                         utpDependencies))
             }
         }.build()
+    }
+
+    private fun createAndroidTestPlugin(
+            utpDependencies: UtpDependencies
+    ): ExtensionProto.Extension {
+        return ANDROID_TEST_PLUGIN.toExtensionProto(
+                utpDependencies, AndroidDevicePlugin::newBuilder) {
+        }
     }
 
     private fun createIceboxPlugin(
@@ -522,63 +557,6 @@ class UtpConfigFactory {
         }
     }
 
-    /**
-     * @param additionalInstallOptions an additional install options to be used for installing
-     *   app (tested-) APKs and test APK. These options are not used for the test helper APKs.
-     */
-    private fun createAndroidTestPlugin(
-            testData: StaticTestData,
-            appApks: Iterable<File>,
-            additionalInstallOptions: Iterable<String>,
-            helperApks: Iterable<File>,
-            installApkTimeoutSeconds: Int?,
-            utpDependencies: UtpDependencies
-    ): ExtensionProto.Extension {
-        return ANDROID_TEST_PLUGIN.toExtensionProto(
-            utpDependencies, AndroidDevicePlugin::newBuilder) {
-            addTestApksBuilder().apply {
-                testApkBuilder.apply {
-                    type = TestArtifactProto.ArtifactType.ANDROID_APK
-                    sourcePathBuilder.apply {
-                        path = testData.testApk.absolutePath
-                    }
-                }
-                additionalInstallOptions.forEach { option ->
-                    addInstallOptionsBuilder().apply {
-                        commandLineParameter = option
-                    }
-                }
-            }
-            appApks.forEach { appApk ->
-                addTestApksBuilder().apply {
-                    testApkBuilder.apply {
-                        type = TestArtifactProto.ArtifactType.ANDROID_APK
-                        sourcePathBuilder.apply {
-                            path = appApk.absolutePath
-                        }
-                    }
-                    additionalInstallOptions.forEach { option ->
-                        addInstallOptionsBuilder().apply {
-                            commandLineParameter = option
-                        }
-                    }
-                }
-            }
-            helperApks.forEach { helperApk ->
-                addTestServiceApksBuilder().apply {
-                    type = TestArtifactProto.ArtifactType.ANDROID_APK
-                    sourcePathBuilder.apply {
-                        path = helperApk.absolutePath
-                    }
-                }
-            }
-
-            installApkTimeoutBuilder.apply{
-                seconds = installApkTimeoutSeconds?.toLong() ?: 0L
-            }
-        }
-    }
-
     private fun createAndroidTestDeviceInfoPlugin(utpDependencies: UtpDependencies): ExtensionProto.Extension {
         return ANDROID_TEST_DEVICE_INFO_PLUGIN.toExtensionProto(utpDependencies)
     }
@@ -588,7 +566,7 @@ class UtpConfigFactory {
      *
      * It specifies two paths, a directory or file path to writes test coverage files on device and
      * a destination directory on a host. This logic used to be implemented in SimpleTestRunnable
-     * and this new implementation is compatible with it (a drop-in replacemant).
+     * and this new implementation is compatible with it (a drop-in replacement).
      */
     private fun createAndroidTestCoveragePlugin(
         coverageOutputDir: File,
@@ -647,6 +625,55 @@ class UtpConfigFactory {
         return ANDROID_TEST_LOGCAT_PLUGIN.toExtensionProto(
                 utpDependencies, AndroidTestLogcatConfig::newBuilder) {
             targetTestProcessName = testPackageName
+        }
+    }
+
+    private fun createApkInstallerPlugin(
+            targetApkConfigBundle: targetApkConfigBundle,
+            helperApks: Iterable<File>,
+            installApkTimeout: Int?,
+            additionalInstallOptions: Iterable<String>,
+            testData: StaticTestData,
+            isManagedDevice: Boolean,
+            utpDependencies:UtpDependencies): ExtensionProto.Extension {
+        return ANDROID_TEST_PLUGIN_APK_INSTALLER.toExtensionProto(
+            utpDependencies, AndroidApkInstallerConfig::newBuilder) {
+
+            if (Iterables.size(targetApkConfigBundle.appApks) > 0) {
+                addApksToInstall(InstallableApk.newBuilder().apply {
+                    addAllApkPaths(targetApkConfigBundle.appApks.map{ it.absolutePath })
+                    installOptions = InstallOption.newBuilder().apply {
+                        addAllCommandLineParameter(additionalInstallOptions)
+                        installAsSplitApk = targetApkConfigBundle.isSplitApk
+                        if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
+                    }.build()
+                    uninstallAfterTest = !isManagedDevice
+                    addAllApksPackageName(listOf(
+                        testData.testedApplicationId,
+                        testData.applicationId))
+                }.build())
+            }
+
+            if (Iterables.size(helperApks) > 0) {
+                addApksToInstall(InstallableApk.newBuilder().apply {
+                    addAllApkPaths(helperApks.map{ it.absolutePath })
+                    installOptions = InstallOption.newBuilder().apply {
+                        addAllCommandLineParameter(additionalInstallOptions)
+                        if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
+                        installAsTestService = true
+                    }.build()
+                }.build())
+            }
+
+            if (testData.testApk.absolutePath.isNotEmpty()){
+                addApksToInstall(InstallableApk.newBuilder().apply {
+                    addAllApkPaths(listOf(testData.testApk.absolutePath))
+                    installOptions = InstallOption.newBuilder().apply {
+                        addAllCommandLineParameter(additionalInstallOptions)
+                        if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
+                    }.build()
+                }.build())
+            }
         }
     }
 

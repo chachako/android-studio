@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.testing.utp
 import com.android.tools.utp.plugins.deviceprovider.ddmlib.proto.AndroidDeviceProviderDdmlibConfigProto
 import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAndroidDeviceProviderProto
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.android.tools.utp.plugins.host.logcat.proto.AndroidTestLogcatConfigProto
@@ -32,6 +33,7 @@ import com.google.testing.platform.proto.api.core.PathProto
 
 private val protoPrinter: ProtoPrinter = ProtoPrinter(listOf(
     AndroidAdditionalTestOutputConfigProto.AndroidAdditionalTestOutputConfig::class.java,
+    AndroidApkInstallerConfigProto.AndroidApkInstallerConfig::class.java,
     AndroidDevicePluginProto.AndroidDevicePlugin::class.java,
     AndroidDeviceProviderDdmlibConfigProto.DdmlibAndroidDeviceProviderConfig::class.java,
     AndroidInstrumentationDriverProto.AndroidInstrumentationDriver::class.java,
@@ -62,7 +64,8 @@ fun assertRunnerConfigProto(
     emulatorGpuFlag: String = "auto-no-window",
     showEmulatorKernelLogging: Boolean = false,
     uninstallIncompatibleApks: Boolean = false,
-    installApkTimeout: Int? = null
+    installApkTimeout: Int? = null,
+    isSplitApk: Boolean = false,
 ) {
     val deviceProviderProto = if (useGradleManagedDeviceProvider) { """
         label {
@@ -193,7 +196,53 @@ fun assertRunnerConfigProto(
         ""
     }
 
-    val installApkTimeoutString = if (installApkTimeout != null) "seconds: ${installApkTimeout}" else ""
+    val installApkTimeoutString = if (installApkTimeout != null) "install_apk_timeout: ${installApkTimeout}" else ""
+    val uninstallAfterTest = if (!useGradleManagedDeviceProvider) "uninstall_after_test: true" else ""
+    val installAsSplitApk = if (isSplitApk) "install_as_split_apk: true" else ""
+
+    val testApkInstallerConfigProto = """
+        host_plugin {
+          label {
+            label: "ANDROID_TEST_PLUGIN_APK_INSTALLER"
+          }
+          class_name: "com.android.tools.utp.plugins.host.apkinstaller.AndroidTestApkInstallerPlugin"
+          jar {
+            path: "path-to-TestPluginApkInstaller.jar"
+          }
+          config {
+            type_url: "type.googleapis.com/com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfig"
+            value {
+              apks_to_install {
+                apk_paths: "mockAppApkPath"
+                apk_paths: "mockTestApkPath"
+                install_options {
+                  command_line_parameter: "-additional_install_option"
+                  $installAsSplitApk
+                  $installApkTimeoutString
+                }
+                $uninstallAfterTest
+                apks_package_name: "com.example.application"
+                apks_package_name: "com.example.application.test"
+              }
+              apks_to_install {
+                apk_paths: "mockHelperApkPath"
+                install_options {
+                  command_line_parameter: "-additional_install_option"
+                  $installApkTimeoutString
+                  install_as_test_service: true
+                }
+              }
+              apks_to_install {
+                apk_paths: "testApk.apk"
+                install_options {
+                  command_line_parameter: "-additional_install_option"
+                  $installApkTimeoutString
+                }
+              }
+            }
+          }
+        }
+    """.trimIndent()
 
     assertThat(protoPrinter.printToString(runnerConfig)).isEqualTo("""
         device {
@@ -209,6 +258,7 @@ fun assertRunnerConfigProto(
             id: "AGP_Test_Fixture"
           }
           ${"\n" + iceboxPluginProto.trimIndent().prependIndent(" ".repeat(10))}
+          ${"\n" + testApkInstallerConfigProto.trimIndent().prependIndent(" ".repeat(10))}
           host_plugin {
             label {
               label: "ANDROID_TEST_PLUGIN"
@@ -219,50 +269,6 @@ fun assertRunnerConfigProto(
             }
             config {
               type_url: "type.googleapis.com/google.testing.platform.runner.plugin.android.proto.AndroidDevicePlugin"
-              value {
-                install_apk_timeout {
-                  ${installApkTimeoutString}
-                }
-                test_service_apks {
-                  source_path {
-                    path: "mockHelperApkPath"
-                  }
-                  type: ANDROID_APK
-                }
-                test_apks {
-                  test_apk {
-                    source_path {
-                      path: "testApk.apk"
-                    }
-                    type: ANDROID_APK
-                  }
-                  install_options {
-                    command_line_parameter: "-additional_install_option"
-                  }
-                }
-                test_apks {
-                  test_apk {
-                    source_path {
-                      path: "mockAppApkPath"
-                    }
-                    type: ANDROID_APK
-                  }
-                  install_options {
-                    command_line_parameter: "-additional_install_option"
-                  }
-                }
-                test_apks {
-                  test_apk {
-                    source_path {
-                      path: "mockTestApkPath"
-                    }
-                    type: ANDROID_APK
-                  }
-                  install_options {
-                    command_line_parameter: "-additional_install_option"
-                  }
-                }
-              }
             }
           }
           host_plugin {

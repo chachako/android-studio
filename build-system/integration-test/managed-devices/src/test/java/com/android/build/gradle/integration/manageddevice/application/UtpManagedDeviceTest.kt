@@ -30,7 +30,7 @@ import java.io.File
 class UtpManagedDeviceTest : UtpTestBase() {
 
     companion object {
-        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/managedDevice/device1/TEST-device1-_app-.xml"
+        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/managedDevice/device1/TEST-device1-_"
         private const val LOGCAT = "build/outputs/androidTest-results/managedDevice/device1/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
         private const val TEST_REPORT = "build/reports/androidTests/managedDevice/device1/com.example.android.kotlin.html"
         private const val TEST_RESULT_PB = "build/outputs/androidTest-results/managedDevice/device1/test-result.pb"
@@ -82,7 +82,7 @@ class UtpManagedDeviceTest : UtpTestBase() {
         """)
 
         testTaskName = ":${moduleName}:allDevicesCheck"
-        testResultXmlPath = "${moduleName}/$TEST_RESULT_XML"
+        testResultXmlPath = "${moduleName}/$TEST_RESULT_XML$moduleName-.xml"
         testReportPath = "${moduleName}/$TEST_REPORT"
         testResultPbPath = "${moduleName}/$TEST_RESULT_PB"
         aggTestResultPbPath = "${moduleName}/$AGGREGATED_TEST_RESULT_PB"

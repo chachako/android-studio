@@ -3308,6 +3308,20 @@ com/android/tools/utp/android-test-plugin-host-additional-test-output-proto
   com/android/tools/utp/plugins/host/additionaltestoutput/
   com/android/tools/utp/plugins/host/additionaltestoutput/proto/
 
+com/android/tools/utp/android-test-plugin-host-apk-installer
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/android-test-plugin-host-apk-installer.kotlin_module
+  META-INF/services/
+  META-INF/services/com.google.testing.platform.api.plugin.HostPlugin
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/utp/
+  com/android/tools/utp/plugins/
+  com/android/tools/utp/plugins/host/
+  com/android/tools/utp/plugins/host/apkinstaller/
+
 com/android/tools/utp/android-test-plugin-host-apk-installer-proto
   META-INF/
   META-INF/MANIFEST.MF

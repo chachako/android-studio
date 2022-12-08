@@ -20,7 +20,6 @@ import com.android.SdkConstants
 import com.android.SdkConstants.DATA_BINDING_KTX_LIB_ARTIFACT
 import com.android.SdkConstants.DOT_JAR
 import com.android.build.api.artifact.Artifact.Single
-import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifact
@@ -87,8 +86,6 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.PROCESSED_RE
 import com.android.build.gradle.internal.scope.InternalArtifactType.RUNTIME_R_CLASS_CLASSES
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.scope.Java8LangSupport
-import com.android.build.gradle.internal.scope.getDirectories
-import com.android.build.gradle.internal.scope.getRegularFiles
 import com.android.build.gradle.internal.scope.publishArtifactToConfiguration
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.R8ParallelBuildService
@@ -1678,7 +1675,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         if (!shouldEnableUtp(
                 globalConfig.services.projectOptions,
                 globalConfig.testOptions,
-                componentType = null
             ) ||
             globalConfig.testOptions.devices.isEmpty()
         ) {
@@ -1756,7 +1752,6 @@ abstract class TaskManager<VariantBuilderT : VariantBuilder, VariantT : VariantC
         if (!shouldEnableUtp(
                 globalConfig.services.projectOptions,
                 globalConfig.testOptions,
-                (creationConfig as? NestedComponentCreationConfig)?.mainVariant?.componentType
             ) ||
                 managedDevices.isEmpty()) {
             return

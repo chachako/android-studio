@@ -35,7 +35,6 @@ import com.google.protobuf.TextFormat
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import com.google.testing.platform.proto.api.service.ServerConfigProto
-import java.io.File
 import org.gradle.api.Action
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
@@ -45,13 +44,14 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.RETURNS_DEEP_STUBS
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.contains
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.nullable
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import java.io.File
 
 /**
  * Unit tests for UtpTestUtils.kt.
@@ -329,18 +329,18 @@ class UtpTestUtilsTest {
             ImmutableMap.of(),
             FakeProviderFactory(FakeProviderFactory.factory, mapOf()))
 
-        assertThat(shouldEnableUtp(projectOptions, testOptions = null, componentType = null)).isTrue()
+        assertThat(shouldEnableUtp(projectOptions, testOptions = null)).isTrue()
     }
 
     @Test
-    fun utpShouldBeDisabledForDynamicFeatureModule() {
+    fun utpShouldBeEnabledForDynamicFeatureModule() {
         val projectOptions = ProjectOptions(
             ImmutableMap.of(),
             FakeProviderFactory(FakeProviderFactory.factory, mapOf()))
         val componentType = mock<ComponentType>()
         `when`(componentType.isDynamicFeature).thenReturn(true)
 
-        assertThat(shouldEnableUtp(projectOptions, testOptions = null, componentType)).isFalse()
+        assertThat(shouldEnableUtp(projectOptions, testOptions = null)).isTrue()
     }
 
     @Test

@@ -119,6 +119,10 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
 
         installables.forEach { artifact ->
             val apkPath = artifact.sourcePath.path
+            if (apkPath.isEmpty()) {
+                logger.warning("Installable APK has empty path.")
+                return@forEach
+            }
             logger.info("Installing APK: $apkPath on device $deviceSerial.")
             if (deviceController.execute(BASE_INSTALL_CMD + listOf(apkPath)).statusCode != 0) {
                 throw UtpException(
@@ -129,6 +133,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
         }
 
         pluginConfig.apksToInstallList.forEach { installableApk ->
+            if (installableApk.apkPathsList.isEmpty()) return@forEach
             // Check if device API level is above the min API level required to install certain
             // features
             val featureMinApi = getFeatureMinApiLevel(installableApk.installOptions)

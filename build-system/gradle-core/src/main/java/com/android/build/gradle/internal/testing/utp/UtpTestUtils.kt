@@ -21,11 +21,11 @@ import com.android.build.gradle.internal.testing.CustomTestRunListener
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkAction
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
-import com.android.builder.core.ComponentType
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto
 import com.android.utils.ILogger
 import com.google.common.io.Files
+import com.google.gson.annotations.SerializedName
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
 import com.google.testing.platform.proto.api.core.ErrorDetailProto
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
@@ -38,6 +38,7 @@ import java.util.logging.Level
 import org.gradle.api.logging.Logging
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
+import java.io.Serializable
 
 const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
 
@@ -259,24 +260,15 @@ fun getUtpPreferenceRootDir(): File {
 /**
  * Returns true when UTP should be enabled, false otherwise.
  *
- * @param componentType a variant type of the tested APK. Null when it is unknown.
  */
 fun shouldEnableUtp(
     projectOptions: ProjectOptions,
     testOptions: TestOptions?,
-    componentType: ComponentType?,
 ): Boolean {
     if (projectOptions[BooleanOption.ENABLE_TEST_SHARDING]) {
         Logging.getLogger("UtpTestUtils").warn(
             "Disabling ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM option because " +
                     "ENABLE_TEST_SHARDING is specified. ENABLE_TEST_SHARDING is not " +
-                    "supported by ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM yet.")
-        return false
-    }
-    if (componentType != null && componentType.isDynamicFeature) {
-        Logging.getLogger("UtpTestUtils").warn(
-            "Disabling ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM option because " +
-                    "this is a dynamic-feature module. Dynamic-feature module is not " +
                     "supported by ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM yet.")
         return false
     }

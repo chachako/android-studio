@@ -23,6 +23,7 @@ import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto.AndroidTestDeviceInfo
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
+import org.junit.Ignore
 import java.io.File
 import java.nio.file.Files
 import org.junit.Rule
@@ -102,37 +103,13 @@ abstract class UtpTestBase {
             """.trimIndent())
     }
 
-    @Test
-    @Throws(Exception::class)
-    fun androidTest() {
-        selectModule("app")
-
-        executor.run(testTaskName)
-
-        assertThat(project.file(testResultXmlPath)).exists()
-        assertThat(project.file(testReportPath)).exists()
-        assertThat(project.file(testResultPbPath)).exists()
-        assertThat(project.file(aggTestResultPbPath)).exists()
-
-        val deviceInfo = getDeviceInfo(project.file(aggTestResultPbPath))
-        assertThat(deviceInfo).isNotNull()
-        assertThat(deviceInfo?.name).isEqualTo(deviceName)
-
-        // Run the task again after clean. This time the task configuration is
-        // restored from the configuration cache. We expect no crashes.
-        executor.run("clean")
-
-        assertThat(project.file(testResultXmlPath)).doesNotExist()
-        assertThat(project.file(testReportPath)).doesNotExist()
-        assertThat(project.file(testResultPbPath)).doesNotExist()
-        assertThat(project.file(aggTestResultPbPath)).doesNotExist()
-
-        executor.run(testTaskName)
-
-        assertThat(project.file(testResultXmlPath)).exists()
-        assertThat(project.file(testReportPath)).exists()
-        assertThat(project.file(testResultPbPath)).exists()
-        assertThat(project.file(aggTestResultPbPath)).exists()
+    private fun enableDynamicFeature(subProjectName: String) {
+        val appProject = project.getSubproject("app")
+        TestFileUtils.appendToFile(
+            appProject.buildFile,
+            """
+                android.dynamicFeatures = [':$subProjectName']
+            """.trimIndent())
     }
 
     private fun getDeviceInfo(aggTestResultPb: File): AndroidTestDeviceInfo? {
@@ -292,5 +269,173 @@ abstract class UtpTestBase {
             .contains("output message4")
         assertThat(project.file("${testAdditionalOutputPath}/subdir/white space/myTestStorageOutputFile5"))
             .contains("output message5")
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun androidTestWithDynamicFeature() {
+        selectModule("dynamicfeature1")
+        enableDynamicFeature("dynamicfeature1")
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testResultXmlPath)).exists()
+        assertThat(project.file(testReportPath)).exists()
+        assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(aggTestResultPbPath)).exists()
+
+        val deviceInfo = getDeviceInfo(project.file(aggTestResultPbPath))
+        assertThat(deviceInfo).isNotNull()
+        assertThat(deviceInfo?.name).isEqualTo(deviceName)
+
+        // Run the task again after clean. This time the task configuration is
+        // restored from the configuration cache. We expect no crashes.
+        executor.run("clean")
+
+        assertThat(project.file(testResultXmlPath)).doesNotExist()
+        assertThat(project.file(testReportPath)).doesNotExist()
+        assertThat(project.file(testResultPbPath)).doesNotExist()
+        assertThat(project.file(aggTestResultPbPath)).doesNotExist()
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testResultXmlPath)).exists()
+        assertThat(project.file(testReportPath)).exists()
+        assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(aggTestResultPbPath)).exists()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun androidTestWithOrchestratorWithDynamicFeature() {
+        selectModule("dynamicfeature1")
+        enableDynamicFeature("dynamicfeature1")
+        enableAndroidTestOrchestrator("dynamicfeature1")
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testReportPath)).exists()
+        assertThat(project.file(testResultPbPath)).exists()
+    }
+
+
+    @Test
+    @Throws(Exception::class)
+    fun connectedAndroidTestWithLogcatWithDynamicFeature() {
+        selectModule("dynamicfeature1")
+        enableDynamicFeature("dynamicfeature1")
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testLogcatPath)).exists()
+        val logcatText = project.file(testLogcatPath).readText()
+        assertThat(logcatText).contains("TestRunner: started: useAppContext(com.example.android.kotlin.ExampleInstrumentedTest)")
+        assertThat(logcatText).contains("TestLogger: test logs")
+        assertThat(logcatText).contains("TestRunner: finished: useAppContext(com.example.android.kotlin.ExampleInstrumentedTest)")
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun connectedAndroidTestWithAdditionalTestOutputUsingTestStorageServiceWithDynamicFeature() {
+        selectModule("dynamicfeature1")
+        enableDynamicFeature("dynamicfeature1")
+        enableTestStorageService("dynamicfeature1")
+
+        val testSrc = """
+            package com.example.helloworld
+
+            import androidx.test.ext.junit.runners.AndroidJUnit4
+            import androidx.test.services.storage.TestStorage
+            import org.junit.Test
+            import org.junit.runner.RunWith
+
+            @RunWith(AndroidJUnit4::class)
+            class TestStorageServiceExampleTest {
+                @Test
+                fun writeFileUsingTestStorageService() {
+                    TestStorage().openOutputFile("myTestStorageOutputFile1").use {
+                        it.write("output message1".toByteArray())
+                    }
+                    TestStorage().openOutputFile("myTestStorageOutputFile2.txt").use {
+                        it.write("output message2".toByteArray())
+                    }
+                    TestStorage().openOutputFile("subdir/myTestStorageOutputFile3").use {
+                        it.write("output message3".toByteArray())
+                    }
+                    TestStorage().openOutputFile("subdir/nested/myTestStorageOutputFile4").use {
+                        it.write("output message4".toByteArray())
+                    }
+                    TestStorage().openOutputFile("subdir/white space/myTestStorageOutputFile5").use {
+                        it.write("output message5".toByteArray())
+                    }
+                }
+            }
+        """.trimIndent()
+        val testStorageServiceExampleTest = project.projectDir
+            .toPath()
+            .resolve("dynamicfeature1/src/androidTest/java/com/example/helloworld/TestStorageServiceExampleTest.kt")
+        Files.createDirectories(testStorageServiceExampleTest.parent)
+        Files.write(testStorageServiceExampleTest, testSrc.toByteArray())
+
+        executor.run(testTaskName)
+
+        assertThat(project.file("${testAdditionalOutputPath}/myTestStorageOutputFile1"))
+            .contains("output message1")
+        assertThat(project.file("${testAdditionalOutputPath}/myTestStorageOutputFile2.txt"))
+            .contains("output message2")
+        assertThat(project.file("${testAdditionalOutputPath}/subdir/myTestStorageOutputFile3"))
+            .contains("output message3")
+        assertThat(project.file("${testAdditionalOutputPath}/subdir/nested/myTestStorageOutputFile4"))
+            .contains("output message4")
+        assertThat(project.file("${testAdditionalOutputPath}/subdir/white space/myTestStorageOutputFile5"))
+            .contains("output message5")
+    }
+
+    /**
+     * TODO: Enable the test once b/261739458 is fixed.
+     */
+    @Ignore
+    @Test
+    @Throws(Exception::class)
+    fun androidTestWithOrchestratorAndCodeCoverageWithDynamicFeature() {
+        selectModule("dynamicfeature1")
+        enableAndroidTestOrchestrator("app")
+        enableCodeCoverage("app")
+        enableAndroidTestOrchestrator("dynamicfeature1")
+        enableDynamicFeature("dynamicfeature1")
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testReportPath)).exists()
+        assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(testCoverageXmlPath)).contains(
+                """<method name="stubDynamicFeature1FuncForTestingCodeCoverage" desc="()V" line="9">"""
+        )
+        assertThat(project.file(testCoverageXmlPath)).contains(
+                """<counter type="INSTRUCTION" missed="3" covered="5"/>"""
+        )
+    }
+
+    /**
+     * TODO: Enable the test once b/261739458 is fixed.
+     */
+    @Ignore
+    @Test
+    @Throws(Exception::class)
+    fun androidTestWithCodeCoverageWithDynamicFeature() {
+        selectModule("dynamicfeature1")
+        enableDynamicFeature("dynamicfeature1")
+        enableCodeCoverage("app")
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testReportPath)).exists()
+        assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(testCoverageXmlPath)).contains(
+                """<method name="stubFuncForTestingCodeCoverage" desc="()V" line="9">"""
+        )
+        assertThat(project.file(testCoverageXmlPath)).contains(
+                """<counter type="INSTRUCTION" missed="3" covered="5"/>"""
+        )
     }
 }

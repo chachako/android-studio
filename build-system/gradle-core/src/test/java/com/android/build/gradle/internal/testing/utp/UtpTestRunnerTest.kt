@@ -27,7 +27,6 @@ import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
-import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.proto.api.service.ServerConfigProto.ServerConfig
 import java.io.File
@@ -106,7 +105,9 @@ class UtpTestRunnerTest {
                 any(),
                 any(),
                 nullable(Int::class.java),
-                nullable(ShardConfig::class.java))).then {
+                any(),
+                nullable(ShardConfig::class.java),
+        )).then {
             RunnerConfigProto.RunnerConfig.getDefaultInstance()
         }
         `when`(mockUtpConfigFactory.createServerConfigProto())
@@ -127,6 +128,7 @@ class UtpTestRunnerTest {
             mockTestResultListener,
             Level.WARNING,
             null,
+            false,
             mockUtpConfigFactory) { runnerConfigs, _, _, _, _ ->
             capturedRunnerConfigs = runnerConfigs
             listOf(result)

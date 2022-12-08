@@ -478,6 +478,7 @@ com.android.tools.build:gradle
     com.android.tools.utp:android-test-plugin-host-additional-test-output-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-coverage-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-logcat-proto (runtime)
+    com.android.tools.utp:android-test-plugin-host-apk-installer-proto (runtime)
     com.android.tools.utp:android-test-plugin-host-retention-proto (runtime)
     com.android.tools.utp:android-test-plugin-result-listener-gradle-proto (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
@@ -769,6 +770,17 @@ com.android.tools.utp:android-test-plugin-host-additional-test-output-proto
   description=A protobuf messages used in a UTP plugin to export additional test outputs
   dependencies:
     com.google.protobuf:protobuf-java (runtime)
+
+com.android.tools.utp:android-test-plugin-host-apk-installer
+  pomName=com.android.tools.utp.android-test-plugin-host-apk-installer
+  description=A UTP plugin to install test APKs on Android devices
+  dependencies:
+    com.android.tools:common (runtime)
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    com.google.protobuf:protobuf-java (runtime)
+    com.android.tools.utp:android-test-plugin-host-apk-installer-proto (runtime)
+    com.google.testing.platform:android-device-provider-local (runtime)
+    com.google.testing.platform:core-proto (runtime)
 
 com.android.tools.utp:android-test-plugin-host-apk-installer-proto
   pomName=com.android.tools.utp.android-test-plugin-host-apk-installer-proto

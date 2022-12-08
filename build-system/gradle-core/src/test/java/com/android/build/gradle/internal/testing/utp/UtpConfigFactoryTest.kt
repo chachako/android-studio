@@ -141,7 +141,8 @@ class UtpConfigFactoryTest {
             uninstallIncompatibleApks: Boolean = false,
             additionalTestOutputDir: File? = null,
             installApkTimeout: Int? = null,
-            shardConfig: ShardConfig? = null
+            shardConfig: ShardConfig? = null,
+            targetIsSplitApk: Boolean = false
     ): RunnerConfigProto.RunnerConfig {
         return UtpConfigFactory().createRunnerConfigProtoForLocalDevice(
                 mockDevice,
@@ -163,7 +164,8 @@ class UtpConfigFactoryTest {
                 mockResultListenerClientPrivateKey,
                 mockTrustCertCollection,
                 installApkTimeout,
-                shardConfig
+                targetIsSplitApk,
+                shardConfig,
         )
     }
 
@@ -175,6 +177,7 @@ class UtpConfigFactoryTest {
             emulatorGpuFlag: String = "auto-no-window",
             showEmulatorKernelLogging: Boolean = false,
             installApkTimeout: Int? = null,
+            targetIsSplitApk: Boolean = false
     ): RunnerConfigProto.RunnerConfig {
         val managedDevice = UtpManagedDevice(
                 "deviceName",
@@ -203,6 +206,7 @@ class UtpConfigFactoryTest {
                 emulatorGpuFlag,
                 showEmulatorKernelLogging,
                 installApkTimeout,
+                targetIsSplitApk,
                 shardConfig
         )
     }
@@ -213,6 +217,14 @@ class UtpConfigFactoryTest {
         assertRunnerConfigProto(runnerConfigProto)
     }
 
+    @Test
+    fun createRunnerConfigProtoForLocalDeviceWithSplitApk() {
+        val runnerConfigProto = createForLocalDevice(targetIsSplitApk = true)
+        assertRunnerConfigProto(
+                runnerConfig = runnerConfigProto,
+                isSplitApk = true
+        )
+    }
     @Test
     fun createRunnerConfigProtoForLocalDeviceUseOrchestrator() {
         val runnerConfigProto = createForLocalDevice(useOrchestrator = true)
@@ -316,6 +328,18 @@ class UtpConfigFactoryTest {
             runnerConfigProto,
             deviceId = ":app:deviceNameDebugAndroidTest",
             useGradleManagedDeviceProvider = true
+        )
+    }
+
+    @Test
+    fun createRunnerConfigProtoForManagedDeviceWithSplitApk() {
+        val runnerConfigProto = createForManagedDevice(targetIsSplitApk = true)
+
+        assertRunnerConfigProto(
+                runnerConfigProto,
+                deviceId = ":app:deviceNameDebugAndroidTest",
+                useGradleManagedDeviceProvider = true,
+                isSplitApk = true,
         )
     }
 

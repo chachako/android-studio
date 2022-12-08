@@ -45,6 +45,7 @@ class UtpTestRunner @JvmOverloads constructor(
         private val utpTestResultListener: UtpTestResultListener?,
         private val utpLoggingLevel: Level,
         private val installApkTimeout: Int?,
+        private val targetIsSplitApk: Boolean,
         private val configFactory: UtpConfigFactory = UtpConfigFactory(),
         private val runUtpTestSuiteAndWaitFunc: (
             List<UtpRunnerConfig>, String, String, File, ILogger
@@ -103,7 +104,8 @@ class UtpTestRunner @JvmOverloads constructor(
                     resultListenerServerMetadata.clientCert,
                     resultListenerServerMetadata.clientPrivateKey,
                     resultListenerServerMetadata.serverCert,
-                    installApkTimeout
+                    installApkTimeout,
+                    targetIsSplitApk
                 )
             }
             UtpRunnerConfig(

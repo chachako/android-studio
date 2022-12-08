@@ -137,6 +137,10 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
         @get: Input
         abstract val enableEmulatorDisplay: Property<Boolean>
 
+        @get: Input
+        @get: Optional
+        abstract val getTargetIsSplitApk: Property<Boolean>
+
         fun createTestRunner(
             workerExecutor: WorkerExecutor, numShards: Int?): ManagedDeviceTestRunner {
 
@@ -162,7 +166,8 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 avdComponents.get(),
                 installApkTimeout.getOrNull(),
                 enableEmulatorDisplay.get(),
-                utpLoggingLevel.get()
+                utpLoggingLevel.get(),
+                getTargetIsSplitApk.getOrElse(false)
             )
         }
 
@@ -470,8 +475,7 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             val executionEnum = globalConfig.testOptionExecutionEnum
             task.testRunnerFactory.executionEnum.setDisallowChanges(executionEnum)
             val useUtp = shouldEnableUtp(
-                projectOptions, globalConfig.testOptions,
-                testedConfig?.componentType
+                projectOptions, globalConfig.testOptions
             )
             task.testRunnerFactory.unifiedTestPlatform.setDisallowChanges(useUtp)
 
@@ -488,7 +492,9 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 task.testRunnerFactory.utpDependencies
                         .resolveDependencies(task.project.configurations)
             }
-
+            task.testRunnerFactory.getTargetIsSplitApk.setDisallowChanges(
+                    testedConfig?.componentType?.isDynamicFeature ?: false
+            )
             task.testRunnerFactory.customManagedDevice.setDisallowChanges(
                 globalConfig.services.projectOptions[
                         BooleanOption.GRADLE_MANAGED_DEVICE_CUSTOM_DEVICE]

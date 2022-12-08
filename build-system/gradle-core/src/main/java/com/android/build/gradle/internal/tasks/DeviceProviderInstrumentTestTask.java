@@ -159,6 +159,9 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
         @Nested
         public abstract UtpDependencies getUtpDependencies();
 
+        @Input
+        public abstract Property<Boolean> getTargetIsSplitApk();
+
         /**
          * Property for the serials passed into the connectedCheck task. This is used to filter the
          * device serials if and only if the --serial command line argument is not set on this task.
@@ -222,7 +225,8 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                         getUninstallIncompatibleApks().get(),
                         utpTestResultListener,
                         utpLoggingLevel(),
-                        getInstallApkTimeout().getOrNull());
+                        getInstallApkTimeout().getOrNull(),
+                        getTargetIsSplitApk().getOrElse(false));
             } else {
                 switch (getExecutionEnum().get()) {
                     case ANDROID_TEST_ORCHESTRATOR:
@@ -799,7 +803,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                         .getConnectedCheckDeviceSerials()
                         .set(connectedCheckTargetSerials);
             }
-            boolean useUtp = shouldEnableUtp(projectOptions, testOptions, componentType);
+            boolean useUtp = shouldEnableUtp(projectOptions, testOptions);
             task.getTestRunnerFactory().getUnifiedTestPlatform().set(useUtp);
             if (useUtp) {
                 if (!projectOptions.get(BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM)) {
@@ -836,6 +840,10 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             task.getTestRunnerFactory()
                     .getInstallApkTimeout()
                     .set(projectOptions.getProvider(IntegerOption.INSTALL_APK_TIMEOUT));
+
+            task.getTestRunnerFactory()
+                    .getTargetIsSplitApk()
+                    .set(componentType != null && componentType.isDynamicFeature());
             task.getCodeCoverageEnabled().set(creationConfig.isAndroidTestCoverageEnabled());
             boolean useJacocoTransformOutputs =
                     creationConfig.isAndroidTestCoverageEnabled();
