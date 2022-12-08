@@ -211,8 +211,7 @@ abstract class DependencyResourcesComputer {
 
         creationConfig.sources.res { resSources ->
             addResourceSets(
-                resSources.getLocalSourcesAsFileCollection(),
-                relativeLocalResources
+                resSources.getLocalSources()
             ) {
                 services.newInstance(ResourceSourceSetInput::class.java)
             }
@@ -254,10 +253,13 @@ abstract class DependencyResourcesComputer {
     }
 
     @VisibleForTesting
-    fun addResourceSets(resourcesMap: Map<String, FileCollection>, relative: Boolean, blockFactory: () -> ResourceSourceSetInput) {
-        resourcesMap.forEach{(name, fileCollection) ->
+    fun addResourceSets(
+        resourcesMap: Map<String, Provider<out Collection<Directory>>>,
+        blockFactory: () -> ResourceSourceSetInput
+    ) {
+        resourcesMap.forEach{(name, providerOfDirectories) ->
             resources.put(name, blockFactory().also {
-                it.sourceDirectories.fromDisallowChanges(fileCollection)
+                it.sourceDirectories.fromDisallowChanges(providerOfDirectories)
             })
         }
     }

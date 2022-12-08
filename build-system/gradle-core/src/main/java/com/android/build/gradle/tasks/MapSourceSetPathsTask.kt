@@ -14,11 +14,10 @@ import com.android.buildanalyzer.common.TaskCategory
 import com.android.ide.common.resources.writeIdentifiedSourceSetsFile
 import com.android.utils.FileUtils
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.internal.file.DefaultFilePropertyFactory
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -65,8 +64,9 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
     @get:Optional
     abstract val incrementalMergedDir: Property<String>
 
-    @get:Input
-    abstract val localResources: MapProperty<String, FileCollection>
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val localResources: ListProperty<Directory>
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -106,7 +106,7 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
             getPathIfPresentOrNull(incrementalMergedDir, listOf(SdkConstants.FD_MERGED_DOT_DIR)),
             getPathIfPresentOrNull(incrementalMergedDir, listOf(SdkConstants.FD_STRIPPED_DOT_DIR))
         )
-        return localResources.get().values.flatMap { it.files }.asSequence()
+        return localResources.get().map { it.asFile }.asSequence()
             .plus(librarySourceSets.files)
             .plus(extraGeneratedResDir.getOrElse(emptyList()).map(::File))
             .plus(uncreatedSourceSets.map(::File))
@@ -207,12 +207,14 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
                             task.allGeneratedRes.addAll(asFiles)
                         }
                 }
-                task.localResources.set(
-                    resSources.getLocalSourcesAsFileCollection()
-                )
+                creationConfig.registerPostOldVariantApiAction {
+                    resSources.getLocalSources().values.forEach {
+                        task.localResources.addAll(it)
+                    }
+                    task.localResources.disallowChanges()
+                }
             }
             task.allGeneratedRes.disallowChanges()
-            task.localResources.disallowChanges()
             if (androidResourcesCreationConfig.vectorDrawables.useSupportLibrary == false) {
                 task.generatedPngsOutputDir.setDisallowChanges(
                     (creationConfig.artifacts.get(InternalArtifactType.GENERATED_PNGS_RES)

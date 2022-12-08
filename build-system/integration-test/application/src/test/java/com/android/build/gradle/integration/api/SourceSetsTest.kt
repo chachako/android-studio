@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 class SourceSetsTest {
     @JvmField
@@ -141,5 +142,65 @@ class SourceSetsTest {
         Truth.assertThat(result.didWorkTasks.contains(":api-use:debugReproTask")).isTrue()
         Truth.assertThat(result.stdout.findAll("ReproducerTask called !").count())
             .isEqualTo(1)
+    }
+
+    /**
+     * Test that create tasks very early and ensures that a directory registered using the
+     * old variant API is part of the sources for the project.
+     */
+    @Test
+    fun testOldVariantApiWithEarlyTaskRealization() {
+        File(project.getSubproject("build-logic").projectDir,
+            "src/main/java/com/example/generate/SourceProducerPlugin.java").writeText(
+            """
+                        package com.example.generate;
+
+                        import java.io.File;
+                        import org.gradle.api.Plugin;
+                        import org.gradle.api.Project;
+                        import org.gradle.api.provider.Provider;
+                        import org.gradle.api.file.Directory;
+                        import org.gradle.api.tasks.TaskProvider;
+                        import com.android.build.gradle.api.AndroidSourceSet;
+                        import com.android.build.gradle.AppExtension;
+
+
+                        /* A Plugin that demonstrates adding generated res from a task using new variant API */
+                        class SourceProducerPlugin implements Plugin<Project> {
+                            @Override public void apply(Project project) {
+                                project.getPluginManager()
+                                        .withPlugin(
+                                            "com.android.application",
+                                            androidPlugin -> {
+                                                registerGenerationTask(project);
+                                            });
+                            }
+
+                            private void registerGenerationTask(Project project) {
+                                AppExtension extension = project.getExtensions().getByType(AppExtension.class);
+                                project.getTasks().all(task -> { System.out.println("Task : " + task.getName());});
+                                extension.getApplicationVariants().all(variant -> {
+                                    TaskProvider<ReproducerTask> reproTask = project.getTasks().register(
+                                            variant.getName() + "ReproTask",
+                                            ReproducerTask.class,
+                                            task -> {
+                                                task.getOutputDirectory().set(new File(project.getProjectDir(), "tmp_test"));
+                                            }
+                                    );
+                                    AndroidSourceSet variantSourceSet = extension.getSourceSets().getByName(variant.getName());
+                                    Provider<Directory> outputDir = reproTask.flatMap(ReproducerTask::getOutputDirectory);
+                                    variantSourceSet.getRes().srcDir(outputDir);
+                                });
+                            }
+                        }
+                """.trimIndent()
+        )
+        project.executor().run(":api-use:mapDebugSourceSetPaths")
+        val content = File(
+            project.projectDir,
+            "./api-use/build/intermediates/source_set_path_map/debug/file-map.txt"
+        ).readText()
+
+        Truth.assertThat(content).contains("tmp_test")
     }
 }

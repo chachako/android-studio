@@ -35,7 +35,6 @@ import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
-import org.mockito.stubbing.Answer
 
 internal class AssetSourceDirectoriesImplTest {
 
@@ -53,7 +52,7 @@ internal class AssetSourceDirectoriesImplTest {
 
     private lateinit var project: Project
 
-    fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
+    private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
     @Before
     fun setup() {
@@ -86,11 +85,9 @@ internal class AssetSourceDirectoriesImplTest {
         Mockito.`when`(variantServices.projectInfo).thenReturn(projectInfo)
         Mockito.`when`(projectInfo.projectDirectory).thenReturn(project.layout.projectDirectory)
 
-        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer(
-            Answer() {
-                project.provider(callableCaptor.value)
-            }
-        )
+        Mockito.`when`(variantServices.provider(capture(callableCaptor))).thenAnswer {
+            project.provider(callableCaptor.value)
+        }
         Mockito.`when`(variantServices.newListPropertyForInternalUse(Directory::class.java)).also {
             var stub = it
             repeat(5) {
@@ -105,23 +102,26 @@ internal class AssetSourceDirectoriesImplTest {
         )
 
         // directories are added in reverse order, lower priority first, then higher prioriry
-        testTarget.addSources(DirectoryEntries("lowest", listOf(
+        testTarget.addSources(DirectoryEntries("lowest", mutableListOf(
             FileBasedDirectoryEntryImpl("lowest1", temporaryFolder.newFolder("lowest1")),
             FileBasedDirectoryEntryImpl("lowest2", temporaryFolder.newFolder("lowest2")),
             FileBasedDirectoryEntryImpl("lowest3", temporaryFolder.newFolder("lowest3")),
-        )))
+        )
+        ))
 
-        testTarget.addSources(DirectoryEntries("lower", listOf(
+        testTarget.addSources(DirectoryEntries("lower", mutableListOf(
             FileBasedDirectoryEntryImpl("lower1", temporaryFolder.newFolder("lower1")),
             FileBasedDirectoryEntryImpl("lower2", temporaryFolder.newFolder("lower2")),
             FileBasedDirectoryEntryImpl("lower3", temporaryFolder.newFolder("lower3")),
-        )))
+        )
+        ))
 
-        testTarget.addSources(DirectoryEntries("higher", listOf(
+        testTarget.addSources(DirectoryEntries("higher", mutableListOf(
             FileBasedDirectoryEntryImpl("higher1", temporaryFolder.newFolder("higher1")),
             FileBasedDirectoryEntryImpl("higher2", temporaryFolder.newFolder("higher2")),
             FileBasedDirectoryEntryImpl("higher3", temporaryFolder.newFolder("higher3")),
-        )))
+        )
+        ))
 
         Truth.assertThat(testTarget.getAscendingOrderAssetSets(FakeGradleProvider("aapt_env"))).isNotNull()
         val assetSets = testTarget.getAscendingOrderAssetSets(FakeGradleProvider("aapt_env")).get().map { it.get() }

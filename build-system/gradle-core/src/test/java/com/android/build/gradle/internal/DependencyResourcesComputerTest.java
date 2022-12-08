@@ -32,20 +32,23 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.gradle.api.Project;
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier;
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.artifacts.result.ResolvedArtifactResult;
 import org.gradle.api.file.Directory;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Provider;
+import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -258,17 +261,31 @@ public class DependencyResourcesComputerTest {
     }
 
     @NonNull
-    private ResourceSet createResourceSet(
-            List<ResourceSet> folderSets,
-            String name,
-            File... files) {
+    private ResourceSet createResourceSet(List<ResourceSet> folderSets, String name, File... files)
+            throws IOException {
+        File testDir = temporaryFolder.newFolder();
+        Project project = ProjectBuilder.builder().withProjectDir(testDir).build();
+
         ResourceSet mainSet = new ResourceSet(name, ResourceNamespace.RES_AUTO, null, false, null);
-        FileCollection artifact = new FakeFileCollection(Arrays.asList(files));
-        Map<String, FileCollection> artifactMap = new LinkedHashMap<>();
+        List<Directory> directories =
+                Arrays.stream(files)
+                        .map(
+                                file ->
+                                        project.getLayout()
+                                                .getProjectDirectory()
+                                                .dir(file.getAbsolutePath()))
+                        .collect(Collectors.toList());
+        Provider<Collection<Directory>> artifact = project.provider(() -> directories);
+        Map<String, Provider<Collection<Directory>>> artifactMap = new LinkedHashMap<>();
         artifactMap.put(name, artifact);
-        mainSet.addSources(artifact.getFiles());
+        mainSet.addSources(Arrays.asList(files));
         folderSets.add(mainSet);
-        computer.addResourceSets(artifactMap, false, () -> FakeObjectFactory.getFactory().newInstance(DependencyResourcesComputer.ResourceSourceSetInput.class));
+        computer.addResourceSets(
+                artifactMap,
+                () ->
+                        FakeObjectFactory.getFactory()
+                                .newInstance(
+                                        DependencyResourcesComputer.ResourceSourceSetInput.class));
         return mainSet;
     }
 

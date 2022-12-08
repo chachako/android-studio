@@ -56,16 +56,29 @@ open class LayeredSourceDirectoriesImpl(
     // Internal APIs
     //
     override fun addSource(directoryEntry: DirectoryEntry) {
-        variantSources.add(DirectoryEntries(directoryEntry.name, listOf(directoryEntry)))
-        variantServices.newListPropertyForInternalUse(Directory::class.java).also {
-            it.addAll(
-                directoryEntry.asFiles(
-                    variantServices.provider {
-                        variantServices.projectInfo.projectDirectory
-                    }
+        // we check first if we have existing instance of [DirectoryEntries] under the name
+        // provided by the passed [DirectoryEntry]. If we do, we just add it to the list of
+        // directories under that name to respect the priority.
+        // This is dependent on the DirectoryEntry object for e.g. main being distinct from the
+        // DirectoryEntries objects for each variant
+        // otherwise, we just add a new one.
+        val existingDirectories = variantSources.get().find { entries -> entries.name == directoryEntry.name }
+        if (existingDirectories != null) {
+            existingDirectories.directoryEntries.add(directoryEntry)
+        } else {
+            variantSources.add(DirectoryEntries(
+                directoryEntry.name, mutableListOf(directoryEntry)
+            ))
+            variantServices.newListPropertyForInternalUse(Directory::class.java).also {
+                it.addAll(
+                    directoryEntry.asFiles(
+                        variantServices.provider {
+                            variantServices.projectInfo.projectDirectory
+                        }
+                    )
                 )
-            )
-            directories.add(it)
+                directories.add(it)
+            }
         }
     }
 
@@ -97,17 +110,35 @@ open class LayeredSourceDirectoriesImpl(
      * Returns the list of local source files which filters out the user added folders as well as
      * any generated folders.
      */
-    fun getLocalSourcesAsFileCollection(): Map<String, FileCollection> =
+    fun getLocalSources(): Map<String, Provider<out Collection<Directory>>> =
         getVariantSources().associate { directoryEntries ->
-            directoryEntries.name to
-                    variantServices.fileCollection(directoryEntries.directoryEntries
-                        .filterNot { it.isUserAdded || it.isGenerated}
-                        .map { it.asFiles(
-                            variantServices.provider {
-                                variantServices.projectInfo.projectDirectory
-                            })
+            val projectDir = variantServices.provider {
+                variantServices.projectInfo.projectDirectory
+            }
+
+            // each [DirectoryEntries] contains a list of [DirectoryEntry] but we need
+            // to return a [Provider] on a single collection of [Directory].
+            //
+            // In order to achieve that, basically, use [Provider]'s zip method to zip
+            // up providers together and flatten the list of list into just one list.
+            var currentZippedValue: Provider<out Collection<Directory>>? = null
+            directoryEntries.directoryEntries
+                .filterNot { it.isUserAdded || it.isGenerated }
+                .forEach {
+                    currentZippedValue = if (currentZippedValue == null) {
+                        it.asFiles(projectDir)
+                    } else {
+                        currentZippedValue!!.zip(it.asFiles(projectDir)) {
+                                d1: Collection<Directory>, d2: Collection<Directory> ->
+                            mutableListOf<Directory>().also { result ->
+                                result.addAll(d1)
+                                result.addAll(d2)
+                            }
                         }
-                    )
+                    }
+                }
+            directoryEntries.name to (currentZippedValue ?:
+                variantServices.provider { listOf() })
         }
 
     /*
