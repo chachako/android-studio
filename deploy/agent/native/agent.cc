@@ -220,7 +220,7 @@ jint HandleAgentRequest(jvmtiEnv* jvmti, JNIEnv* jni, char* socket_name) {
 }
 
 static void SlicerLogger(const std::string& msg) {
-  Log::V(msg.c_str());
+  Log::V("%s", msg.c_str());
   LogEvent(msg);
 }
 
