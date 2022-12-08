@@ -77,19 +77,18 @@ class UastImplementationDetector : Detector(), SourceCodeScanner {
         }
 
         private fun isAllowedUastImplementation(fqName: String): Boolean = when (fqName) {
+            "org.jetbrains.uast.java.JavaUDeclarationsExpression", // no plugin API to create this
             "org.jetbrains.uast.java.JavaUastLanguagePlugin", // plugin
-            "org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin", // plugin
             "org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService", // service
-            // TODO(b/229742431): remove FE1.0-specific uses
-            "org.jetbrains.uast.kotlin.KotlinUastResolveProviderService", // service
             "org.jetbrains.uast.kotlin.KotlinBinaryExpressionWithTypeKinds", // See below
             "org.jetbrains.uast.kotlin.KotlinBinaryOperators", // no API to retrieve lang-specific op
             "org.jetbrains.uast.kotlin.KotlinPostfixOperators", // we need a consolidated place :\
             "org.jetbrains.uast.kotlin.KotlinQualifiedExpressionAccessTypes", // again
-            "org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds", // and again
-            "org.jetbrains.uast.java.JavaUDeclarationsExpression", // no plugin API to create this
-            "org.jetbrains.uast.java.UnknownJavaExpression", // no common interface (yet)
-            "org.jetbrains.uast.kotlin.UnknownKotlinExpression" -> true // no common interface (yet)
+            "org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin", // plugin
+            // TODO(b/229742431, b/251847039): remove FE1.0-specific uses
+            "org.jetbrains.uast.kotlin.KotlinUastResolveProviderService", // FE1.0 service
+            "org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds" // and again
+            -> true
             else -> false
         }
     }
