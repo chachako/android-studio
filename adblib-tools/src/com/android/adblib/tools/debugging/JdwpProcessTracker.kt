@@ -15,13 +15,23 @@
  */
 package com.android.adblib.tools.debugging
 
-import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.DeviceState
 import com.android.adblib.scope
+import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.impl.JdwpProcessTrackerImpl
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.isActive
+import java.time.Duration
 
 /**
  * Tracks the list of active [JdwpProcess] processes on a given [ConnectedDevice].
@@ -61,8 +71,8 @@ interface JdwpProcessTracker {
          * of a given [device]. Use the [JdwpProcessTracker.processesFlow] property to access
          * or collect the list of active [JdwpProcess].
          */
-        fun create(session: AdbSession, device: ConnectedDevice): JdwpProcessTracker {
-            return JdwpProcessTrackerImpl(session, device)
+        fun create(device: ConnectedDevice): JdwpProcessTracker {
+            return JdwpProcessTrackerImpl(device)
         }
     }
 }
@@ -72,3 +82,55 @@ fun Throwable.rethrowCancellation() {
         throw this
     }
 }
+
+/**
+ * Device cache key for [jdwpProcessTracker]
+ */
+@Suppress("PrivatePropertyName")
+private val JDWP_PROCESS_TRACKER_KEY = CoroutineScopeCache.Key<JdwpProcessTracker>("JdwpProcessTracker device cache entry")
+
+/**
+ * The default [JdwpProcessTracker] for this device, giving access to the list of [JdwpProcess]
+ * currently active on the device (through a [StateFlow]).
+ *
+ * See also [ConnectedDevice.jdwpProcessFlow] to access a more user-friendly version of
+ * the [StateFlow], i.e. a [Flow] that tracks the lifetime of the [ConnectedDevice].
+ */
+val ConnectedDevice.jdwpProcessTracker: JdwpProcessTracker
+    get() {
+        return this.cache.getOrPut(JDWP_PROCESS_TRACKER_KEY) {
+            JdwpProcessTracker.create(this)
+        }
+    }
+
+@Suppress("PrivatePropertyName")
+private val JDWP_PROCESS_TRACKER_RETRY_DELAY = Duration.ofSeconds(2)
+
+/**
+ * The [Flow] of [processes][JdwpProcess] currently active on the device.
+ *
+ * The [Flow] starts when the device becomes [DeviceState.ONLINE] and ends
+ * when the device is disconnected [DeviceState.DISCONNECTED].
+ */
+val ConnectedDevice.jdwpProcessFlow : Flow<List<JdwpProcess>>
+    get() {
+        val device = this
+        return this.deviceInfoFlow
+            .filter {
+                // Wait until device is "ONLINE"
+                it.deviceState == DeviceState.ONLINE
+            }.flatMapConcat {
+                device.jdwpProcessTracker.processesFlow
+            }.retryWhen { throwable, _ ->
+                device.thisLogger(session).warn(
+                    throwable,
+                    "Device process tracking failed for device $device " +
+                            "($throwable), retrying in ${JDWP_PROCESS_TRACKER_RETRY_DELAY.seconds} sec"
+                )
+                // We retry as long as the device is valid
+                if (device.scope.isActive) {
+                    delay(JDWP_PROCESS_TRACKER_RETRY_DELAY.toMillis())
+                }
+                device.scope.isActive
+            }.flowOn(session.host.ioDispatcher)
+    }

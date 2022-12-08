@@ -78,7 +78,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
             Assert.assertNull(fakeDevice.getClient(pid11))
         }
 
-        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
         // Collecting the flow deterministically is a little tricky, as the list of events
         // in the flow depend on how fast FakeAdbServer emits events from the "track-jdwp"
         // event and how fast adblib collects and emits these events in the jdwp tracker
@@ -176,7 +176,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
         val pid11 = 11
         fakeDevice.startClient(pid10, 100, "a.b.c", false)
         fakeDevice.startClient(pid11, 101, "a.b.c.e", true)
-        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
 
         // Act
         val processListFlow = jdwpTracker.processesFlow
@@ -228,7 +228,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
 
         // Act
         val listOfProcessList = CopyOnWriteArrayList<List<JdwpProcess>>()
-        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
         launch {
             fakeDevice.startClient(pid10, 0, "a.b.c", false)
             fakeDevice.startClient(pid11, 0, "a.b.c.e", false)
@@ -273,7 +273,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
         exceptionRule.expectMessage("My Test Exception")
         fakeDevice.startClient(pid10, 0, "a.b.c", false)
 
-        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
         jdwpTracker.processesFlow.collect {
             throw Exception("My Test Exception")
         }
@@ -307,7 +307,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
         exceptionRule.expectMessage("My Test Exception")
         fakeDevice.startClient(pid10, 0, "a.b.c", false)
 
-        val jdwpTracker = JdwpProcessTracker.create(hostServices.session, connectedDevice)
+        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
         jdwpTracker.processesFlow.collect {
             cancel("My Test Exception")
         }

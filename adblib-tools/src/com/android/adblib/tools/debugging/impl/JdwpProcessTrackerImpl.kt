@@ -16,7 +16,6 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbDeviceServices
-import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.ProcessIdList
 import com.android.adblib.emptyProcessIdList
@@ -39,9 +38,11 @@ import java.io.EOFException
 import java.time.Duration
 
 internal class JdwpProcessTrackerImpl(
-  private val session: AdbSession,
   override val device: ConnectedDevice
 ): JdwpProcessTracker {
+
+    private val session
+        get() = device.session
 
     private val logger = thisLogger(session)
 

@@ -19,15 +19,13 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
-import com.android.adblib.DeviceState
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
-import com.android.adblib.tools.debugging.JdwpProcessTracker
-import com.android.adblib.trackDeviceInfo
+import com.android.adblib.tools.debugging.jdwpProcessFlow
 import com.android.adblib.trackDevices
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
@@ -40,14 +38,10 @@ import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -121,42 +115,17 @@ internal class AdbLibDeviceClientManager(
     private fun launchProcessTracking(device: ConnectedDevice) {
         device.scope.launch(session.host.ioDispatcher) {
             logger.debug { "Starting process tracking for device $iDevice" }
+            val processEntryMap = mutableMapOf<Int, AdblibClientWrapper>()
             try {
-                session.trackDeviceInfo(deviceSelector)
-                    .filter {
-                        // Wait until device is "ONLINE"
-                        it.deviceState == DeviceState.ONLINE
-                    }.map {
-                        // Run the 'jdwp-track' service and collect PIDs
-                        trackProcesses(device)
-                    }.retryWhen { throwable, _ ->
-                        logger.warn(
-                            throwable,
-                            "Device process tracking failed for device $deviceSelector " +
-                                    "($throwable), retrying in ${retryDelay.seconds} sec"
-                        )
-                        // We retry as long as the device is valid
-                        if (device.scope.isActive) {
-                            delay(retryDelay.toMillis())
-                        }
-                        device.scope.isActive
-                    }.collect()
+                // Run the 'jdwp-track' service and collect PIDs
+                device.jdwpProcessFlow
+                    .collect { processList ->
+                        updateProcessList(device.scope, processEntryMap, processList)
+                    }
             } finally {
+                updateProcessList(device.scope, processEntryMap, emptyList())
                 logger.debug { "Stop process tracking for device $iDevice (scope.isActive=${device.scope.isActive})" }
             }
-        }
-    }
-
-    private suspend fun trackProcesses(device: ConnectedDevice) {
-        val processEntryMap = mutableMapOf<Int, AdblibClientWrapper>()
-        try {
-            JdwpProcessTracker.create(clientManager.session, device)
-                .processesFlow
-                .collect { processList ->
-                    updateProcessList(device.scope, processEntryMap, processList)
-                }
-        } finally {
-            updateProcessList(device.scope, processEntryMap, emptyList())
         }
     }
 
