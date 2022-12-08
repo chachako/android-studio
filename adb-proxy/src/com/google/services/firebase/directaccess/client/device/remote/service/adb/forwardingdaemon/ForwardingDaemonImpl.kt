@@ -17,6 +17,7 @@
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
 import com.android.adblib.AdbChannel
+import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
 import java.nio.ByteBuffer
 import java.time.Duration
@@ -49,8 +50,12 @@ import kotlinx.coroutines.withTimeout
 internal class ForwardingDaemonImpl(
   private val streamOpener: StreamOpener,
   private val scope: CoroutineScope,
-  private val adbSession: AdbSession
+  private val adbSession: AdbSession,
+  private val serverSocketProvider: suspend () -> AdbServerSocket = {
+    adbSession.channelFactory.createServerSocket()
+  }
 ) : ForwardingDaemon {
+
   private val streams = mutableMapOf<Int, Stream>()
   private val startedLatch = Mutex(locked = true)
   private val started = AtomicBoolean(false)
@@ -70,7 +75,7 @@ internal class ForwardingDaemonImpl(
     streamOpener.connect(this)
 
     withContext(Dispatchers.IO) {
-      adbSession.channelFactory.createServerSocket().use { serverSocket ->
+      serverSocketProvider().use { serverSocket ->
         devicePort = serverSocket.bind().port
         startedLatch.unlock()
         while (true) {

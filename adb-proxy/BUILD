@@ -12,12 +12,16 @@ iml_module(
     name = "studio.adb-proxy",
     srcs = ["src"],
     iml_files = ["adb-proxy.iml"],
+    test_srcs = ["testSrc"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/adblib:studio.android.sdktools.adblib[module]",
         "//tools/adt/idea/.idea/libraries:adb_proxy_proto",
+        "//tools/adt/idea/.idea/libraries:mockito[test]",
+        "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
+        "//tools/adt/idea/.idea/libraries:truth[test]",
     ],
 )
 

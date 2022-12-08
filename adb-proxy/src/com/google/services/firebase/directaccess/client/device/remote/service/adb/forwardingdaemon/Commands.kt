@@ -23,20 +23,20 @@ import java.nio.ByteOrder
 import java.util.zip.CRC32
 
 // Constants from
-// https://source.corp.google.com/android/packages/modules/adb/protocol.txt;l=212;rcl=d6d8cc70fa00de9e556ad37b1382208ece298685
-private const val CNXN = 0x4E584E43
-private const val OPEN = 0x4E45504F
-private const val OKAY = 0x59414B4F
-private const val CLSE = 0x45534C43
-private const val WRTE = 0x45545257
+// https://cs.android.com/android/_/android/platform/packages/modules/adb/+/master:protocol.txt;l=210;drc=ebf09dd6e6cf295df224730b1551606c521e74a9
+internal const val CNXN = 0x4E584E43
+internal const val OPEN = 0x4E45504F
+internal const val OKAY = 0x59414B4F
+internal const val CLSE = 0x45534C43
+internal const val WRTE = 0x45545257
 
 /**
  * A command represents a single unit of data exchanged between an ADB server and an ADB daemon.
  *
  * Commands are outlined briefly in
- * [protocol.txt](https://source.corp.google.com/android/packages/modules/adb/protocol.txt). In
- * short, commands are a 24-byte packet followed by payload data (if applicable). ADB's packets are
- * laid out using six 32-bit integers (in little endian).
+ * [protocol.txt](https://cs.android.com/android/_/android/platform/packages/modules/adb/+/master:protocol.txt;drc=ebf09dd6e6cf295df224730b1551606c521e74a9).
+ * In short, commands are a 24-byte packet followed by payload data (if applicable). ADB's packets
+ * are laid out using six 32-bit integers (in little endian).
  *
  * The packets are laid out as follows:
  * 1. Command type (one of CNXN, OPEN, OKAY, CLSE, or WRTE). There are commands we don't support in
