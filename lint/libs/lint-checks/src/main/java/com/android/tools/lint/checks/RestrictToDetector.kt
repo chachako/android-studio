@@ -51,10 +51,10 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UTypeReferenceExpression
+import org.jetbrains.uast.UUnknownExpression
 import org.jetbrains.uast.UastEmptyExpression
 import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.getParentOfType
-import org.jetbrains.uast.java.UnknownJavaExpression
 import org.jetbrains.uast.util.isArrayInitializer
 
 class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
@@ -500,7 +500,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                     "PACKAGE_PRIVATE" -> return VISIBILITY_PACKAGE_PRIVATE
                     "PACKAGE" -> return VISIBILITY_PACKAGE_PRIVATE
                 }
-            } else if (value is UnknownJavaExpression) {
+            } else if (value is UUnknownExpression) {
                 // Workaround for https://youtrack.jetbrains.com/issue/KT-47290 -- see
                 // https://issuetracker.google.com/190113936 for an applicable scenario
                 val sourcePsi = value.sourcePsi

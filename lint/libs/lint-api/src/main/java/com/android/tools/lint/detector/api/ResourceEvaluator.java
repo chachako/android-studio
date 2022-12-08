@@ -72,9 +72,9 @@ import org.jetbrains.uast.UParenthesizedExpression;
 import org.jetbrains.uast.UQualifiedReferenceExpression;
 import org.jetbrains.uast.UReferenceExpression;
 import org.jetbrains.uast.USimpleNameReferenceExpression;
+import org.jetbrains.uast.UUnknownExpression;
 import org.jetbrains.uast.UastCallKind;
 import org.jetbrains.uast.UastFacade;
-import org.jetbrains.uast.java.UnknownJavaExpression;
 
 /** Evaluates constant expressions */
 public class ResourceEvaluator {
@@ -755,7 +755,7 @@ public class ResourceEvaluator {
                         && unit.getSourcePsi() instanceof PsiLiteralExpression) { // bytecode
                     PsiLiteralExpression psi = (PsiLiteralExpression) unit.getSourcePsi();
                     return getDimensionFromIntValue(psi.getValue());
-                } else if (unit instanceof UnknownJavaExpression) {
+                } else if (unit instanceof UUnknownExpression) {
                     // some other PSI problem
                     return null;
                 }
