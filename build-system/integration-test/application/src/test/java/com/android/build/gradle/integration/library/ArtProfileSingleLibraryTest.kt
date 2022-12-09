@@ -35,6 +35,8 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.jar.JarFile
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import kotlin.io.path.inputStream
 
 class ArtProfileSingleLibraryTest {
 
@@ -124,7 +126,7 @@ class ArtProfileSingleLibraryTest {
         )
 
         val result = project.executor()
-                .run(":lib:bundleReleaseAar", ":app:assembleRelease")
+                .run(":lib:bundleReleaseAar", ":app:assembleRelease", ":app:makeApkFromBundleForRelease")
         Truth.assertThat(result.failedTasks).isEmpty()
 
         val libFile = FileUtils.join(
@@ -197,5 +199,29 @@ class ArtProfileSingleLibraryTest {
                 Truth.assertThat(artProfileMetadataEntry.method).isEqualTo(ZipEntry.STORED)
             }
         }
+
+        val bundleApks = project.getSubproject(":app").getIntermediateFile("apks_from_bundle", "release", "bundle.apks").toPath()
+
+        val base: ByteArray
+        ZipInputStream(bundleApks.inputStream().buffered()).use {
+            while (true) {
+                val entry = it.nextEntry ?: throw AssertionError("Base apk not found")
+                if (entry.name == "splits/base-master.apk") {
+                    base = it.readAllBytes()
+                    break
+                }
+            }
+        }
+        val found = mutableSetOf<String>()
+        ZipInputStream(base.inputStream()).use {
+            while (true) {
+                val entry = it.nextEntry ?: break
+                if (entry.name.startsWith("assets/dexopt/baseline.prof")) {
+                    found += entry.name
+                    Truth.assertThat(entry.method).isEqualTo(ZipEntry.STORED)
+                }
+            }
+        }
+        Truth.assertThat(found).containsExactly("assets/dexopt/baseline.prof", "assets/dexopt/baseline.profm")
     }
 }
