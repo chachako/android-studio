@@ -55,8 +55,6 @@ fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -
     }
     action(this)
 }.addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
-    .addGradleProperties("android.privacySandboxSdk.apiGenerator=androidx.privacysandbox.tools:tools-apigenerator:1.0.0-SNAPSHOT")
-    .addGradleProperties("android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies=org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC,org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
     .create()
 
 
