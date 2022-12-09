@@ -21,6 +21,7 @@ import com.android.build.api.instrumentation.ManagedDeviceTestRunnerFactory
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
 import com.google.firebase.testlab.gradle.Orientation
+import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import javax.inject.Inject
 import org.gradle.api.Project
 import org.gradle.api.tasks.Input
@@ -55,9 +56,18 @@ open class ManagedDeviceImpl @Inject constructor(private val name: String)
         useOrchestrator: Boolean,
         enableEmulatorDisplay: Boolean,
     ): ManagedDeviceTestRunner {
-        return ManagedDeviceTestRunner(
-            TestLabBuildService.RegistrationAction()
-                .registerIfAbsent(project.gradle.sharedServices)
-        )
+        val extension = project.extensions.getByType(TestLabGradlePluginExtension::class.java)
+        return if (extension.serviceAccountCredentials.isPresent) {
+            ManagedDeviceTestRunner(
+                TestLabBuildService.RegistrationAction{
+                    extension.serviceAccountCredentials.get().asFile
+                }.registerIfAbsent(project.gradle.sharedServices)
+            )
+        } else {
+            ManagedDeviceTestRunner(
+                TestLabBuildService.RegistrationAction()
+                    .registerIfAbsent(project.gradle.sharedServices)
+            )
+        }
     }
 }

@@ -21,6 +21,7 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.api.AndroidBasePlugin
 import com.google.firebase.testlab.gradle.ManagedDevice
+import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -43,6 +44,8 @@ class TestLabGradlePlugin : Plugin<Project> {
                 ManagedDevice::class.java,
                 ManagedDeviceImpl::class.java
             )
+
+            project.extensions.create("firebaseTestLab", TestLabGradlePluginExtension::class.java)
         }
     }
 }

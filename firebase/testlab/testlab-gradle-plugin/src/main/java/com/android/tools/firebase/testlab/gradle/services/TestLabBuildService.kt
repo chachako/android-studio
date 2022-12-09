@@ -139,7 +139,12 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     }
 
     private val credential = parameters.credentialFile.get().asFile.inputStream().use {
-        GoogleCredential.fromStream(it)
+        GoogleCredential.fromStream(it).createScoped(
+            listOf(
+                // Scope for Cloud Tool Results API and Cloud Testing API.
+                "https://www.googleapis.com/auth/cloud-platform",
+            )
+        )
     }
 
     private val httpRequestInitializer: HttpRequestInitializer = HttpRequestInitializer { request ->
@@ -832,7 +837,14 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                         it, StandardCharsets.UTF_8,
                         GenericJson::class.java
                     )
-                    fileContents["quota_project_id"] as? String
+
+                    val quota = fileContents["quota_project_id"] as? String
+                    if (!quota.isNullOrBlank()) {
+                        quota
+                    } else {
+                        // Falls-back to project ID.
+                        fileContents["project_id"] as? String
+                    }
                 }
                 if (quotaProjectName.isNullOrBlank()) {
                     throwCredentialNotFoundError()
