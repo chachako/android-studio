@@ -65,7 +65,7 @@ maven_library(
     bundled_deps = [
         "//tools/base/common/version",
     ],
-    coordinates = "com.android.tools:common:" + BASE_VERSION,
+    coordinates = "com.android.tools:common",
     description = "common library used by other Android tools libraries.",
     module_name = "common",
     notice = "NOTICE",
@@ -73,6 +73,7 @@ maven_library(
     resources = [
         ":tools.common.resources",
     ],
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         "//tools/base/annotations",

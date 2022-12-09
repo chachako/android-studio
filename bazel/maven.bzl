@@ -367,16 +367,30 @@ maven_repository = rule(
     implementation = _maven_repository_impl,
 )
 
-def split_coordinates(coordinates):
+def split_coordinates(coordinates, version):
     parts = coordinates.split(":")
-    if len(parts) != 3:
-        print("Unsupported coordinates")
-    segments = parts[0].split(".") + [parts[1], parts[2]]
+    if len(parts) != (2 if version else 3) or "" in parts:
+        fail(
+            "Could not determine maven_library version.\n" +
+            "Invalid maven_library coordinates:\n" +
+            "    coordinates = \"" + coordinates + "\",\n" +
+            (("    version = \"" + version + "\",\n") if version else "") +
+            "\n" +
+            "Expected definitions of one of these forms:\n" +
+            "    coordinates = \"com.android.example:library:1.2.3\",\n" +
+            "or\n" +
+            "    coordinates = \"com.android.example:library\",\n" +
+            "    version = \"1.2.3\",\n",
+        )
+    group_id = parts[0]
+    artifact_id = parts[1]
+    version = version if version else parts[2]
+    repo_path_segments = group_id.split(".") + [artifact_id, version]
     return struct(
-        group_id = parts[0],
-        artifact_id = parts[1],
-        version = parts[2],
-        repo_path = "/".join(segments),
+        group_id = group_id,
+        artifact_id = artifact_id,
+        version = version,
+        repo_path = "/".join(repo_path_segments),
     )
 
 def _maven_library_impl(ctx):
@@ -385,7 +399,7 @@ def _maven_library_impl(ctx):
     pom_deps = [info.pom for info in infos_deps]
     pom_exports = [info.pom for info in infos_exports]
 
-    coordinates = split_coordinates(ctx.attr.coordinates)
+    coordinates = split_coordinates(ctx.attr.coordinates, ctx.attr.version)
     basename = coordinates.artifact_id + "-" + coordinates.version
     pom_name = ctx.attr.pom_name if ctx.attr.pom_name else coordinates.group_id + "." + coordinates.artifact_id
     generate_pom(
@@ -487,6 +501,7 @@ _maven_library = rule(
         "neverlink_deps": attr.label_list(providers = [JavaInfo]),
         "files": attr.label_keyed_string_dict(allow_files = True),
         "coordinates": attr.string(),
+        "version": attr.string(),
         "description": attr.string(),
         "manifest_lines": attr.string_list(),
         "pom_name": attr.string(),
@@ -537,6 +552,7 @@ def maven_library(
         friends = [],
         notice = None,
         coordinates = None,
+        version = None,
         jar_name = None,
         description = None,
         pom_name = None,
@@ -562,7 +578,8 @@ def maven_library(
         bundled_deps: The dependencies that are bundled inside the output jar and not treated as a maven dependency
         friends: The list of kotlin-friends.
         notice: An optional notice file to be included in the jar.
-        coordinates: The maven coordinates of this artifact.
+        coordinates: The maven coordinates of this artifact, can include the version.
+        version: The version of the artifact, if not specified in coordinates.
         jar_name: Optional name for the output jar, otherwise {name}.jar is used.
         exclusions: Files to exclude from the generated pom file.
         lint_*: Lint configuration arguments
@@ -599,6 +616,7 @@ def maven_library(
         bundled_deps = bundled_deps,
         exports = exports,
         coordinates = coordinates,
+        version = version,
         description = description,
         pom_name = pom_name,
         manifest_lines = manifest_lines,
