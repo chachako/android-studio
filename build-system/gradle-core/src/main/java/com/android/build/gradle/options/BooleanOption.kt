@@ -217,14 +217,6 @@ enum class BooleanOption(
 
     ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
-    ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE(
-        "android.bundle.enableUncompressedNativeLibs",
-        true,
-        FeatureStage.SoftlyEnforced(
-            DeprecationReporter.DeprecationTarget.ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE
-        )
-    ),
-
     COMPILE_CLASSPATH_LIBRARY_R_CLASSES("android.useCompileClasspathLibraryRClasses", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
     ENABLE_DEXING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
@@ -550,6 +542,12 @@ enum class BooleanOption(
             "android.enableRTxtResourceShrinking",
             true,
             FeatureStage.Enforced(Version.VERSION_8_0)
+    ),
+
+    ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE(
+        "android.bundle.enableUncompressedNativeLibs",
+        true,
+        FeatureStage.Enforced(Version.VERSION_8_0)
     ),
 
     /* ----------------

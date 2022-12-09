@@ -72,12 +72,8 @@ class CompressNativeLibsInPackageBundleTaskTest(
                     "\nandroid.packagingOptions.jniLibs.useLegacyPackaging = $it\n"
                 )
         }
-        val executor =
-            enableUncompressedNativeLibs?.let {
-                project.executor().with(BooleanOption.ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE, it)
-            } ?: project.executor()
 
-        executor.run(":app:bundleDebug")
+        project.executor().run(":app:bundleDebug")
         val bundleFile =
             project.model()
                 .fetchContainer(AppBundleProjectBuildOutput::class.java)
@@ -90,7 +86,6 @@ class CompressNativeLibsInPackageBundleTaskTest(
             val appBundle = AppBundle.buildFromZip(zip)
             val expectedUncompressNativeLibsEnabledValue =
                 when {
-                    enableUncompressedNativeLibs == false -> false
                     jniLibsUseLegacyPackaging == true -> false
                     else -> true
                 }

@@ -603,11 +603,6 @@ abstract class PackageBundleTask : NonIncrementalTask() {
             task.compressNativeLibs.set(
                 componentProperties.packaging.jniLibs.useLegacyPackagingFromBundle
             )
-            // TODO(b/132103049, b/174695257) Deprecate the BooleanOption with instructions to use
-            //  the DSL instead.
-            if (!creationConfig.services.projectOptions[BooleanOption.ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE]) {
-                task.compressNativeLibs.set(true)
-            }
             task.compressNativeLibs.disallowChanges()
 
             if (creationConfig.dexingCreationConfig.needsMainDexListForBundle) {
