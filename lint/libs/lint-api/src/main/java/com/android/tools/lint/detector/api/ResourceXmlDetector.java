@@ -43,6 +43,6 @@ public abstract class ResourceXmlDetector extends Detector implements XmlScanner
     public void run(@NonNull Context context) {
         // The infrastructure should never call this method on an xml detector since
         // it will run the various visitors instead
-        assert false;
+        assert false : this.getClass().getName();
     }
 }

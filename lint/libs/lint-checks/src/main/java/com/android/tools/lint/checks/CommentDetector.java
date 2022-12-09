@@ -39,6 +39,7 @@ import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.SourceCodeScanner;
 import com.android.tools.lint.detector.api.XmlContext;
 import com.android.tools.lint.model.LintModelVariant;
+import com.android.utils.CharSequences;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import java.util.Collections;
@@ -384,6 +385,33 @@ public class CommentDetector extends ResourceXmlDetector
                 // File ended with a line comment
                 checkComment(context, null, contents, 0, startComment, length);
             }
+        }
+    }
+
+    // Property files
+    @Override
+    public void run(@NonNull Context context) {
+        CharSequence content = context.getContents();
+        if (content == null) {
+            return;
+        }
+        int lineBegin = 0;
+        int length = content.length();
+        while (lineBegin < length) {
+            int lineEnd = CharSequences.indexOf(content, '\n', lineBegin);
+            if (lineEnd == -1) {
+                lineEnd = length;
+            }
+            for (int i = lineBegin; i < lineEnd; i++) {
+                char c = content.charAt(i);
+                if (!Character.isWhitespace(c)) {
+                    if (c == '#' || c == '!') {
+                        checkComment(context, null, content, 0, lineBegin, lineEnd);
+                    }
+                    break;
+                }
+            }
+            lineBegin = lineEnd + 1;
         }
     }
 

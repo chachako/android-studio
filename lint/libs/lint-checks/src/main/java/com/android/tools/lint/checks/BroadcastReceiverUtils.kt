@@ -19,7 +19,6 @@ import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
 import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.isReturningContext
-import com.google.common.annotations.VisibleForTesting
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import org.jetbrains.uast.UCallExpression

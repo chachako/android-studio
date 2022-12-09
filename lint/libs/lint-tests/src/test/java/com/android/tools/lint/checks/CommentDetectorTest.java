@@ -373,4 +373,39 @@ public class CommentDetectorTest extends AbstractCheckTest {
                                 + "@@ -6 +5\n"
                                 + "+ } // ");
     }
+
+    public void testProperties() {
+        // Include property file comments (on # and ! lines), not key/value matches
+        lint().files(
+                        propertyFile(
+                                "local.properties",
+                                ""
+                                        + "# STOPSHIP\n"
+                                        + " ! STOPSHIP\n"
+                                        + "STOPSHIP=STOPSHIP\n"
+                                        + // OK
+                                        "sdk.dir=/Users/test/dev/sdks\n" // OK
+                                ))
+                .variant("release")
+                .run()
+                .expect(
+                        ""
+                                + "local.properties:1: Error: STOPSHIP comment found; points to code which must be fixed prior to release [StopShip]\n"
+                                + "# STOPSHIP\n"
+                                + "  ~~~~~~~~\n"
+                                + "local.properties:2: Error: STOPSHIP comment found; points to code which must be fixed prior to release [StopShip]\n"
+                                + " ! STOPSHIP\n"
+                                + "   ~~~~~~~~\n"
+                                + "2 errors, 0 warnings")
+                .expectFixDiffs(
+                        ""
+                                + "Fix for local.properties line 1: Remove STOPSHIP:\n"
+                                + "@@ -1 +1\n"
+                                + "- # STOPSHIP\n"
+                                + "+ #\n"
+                                + "Fix for local.properties line 2: Remove STOPSHIP:\n"
+                                + "@@ -2 +2\n"
+                                + "-  ! STOPSHIP\n"
+                                + "+  !");
+    }
 }
