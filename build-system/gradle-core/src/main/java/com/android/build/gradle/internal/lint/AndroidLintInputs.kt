@@ -1171,7 +1171,7 @@ abstract class BuildFeaturesInput {
     fun initialize(creationConfig: VariantCreationConfig) {
         viewBinding.setDisallowChanges(creationConfig.buildFeatures.viewBinding)
         coreLibraryDesugaringEnabled.setDisallowChanges(
-            (creationConfig as? ApkCreationConfig)?.dexingCreationConfig?.isCoreLibraryDesugaringEnabled
+            (creationConfig as? ConsumableCreationConfig)?.isCoreLibraryDesugaringEnabledLintCheck
                 ?: false
         )
         namespacingMode.setDisallowChanges(

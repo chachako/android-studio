@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="${projectDir}/library"
+    name=":library"
+    type="LIBRARY"
+    maven="lintKotlin:library:"
+    agpVersion="$androidGradlePluginVersion"
+    buildFolder="build"
+    bootClassPath="${androidSdkDir}/platforms/android-${androidHighestKnownStableApi}/android.jar:${androidSdkDir}/build-tools/30.0.3/core-lambda-stubs.jar"
+    javaSourceLevel="1.8"
+    compileTarget="android-${androidHighestKnownStableApi}"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="debug"/>
+</lint-module>

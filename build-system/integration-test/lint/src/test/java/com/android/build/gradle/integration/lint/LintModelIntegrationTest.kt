@@ -46,7 +46,45 @@ class LintModelIntegrationTest {
             project = project,
             lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
                 .resolve("incremental/lintReportDebug"),
-            modelSnapshotResourceRelativePath = "kotlinmodel/lintDebug",
+            modelSnapshotResourceRelativePath = "kotlinmodel/app/lintDebug",
+            "debug-androidTestArtifact-dependencies.xml",
+            "debug-androidTestArtifact-libraries.xml",
+            "debug-mainArtifact-dependencies.xml",
+            "debug-mainArtifact-libraries.xml",
+            "debug-testArtifact-dependencies.xml",
+            "debug-testArtifact-libraries.xml",
+            "debug.xml",
+            "module.xml",
+        )
+    }
+
+    @Test
+    fun checkLibraryLintModels() {
+        // Enable core library desugaring in library module as regression test for b/260755411
+        TestFileUtils.appendToFile(
+            project.getSubproject("library").buildFile,
+            """
+                android {
+                    compileOptions {
+                        coreLibraryDesugaringEnabled true
+                    }
+                }
+            """.trimIndent()
+        )
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("library").buildFile,
+            "minSdkVersion 15",
+            "minSdkVersion 24"
+        )
+
+        // Check lint runs correctly before asserting about the model.
+        project.executor().run("clean", ":library:lintDebug")
+
+        checkLintModels(
+            project = project,
+            lintModelDir = project.getSubproject("library").intermediatesDir.toPath()
+                .resolve("incremental/lintReportDebug"),
+            modelSnapshotResourceRelativePath = "kotlinmodel/library/lintDebug",
             "debug-androidTestArtifact-dependencies.xml",
             "debug-androidTestArtifact-libraries.xml",
             "debug-mainArtifact-dependencies.xml",
