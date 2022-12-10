@@ -67,7 +67,7 @@ import org.jetbrains.annotations.TestOnly;
 /**
  * A resource repository representing unpacked contents of a non-namespaced AAR.
  *
- * For performance reasons ID resources defined using @+id syntax in layout XML files are
+ * <p>For performance reasons ID resources defined using @+id syntax in layout XML files are
  * obtained from R.txt instead, when it is available. This means that
  * {@link ResourceItem#getOriginalSource()} method may return null for such ID resources.
  */
@@ -107,7 +107,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     myResourcePathPrefix = loader.getResourcePathPrefix();
     myResourceUrlPrefix = loader.getResourceUrlPrefix();
 
-    myManifestPackageName = NullableLazyValue.createValue(() -> {
+    myManifestPackageName = NullableLazyValue.lazyNullable(() -> {
       try {
         PathString manifestPath = getSourceFile("../" + FN_ANDROID_MANIFEST_XML, true);
         return AndroidManifestPackageNameUtils.getPackageNameFromManifestFile(manifestPath);
@@ -264,7 +264,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * Loads contents the repository from a cache file on disk.
    * @see ResourceSerializationUtil#createPersistentCache
    */
-  private boolean loadFromPersistentCache(@NotNull Path cacheFile, @NotNull byte[] fileHeader) {
+  private boolean loadFromPersistentCache(@NotNull Path cacheFile, byte @NotNull [] fileHeader) {
     try (Base128InputStream stream = new Base128InputStream(cacheFile)) {
       if (!stream.validateContents(fileHeader)) {
         return false; // Cache file header doesn't match.
