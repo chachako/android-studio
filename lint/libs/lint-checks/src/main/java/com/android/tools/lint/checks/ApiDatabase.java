@@ -22,6 +22,7 @@ import static com.android.tools.lint.detector.api.ApiConstraint.SdkApiConstraint
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.lint.client.api.LintClient;
+import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.google.common.io.Files;
 import java.io.File;
@@ -167,7 +168,7 @@ public class ApiDatabase {
     protected void readData(
             @NonNull LintClient client,
             @NonNull File binaryFile,
-            @NonNull CacheCreator cacheCreator,
+            @Nullable CacheCreator cacheCreator,
             int majorBinaryFormatVersion) {
         if (!binaryFile.exists()) {
             client.log(null, "%1$s does not exist", binaryFile);
@@ -192,6 +193,11 @@ public class ApiDatabase {
 
             // Read in the format number.
             if (b[offset++] != getBinaryFormatVersion(majorBinaryFormatVersion)) {
+                if (cacheCreator == null) {
+                    throw new IllegalStateException(
+                            "API database binary file uses an incompatible format version: "
+                                    + binaryFile);
+                }
                 // Force regeneration of new binary data with up to date format.
                 if (cacheCreator.create(client, binaryFile)) {
                     readData(client, binaryFile, cacheCreator, majorBinaryFormatVersion); // Recurse
@@ -446,6 +452,12 @@ public class ApiDatabase {
                     assert colon != -1 : segment;
                     int sdk = Integer.parseInt(segment.substring(0, colon));
                     int version = Integer.parseInt(segment.substring(colon + 1));
+
+                    // Force ApiConstraint class to be loaded before SdkApiConstraint.
+                    // TODO(b/263504975): Remove once b/263504975 is fixed.
+                    @SuppressWarnings("unused")
+                    ApiConstraint unused = ApiConstraint.NONE;
+
                     if (!isValidApiLevel(version)) {
                         /* Temporarily remove log warning until b/260716454 is checked in and
                            the Integer.MAX_VALUE entries disappear from the SDK.

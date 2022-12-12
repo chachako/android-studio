@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import kotlin.text.Charsets;
 import kotlin.text.StringsKt;
@@ -88,7 +89,12 @@ public class ApiLookup extends ApiDatabase {
 
     private static final Map<AndroidVersion, SoftReference<ApiLookup>> instances = new HashMap<>();
     /** The API database this lookup is based on */
-    @NonNull public final File xmlFile;
+    @Nullable public final File xmlFile;
+
+    private static final String API_DATABASE_BINARY_PATH_PROPERTY =
+            "android.lint.api-database-binary-path";
+
+    static String overrideDbBinaryPath = System.getProperty(API_DATABASE_BINARY_PATH_PROPERTY);
 
     /**
      * Returns an instance of the API database
@@ -256,11 +262,22 @@ public class ApiLookup extends ApiDatabase {
             return null;
         }
 
+        if (overrideDbBinaryPath != null) {
+            File binaryData = new File(overrideDbBinaryPath);
+            if (!binaryData.isFile()) {
+                throw new IllegalArgumentException(
+                        String.format(
+                                Locale.US,
+                                "API database binary file specified by system property %s not found: %s",
+                                API_DATABASE_BINARY_PATH_PROPERTY,
+                                binaryData));
+            }
+            return new ApiLookup(client, null, binaryData);
+        }
         File cacheDir = client.getCacheDir(null, true);
         if (cacheDir == null) {
             cacheDir = xmlFile.getParentFile();
         }
-
         File binaryData = new File(cacheDir, getCacheFileName(xmlFile.getName(), version));
 
         if (DEBUG_FORCE_REGENERATE_BINARY) {
@@ -319,10 +336,14 @@ public class ApiLookup extends ApiDatabase {
 
     /** Use one of the {@link #get} factory methods instead. */
     private ApiLookup(
-            @NonNull LintClient client, @NonNull File xmlFile, @Nullable File binaryFile) {
+            @NonNull LintClient client, @Nullable File xmlFile, @Nullable File binaryFile) {
         this.xmlFile = xmlFile;
         if (binaryFile != null) {
-            readData(client, binaryFile, cacheCreator(xmlFile), API_LOOKUP_BINARY_FORMAT_VERSION);
+            readData(
+                    client,
+                    binaryFile,
+                    xmlFile != null ? cacheCreator(xmlFile) : null,
+                    API_LOOKUP_BINARY_FORMAT_VERSION);
             initializeApiConstraints();
         }
     }
@@ -1268,5 +1289,21 @@ public class ApiLookup extends ApiDatabase {
     @VisibleForTesting
     static void dispose() {
         instances.clear();
+    }
+
+    public static boolean create(
+            @NonNull LintClient client, @NonNull File apiFile, @NonNull File outputFile) {
+        if (!outputFile.getParentFile().isDirectory()) {
+            boolean ok = outputFile.getParentFile().mkdirs();
+            if (!ok) {
+                return false;
+            }
+        }
+
+        boolean ok = cacheCreator(apiFile).create(client, outputFile);
+        if (ok) {
+            System.out.println("Created API database file " + outputFile);
+        }
+        return ok;
     }
 }

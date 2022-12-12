@@ -16,12 +16,15 @@
 
 package com.android.tools.lint.checks;
 
+import static com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS;
 import static com.android.tools.lint.checks.ApiClass.STRIP_MEMBERS;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.sdklib.IAndroidTarget;
 import com.android.testutils.TestUtils;
+import com.android.tools.lint.MainTest;
+import com.android.tools.lint.checks.infrastructure.LintTestUtils;
 import com.android.tools.lint.checks.infrastructure.TestLintResult;
 import com.android.tools.lint.checks.infrastructure.TestLintTask;
 import com.android.tools.lint.checks.infrastructure.TestMode;
@@ -36,6 +39,7 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import kotlin.io.FilesKt;
 import org.intellij.lang.annotations.Language;
@@ -628,6 +632,121 @@ public class ApiLookupTest extends AbstractCheckTest {
 
     public void testLookUpContractSettings() {
         assertEquals(14, getFieldVersion("android/provider/ContactsContract$Settings", "DATA_SET"));
+    }
+
+    public void testPreCreateDatabase() {
+        int apiLevel = 22;
+        String codename = "stable";
+
+        File root = getTempDir();
+        File outputFile = new File(root, "bin/api_database.bin");
+
+        // Stub SDK
+        File sdkHome = new File(root, "sdk");
+        File platformDir = new File(sdkHome, "platforms/" + codename);
+        File apiFile = new File(platformDir, "data/api-versions.xml");
+        File sourceProp = new File(platformDir, "source.properties");
+
+        //noinspection ResultOfMethodCallIgnored
+        sourceProp.getParentFile().mkdirs();
+        FilesKt.writeText(
+                sourceProp,
+                "Pkg.Desc=Android SDK Platform "
+                        + codename
+                        + "\n"
+                        + "Pkg.UserSrc=false\n"
+                        + "Platform.Version=13\n"
+                        + "AndroidVersion.CodeName="
+                        + codename
+                        + "\n"
+                        + "Pkg.Revision=2\n"
+                        + "AndroidVersion.ApiLevel="
+                        + apiLevel
+                        + "\n"
+                        + "AndroidVersion.ExtensionLevel=3\n"
+                        + "AndroidVersion.IsBaseSdk=true\n"
+                        + "Layoutlib.Api=15\n"
+                        + "Layoutlib.Revision=1\n"
+                        + "Platform.MinToolsRev=22",
+                Charsets.UTF_8);
+
+        //noinspection ResultOfMethodCallIgnored
+        apiFile.getParentFile().mkdirs();
+        FilesKt.writeText(
+                apiFile,
+                ""
+                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<api version=\"3\">\n"
+                        + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "                <method name=\"clone()Ljava/lang/Object;\"/>\n"
+                        + "                <method name=\"equals(Ljava/lang/Object;)Z\"/>\n"
+                        + "                <method name=\"finalize()V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/Manifest\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "        </class>\n"
+                        // Not real API; here so we can make sure we're really using this database
+                        + "        <class name=\"android/MyTest\" since=\"14\">\n"
+                        + "        </class>\n"
+                        + "</api>\n",
+                Charsets.UTF_8);
+
+        MainTest.checkDriver(
+                "Created API database file ROOT/bin/api_database.bin",
+                "",
+                ERRNO_SUCCESS,
+                new String[] {"--XgenerateApiLookup", apiFile.getPath(), outputFile.getPath()},
+                s -> {
+                    s = s.replace(root.getPath(), "ROOT");
+                    try {
+                        s = s.replace(root.getCanonicalPath(), "ROOT");
+                    } catch (IOException ignore) {
+                    }
+                    return LintTestUtils.dos2unix(s);
+                },
+                null);
+        com.android.tools.lint.checks.infrastructure.TestLintClient client =
+                new com.android.tools.lint.checks.infrastructure.TestLintClient() {
+                    @Override
+                    public File getSdkHome() {
+                        return sdkHome;
+                    }
+                };
+        List<IAndroidTarget> targets = client.getPlatformLookup().getTargets(false);
+        assertEquals(1, targets.size());
+        IAndroidTarget target = targets.get(0);
+        assertEquals(codename, target.getVersion().getCodename());
+
+        // Change API contents to not contain my custom class (android.MyTest)
+        // to make sure we're really using the binary we point to, not a newly
+        // recreated version of the database:
+        FilesKt.writeText(
+                apiFile,
+                ""
+                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<api version=\"3\">\n"
+                        + "        <class name=\"java/lang/Object\" since=\"1\">\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "                <method name=\"clone()Ljava/lang/Object;\"/>\n"
+                        + "                <method name=\"equals(Ljava/lang/Object;)Z\"/>\n"
+                        + "                <method name=\"finalize()V\"/>\n"
+                        + "        </class>\n"
+                        + "</api>\n",
+                Charsets.UTF_8);
+
+        // Make sure the output isn't older than the input (the API lookup code looks for that)
+        //noinspection ResultOfMethodCallIgnored
+        outputFile.setLastModified(apiFile.lastModified());
+        try {
+            ApiLookup.overrideDbBinaryPath = outputFile.getPath();
+            ApiLookup lookup = ApiLookup.get(client, target);
+            assertNotNull(lookup);
+            assertEquals(14, lookup.getClassVersions("android.MyTest").min());
+        } finally {
+            ApiLookup.overrideDbBinaryPath = null;
+        }
     }
 
     public void testFrom() throws IOException {

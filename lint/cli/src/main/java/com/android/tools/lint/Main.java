@@ -33,6 +33,7 @@ import static com.android.tools.lint.detector.api.TextFormat.TEXT;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.lint.checks.ApiLookup;
 import com.android.tools.lint.checks.BuiltinIssueRegistry;
 import com.android.tools.lint.checks.DesugaredMethodLookup;
 import com.android.tools.lint.client.api.Configuration;
@@ -1461,6 +1462,24 @@ public class Main {
                     argumentState.desugaredMethodsPaths = new ArrayList<>();
                 }
                 argumentState.desugaredMethodsPaths.add(path);
+            } else if (arg.equals("--XgenerateApiLookup")) {
+                if (index > args.length - 3) {
+                    System.err.println(
+                            "Expected --XgenerateApiLookup <api-versions.xml> <output-database-file.bin>, "
+                                    + "e.g. $ANDROID_HOME/platforms/android-31/data/api-versions.xml /tmp/api-database.bin");
+                    return ERRNO_INVALID_ARGS;
+                }
+                File apiFile = new File(args[++index]);
+                if (!apiFile.isFile()) {
+                    System.err.println(apiFile + " does not exist");
+                    return ERRNO_INVALID_ARGS;
+                }
+                File outputFile = new File(args[++index]);
+                if (ApiLookup.create(client, apiFile, outputFile)) {
+                    return ERRNO_SUCCESS;
+                } else {
+                    return ERRNO_ERRORS;
+                }
             } else if (arg.equals(ARG_PRINT_INTERNAL_ERROR_STACKTRACE)) {
                 flags.setPrintInternalErrorStackTrace(true);
             } else if (arg.equals(ARG_ANALYZE_ONLY)) {
