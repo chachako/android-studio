@@ -36,7 +36,13 @@ import org.jetbrains.uast.kotlin.providers.impl.KotlinStaticPsiDeclarationProvid
 import java.io.File
 import kotlin.concurrent.withLock
 
-/** This class is FIR version of [UastEnvironment] */
+/**
+ * This class is FIR (or K2) version of [UastEnvironment]
+ *
+ * K2 is a new compiler name that uses FIR as a frontend. Kotlin UAST is
+ * rewritten to use that new frontend via Analysis APIs (backed by FIR),
+ * and named as FIR UAST. We may use K2 UAST interchangeably.
+ */
 class FirUastEnvironment private constructor(
     override val coreAppEnv: CoreApplicationEnvironment,
     override val ideaProject: MockProject,

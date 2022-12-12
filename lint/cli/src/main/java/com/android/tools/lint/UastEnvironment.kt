@@ -31,6 +31,10 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.languageVersionSettings
 import java.io.File
 
+/**
+ * JVM system property to enable FIR UAST
+ * or K2 UAST, as per the new compiler name
+ */
 const val FIR_UAST_KEY = "lint.use.fir.uast"
 private fun useFirUast(): Boolean =
     System.getProperty(FIR_UAST_KEY, "false").toBoolean()
