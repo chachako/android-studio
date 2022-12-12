@@ -33,7 +33,7 @@ import com.android.build.gradle.internal.dsl.AdbOptions as AdbOptionsImpl
 import com.android.build.gradle.internal.dsl.DataBindingOptions as DataBindingOptionsImpl
 import com.android.build.gradle.internal.dsl.ExternalNativeBuild as ExternalNativeBuildImpl
 import com.android.build.gradle.internal.dsl.LintOptions as LintOptionsImpl
-import com.android.build.gradle.internal.dsl.Packaging as PackagingImpl
+import com.android.build.gradle.internal.dsl.PackagingOptions as PackagingImpl
 import com.android.build.gradle.internal.dsl.Splits as SplitsImpl
 import com.android.build.gradle.internal.dsl.TestOptions as TestOptionsImpl
 

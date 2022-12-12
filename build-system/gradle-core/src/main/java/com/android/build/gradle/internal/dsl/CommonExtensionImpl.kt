@@ -350,15 +350,15 @@ abstract class CommonExtensionImpl<
         action.execute(lintOptions)
     }
 
-    override val packagingOptions: com.android.build.gradle.internal.dsl.Packaging
-        get() = packaging as com.android.build.gradle.internal.dsl.Packaging
+    override val packagingOptions: com.android.build.gradle.internal.dsl.PackagingOptions
+        get() = packaging as com.android.build.gradle.internal.dsl.PackagingOptions
 
     override fun packagingOptions(action: Packaging.() -> Unit) {
         action.invoke(packaging)
     }
 
-    override fun packagingOptions(action: Action<com.android.build.gradle.internal.dsl.Packaging>) {
-        action.execute(packaging as com.android.build.gradle.internal.dsl.Packaging)
+    override fun packagingOptions(action: Action<com.android.build.gradle.internal.dsl.PackagingOptions>) {
+        action.execute(packaging as com.android.build.gradle.internal.dsl.PackagingOptions)
     }
 
     override fun productFlavors(action: Action<NamedDomainObjectContainer<ProductFlavor>>) {

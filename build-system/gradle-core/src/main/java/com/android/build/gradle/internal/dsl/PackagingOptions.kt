@@ -138,7 +138,7 @@ import javax.inject.Inject
  * }
  * </pre>
  */
-abstract class Packaging
+abstract class PackagingOptions
 @Inject @WithLazyInitialization("lazyInit") constructor() :
     com.android.builder.model.PackagingOptions,
     com.android.build.api.dsl.Packaging {

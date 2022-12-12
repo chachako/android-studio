@@ -42,7 +42,7 @@ import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.dsl.ExternalNativeBuild
 import com.android.build.gradle.internal.dsl.LintOptions
 import com.android.build.gradle.internal.dsl.Lockable
-import com.android.build.gradle.internal.dsl.Packaging
+import com.android.build.gradle.internal.dsl.PackagingOptions
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.dsl.Splits
@@ -204,7 +204,7 @@ abstract class BaseExtension protected constructor(
 
     abstract fun compileOptions(action: Action<CompileOptions>)
 
-    abstract fun packagingOptions(action: Action<Packaging>)
+    abstract fun packagingOptions(action: Action<PackagingOptions>)
 
     abstract fun jacoco(action: Action<JacocoOptions>)
 
@@ -483,7 +483,7 @@ abstract class BaseExtension protected constructor(
 
     abstract override val lintOptions: LintOptions
 
-    abstract override val packagingOptions: Packaging
+    abstract override val packagingOptions: PackagingOptions
 
     abstract override val productFlavors: NamedDomainObjectContainer<ProductFlavor>
     abstract fun productFlavors(action: Action<NamedDomainObjectContainer<ProductFlavor>>)
