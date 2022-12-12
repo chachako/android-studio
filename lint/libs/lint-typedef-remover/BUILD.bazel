@@ -8,11 +8,12 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.lint:lint-typedef-remover:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint-typedef-remover",
     description = "Utility to remove typedef annotations from classes",
     module_name = "lint-typedef-remover",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-typdef-remover",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/annotations",

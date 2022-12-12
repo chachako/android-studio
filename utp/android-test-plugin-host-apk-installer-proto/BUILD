@@ -4,10 +4,11 @@ load("//tools/base/common:version.bzl", "BASE_VERSION")
 maven_proto_library(
     name = "android-test-plugin-host-apk-installer-proto",
     srcs = glob(["src/main/proto/*.proto"]),
-    coordinates = "com.android.tools.utp:android-test-plugin-host-apk-installer-proto:" + BASE_VERSION,
+    coordinates = "com.android.tools.utp:android-test-plugin-host-apk-installer-proto",
     description = "A protobuf messages used in a UTP plugin to install APKs",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/utp/android-test-plugin-host-apk-installer-proto/src/main/proto",
     resources = glob(["src/main/proto/*.proto"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )

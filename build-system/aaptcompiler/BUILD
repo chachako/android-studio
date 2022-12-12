@@ -8,10 +8,11 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.build:aaptcompiler:" + BUILD_VERSION,
+    coordinates = "com.android.tools.build:aaptcompiler",
     lint_baseline = "lint_baseline.xml",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/build-system/aaptcompiler",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/build-system/aapt2-proto",

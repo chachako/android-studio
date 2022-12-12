@@ -24,9 +24,10 @@ maven_library(
     srcs = glob([
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.build:builder-test-api:" + BUILD_VERSION,
+    coordinates = "com.android.tools.build:builder-test-api",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/build-system/builder-test-api",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/annotations",

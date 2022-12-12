@@ -8,9 +8,10 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.utp:android-test-plugin-host-additional-test-output:" + BASE_VERSION,
+    coordinates = "com.android.tools.utp:android-test-plugin-host-additional-test-output",
     resource_strip_prefix = "tools/base/utp/android-test-plugin-host-additional-test-output/src/main/resources/",
     resources = glob(["src/main/resources/**"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",

@@ -17,8 +17,9 @@ iml_module(
 maven_library(
     name = "annotations",
     srcs = glob(["src/main/java/**"]),
-    coordinates = "com.android.tools:annotations:" + BASE_VERSION,
+    coordinates = "com.android.tools:annotations",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/annotations",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )

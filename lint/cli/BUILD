@@ -13,7 +13,7 @@ maven_library(
     bundled_deps = [
         ":groovy_neverlink",
     ],
-    coordinates = "com.android.tools.lint:lint:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint",
     description = "Lint tools. Both a Command line tool and a library to add lint features to other tools",
     lint_baseline = "lint_baseline.xml",
     module_name = "lint-cli",
@@ -26,6 +26,7 @@ maven_library(
             "src/main/java/**/*.kt",
         ],
     ),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         "//tools/base/lint:tools.lint-api",

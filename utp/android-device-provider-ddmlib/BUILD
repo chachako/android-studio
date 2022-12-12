@@ -8,9 +8,10 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.utp:android-device-provider-ddmlib:" + BASE_VERSION,
+    coordinates = "com.android.tools.utp:android-device-provider-ddmlib",
     resource_strip_prefix = "tools/base/utp/android-device-provider-ddmlib/src/main/resources/",
     resources = glob(["src/main/resources/**"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",

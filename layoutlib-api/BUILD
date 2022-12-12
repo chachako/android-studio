@@ -30,11 +30,12 @@ maven_library(
     srcs = glob([
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.layoutlib:layoutlib-api:" + BASE_VERSION,
+    coordinates = "com.android.tools.layoutlib:layoutlib-api",
     description = "Library to use the rendering library for Android layouts: layoutlib",
     notice = "NOTICE",
     pom_name = "Android Tools layoutlib-api",
     resource_strip_prefix = "tools/base/layoutlib-api",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/annotations",

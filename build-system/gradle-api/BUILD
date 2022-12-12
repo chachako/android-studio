@@ -20,11 +20,12 @@ maven_library(
     bundled_deps = [
         "//tools/base/build-system:gradle-api_neverlink",
     ],
-    coordinates = "com.android.tools.build:gradle-api:" + BUILD_VERSION,
+    coordinates = "com.android.tools.build:gradle-api",
     lint_baseline = "lint_baseline.xml",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/build-system/gradle-api",
     resources = [":resources"],
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         "@maven//:org.ow2.asm.asm",

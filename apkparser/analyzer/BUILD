@@ -56,11 +56,12 @@ maven_library(
     bundled_deps = [
         ":tools.analyzer",
     ],
-    coordinates = "com.android.tools.apkparser:apkanalyzer:" + BASE_VERSION,
+    coordinates = "com.android.tools.apkparser:apkanalyzer",
     description = "Library for parsing and analyzing information from APK files",
     notice = "NOTICE",
     pom_name = "Apk Analyzer library",
     resource_strip_prefix = "tools/base/apkparser/analyzer",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/annotations",

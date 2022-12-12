@@ -39,7 +39,7 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.build:builder-model:" + BUILD_VERSION,
+    coordinates = "com.android.tools.build:builder-model",
     javacopts = [
         "-source 8",
         "-target 8",
@@ -47,6 +47,7 @@ maven_library(
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/build-system/builder-model",
     resources = [":version.properties"],
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/annotations",

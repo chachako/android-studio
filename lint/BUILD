@@ -8,11 +8,12 @@ load("//tools/base/bazel:proto.bzl", "maven_proto_library")
 maven_proto_library(
     name = "lint-checks-proto",
     srcs = glob(["libs/lint-checks/src/main/**/*.proto"]),
-    coordinates = "com.android.tools:play-sdk-proto:" + BASE_VERSION,
+    coordinates = "com.android.tools:play-sdk-proto",
     description = "A protobuf message used for Google Play SDK Index",
     notice = "libs/lint-model/NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-checks/src/main/proto/",
     resources = ["libs/lint-checks/src/main/proto/index.proto"],
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )
 
@@ -40,7 +41,7 @@ maven_library(
         "libs/lint-model/src/main/java/**/*.kt",
         "libs/lint-model/src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.lint:lint-model:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint-model",
     description = "Lint build system model",
     module_name = "lint-model",
     notice = "libs/lint-model/NOTICE",
@@ -52,6 +53,7 @@ maven_library(
             "libs/lint-model/src/main/java/**/*.kt",
         ],
     ),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/build-system/builder-model",
@@ -100,7 +102,7 @@ maven_library(
         "libs/lint-api/src/main/java/**/*.kt",
         "libs/lint-api/src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.lint:lint-api:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint-api",
     description = "API to build lint checks",
     module_name = "lint-api",
     notice = "libs/lint-api/NOTICE",
@@ -112,6 +114,7 @@ maven_library(
             "libs/lint-api/src/main/java/**/*.kt",
         ],
     ),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         ":tools.lint-model",
@@ -160,7 +163,7 @@ maven_library(
         "libs/lint-checks/src/main/java/**/*.kt",
         "libs/lint-checks/src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.lint:lint-checks:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint-checks",
     description = "Checks for Android Lint",
     lint_baseline = "libs/lint-checks/lint_baseline.xml",
     module_name = "lint-checks",
@@ -170,6 +173,7 @@ maven_library(
         include = ["libs/lint-checks/src/main/resources/**"],
         exclude = ["libs/lint-checks/src/main/resources/NOTICE"],
     ),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         ":tools.lint-api",
@@ -198,11 +202,12 @@ maven_library(
         "libs/lint-gradle/src/main/java/**/*.kt",
         "libs/lint-gradle/src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.lint:lint-gradle:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint-gradle",
     description = "Gradle integration for Android Lint",
     lint_baseline = "libs/lint-gradle/lint_baseline.xml",
     module_name = "lint-gradle",
     notice = "libs/lint-gradle/NOTICE",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/tools/common/lint-psi/intellij-core",

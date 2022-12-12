@@ -21,11 +21,12 @@ iml_module(
 maven_library(
     name = "tools.ninepatch",
     srcs = glob(["src/main/java/**/*.java"]),
-    coordinates = "com.android.tools:ninepatch:" + BASE_VERSION,
+    coordinates = "com.android.tools:ninepatch",
     description = "draws a bitmap in nine or more sections",
     notice = "NOTICE",
     pom_name = "NinePatch",
     resource_strip_prefix = "tools/base/draw9patch/src/main/resources",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = ["@maven//:com.google.guava.guava"],
 )

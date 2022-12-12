@@ -30,9 +30,10 @@ maven_library(
         "manifest-merger/src/main/java/**/*.kt",
         "manifest-merger/src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.build:manifest-merger:" + BASE_VERSION,
+    coordinates = "com.android.tools.build:manifest-merger",
     notice = "manifest-merger/NOTICE",
     resource_strip_prefix = "tools/base/build-system/manifest-merger",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",
@@ -83,9 +84,10 @@ maven_library(
     bundled_deps = [
         "//tools/apksig:apksig-all",
     ],
-    coordinates = "com.android.tools.build:apksig:" + BUILD_VERSION,
+    coordinates = "com.android.tools.build:apksig",
     description = "Library for signing APKs and for checking that APK signatures verify on Android",
     notice = "//tools/apksig:LICENSE",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
 )
 

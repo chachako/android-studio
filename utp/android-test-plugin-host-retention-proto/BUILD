@@ -4,7 +4,7 @@ load("//tools/base/common:version.bzl", "BASE_VERSION")
 maven_proto_library(
     name = "android-test-plugin-host-retention-proto",
     srcs = glob(["src/main/proto/*.proto"]),
-    coordinates = "com.android.tools.utp:android-test-plugin-host-retention-proto:" + BASE_VERSION,
+    coordinates = "com.android.tools.utp:android-test-plugin-host-retention-proto",
     description = "A protobuf message used in UTP plugin to take a device snapshot on test failures.",
     java_exports = [
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
@@ -12,6 +12,7 @@ maven_proto_library(
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/utp/android-test-plugin-host-retention-proto/src/main/proto",
     resources = glob(["src/main/proto/*.proto"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )
 

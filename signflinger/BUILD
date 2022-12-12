@@ -6,8 +6,9 @@ maven_library(
     srcs = glob([
         "src/**/*.java",
     ]),
-    coordinates = "com.android:signflinger:" + BUILD_VERSION,
+    coordinates = "com.android:signflinger",
     description = "Library used to sign APKs",
+    version = BUILD_VERSION,
     visibility = [
         "//tools/base:__pkg__",
         "//tools/base/build-system:__subpackages__",

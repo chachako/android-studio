@@ -24,11 +24,12 @@ maven_library(
     srcs = glob([
         "dvlib/src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools:dvlib:" + BASE_VERSION,
+    coordinates = "com.android.tools:dvlib",
     description = "A Library to manage the Android device database XML files.",
     notice = "dvlib/NOTICE",
     resource_strip_prefix = "tools/base/device_validator/dvlib/src/main/resources",
     resources = glob(["dvlib/src/main/resources/**"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",

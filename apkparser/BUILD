@@ -24,11 +24,12 @@ iml_module(
 maven_library(
     name = "tools.binary-resources",
     srcs = glob(["binary-resources/src/main/java/**"]),
-    coordinates = "com.android.tools.apkparser:binary-resources:" + BASE_VERSION,
+    coordinates = "com.android.tools.apkparser:binary-resources",
     description = "Library for parsing the resources.arsc file",
     notice = "binary-resources/NOTICE",
     pom_name = "Binary Resources parser",
     resource_strip_prefix = "tools/base/apkparser/binary-resources",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/annotations",

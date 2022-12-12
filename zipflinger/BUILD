@@ -7,8 +7,9 @@ maven_library(
     srcs = glob([
         "src/com/android/zipflinger/**/*.java",
     ]),
-    coordinates = "com.android:zipflinger:" + BUILD_VERSION,
+    coordinates = "com.android:zipflinger",
     description = "Library used to build and incrementally modify zip files",
+    version = BUILD_VERSION,
     visibility = [
         "//tools/base:__pkg__",
         "//tools/base/bazel:__subpackages__",

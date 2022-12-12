@@ -4,7 +4,7 @@ load("//tools/base/common:version.bzl", "BASE_VERSION")
 maven_proto_library(
     name = "proto",
     srcs = glob(["*.proto"]),
-    coordinates = "com.android.tools.emulator:proto:" + BASE_VERSION,
+    coordinates = "com.android.tools.emulator:proto",
     description = "A protobuf messages to control Android Emulator",
     grpc_support = True,
     java_deps = [
@@ -18,6 +18,7 @@ maven_proto_library(
     pom_name = "Emulator protos for Android Tools",
     resource_strip_prefix = "tools/base/emulator/proto",
     resources = glob(["*.proto"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )
 

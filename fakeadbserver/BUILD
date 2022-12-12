@@ -27,11 +27,12 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.fakeadbserver:fakeadbserver:" + BASE_VERSION,
+    coordinates = "com.android.tools.fakeadbserver:fakeadbserver",
     description = "Library implementing the ADB Server protocol",
     module_name = "fakeadbserver",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/fakeadbserver",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",

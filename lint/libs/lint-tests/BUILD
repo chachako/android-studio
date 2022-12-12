@@ -8,11 +8,12 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
-    coordinates = "com.android.tools.lint:lint-tests:" + BASE_VERSION,
+    coordinates = "com.android.tools.lint:lint-tests",
     description = "API to build lint check tests",
     module_name = "lint-tests",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-tests",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",

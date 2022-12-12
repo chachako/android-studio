@@ -70,9 +70,10 @@ maven_library(
         ":sdkmanager_lib",
         ":tools.sdklib.core",
     ],
-    coordinates = "com.android.tools:sdklib:" + BASE_VERSION,
+    coordinates = "com.android.tools:sdklib",
     description = "A library to parse and download the Android SDK.",
     notice = "NOTICE",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
     exports = [
         "//tools/base/repository:tools.repository",

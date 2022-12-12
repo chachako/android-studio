@@ -17,10 +17,11 @@ iml_module(
 maven_library(
     name = "tools.chunkio",
     srcs = glob(["src/main/java/**/*.java"]),
-    coordinates = "com.android.tools.chunkio:chunkio:" + BASE_VERSION,
+    coordinates = "com.android.tools.chunkio:chunkio",
     description = "annotations for use with chunkio-processor, and runtime supporting APIs",
     notice = "NOTICE",
     pom_name = "ChunkIO",
     resource_strip_prefix = "tools/base/chunkio",
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )

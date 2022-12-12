@@ -4,11 +4,12 @@ load("//tools/base/common:version.bzl", "BASE_VERSION")
 maven_proto_library(
     name = "android-device-provider-gradle-proto",
     srcs = glob(["*.proto"]),
-    coordinates = "com.android.tools.utp:android-device-provider-gradle-proto:" + BASE_VERSION,
+    coordinates = "com.android.tools.utp:android-device-provider-gradle-proto",
     description = "A protobuf messages used in a UTP plugin to provide a Gradle managed virtual Android devices",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/utp/android-device-provider-gradle-proto/",
     resources = glob(["*.proto"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )
 

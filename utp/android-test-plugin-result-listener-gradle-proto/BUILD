@@ -4,7 +4,7 @@ load("//tools/base/common:version.bzl", "BASE_VERSION")
 maven_proto_library(
     name = "android-test-plugin-result-listener-gradle-proto",
     srcs = glob(["src/main/proto/*.proto"]),
-    coordinates = "com.android.tools.utp:android-test-plugin-result-listener-gradle-proto:" + BASE_VERSION,
+    coordinates = "com.android.tools.utp:android-test-plugin-result-listener-gradle-proto",
     description = "A protobuf messages used in a UTP plugin to listen test results",
     grpc_support = True,
     java_deps = [
@@ -18,6 +18,7 @@ maven_proto_library(
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/utp/android-test-plugin-result-listener-gradle-proto/src/main/proto",
     resources = glob(["src/main/proto/*.proto"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )
 

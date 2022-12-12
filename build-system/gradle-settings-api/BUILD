@@ -21,8 +21,9 @@ maven_library(
     bundled_deps = [
         "//tools/base/build-system:gradle-api_neverlink",
     ],
-    coordinates = "com.android.tools.build:gradle-settings-api:" + BUILD_VERSION,
+    coordinates = "com.android.tools.build:gradle-settings-api",
     resources = [":resources"],
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",

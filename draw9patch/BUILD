@@ -22,12 +22,13 @@ iml_module(
 maven_library(
     name = "tools.draw9patch",
     srcs = glob(["src/main/java/**/*.java"]),
-    coordinates = "com.android.tools:draw9patch:" + BASE_VERSION,
+    coordinates = "com.android.tools:draw9patch",
     description = "WYSIWYG editor for automatically resizing images",
     notice = "NOTICE",
     pom_name = "Draw 9-patch tool",
     resource_strip_prefix = "tools/base/draw9patch/src/main/resources",
     resources = glob(["src/main/resources/**/*"]),
+    version = BASE_VERSION,
     visibility = ["//visibility:public"],
 )
 
