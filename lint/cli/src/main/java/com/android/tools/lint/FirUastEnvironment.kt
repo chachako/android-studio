@@ -19,20 +19,20 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.impl.jar.CoreJarFileSystem
 import com.intellij.pom.java.LanguageLevel
+import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.lifetime.KtAlwaysAccessibleLifetimeTokenFactory
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
-import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
-import org.jetbrains.uast.kotlin.providers.KotlinPsiDeclarationProviderFactory
-import org.jetbrains.uast.kotlin.providers.impl.KotlinStaticPsiDeclarationProviderFactory
 import java.io.File
 import kotlin.concurrent.withLock
 
@@ -85,7 +85,7 @@ class FirUastEnvironment private constructor(
 private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): CompilerConfiguration {
     val config = createCommonKotlinCompilerConfig()
 
-    // TODO: NO_JDK ?
+    System.setProperty("psi.sleep.in.validity.check", "false")
 
     // TODO: if [enableKotlinScripting], register FIR version of scripting compiler plugin if any
 
@@ -102,6 +102,7 @@ private fun createAnalysisSession(
 
     val analysisSession = buildStandaloneAnalysisAPISession(
         projectDisposable = parentDisposable,
+        withPsiDeclarationFromBinaryModuleProvider = true
     ) {
         buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig)
     }
@@ -116,17 +117,6 @@ private fun configureFirProjectEnvironment(
     config: UastEnvironment.Configuration
 ) {
     val project = analysisAPISession.mockProject
-
-    val projectStructureProvider = project.getService(ProjectStructureProvider::class.java)
-    // TODO: will be part of analysis API session creation
-    project.registerService(
-        KotlinPsiDeclarationProviderFactory::class.java,
-        KotlinStaticPsiDeclarationProviderFactory(
-            project,
-            projectStructureProvider.getKtBinaryModules(),
-            analysisAPISession.coreApplicationEnvironment.jarFileSystem as CoreJarFileSystem
-        )
-    )
 
     project.registerService(
         FirKotlinUastResolveProviderService::class.java,
@@ -146,3 +136,10 @@ private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironmen
         )
     }
 }
+
+// Lint version of `analyzeForUast` in `org.jetbrains.uast.kotlin.internal.firKotlinInternalUastUtils`
+inline fun <R> analyzeForLint(
+    useSiteKtElement: KtElement,
+    action: KtAnalysisSession.() -> R
+): R =
+    analyze(useSiteKtElement, KtAlwaysAccessibleLifetimeTokenFactory, action)

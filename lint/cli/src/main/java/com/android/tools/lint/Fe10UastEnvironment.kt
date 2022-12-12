@@ -53,7 +53,6 @@ import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticAnnotationsResol
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticDeclarationProviderFactory
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticModificationTrackerFactory
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticPackageProviderFactory
-import org.jetbrains.kotlin.asJava.classes.FacadeCache
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.CompilerSystemProperties
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
@@ -63,12 +62,16 @@ import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.config.JavaSourceRoot
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
 import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.references.fe10.base.DummyKtFe10ReferenceResolutionHelper
+import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
+import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
@@ -157,10 +160,6 @@ class Fe10UastEnvironment private constructor(
         //  should be removed when we move to a model where UastEnvironment is used only once.
         resetPackagePartProviders()
 
-        // TODO: This is a temporary hotfix for b/159733104.
-        ideaProject.picoContainer.unregisterComponent(FacadeCache::class.java.name)
-        ideaProject.registerService(FacadeCache::class.java, FacadeCache(ideaProject))
-
         val perfManager = kotlinCompilerConfig.get(CLIConfigurationKeys.PERF_MANAGER)
         perfManager?.notifyAnalysisStarted()
 
@@ -233,10 +232,9 @@ class Fe10UastEnvironment private constructor(
     }
 }
 
+@OptIn(ExperimentalCompilerApi::class)
 private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): CompilerConfiguration {
     val config = createCommonKotlinCompilerConfig()
-
-    config.put(JVMConfigurationKeys.NO_JDK, true)
 
     // Registers the scripting compiler plugin to support build.gradle.kts files.
     if (enableKotlinScripting) {
@@ -257,7 +255,7 @@ private fun createKotlinCompilerEnv(
     // prevent warning logs on Windows when it's not found (see b.android.com/260180).
     System.setProperty("idea.use.native.fs.for.win", "false")
 
-    // By default the Kotlin compiler will dispose the application environment when there
+    // By default, the Kotlin compiler will dispose the application environment when there
     // are no projects left. However, that behavior is poorly tested and occasionally buggy
     // (see KT-45289). So, instead we manage the application lifecycle manually.
     CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
@@ -310,7 +308,7 @@ private fun configureAnalysisApiServices(
     )
 
     project.registerService(KotlinAnnotationsResolverFactory::class.java, KotlinStaticAnnotationsResolverFactory(ktFiles))
-    project.registerService(KotlinDeclarationProviderFactory::class.java, KotlinStaticDeclarationProviderFactory(ktFiles))
+    project.registerService(KotlinDeclarationProviderFactory::class.java, KotlinStaticDeclarationProviderFactory(project, ktFiles))
     project.registerService(KotlinPackageProviderFactory::class.java, KotlinStaticPackageProviderFactory(ktFiles))
 
     project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService::class.java)
@@ -321,9 +319,7 @@ private fun configureAnalysisApiServices(
     // Duplicate: already registered at [KotlinCoreEnvironment]
     // project.registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(enabled = true))
     project.registerService(ReadWriteAccessChecker::class.java, ReadWriteAccessCheckerDescriptorsImpl())
-
-    // TODO: not available yet?
-    // project.registerService(KotlinReferenceProviderContributor::class.java, KtFe10KotlinReferenceProviderContributor::class.java)
+    project.registerService(KotlinReferenceProviderContributor::class.java, KtFe10KotlinReferenceProviderContributor::class.java)
 
     AnalysisHandlerExtension.registerExtension(project, KtFe10AnalysisHandlerExtension())
 }
@@ -336,6 +332,8 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
             BaseKotlinUastResolveProviderService::class.java,
             CliKotlinUastResolveProviderService::class.java
         )
+
+        it.application.registerService(KtFe10ReferenceResolutionHelper::class.java, DummyKtFe10ReferenceResolutionHelper)
     }
 }
 

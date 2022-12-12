@@ -53,6 +53,8 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
     // However, Lint still relies on representing class files with PSI.
     config.put(JVMConfigurationKeys.USE_PSI_CLASS_FILES_READING, true)
 
+    config.put(JVMConfigurationKeys.NO_JDK, true)
+
     return config
 }
 
