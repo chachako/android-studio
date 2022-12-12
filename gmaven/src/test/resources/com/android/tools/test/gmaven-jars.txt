@@ -1486,6 +1486,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/kotlinx-collections-immutable.kotlin_module
   META-INF/kt-references-fe10.kotlin_module
   META-INF/kt-references.kotlin_module
+  META-INF/light-classes-base.kotlin_module
   META-INF/light-classes-for-decompiled-fe10.kotlin_module
   META-INF/light-classes-for-decompiled.kotlin_module
   META-INF/light-classes.kotlin_module
@@ -1677,6 +1678,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/fir/components/
   org/jetbrains/kotlin/analysis/api/fir/diagnostics/
   org/jetbrains/kotlin/analysis/api/fir/evaluate/
+  org/jetbrains/kotlin/analysis/api/fir/references/
   org/jetbrains/kotlin/analysis/api/fir/renderer/
   org/jetbrains/kotlin/analysis/api/fir/scopes/
   org/jetbrains/kotlin/analysis/api/fir/symbols/
@@ -1754,6 +1756,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/utils/collections/
   org/jetbrains/kotlin/analysis/utils/errors/
   org/jetbrains/kotlin/analysis/utils/printer/
+  org/jetbrains/kotlin/analysis/utils/trackers/
   org/jetbrains/kotlin/analyzer/
   org/jetbrains/kotlin/analyzer/common/
   org/jetbrains/kotlin/arguments/
@@ -1836,6 +1839,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/cli/js/internal/
   org/jetbrains/kotlin/cli/jvm/
   org/jetbrains/kotlin/cli/jvm/compiler/
+  org/jetbrains/kotlin/cli/jvm/compiler/builder/
   org/jetbrains/kotlin/cli/jvm/compiler/jarfs/
   org/jetbrains/kotlin/cli/jvm/compiler/pipeline/
   org/jetbrains/kotlin/cli/jvm/config/
@@ -1844,6 +1848,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/cli/jvm/modules/
   org/jetbrains/kotlin/cli/jvm/plugins/
   org/jetbrains/kotlin/cli/metadata/
+  org/jetbrains/kotlin/cli/plugins/
   org/jetbrains/kotlin/codegen/
   org/jetbrains/kotlin/codegen/binding/
   org/jetbrains/kotlin/codegen/context/
@@ -1968,6 +1973,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/references/
   org/jetbrains/kotlin/fir/references/builder/
   org/jetbrains/kotlin/fir/references/impl/
+  org/jetbrains/kotlin/fir/renderer/
   org/jetbrains/kotlin/fir/resolve/
   org/jetbrains/kotlin/fir/resolve/calls/
   org/jetbrains/kotlin/fir/resolve/calls/jvm/
@@ -2119,10 +2125,13 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/light/
   org/jetbrains/kotlin/light/classes/
   org/jetbrains/kotlin/light/classes/symbol/
-  org/jetbrains/kotlin/light/classes/symbol/caches/
+  org/jetbrains/kotlin/light/classes/symbol/annotations/
   org/jetbrains/kotlin/light/classes/symbol/classes/
-  org/jetbrains/kotlin/light/classes/symbol/decompiled/
-  org/jetbrains/kotlin/light/classes/symbol/elements/
+  org/jetbrains/kotlin/light/classes/symbol/codeReferences/
+  org/jetbrains/kotlin/light/classes/symbol/fields/
+  org/jetbrains/kotlin/light/classes/symbol/methods/
+  org/jetbrains/kotlin/light/classes/symbol/modifierLists/
+  org/jetbrains/kotlin/light/classes/symbol/parameters/
   org/jetbrains/kotlin/load/
   org/jetbrains/kotlin/load/java/
   org/jetbrains/kotlin/load/java/components/
@@ -2370,8 +2379,6 @@ com/android/tools/external/org-jetbrains/uast
   org/jetbrains/uast/kotlin/evaluation/
   org/jetbrains/uast/kotlin/internal/
   org/jetbrains/uast/kotlin/kinds/
-  org/jetbrains/uast/kotlin/providers/
-  org/jetbrains/uast/kotlin/providers/impl/
   org/jetbrains/uast/kotlin/psi/
   org/jetbrains/uast/psi/
   org/jetbrains/uast/util/
