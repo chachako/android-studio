@@ -34,7 +34,6 @@ import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
 import com.android.tools.lint.detector.api.VersionChecks.SdkIntAnnotation.Companion.findSdkIntAnnotation
 import com.android.utils.SdkUtils
 import com.google.common.annotations.VisibleForTesting
-import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiCompiledElement
@@ -512,9 +511,7 @@ class VersionChecks(
         private fun findChecksSdkAnnotation(
             owner: PsiModifierListOwner,
         ): SdkIntAnnotation? {
-            val annotation = AnnotationUtil.findAnnotation(
-                owner, true, CHECKS_SDK_INT_AT_LEAST_ANNOTATION
-            ) ?: return null
+            val annotation = owner.getAnnotation(CHECKS_SDK_INT_AT_LEAST_ANNOTATION) ?: return null
             return SdkIntAnnotation(annotation)
         }
 
@@ -1660,9 +1657,7 @@ class VersionChecks(
              * given method or field.
              */
             fun get(owner: PsiModifierListOwner): SdkIntAnnotation? {
-                val annotation = AnnotationUtil.findAnnotation(
-                    owner, true, CHECKS_SDK_INT_AT_LEAST_ANNOTATION
-                ) ?: return null
+                val annotation = owner.getAnnotation(CHECKS_SDK_INT_AT_LEAST_ANNOTATION) ?: return null
                 return SdkIntAnnotation(annotation)
             }
 
