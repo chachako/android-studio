@@ -18,15 +18,19 @@ package com.android.tools.lint.checks.infrastructure
 import com.android.tools.lint.analyzeForLint
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import org.jetbrains.kotlin.analysis.api.annotations.annotations
+import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.calls.symbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithVisibility
 import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
 import org.jetbrains.kotlin.analysis.api.types.KtFunctionalType
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtTypeReference
+import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UMethod
@@ -177,6 +181,41 @@ abstract class AnalysisApiServicesTestBase {
                     }
 
                     return super.visitClass(node)
+                }
+            })
+        }
+    }
+
+    // Usage from AbstractGuardedByVisitor in g3
+    protected fun checkParameterModifiers() {
+        listOf(
+            kotlin(
+                """
+                inline fun <T, R> T.myLet(noinline myBlock: (T) -> R): R {
+                  return block(this)
+                }
+
+                fun test() {
+                  4.let { "no modifier" }
+                  2.myLet { "noinline" }
+                }
+                """
+            )
+        ).use { context ->
+            context.uastFile!!.accept(object : AbstractUastVisitor() {
+                override fun visitCallExpression(node: UCallExpression): Boolean {
+                    val ktElement = node.sourcePsi as? KtElement ?: return super.visitCallExpression(node)
+                    analyzeForLint(ktElement) {
+                        val ktFunctionSymbol = ktElement.resolveCall()?.singleFunctionCallOrNull()?.symbol
+                            ?: return super.visitCallExpression(node)
+                        val ktParamSymbol = ktFunctionSymbol.valueParameters.single()
+                        assertEquals(
+                            ktFunctionSymbol.callableIdIfNonLocal?.callableName?.identifier == "myLet",
+                            ktParamSymbol.isNoinline
+                        )
+                    }
+
+                    return super.visitCallExpression(node)
                 }
             })
         }

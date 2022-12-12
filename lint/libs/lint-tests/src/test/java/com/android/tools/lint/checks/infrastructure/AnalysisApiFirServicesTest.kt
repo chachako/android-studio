@@ -67,4 +67,9 @@ class AnalysisApiFirServicesTest : AnalysisApiServicesTestBase() {
     fun testAnnotationOnTypeParameter() {
         checkAnnotationOnTypeParameter()
     }
+
+    @Test
+    fun testParameterModifiers() {
+        checkParameterModifiers()
+    }
 }

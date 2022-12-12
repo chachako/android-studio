@@ -60,4 +60,9 @@ class AnalysisApiFe10ServicesTest : AnalysisApiServicesTestBase() {
     fun testAnnotationOnTypeParameter() {
         checkAnnotationOnTypeParameter()
     }
+
+    @Test
+    fun testParameterModifiers() {
+        checkParameterModifiers()
+    }
 }
