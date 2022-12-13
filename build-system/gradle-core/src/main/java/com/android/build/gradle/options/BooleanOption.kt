@@ -209,6 +209,8 @@ enum class BooleanOption(
     ),
 
     PRIVACY_SANDBOX_SDK_SUPPORT("android.experimental.privacysandboxsdk.enable", false, FeatureStage.Experimental),
+    PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES(
+            "android.experimental.privacysandboxsdk.requireServices", true, FeatureStage.Experimental),
 
     PRINT_LINT_STACK_TRACE("android.lint.printStackTrace", false, FeatureStage.Experimental),
     /* ------------------------

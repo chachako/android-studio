@@ -25,7 +25,9 @@ import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformOutputs
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.PathSensitive
@@ -81,6 +83,9 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
         @get:InputFiles
         @get:PathSensitive(PathSensitivity.NONE)
         val runtimeDependencies: ConfigurableFileCollection
+
+        @get:Input
+        val requireServices: Property<Boolean>
     }
 
     @get:Inject
@@ -92,6 +97,18 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
 
     override fun transform(transformOutputs: TransformOutputs) {
         val sdkInterfaceDescriptorJar = inputArtifact.get().asFile
+        if (!sdkInterfaceDescriptorJar.isFile) {
+            throw IOException("${sdkInterfaceDescriptorJar.absolutePath} must be a file.")
+        }
+        if (checkEmptyJar(sdkInterfaceDescriptorJar)) {
+            if (parameters.requireServices.get()) {
+                throw RuntimeException(
+                        "Unable to proceed generating shim with no provided sdk descriptor entries in: " +
+                                "${sdkInterfaceDescriptorJar.absolutePath}." +
+                                "Privacy Sandbox Sdk modules require at least one service declaration.")
+            }
+            return
+        }
         val output = transformOutputs.file("sdk-shim-generated.jar")
         val aidlExecutable = parameters.buildTools.aidlExecutableProvider().get().absoluteFile
         val totalClasspath =
@@ -102,15 +119,6 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
         val apiGeneratorUrls: Array<URL> =
                 apiGeneratorJarsFiles.mapNotNull { it.toURI().toURL() }.toTypedArray()
         val tempDirForApiGeneratorOutputs = Files.createTempDirectory("extract-shim-transform")
-        if (!sdkInterfaceDescriptorJar.isFile) {
-            throw IOException("${sdkInterfaceDescriptorJar.absolutePath} must be a file.")
-        }
-        if (checkEmptyJar(sdkInterfaceDescriptorJar)) {
-            throw RuntimeException(
-                    "Unable to proceed generating shim with no provided sdk descriptor entries in: " +
-                            "${sdkInterfaceDescriptorJar.absolutePath}.  " +
-                            "Privacy Sandbox Sdk modules require at least one service declaration.")
-        }
         try {
             val kotlinOutDir = File(tempDirForApiGeneratorOutputs.toFile(), "kotlin-compiled")
             val javaOutDir = File(tempDirForApiGeneratorOutputs.toFile(), "java-compiled")

@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
 import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.sdklib.BuildToolInfo
@@ -72,20 +73,12 @@ class PrivacySandboxSdkTest {
                 compileSdkPreview = "TiramisuPrivacySandbox"
             }
             dependencies {
-                implementation("junit:junit:4.12")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
                 implementation("androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT")
                 implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
                 implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
 
-                ksp("com.google.protobuf:protobuf-java:3.19.3")
-                ksp("com.squareup:kotlinpoet:1.12.0")
-                ksp("androidx.privacysandbox.tools:tools-core:1.0.0-SNAPSHOT")
-                ksp("androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT")
                 ksp("androidx.privacysandbox.tools:tools-apicompiler:1.0.0-SNAPSHOT")
-                ksp("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
-                ksp("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
-                ksp("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
             }
             appendToBuildFile {
                 "def aidlCompilerPath = '$aidlPath'\n" +
@@ -438,12 +431,19 @@ class PrivacySandboxSdkTest {
     }
 
     @Test
-    fun failWhenNoServiceDefinedInModuleUsedBySdk() {
-        val failure =
-                project.executor().expectFailure().run(":example-app:assembleDebug")
+    fun testNoServiceDefinedInModuleUsedBySdk() {
+        project.executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, true)
+                .expectFailure()
+                .run(":example-app:assembleDebug")
+                .also {
+                    assertThat(it.failureMessage).contains(
+                            "Unable to proceed generating shim with no provided sdk descriptor entries in:")
+                }
 
-        assertThat(failure.failureMessage).contains(
-                "Unable to proceed generating shim with no provided sdk descriptor entries in:")
+        project.executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                .run(":example-app:assembleDebug")
     }
 
     companion object {

@@ -20,25 +20,51 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
+import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
+import com.android.sdklib.BuildToolInfo
 import com.android.testutils.apk.Apk
+import com.android.utils.FileUtils
 import com.google.common.truth.Truth
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 class MinimalPrivacySandboxSdkTest {
 
     @get:Rule
     val project = createGradleProjectBuilder {
-        subProject(":android-lib3") {
+        val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
+                .replace("""\""", """\\""")
+        val androidxPrivacySandboxSdkVersion = "1.0.0-SNAPSHOT"
+        subProject(":androidlib3") {
+            useNewPluginsDsl = true
             plugins.add(PluginType.ANDROID_LIB)
+            plugins.add(PluginType.KOTLIN_ANDROID)
+            plugins.add(PluginType.KSP)
             android {
                 defaultCompileSdk()
-                namespace = "com.example.androidLib3"
-                minSdk = 12
+                namespace = "com.example.androidlib3"
+                minSdk = 14
+                compileSdkPreview = "TiramisuPrivacySandbox"
+            }
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+                implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxSdkVersion")
+                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:$androidxPrivacySandboxSdkVersion")
+                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:$androidxPrivacySandboxSdkVersion")
+
+                ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxSdkVersion")
+            }
+            appendToBuildFile {
+                """
+                   def aidlCompilerPath = '$aidlPath'
+                   ksp { arg("aidl_compiler_path", aidlCompilerPath) }
+                """
             }
             addFile("src/main/AndroidManifest.xml", """
                 <?xml version="1.0" encoding="utf-8"?>
@@ -51,7 +77,7 @@ class MinimalPrivacySandboxSdkTest {
             plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
             android {
                 defaultCompileSdk()
-                minSdk = 12
+                minSdk = 14
             }
             appendToBuildFile {
                 """
@@ -65,14 +91,14 @@ class MinimalPrivacySandboxSdkTest {
                     """.trimIndent()
             }
             dependencies {
-                include(project(":android-lib3"))
+                include(project(":androidlib3"))
             }
         }
         subProject(":minimal-app") {
             plugins.add(PluginType.ANDROID_APP)
             android {
                 defaultCompileSdk()
-                minSdk = 12
+                minSdk = 14
                 namespace = "com.example.emptyprivacysandboxsdk.consumer"
             }
             dependencies {
@@ -88,7 +114,7 @@ class MinimalPrivacySandboxSdkTest {
                 """.trimIndent()
             }
         }
-    }
+    }.withKotlinGradlePlugin(true)
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
             .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .addGradleProperties(
@@ -97,6 +123,9 @@ class MinimalPrivacySandboxSdkTest {
                             "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT")
             .create()
 
+    // Test disabled due to https://github.com/google/ksp/issues/1050
+    // that is impacting the current KSP version in prebuilts.
+    @Ignore
     @Test
     fun privacySandboxWithMinimalConfigAndDependency() {
         project.execute(":minimal-app:buildPrivacySandboxSdkApksForDebug")
@@ -134,15 +163,71 @@ class MinimalPrivacySandboxSdkTest {
             )
             Truth.assertThat(apk.entries.map { it.toString() }).containsExactly(
                     "/resources.arsc",
-                    "/classes.dex",
+                    "/kotlin/reflect/reflect.kotlin_builtins",
+                    "/kotlin/ranges/ranges.kotlin_builtins",
+                    "/kotlin/kotlin.kotlin_builtins",
+                    "/kotlin/internal/internal.kotlin_builtins",
+                    "/kotlin/coroutines/coroutines.kotlin_builtins",
+                    "/kotlin/collections/collections.kotlin_builtins",
+                    "/kotlin/annotation/annotation.kotlin_builtins",
                     "/classes2.dex",
+                    "/classes.dex",
+                    "/META-INF/tools.kotlin_module",
+                    "/META-INF/sdkruntime-core_release.kotlin_module",
+                    "/META-INF/sdkruntime-client_release.kotlin_module",
+                    "/META-INF/kotlinx_coroutines_core.version",
+                    "/META-INF/kotlinx-coroutines-core.kotlin_module",
+                    "/META-INF/kotlin-stdlib.kotlin_module",
+                    "/META-INF/kotlin-stdlib-jdk8.kotlin_module",
+                    "/META-INF/kotlin-stdlib-jdk7.kotlin_module",
+                    "/META-INF/kotlin-stdlib-common.kotlin_module",
+                    "/META-INF/androidx.privacysandbox.sdkruntime_sdkruntime-core.version",
+                    "/META-INF/androidx.privacysandbox.sdkruntime_sdkruntime-client.version",
+                    "/DebugProbesKt.bin",
                     "/AndroidManifest.xml"
             )
         }
     }
 
+
+    // Test disabled due to https://github.com/google/ksp/issues/1050
+    // that is impacting the current KSP version in prebuilts.
+    @Ignore
     @Test
-    fun checkOptInRequired() {
+    fun testAssemble() {
+        val androidLib3SrcMainSrcJava =
+                FileUtils.join(project.getSubproject("androidlib3").mainSrcDir,
+                        "com",
+                        "example",
+                        "androidlib3")
+        androidLib3SrcMainSrcJava.mkdirs()
+
+        val sdkServiceFile = File(androidLib3SrcMainSrcJava, "MySdk.kt").also {
+            it.writeText(
+                    """package com.example.androidlib3
+                            import androidx.privacysandbox.tools.PrivacySandboxService
+                            @PrivacySandboxService
+                            public interface MySdk {
+                                suspend fun foo(bar: Int): String
+                            }
+                        """
+            )
+        }
+
+
+        project.executor().run(":minimal-app:assembleDebug")
+
+        FileUtils.delete(sdkServiceFile)
+
+        project.executor().expectFailure().run(":minimal-app:assembleDebug").also {
+            Truth.assertThat(it.failureMessage).contains(
+                    "Unable to proceed generating shim with no provided sdk descriptor entries in: ")
+        }
+
+    }
+
+    @Test
+    fun checkPrivacySandboxOptInRequired() {
         TestFileUtils.searchAndReplace(
                 project.file("gradle.properties"),
                 BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName,
