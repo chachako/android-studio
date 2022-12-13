@@ -2456,6 +2456,41 @@ class VersionChecksTest : AbstractCheckTest() {
         )
     }
 
+    fun testKotlinWhenStatement3() {
+        // Regression test for https://issuetracker.google.com/262376528
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+
+                import android.content.Context
+                import android.os.Build
+                import androidx.annotation.RequiresApi
+
+                fun check(
+                    darkTheme: Boolean,
+                    context: Context
+                ) {
+                    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                    val colorScheme = when {
+                        dynamicColor && darkTheme -> dynamicDarkColorScheme(context)
+                        dynamicColor && !darkTheme -> dynamicLightColorScheme(context)
+                        else -> TODO()
+                    }
+                }
+
+                class ColorScheme
+                @RequiresApi(Build.VERSION_CODES.S)
+                fun dynamicDarkColorScheme(context: Context): ColorScheme = TODO()
+
+                @RequiresApi(Build.VERSION_CODES.S)
+                fun dynamicLightColorScheme(context: Context): ColorScheme = TODO()
+                """
+            ).indented(),
+            SUPPORT_ANNOTATIONS_JAR
+        ).run().expectClean()
+    }
+
     fun testIfElse() {
         // Regression test for issue 69661204
         lint().files(

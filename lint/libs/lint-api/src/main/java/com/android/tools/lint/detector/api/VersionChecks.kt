@@ -39,6 +39,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiField
+import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
@@ -1171,6 +1172,18 @@ class VersionChecks(
                 val validFromAnnotation = getValidFromAnnotation(resolved)
                 if (validFromAnnotation != null) {
                     return validFromAnnotation
+                }
+            } else if (resolved is PsiLocalVariable) {
+                // Technically we should only use the initializer if the variable is final,
+                // but it's possible/likely people don't bother with this for local
+                // variables, and it's unlikely that an unconditional SDK_INT constraint
+                // would be changed.
+                val initializer = UastFacade.getInitializerBody(resolved)?.skipParenthesizedExprDown()
+                if (initializer != null) {
+                    val constraint = getVersionCheckConstraint(element = initializer)
+                    if (constraint != null) {
+                        return constraint
+                    }
                 }
             } else if (resolved is PsiMethod &&
                 element is UQualifiedReferenceExpression &&
