@@ -337,13 +337,26 @@ class PrivacySandboxSdkTest {
         Apk(baseMaster2Apk).use {
             assertThat(it).doesNotExist()
         }
+        // Expect the first assignment of certDigest to be the same for all modules.
+        val certDigest: String
         Apk(baseMaster3Apk).use {
             assertThat(it).exists()
             assertThat(it).containsClass("Lcom/example/privacysandboxsdk/consumer/R;")
             assertThat(it).doesNotContainClass(ANDROID_LIB1_CLASS)
-            val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n")
-            assertThat(manifestContent).contains(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
-            assertThat(manifestContent).contains(MY_PRIVACY_SANDBOX_SDK_MANIFEST_REFERENCE)
+            val manifestContent = ApkSubject.getManifestContent(it.file)
+            val manifestContentStr = manifestContent.joinToString("\n")
+            certDigest = certDigestPattern.find(manifestContentStr)?.value!!
+            assertThat(manifestContentStr)
+                    .contains(MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE)
+            assertThat(manifestContent).containsAtLeastElementsIn(
+                    listOf(
+                            "      E: application (line=14)",
+                            "          E: uses-sdk-library (line=0)",
+                            "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
+                            "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
+                            "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=\"10002\" (Raw: \"10002\")"
+                    )
+            )
         }
 
         // Check building the bundle to deploy to a non-privacy sandbox device:
@@ -365,7 +378,7 @@ class PrivacySandboxSdkTest {
             assertThat(it).doesNotContainClass(ANDROID_LIB1_CLASS)
             val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n")
             assertThat(manifestContent).doesNotContain(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
-            assertThat(manifestContent).doesNotContain(MY_PRIVACY_SANDBOX_SDK_MANIFEST_REFERENCE)
+            assertThat(manifestContent).doesNotContain(MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE)
         }
         Apk(baseMaster3Apk).use {
             assertThat(it).doesNotExist()
@@ -377,14 +390,14 @@ class PrivacySandboxSdkTest {
         Apk(project.getSubproject(":example-app").getApk(GradleTestProject.ApkType.DEBUG).file).use {
             assertThat(it).exists()
             val manifestContent = ApkSubject.getManifestContent(it.file)
-            assertThat(manifestContent.normalizeManifestContent()).containsAtLeastElementsIn(
+            assertThat(manifestContent).containsAtLeastElementsIn(
                 listOf(
                 "      E: application (line=14)",
                 "          E: uses-sdk-library (line=17)",
                 "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
-                "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"15:D3:8B:C5:64:63:F1:BE:1E:BE:8C:FD:1F:E8:C9:AB:73:8C:5B:2F:68:2A:35:D7:54:F0:C2:7A:68:B3:3B:AF\" (Raw: \"15:D3:8B:C5:64:63:F1:BE:1E:BE:8C:FD:1F:E8:C9:AB:73:8C:5B:2F:68:2A:35:D7:54:F0:C2:7A:68:B3:3B:AF\")",
+                "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
                 "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"
-                ).normalizeManifestContent()
+                )
             )
         }
     }
@@ -433,15 +446,11 @@ class PrivacySandboxSdkTest {
                 "Unable to proceed generating shim with no provided sdk descriptor entries in:")
     }
 
-    private fun List<String>.normalizeManifestContent(): List<String> = map {
-        certDigestPattern.replace(it, "CERT_DIGEST")
-    }
-
     companion object {
         private val certDigestPattern = Regex("([0-9A-F]{2}:){31}[0-9A-F]{2}")
         private const val ANDROID_LIB1_CLASS = "Lcom/example/androidlib1/Example;"
         private const val USES_SDK_LIBRARY_MANIFEST_ELEMENT = "uses-sdk-library"
-        private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_REFERENCE = "=\"com.example.privacysandboxsdk\""
+        private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE = "=\"com.example.privacysandboxsdk\""
     }
 }
 
