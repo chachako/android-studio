@@ -107,6 +107,7 @@ public class ManifestMerger2 {
     @NonNull private final String mFeatureName;
     @Nullable private final String mNamespace;
     @NonNull private final FileStreamProvider mFileStreamProvider;
+    @Nullable private final ManifestDocumentProvider mManifestDocumentProvider;
     @NonNull private final ProcessCancellationChecker mProcessCancellationChecker;
     @NonNull private final ImmutableList<File> mNavigationFiles;
     @NonNull private final ImmutableList<File> mNavigationJsons;
@@ -128,6 +129,7 @@ public class ManifestMerger2 {
             @NonNull String featureName,
             @Nullable String namespace,
             @NonNull FileStreamProvider fileStreamProvider,
+            @Nullable ManifestDocumentProvider manifestDocumentProvider,
             @NonNull ProcessCancellationChecker processCancellationChecker,
             @NonNull ImmutableList<File> navigationFiles,
             @NonNull ImmutableList<File> navigationJsons,
@@ -146,6 +148,7 @@ public class ManifestMerger2 {
         this.mFeatureName = featureName;
         this.mNamespace = namespace;
         this.mFileStreamProvider = fileStreamProvider;
+        this.mManifestDocumentProvider = manifestDocumentProvider;
         this.mProcessCancellationChecker = processCancellationChecker;
         this.mNavigationFiles = navigationFiles;
         this.mNavigationJsons = navigationJsons;
@@ -1185,18 +1188,34 @@ public class ManifestMerger2 {
             File xmlFile = manifestInfo.mLocation;
             XmlDocument libraryDocument;
             try {
-                InputStream inputStream = mFileStreamProvider.getInputStream(xmlFile);
-                libraryDocument =
-                        XmlLoader.load(
-                                selectors,
-                                mSystemPropertyResolver,
-                                manifestInfo.mName,
-                                xmlFile,
-                                inputStream,
-                                XmlDocument.Type.LIBRARY,
-                                null, /* namespace */
-                                mModel,
-                                false);
+                Optional<Document> document =
+                        Optional.ofNullable(mManifestDocumentProvider)
+                                .flatMap(provider -> provider.getManifestDocument(xmlFile));
+                if (document.isPresent()) {
+                    libraryDocument =
+                            XmlLoader.load(
+                                    document.get(),
+                                    selectors,
+                                    mSystemPropertyResolver,
+                                    manifestInfo.mName,
+                                    xmlFile,
+                                    XmlDocument.Type.LIBRARY,
+                                    null, /* namespace */
+                                    mModel,
+                                    false);
+                } else {
+                    libraryDocument =
+                            XmlLoader.load(
+                                    selectors,
+                                    mSystemPropertyResolver,
+                                    manifestInfo.mName,
+                                    xmlFile,
+                                    mFileStreamProvider.getInputStream(xmlFile),
+                                    XmlDocument.Type.LIBRARY,
+                                    null, /* namespace */
+                                    mModel,
+                                    false);
+                }
             } catch (Exception e) {
                 throw new MergeFailureException(e);
             }
@@ -1408,8 +1427,25 @@ public class ManifestMerger2 {
     }
 
     /**
+     * A {@linkplain ManifestDocumentProvider} provides the merged manifest XML {@link Document}
+     * instance for the project a given {@link File} belongs to.
+     */
+    public interface ManifestDocumentProvider {
+        /**
+         * Gets a Merged manifest XML document for the given file's project. Returns
+         * Optional.empty() when the document is unavailable. ManifestMerger process falls back to
+         * the {@link FileStreamProvider} when the document is not available.
+         *
+         * @param file the file handle
+         * @return the contents of the file
+         */
+        Optional<Document> getManifestDocument(@NonNull File file);
+    }
+
+    /**
      * A {@linkplain FileStreamProvider} provides (buffered, if necessary) {@link InputStream}
-     * instances for a given {@link File} handle.
+     * instances for a given {@link File} handle. Consider providing a {@link
+     * ManifestDocumentProvider} when manifest DOM is available.
      */
     public static class FileStreamProvider {
         /**
@@ -1554,6 +1590,8 @@ public class ManifestMerger2 {
 
         @Nullable
         private FileStreamProvider mFileStreamProvider;
+
+        @Nullable private ManifestDocumentProvider mManifestDocumentProvider;
 
         @Nullable
         private ProcessCancellationChecker mProcessCancellationChecker;
@@ -1889,6 +1927,22 @@ public class ManifestMerger2 {
             return this;
         }
 
+        /**
+         * Sets a manifest XML document provider which allows the client of the manifest merger to
+         * provide manifest DOM Document object lookup for given files.
+         *
+         * <p>NOTE: There should only be one.
+         *
+         * @param provider the provider to use
+         * @return itself.
+         */
+        @NonNull
+        public Invoker withManifestDocumentProvider(@Nullable ManifestDocumentProvider provider) {
+            assert mManifestDocumentProvider == null || provider == null;
+            mManifestDocumentProvider = provider;
+            return this;
+        }
+
         @NonNull
         public Invoker withProcessCancellationChecker(@NonNull ProcessCancellationChecker checker) {
             assert mProcessCancellationChecker == null;
@@ -2044,6 +2098,7 @@ public class ManifestMerger2 {
                             mFeatureName,
                             mNamespace,
                             fileStreamProvider,
+                            mManifestDocumentProvider,
                             processCancellationChecker,
                             mNavigationFilesBuilder.build(),
                             mNavigationJsonsBuilder.build(),
