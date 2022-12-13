@@ -45,11 +45,11 @@ public class CrashlyticsTest {
                 "android {\n",
                 "buildscript {\n"
                         + "    dependencies {\n"
-                        + "        classpath 'io.fabric.tools:gradle:1.28.0'\n"
+                        + "        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.5.1'\n"
                         + "    }\n"
                         + "}\n"
                         + "\n"
-                        + "apply plugin: 'io.fabric'\n"
+                        + "apply plugin: 'com.google.firebase.crashlytics'\n"
                         + "\n"
                         + "dependencies {\n"
                         + "    api 'com.crashlytics.sdk.android:crashlytics:2.6.8@aar'\n"

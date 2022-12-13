@@ -29901,6 +29901,33 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.firebase.firebase-crashlytics-buildtools_2.5.1",
+    pom = "repository/com/google/firebase/firebase-crashlytics-buildtools/2.5.1/firebase-crashlytics-buildtools-2.5.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/firebase/firebase-crashlytics-buildtools/2.5.1",
+    deps = [
+        "org.apache.httpcomponents.httpclient_4.5.6",
+        "org.apache.httpcomponents.httpmime_4.5.6",
+        "commons-cli.commons-cli_1.4",
+        "commons-io.commons-io_2.6",
+        "com.google.code.gson.gson_2.8.5",
+        "com.google.guava.guava_24.1-jre",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.firebase.firebase-crashlytics-gradle_2.5.1",
+    pom = "repository/com/google/firebase/firebase-crashlytics-gradle/2.5.1/firebase-crashlytics-gradle-2.5.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/firebase/firebase-crashlytics-gradle/2.5.1",
+    deps = [
+        "com.google.firebase.firebase-crashlytics-buildtools_2.5.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.googlejavaformat.google-java-format_1.5",
     pom = "repository/com/google/googlejavaformat/google-java-format/1.5/google-java-format-1.5.pom",
     repo_root_path = "repository",
@@ -29998,6 +30025,22 @@ maven_artifact(
         "com.google.code.findbugs.jsr305_1.3.9",
         "org.checkerframework.checker-qual_2.0.0",
         "com.google.errorprone.error_prone_annotations_2.0.18",
+        "com.google.j2objc.j2objc-annotations_1.1",
+        "org.codehaus.mojo.animal-sniffer-annotations_1.14",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.guava.guava_24.1-jre",
+    pom = "repository/com/google/guava/guava/24.1-jre/guava-24.1-jre.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava/24.1-jre",
+    parent = "com.google.guava.guava-parent_24.1-jre",
+    deps = [
+        "com.google.code.findbugs.jsr305_1.3.9",
+        "org.checkerframework.checker-compat-qual_2.0.0",
+        "com.google.errorprone.error_prone_annotations_2.1.3",
         "com.google.j2objc.j2objc-annotations_1.1",
         "org.codehaus.mojo.animal-sniffer-annotations_1.14",
     ],
@@ -31059,6 +31102,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "commons-io.commons-io_2.6",
+    pom = "repository/commons-io/commons-io/2.6/commons-io-2.6.pom",
+    repo_root_path = "repository",
+    repo_path = "commons-io/commons-io/2.6",
+    parent = "org.apache.commons.commons-parent_42",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "commons-lang.commons-lang_2.4",
     pom = "repository/commons-lang/commons-lang/2.4/commons-lang-2.4.pom",
     repo_root_path = "repository",
@@ -31165,14 +31217,6 @@ maven_artifact(
     pom = "repository/io/fabric/sdk/android/fabric/1.3.17/fabric-1.3.17.pom",
     repo_root_path = "repository",
     repo_path = "io/fabric/sdk/android/fabric/1.3.17",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "io.fabric.tools.gradle_1.28.0",
-    pom = "repository/io/fabric/tools/gradle/1.28.0/gradle-1.28.0.pom",
-    repo_root_path = "repository",
-    repo_path = "io/fabric/tools/gradle/1.28.0",
     visibility = ["//visibility:public"],
 )
 
@@ -32409,6 +32453,14 @@ maven_artifact(
     deps = [
         "org.bytedeco.javacpp_1.5.7",
     ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.checkerframework.checker-compat-qual_2.0.0",
+    pom = "repository/org/checkerframework/checker-compat-qual/2.0.0/checker-compat-qual-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/checkerframework/checker-compat-qual/2.0.0",
     visibility = ["//visibility:public"],
 )
 
@@ -39918,6 +39970,14 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/guava/guava-parent/23.5-jre",
     parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
+    name = "com.google.guava.guava-parent_24.1-jre",
+    pom = "repository/com/google/guava/guava-parent/24.1-jre/guava-parent-24.1-jre.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava-parent/24.1-jre",
+    parent = "org.sonatype.oss.oss-parent_9",
 )
 
 maven_artifact(
