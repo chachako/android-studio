@@ -126,12 +126,27 @@ internal class ReverseService(
    * device will be closed, so no new connections will be made.
    */
   suspend fun killAll() {
-    openReversesLock.withLock { openReverses.forEach { (key, _) -> killForward(key) } }
+    openReversesLock.withLock {
+      openReverses.forEach { (key, _) ->
+        killForwardUnsafe(key)
+      }
+    }
   }
 
   private suspend fun killForward(key: String) {
     logger.info("Handling killforward for $key")
-    openReversesLock.withLock { openReverses.remove(key)?.kill() }
+    openReversesLock.withLock { killForwardUnsafe(key) }
+  }
+
+  /**
+   * This function is unsafe to call directly. Instead, call to this function should be wrapped
+   * with a lock on [openReversesLock].
+   *
+   * For example, see [killForward], [killAll]
+   */
+  private suspend fun killForwardUnsafe(key: String) {
+      assert(openReversesLock.isLocked)
+      openReverses.remove(key)?.kill()
   }
 
   companion object {
