@@ -61,6 +61,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.process.CommandLineArgumentProvider
 import java.io.Serializable
+import java.util.concurrent.atomic.AtomicBoolean
 
 class OldVariantApiLegacySupportImpl(
     private val component: ComponentCreationConfig,
@@ -347,5 +348,29 @@ class OldVariantApiLegacySupportImpl(
             dimension,
             ImmutableMap.of(requestedValue, alternatedValues)
         )
+    }
+
+
+    // registrar for all post old variant API actions.
+    private val postOldVariantActions = mutableListOf<() -> Unit>()
+
+    private val oldVariantAPICompleted = AtomicBoolean(false)
+
+    override fun oldVariantApiCompleted() {
+        synchronized(postOldVariantActions) {
+            oldVariantAPICompleted.set(true)
+            postOldVariantActions.forEach { action -> action() }
+            postOldVariantActions.clear()
+        }
+    }
+
+    override fun registerPostOldVariantApiAction(action: () -> Unit) {
+        synchronized(postOldVariantActions) {
+            if (oldVariantAPICompleted.get()) {
+                action()
+            } else {
+                postOldVariantActions.add(action)
+            }
+        }
     }
 }

@@ -51,4 +51,20 @@ interface OldVariantApiLegacySupport {
     fun getAllRawAndroidResources(component: ComponentCreationConfig): FileCollection
 
     fun handleMissingDimensionStrategy(dimension: String, alternatedValues: List<String>)
+
+    /**
+     * Notification that the old variant API ran successfully.
+     */
+    fun oldVariantApiCompleted()
+
+    /**
+     * Registers an action to run once the old variant API has completed.
+     * The action will run in an undetermined thread.
+     *
+     * Note that if the variant API has already completed, the action will run
+     * immediately in the calling thread.
+     *
+     * @param action lambda to run once old variant API completed.
+     */
+    fun registerPostOldVariantApiAction(action: () -> Unit)
 }
