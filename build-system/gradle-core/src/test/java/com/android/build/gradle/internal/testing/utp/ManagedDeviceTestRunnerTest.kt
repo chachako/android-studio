@@ -48,6 +48,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import kotlin.io.path.Path
 
 /**
  * Unit tests for [ManagedDeviceTestRunner].
@@ -91,6 +92,8 @@ class ManagedDeviceTestRunnerTest {
 
     private lateinit var capturedRunnerConfigs: List<UtpRunnerConfig>
     private var utpInvocationCount: Int = 0
+    private val extractedSdkApks = listOf(listOf(Path("test1"), Path("test2")))
+    private val sdkApkSet = setOf(File("test"))
 
     @Before
     fun setupMocks() {
@@ -98,6 +101,7 @@ class ManagedDeviceTestRunnerTest {
 
         `when`(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
         `when`(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
+        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { extractedSdkApks }
         `when`(mockUtpConfigFactory.createRunnerConfigProtoForManagedDevice(
                 any(),
                 any(),
@@ -117,7 +121,7 @@ class ManagedDeviceTestRunnerTest {
                 any(),
                 nullable(Int::class.java),
                 any(),
-                nullable(ShardConfig::class.java))).then {
+                nullable(ShardConfig::class.java),)).then {
             RunnerConfigProto.RunnerConfig.getDefaultInstance()
         }
         `when`(mockUtpConfigFactory.createServerConfigProto())
@@ -185,21 +189,22 @@ class ManagedDeviceTestRunnerTest {
                 false,
                 Level.WARNING,
                 false,
-                mockUtpConfigFactory
-            ) { runnerConfigs, _, _, resultsDir, _ ->
-                utpInvocationCount++
-                capturedRunnerConfigs = runnerConfigs
-                TestSuiteResult.getDefaultInstance()
-                    .writeTo(File(resultsDir, TEST_RESULT_PB_FILE_NAME).outputStream())
-                runnerConfigs.map {
-                    UtpTestRunResult(
-                        result,
-                        createTestSuiteResult(
-                            hasEmulatorTimeoutException[it.shardConfig?.index ?: 0]
+                mockUtpConfigFactory,
+                { runnerConfigs, _, _, resultsDir, _ ->
+                    utpInvocationCount++
+                    capturedRunnerConfigs = runnerConfigs
+                    TestSuiteResult.getDefaultInstance()
+                        .writeTo(File(resultsDir, TEST_RESULT_PB_FILE_NAME).outputStream())
+                    runnerConfigs.map {
+                        UtpTestRunResult(
+                            result,
+                            createTestSuiteResult(
+                                hasEmulatorTimeoutException[it.shardConfig?.index ?: 0]
+                            )
                         )
-                    )
-                }
-            }
+                    }
+                },
+            )
 
             outputDirectory = temporaryFolderRule.newFolder("results")
             runner.runTests(
@@ -213,7 +218,8 @@ class ManagedDeviceTestRunnerTest {
                 mockTestData,
                 listOf(),
                 setOf(mockHelperApk),
-                mockLogger
+                mockLogger,
+                sdkApkSet
             )
         }
     }

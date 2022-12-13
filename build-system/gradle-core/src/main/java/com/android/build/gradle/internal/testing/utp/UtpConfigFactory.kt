@@ -35,8 +35,6 @@ import com.android.tools.utp.plugins.deviceprovider.ddmlib.proto.AndroidDevicePr
 import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAndroidDeviceProviderProto.GradleManagedAndroidDeviceProviderConfig
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto.AndroidAdditionalTestOutputConfig
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.AndroidApkInstallerConfig
-import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk
-import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto.AndroidTestCoverageConfig
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto.IceboxPlugin
@@ -59,7 +57,9 @@ import com.google.testing.platform.proto.api.core.PathProto
 import com.google.testing.platform.proto.api.service.ServerConfigProto
 import org.gradle.api.logging.Logging
 import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.absolutePathString
 
 // This is an arbitrary string. This ID is used to lookup test results from UTP.
 // UTP can run multiple test fixtures at a time so we have to give a name for
@@ -91,14 +91,6 @@ class UtpConfigFactory {
     private val logger = Logging.getLogger(this.javaClass)
 
     /**
-     * Encapsulates installation configuration for app APKs
-     */
-    private data class targetApkConfigBundle (
-        val appApks: Iterable<File>,
-        val isSplitApk: Boolean
-    )
-
-    /**
      * Creates a runner config proto which you can pass into the Unified Test Platform's
      * test executor.
      *
@@ -111,7 +103,7 @@ class UtpConfigFactory {
     fun createRunnerConfigProtoForLocalDevice(
         device: DeviceConnector,
         testData: StaticTestData,
-        appApks: Iterable<File>,
+        targetApkConfigBundle: TargetApkConfigBundle,
         additionalInstallOptions: Iterable<String>,
         helperApks: Iterable<File>,
         uninstallIncompatibleApks: Boolean,
@@ -128,8 +120,8 @@ class UtpConfigFactory {
         resultListenerClientPrivateKey: File,
         trustCertCollection: File,
         installApkTimeout: Int?,
-        targetIsSplitApk: Boolean,
-        shardConfig: ShardConfig? = null
+        extractedSdkApks: List<List<Path>>,
+        shardConfig: ShardConfig? = null,
     ): RunnerConfigProto.RunnerConfig {
         return RunnerConfigProto.RunnerConfig.newBuilder().apply {
             val grpcInfo = findGrpcInfo(device.serialNumber)
@@ -138,7 +130,7 @@ class UtpConfigFactory {
                 createTestFixture(
                     grpcInfo.port,
                     grpcInfo.token,
-                    appApks,
+                    targetApkConfigBundle,
                     additionalInstallOptions,
                     helperApks,
                     testData,
@@ -154,9 +146,9 @@ class UtpConfigFactory {
                     },
                     coverageOutputDir,
                     installApkTimeout,
-                    targetIsSplitApk,
                     shardConfig,
-                    false
+                    false,
+                    extractedSdkApks,
                 )
             )
             singleDeviceExecutor = createSingleDeviceExecutor(device.serialNumber, shardConfig)
@@ -199,7 +191,7 @@ class UtpConfigFactory {
     fun createRunnerConfigProtoForManagedDevice(
         device: UtpManagedDevice,
         testData: StaticTestData,
-        appApks: Iterable<File>,
+        targetApkConfigBundle: TargetApkConfigBundle,
         additionalInstallOptions: Iterable<String>,
         helperApks: Iterable<File>,
         utpDependencies: UtpDependencies,
@@ -214,8 +206,8 @@ class UtpConfigFactory {
         emulatorGpuFlag: String,
         showEmulatorKernelLogging: Boolean,
         installApkTimeout: Int?,
-        targetIsSplitApk: Boolean,
-        shardConfig: ShardConfig? = null
+        extractedSdkApks: List<List<Path>>,
+        shardConfig: ShardConfig? = null,
     ): RunnerConfigProto.RunnerConfig {
         return RunnerConfigProto.RunnerConfig.newBuilder().apply {
             addDevice(
@@ -223,14 +215,15 @@ class UtpConfigFactory {
                     device, utpDependencies, emulatorGpuFlag, showEmulatorKernelLogging))
             addTestFixture(
                 createTestFixture(
-                    null, null, appApks, additionalInstallOptions, helperApks, testData,
+                    null, null, targetApkConfigBundle, additionalInstallOptions, helperApks, testData,
                     utpDependencies, versionedSdkLoader,
                     outputDir, tmpDir, retentionConfig, useOrchestrator,
                     additionalTestOutputDir,
                     additionalTestOutputDir?.let {
                         findAdditionalTestOutputDirectoryOnManagedDevice(device, testData)
                     },
-                    coverageOutputDir, installApkTimeout, targetIsSplitApk, shardConfig, true
+                    coverageOutputDir, installApkTimeout, shardConfig, true,
+                    extractedSdkApks,
                 )
             )
             singleDeviceExecutor = createSingleDeviceExecutor(device.id, shardConfig)
@@ -333,7 +326,7 @@ class UtpConfigFactory {
     private fun createTestFixture(
         grpcPort: Int?,
         grpcToken: String?,
-        appApks: Iterable<File>,
+        targetApkConfigBundle: TargetApkConfigBundle,
         additionalInstallOptions: Iterable<String>,
         helperApks: Iterable<File>,
         testData: StaticTestData,
@@ -347,9 +340,9 @@ class UtpConfigFactory {
         additionalTestOutputOnDeviceDir: String?,
         coverageOutputDir: File,
         installApkTimeout: Int?,
-        targetIsSplitApk: Boolean,
         shardConfig: ShardConfig?,
         isManagedDevice: Boolean,
+        extractedSdkApks: List<List<Path>>,
     ): FixtureProto.TestFixture {
         return FixtureProto.TestFixture.newBuilder().apply {
             testFixtureIdBuilder.apply {
@@ -387,13 +380,14 @@ class UtpConfigFactory {
                                               additionalTestOutputOnDeviceDir, shardConfig)
             }
             addHostPlugin(createApkInstallerPlugin(
-                    targetApkConfigBundle(appApks, targetIsSplitApk),
+                    targetApkConfigBundle,
+                    extractedSdkApks,
                     helperApks,
                     installApkTimeout,
                     additionalInstallOptions,
                     testData,
                     isManagedDevice,
-                    utpDependencies))
+                    utpDependencies, ))
             // This line is required since AndroidTestPlugin sends event message to context after
             // installing the APKs
             addHostPlugin(createAndroidTestPlugin(utpDependencies))
@@ -628,21 +622,37 @@ class UtpConfigFactory {
         }
     }
 
+    // APK install sequence is aligned with legacy installer for better compatibility
     private fun createApkInstallerPlugin(
-            targetApkConfigBundle: targetApkConfigBundle,
+            targetApkConfigBundle: TargetApkConfigBundle,
+            extractedSdkApks: List<List<Path>>,
             helperApks: Iterable<File>,
             installApkTimeout: Int?,
             additionalInstallOptions: Iterable<String>,
             testData: StaticTestData,
             isManagedDevice: Boolean,
-            utpDependencies:UtpDependencies): ExtensionProto.Extension {
+            utpDependencies:UtpDependencies,
+    ): ExtensionProto.Extension {
         return ANDROID_TEST_PLUGIN_APK_INSTALLER.toExtensionProto(
             utpDependencies, AndroidApkInstallerConfig::newBuilder) {
 
+            if (extractedSdkApks.isNotEmpty() && extractedSdkApks[0].isNotEmpty()) {
+                extractedSdkApks.forEach { apks ->
+                    addApksToInstallBuilder().apply {
+                        addAllApkPaths(apks.map { it.absolutePathString() })
+                        installOptionsBuilder.apply {
+                            addAllCommandLineParameter(additionalInstallOptions)
+                            installAsSplitApk = (apks.size > 1)
+                            if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
+                        }.build()
+                    }.build()
+                }
+            }
+
             if (Iterables.size(targetApkConfigBundle.appApks) > 0) {
-                addApksToInstall(InstallableApk.newBuilder().apply {
+                addApksToInstallBuilder().apply {
                     addAllApkPaths(targetApkConfigBundle.appApks.map{ it.absolutePath })
-                    installOptions = InstallOption.newBuilder().apply {
+                    installOptionsBuilder.apply {
                         addAllCommandLineParameter(additionalInstallOptions)
                         installAsSplitApk = targetApkConfigBundle.isSplitApk
                         if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
@@ -651,28 +661,28 @@ class UtpConfigFactory {
                     addAllApksPackageName(listOf(
                         testData.testedApplicationId,
                         testData.applicationId))
-                }.build())
+                }.build()
             }
 
             if (Iterables.size(helperApks) > 0) {
-                addApksToInstall(InstallableApk.newBuilder().apply {
+                addApksToInstallBuilder().apply {
                     addAllApkPaths(helperApks.map{ it.absolutePath })
-                    installOptions = InstallOption.newBuilder().apply {
+                    installOptionsBuilder.apply {
                         addAllCommandLineParameter(additionalInstallOptions)
                         if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
                         installAsTestService = true
                     }.build()
-                }.build())
+                }.build()
             }
 
             if (testData.testApk.absolutePath.isNotEmpty()){
-                addApksToInstall(InstallableApk.newBuilder().apply {
+                addApksToInstallBuilder().apply {
                     addAllApkPaths(listOf(testData.testApk.absolutePath))
-                    installOptions = InstallOption.newBuilder().apply {
+                    installOptionsBuilder.apply {
                         addAllCommandLineParameter(additionalInstallOptions)
                         if (installApkTimeout != null) setInstallApkTimeout(installApkTimeout)
                     }.build()
-                }.build())
+                }.build()
             }
         }
     }

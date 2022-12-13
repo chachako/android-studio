@@ -27,20 +27,22 @@ import com.android.sdklib.BuildToolInfo
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.TextFormat.escapeDoubleQuotesAndBackslashes
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
-import java.io.File
-import java.lang.IllegalArgumentException
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Answers
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 /**
  * Unit tests for [UtpConfigFactory].
@@ -66,8 +68,11 @@ class UtpConfigFactoryTest {
     @Mock private lateinit var mockResultListenerClientCert: File
     @Mock private lateinit var mockResultListenerClientPrivateKey: File
     @Mock private lateinit var mockTrustCertCollection: File
+    @Mock private lateinit var mockDependencyApk: File
 
     private lateinit var testResultListenerServerMetadata: UtpTestResultListenerServerMetadata
+    private lateinit var testExtractedSdkApks: List<List<Path>>
+    private lateinit var testTargetApkConfigBundle: TargetApkConfigBundle
 
     private val testData = StaticTestData(
         testedApplicationId = "com.example.application",
@@ -82,7 +87,10 @@ class UtpConfigFactoryTest {
         flavorName = "",
         testApk = mockFile("testApk.apk"),
         testDirectories = emptyList(),
-        testedApkFinder = { emptyList() }
+        testedApkFinder = { emptyList() },
+        privacySandboxInstallBundlesFinder = {
+            listOf(listOf(mockPath("mockDependencyApkPath")))
+        }
     )
 
     private val utpDependencies: UtpDependencies = mock(UtpDependencies::class.java) {
@@ -90,8 +98,15 @@ class UtpConfigFactoryTest {
             mockFile("path-to-${it.method.name.removePrefix("get")}.jar"))
     }
 
+    private val mockDependencyApkPath = mockPath("mockDependencyApkPath")
+
     private fun mockFile(absolutePath: String): File = mock(File::class.java).also {
         `when`(it.absolutePath).thenReturn(absolutePath)
+    }
+
+    private fun mockPath(absolutePath: String): Path = mock(Path::class.java,
+            Answers.RETURNS_DEEP_STUBS).also {
+        `when`(it.absolutePathString()).thenReturn(absolutePath)
     }
 
     @Before
@@ -127,11 +142,17 @@ class UtpConfigFactoryTest {
         `when`(mockResultListenerClientCert.absolutePath).thenReturn("mockResultListenerClientCertPath")
         `when`(mockResultListenerClientPrivateKey.absolutePath).thenReturn("mockResultListenerClientPrivateKeyPath")
         `when`(mockTrustCertCollection.absolutePath).thenReturn("mockTrustCertCollectionPath")
+        `when`(mockDependencyApk.toPath()).thenReturn(mockDependencyApkPath)
         testResultListenerServerMetadata = UtpTestResultListenerServerMetadata(
                 serverCert = mockTrustCertCollection,
                 serverPort = 1234,
                 clientCert = mockResultListenerClientCert,
                 clientPrivateKey = mockResultListenerClientPrivateKey
+        )
+        testExtractedSdkApks = listOf(listOf(mockPath("mockDependencyApkPath")))
+        testTargetApkConfigBundle = TargetApkConfigBundle(
+                appApks = listOf(mockAppApk, mockTestApk),
+                isSplitApk = false
         )
     }
 
@@ -142,12 +163,13 @@ class UtpConfigFactoryTest {
             additionalTestOutputDir: File? = null,
             installApkTimeout: Int? = null,
             shardConfig: ShardConfig? = null,
-            targetIsSplitApk: Boolean = false
+            targetApkConfigBundle: TargetApkConfigBundle = testTargetApkConfigBundle,
+            extractedSdkApks: List<List<Path>> = testExtractedSdkApks,
     ): RunnerConfigProto.RunnerConfig {
         return UtpConfigFactory().createRunnerConfigProtoForLocalDevice(
                 mockDevice,
                 testData,
-                listOf(mockAppApk, mockTestApk),
+                targetApkConfigBundle,
                 listOf("-additional_install_option"),
                 listOf(mockHelperApk),
                 uninstallIncompatibleApks,
@@ -164,7 +186,7 @@ class UtpConfigFactoryTest {
                 mockResultListenerClientPrivateKey,
                 mockTrustCertCollection,
                 installApkTimeout,
-                targetIsSplitApk,
+                extractedSdkApks,
                 shardConfig,
         )
     }
@@ -177,7 +199,7 @@ class UtpConfigFactoryTest {
             emulatorGpuFlag: String = "auto-no-window",
             showEmulatorKernelLogging: Boolean = false,
             installApkTimeout: Int? = null,
-            targetIsSplitApk: Boolean = false
+            targetApkConfigBundle: TargetApkConfigBundle = testTargetApkConfigBundle
     ): RunnerConfigProto.RunnerConfig {
         val managedDevice = UtpManagedDevice(
                 "deviceName",
@@ -191,7 +213,7 @@ class UtpConfigFactoryTest {
         return UtpConfigFactory().createRunnerConfigProtoForManagedDevice(
                 managedDevice,
                 testData,
-                listOf(mockAppApk, mockTestApk),
+                targetApkConfigBundle,
                 listOf("-additional_install_option"),
                 listOf(mockHelperApk),
                 utpDependencies,
@@ -206,8 +228,8 @@ class UtpConfigFactoryTest {
                 emulatorGpuFlag,
                 showEmulatorKernelLogging,
                 installApkTimeout,
-                targetIsSplitApk,
-                shardConfig
+                testExtractedSdkApks,
+                shardConfig,
         )
     }
 
@@ -219,7 +241,12 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoForLocalDeviceWithSplitApk() {
-        val runnerConfigProto = createForLocalDevice(targetIsSplitApk = true)
+        val runnerConfigProto = createForLocalDevice(
+                targetApkConfigBundle = TargetApkConfigBundle(
+                        appApks = listOf(mockAppApk, mockTestApk),
+                        isSplitApk = true
+                )
+        )
         assertRunnerConfigProto(
                 runnerConfig = runnerConfigProto,
                 isSplitApk = true
@@ -333,7 +360,12 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoForManagedDeviceWithSplitApk() {
-        val runnerConfigProto = createForManagedDevice(targetIsSplitApk = true)
+        val runnerConfigProto = createForManagedDevice(
+                targetApkConfigBundle = TargetApkConfigBundle(
+                        appApks = listOf(mockAppApk, mockTestApk),
+                        isSplitApk = true
+                )
+        )
 
         assertRunnerConfigProto(
                 runnerConfigProto,
@@ -633,5 +665,18 @@ class UtpConfigFactoryTest {
         assertThat(serverConfigProto.toString().trim()).isEqualTo("""
             address: "localhost:20000"
         """.trimIndent())
+    }
+
+    @Test
+    fun multipleDependencyApk() {
+        val mockPath1 = mockPath("mockDependencyApkPath1")
+        val mockPath2 = mockPath("mockDependencyApkPath2")
+        val extractedSdkApks = listOf(listOf(mockPath1, mockPath2))
+
+        val runnerConfigProto = createForLocalDevice(
+                extractedSdkApks = extractedSdkApks)
+        assertRunnerConfigProto(
+                runnerConfigProto,
+                isDependencyApkSplit = true)
     }
 }

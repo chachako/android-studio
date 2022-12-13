@@ -23,7 +23,6 @@ import com.google.firebase.testlab.gradle.ManagedDevice
 import java.io.File
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
-import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 
 /**
@@ -44,6 +43,7 @@ class ManagedDeviceTestRunner(
         additionalInstallOptions: List<String>,
         helperApks: Set<File>,
         logger: Logger,
+        dependencyApks: Set<File>
     ): Boolean {
         val results = testLabBuildService.get().runTestsOnDevice(
             managedDevice as ManagedDevice,

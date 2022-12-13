@@ -594,7 +594,8 @@ public class SimpleTestRunnableTest {
                 testApk,
                 testDirectories,
                 (@NonNull DeviceConfigProvider deviceConfigProvider) ->
-                        ImmutableList.copyOf(testedApks));
+                        ImmutableList.copyOf(testedApks),
+                (DeviceConfigProvider deviceConfigProvider) -> Collections.emptyList());
     }
 
     static class SimpleTestRunnable

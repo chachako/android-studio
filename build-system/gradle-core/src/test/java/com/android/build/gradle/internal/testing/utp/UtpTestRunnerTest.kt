@@ -29,8 +29,6 @@ import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.proto.api.service.ServerConfigProto.ServerConfig
-import java.io.File
-import java.util.logging.Level
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
 import org.junit.Before
@@ -47,6 +45,9 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import java.io.File
+import java.util.logging.Level
+import kotlin.io.path.Path
 
 /**
  * Unit tests for [UtpTestRunner].
@@ -63,7 +64,7 @@ class UtpTestRunnerTest {
     @Mock lateinit var mockVersionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader
     @Mock lateinit var mockTestData: StaticTestData
     @Mock lateinit var mockAppApk: File
-    @Mock lateinit var mockTestApk: File
+    @Mock lateinit var mockPrivacySandboxSdkApk: File
     @Mock lateinit var mockHelperApk: File
     @Mock lateinit var mockDevice: DeviceConnector
     @Mock lateinit var mockLogger: ILogger
@@ -88,7 +89,7 @@ class UtpTestRunnerTest {
         `when`(mockUtpConfigFactory.createRunnerConfigProtoForLocalDevice(
                 any(),
                 any(),
-                anyIterable(),
+                any(),
                 anyIterable(),
                 anyIterable(),
                 anyBoolean(),
@@ -129,18 +130,20 @@ class UtpTestRunnerTest {
             Level.WARNING,
             null,
             false,
-            mockUtpConfigFactory) { runnerConfigs, _, _, _, _ ->
-            capturedRunnerConfigs = runnerConfigs
-            listOf(result)
-        }
+            mockUtpConfigFactory,
+            { runnerConfigs, _, _, _, _ ->
+                capturedRunnerConfigs = runnerConfigs
+                listOf(result)
+            },
+        )
 
         resultsDirectory = temporaryFolderRule.newFolder("results")
         return runner.runTests(
             "projectName",
             "variantName",
             mockTestData,
+            setOf(mockPrivacySandboxSdkApk),
             setOf(mockHelperApk),
-            emptySet(),
             listOf(mockDevice),
             0,
             setOf(),
@@ -153,6 +156,8 @@ class UtpTestRunnerTest {
 
     @Test
     fun runUtpAndPassed() {
+        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
+
         val result = runUtp(UtpTestRunResult(testPassed = true,
                                              TestSuiteResult.getDefaultInstance()))
 
@@ -168,6 +173,8 @@ class UtpTestRunnerTest {
 
     @Test
     fun runUtpAndFailed() {
+        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
+
         val result = runUtp(UtpTestRunResult(testPassed = false, null))
 
         assertThat(capturedRunnerConfigs).hasSize(1)

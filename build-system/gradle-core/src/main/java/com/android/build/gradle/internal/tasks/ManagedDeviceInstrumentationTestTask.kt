@@ -55,8 +55,6 @@ import com.android.repository.Revision
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
-import java.io.File
-import java.util.logging.Level
 import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
@@ -81,6 +79,8 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.internal.logging.ConsoleRenderer
 import org.gradle.work.DisableCachingByDefault
 import org.gradle.workers.WorkerExecutor
+import java.io.File
+import java.util.logging.Level
 
 /**
  * Runs instrumentation tests of a variant on a device defined in the DSL.
@@ -264,6 +264,11 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
     @get: Input
     abstract val enableEmulatorDisplay: Property<Boolean>
 
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    @Optional
+    abstract fun getPrivacySandboxSdkApksFiles(): ConfigurableFileCollection
+
     @Option(
         option="enable-display",
         description = "Adding this option will display the emulator while testing, instead" +
@@ -320,7 +325,8 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                     testData.get().getAsStaticData(),
                     installOptions.getOrElse(listOf()),
                     buddyApks.files,
-                    logger
+                    logger,
+                    getPrivacySandboxSdkApksFiles()?.files ?: setOf()
                 )
             } catch (e: Exception) {
                 recordCrashedInstrumentedTestRun(
@@ -560,6 +566,22 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 )
             }
             task.rClasses.disallowChanges()
+
+            if(creationConfig
+                            .services
+                            .projectOptions
+                            .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)
+                    && testedConfig != null) {
+                task.getPrivacySandboxSdkApksFiles()
+                    .setFrom(
+                        testedConfig
+                            .variantDependencies
+                            .getArtifactFileCollection(
+                                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                                AndroidArtifacts.ArtifactScope.ALL,
+                                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS))
+            }
+            task.getPrivacySandboxSdkApksFiles().disallowChanges()
         }
     }
 }

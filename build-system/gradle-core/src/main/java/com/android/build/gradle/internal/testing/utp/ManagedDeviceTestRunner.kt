@@ -34,6 +34,7 @@ import java.io.File
 import java.util.logging.Level
 import org.gradle.api.logging.Logger
 import org.gradle.workers.WorkerExecutor
+import java.nio.file.Path
 
 class ManagedDeviceTestRunner(
     private val workerExecutor: WorkerExecutor,
@@ -56,11 +57,12 @@ class ManagedDeviceTestRunner(
         runUtpTestSuiteAndWait(
             runnerConfigs, workerExecutor, projectPath, variantName, resultsDir, logger,
             null, utpDependencies)
-    }
+    },
 ): com.android.build.api.instrumentation.ManagedDeviceTestRunner {
 
     /**
      * @param additionalTestOutputDir output directory for additional test output, or null if disabled
+     * @param dependencyApks are the private sandbox SDK APKs
      */
     override fun runTests(
         managedDevice: Device,
@@ -73,7 +75,8 @@ class ManagedDeviceTestRunner(
         testData: StaticTestData,
         additionalInstallOptions: List<String>,
         helperApks: Set<File>,
-        logger: Logger
+        logger: Logger,
+        dependencyApks: Set<File>
     ): Boolean {
         managedDevice as ManagedVirtualDevice
         val logger = LoggerWrapper(logger)
@@ -92,6 +95,7 @@ class ManagedDeviceTestRunner(
             enableEmulatorDisplay
         )
         val testedApks = getTestedApks(testData, utpManagedDevice, logger)
+        val extractedSdkApks = getExtractedSdkApks(testData, utpManagedDevice)
         val runnerConfigs = mutableListOf<UtpRunnerConfig>()
         try {
             avdComponents.lockManager.lock(numShards ?: 1).use { lock ->
@@ -129,7 +133,7 @@ class ManagedDeviceTestRunner(
                             configFactory.createRunnerConfigProtoForManagedDevice(
                                 shardedManagedDevice,
                                 testData,
-                                testedApks,
+                                TargetApkConfigBundle(testedApks, targetIsSplitApk),
                                 additionalInstallOptions,
                                 helperApks,
                                 utpDependencies,
@@ -144,7 +148,7 @@ class ManagedDeviceTestRunner(
                                 emulatorGpuFlag,
                                 showEmulatorKernelLogging,
                                 installApkTimeout,
-                                targetIsSplitApk,
+                                extractedSdkApks,
                                 shardConfig
                             )
                         }
@@ -288,6 +292,12 @@ class ManagedDeviceTestRunner(
                 return testedApks
             }
             return listOf()
+        }
+
+        fun getExtractedSdkApks(
+                testData: StaticTestData, device: UtpManagedDevice): List<List<Path>> {
+            val deviceConfigProvider = ManagedDeviceConfigProvider(device)
+            return testData.privacySandboxInstallBundlesFinder(deviceConfigProvider)
         }
     }
 }

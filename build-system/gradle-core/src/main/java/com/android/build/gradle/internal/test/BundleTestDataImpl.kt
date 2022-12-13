@@ -49,12 +49,14 @@ internal class BundleTestDataImpl constructor(
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
-    val apkBundle: FileCollection
+    val apkBundle: FileCollection,
+    privacySandboxSdkApks: FileCollection?
 ) : AbstractTestDataImpl(
     namespace,
     creationConfig,
     testApkDir,
-    null
+    null,
+    privacySandboxSdkApks
 ) {
 
     override val libraryType = creationConfig.services.provider { false }

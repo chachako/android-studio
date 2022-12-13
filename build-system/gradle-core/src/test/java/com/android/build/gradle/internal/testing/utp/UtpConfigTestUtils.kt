@@ -66,6 +66,7 @@ fun assertRunnerConfigProto(
     uninstallIncompatibleApks: Boolean = false,
     installApkTimeout: Int? = null,
     isSplitApk: Boolean = false,
+    isDependencyApkSplit: Boolean = false,
 ) {
     val deviceProviderProto = if (useGradleManagedDeviceProvider) { """
         label {
@@ -199,6 +200,12 @@ fun assertRunnerConfigProto(
     val installApkTimeoutString = if (installApkTimeout != null) "install_apk_timeout: ${installApkTimeout}" else ""
     val uninstallAfterTest = if (!useGradleManagedDeviceProvider) "uninstall_after_test: true" else ""
     val installAsSplitApk = if (isSplitApk) "install_as_split_apk: true" else ""
+    val dependencyApkPath = if (isDependencyApkSplit) """
+        apk_paths: "mockDependencyApkPath1"
+        apk_paths: "mockDependencyApkPath2"
+    """ else """
+        apk_paths: "mockDependencyApkPath"
+    """
 
     val testApkInstallerConfigProto = """
         host_plugin {
@@ -212,6 +219,14 @@ fun assertRunnerConfigProto(
           config {
             type_url: "type.googleapis.com/com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfig"
             value {
+              apks_to_install {
+                ${"\n" + dependencyApkPath.trimIndent().prependIndent(" ".repeat(16))}
+                install_options {
+                  command_line_parameter: "-additional_install_option"
+                  ${if (isDependencyApkSplit) "install_as_split_apk: true" else ""}
+                  $installApkTimeoutString
+                }
+              }
               apks_to_install {
                 apk_paths: "mockAppApkPath"
                 apk_paths: "mockTestApkPath"

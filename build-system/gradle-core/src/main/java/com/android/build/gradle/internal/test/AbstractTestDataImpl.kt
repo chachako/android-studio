@@ -18,9 +18,12 @@ package com.android.build.gradle.internal.test
 import com.android.SdkConstants
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.tasks.databinding.DATA_BINDING_TRIGGER_CLASS
+import com.android.build.gradle.internal.tasks.extractApkFilesBypassingBundleTool
 import com.android.build.gradle.internal.testing.StaticTestData
 import com.android.build.gradle.internal.testing.TestData
+import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.ide.common.util.toPathString
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.common.io.Files
 import org.gradle.api.file.ConfigurableFileCollection
@@ -32,6 +35,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import java.nio.file.Path
 import java.util.zip.ZipFile
 
 /**
@@ -46,7 +50,11 @@ abstract class AbstractTestDataImpl(
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
-    val testedApksDir: FileCollection?
+    val testedApksDir: FileCollection?,
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    val privacySandboxSdkApks: FileCollection?
 ) : TestData {
 
     private var extraInstrumentationTestRunnerArgs: Map<String, String> = mutableMapOf()
@@ -111,7 +119,8 @@ abstract class AbstractTestDataImpl(
                 flavorName.get(),
                 getTestApk().get(),
                 testDirectories.files.toList(),
-                this::findTestedApks
+                this::findTestedApks,
+                this::privacySandboxInstallBundlesFinder
         )
     }
 
@@ -167,4 +176,14 @@ abstract class AbstractTestDataImpl(
                 }
                 false
             }
+
+    override fun privacySandboxInstallBundlesFinder(
+        deviceConfigProvider: DeviceConfigProvider): List<List<Path>> {
+        privacySandboxSdkApks?: return emptyList()
+        val privacySandboxInstallBundles = ImmutableList.builder<List<Path>>()
+        privacySandboxSdkApks.forEach {  apk ->
+            privacySandboxInstallBundles.add(extractApkFilesBypassingBundleTool(apk.toPath()))
+        }
+        return privacySandboxInstallBundles.build()
+    }
 }

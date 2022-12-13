@@ -22,12 +22,14 @@ import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.SdkComponentsBuildService.VersionedSdkLoader
+import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.dsl.EmulatorSnapshots
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.testing.utp.ManagedDeviceTestRunner
@@ -105,7 +107,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
     @Mock
     lateinit var sdkService: SdkComponentsBuildService
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
+    @Mock(answer = RETURNS_DEEP_STUBS, extraInterfaces = [AndroidTestCreationConfig::class])
     lateinit var creationConfig: TestVariantImpl
 
     @Mock(answer = RETURNS_DEEP_STUBS)
@@ -298,6 +300,18 @@ class ManagedDeviceInstrumentationTestTaskTest {
         // Needed to ensure the ExecutionEnum
         `when`(creationConfig.global.testOptionExecutionEnum)
             .thenReturn(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR)
+        `when`(creationConfig
+                .services
+                .projectOptions
+                .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)).thenReturn(true)
+
+        `when`((creationConfig as AndroidTestCreationConfig).mainVariant
+                .variantDependencies
+                .getArtifactFileCollection(
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactScope.ALL,
+                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS))
+                .thenReturn(project.objects.fileCollection())
         val config = ManagedDeviceInstrumentationTestTask.CreationAction(
             creationConfig,
             managedDevice,
@@ -367,7 +381,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
             testData = any(),
             additionalInstallOptions = any(),
             helperApks = any(),
-            logger = any()
+            logger = any(),
+            dependencyApks = any()
         )
         println("TestRunner: $testRunner")
 
@@ -395,7 +410,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
             testData = any(),
             additionalInstallOptions = eq(listOf()),
             helperApks = any(),
-            logger = any()
+            logger = any(),
+            dependencyApks = any()
         )
         verifyNoMoreInteractions(testRunner)
 
@@ -418,7 +434,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
             testData = any(),
             additionalInstallOptions = any(),
             helperApks = any(),
-            logger = any()
+            logger = any(),
+            dependencyApks = any()
         )
 
         doReturn(FakeGradleProperty<Int>()).`when`(runnerFactory).testShardsSize
@@ -454,7 +471,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
             testData = any(),
             additionalInstallOptions = eq(listOf()),
             helperApks = any(),
-            logger = any()
+            logger = any(),
+            dependencyApks = any()
         )
         verifyNoMoreInteractions(testRunner)
 
@@ -477,7 +495,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
             testData = any(),
             additionalInstallOptions = any(),
             helperApks = any(),
-            logger = any()
+            logger = any(),
+            dependencyApks = any()
         )
 
         doReturn(FakeGradleProperty<Int>()).`when`(runnerFactory).testShardsSize

@@ -21,24 +21,24 @@ import com.android.build.gradle.internal.testing.CustomTestRunListener
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkAction
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.ProjectOptions
+import com.android.builder.testing.api.DeviceConnector
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto
 import com.android.utils.ILogger
 import com.google.common.io.Files
-import com.google.gson.annotations.SerializedName
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
 import com.google.testing.platform.proto.api.core.ErrorDetailProto
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto
 import com.google.testing.platform.proto.api.service.ServerConfigProto
-import java.io.File
-import java.io.FileOutputStream
-import java.util.concurrent.ConcurrentHashMap
-import java.util.logging.Level
 import org.gradle.api.logging.Logging
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
-import java.io.Serializable
+import java.io.File
+import java.io.FileOutputStream
+import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Level
 
 const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
 
@@ -66,6 +66,23 @@ data class UtpRunnerConfig(
     val serverConfig: ServerConfigProto.ServerConfig,
     val shardConfig: ShardConfig? = null,
     val utpLoggingLevel: Level = Level.WARNING,
+)
+
+/**
+ * @property sdkApkSet the privacy sandbox SDK APK
+ * @property extractedApks extracted APks from the privacy sandbox SDK APK to install during test
+ */
+data class PrivacySandboxSdkInstallBundle(
+    val sdkApkSet: Set<File>,
+    val extractedApkMap: Map<DeviceConnector, List<List<Path>>>
+)
+
+/**
+ * Encapsulates installation configuration for app APKs
+ */
+data class TargetApkConfigBundle (
+    val appApks: Iterable<File>,
+    val isSplitApk: Boolean
 )
 
 fun UtpRunnerConfig.shardName(): String {
@@ -269,13 +286,6 @@ fun shouldEnableUtp(
         Logging.getLogger("UtpTestUtils").warn(
             "Disabling ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM option because " +
                     "ENABLE_TEST_SHARDING is specified. ENABLE_TEST_SHARDING is not " +
-                    "supported by ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM yet.")
-        return false
-    }
-    if (projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
-        Logging.getLogger("UtpTestUtils").warn(
-            "Disabling ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM option because " +
-                    "PRIVACY_SANDBOX_SDK_SUPPORT is set. This is not " +
                     "supported by ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM yet.")
         return false
     }

@@ -18,8 +18,9 @@ package com.android.build.api.instrumentation
 
 import com.android.build.api.variant.AndroidVersion
 import com.android.builder.testing.api.DeviceConfigProvider
-import java.io.File
 import org.gradle.api.Incubating
+import java.io.File
+import java.nio.file.Path
 
 /**
  * Final values for the Android Test data that can be passed to test runners. This should not be
@@ -118,4 +119,13 @@ interface StaticTestData {
      */
     @get:Incubating
     val testedApkFinder: (DeviceConfigProvider) -> List<File>
+
+    /**
+     * TODO: Pending migration from extractApkFilesBypassingBundleTool to getApkFiles
+     *
+     * Returns extracted dependency APK files to install for privacy sandbox apps.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
+     */
+    val privacySandboxInstallBundlesFinder: (DeviceConfigProvider) -> List<List<Path>>
 }

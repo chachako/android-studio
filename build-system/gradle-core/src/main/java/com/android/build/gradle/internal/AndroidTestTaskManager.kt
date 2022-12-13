@@ -205,6 +205,17 @@ class AndroidTestTaskManager(
     private fun createConnectedTestForVariant(androidTestProperties: AndroidTestCreationConfig) {
         val testedVariant = androidTestProperties.mainVariant
         val isLibrary = testedVariant.componentType.isAar
+
+        val privacySandboxSdkApks = if (androidTestProperties.services.projectOptions
+                        .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
+                testedVariant
+                .variantDependencies
+                .getArtifactFileCollection(
+                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                    AndroidArtifacts.ArtifactScope.ALL,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS)
+        else null
+
         val testData: AbstractTestDataImpl = if (testedVariant.componentType.isDynamicFeature) {
             BundleTestDataImpl(
                 androidTestProperties.namespace,
@@ -216,7 +227,8 @@ class AndroidTestTaskManager(
                     .getArtifactFileCollection(
                         AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                         AndroidArtifacts.ArtifactScope.PROJECT,
-                        AndroidArtifacts.ArtifactType.APKS_FROM_BUNDLE))
+                        AndroidArtifacts.ArtifactType.APKS_FROM_BUNDLE),
+                privacySandboxSdkApks)
         } else {
             val testedApkFileCollection =
                 project.files(testedVariant.artifacts.get(SingleArtifact.APK))
@@ -224,7 +236,8 @@ class AndroidTestTaskManager(
                 androidTestProperties.namespace,
                 androidTestProperties,
                 androidTestProperties.artifacts.get(SingleArtifact.APK),
-                if (isLibrary) null else testedApkFileCollection)
+                if (isLibrary) null else testedApkFileCollection,
+                privacySandboxSdkApks)
         }
         configureTestData(androidTestProperties, testData)
         val connectedCheckSerials: Provider<List<String>> =

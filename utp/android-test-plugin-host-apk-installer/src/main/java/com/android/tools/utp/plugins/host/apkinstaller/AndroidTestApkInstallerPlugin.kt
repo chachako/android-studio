@@ -36,6 +36,7 @@ import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.runtime.android.controller.ext.uninstall
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
+import java.io.IOException
 import java.util.logging.Logger
 
 /**
@@ -45,8 +46,6 @@ import java.util.logging.Logger
 class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : HostPlugin {
 
     companion object {
-        // Prepend -t to install apk marked as testOnly.
-
         /**
          * Encapsulates information about minimum API level for test APK installation per the
          * features used in the test APK.
@@ -58,8 +57,8 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             SPLIT_APK(21)
         }
 
-        private val BASE_INSTALL_CMD = listOf("install", "-t")
-        private val SPLIT_APK_INSTALL_CMD = listOf("install-multiple", "-t")
+        private val BASE_INSTALL_CMD = listOf("install")
+        private val SPLIT_APK_INSTALL_CMD = listOf("install-multiple")
         private val installErrorSummary = object : ErrorSummary {
             override val errorCode: Int = 2002
             override val errorName: String = "Test APK installation Error"
@@ -70,6 +69,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
 
     private lateinit var pluginConfig: AndroidApkInstallerConfig
     private lateinit var installables: Set<Artifact>
+    private var userId: String? = null
 
     /**
      * Returns minimum API level given install options
@@ -84,17 +84,41 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
     }
 
     /**
+     * Obtain current user ID to correctly install test packages
+     */
+    private fun getUserId(deviceApiLevel: Int, deviceController: DeviceController,
+            deviceSerial: String): String? {
+        if (deviceApiLevel < 24) return null
+        val result = deviceController.execute(listOf("shell", "am", "get-current-user"))
+        if (result.statusCode != 0) {
+            logger.warning("Failed to execute command to obtain user ID from " +
+                    "device $deviceSerial")
+            return null
+        }
+        val userId = result.output.getOrNull(0)
+        if (userId?.toIntOrNull() == null) {
+            logger.warning("Unexpected output of command get-current-user, " +
+                    "expected a user id found the following output: $userId")
+            return null
+        }
+        return userId
+    }
+
+    /**
      * Returns corresponding installation command based on installable APK configuration.
      */
-    private fun getInstallCmd(installableApk: InstallableApk, deviceApiLevel: Int): List<String> {
+    private fun getInstallCmd(installableApk: InstallableApk?, deviceApiLevel: Int): List<String> {
         var installCmd: MutableList<String> = BASE_INSTALL_CMD.toMutableList()
-        if (installableApk.installOptions.installAsSplitApk) {
+        if (installableApk != null && installableApk.installOptions.installAsSplitApk) {
             installCmd = SPLIT_APK_INSTALL_CMD.toMutableList()
         }
-        if (installableApk.installOptions.installAsTestService) {
+        // Append -t to install apk marked as testOnly.
+        installCmd.add("-t")
+        if (installableApk != null && installableApk.installOptions.installAsTestService) {
             if (deviceApiLevel >= 23) installCmd.add("-g")
             if (deviceApiLevel >= 30) installCmd.add("--force-queryable")
         }
+        if (userId != null) installCmd.addAll(listOfNotNull("--user", userId))
         return installCmd
     }
 
@@ -116,7 +140,9 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                 (deviceController.getDevice().properties as AndroidDeviceProperties)
                         .deviceApiLevel.toInt()
         val deviceSerial = deviceController.getDevice().serial
+        userId = getUserId(deviceApiLevel, deviceController, deviceSerial)
 
+        val installablesInstallCmd = getInstallCmd(null, deviceApiLevel)
         installables.forEach { artifact ->
             val apkPath = artifact.sourcePath.path
             if (apkPath.isEmpty()) {
@@ -124,7 +150,8 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                 return@forEach
             }
             logger.info("Installing APK: $apkPath on device $deviceSerial.")
-            if (deviceController.execute(BASE_INSTALL_CMD + listOf(apkPath)).statusCode != 0) {
+            if (deviceController.execute(
+                            installablesInstallCmd + listOf(apkPath)).statusCode != 0) {
                 throw UtpException(
                         installErrorSummary,
                         "Failed to install APK: ${artifact.sourcePath.path} on device " +

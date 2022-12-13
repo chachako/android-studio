@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.testing
 import com.android.build.api.variant.AndroidVersion
 import com.android.builder.testing.api.DeviceConfigProvider
 import java.io.File
+import java.nio.file.Path
 
 /**
  * Final values for the [TestData] that can be passed to test runners. This should not be used as
@@ -58,8 +59,17 @@ data class StaticTestData(
     override val testDirectories: List<File?>,
 
     /**
+     *
      * Returns APK files to install based on given density and abis. If none match,
      * empty list is returned.
      */
-    override val testedApkFinder: (DeviceConfigProvider) -> List<File>
+    override val testedApkFinder: (DeviceConfigProvider) -> List<File>,
+
+    /**
+     * TODO: Pending migration from extractApkFilesBypassingBundleTool to getApkFiles (Currently unused)
+     *
+     * Returns extracted dependency APK files to install for privacy sandbox apps.
+     */
+    override val privacySandboxInstallBundlesFinder: (DeviceConfigProvider) -> List<List<Path>>
+
 ) : com.android.build.api.instrumentation.StaticTestData

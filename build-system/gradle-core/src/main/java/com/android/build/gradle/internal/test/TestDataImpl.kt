@@ -33,12 +33,14 @@ class TestDataImpl(
     namespace: Provider<String>,
     testConfig: AndroidTestCreationConfig,
     testApkDir: Provider<Directory>,
-    testedApksDir: FileCollection?
+    testedApksDir: FileCollection?,
+    privacySandboxSdkApks: FileCollection?
 ) : AbstractTestDataImpl(
     namespace,
     testConfig,
     testApkDir,
-    testedApksDir
+    testedApksDir,
+    privacySandboxSdkApks
 ) {
 
     override val libraryType =

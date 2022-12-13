@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.testing.utp
 
+import com.android.annotations.NonNull
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.testing.BaseTestRunner
 import com.android.build.gradle.internal.testing.StaticTestData
@@ -53,7 +54,7 @@ class UtpTestRunner @JvmOverloads constructor(
             runUtpTestSuiteAndWait(
                 runnerConfigs, workerExecutor, projectName, variantName, resultsDir, logger,
                 utpTestResultListener, utpDependencies)
-        }
+        },
 )
     : BaseTestRunner(splitSelectExec, processExecutor, executor) {
 
@@ -62,7 +63,7 @@ class UtpTestRunner @JvmOverloads constructor(
             variantName: String,
             testData: StaticTestData,
             apksForDevice: MutableMap<DeviceConnector, ImmutableList<File>>,
-            dependencyApks: Set<File>,
+            privacySandboxSdkInstallBundle: PrivacySandboxSdkInstallBundle,
             helperApks: MutableSet<File>,
             timeoutInMs: Int,
             installOptions: MutableCollection<String>,
@@ -84,7 +85,7 @@ class UtpTestRunner @JvmOverloads constructor(
                 configFactory.createRunnerConfigProtoForLocalDevice(
                     deviceConnector,
                     testData,
-                    apks,
+                    TargetApkConfigBundle(apks, targetIsSplitApk),
                     installOptions,
                     helperApks,
                     uninstallIncompatibleApks,
@@ -105,7 +106,7 @@ class UtpTestRunner @JvmOverloads constructor(
                     resultListenerServerMetadata.clientPrivateKey,
                     resultListenerServerMetadata.serverCert,
                     installApkTimeout,
-                    targetIsSplitApk
+                    privacySandboxSdkInstallBundle.extractedApkMap[deviceConnector]?: emptyList()
                 )
             }
             UtpRunnerConfig(

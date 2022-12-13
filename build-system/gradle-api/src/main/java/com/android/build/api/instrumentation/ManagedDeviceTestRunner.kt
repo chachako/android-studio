@@ -53,6 +53,7 @@ interface ManagedDeviceTestRunner {
         testData: StaticTestData,
         additionalInstallOptions: List<String>,
         helperApks: Set<File>,
-        logger: Logger
+        logger: Logger,
+        dependencyApks: Set<File>
     ): Boolean
 }
