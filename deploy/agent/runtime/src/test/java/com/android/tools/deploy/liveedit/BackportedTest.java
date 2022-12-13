@@ -61,7 +61,6 @@ public class BackportedTest {
             byte v1 = 1;
             mocked.when(() -> Byte.compareUnsigned(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -80,7 +79,6 @@ public class BackportedTest {
             short v1 = 1;
             mocked.when(() -> Short.compareUnsigned(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -99,7 +97,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> Math.multiplyExact(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -118,7 +115,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> StrictMath.multiplyExact(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -137,7 +133,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> Math.multiplyFull(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -156,7 +151,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> StrictMath.multiplyFull(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -175,7 +169,6 @@ public class BackportedTest {
             long v1 = 1;
             mocked.when(() -> Math.multiplyHigh(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -194,7 +187,6 @@ public class BackportedTest {
             long v1 = 1;
             mocked.when(() -> StrictMath.multiplyHigh(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -213,7 +205,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> Math.floorDiv(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -232,7 +223,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> StrictMath.floorDiv(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -251,7 +241,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> Math.floorMod(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -270,7 +259,6 @@ public class BackportedTest {
             int v1 = 1;
             mocked.when(() -> StrictMath.floorMod(v0, v1)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("Bad " + methodName + " invocation", expected, r);
@@ -288,7 +276,6 @@ public class BackportedTest {
             java.util.Map v0 = new java.util.HashMap();
             mocked.when(() -> Map.copyOf(v0)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertTrue("Bad " + methodName + " invocation", expected == r);
@@ -306,7 +293,6 @@ public class BackportedTest {
             java.util.List v0 = new java.util.ArrayList<>();
             mocked.when(() -> List.copyOf(v0)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertTrue("Bad " + methodName + " invocation", expected == r);
@@ -324,7 +310,6 @@ public class BackportedTest {
             java.util.Set v0 = new java.util.HashSet<>();
             mocked.when(() -> Set.copyOf(v0)).thenReturn(expected);
             LiveEditStubs.addClass(className, byteCode, false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0};
             Object r = LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertTrue("Bad " + methodName + " invocation", expected == r);

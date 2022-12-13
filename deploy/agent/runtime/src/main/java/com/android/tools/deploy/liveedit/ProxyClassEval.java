@@ -187,14 +187,12 @@ class ProxyClassEval extends BackPorterEval {
 
         try {
             // If the method is a synthetic static added by Compose compiler, we must interpret it.
-            // To detect these methods, we check if a given static method exists in the original,
-            // and that it wasn't added by the user via a LiveEdit operation.
+            // To detect these methods, we check if a given static method exists in the original.
             Type[] parameterTypes = Type.getArgumentTypes(methodDesc);
             Type returnType = Type.getReturnType(methodDesc);
             Method originalMethod =
                     methodLookup(internalName, methodName, parameterTypes, returnType);
-            boolean isLiveEdited = clazz.hasLiveEditedMethod(methodName, methodDesc);
-            if (originalMethod == null && !isLiveEdited) {
+            if (originalMethod == null) {
                 Log.v("live.deploy.lambda", "invokeStaticMethod: " + method);
                 Object result =
                         clazz.invokeDeclaredMethod(

@@ -54,7 +54,6 @@ public class TestException {
 
         try {
             LiveEditStubs.addClass(className, new Interpretable(byteCode), false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null};
             stubInvocationLineNumber = getNextLineNumber();
             stubbedMethod(className, methodName, methodDesc, parameters);
@@ -102,7 +101,6 @@ public class TestException {
 
         try {
             LiveEditStubs.addClass(className, new Interpretable(byteCode), false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null};
             stubInvocationLineNumber = getNextLineNumber();
             stubbedMethod(className, methodName, methodDesc, parameters);
@@ -143,7 +141,6 @@ public class TestException {
 
         try {
             LiveEditStubs.addClass(className, new Interpretable(byteCode), false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null};
             StackTraceElement[] actual = {
                 (StackTraceElement) stubbedMethod(className, methodName, methodDesc, parameters)

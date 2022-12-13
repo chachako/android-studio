@@ -38,7 +38,6 @@ public class TestLocalVariable {
         long v1 = 2;
         try {
             LiveEditStubs.addClass(className, new Interpretable(byteCode), false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Long l = (Long) LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("LocalVariable unalignment", l, Long.valueOf(v0 + v1));
@@ -60,7 +59,6 @@ public class TestLocalVariable {
         double v1 = 2;
         try {
             LiveEditStubs.addClass(className, new Interpretable(byteCode), false);
-            LiveEditStubs.addLiveEditedMethod(className, methodName, methodDesc);
             Object[] parameters = {null, null, v0, v1};
             Double d = (Double) LiveEditStubs.stubL(className, methodName, methodDesc, parameters);
             Assert.assertEquals("LocalVariable unalignment", d, Double.valueOf(v0 + v1));

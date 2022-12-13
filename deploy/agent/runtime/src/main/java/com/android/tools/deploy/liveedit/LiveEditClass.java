@@ -49,16 +49,12 @@ class LiveEditClass {
     private final HashMap<String, Field> superReflectedFields;
     private final HashMap<String, Method> superReflectedMethods;
 
-    // Named method descriptors of methods that have been live edited.
-    private final HashSet<String> liveEditedMethods;
-
     public LiveEditClass(LiveEditContext context, Interpretable bytecode, boolean isProxyClass) {
         this.context = context;
         this.staticFields = new HashMap<>();
         this.castableTypes = new HashSet<>();
         this.superReflectedFields = new HashMap<>();
         this.superReflectedMethods = new HashMap<>();
-        this.liveEditedMethods = new HashSet<>();
         updateBytecode(bytecode, isProxyClass);
     }
 
@@ -77,14 +73,6 @@ class LiveEditClass {
             staticFields.clear();
         }
         this.bytecode = bytecode;
-    }
-
-    public void addLiveEditedMethod(String methodName, String methodDesc) {
-        liveEditedMethods.add(methodName + methodDesc);
-    }
-
-    public boolean hasLiveEditedMethod(String methodName, String methodDesc) {
-        return liveEditedMethods.contains(methodName + methodDesc);
     }
 
     public boolean isProxyClass() {

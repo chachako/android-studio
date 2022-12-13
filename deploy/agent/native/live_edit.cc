@@ -207,15 +207,6 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
     PrimeClass(jvmti, jni, support_class.class_name());
   }
 
-  for (auto& target_class : req.target_classes()) {
-    live_edit_stubs.CallStaticVoidMethod(
-        "addLiveEditedMethod",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-        jni->NewStringUTF(target_class.class_name().c_str()),
-        jni->NewStringUTF(target_class.method_name().c_str()),
-        jni->NewStringUTF(target_class.method_desc().c_str()));
-  }
-
   Recompose recompose(jvmti, jni);
   jobject reloader = recompose.GetComposeHotReload();
   if (reloader) {

@@ -25,10 +25,6 @@ import java.util.List;
 public final class LiveEditStubs {
     private static final String TAG = "studio.deploy";
 
-    // Currently set to true as a workaround to handle the changes the Compose compiler makes to the
-    // signatures of functions that accept or return @Composable lambdas.
-    private static final boolean INTERPRET_ALL = true;
-
     // Context object that holds all of LiveEdit's global state. Initialized by the first LiveEdit.
     private static LiveEditContext context = null;
 
@@ -74,11 +70,6 @@ public final class LiveEditStubs {
         }
     }
 
-    public static void addLiveEditedMethod(
-            String internalClassName, String methodName, String methodDesc) {
-        context.getClass(internalClassName).addLiveEditedMethod(methodName, methodDesc);
-    }
-
     @VisibleForTesting
     public static void deleteClass(String internalName) {
         context.removeClass(internalName);
@@ -93,10 +84,8 @@ public final class LiveEditStubs {
     // TODO: We need to centralize which LiveEdit component "owns" this key format.
     public static boolean shouldInterpretMethod(
             String internalClassName, String methodName, String methodDesc) {
-        LiveEditClass clazz = context.getClass(internalClassName);
-        return INTERPRET_ALL
-                || (clazz != null && clazz.isProxyClass())
-                || (clazz != null && clazz.hasLiveEditedMethod(methodName, methodDesc));
+        // TODO(noahz): Consider removing this method.
+        return true;
     }
 
     public static Object doStub(

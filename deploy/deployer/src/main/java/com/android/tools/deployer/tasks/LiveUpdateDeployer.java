@@ -70,8 +70,6 @@ public class LiveUpdateDeployer {
     /** Inputs for Live Edit updates. */
     public static class UpdateLiveEditsParam {
         public final String className;
-        public final String methodName;
-        public final String methodDesc;
         public final boolean isComposable;
         public final int groupId;
         public final byte[] classData;
@@ -80,16 +78,12 @@ public class LiveUpdateDeployer {
 
         public UpdateLiveEditsParam(
                 String className,
-                String methodName,
-                String methodDesc,
                 boolean isComposable,
                 int groupId,
                 byte[] classData,
                 Map<String, byte[]> supportClasses,
                 boolean debugModeEnabled) {
             this.className = className;
-            this.methodName = methodName;
-            this.methodDesc = methodDesc;
             this.isComposable = isComposable;
             this.groupId = groupId;
             this.classData = classData;
@@ -331,9 +325,7 @@ public class LiveUpdateDeployer {
         requestBuilder.addTargetClasses(
                 Deploy.LiveEditClass.newBuilder()
                         .setClassName(param.className)
-                        .setClassData(ByteString.copyFrom(param.classData))
-                        .setMethodName(param.methodName)
-                        .setMethodDesc(param.methodDesc));
+                        .setClassData(ByteString.copyFrom(param.classData)));
 
         for (String name : param.supportClasses.keySet()) {
             ByteString data = ByteString.copyFrom(param.supportClasses.get(name));
@@ -342,17 +334,6 @@ public class LiveUpdateDeployer {
         }
         requestBuilder.setDebugModeEnabled(param.debugModeEnabled);
         Deploy.LiveEditRequest request = requestBuilder.build();
-
-
-        // TODO: Remove when we are fully connected to the agent.
-        System.out.println(
-                "Live Edit: Uploading "
-                        + param.className
-                        + "."
-                        + param.methodName
-                        + " of "
-                        + param.classData.length
-                        + " bytes.");
 
         UpdateLiveEditResult result = null;
         try {
