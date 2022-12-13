@@ -30,6 +30,7 @@ import com.android.tools.perflogger.Benchmark;
  * Connected tests using UTP test executor.
  */
 class UtpConnectedTest : UtpTestBase() {
+    private val connectedAndroidTestWithUtpBenchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtp").setProject("Android Studio Gradle").build()
 
     companion object {
         @ClassRule
@@ -78,11 +79,14 @@ class UtpConnectedTest : UtpTestBase() {
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
+        var testExecutionStartTime: Long = java.lang.System.currentTimeMillis()
         val result = project.executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .withArgument("-P${ENABLE_UTP_TEST_REPORT_PROPERTY}=true")
                 .run(testTaskName)
+        var testExecutionTime = java.lang.System.currentTimeMillis() - testExecutionStartTime
+        connectedAndroidTestWithUtpBenchmark.log("connectedAndroidTestWithUtpTestResultListenerExecution_time", testExecutionTime)
 
         result.stdout.use {
             assertThat(it).contains("<UTP_TEST_RESULT_ON_TEST_RESULT_EVENT>")
@@ -98,11 +102,14 @@ class UtpConnectedTest : UtpTestBase() {
         assertThat(project.file(testReportPath)).doesNotExist()
         assertThat(project.file(testResultPbPath)).doesNotExist()
 
+        testExecutionStartTime = java.lang.System.currentTimeMillis()
         val resultWithConfigCache = project.executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .withArgument("-P${ENABLE_UTP_TEST_REPORT_PROPERTY}=true")
                 .run(testTaskName)
+        testExecutionTime = java.lang.System.currentTimeMillis() - testExecutionStartTime
+        connectedAndroidTestWithUtpBenchmark.log("connectedAndroidTestWithUtpTestResultListenerWithConfigCacheExecution_time", testExecutionTime)
 
         resultWithConfigCache.stdout.use {
             assertThat(it).contains("<UTP_TEST_RESULT_ON_TEST_RESULT_EVENT>")
@@ -123,10 +130,13 @@ class UtpConnectedTest : UtpTestBase() {
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
+        val testExecutionStartTime: Long = java.lang.System.currentTimeMillis()
         val result = project.executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .run(testTaskName)
+        val testExecutionTime = java.lang.System.currentTimeMillis() - testExecutionStartTime
+        connectedAndroidTestWithUtpBenchmark.log("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabledExecution_time", testExecutionTime)
 
         result.stdout.use {
             assertThat(it).doesNotContain("<UTP_TEST_RESULT_ON_TEST_RESULT_EVENT>")
