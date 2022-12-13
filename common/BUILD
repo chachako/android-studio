@@ -10,7 +10,7 @@ filegroup(
     srcs = [
         # As the Gradle builds need to be able to run outside of Bazel,
         # they read the version file directly
-        "version.bzl",
+        "release_version.bzl",
     ],
     visibility = [
         "//tools/base/build-system:__pkg__",

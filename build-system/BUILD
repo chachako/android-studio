@@ -3,6 +3,7 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
 load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
 load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
+load("hybrid_build.bzl", "GRADLE_PROPERTIES")
 
 # managed by go/iml_to_build
 iml_module(
@@ -299,10 +300,7 @@ gradle_build(
     name = "android_gradle_plugin",
     build_file = "//tools:agp_gradle_build_root_build_file",
     data = ["//prebuilts/studio/jdk:jdk11"] + ANDROID_GRADLE_PLUGIN_SOURCE_FILES,
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     output_file = "android_gradle_plugin.zip",
     output_file_source = "dist/repo.zip",
     repos = [
@@ -440,10 +438,7 @@ gradle_test(
         "//tools/buildSrc:agp_gradle_build_files",
         "//tools/buildSrc/base:agp_gradle_build_files",
     ],
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     # keep sorted
     repos = [
         ":android_gradle_plugin_gradle_api_test_repository",
@@ -462,10 +457,7 @@ gradle_build(
         "//prebuilts/studio/jdk:jdk11",
         "//prebuilts/tools/common/dackka",
     ] + ANDROID_GRADLE_PLUGIN_SOURCE_FILES,
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     output_file = "documentation.zip",
     output_file_source = "dist/documentation.zip",
     repos = [
@@ -491,10 +483,7 @@ gradle_build(
         "//prebuilts/studio/jdk:jdk11",
         "//prebuilts/tools/common/dackka",
     ] + ANDROID_GRADLE_PLUGIN_SOURCE_FILES,
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     output_file = "apis.zip",
     output_file_source = "dist/apis.zip",
     repos = [
@@ -523,10 +512,7 @@ gradle_test(
         "//tools/buildSrc:agp_gradle_build_files",
         "//tools/buildSrc/base:agp_gradle_build_files",
     ],
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     # keep sorted
     repos = [
         ":android_gradle_plugin_gradle_api_test_repository",

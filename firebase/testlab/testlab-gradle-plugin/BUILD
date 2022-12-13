@@ -1,5 +1,6 @@
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
+load("//tools/base/build-system:hybrid_build.bzl", "GRADLE_PROPERTIES")
 
 filegroup(
     name = "agp_gradle_build_files",
@@ -69,10 +70,7 @@ gradle_build(
     name = "testlab-gradle-plugin",
     build_file = "//tools:agp_gradle_build_root_build_file",
     data = ["//prebuilts/studio/jdk:jdk11"] + FTL_GRADLE_PLUGIN_SOURCE_FILES,
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     output_file = "testlab-gradle-plugin.zip",
     output_file_source = "dist/repo.zip",
     repos = [
@@ -94,10 +92,7 @@ gradle_test(
         ":agp_gradle_test_files",
         "//prebuilts/studio/jdk:jdk11",
     ] + FTL_GRADLE_PLUGIN_SOURCE_FILES,
-    gradle_properties = {
-        "hybrid-build-embedded-in-bazel": "true",
-        "release": "true",
-    },
+    gradle_properties = GRADLE_PROPERTIES,
     repos = [
         ":maven_dependencies",
         ":maven_test_dependencies",
