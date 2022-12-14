@@ -123,7 +123,7 @@ class ResourceVisitor {
             for (XmlScanner check : allDetectors) {
                 check.afterCheckFile(context);
             }
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
             LintDriver.handleDetectorError(context, context.getDriver(), e);
         }
     }
