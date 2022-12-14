@@ -459,21 +459,25 @@ class LintDriver(
      */
     fun analyzeOnly() {
         mode = DriverMode.ANALYSIS_ONLY
+        // Partial analysis only looks at a single project, not multiple projects
+        // with source dependencies
+        assert(projectRoots.size == 1)
+        val project = projectRoots.first()
 
-        doAnalyze(
-            analysis = {
-                // Partial analysis only looks at a single project, not multiple projects
-                // with source dependencies
-                assert(projectRoots.size == 1)
-                val project = projectRoots.first()
-                try {
-                    checkProjectRoot(project)
-                } finally {
-                    client.storeState(project)
-                }
-            },
-            partial = true
-        )
+        try {
+            doAnalyze(
+                analysis = {
+                    try {
+                        checkProjectRoot(project)
+                    } catch (throwable: Throwable) {
+                        handleDetectorError(null, this, throwable)
+                    }
+                },
+                partial = true
+            )
+        } finally {
+            client.storeState(project)
+        }
     }
 
     /**
