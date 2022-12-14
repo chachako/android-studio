@@ -590,13 +590,8 @@ def iml_module(
         java_toolchain = "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain"
     elif jvm_target == "11":
         java_toolchain = "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain"
-    elif jvm_target == "17":
-        java_toolchain = "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain"
     else:
-        java_toolchain = select({
-            "//tools/base/bazel:java_language_version_17": "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain",
-            "//conditions:default": "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain",
-        })
+        java_toolchain = "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain"
 
     _iml_module_(
         name = name,

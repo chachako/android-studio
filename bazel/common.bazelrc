@@ -85,9 +85,6 @@ build --test_env=SHELL
 
 # Bazel will find the matching java toolchain registered in WORKSPACE.
 build --java_language_version=8
-# TODO migration_java_language_version is used to selectivly migrate rules
-#      switch from migration_java_language_version to java_language_version once java 17 is fully supported
-build --//tools/base/bazel:migration_java_language_version=17
 build --java_runtime_version=jdk17
 build --tool_java_runtime_version=jdk17
 
