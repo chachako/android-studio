@@ -37,8 +37,11 @@ import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.net.URLClassLoader
+import java.nio.file.AccessDeniedException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.stream.Collectors
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -109,7 +112,7 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
                             "Privacy Sandbox Sdk modules require at least one service declaration.")
         }
         try {
-            val kotlinOutJar = File(tempDirForApiGeneratorOutputs.toFile(), "kotlin-compiled.jar")
+            val kotlinOutDir = File(tempDirForApiGeneratorOutputs.toFile(), "kotlin-compiled")
             val javaOutDir = File(tempDirForApiGeneratorOutputs.toFile(), "java-compiled")
 
             URLClassLoader(apiGeneratorUrls).use {
@@ -124,21 +127,23 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
                  stream.filter { Files.isRegularFile(it) }.collect(Collectors.toList())
             }
 
-            compileKotlin(generatedFiles, totalClasspathStr, kotlinOutJar)
             // Java sources are produced by the apigenerator invoking the aidl compiler, therefore
             // java sources do not reference Kotlin sources.
+            compileKotlin(generatedFiles, totalClasspathStr, kotlinOutDir)
             compileJava(generatedFiles, totalClasspathStr, javaOutDir)
 
-            // As the Kotlin compiler may interact with files out of process, we produce a
-            // compiled jar to prevent accessing files that may still be accessed by other processes,
-            // we then add the compiled java to the jar for the transform output jar.
             ZipOutputStream(BufferedOutputStream(output.outputStream())).use { outJar ->
-                writeCompiledClassesToZip(kotlinOutJar, outJar)
+                writeCompiledClassesToZip(kotlinOutDir, outJar)
                 writeCompiledClassesToZip(javaOutDir, outJar)
             }
         }
         finally {
-            FileUtils.deleteRecursivelyIfExists(tempDirForApiGeneratorOutputs.toFile())
+            try {
+                FileUtils.deleteRecursivelyIfExists(tempDirForApiGeneratorOutputs.toFile())
+            } catch (e: AccessDeniedException) {
+                Logger.getLogger(ExtractCompileSdkShimTransform::class.java.name)
+                        .log(Level.WARNING, e.message)
+            }
         }
     }
 
@@ -164,8 +169,7 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
         ).call()
     }
 
-    private fun compileKotlin(
-            generatedFiles: List<Path>, totalClasspathStr: String, kotlinOutJar: File) {
+    private fun compileKotlin(generatedFiles: List<Path>, totalClasspathStr: String, kotlinOutDir: File) {
         execOperations.javaexec { spec ->
             spec.mainClass.set("org.jetbrains.kotlin.cli.jvm.K2JVMCompilerKt")
             spec.classpath(parameters.kotlinCompiler)
@@ -173,7 +177,7 @@ abstract class ExtractSdkShimTransform : TransformAction<ExtractSdkShimTransform
                     "-no-jdk",
                     "-no-reflect") + generatedFiles.map { it.pathString } + listOf(
                     "-classpath", totalClasspathStr,
-                    "-d", kotlinOutJar.path)
+                    "-d", kotlinOutDir.path)
         }
     }
 
