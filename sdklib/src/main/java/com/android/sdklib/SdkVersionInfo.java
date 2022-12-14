@@ -116,6 +116,12 @@ public class SdkVersionInfo {
     public static final int LOWEST_COMPILE_SDK_VERSION = 22;
 
     /**
+     * The lowest api level where profile guided optimization is on. On api 21 - 23 apps are fully
+     * AOT compiled.
+     */
+    public static final int LOWEST_PROFILE_GUIDED_OPTIMIZATIONS_SDK_VERSION = 24;
+
+    /**
      * Build.VERSION_CODES.CUR_DEVELOPMENT; set for platforms in
      * development before preview
      */

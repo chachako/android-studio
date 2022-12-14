@@ -262,6 +262,7 @@ DATA = [
     "androidx.palette:palette-ktx:1.0.0",
     "androidx.preference:preference:1.0.0",
     "androidx.preference:preference:1.2.0",
+    "androidx.profileinstaller:profileinstaller:1.3.0-beta01",
     "androidx.recyclerview:recyclerview:1.2.1",
     "androidx.room:room-compiler:2.0.0",
     "androidx.room:room-runtime:2.0.0",
