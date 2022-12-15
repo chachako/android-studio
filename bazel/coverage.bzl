@@ -15,6 +15,8 @@ def coverage_java_test(name, data = [], jvm_flags = [], visibility = None, test_
             "//tools/base/bazel:agent_coverage": [jacoco_jvm_agent],
             "//conditions:default": [],
         }),
+        #TODO Change to --release 8 once b/262636623 is fixed
+        javacopts = kwargs.pop("javacopts", []) + ["-source", "8", "-target", "8"],
         jvm_flags = jvm_flags + select({
             "//tools/base/bazel:agent_coverage": [jacoco_jvm_flag],
             "//conditions:default": [],
