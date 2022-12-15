@@ -57,6 +57,7 @@ import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorVie
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.ErrorCode
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Event
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.FoldEvent.FoldState
+import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.LayoutEvent
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.ProgressEvent.ProgressCheckpoint
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Response
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Screenshot
@@ -1770,10 +1771,14 @@ abstract class ViewLayoutInspectorTestBase {
     }
 
     @Test
-    fun noRootViewsReturnError() = createViewInspector { viewInspector ->
+    fun noRootViewsSendsEmptyLayoutEvent() = createViewInspector { viewInspector ->
         val responseQueue = ArrayBlockingQueue<ByteArray>(1)
         inspectorRule.commandCallback.replyListeners.add { bytes ->
             responseQueue.add(bytes)
+        }
+        val eventQueue = ArrayBlockingQueue<ByteArray>(10)
+        inspectorRule.connection.eventListeners.add { bytes ->
+            eventQueue.add(bytes)
         }
 
         val startFetchCommand = Command.newBuilder().apply {
@@ -1790,9 +1795,13 @@ abstract class ViewLayoutInspectorTestBase {
             assertThat(response.specializedCase)
                 .isEqualTo(Response.SpecializedCase.START_FETCH_RESPONSE)
             assertThat(response.startFetchResponse.error)
-                .isEqualTo("Unable to find any root Views")
+                .isEqualTo("")
             assertThat(response.startFetchResponse.code)
-                .isEqualTo(ErrorCode.NO_ROOT_VIEWS_FOUND)
+                .isEqualTo(ErrorCode.UNKNOWN_ERROR_CODE)
+        }
+        checkNonProgressEvent(eventQueue) { event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
+            assertThat(event.layoutEvent).isEqualTo(LayoutEvent.getDefaultInstance())
         }
     }
 

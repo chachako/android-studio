@@ -24,11 +24,6 @@ fun noHardwareAcceleration() = InspectorError(
     ErrorCode.NO_HARDWARE_ACCELERATION
 )
 
-fun noRootViews() = InspectorError(
-    "Unable to find any root Views",
-    ErrorCode.NO_ROOT_VIEWS_FOUND
-)
-
 val Throwable.errorCode: ErrorCode
   get() = (this as? InspectorError)?.code ?: ErrorCode.UNKNOWN_ERROR_CODE
 

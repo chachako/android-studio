@@ -44,7 +44,6 @@ import com.android.tools.idea.protobuf.ByteString
 import com.android.tools.layoutinspector.BitmapType
 import com.android.tools.layoutinspector.errors.errorCode
 import com.android.tools.layoutinspector.errors.noHardwareAcceleration
-import com.android.tools.layoutinspector.errors.noRootViews
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -650,6 +649,12 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         }
     }
 
+    private fun sendEmptyLayoutEvent() {
+        connection.sendEvent {
+            layoutEvent = LayoutEvent.getDefaultInstance()
+        }
+    }
+
     private fun createLayoutMessage(
         stringTable: StringTable,
         appContext: LayoutInspectorViewProtocol.AppContext,
@@ -719,7 +724,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
                 }.get()
                 when {
                     result -> break
-                    tries == MAX_START_FETCH_RETRIES -> throw Exception(noRootViews())
+                    tries == MAX_START_FETCH_RETRIES -> sendEmptyLayoutEvent()
                     else -> Thread.sleep(300)
                 }
             }
