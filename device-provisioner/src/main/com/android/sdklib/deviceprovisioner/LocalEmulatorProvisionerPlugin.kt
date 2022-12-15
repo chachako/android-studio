@@ -240,7 +240,7 @@ class LocalEmulatorProvisionerPlugin(
 
         override val isEnabled =
           stateFlow
-            .map { it is Disconnected }
+            .map { it is Disconnected && !it.isTransitioning }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
         override suspend fun activate(params: ActivationParams) {
@@ -249,7 +249,11 @@ class LocalEmulatorProvisionerPlugin(
           stateFlow.advanceStateWithTimeout(
             scope = scope,
             timeout = CONNECTION_TIMEOUT,
-            updateState = { (it as? Disconnected)?.let { Activating(it.properties) } },
+            updateState = {
+              (it as? Disconnected)?.let {
+                Disconnected(it.properties, isTransitioning = true, status = "Starting up")
+              }
+            },
             advanceAction = { avdManager.startAvd(avdInfo) },
             onAbort = {
               logger.warn("Emulator failed to connect within $CONNECTION_TIMEOUT_MINUTES minutes")
@@ -278,7 +282,9 @@ class LocalEmulatorProvisionerPlugin(
         // We could check this with AvdManagerConnection.isAvdRunning, but that's expensive, and if
         // it's not running we should see it from ADB anyway
         override val isEnabled =
-          stateFlow.map { it is Connected }.stateIn(scope, SharingStarted.WhileSubscribed(), false)
+          stateFlow
+            .map { it is Connected && !it.isTransitioning }
+            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
         override suspend fun deactivate() {
           stateFlow.advanceStateWithTimeout(
@@ -287,7 +293,14 @@ class LocalEmulatorProvisionerPlugin(
             updateState = {
               // TODO: In theory, we could cancel from the Connecting state, but that would require
               //  a lot of work in AvdManagerConnection to make everything shutdown cleanly.
-              (it as? Connected)?.let { Deactivating(it.properties, it.connectedDevice) }
+              (it as? Connected)?.let {
+                Connected(
+                  it.properties,
+                  isTransitioning = true,
+                  status = "Shutting down",
+                  connectedDevice = it.connectedDevice
+                )
+              }
             },
             // We can either use the emulator console or AvdManager (which uses a shell
             // command to kill the process)

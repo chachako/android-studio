@@ -32,6 +32,8 @@ class DeviceStateTest {
 
   val properties = PhysicalDeviceProperties.build { connectionType = ConnectionType.USB }
 
+  class Activating(override val properties: DeviceProperties) : Disconnected(properties)
+
   @Test
   fun advanceStateWithTimeoutAdvances() = runBlockingTest {
     val state = MutableStateFlow<DeviceState>(Disconnected(properties))

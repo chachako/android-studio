@@ -29,14 +29,26 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
-/**
- * Identifies the state of a provisionable device with respect to ADB: disconnected, connecting,
- * connected, disconnecting.
- */
+/** Identifies the ADB connection state of a provisionable device and its characteristics. */
 sealed interface DeviceState {
+
   val properties: DeviceProperties
+
+  /** The [ConnectedDevice] provided by adblib, if we are connected. */
   val connectedDevice: ConnectedDevice?
     get() = null
+
+  /**
+   * Indicates that the device is in the process of changing state; generally, this would correspond
+   * to a spinner in the UI.
+   */
+  val isTransitioning: Boolean
+
+  /**
+   * A very short, user-visible summary of the state of the device, e.g. "Offline", "Starting up",
+   * "Connecting", "Connected".
+   */
+  val status: String
 }
 
 fun DeviceState.isOnline() =
@@ -50,9 +62,13 @@ inline fun <R> DeviceState.ifOnline(block: (ConnectedDevice) -> R): R? =
     }
   }
 
-open class Disconnected(override val properties: DeviceProperties) : DeviceState
-
-open class Activating(override val properties: DeviceProperties) : DeviceState
+open class Disconnected(
+  override val properties: DeviceProperties,
+  override val isTransitioning: Boolean,
+  override val status: String
+) : DeviceState {
+  constructor(properties: DeviceProperties) : this(properties, false, "Offline")
+}
 
 /**
  * The state of a device that is connected to ADB. The device may not be usable yet; most clients
@@ -60,13 +76,15 @@ open class Activating(override val properties: DeviceProperties) : DeviceState
  */
 open class Connected(
   override val properties: DeviceProperties,
+  override val isTransitioning: Boolean,
+  override val status: String,
   override val connectedDevice: ConnectedDevice
-) : DeviceState
-
-open class Deactivating(
-  override val properties: DeviceProperties,
-  override val connectedDevice: ConnectedDevice,
-) : DeviceState
+) : DeviceState {
+  constructor(
+    properties: DeviceProperties,
+    connectedDevice: ConnectedDevice
+  ) : this(properties, false, "Connected", connectedDevice)
+}
 
 class TimeoutTracker(private val duration: Duration) {
   private val stopwatch = Stopwatch.createStarted()

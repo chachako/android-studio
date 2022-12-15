@@ -138,7 +138,7 @@ private constructor(
       logger.debug { "Offering ${device.serialNumber}" }
       while (currentCoroutineContext().isActive) {
         val handle = offer(device)
-        handle.stateFlow.takeWhile { it is Connected || it is Deactivating }.collect()
+        handle.stateFlow.takeWhile { it is Connected }.collect()
         logger.debug { "Re-offering ${device.serialNumber}" }
       }
     }
