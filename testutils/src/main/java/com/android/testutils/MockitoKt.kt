@@ -15,7 +15,6 @@
  */
 package com.android.testutils
 
-import org.junit.rules.ExternalResource
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.InOrder
@@ -27,7 +26,6 @@ import org.mockito.Mockito.withSettings
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.OngoingStubbing
 import org.mockito.stubbing.Stubber
-import kotlin.reflect.KMutableProperty
 
 object MockitoKt {
   /**
@@ -137,22 +135,5 @@ object MockitoKt {
     /** Wrapper around [Mockito.inOrder] that can take a block. */
     inline fun inOrder(vararg mocks: Any, block: InOrder.() -> Unit) {
         with(Mockito.inOrder(*mocks), block)
-    }
-}
-
-/**
- * Sets the given [property] to [newValue] before the test, and puts the original value back after.
- */
-class PropertySetterRule<T: Any>(val newValue: T, val property: KMutableProperty<T>) : ExternalResource() {
-    var oldValue: T? = null
-
-    override fun before() {
-      oldValue = property.getter.call()
-      property.setter.call(newValue)
-    }
-
-    override fun after() {
-      property.setter.call(oldValue)
-      oldValue = null
     }
 }
