@@ -19,6 +19,7 @@ import com.android.tools.appinspection.network.HttpTrackerFactory
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
 import com.android.tools.appinspection.network.rules.NetworkConnection
 import com.android.tools.appinspection.network.rules.NetworkResponse
+import com.android.tools.appinspection.network.rules.InterceptedResponseBody
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
 import java.io.IOException
 import java.io.InputStream
@@ -115,15 +116,15 @@ class TrackedHttpURLConnection(
                         wrapped.url.toString(),
                         wrapped.requestMethod
                     ),
-                    NetworkResponse(
-                        wrapped.headerFields,
-                        wrapped.inputStream
-                    )
+                    NetworkResponse(wrapped.headerFields, wrapped.inputStream)
                 )
                 // Don't call our getHeaderFields overrides, as it would call
                 // this method recursively.
                 connectionTracker.trackResponseHeaders(interceptedResponse.responseHeaders)
                 connectionTracker.trackResponseInterception(interceptedResponse.interception)
+            } catch (e: IOException) {
+                interceptedResponse = NetworkResponse(wrapped.headerFields, e)
+                throw e
             } finally {
                 responseTracked = true
             }
@@ -131,7 +132,7 @@ class TrackedHttpURLConnection(
     }
 
     /**
-     * Like [.trackResponse] but swallows the exception. This is useful because there are
+     * Like [trackResponse] but swallows the exception. This is useful because there are
      * many methods in [HttpURLConnection] that a user can call which indicate that a request
      * has been completed (for example, [HttpURLConnection.getResponseCode] which don't,
      * itself, throw an exception.

@@ -19,7 +19,7 @@ package com.android.tools.appinspection.network.http
 import java.net.HttpURLConnection
 import java.net.URL
 
-class FakeHttpUrlConnection(
+open class FakeHttpUrlConnection(
     url: URL,
     fakeResponseBody: ByteArray = ByteArray(0),
     private val requestMethod: String = "GET",

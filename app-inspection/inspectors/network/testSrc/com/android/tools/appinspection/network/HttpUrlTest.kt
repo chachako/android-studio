@@ -218,7 +218,22 @@ class HttpUrlTest {
         assertThat(inspectorRule.connection.httpData.last().httpClosed.completed).isTrue()
     }
 
-    private fun FakeHttpUrlConnection.triggerHttpExitHook(): HttpURLConnection {
+    @Test
+    fun `failed connection should not affect getting headerFields`() {
+        val url = URL("http://google1231541431.com")
+        val connection = (url.openConnection() as HttpURLConnection).triggerHttpExitHook()
+        connection.requestMethod = "GET"
+        assertThat(connection.headerFields).isEmpty()
+
+        try {
+            connection.connect()
+        } catch (e: Exception) {
+        }
+
+        assertThat(connection.headerFields).isEmpty()
+    }
+
+    private fun HttpURLConnection.triggerHttpExitHook(): HttpURLConnection {
         return inspectorRule.environment.fakeArtTooling.triggerExitHook(
             URL::class.java,
             "openConnection()Ljava/net/URLConnection;",

@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.network.rules
 
+import java.io.IOException
 import java.io.InputStream
 
 data class NetworkConnection(
@@ -23,11 +24,38 @@ data class NetworkConnection(
     val method: String,
 )
 
+sealed class InterceptedResponseBody {
+
+    abstract fun get(): InputStream
+    class SuccessfulResponseBody(private val responseBody: InputStream) : InterceptedResponseBody() {
+
+        override fun get() = responseBody
+    }
+
+    class FailedResponseBody(val exception: IOException) : InterceptedResponseBody() {
+
+        override fun get() = throw exception
+    }
+}
+
 data class NetworkResponse(
     val responseHeaders: Map<String?, List<String>>,
-    val body: InputStream,
+    val responseBody: InterceptedResponseBody,
     val interception: NetworkInterceptionMetrics = NetworkInterceptionMetrics()
-)
+) {
+    constructor(
+        responseHeaders: Map<String?, List<String>>,
+        responseBody: InputStream
+    ): this(responseHeaders, InterceptedResponseBody.SuccessfulResponseBody(responseBody))
+
+    constructor(
+        responseHeaders: Map<String?, List<String>>,
+        error: IOException
+    ): this(responseHeaders, InterceptedResponseBody.FailedResponseBody(error))
+
+    val body: InputStream
+        get() = responseBody.get()
+}
 
 data class NetworkInterceptionMetrics(
     val criteriaMatched: Boolean = false,

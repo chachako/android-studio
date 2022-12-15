@@ -168,7 +168,12 @@ class BodyReplacedTransformation(
 
     override fun transform(response: NetworkResponse): NetworkResponse {
         return response.copy(
-            body = if (isContentCompressed(response)) gzipBody else body,
+            responseBody = InterceptedResponseBody.SuccessfulResponseBody(
+                if (isContentCompressed(
+                        response
+                    )
+                ) gzipBody else body
+            ),
             interception = response.interception.copy(bodyReplaced = true)
         )
     }
@@ -195,7 +200,9 @@ class BodyModifiedTransformation(
             val isBodyModified = body != newBody
             val newBodyBytes = newBody.toByteArray()
             return response.copy(
-                body = (if (isCompressed) newBodyBytes.gzip() else newBodyBytes).inputStream(),
+                responseBody = InterceptedResponseBody.SuccessfulResponseBody(
+                    (if (isCompressed) newBodyBytes.gzip() else newBodyBytes).inputStream()
+                ),
                 interception = response.interception.copy(bodyModified = isBodyModified)
             )
         } catch (ignored: IOException) {

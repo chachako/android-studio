@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.network
 
+import com.android.tools.appinspection.network.rules.InterceptedResponseBody
 import com.android.tools.appinspection.network.rules.InterceptionRule
 import com.android.tools.appinspection.network.rules.InterceptionRuleServiceImpl
 import com.android.tools.appinspection.network.rules.NetworkConnection
@@ -38,8 +39,10 @@ class InterceptionRuleServiceTest {
             connection: NetworkConnection,
             response: NetworkResponse
         ) = response.copy(
-            body = "${response.body.bufferedReader().use { it.readText() }}${c}".toByteArray()
-                .inputStream()
+            responseBody = InterceptedResponseBody.SuccessfulResponseBody(
+                "${response.body.bufferedReader().use { it.readText() }}${c}".toByteArray()
+                    .inputStream()
+            )
         )
     }
 
