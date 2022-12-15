@@ -77,7 +77,6 @@ public class LiveUpdateDeployer {
         public final byte[] classData;
         public final Map<String, byte[]> supportClasses;
         final boolean debugModeEnabled;
-        final boolean recomposeAfterPriming;
 
         public UpdateLiveEditsParam(
                 String className,
@@ -87,8 +86,7 @@ public class LiveUpdateDeployer {
                 int groupId,
                 byte[] classData,
                 Map<String, byte[]> supportClasses,
-                boolean debugModeEnabled,
-                boolean recomposeAfterPriming) {
+                boolean debugModeEnabled) {
             this.className = className;
             this.methodName = methodName;
             this.methodDesc = methodDesc;
@@ -97,7 +95,6 @@ public class LiveUpdateDeployer {
             this.classData = classData;
             this.supportClasses = supportClasses;
             this.debugModeEnabled = debugModeEnabled;
-            this.recomposeAfterPriming = recomposeAfterPriming;
         }
     }
 
@@ -344,7 +341,6 @@ public class LiveUpdateDeployer {
                     Deploy.LiveEditClass.newBuilder().setClassName(name).setClassData(data));
         }
         requestBuilder.setDebugModeEnabled(param.debugModeEnabled);
-        requestBuilder.setRecomposeAfterPriming(param.recomposeAfterPriming);
         Deploy.LiveEditRequest request = requestBuilder.build();
 
 
@@ -386,9 +382,6 @@ public class LiveUpdateDeployer {
             } else {
                 errors.add(new UpdateLiveEditError(response.getStatus().toString()));
             }
-            // TODO: Handle multiple recomposeType resuls. It seems we only process the last one.
-            // If we requested to not recompose after priming and indeed recompose was skipped we
-            // need to let the user know.
             result = new UpdateLiveEditResult(errors, recomposeType);
         } catch (IOException e) {
             result =
@@ -399,24 +392,6 @@ public class LiveUpdateDeployer {
 
         // TODO: Next CL: Change the return type and return the result object instead.
         return result;
-    }
-
-    public void recompose(Installer installer, AdbClient adb, String applicationId) {
-        Deploy.RecomposeRequest.Builder builder = Deploy.RecomposeRequest.newBuilder();
-        List<Integer> pids = adb.getPids(applicationId);
-        if (pids.isEmpty()) {
-            System.out.println("Cancelling Recompose (No target pids)");
-            return;
-        }
-
-        builder.setArch(adb.getArch(pids));
-        builder.addAllProcessIds(pids);
-        builder.setApplicationId(applicationId);
-        try {
-            installer.recompose(builder.build());
-        } catch (IOException e) {
-            logger.error(e, "Recompose error");
-        }
     }
 
     /** @return True if there are recomposition errors, false otherwise. */

@@ -114,26 +114,6 @@ jint HandleStartupAgent(jvmtiEnv* jvmti, JNIEnv* jni,
   return JNI_OK;
 }
 
-// TODO: This method should be called "Recompose" but this name is already
-//       taken by Recompose object. We should rename the object "Recomposer"
-//       and this method "Recompose"
-static proto::AgentRecomposeResponse TriggerRecompose(
-    jvmtiEnv* jvmti, JNIEnv* jni, const proto::RecomposeRequest& request) {
-  proto::AgentRecomposeResponse resp;
-
-  Recompose recompose(jvmti, jni);
-  jobject reloader = recompose.GetComposeHotReload();
-  if (reloader) {
-    jobject state = recompose.SaveStateAndDispose(reloader);
-    recompose.LoadStateAndCompose(reloader, state);
-    resp.set_status(proto::AgentRecomposeResponse::OK);
-  } else {
-    resp.set_status(proto::AgentRecomposeResponse::ERROR);
-  }
-
-  return resp;
-}
-
 jint HandleAgentRequest(jvmtiEnv* jvmti, JNIEnv* jni, char* socket_name) {
   InitEventSystem();
 
@@ -204,9 +184,6 @@ jint HandleAgentRequest(jvmtiEnv* jvmti, JNIEnv* jni, char* socket_name) {
   } else if (request.has_compose_status_request()) {
     *response.mutable_compose_status_response() =
         ComposeStatus(jvmti, jni, request.compose_status_request());
-  } else if (request.has_recompose_request()) {
-    *response.mutable_recompose_response() =
-        TriggerRecompose(jvmti, jni, request.recompose_request());
   } else {
     Log::E("Unknown / Empty Agent Request");
   }

@@ -30,7 +30,6 @@
 #include "tools/base/deploy/installer/oid_push.h"
 #include "tools/base/deploy/installer/overlay_install.h"
 #include "tools/base/deploy/installer/overlay_swap.h"
-#include "tools/base/deploy/installer/recompose.h"
 #include "tools/base/deploy/installer/root_push_install.h"
 #include "tools/base/deploy/installer/swap.h"
 #include "tools/base/deploy/installer/timeout.h"
@@ -65,7 +64,6 @@ std::unique_ptr<Command> GetCommand(const char* command_name,
            [&]() { return new ComposeStatusCommand(workspace); }},
           {"networktest", [&]() { return new NetworkTestCommand(workspace); }},
           {"timeout", [&]() { return new TimeoutCommand(workspace); }},
-          {"recompose", [&]() { return new RecomposeCommand(workspace); }},
           // Add here more commands (e.g: version, install, patch, agent, ...)
       };
 

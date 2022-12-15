@@ -233,15 +233,10 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
     // When the recompose API is stable, we will only call the new API
     // and never call whole program recompose.
     if (hasNewlyPrimedClass) {
-      if (req.recompose_after_priming()) {
         resp.set_recompose_type(proto::AgentLiveEditResponse::INIT_RESET);
         jobject state = recompose.SaveStateAndDispose(reloader);
         recompose.LoadStateAndCompose(reloader, state);
         InfoEvent("Recomposed after priming (likely automatic mode)");
-      } else {
-        resp.set_recompose_type(proto::AgentLiveEditResponse::RESET_SKIPPED);
-        InfoEvent("Skipped Recompose as requested (likely manual mode)");
-      }
     } else {  // No newlyPrimedClasses
       if (usePartialRecomposition) {
         std::string error = "";
