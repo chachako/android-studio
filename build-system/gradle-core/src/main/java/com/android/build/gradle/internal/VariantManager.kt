@@ -77,6 +77,7 @@ import com.android.build.gradle.internal.services.VariantBuilderServices
 import com.android.build.gradle.internal.services.VariantBuilderServicesImpl
 import com.android.build.gradle.internal.services.VariantServicesImpl
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.tasks.SigningConfigUtils.Companion.createSigningOverride
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl.Companion.toExecutionEnum
 import com.android.build.gradle.internal.variant.ComponentInfo
@@ -88,7 +89,6 @@ import com.android.build.gradle.internal.variant.VariantFactory
 import com.android.build.gradle.internal.variant.VariantInputModel
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.SigningOptions
 import com.android.builder.core.AbstractProductFlavor.DimensionRequest
 import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
@@ -959,27 +959,6 @@ class VariantManager<
         testFixturesComponents.add(testFixturesComponent)
     }
 
-    private fun createSigningOverride(): SigningConfig? {
-        SigningOptions.readSigningOptions(dslServices.projectOptions)?.let { signingOptions ->
-            val signingConfigDsl = dslServices.newDecoratedInstance(SigningConfig::class.java, SigningOptions.SIGNING_CONFIG_NAME, dslServices)
-            signingConfigDsl.storeFile(File(signingOptions.storeFile))
-            signingConfigDsl.storePassword(signingOptions.storePassword)
-            signingConfigDsl.keyAlias(signingOptions.keyAlias)
-            signingConfigDsl.keyPassword(signingOptions.keyPassword)
-            signingOptions.storeType?.let {
-                signingConfigDsl.storeType(it)
-            }
-            signingOptions.v1Enabled?.let {
-                signingConfigDsl.enableV1Signing = it
-            }
-            signingOptions.v2Enabled?.let {
-                signingConfigDsl.enableV2Signing = it
-            }
-            return signingConfigDsl
-        }
-        return null
-    }
-
     private fun getLazyManifestParser(
             file: File,
             isManifestFileRequired: Boolean,
@@ -1040,7 +1019,7 @@ class VariantManager<
     }
 
     init {
-        signingOverride = createSigningOverride()
+        signingOverride = createSigningOverride(dslServices)
         variantFilter = VariantFilter(ReadOnlyObjectProvider())
         variantBuilderServices = VariantBuilderServicesImpl(projectServices)
         variantPropertiesApiServices = VariantServicesImpl(
