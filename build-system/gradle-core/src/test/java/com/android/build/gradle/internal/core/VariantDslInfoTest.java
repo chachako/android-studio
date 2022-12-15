@@ -216,7 +216,6 @@ public class VariantDslInfoTest {
         ApplicationVariantDslInfo variant = getVariant();
 
         assertThat(variant.getMinSdkVersion().getApiLevel()).isEqualTo(16);
-        assertThat(variant.getDexingDslInfo().getTargetDeployApiFromIDE()).isEqualTo(18);
     }
 
     @Test
@@ -231,7 +230,6 @@ public class VariantDslInfoTest {
         ApplicationVariantDslInfo variant = getVariant();
 
         assertThat(variant.getMinSdkVersion().getApiLevel()).isEqualTo(16);
-        assertThat(variant.getDexingDslInfo().getTargetDeployApiFromIDE()).isEqualTo(18);
     }
 
     @Test
@@ -246,7 +244,6 @@ public class VariantDslInfoTest {
         ApplicationVariantDslInfo variant = getVariant();
 
         assertThat(variant.getMinSdkVersion().getApiLevel()).isEqualTo(16);
-        assertThat(variant.getDexingDslInfo().getTargetDeployApiFromIDE()).isEqualTo(18);
     }
 
     @Test
@@ -261,7 +258,6 @@ public class VariantDslInfoTest {
         ApplicationVariantDslInfo variant = getVariant();
 
         assertThat(variant.getMinSdkVersion().getApiLevel()).isEqualTo(16);
-        assertThat(variant.getDexingDslInfo().getTargetDeployApiFromIDE()).isEqualTo(22);
     }
 
     @Test

@@ -108,7 +108,7 @@ open class ApplicationVariantImpl @Inject constructor(
             dslInfo.signingConfig,
             internalServices,
             minSdk.apiLevel,
-            internalServices.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
+            global.targetDeployApiFromIDE
         )
     }
 

@@ -179,7 +179,7 @@ open class AndroidTestImpl @Inject constructor(
                 it,
                 variantServices,
                 minSdk.apiLevel,
-                services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
+                global.targetDeployApiFromIDE
             )
         }
     }

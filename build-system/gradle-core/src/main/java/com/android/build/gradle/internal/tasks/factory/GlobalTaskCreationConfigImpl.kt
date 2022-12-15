@@ -46,6 +46,7 @@ import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.StringOption
 import com.android.builder.core.LibraryRequest
 import com.android.builder.testing.api.DeviceProvider
@@ -243,4 +244,7 @@ class GlobalTaskCreationConfigImpl(
                 services.buildServiceRegistry
             )
         }
+
+    override val targetDeployApiFromIDE: Int? =
+        services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
 }

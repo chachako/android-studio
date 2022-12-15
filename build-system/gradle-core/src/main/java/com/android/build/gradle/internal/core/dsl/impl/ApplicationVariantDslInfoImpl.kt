@@ -174,7 +174,7 @@ internal class ApplicationVariantDslInfoImpl(
 
     override val dexingDslInfo: DexingDslInfo by lazy {
         DexingDslInfoImpl(
-            buildTypeObj, mergedFlavor, services
+            buildTypeObj, mergedFlavor
         )
     }
 

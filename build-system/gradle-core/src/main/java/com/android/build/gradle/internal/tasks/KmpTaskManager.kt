@@ -18,7 +18,9 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
@@ -45,15 +47,23 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 
 class KmpTaskManager {
 
+    var hasCreatedTasks = false
+
     fun createTasks(
         project: Project,
         variant: KmpCreationConfig,
         unitTest: KmpUnitTestImpl?,
+        androidTest: KmpAndroidTestImpl?,
     ) {
         createMainVariantTasks(project, variant)
         unitTest?.let { createUnitTestTasks(project, unitTest) }
+        androidTest?.let {
+            createAndroidTestTasks(project, androidTest)
+        }
 
         variant.publishBuildArtifacts()
+
+        hasCreatedTasks = true
     }
 
     private fun createMainVariantTasks(
@@ -188,9 +198,25 @@ class KmpTaskManager {
         }
     }
 
+    private fun createAndroidTestTasks(
+        project: Project,
+        component: KmpAndroidTestImpl
+    ) {
+        createAnchorTasks(project, component, false)
+
+        AndroidTestTaskManager(
+            project = project,
+            globalConfig = component.global,
+        ).also {
+            it.createTopLevelTasks()
+            it.createTasks(component)
+        }
+    }
+
     private fun createAnchorTasks(
         project: Project,
-        component: ComponentCreationConfig
+        component: ComponentCreationConfig,
+        createPreBuildTask: Boolean = true
     ) {
         project.tasks.registerTask(
             component.computeTaskName("assemble"),
@@ -210,6 +236,8 @@ class KmpTaskManager {
             }
         )
 
-        project.tasks.registerTask(TaskManager.PreBuildCreationAction(component))
+        if (createPreBuildTask) {
+            project.tasks.registerTask(TaskManager.PreBuildCreationAction(component))
+        }
     }
 }

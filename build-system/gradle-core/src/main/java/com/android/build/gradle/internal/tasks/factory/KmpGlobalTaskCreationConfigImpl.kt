@@ -45,6 +45,7 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl.Companion.toExecutionEnum
 import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.StringOption
 import com.android.builder.core.LibraryRequest
 import com.android.builder.testing.api.DeviceProvider
@@ -188,6 +189,9 @@ class KmpGlobalTaskCreationConfigImpl(
         val fakeDependency = project.dependencies.create(project.files(fakeJarService.lazyCachedFakeJar))
         return project.configurations.detachedConfiguration(fakeDependency)
     }
+
+    override val targetDeployApiFromIDE: Int? =
+        services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
 
     // Unsupported properties
     // TODO: Refactor the parent interface so that we don't have to override these values to avoid

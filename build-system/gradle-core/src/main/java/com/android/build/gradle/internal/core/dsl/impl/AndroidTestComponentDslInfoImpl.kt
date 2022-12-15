@@ -116,7 +116,7 @@ internal class AndroidTestComponentDslInfoImpl(
 
     override val dexingDslInfo: DexingDslInfo by lazy {
         DexingDslInfoImpl(
-            buildTypeObj, mergedFlavor, services
+            buildTypeObj, mergedFlavor
         )
     }
 

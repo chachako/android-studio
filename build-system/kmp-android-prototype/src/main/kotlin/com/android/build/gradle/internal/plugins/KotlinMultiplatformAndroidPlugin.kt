@@ -21,12 +21,14 @@ import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
+import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
@@ -36,6 +38,7 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
 import com.android.build.gradle.internal.dsl.decorator.androidPluginDslDecorator
+import com.android.build.gradle.internal.manifest.LazyManifestParser
 import com.android.build.gradle.internal.scope.KotlinMultiplatformBuildFeaturesValuesImpl
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
@@ -49,11 +52,13 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.services.VariantServicesImpl
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.tasks.KmpTaskManager
+import com.android.build.gradle.internal.tasks.SigningConfigUtils.Companion.createSigningOverride
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.KmpGlobalTaskCreationConfigImpl
 import com.android.build.gradle.internal.utils.validatePreviewTargetValue
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ComponentTypeImpl
 import com.android.repository.Revision
 import com.android.utils.FileUtils
@@ -207,7 +212,17 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             mainVariant
         )
 
+        val androidTest = createAndroidTestComponent(
+            project,
+            global,
+            variantServices,
+            taskServices,
+            taskManager,
+            mainVariant
+        )
+
         mainVariant.unitTest = unitTest
+        mainVariant.androidTest = androidTest
 
         val stats = configuratorService.getVariantBuilder(
             project.path,
@@ -234,6 +249,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             project,
             mainVariant,
             unitTest,
+            androidTest
         )
     }
 
@@ -321,6 +337,64 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             manifestFile = FileUtils.join(
                 project.projectDir, "src", "androidTest", "AndroidManifest.xml"
             )
+        )
+    }
+
+    private fun createAndroidTestComponent(
+        project: Project,
+        global: GlobalTaskCreationConfig,
+        variantServices: VariantServices,
+        taskCreationServices: TaskCreationServices,
+        taskManager: KmpTaskManager,
+        mainVariant: KmpVariantImpl
+    ): KmpAndroidTestImpl? {
+        if (!mainVariant.dslInfo.enableAndroidTest) {
+            return null
+        }
+
+        val manifestLocation = FileUtils.join(
+            project.projectDir, "src", "androidInstrumentedTest", "AndroidManifest.xml"
+        )
+
+        val manifestParser = LazyManifestParser(
+            manifestFile = projectServices.objectFactory.fileProperty().fileValue(manifestLocation),
+            manifestFileRequired = true,
+            projectServices = projectServices
+        ) {
+            taskManager.hasCreatedTasks || !projectServices.projectOptions.get(
+                BooleanOption.DISABLE_EARLY_MANIFEST_PARSING
+            )
+        }
+
+        val dslInfo = KmpAndroidTestDslInfoImpl(
+            androidExtension,
+            variantServices,
+            manifestParser,
+            mainVariant.dslInfo,
+            createSigningOverride(dslServices),
+            dslServices
+        )
+
+        val paths = VariantPathHelper(
+            project.layout.buildDirectory,
+            dslInfo,
+            dslServices
+        )
+
+        val artifacts = ArtifactsImpl(project, dslInfo.componentIdentity.name)
+
+        return KmpAndroidTestImpl(
+            dslInfo = dslInfo,
+            internalServices = variantServices,
+            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(),
+            variantDependencies = createVariantDependencies(project, dslInfo),
+            paths = paths,
+            artifacts = artifacts,
+            taskContainer = MutableTaskContainer(),
+            services = taskCreationServices,
+            global = global,
+            mainVariant = mainVariant,
+            manifestFile = manifestLocation
         )
     }
 

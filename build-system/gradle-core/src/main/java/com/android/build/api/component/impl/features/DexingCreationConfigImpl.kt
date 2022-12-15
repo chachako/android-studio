@@ -85,7 +85,7 @@ class DexingCreationConfigImpl(
                 DexingType.NATIVE_MULTIDEX
             } else if (isMultiDexEnabled) {
                 if (component.minSdk.getFeatureLevel() >= 21 ||
-                    dslInfo.targetDeployApiFromIDE?.let { it >= 21 } == true
+                    component.global.targetDeployApiFromIDE?.let { it >= 21 } == true
                 ) {
                     // if minSdkVersion is 21+ or we are deploying to 21+ device, use native multidex
                     DexingType.NATIVE_MULTIDEX
@@ -167,7 +167,7 @@ class DexingCreationConfigImpl(
      */
     override val minSdkVersionForDexing: AndroidVersion
         get() {
-            val targetDeployApiFromIDE = dslInfo.targetDeployApiFromIDE ?: 1
+            val targetDeployApiFromIDE = component.global.targetDeployApiFromIDE ?: 1
 
             val minForDexing = if (targetDeployApiFromIDE >= com.android.sdklib.AndroidVersion.VersionCodes.N) {
                 max(24, component.minSdk.getFeatureLevel())

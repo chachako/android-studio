@@ -169,7 +169,7 @@ open class TestVariantImpl @Inject constructor(
                 it,
                 internalServices,
                 minSdk.apiLevel,
-                services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
+                global.targetDeployApiFromIDE
             )
         }
     }

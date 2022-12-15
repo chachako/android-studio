@@ -77,6 +77,9 @@ interface KotlinMultiplatformAndroidExtension {
 
     var testFunctionalTest: Boolean?
 
+    var isTestMultiDexEnabled: Boolean?
+    var testMultiDexKeepProguard: File?
+
     val installation: Installation
 
     // should this be here?
@@ -89,6 +92,7 @@ interface KotlinMultiplatformAndroidExtension {
     var enableAndroidTest: Boolean
 
     var enableUnitTestCoverage: Boolean
+    var enableInstrumentedTestCoverage: Boolean
 
     fun onVariant(
         callback: KotlinMultiplatformAndroidVariant.() -> Unit
