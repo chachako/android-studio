@@ -148,7 +148,6 @@ abstract class LintPlugin : Plugin<Project> {
                         customLintChecks,
                         lintOptions!!,
                         artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
-                        artifacts.getOutputPath(InternalArtifactType.LINT_MODEL),
                         LintMode.UPDATE_BASELINE
                     )
                 }
@@ -160,7 +159,6 @@ abstract class LintPlugin : Plugin<Project> {
                     customLintChecks,
                     lintOptions!!,
                     artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
-                    artifacts.getOutputPath(InternalArtifactType.LINT_MODEL),
                     LintMode.REPORTING
                 )
                 task.mustRunAfter(updateLintBaselineTask)
@@ -194,7 +192,6 @@ abstract class LintPlugin : Plugin<Project> {
                     customLintChecks,
                     lintOptions!!,
                     artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS),
-                    artifacts.getOutputPath(InternalArtifactType.LINT_VITAL_LINT_MODEL),
                     LintMode.REPORTING,
                     fatalOnly = true
                 )
@@ -215,7 +212,6 @@ abstract class LintPlugin : Plugin<Project> {
                     customLintChecks,
                     lintOptions!!,
                     artifacts.get(InternalArtifactType.LINT_PARTIAL_RESULTS),
-                    artifacts.getOutputPath(InternalArtifactType.LINT_MODEL),
                     LintMode.REPORTING,
                     autoFix = true
                 )
@@ -264,12 +260,11 @@ abstract class LintPlugin : Plugin<Project> {
                     fatalOnly = false
                 )
             }
-            LintModelWriterTask.BaseCreationAction
-                .registerOutputArtifacts(
-                    lintModelWriterTask,
-                    InternalArtifactType.LINT_MODEL,
-                    artifacts
-                )
+            LintModelWriterTask.registerOutputArtifacts(
+                lintModelWriterTask,
+                InternalArtifactType.LINT_MODEL,
+                artifacts
+            )
             val lintVitalModelWriterTask =
                 project.tasks.register(
                     "generateLintVitalLintModel",
@@ -286,12 +281,11 @@ abstract class LintPlugin : Plugin<Project> {
                         fatalOnly = true
                     )
                 }
-            LintModelWriterTask.BaseCreationAction
-                .registerOutputArtifacts(
-                    lintVitalModelWriterTask,
-                    InternalArtifactType.LINT_VITAL_LINT_MODEL,
-                    artifacts
-                )
+            LintModelWriterTask.registerOutputArtifacts(
+                lintVitalModelWriterTask,
+                InternalArtifactType.LINT_VITAL_LINT_MODEL,
+                artifacts
+            )
             val lintModelMetadataWriterTask =
                 project.tasks
                     .register("writeLintModelMetadata", LintModelMetadataTask::class.java) { task ->

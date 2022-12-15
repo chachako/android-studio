@@ -758,14 +758,16 @@ private class LintModelVariantWriter(
     writeManifestPlaceholders(variant.manifestPlaceholders, indent + 1)
 
     writeArtifact(variant.artifact, "artifact", indent + 1, writeDependencies, writeType = true)
-    variant.androidTestArtifact?.let { artifact ->
-      writeArtifact(artifact, "androidTestArtifact", indent + 1, writeDependencies)
-    }
-    variant.testFixturesArtifact?.let { artifact ->
-      writeArtifact(artifact, "testFixturesArtifact", indent + 1, writeDependencies)
-    }
-    variant.testArtifact?.let { artifact ->
-      writeArtifact(artifact, "testArtifact", indent + 1, writeDependencies)
+    if (variant.artifact.type == LintModelArtifactType.MAIN) {
+      variant.androidTestArtifact?.let { artifact ->
+        writeArtifact(artifact, "androidTestArtifact", indent + 1, writeDependencies)
+      }
+      variant.testFixturesArtifact?.let { artifact ->
+        writeArtifact(artifact, "testFixturesArtifact", indent + 1, writeDependencies)
+      }
+      variant.testArtifact?.let { artifact ->
+        writeArtifact(artifact, "testArtifact", indent + 1, writeDependencies)
+      }
     }
 
     indent(indent)

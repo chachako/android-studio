@@ -370,5 +370,6 @@
       resolved="org.jetbrains:annotations:13.0"/>
   <library
       name="${projectDir}@@:app::debug"
-      project=":app"/>
+      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
+      resolved="::"/>
 </libraries>

@@ -12,8 +12,8 @@ import com.android.build.gradle.internal.tasks.LintModelMetadataTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskFactory
 import com.android.build.gradle.internal.variant.VariantModel
+import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.builder.core.ComponentType
-import com.android.builder.core.ComponentTypeImpl
 import com.android.utils.appendCapitalized
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -86,13 +86,25 @@ class LintTaskManager constructor(
 
         for (variantWithTests in variantsWithTests.values) {
             val mainVariant = variantWithTests.main
+            val isPerComponent =
+                mainVariant.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
             if (componentType.isAar || componentType.isDynamicFeature) {
-                taskFactory.register(
-                    LintModelWriterTask.LintVitalCreationAction(
-                        mainVariant,
-                        checkDependencies = componentType.isAar
+                if (isPerComponent) {
+                    taskFactory.register(
+                        LintModelWriterTask.PerComponentCreationAction(
+                            mainVariant,
+                            useModuleDependencyLintModels = componentType.isAar,
+                            fatalOnly = true
+                        )
                     )
-                )
+                } else {
+                    taskFactory.register(
+                        LintModelWriterTask.LintVitalCreationAction(
+                            mainVariant,
+                            useModuleDependencyLintModels = componentType.isAar
+                        )
+                    )
+                }
                 taskFactory.register(
                     AndroidLintAnalysisTask.LintVitalCreationAction(mainVariant)
                 )
@@ -104,17 +116,33 @@ class LintTaskManager constructor(
             }
             // We need app and dynamic feature models if there are dynamic features.
             // TODO (b/180672373) consider also publishing dynamic feature and app lint models
-            //  with checkDependencies = true if that's necessary to properly run lint from an
-            //  app or dynamic feature module with checkDependencies = true.
-            taskFactory.register(
-                LintModelWriterTask.LintCreationAction(
-                    variantWithTests,
-                    checkDependencies = componentType.isAar
+            //  with useModuleDependencyLintModels = true if that's necessary to properly run lint
+            //  from an app or dynamic feature module with checkDependencies = true.
+            if (isPerComponent) {
+                taskFactory.register(
+                    LintModelWriterTask.PerComponentCreationAction(
+                        mainVariant,
+                        useModuleDependencyLintModels = componentType.isAar,
+                        fatalOnly = false
+                    )
                 )
-            )
-            taskFactory.register(
-                AndroidLintAnalysisTask.SingleVariantCreationAction(variantWithTests)
-            )
+                taskFactory.register(
+                    AndroidLintAnalysisTask.PerComponentCreationAction(
+                        mainVariant,
+                        fatalOnly = false
+                    )
+                )
+            } else {
+                taskFactory.register(
+                    LintModelWriterTask.LintCreationAction(
+                        variantWithTests,
+                        useModuleDependencyLintModels = componentType.isAar
+                    )
+                )
+                taskFactory.register(
+                    AndroidLintAnalysisTask.SingleVariantCreationAction(variantWithTests)
+                )
+            }
 
             if (componentType.isDynamicFeature) {
                 // Don't register any lint reporting tasks or lintFix task for dynamic features
@@ -145,9 +173,18 @@ class LintTaskManager constructor(
                 !(mainVariant as ApplicationCreationConfig).profileable &&
                 globalTaskCreationConfig.lintOptions.checkReleaseBuilds
             ) {
-                taskFactory.register(
-                    AndroidLintAnalysisTask.LintVitalCreationAction(mainVariant)
-                )
+                if (isPerComponent) {
+                    taskFactory.register(
+                        AndroidLintAnalysisTask.PerComponentCreationAction(
+                            mainVariant,
+                            fatalOnly = true
+                        )
+                    )
+                } else {
+                    taskFactory.register(
+                        AndroidLintAnalysisTask.LintVitalCreationAction(mainVariant)
+                    )
+                }
                 val lintVitalTask =
                     taskFactory.register(AndroidLintTask.LintVitalCreationAction(mainVariant))
                         .also { it.configure { task -> task.mustRunAfter(updateLintBaselineTask) } }

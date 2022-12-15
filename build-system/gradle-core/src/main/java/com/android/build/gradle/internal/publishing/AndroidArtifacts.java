@@ -90,10 +90,20 @@ public class AndroidArtifacts {
             "android-base-module-lint-variant-dependencies-model";
     private static final String TYPE_LINT_VITAL_LINT_MODEL =
             "android-lint-vital-lint-variant-dependencies-model";
+    private static final String TYPE_UNIT_TEST_LINT_MODEL = "android-unit-test-lint-model";
+    private static final String TYPE_ANDROID_TEST_LINT_MODEL =
+            "android-instrumentation-test-lint-model";
+    private static final String TYPE_TEST_FIXTURES_LINT_MODEL = "android-test-fixtures-lint-model";
     private static final String TYPE_LINT_PARTIAL_RESULTS =
             "android-lint-variant-dependencies-partial-results";
     private static final String TYPE_LINT_VITAL_PARTIAL_RESULTS =
             "android-lint-vital-variant-dependencies-partial-results";
+    private static final String TYPE_UNIT_TEST_LINT_PARTIAL_RESULTS =
+            "android-unit-test-lint-partial-results";
+    private static final String TYPE_ANDROID_TEST_LINT_PARTIAL_RESULTS =
+            "android-instrumentation-test-lint-partial-results";
+    private static final String TYPE_TEST_FIXTURES_LINT_PARTIAL_RESULTS =
+            "android-test-fixtures-lint-partial-results";
     private static final String TYPE_LOCAL_AAR_FOR_LINT = "android-lint-local-aar";
     private static final String TYPE_LOCAL_EXPLODED_AAR_FOR_LINT = "android-lint-exploded-aar";
     private static final String TYPE_LINT_MODEL_METADATA = "android-lint-model-metadata";
@@ -421,10 +431,25 @@ public class AndroidArtifacts {
         BASE_MODULE_LINT_MODEL(AndroidArtifacts.TYPE_BASE_MODULE_LINT_MODEL),
         // The lint model with partial results set to the location of LINT_VITAL_PARTIAL_RESULTS.
         LINT_VITAL_LINT_MODEL(AndroidArtifacts.TYPE_LINT_VITAL_LINT_MODEL),
+        // The unit test lint model
+        UNIT_TEST_LINT_MODEL(TYPE_UNIT_TEST_LINT_MODEL),
+        // The android test lint model
+        ANDROID_TEST_LINT_MODEL(TYPE_ANDROID_TEST_LINT_MODEL),
+        // The test fixtures lint model
+        TEST_FIXTURES_LINT_MODEL(TYPE_TEST_FIXTURES_LINT_MODEL),
         // The partial results produced by running lint with --analyze-only
         LINT_PARTIAL_RESULTS(AndroidArtifacts.TYPE_LINT_PARTIAL_RESULTS),
         // The partial results produced by running lint with --analyze-only and --fatalOnly
         LINT_VITAL_PARTIAL_RESULTS(TYPE_LINT_VITAL_PARTIAL_RESULTS),
+        // The partial results produced by running lint with --analyze-only on the unit test
+        // component
+        UNIT_TEST_LINT_PARTIAL_RESULTS(TYPE_UNIT_TEST_LINT_PARTIAL_RESULTS),
+        // The partial results produced by running lint with --analyze-only on the android test
+        // component
+        ANDROID_TEST_LINT_PARTIAL_RESULTS(TYPE_ANDROID_TEST_LINT_PARTIAL_RESULTS),
+        // The partial results produced by running lint with --analyze-only on the test fixtures
+        // component
+        TEST_FIXTURES_LINT_PARTIAL_RESULTS(TYPE_TEST_FIXTURES_LINT_PARTIAL_RESULTS),
         // An AAR built from a library project for lint to consume.
         LOCAL_AAR_FOR_LINT(TYPE_LOCAL_AAR_FOR_LINT),
         // Exploded AARs from library projects for lint to consume when not run with check

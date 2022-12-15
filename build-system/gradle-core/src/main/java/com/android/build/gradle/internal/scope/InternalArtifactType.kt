@@ -361,6 +361,12 @@ InternalArtifactType<T : FileSystemLocation>(
     // Serialized Lint Model for a variant, with the partial results location set to
     // LINT_VITAL_PARTIAL_RESULTS.
     object LINT_VITAL_LINT_MODEL:  InternalArtifactType<Directory>(DIRECTORY)
+    // Serialized Lint Model for a variant's unit test component
+    object UNIT_TEST_LINT_MODEL: InternalArtifactType<Directory>(DIRECTORY)
+    // Serialized Lint Model for a variant's android test component
+    object ANDROID_TEST_LINT_MODEL: InternalArtifactType<Directory>(DIRECTORY)
+    // Serialized Lint Model for a variant's test fixtures component
+    object TEST_FIXTURES_LINT_MODEL: InternalArtifactType<Directory>(DIRECTORY)
     // Lint reports
     object LINT_TEXT_REPORT: InternalArtifactType<RegularFile>(FILE, Category.REPORTS)
     object LINT_HTML_REPORT: InternalArtifactType<RegularFile>(FILE, Category.REPORTS)
@@ -377,6 +383,12 @@ InternalArtifactType<T : FileSystemLocation>(
     // downstream.
     object LINT_PARTIAL_RESULTS: InternalArtifactType<Directory>(DIRECTORY)
     object LINT_VITAL_PARTIAL_RESULTS: InternalArtifactType<Directory>(DIRECTORY)
+    // Partial lint results for a variant's unit test component
+    object UNIT_TEST_LINT_PARTIAL_RESULTS: InternalArtifactType<Directory>(DIRECTORY)
+    // Partial lint results for a variant's android test component
+    object ANDROID_TEST_LINT_PARTIAL_RESULTS: InternalArtifactType<Directory>(DIRECTORY)
+    // Partial lint results for a variant's test fixtures component
+    object TEST_FIXTURES_LINT_PARTIAL_RESULTS: InternalArtifactType<Directory>(DIRECTORY)
     // File containing lint model metadata to be included in the LOCAL_AAR_FOR_LINT file
     object LINT_MODEL_METADATA: InternalArtifactType<RegularFile>(FILE), Replaceable
     // Local .aar file used when running lint from a downstream module

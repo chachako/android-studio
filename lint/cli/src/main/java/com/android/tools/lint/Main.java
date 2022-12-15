@@ -62,6 +62,7 @@ import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.SeverityKt;
 import com.android.tools.lint.detector.api.TextFormat;
 import com.android.tools.lint.model.LintModelAndroidLibrary;
+import com.android.tools.lint.model.LintModelArtifactType;
 import com.android.tools.lint.model.LintModelJavaLibrary;
 import com.android.tools.lint.model.LintModelLibrary;
 import com.android.tools.lint.model.LintModelModule;
@@ -328,7 +329,8 @@ public class Main {
                             "sourceProvider",
                             sourceProviderIndex++,
                             module.getModulePath(),
-                            variant.getName());
+                            variant.getName(),
+                            variant.getArtifact().getType());
                 }
                 int testSourceProviderIndex = 0;
                 for (LintModelSourceProvider testSourceProvider :
@@ -339,7 +341,8 @@ public class Main {
                             "testSourceProvider",
                             testSourceProviderIndex++,
                             module.getModulePath(),
-                            variant.getName());
+                            variant.getName(),
+                            variant.getArtifact().getType());
                 }
                 int testFixturesSourceProviderIndex = 0;
                 for (LintModelSourceProvider testFixturesSourceProvider :
@@ -350,7 +353,8 @@ public class Main {
                             "testFixturesSourceProvider",
                             testFixturesSourceProviderIndex++,
                             module.getModulePath(),
-                            variant.getName());
+                            variant.getName(),
+                            variant.getArtifact().getType());
                 }
             }
         }
@@ -365,12 +369,14 @@ public class Main {
             String sourceProviderType,
             int sourceProviderIndex,
             String modulePath,
-            String variantName) {
+            String variantName,
+            LintModelArtifactType artifactType) {
         addSourceProviderPathVariables(
                 pathVariables,
                 sourceProvider.getManifestFiles(),
                 modulePath,
                 variantName,
+                artifactType,
                 sourceProviderType,
                 sourceProviderIndex,
                 "manifest");
@@ -379,6 +385,7 @@ public class Main {
                 sourceProvider.getJavaDirectories(),
                 modulePath,
                 variantName,
+                artifactType,
                 sourceProviderType,
                 sourceProviderIndex,
                 "javaDir");
@@ -387,6 +394,7 @@ public class Main {
                 sourceProvider.getResDirectories(),
                 modulePath,
                 variantName,
+                artifactType,
                 sourceProviderType,
                 sourceProviderIndex,
                 "resDir");
@@ -395,6 +403,7 @@ public class Main {
                 sourceProvider.getAssetsDirectories(),
                 modulePath,
                 variantName,
+                artifactType,
                 sourceProviderType,
                 sourceProviderIndex,
                 "assetsDir");
@@ -406,6 +415,7 @@ public class Main {
             Collection<File> files,
             String modulePath,
             String variantName,
+            LintModelArtifactType artifactType,
             String sourceProviderType,
             int sourceProviderIndex,
             String sourceType) {
@@ -416,6 +426,8 @@ public class Main {
                             + modulePath
                             + "*"
                             + variantName
+                            + "*"
+                            + artifactType.name()
                             + "*"
                             + sourceProviderType
                             + "*"

@@ -21,12 +21,15 @@ import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
+import com.android.build.gradle.internal.lint.LintModelWriterTask
 import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.PackageForUnitTest
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.build.gradle.tasks.GenerateTestConfig
 import com.android.build.gradle.tasks.factory.AndroidUnitTest
 import com.google.common.collect.ImmutableSet
@@ -163,6 +166,21 @@ class UnitTestTaskManager(
         // testedVariantScope.getTaskContainer().getJavacTask());
         maybeCreateTransformClassesWithAsmTask(unitTestCreationConfig)
 
+        if (unitTestCreationConfig.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)) {
+            taskFactory.register(
+                AndroidLintAnalysisTask.PerComponentCreationAction(
+                    unitTestCreationConfig,
+                    fatalOnly = false
+                )
+            )
+            taskFactory.register(
+                LintModelWriterTask.PerComponentCreationAction(
+                    unitTestCreationConfig,
+                    useModuleDependencyLintModels = false,
+                    fatalOnly = false
+                )
+            )
+        }
 
         // TODO: use merged java res for unit tests (bug 118690729)
         createRunUnitTestTask(unitTestCreationConfig)

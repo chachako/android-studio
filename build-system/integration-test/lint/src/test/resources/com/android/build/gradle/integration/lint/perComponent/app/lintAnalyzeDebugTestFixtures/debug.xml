@@ -1,0 +1,30 @@
+<variant
+    name="debug"
+    package="com.example.android.lint.kotlin"
+    minSdkVersion="15"
+    targetSdkVersion="${androidHighestKnownStableApi}"
+    debuggable="true"
+    mergedManifest="build/intermediates/merged_manifest/debug/AndroidManifest.xml"
+    partialResultsDir="build/intermediates/test_fixtures_lint_partial_results/debug/out"
+    desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
+  <buildFeatures
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+    <sourceProvider
+        manifests="src/testFixtures/AndroidManifest.xml"
+        javaDirectories="src/testFixtures/java:src/testFixturesDebug/java:src/testFixtures/kotlin:src/testFixturesDebug/kotlin"
+        assetsDirectories="src/testFixtures/assets:src/testFixturesDebug/assets"
+        testFixture="true"/>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="build/intermediates/javac/debugTestFixtures/classes"
+      type="TEST_FIXTURES"
+      applicationId="com.example.android.lint.kotlin.testFixtures"
+      generatedSourceFolders="build/generated/ap_generated_sources/debugTestFixtures/out"
+      desugaredMethodsFiles="${gradleCacheDir}/<digest>/transformed/D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

@@ -20,11 +20,20 @@ import com.android.Version
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.Lint
 import com.android.build.gradle.internal.SdkComponentsBuildService
+import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.NestedComponentCreationConfig
+import com.android.build.gradle.internal.component.TestFixturesCreationConfig
+import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.InternalArtifactType.ANDROID_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLintParallelBuildService
@@ -221,7 +230,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         override fun handleProvider(taskProvider: TaskProvider<AndroidLintAnalysisTask>) {
             registerOutputArtifacts(
                 taskProvider,
-                InternalArtifactType.LINT_PARTIAL_RESULTS,
+                LINT_PARTIAL_RESULTS,
                 creationConfig.artifacts
             )
         }
@@ -246,7 +255,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         override fun handleProvider(taskProvider: TaskProvider<AndroidLintAnalysisTask>) {
             registerOutputArtifacts(
                 taskProvider,
-                InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS,
+                LINT_VITAL_PARTIAL_RESULTS,
                 creationConfig.artifacts
             )
         }
@@ -302,7 +311,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
             task.projectInputs.initialize(variant, LintMode.ANALYSIS)
             task.variantInputs.initialize(
                 variant,
-                checkDependencies = false,
+                useModuleDependencyLintModels = false,
                 warnIfProjectTreatedAsExternalDependency = false,
                 LintMode.ANALYSIS,
                 fatalOnly = fatalOnly
@@ -315,6 +324,121 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                         ?.isCoreLibraryDesugaringEnabledLintCheck ?: false,
                     creationConfig.minSdk,
                     creationConfig.global
+                )
+            )
+            task.desugaredMethodsFiles.disallowChanges()
+        }
+    }
+
+    class PerComponentCreationAction(
+        creationConfig: ComponentCreationConfig,
+        private val fatalOnly: Boolean
+    ) : VariantTaskCreationAction<AndroidLintAnalysisTask,
+            ComponentCreationConfig>(creationConfig) {
+
+        override val type: Class<AndroidLintAnalysisTask>
+            get() = AndroidLintAnalysisTask::class.java
+
+        override val name =
+            if (fatalOnly) {
+                creationConfig.computeTaskName("lintVitalAnalyze")
+            } else {
+                creationConfig.computeTaskName("lintAnalyze")
+
+            }
+        private val description =
+            "Run lint analysis " +
+                    if (fatalOnly) "with only the fatal issues enabled " else "" +
+                            "on the ${creationConfig.name} component"
+
+        override fun handleProvider(taskProvider: TaskProvider<AndroidLintAnalysisTask>) {
+            val artifactType =
+                when (creationConfig) {
+                    is UnitTestCreationConfig -> UNIT_TEST_LINT_PARTIAL_RESULTS
+                    is AndroidTestCreationConfig -> ANDROID_TEST_LINT_PARTIAL_RESULTS
+                    is TestFixturesCreationConfig -> TEST_FIXTURES_LINT_PARTIAL_RESULTS
+                    else -> if (fatalOnly) {
+                        LINT_VITAL_PARTIAL_RESULTS
+                    } else {
+                        LINT_PARTIAL_RESULTS
+                    }
+                }
+            val mainVariant =
+                if (creationConfig is NestedComponentCreationConfig) {
+                    creationConfig.mainVariant
+                } else {
+                    creationConfig
+                }
+            registerOutputArtifacts(taskProvider, artifactType, mainVariant.artifacts)
+        }
+
+        override fun configure(task: AndroidLintAnalysisTask) {
+            super.configure(task)
+
+            task.group = JavaBasePlugin.VERIFICATION_GROUP
+            task.description = description
+
+            task.initializeGlobalInputs(
+                services = creationConfig.services,
+                isAndroid = true
+            )
+            task.lintModelDirectory.set(creationConfig.paths.getIncrementalDir(task.name))
+            val mainVariant =
+                if (creationConfig is NestedComponentCreationConfig) {
+                    creationConfig.mainVariant
+                } else {
+                    creationConfig as VariantCreationConfig
+                }
+            task.lintRuleJars.from(mainVariant.global.localCustomLintChecks)
+            task.lintRuleJars.from(
+                mainVariant
+                    .variantDependencies
+                    .getArtifactFileCollection(
+                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                        AndroidArtifacts.ArtifactScope.ALL,
+                        AndroidArtifacts.ArtifactType.LINT
+                    )
+            )
+            task.lintRuleJars.from(
+                mainVariant
+                    .variantDependencies
+                    .getArtifactFileCollection(
+                        AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
+                        AndroidArtifacts.ArtifactScope.ALL,
+                        AndroidArtifacts.ArtifactType.LINT
+                    )
+            )
+            task.lintRuleJars.disallowChanges()
+            task.fatalOnly.setDisallowChanges(fatalOnly)
+            task.checkOnly.set(
+                mainVariant.services.provider {
+                    creationConfig.global.lintOptions.checkOnly
+                }
+            )
+            task.projectInputs.initialize(mainVariant, LintMode.ANALYSIS)
+            task.variantInputs.initialize(
+                mainVariant,
+                creationConfig as? UnitTestCreationConfig,
+                creationConfig as? AndroidTestCreationConfig,
+                creationConfig as? TestFixturesCreationConfig,
+                creationConfig.services,
+                mainVariant.name,
+                useModuleDependencyLintModels = false,
+                warnIfProjectTreatedAsExternalDependency = false,
+                lintMode = LintMode.ANALYSIS,
+                addBaseModuleLintModel = false,
+                fatalOnly = fatalOnly,
+                includeMainArtifact = creationConfig is VariantCreationConfig
+            )
+
+            task.lintTool.initialize(mainVariant.services)
+            task.desugaredMethodsFiles.from(
+                getDesugaredMethods(
+                    mainVariant.services,
+                    (mainVariant as? ConsumableCreationConfig)
+                        ?.isCoreLibraryDesugaringEnabledLintCheck ?: false,
+                    mainVariant.minSdk,
+                    mainVariant.global
                 )
             )
             task.desugaredMethodsFiles.disallowChanges()
@@ -366,6 +490,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         )
     }
 
+    // TODO - support per component analysis for java libraries
     fun configureForStandalone(
         taskCreationServices: TaskCreationServices,
         javaPluginExtension: JavaPluginExtension,
@@ -396,7 +521,7 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 javaPluginExtension,
                 taskCreationServices.projectOptions,
                 fatalOnly,
-                checkDependencies = false,
+                useModuleDependencyLintModels = false,
                 LintMode.ANALYSIS
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)

@@ -1,9 +1,27 @@
 <libraries>
   <library
-      name="com.android.support:appcompat-v7:28.0.0@aar"
-      jars="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0/jars/classes.jar"
-      resolved="com.android.support:appcompat-v7:28.0.0"
-      folder="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0"
+      name="${projectDir}@@:app::debug::testFixtures"
+      jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
+      resolved="artifacts:app:unspecified"
+      folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="${projectDir}@@:app::debug"
+      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
+      resolved="::"/>
+  <library
+      name="${projectDir}@@:library::debug"
+      jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
+      resolved="lintKotlin:library:unspecified"
+      provided="true"
+      folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -15,11 +33,37 @@
   <library
       name="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}@jar"
       jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib/${kotlinVersion}/kotlin-stdlib-${kotlinVersion}.jar"
-      resolved="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"/>
+      resolved="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
+      provided="true"/>
+  <library
+      name="com.android.support:appcompat-v7:28.0.0@aar"
+      jars="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0/jars/classes.jar"
+      resolved="com.android.support:appcompat-v7:28.0.0"
+      provided="true"
+      folder="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}@jar"
+      jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib-common/${kotlinVersion}/kotlin-stdlib-common-${kotlinVersion}.jar"
+      resolved="org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}"
+      provided="true"/>
+  <library
+      name="org.jetbrains:annotations:13.0@jar"
+      jars="${mavenRepo}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+      resolved="org.jetbrains:annotations:13.0"
+      provided="true"/>
   <library
       name="com.android.support:support-fragment:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/support-fragment-28.0.0/jars/classes.jar"
       resolved="com.android.support:support-fragment:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/support-fragment-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -33,6 +77,7 @@
       name="com.android.support:animated-vector-drawable:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/animated-vector-drawable-28.0.0/jars/classes.jar"
       resolved="com.android.support:animated-vector-drawable:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/animated-vector-drawable-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -46,6 +91,7 @@
       name="com.android.support:support-core-ui:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/support-core-ui-28.0.0/jars/classes.jar"
       resolved="com.android.support:support-core-ui:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/support-core-ui-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -59,6 +105,7 @@
       name="com.android.support:support-core-utils:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/support-core-utils-28.0.0/jars/classes.jar"
       resolved="com.android.support:support-core-utils:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/support-core-utils-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -72,6 +119,7 @@
       name="com.android.support:support-vector-drawable:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/support-vector-drawable-28.0.0/jars/classes.jar"
       resolved="com.android.support:support-vector-drawable:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/support-vector-drawable-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -85,6 +133,7 @@
       name="com.android.support:loader:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/loader-28.0.0/jars/classes.jar"
       resolved="com.android.support:loader:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/loader-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -98,6 +147,7 @@
       name="com.android.support:viewpager:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/viewpager-28.0.0/jars/classes.jar"
       resolved="com.android.support:viewpager:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/viewpager-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -111,6 +161,7 @@
       name="com.android.support:coordinatorlayout:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/coordinatorlayout-28.0.0/jars/classes.jar"
       resolved="com.android.support:coordinatorlayout:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/coordinatorlayout-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -124,6 +175,7 @@
       name="com.android.support:drawerlayout:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/drawerlayout-28.0.0/jars/classes.jar"
       resolved="com.android.support:drawerlayout:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/drawerlayout-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -137,6 +189,7 @@
       name="com.android.support:slidingpanelayout:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/slidingpanelayout-28.0.0/jars/classes.jar"
       resolved="com.android.support:slidingpanelayout:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/slidingpanelayout-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -150,6 +203,7 @@
       name="com.android.support:customview:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/customview-28.0.0/jars/classes.jar"
       resolved="com.android.support:customview:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/customview-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -163,6 +217,7 @@
       name="com.android.support:swiperefreshlayout:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/swiperefreshlayout-28.0.0/jars/classes.jar"
       resolved="com.android.support:swiperefreshlayout:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/swiperefreshlayout-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -176,6 +231,7 @@
       name="com.android.support:asynclayoutinflater:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/asynclayoutinflater-28.0.0/jars/classes.jar"
       resolved="com.android.support:asynclayoutinflater:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/asynclayoutinflater-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -189,6 +245,7 @@
       name="com.android.support:support-compat:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/support-compat-28.0.0/jars/classes.jar"
       resolved="com.android.support:support-compat:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/support-compat-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -202,6 +259,7 @@
       name="com.android.support:versionedparcelable:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/versionedparcelable-28.0.0/jars/classes.jar"
       resolved="com.android.support:versionedparcelable:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/versionedparcelable-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -214,11 +272,13 @@
   <library
       name="com.android.support:collections:28.0.0@jar"
       jars="${mavenRepo}/com/android/support/collections/28.0.0/collections-28.0.0.jar"
-      resolved="com.android.support:collections:28.0.0"/>
+      resolved="com.android.support:collections:28.0.0"
+      provided="true"/>
   <library
       name="com.android.support:cursoradapter:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/cursoradapter-28.0.0/jars/classes.jar"
       resolved="com.android.support:cursoradapter:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/cursoradapter-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -232,6 +292,7 @@
       name="android.arch.lifecycle:runtime:1.1.1@aar"
       jars="${gradleCacheDir}/<digest>/transformed/runtime-1.1.1/jars/classes.jar"
       resolved="android.arch.lifecycle:runtime:1.1.1"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/runtime-1.1.1"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -245,6 +306,7 @@
       name="com.android.support:documentfile:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/documentfile-28.0.0/jars/classes.jar"
       resolved="com.android.support:documentfile:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/documentfile-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -258,6 +320,7 @@
       name="com.android.support:localbroadcastmanager:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/localbroadcastmanager-28.0.0/jars/classes.jar"
       resolved="com.android.support:localbroadcastmanager:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/localbroadcastmanager-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -271,6 +334,7 @@
       name="com.android.support:print:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/print-28.0.0/jars/classes.jar"
       resolved="com.android.support:print:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/print-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -284,6 +348,7 @@
       name="android.arch.lifecycle:viewmodel:1.1.1@aar"
       jars="${gradleCacheDir}/<digest>/transformed/viewmodel-1.1.1/jars/classes.jar"
       resolved="android.arch.lifecycle:viewmodel:1.1.1"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/viewmodel-1.1.1"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -297,6 +362,7 @@
       name="android.arch.lifecycle:livedata:1.1.1@aar"
       jars="${gradleCacheDir}/<digest>/transformed/livedata-1.1.1/jars/classes.jar"
       resolved="android.arch.lifecycle:livedata:1.1.1"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/livedata-1.1.1"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -310,6 +376,7 @@
       name="android.arch.lifecycle:livedata-core:1.1.1@aar"
       jars="${gradleCacheDir}/<digest>/transformed/livedata-core-1.1.1/jars/classes.jar"
       resolved="android.arch.lifecycle:livedata-core:1.1.1"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/livedata-core-1.1.1"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -322,11 +389,13 @@
   <library
       name="android.arch.lifecycle:common:1.1.1@jar"
       jars="${mavenRepo}/android/arch/lifecycle/common/1.1.1/common-1.1.1.jar"
-      resolved="android.arch.lifecycle:common:1.1.1"/>
+      resolved="android.arch.lifecycle:common:1.1.1"
+      provided="true"/>
   <library
       name="android.arch.core:runtime:1.1.1@aar"
       jars="${gradleCacheDir}/<digest>/transformed/runtime-1.1.1/jars/classes.jar"
       resolved="android.arch.core:runtime:1.1.1"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/runtime-1.1.1"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -339,11 +408,13 @@
   <library
       name="android.arch.core:common:1.1.1@jar"
       jars="${mavenRepo}/android/arch/core/common/1.1.1/common-1.1.1.jar"
-      resolved="android.arch.core:common:1.1.1"/>
+      resolved="android.arch.core:common:1.1.1"
+      provided="true"/>
   <library
       name="com.android.support:interpolator:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/interpolator-28.0.0/jars/classes.jar"
       resolved="com.android.support:interpolator:28.0.0"
+      provided="true"
       folder="${gradleCacheDir}/<digest>/transformed/interpolator-28.0.0"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -356,26 +427,6 @@
   <library
       name="com.android.support:support-annotations:28.0.0@jar"
       jars="${mavenRepo}/com/android/support/support-annotations/28.0.0/support-annotations-28.0.0.jar"
-      resolved="com.android.support:support-annotations:28.0.0"/>
-  <library
-      name="org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}@jar"
-      jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib-common/${kotlinVersion}/kotlin-stdlib-common-${kotlinVersion}.jar"
-      resolved="org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}"/>
-  <library
-      name="org.jetbrains:annotations:13.0@jar"
-      jars="${mavenRepo}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
-      resolved="org.jetbrains:annotations:13.0"/>
-  <library
-      name="${projectDir}@@:library::debug"
-      jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
-      resolved="lintKotlin:library:unspecified"
-      folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"
-      manifest="AndroidManifest.xml"
-      resFolder="res"
-      assetsFolder="assets"
-      lintJar="lint.jar"
-      publicResources="public.txt"
-      symbolFile="R.txt"
-      externalAnnotations="annotations.zip"
-      proguardRules="proguard.txt"/>
+      resolved="com.android.support:support-annotations:28.0.0"
+      provided="true"/>
 </libraries>

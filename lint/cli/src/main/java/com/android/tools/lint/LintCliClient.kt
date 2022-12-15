@@ -74,6 +74,7 @@ import com.android.tools.lint.detector.api.isJdkFolder
 import com.android.tools.lint.gradle.GroovyGradleVisitor
 import com.android.tools.lint.helpers.DefaultJavaEvaluator
 import com.android.tools.lint.helpers.DefaultUastParser
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.CharSequences
@@ -489,21 +490,39 @@ open class LintCliClient : LintClient {
     val dependentsMap: MutableMap<Project, MutableList<Project>> = HashMap()
     projects.add(root)
     if (driver.checkDependencies) {
+      // modulePathToMainProject is a map of modulePath to "main" Project, we need this map because
+      // partial results from test components should be considered with respect to their own "main"
+      // project, not the "root" project.
+      val modulePathToMainProject: MutableMap<String, Project> = HashMap()
+      for (project in root.allLibraries + listOf(root)) {
+        if (project.buildVariant?.artifact?.type == LintModelArtifactType.MAIN) {
+          project.buildModule?.modulePath?.let { modulePathToMainProject[it] = project }
+        }
+      }
       for (dependency in root.allLibraries) {
         if (dependency.isExternalLibrary) {
           continue
         }
         val dependents =
           dependentsMap[dependency] ?: ArrayList<Project>().also { dependentsMap[dependency] = it }
-        dependents.add(root)
+        val dependencyType = dependency.buildVariant?.artifact?.type
+        val dependencyModulePath = dependency.buildModule?.modulePath
+        if (dependencyType != null
+          && dependencyType != LintModelArtifactType.MAIN
+          && dependencyModulePath != null) {
+          dependents.add(modulePathToMainProject[dependencyModulePath] ?: root)
+        } else {
+          dependents.add(root)
+        }
         projects.add(dependency)
       }
     } else {
       // Even in non-check-dependencies scenarios we have to add in any dynamic
-      // features since we've transferred them in as dependencies instead
-      // (see LintModelModuleProject.resolveDependencies)
+      // features and test components since we've transferred them in as dependencies
+      // instead (see LintModelModuleProject.resolveDependencies)
       for (dependency in root.allLibraries) {
-        if (dependency.type == LintModelModuleType.DYNAMIC_FEATURE) {
+        if (dependency.type == LintModelModuleType.DYNAMIC_FEATURE
+          || root.buildModule?.modulePath?.let { it == dependency.buildModule?.modulePath } == true) {
           val dependents =
             dependentsMap[dependency]
               ?: ArrayList<Project>().also { dependentsMap[dependency] = it }

@@ -1,9 +1,25 @@
 <libraries>
   <library
+      name="${projectDir}@@:app::debug::testFixtures"
+      jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
+      resolved="artifacts:app:unspecified"
+      folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="${projectDir}@@:app::debug"
+      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
+      resolved="::"/>
+  <library
       name="${projectDir}@@:library::debug"
       jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
       resolved="lintKotlin:library:unspecified"
-      partialResultsDir="${projectDir}/library/build/intermediates/lint_partial_results/debug/out"
       folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
@@ -13,6 +29,10 @@
       symbolFile="R.txt"
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
+  <library
+      name="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}@jar"
+      jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib/${kotlinVersion}/kotlin-stdlib-${kotlinVersion}.jar"
+      resolved="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"/>
   <library
       name="com.android.support:appcompat-v7:28.0.0@aar"
       jars="${gradleCacheDir}/<digest>/transformed/appcompat-v7-28.0.0/jars/classes.jar"
@@ -368,10 +388,6 @@
       jars="${mavenRepo}/com/android/support/support-annotations/28.0.0/support-annotations-28.0.0.jar"
       resolved="com.android.support:support-annotations:28.0.0"/>
   <library
-      name="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}@jar"
-      jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib/${kotlinVersion}/kotlin-stdlib-${kotlinVersion}.jar"
-      resolved="org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"/>
-  <library
       name="org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}@jar"
       jars="${mavenRepo}/org/jetbrains/kotlin/kotlin-stdlib-common/${kotlinVersion}/kotlin-stdlib-common-${kotlinVersion}.jar"
       resolved="org.jetbrains.kotlin:kotlin-stdlib-common:${kotlinVersion}"/>
@@ -379,8 +395,4 @@
       name="org.jetbrains:annotations:13.0@jar"
       jars="${mavenRepo}/org/jetbrains/annotations/13.0/annotations-13.0.jar"
       resolved="org.jetbrains:annotations:13.0"/>
-  <library
-      name="${projectDir}@@:app::debug"
-      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/debug/classes.jar"
-      resolved="::"/>
 </libraries>

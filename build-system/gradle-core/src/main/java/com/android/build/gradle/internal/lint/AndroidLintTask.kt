@@ -22,11 +22,22 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.Version
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.Lint
+import com.android.build.api.variant.HasUnitTest
+import com.android.build.api.variant.HasAndroidTest
+import com.android.build.api.variant.HasTestFixtures
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.InternalArtifactType.ANDROID_TEST_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalArtifactType.ANDROID_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_MODEL
+import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLintParallelBuildService
@@ -36,6 +47,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.ide.common.repository.GradleVersion
 import com.android.tools.lint.model.LintModelSerialization
@@ -72,7 +84,7 @@ import java.io.File
 import java.util.Collections
 import javax.inject.Inject
 
-/** Task to invoke lint in a process isolated worker passing in the new lint models. */
+/** Task to invoke lint with the --report-only flag. */
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.LINT)
 abstract class AndroidLintTask : NonIncrementalTask() {
@@ -82,15 +94,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     @get:OutputDirectory
     abstract val lintModelDirectory: DirectoryProperty
-
-    /**
-     * This task needs the location of the lint model directory produced by [LintModelWriterTask]
-     * in order to ensure that that directory is not passed to lint via --lint-model, which would
-     * be problematic because [lintModelDirectory] is already being passed to lint via --lint-model.
-     * See b/190855628.
-     */
-    @get:Input
-    abstract val lintModelWriterTaskOutputPath: Property<String>
 
     @get:Input
     abstract val textReportEnabled: Property<Boolean>
@@ -166,15 +169,12 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
-    abstract val androidTestDependencyLintModels: ConfigurableFileCollection
-
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.ABSOLUTE)
-    abstract val unitTestDependencyLintModels: ConfigurableFileCollection
-
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.ABSOLUTE)
     abstract val dynamicFeatureLintModels: ConfigurableFileCollection
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.ABSOLUTE)
+    @get:Optional
+    abstract val nestedComponentLintModels: ConfigurableFileCollection
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
@@ -185,6 +185,11 @@ abstract class AndroidLintTask : NonIncrementalTask() {
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
     @get:Optional
     abstract val dependencyPartialResults: ConfigurableFileCollection
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.ABSOLUTE)
+    @get:Optional
+    abstract val nestedComponentPartialResults: ConfigurableFileCollection
 
     @get:Input
     abstract val printStackTrace: Property<Boolean>
@@ -377,20 +382,15 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         val models = LinkedHashSet<String>(1)
         models += lintModelDirectory.get().asFile.absolutePath
 
+        for (model in nestedComponentLintModels) {
+            models.add(model.absolutePath)
+        }
         for (model in dynamicFeatureLintModels) {
             models.add(model.absolutePath)
         }
         for (model in mainDependencyLintModels.files) {
             models.add(model.absolutePath)
         }
-        for (model in androidTestDependencyLintModels.files) {
-            models.add(model.absolutePath)
-        }
-        for (model in unitTestDependencyLintModels.files) {
-            models.add(model.absolutePath)
-        }
-
-        models.remove(lintModelWriterTaskOutputPath.get())
 
         arguments += "--lint-model"
         arguments += models.asLintPaths()
@@ -576,23 +576,10 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             )
             task.lintModelDirectory.set(variant.main.paths.getIncrementalDir(task.name))
             task.lintRuleJars.from(creationConfig.global.localCustomLintChecks)
-            task.lintRuleJars.from(
-                creationConfig
-                    .variantDependencies
-                    .getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.ALL,
-                        AndroidArtifacts.ArtifactType.LINT
-                    )
-            )
-            task.lintRuleJars.from(
-                creationConfig
-                    .variantDependencies
-                    .getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.ALL,
-                        AndroidArtifacts.ArtifactType.LINT
-                    )
+            task.lintRuleJars.addRuntimeAndCompileArtifacts(
+                creationConfig,
+                ArtifactScope.ALL,
+                ArtifactType.LINT
             )
             task.lintRuleJars.disallowChanges()
             task.fatalOnly.setDisallowChanges(fatalOnly)
@@ -614,13 +601,31 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                         || task.missingBaselineIsEmptyBaseline.get()
             }
             val hasDynamicFeatures = creationConfig.global.hasDynamicFeatures
-            task.variantInputs.initialize(
-                variant,
-                checkDependencies = true,
-                warnIfProjectTreatedAsExternalDependency = true,
-                lintMode,
-                fatalOnly = fatalOnly
-            )
+            val isLintAnalysisPerComponent =
+                variant.main.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)
+            if (isLintAnalysisPerComponent) {
+                task.variantInputs.initialize(
+                    variant.main,
+                    unitTestCreationConfig = null,
+                    androidTestCreationConfig = null,
+                    testFixturesCreationConfig = null,
+                    services = variant.main.services,
+                    variantName = variant.main.name,
+                    useModuleDependencyLintModels = true,
+                    warnIfProjectTreatedAsExternalDependency = true,
+                    lintMode = lintMode,
+                    fatalOnly = fatalOnly,
+                    includeMainArtifact = true
+                )
+            } else {
+                task.variantInputs.initialize(
+                    variant,
+                    useModuleDependencyLintModels = true,
+                    warnIfProjectTreatedAsExternalDependency = true,
+                    lintMode = lintMode,
+                    fatalOnly = fatalOnly
+                )
+            }
             val partialResults = if (fatalOnly) {
                 creationConfig.artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS)
             } else {
@@ -629,101 +634,159 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             task.partialResults.setDisallowChanges(partialResults)
             val lintModelArtifactType =
                 if (fatalOnly) {
-                    AndroidArtifacts.ArtifactType.LINT_VITAL_LINT_MODEL
+                    ArtifactType.LINT_VITAL_LINT_MODEL
                 } else {
-                    AndroidArtifacts.ArtifactType.LINT_MODEL
+                    ArtifactType.LINT_MODEL
                 }
             val lintPartialResultsArtifactType =
                 if (fatalOnly) {
-                    AndroidArtifacts.ArtifactType.LINT_VITAL_PARTIAL_RESULTS
+                    ArtifactType.LINT_VITAL_PARTIAL_RESULTS
                 } else {
-                    AndroidArtifacts.ArtifactType.LINT_PARTIAL_RESULTS
+                    ArtifactType.LINT_PARTIAL_RESULTS
                 }
             if (hasDynamicFeatures) {
                 task.dynamicFeatureLintModels.from(
                     creationConfig.variantDependencies.getArtifactFileCollection(
                         AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
-                        AndroidArtifacts.ArtifactScope.PROJECT,
+                        ArtifactScope.PROJECT,
                         lintModelArtifactType
                     )
                 )
                 task.dependencyPartialResults.from(
                     creationConfig.variantDependencies.getArtifactFileCollection(
                         AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
-                        AndroidArtifacts.ArtifactScope.PROJECT,
+                        ArtifactScope.PROJECT,
                         lintPartialResultsArtifactType
                     )
                 )
+                if (!fatalOnly && isLintAnalysisPerComponent) {
+                    // Add dynamic feature unit test lint models and partial results
+                    task.dynamicFeatureLintModels.from(
+                        creationConfig.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            ArtifactType.UNIT_TEST_LINT_MODEL
+                        )
+                    )
+                    task.dependencyPartialResults.from(
+                        creationConfig.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            ArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+                        )
+                    )
+
+                    // Add dynamic feature android test lint models and partial results
+                    task.dynamicFeatureLintModels.from(
+                        creationConfig.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            ArtifactType.ANDROID_TEST_LINT_MODEL
+                        )
+                    )
+                    task.dependencyPartialResults.from(
+                        creationConfig.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            ArtifactType.ANDROID_TEST_LINT_PARTIAL_RESULTS
+                        )
+                    )
+
+
+                    // Add test fixtures lint models and partial results
+                    task.dynamicFeatureLintModels.from(
+                        creationConfig.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            ArtifactType.TEST_FIXTURES_LINT_MODEL
+                        )
+                    )
+                    task.dependencyPartialResults.from(
+                        creationConfig.variantDependencies.getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.REVERSE_METADATA_VALUES,
+                            ArtifactScope.PROJECT,
+                            ArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
+                        )
+                    )
+                }
             }
             task.dynamicFeatureLintModels.disallowChanges()
-            task.mainDependencyLintModels.from(
-                creationConfig.variantDependencies.getArtifactFileCollection(
-                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                    AndroidArtifacts.ArtifactScope.PROJECT,
-                    lintModelArtifactType
-                )
+            task.mainDependencyLintModels.addRuntimeAndCompileArtifacts(
+                creationConfig,
+                ArtifactScope.PROJECT,
+                lintModelArtifactType
             )
-            task.mainDependencyLintModels.from(
-                creationConfig.variantDependencies.getArtifactFileCollection(
-                    AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
-                    AndroidArtifacts.ArtifactScope.PROJECT,
-                    lintModelArtifactType
-                )
+            task.dependencyPartialResults.addRuntimeAndCompileArtifacts(
+                creationConfig,
+                ArtifactScope.PROJECT,
+                lintPartialResultsArtifactType
             )
-            variant.androidTest?.let {
-                task.androidTestDependencyLintModels.from(
-                    it.variantDependencies.getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.PROJECT,
-                        lintModelArtifactType
+            if (!fatalOnly && isLintAnalysisPerComponent) {
+                // Add unit test lint models and partial results
+                if ((creationConfig as? HasUnitTest)?.unitTest != null) {
+                    task.nestedComponentLintModels.from(
+                        creationConfig.artifacts.get(UNIT_TEST_LINT_MODEL)
                     )
+                    task.nestedComponentPartialResults.from(
+                        creationConfig.artifacts.get(UNIT_TEST_LINT_PARTIAL_RESULTS)
+                    )
+                }
+                task.mainDependencyLintModels.addRuntimeAndCompileArtifacts(
+                    creationConfig,
+                    ArtifactScope.PROJECT,
+                    ArtifactType.UNIT_TEST_LINT_MODEL
                 )
-                task.androidTestDependencyLintModels.from(
-                    it.variantDependencies.getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.PROJECT,
-                        lintModelArtifactType
+                task.dependencyPartialResults.addRuntimeAndCompileArtifacts(
+                    creationConfig,
+                    ArtifactScope.PROJECT,
+                    ArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+                )
+
+                // Add android test lint models and partial results
+                if ((creationConfig as? HasAndroidTest)?.androidTest != null) {
+                    task.nestedComponentLintModels.from(
+                        creationConfig.artifacts.get(ANDROID_TEST_LINT_MODEL)
                     )
+                    task.nestedComponentPartialResults.from(
+                        creationConfig.artifacts.get(ANDROID_TEST_LINT_PARTIAL_RESULTS)
+                    )
+                }
+                task.mainDependencyLintModels.addRuntimeAndCompileArtifacts(
+                    creationConfig,
+                    ArtifactScope.PROJECT,
+                    ArtifactType.ANDROID_TEST_LINT_MODEL
+                )
+                task.dependencyPartialResults.addRuntimeAndCompileArtifacts(
+                    creationConfig,
+                    ArtifactScope.PROJECT,
+                    ArtifactType.ANDROID_TEST_LINT_PARTIAL_RESULTS
+                )
+
+                // Add test fixtures lint models and partial results
+                if ((creationConfig as? HasTestFixtures)?.testFixtures != null) {
+                    task.nestedComponentLintModels.from(
+                        creationConfig.artifacts.get(TEST_FIXTURES_LINT_MODEL)
+                    )
+                    task.nestedComponentPartialResults.from(
+                        creationConfig.artifacts.get(TEST_FIXTURES_LINT_PARTIAL_RESULTS)
+                    )
+                }
+                task.mainDependencyLintModels.addRuntimeAndCompileArtifacts(
+                    creationConfig,
+                    ArtifactScope.PROJECT,
+                    ArtifactType.TEST_FIXTURES_LINT_MODEL
+                )
+                task.dependencyPartialResults.addRuntimeAndCompileArtifacts(
+                    creationConfig,
+                    ArtifactScope.PROJECT,
+                    ArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
                 )
             }
-            variant.unitTest?.let {
-                task.unitTestDependencyLintModels.from(
-                    it.variantDependencies.getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.PROJECT,
-                        lintModelArtifactType
-                    )
-                )
-                task.unitTestDependencyLintModels.from(
-                    it.variantDependencies.getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.PROJECT,
-                        lintModelArtifactType
-                    )
-                )
-            }
-            task.dependencyPartialResults.from(
-                creationConfig.variantDependencies.getArtifactFileCollection(
-                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                    AndroidArtifacts.ArtifactScope.PROJECT,
-                    lintPartialResultsArtifactType
-                )
-            )
-            task.dependencyPartialResults.from(
-                creationConfig.variantDependencies.getArtifactFileCollection(
-                    AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
-                    AndroidArtifacts.ArtifactScope.PROJECT,
-                    lintPartialResultsArtifactType
-                )
-            )
             task.mainDependencyLintModels.disallowChanges()
-            task.androidTestDependencyLintModels.disallowChanges()
-            task.unitTestDependencyLintModels.disallowChanges()
             task.dependencyPartialResults.disallowChanges()
+            task.nestedComponentLintModels.disallowChanges()
+            task.nestedComponentPartialResults.disallowChanges()
             task.lintTool.initialize(creationConfig.services)
-            task.lintModelWriterTaskOutputPath.setDisallowChanges(
-                creationConfig.artifacts.getOutputPath(InternalArtifactType.LINT_MODEL).absolutePath
-            )
             if (autoFix) {
                 task.outputs.upToDateWhen {
                     it.logger.debug("Lint fix task potentially modifies sources so cannot be up-to-date")
@@ -841,7 +904,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         customLintChecksConfig: FileCollection,
         lintOptions: Lint,
         partialResults: Provider<Directory>,
-        lintModelWriterTaskOutputDir: File,
         lintMode: LintMode,
         fatalOnly: Boolean = false,
         autoFix: Boolean = false,
@@ -877,14 +939,13 @@ abstract class AndroidLintTask : NonIncrementalTask() {
         // The updateLintBaseline task should never be UP-TO-DATE because the baseline file is not
         // annotated as an output
         this.outputs.upToDateWhen { this.lintMode.get() != LintMode.UPDATE_BASELINE }
-        // Do not support check dependencies in the standalone lint plugin
         this.variantInputs
             .initializeForStandalone(
                 project,
                 javaPluginExtension,
                 taskCreationServices.projectOptions,
                 fatalOnly,
-                checkDependencies = true,
+                useModuleDependencyLintModels = true,
                 lintMode
             )
         this.lintRuleJars.fromDisallowChanges(customLintChecksConfig)
@@ -892,9 +953,6 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             projectInfo.buildDirectory.dir("intermediates/${this.name}/android-lint-model")
         )
         this.partialResults.setDisallowChanges(partialResults)
-        this.lintModelWriterTaskOutputPath.setDisallowChanges(
-            lintModelWriterTaskOutputDir.absolutePath
-        )
         this.initializeOutputTypesConvention()
         when {
             fatalOnly -> {
@@ -961,5 +1019,27 @@ abstract class AndroidLintTask : NonIncrementalTask() {
             }
             return false
         }
+
+        private fun ConfigurableFileCollection.addRuntimeAndCompileArtifacts(
+            creationConfig: ComponentCreationConfig,
+            artifactScope: ArtifactScope,
+            artifactType: ArtifactType
+        ) {
+            from(
+                creationConfig.variantDependencies.getArtifactFileCollection(
+                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                    artifactScope,
+                    artifactType
+                )
+            )
+            from(
+                creationConfig.variantDependencies.getArtifactFileCollection(
+                    AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH,
+                    artifactScope,
+                    artifactType
+                )
+            )
+        }
+
     }
 }

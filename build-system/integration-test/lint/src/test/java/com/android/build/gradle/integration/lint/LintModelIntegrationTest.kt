@@ -17,7 +17,6 @@ package com.android.build.gradle.integration.lint
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -68,29 +67,6 @@ class LintModelIntegrationTest {
             lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
                 .resolve("incremental/lintAnalyzeDebug"),
             modelSnapshotResourceRelativePath = "kotlinmodel/app/lintAnalyzeDebug",
-            "debug-androidTestArtifact-dependencies.xml",
-            "debug-androidTestArtifact-libraries.xml",
-            "debug-artifact-dependencies.xml",
-            "debug-artifact-libraries.xml",
-            "debug-testArtifact-dependencies.xml",
-            "debug-testArtifact-libraries.xml",
-            "debug.xml",
-            "module.xml",
-        )
-    }
-
-    @Test
-    fun checkLintAnalysisModels_lintAnalysisPerComponent() {
-        project.executor()
-            .with(BooleanOption.LINT_ANALYSIS_PER_COMPONENT, true)
-            .expectFailure()
-            .run("clean", ":app:lintDebug")
-
-        checkLintModels(
-            project = project,
-            lintModelDir = project.getSubproject("app").intermediatesDir.toPath()
-                .resolve("incremental/lintAnalyzeDebug"),
-            modelSnapshotResourceRelativePath = "kotlinmodel/app/lintAnalyzeDebug/perComponent",
             "debug-androidTestArtifact-dependencies.xml",
             "debug-androidTestArtifact-libraries.xml",
             "debug-artifact-dependencies.xml",

@@ -104,7 +104,7 @@ public class Project {
     protected final LintClient client;
     protected final File dir;
     protected File referenceDir;
-    protected final File partialResultsDir;
+    private final File partialResultsDir;
     protected Configuration configuration;
     protected String pkg;
     protected Document dom;
@@ -763,6 +763,7 @@ public class Project {
      *
      * @return the partial results directory for the project, or null if unset
      */
+    @Nullable
     public File getPartialResultsDir() {
         return partialResultsDir;
     }

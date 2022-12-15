@@ -367,5 +367,15 @@
       resolved="org.jetbrains:annotations:13.0"/>
   <library
       name="${projectDir}@@:library::debug"
-      project=":library"/>
+      jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
+      resolved="lintKotlin:library:unspecified"
+      folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
 </libraries>

@@ -25,6 +25,8 @@ import com.android.build.gradle.internal.coverage.JacocoConfigurations
 import com.android.build.gradle.internal.coverage.JacocoReportTask
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
+import com.android.build.gradle.internal.lint.AndroidLintAnalysisTask
+import com.android.build.gradle.internal.lint.LintModelWriterTask
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.getBuildService
@@ -50,6 +52,7 @@ import com.android.build.gradle.internal.test.BundleTestDataImpl
 import com.android.build.gradle.internal.test.TestDataImpl
 import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.builder.core.BuilderConstants.FD_MANAGED_DEVICE_SETUP_RESULTS
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableSet
@@ -205,6 +208,22 @@ class AndroidTestTaskManager(
                     .taskContainer
                     .assembleTask
                     .name)
+        }
+
+        if (androidTestProperties.services.projectOptions.get(LINT_ANALYSIS_PER_COMPONENT)) {
+            taskFactory.register(
+                AndroidLintAnalysisTask.PerComponentCreationAction(
+                    androidTestProperties,
+                    fatalOnly = false
+                )
+            )
+            taskFactory.register(
+                LintModelWriterTask.PerComponentCreationAction(
+                    androidTestProperties,
+                    useModuleDependencyLintModels = false,
+                    fatalOnly = false
+                )
+            )
         }
 
         createConnectedTestForVariant(androidTestProperties)

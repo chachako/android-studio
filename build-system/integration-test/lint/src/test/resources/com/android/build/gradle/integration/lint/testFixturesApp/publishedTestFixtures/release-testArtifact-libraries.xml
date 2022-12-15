@@ -20,10 +20,21 @@
       proguardRules="proguard.txt"/>
   <library
       name="${projectDir}@@:app::release::testFixtures"
-      project=":app"/>
+      jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
+      resolved="artifacts:app:unspecified"
+      folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
   <library
       name="${projectDir}@@:app::release"
-      project=":app"/>
+      jars="${projectDir}/app/build/intermediates/compile_app_classes_jar/release/classes.jar"
+      resolved="::"/>
   <library
       name="com.example.javaLib:javaLib:1.0:test-fixtures@jar::testFixtures"
       jars="${projectDir}/testrepo/com/example/javaLib/javaLib/1.0/javaLib-1.0-test-fixtures.jar"

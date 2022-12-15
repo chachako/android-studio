@@ -233,30 +233,30 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                 .contains("{$moduleName*projectDir}")
             if (moduleName == ":java-lib") {
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*sourceProvider*0*javaDir*0}")
+                    .contains("{$moduleName*main*MAIN*sourceProvider*0*javaDir*0}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*sourceProvider*0*javaDir*1}")
+                    .contains("{$moduleName*main*MAIN*sourceProvider*0*javaDir*1}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*testSourceProvider*0*javaDir*0}")
+                    .contains("{$moduleName*main*MAIN*testSourceProvider*0*javaDir*0}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*main*testSourceProvider*0*javaDir*1}")
+                    .contains("{$moduleName*main*MAIN*testSourceProvider*0*javaDir*1}")
             } else {
                 // There are no lint issues in the java library's build directory, so only check for
                 // the build directory encoding in the android modules.
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
                     .contains("{$moduleName*buildDir}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*sourceProvider*0*manifest*1}")
+                    .contains("{$moduleName*debug*MAIN*sourceProvider*0*manifest*1}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*sourceProvider*0*javaDir*0}")
+                    .contains("{$moduleName*debug*MAIN*sourceProvider*0*javaDir*0}")
                 assertThat(File(partialResultsDir1, lintPartialFileName).readText())
-                    .contains("{$moduleName*debug*sourceProvider*0*resDir*1}")
+                    .contains("{$moduleName*debug*MAIN*sourceProvider*0*resDir*1}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*testSourceProvider*0*javaDir*0}")
+                    .contains("{$moduleName*debug*MAIN*testSourceProvider*0*javaDir*0}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*testSourceProvider*0*javaDir*1}")
+                    .contains("{$moduleName*debug*MAIN*testSourceProvider*0*javaDir*1}")
                 assertThat(File(partialResultsDir1, lintDefiniteFileName).readText())
-                    .contains("{$moduleName*debug*testSourceProvider*1*javaDir*0}")
+                    .contains("{$moduleName*debug*MAIN*testSourceProvider*1*javaDir*0}")
             }
 
             // assert that the lint analysis outputs do not contain the extra source paths.
@@ -406,6 +406,7 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
                             checkAllWarnings = true
                             checkTestSources = true
                         }
+                        testFixtures.enable = true
                     }
                 """.trimIndent()
             )
@@ -456,6 +457,7 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
                             checkAllWarnings = true
                             checkTestSources = true
                         }
+                        testFixtures.enable = true
                     }
                 """.trimIndent()
             )
@@ -525,6 +527,16 @@ private fun MinimalSubProject.addLintIssues(isAndroid: Boolean = true): MinimalS
 
                 public class Baz {
                     private String baz = "$byteOrderMark";
+                }
+            """.trimIndent()
+        )
+        this.withFile(
+            "src/testFixtures/java/com/example/Qux.java",
+            """
+                package com.example;
+
+                public class Qux {
+                    private String qux = "$byteOrderMark";
                 }
             """.trimIndent()
         )

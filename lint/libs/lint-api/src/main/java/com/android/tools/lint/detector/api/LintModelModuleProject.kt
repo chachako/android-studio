@@ -25,6 +25,7 @@ import com.android.support.AndroidxNameUtils
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.model.LintModelAndroidArtifact
+import com.android.tools.lint.model.LintModelArtifactType
 import com.android.tools.lint.model.LintModelDependency
 import com.android.tools.lint.model.LintModelExternalLibrary
 import com.android.tools.lint.model.LintModelModule
@@ -33,6 +34,7 @@ import com.android.tools.lint.model.LintModelModuleType
 import com.android.tools.lint.model.LintModelModuleType.DYNAMIC_FEATURE
 import com.android.tools.lint.model.LintModelSourceProvider
 import com.android.tools.lint.model.LintModelVariant
+import com.android.utils.FileUtils
 import com.android.utils.XmlUtils
 import com.google.common.collect.Lists
 import com.google.common.io.Files
@@ -485,6 +487,23 @@ open class LintModelModuleProject(
     }
   }
 
+  override fun getPartialResultsDir(): File? {
+    return variant.partialResultsDir ?: super.getPartialResultsDir()
+  }
+
+  override fun equals(other: Any?): Boolean {
+    val thisPartialResultsDir = partialResultsDir
+    val otherPartialResultDir = (other as? LintModelModuleProject)?.partialResultsDir
+    val samePartialResultsDir = if (thisPartialResultsDir == null) {
+      otherPartialResultDir == null
+    } else {
+      otherPartialResultDir != null && FileUtils.isSameFile(thisPartialResultsDir, otherPartialResultDir)
+    }
+
+    return super.equals(other) && samePartialResultsDir
+  }
+
+
   companion object {
     /**
      * Given a collection of model projects, set up the lint project dependency lists based on the
@@ -499,6 +518,9 @@ open class LintModelModuleProject(
       // projects have been initialized
       val projectMap: MutableMap<String, LintModelModuleProject> = HashMap()
       for (project in projects) {
+        if (project.variant.artifact.type != LintModelArtifactType.MAIN) {
+          continue
+        }
         val module = project.model
         val modulePath = module.modulePath
         assert(projectMap[modulePath] == null)
@@ -507,6 +529,13 @@ open class LintModelModuleProject(
 
       for (project: LintModelModuleProject in projects) {
         val variant = project.buildVariant
+        // Similar to dynamic features (below), we reverse the dependency between
+        // test components and main components
+        if (variant.artifact.type != LintModelArtifactType.MAIN) {
+          val modulePath = variant.module.modulePath
+          projectMap[modulePath]?.addDirectLibrary(project)
+          continue
+        }
         val roots = variant.artifact.dependencies.compileDependencies.roots
         for (dependency: LintModelDependency in roots) {
           val library = dependency.findLibrary()
