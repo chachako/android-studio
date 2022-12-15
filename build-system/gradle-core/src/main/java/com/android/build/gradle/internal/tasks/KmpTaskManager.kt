@@ -18,11 +18,15 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
+import com.android.build.gradle.internal.coverage.JacocoConfigurations
+import com.android.build.gradle.internal.coverage.JacocoReportTask
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.GenerateEmptyResourceFilesTask
+import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
 import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.tasks.factory.TaskConfigAction
 import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
@@ -31,18 +35,23 @@ import com.android.build.gradle.internal.tasks.factory.registerTask
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.BundleAar
 import com.android.build.gradle.tasks.ProcessLibraryManifest
+import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.ZipMergingTask
+import com.android.build.gradle.tasks.factory.AndroidUnitTest
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.testing.jacoco.plugins.JacocoPlugin
 
 class KmpTaskManager {
 
     fun createTasks(
         project: Project,
         variant: KmpCreationConfig,
+        unitTest: KmpUnitTestImpl?,
     ) {
         createMainVariantTasks(project, variant)
+        unitTest?.let { createUnitTestTasks(project, unitTest) }
 
         variant.publishBuildArtifacts()
     }
@@ -146,6 +155,37 @@ class KmpTaskManager {
             }
 
         project.tasks.getByName("assemble").dependsOn(variant.taskContainer.assembleTask)
+    }
+
+    private fun createUnitTestTasks(
+        project: Project,
+        component: KmpUnitTestImpl
+    ) {
+        createAnchorTasks(project, component)
+
+        project.tasks.registerTask(ProcessTestManifest.CreationAction(component))
+        project.tasks.registerTask(
+            GenerateLibraryRFileTask.TestRuntimeStubRClassCreationAction(
+                component
+            )
+        )
+        project.tasks.registerTask(ProcessJavaResTask.CreationAction(component))
+
+        if (component.isUnitTestCoverageEnabled) {
+            project.pluginManager.apply(JacocoPlugin::class.java)
+        }
+        project.tasks.registerTask(AndroidUnitTest.CreationAction(component))
+        if (component.isUnitTestCoverageEnabled) {
+            val ant = JacocoConfigurations.getJacocoAntTaskConfiguration(
+                project, JacocoTask.getJacocoVersion(component)
+            )
+            project.plugins.withType(JacocoPlugin::class.java) {
+                // Jacoco plugin is applied and test coverage enabled, generate coverage report.
+                project.tasks.registerTask(
+                    JacocoReportTask.CreateActionUnitTest(component, ant)
+                )
+            }
+        }
     }
 
     private fun createAnchorTasks(

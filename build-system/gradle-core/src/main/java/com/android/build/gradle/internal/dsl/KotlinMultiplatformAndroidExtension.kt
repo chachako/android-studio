@@ -88,6 +88,8 @@ interface KotlinMultiplatformAndroidExtension {
     var enableUnitTest: Boolean
     var enableAndroidTest: Boolean
 
+    var enableUnitTestCoverage: Boolean
+
     fun onVariant(
         callback: KotlinMultiplatformAndroidVariant.() -> Unit
     )

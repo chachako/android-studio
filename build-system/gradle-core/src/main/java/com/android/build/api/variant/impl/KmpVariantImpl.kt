@@ -19,6 +19,7 @@ package com.android.build.api.variant.impl
 import com.android.SdkConstants.DOT_AAR
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.KmpComponentImpl
+import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.Component
@@ -96,7 +97,7 @@ open class KmpVariantImpl @Inject constructor(
         )
     }
 
-    override var unitTest = null
+    override var unitTest: KmpUnitTestImpl? = null
 
     override var androidTest = null
 

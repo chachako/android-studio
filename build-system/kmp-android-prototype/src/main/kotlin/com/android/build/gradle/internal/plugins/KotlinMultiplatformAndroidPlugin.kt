@@ -21,11 +21,13 @@ import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
+import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
 import com.android.build.gradle.internal.dependency.SingleVariantBuildTypeRule
@@ -197,6 +199,16 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             taskServices
         )
 
+        val unitTest = createUnitTestComponent(
+            project,
+            global,
+            variantServices,
+            taskServices,
+            mainVariant
+        )
+
+        mainVariant.unitTest = unitTest
+
         val stats = configuratorService.getVariantBuilder(
             project.path,
             mainVariant.name
@@ -214,18 +226,14 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         dependencyConfigurator.configureVariantTransforms(
             variants = listOf(mainVariant),
-            nestedComponents = listOf(),
+            nestedComponents = mainVariant.nestedComponents,
             bootClasspathConfig = global
         )
 
         taskManager.createTasks(
             project,
-            createVariant(
-                project,
-                global,
-                variantServices,
-                taskServices
-            )
+            mainVariant,
+            unitTest,
         )
     }
 
@@ -269,6 +277,49 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             // TODO: Search for the manifest in the kotlin source directories
             manifestFile = FileUtils.join(
                 project.projectDir, "src", "androidMain", "AndroidManifest.xml"
+            )
+        )
+    }
+
+    private fun createUnitTestComponent(
+        project: Project,
+        global: GlobalTaskCreationConfig,
+        variantServices: VariantServices,
+        taskCreationServices: TaskCreationServices,
+        mainVariant: KmpVariantImpl
+    ): KmpUnitTestImpl? {
+        if (!mainVariant.dslInfo.enabledUnitTest) {
+            return null
+        }
+
+        val dslInfo = KmpUnitTestDslInfoImpl(
+            androidExtension,
+            variantServices,
+            mainVariant.dslInfo,
+        )
+
+        val paths = VariantPathHelper(
+            project.layout.buildDirectory,
+            dslInfo,
+            dslServices
+        )
+
+        val artifacts = ArtifactsImpl(project, dslInfo.componentIdentity.name)
+
+        return KmpUnitTestImpl(
+            dslInfo = dslInfo,
+            internalServices = variantServices,
+            buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(),
+            variantDependencies = createVariantDependencies(project, dslInfo),
+            paths = paths,
+            artifacts = artifacts,
+            taskContainer = MutableTaskContainer(),
+            services = taskCreationServices,
+            global = global,
+            mainVariant = mainVariant,
+            // TODO: Search for the manifest in the kotlin source directories
+            manifestFile = FileUtils.join(
+                project.projectDir, "src", "androidTest", "AndroidManifest.xml"
             )
         )
     }
