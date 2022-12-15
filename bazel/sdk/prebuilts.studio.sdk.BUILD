@@ -8,12 +8,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "build-tools/latest-preview",
-    srcs = [":build-tools/26.0.0"],
-    visibility = ["//visibility:public"],
-)
-
 java_import(
     name = "dxlib-preview",
     jars = sdk_path(["build-tools/26.0.0/lib/dx.jar"]),
@@ -61,6 +55,7 @@ filegroup(
         "//tools/adt/idea/designer:__pkg__",
         "//tools/adt/idea/old-agp-tests:__pkg__",
         "//tools/adt/idea/project-system-gradle-upgrade:__pkg__",
+        "//tools/adt/idea/sync-perf-tests:__pkg__",
     ],
 )
 
