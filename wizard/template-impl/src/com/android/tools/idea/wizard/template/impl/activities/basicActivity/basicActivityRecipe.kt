@@ -54,7 +54,10 @@ fun RecipeExecutor.generateBasicActivity(
   val (projectData, srcOut, resOut) = moduleData
   val appCompatVersion = moduleData.apis.appCompatVersion
   val useAndroidX = moduleData.projectTemplateData.androidXSupport
-  addAllKotlinDependencies(moduleData)
+
+  if (projectData.language == Language.Kotlin) {
+      addAllKotlinDependencies(moduleData)
+  }
   addMaterial3Dependency()
   // Generate the themes for material3 to make sure the Activity created for a flavor has an
   // appropriate set of themes
@@ -141,7 +144,6 @@ fun RecipeExecutor.generateBasicActivity(
       firstFragmentClass = firstFragmentClass,
       secondFragmentClass = secondFragmentClass,
       firstFragmentLayoutName = firstFragmentLayoutName,
-      useAndroidX = useAndroidX,
       isViewBindingSupported = isViewBindingSupported
     )
   }
@@ -158,11 +160,11 @@ fun RecipeExecutor.generateBasicActivity(
     Language.Kotlin -> secondFragmentKt(
       packageName = packageName,
       applicationPackage = projectData.applicationPackage,
-      useAndroidX = useAndroidX,
       firstFragmentClass = firstFragmentClass,
       secondFragmentClass = secondFragmentClass,
       secondFragmentLayoutName = secondFragmentLayoutName,
-      isViewBindingSupported = isViewBindingSupported
+      isViewBindingSupported = isViewBindingSupported,
+      useAndroidX = useAndroidX
     )
   }
   val firstFragmentLayoutContent = fragmentFirstLayout(useAndroidX, firstFragmentClass)
@@ -191,9 +193,8 @@ fun RecipeExecutor.generateBasicActivity(
     addDependency("android.arch.navigation:navigation-fragment:+")
     addDependency("android.arch.navigation:navigation-ui:+")
   }
-  if (generateKotlin) {
-    requireJavaVersion("1.8", true)
-  }
+
+  requireJavaVersion("1.8", projectData.language == Language.Kotlin)
   open(simpleActivityPath)
 
   open(resOut.resolve("layout/$contentLayoutName"))
