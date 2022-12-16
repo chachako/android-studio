@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -126,9 +125,8 @@ public class ManifestMergingTest {
 
     @Test
     public void checkTestOnlyAttribute() throws Exception {
-        // do not run if compile sdk is a preview
-        Assume.assumeFalse(GradleTestProject.getCompileSdkHash().startsWith("android-"));
         flavors.executor()
+                .with(OptionalBooleanOption.IDE_TEST_ONLY, false)
                 .run("clean", "assembleF1FaDebug");
 
         assertThat(
@@ -168,6 +166,15 @@ public class ManifestMergingTest {
                         "android:minSdkVersion=\"15\"",
                         "android:targetSdkVersion=\"N\"",
                         "android:testOnly=\"true\"");
+
+        libsTest.executor()
+                .with(OptionalBooleanOption.IDE_TEST_ONLY, false)
+                .run(":app:assembleDebug");
+
+        assertThat(
+                        appProject.file(
+                                "build/intermediates/packaged_manifests/debug/AndroidManifest.xml"))
+                .doesNotContain("android:testOnly=\"true\"");
     }
 
     /** Check that setting minSdkVersion to a preview version mark the manifest with testOnly */
