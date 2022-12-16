@@ -85,7 +85,7 @@ class LibraryTaskManager(
     globalConfig: GlobalTaskCreationConfig,
     localConfig: TaskManagerConfig,
     extension: BaseExtension
-) : TaskManager<LibraryVariantBuilder, LibraryCreationConfig>(
+) : VariantTaskManager<LibraryVariantBuilder, LibraryCreationConfig>(
     project,
     variants,
     testComponents,
@@ -427,24 +427,13 @@ class LibraryTaskManager(
         )
     }
 
-    fun createLibraryAssetsTask(variant: LibraryCreationConfig) {
+    private fun createLibraryAssetsTask(variant: LibraryCreationConfig) {
         taskFactory.register(LibraryAssetCreationAction(variant))
     }
 
-    override fun getJavaResMergingScopes(
-        creationConfig: ComponentCreationConfig
-    ): Set<InternalScopedArtifacts.InternalScope> =
-        if (creationConfig.componentType.isTestComponent) {
-            setOf(
-                InternalScopedArtifacts.InternalScope.SUB_PROJECT,
-                InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS,
-                InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
-            )
-        } else {
-            setOf(
-                InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
-            )
-        }
+    override val javaResMergingScopes = setOf(
+        InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
+    )
 
     override fun createPrepareLintJarForPublishTask() {
         super.createPrepareLintJarForPublishTask()

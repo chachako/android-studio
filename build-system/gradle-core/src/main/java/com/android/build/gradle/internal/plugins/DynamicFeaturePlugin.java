@@ -29,7 +29,6 @@ import com.android.build.api.variant.DynamicFeatureVariantBuilder;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.api.BaseVariantOutput;
 import com.android.build.gradle.internal.ExtraModelInfo;
-import com.android.build.gradle.internal.TaskManager;
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig;
 import com.android.build.gradle.internal.component.TestComponentCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
@@ -251,22 +250,20 @@ public class DynamicFeaturePlugin
 
     @NonNull
     @Override
-    protected TaskManager<DynamicFeatureVariantBuilder, DynamicFeatureCreationConfig>
-            createTaskManager(
-                    @NonNull Project project,
-                    @NonNull
-                            Collection<
-                                            ? extends
-                                                    ComponentInfo<
-                                                            DynamicFeatureVariantBuilder,
-                                                            DynamicFeatureCreationConfig>>
-                                    variants,
-                    @NonNull Collection<? extends TestComponentCreationConfig> testComponents,
-                    @NonNull
-                            Collection<? extends TestFixturesCreationConfig> testFixturesComponents,
-                    @NonNull GlobalTaskCreationConfig globalTaskCreationConfig,
-                    @NonNull TaskManagerConfig localConfig,
-                    @NonNull BaseExtension extension) {
+    protected DynamicFeatureTaskManager createTaskManager(
+            @NonNull Project project,
+            @NonNull
+                    Collection<
+                                    ? extends
+                                            ComponentInfo<
+                                                    DynamicFeatureVariantBuilder,
+                                                    DynamicFeatureCreationConfig>>
+                            variants,
+            @NonNull Collection<? extends TestComponentCreationConfig> testComponents,
+            @NonNull Collection<? extends TestFixturesCreationConfig> testFixturesComponents,
+            @NonNull GlobalTaskCreationConfig globalTaskCreationConfig,
+            @NonNull TaskManagerConfig localConfig,
+            @NonNull BaseExtension extension) {
         return new DynamicFeatureTaskManager(
                 project,
                 variants,

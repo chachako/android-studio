@@ -33,7 +33,6 @@ import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.api.BaseVariantOutput;
 import com.android.build.gradle.internal.AppModelBuilder;
 import com.android.build.gradle.internal.ExtraModelInfo;
-import com.android.build.gradle.internal.TaskManager;
 import com.android.build.gradle.internal.component.ApplicationCreationConfig;
 import com.android.build.gradle.internal.component.TestComponentCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
@@ -243,7 +242,7 @@ public class AppPlugin
 
     @NonNull
     @Override
-    protected TaskManager<ApplicationVariantBuilder, ApplicationCreationConfig> createTaskManager(
+    protected ApplicationTaskManager createTaskManager(
             @NonNull Project project,
             @NonNull
                     Collection<

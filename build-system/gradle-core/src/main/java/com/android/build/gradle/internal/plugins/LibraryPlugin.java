@@ -30,7 +30,6 @@ import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.api.BaseVariantOutput;
 import com.android.build.gradle.internal.ExtraModelInfo;
 import com.android.build.gradle.internal.LibraryTaskManager;
-import com.android.build.gradle.internal.TaskManager;
 import com.android.build.gradle.internal.component.LibraryCreationConfig;
 import com.android.build.gradle.internal.component.TestComponentCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
@@ -247,7 +246,7 @@ public class LibraryPlugin
 
     @NonNull
     @Override
-    protected TaskManager<LibraryVariantBuilder, LibraryCreationConfig> createTaskManager(
+    protected LibraryTaskManager createTaskManager(
             @NonNull Project project,
             @NonNull
                     Collection<

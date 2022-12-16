@@ -64,7 +64,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 /** TaskManager for creating tasks in an Android application project. */
 public abstract class AbstractAppTaskManager<
                 VariantBuilderT extends VariantBuilder, VariantT extends VariantCreationConfig>
-        extends TaskManager<VariantBuilderT, VariantT> {
+        extends VariantTaskManager<VariantBuilderT, VariantT> {
 
     protected AbstractAppTaskManager(
             @NonNull Project project,
@@ -182,60 +182,44 @@ public abstract class AbstractAppTaskManager<
     protected void createVariantPreBuildTask(@NonNull ComponentCreationConfig creationConfig) {
         final ComponentType componentType = creationConfig.getComponentType();
 
-        if (componentType.isApk()) {
-            boolean useDependencyConstraints =
-                    creationConfig
-                            .getServices()
-                            .getProjectOptions()
-                            .get(BooleanOption.USE_DEPENDENCY_CONSTRAINTS);
+        boolean useDependencyConstraints =
+                creationConfig
+                        .getServices()
+                        .getProjectOptions()
+                        .get(BooleanOption.USE_DEPENDENCY_CONSTRAINTS);
 
-            TaskProvider<? extends Task> task;
+        TaskProvider<? extends Task> task =
+                taskFactory.register(AppPreBuildTask.getCreationAction(creationConfig));
 
-            if (componentType.isTestComponent()) {
-                task =
-                        taskFactory.register(
-                                new TestPreBuildTask.CreationAction(
-                                        (TestComponentCreationConfig) creationConfig));
-                if (useDependencyConstraints) {
-                    task.configure(t -> t.setEnabled(false));
-                }
-            } else {
-                task = taskFactory.register(AppPreBuildTask.getCreationAction(creationConfig));
-                ApkCreationConfig config = (ApkCreationConfig) creationConfig;
-                // Only record application ids for release artifacts
-                boolean analyticsEnabled =
-                        creationConfig.getServices().getProjectOptions().isAnalyticsEnabled();
-                if (!config.getDebuggable() && analyticsEnabled) {
-                    TaskProvider<AnalyticsRecordingTask> recordTask =
-                            taskFactory.register(new AnalyticsRecordingTask.CreationAction(config));
-                    task.configure(it -> it.finalizedBy(recordTask));
-                }
-            }
-
-            if (!useDependencyConstraints) {
-                TaskProvider<AppClasspathCheckTask> classpathCheck =
-                        taskFactory.register(
-                                new AppClasspathCheckTask.CreationAction(creationConfig));
-                TaskFactoryUtils.dependsOn(task, classpathCheck);
-            }
-
-            if (componentType.isBaseModule() && globalConfig.getHasDynamicFeatures()) {
-                TaskProvider<CheckMultiApkLibrariesTask> checkMultiApkLibrariesTask =
-                        taskFactory.register(
-                                new CheckMultiApkLibrariesTask.CreationAction(creationConfig));
-
-                TaskFactoryUtils.dependsOn(task, checkMultiApkLibrariesTask);
-            }
-            return;
+        ApkCreationConfig config = (ApkCreationConfig) creationConfig;
+        // Only record application ids for release artifacts
+        boolean analyticsEnabled =
+                creationConfig.getServices().getProjectOptions().isAnalyticsEnabled();
+        if (!config.getDebuggable() && analyticsEnabled) {
+            TaskProvider<AnalyticsRecordingTask> recordTask =
+                    taskFactory.register(new AnalyticsRecordingTask.CreationAction(config));
+            task.configure(it -> it.finalizedBy(recordTask));
         }
 
-        super.createVariantPreBuildTask(creationConfig);
+        if (!useDependencyConstraints) {
+            TaskProvider<AppClasspathCheckTask> classpathCheck =
+                    taskFactory.register(
+                            new AppClasspathCheckTask.CreationAction(creationConfig));
+            TaskFactoryUtils.dependsOn(task, classpathCheck);
+        }
+
+        if (componentType.isBaseModule() && globalConfig.getHasDynamicFeatures()) {
+            TaskProvider<CheckMultiApkLibrariesTask> checkMultiApkLibrariesTask =
+                    taskFactory.register(
+                            new CheckMultiApkLibrariesTask.CreationAction(creationConfig));
+
+            TaskFactoryUtils.dependsOn(task, checkMultiApkLibrariesTask);
+        }
     }
 
     @NonNull
     @Override
-    protected Set<InternalScopedArtifacts.InternalScope> getJavaResMergingScopes(
-            @NonNull ComponentCreationConfig creationConfig) {
+    protected Set<InternalScopedArtifacts.InternalScope> getJavaResMergingScopes() {
         return Set.of(
                 InternalScopedArtifacts.InternalScope.SUB_PROJECT,
                 InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS

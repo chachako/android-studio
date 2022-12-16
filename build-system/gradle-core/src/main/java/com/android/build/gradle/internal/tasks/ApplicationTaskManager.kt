@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.MultipleArtifact
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ScopedArtifacts
@@ -26,6 +27,7 @@ import com.android.build.gradle.internal.AbstractAppTaskManager
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
+import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
 import com.android.build.gradle.internal.dsl.AbstractPublishing
@@ -35,7 +37,9 @@ import com.android.build.gradle.internal.publishing.PublishedConfigSpec
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.databinding.DataBindingExportFeatureNamespacesTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
+import com.android.build.gradle.internal.tasks.factory.TaskConfigAction
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
+import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.tasks.featuresplit.FeatureSetMetadataWriterTask
 import com.android.build.gradle.internal.variant.ComponentInfo
@@ -47,10 +51,12 @@ import com.android.build.gradle.tasks.sync.AppIdListTask
 import com.android.builder.core.ComponentType
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.TaskProvider
 
 class ApplicationTaskManager(
     project: Project,
@@ -88,6 +94,8 @@ class ApplicationTaskManager(
         createCommonTasks(variantInfo)
 
         val variant = variantInfo.variant
+
+        createBundleTask(variant)
 
         taskFactory.register(ApplicationVariantModelTask.CreationAction(variant))
 
@@ -140,6 +148,24 @@ class ApplicationTaskManager(
                 configType
             )
         }
+    }
+
+    private fun createBundleTask(component: ComponentCreationConfig) {
+        taskFactory.register(
+            component.computeTaskName("bundle"),
+            null,
+            object : TaskConfigAction<Task> {
+                override fun configure(task: Task) {
+                    task.description = "Assembles bundle for variant " + component.name
+                    task.dependsOn(component.artifacts.get(SingleArtifact.BUNDLE))
+                }
+            },
+            object : TaskProviderCallback<Task> {
+                override fun handleProvider(taskProvider: TaskProvider<Task>) {
+                    component.taskContainer.bundleTask = taskProvider
+                }
+            }
+        )
     }
 
     /** Configure variantData to generate embedded wear application.  */
