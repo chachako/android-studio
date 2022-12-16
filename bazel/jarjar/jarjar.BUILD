@@ -22,5 +22,8 @@ java_library(
     resource_strip_prefix = "res/",
     resources = ["res/com/tonicsystems/jarjar/help.txt"],
     visibility = ["//visibility:private"],
-    deps = ["@//prebuilts/tools/common/m2:jarjar_asm"],
+    deps = [
+        "@maven//:org.ow2.asm.asm",
+        "@maven//:org.ow2.asm.asm-commons",
+    ],
 )
