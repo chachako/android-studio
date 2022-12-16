@@ -26,7 +26,6 @@ import org.objectweb.asm.tree.ClassNode
 import java.io.File
 import java.io.IOException
 import java.util.Collections.emptyIterator
-import java.util.NoSuchElementException
 import java.util.zip.ZipFile
 import kotlin.math.min
 
@@ -243,123 +242,42 @@ class ClassEntry(
             client: LintClient,
             classPath: List<File>
         ): Iterator<ClassEntry> {
-            return if (classPath.isNotEmpty()) {
-                LazyClassEntryIterator(client, classPath)
-            } else {
-                emptyIterator()
-            }
-        }
-
-        private class LazyClassEntryIterator(private val client: LintClient, private val classPath: List<File>) : Iterator<ClassEntry> {
-            /**
-             * The index of the next entry in [classPath] to look
-             * at, once there are no more pending .class files in
-             * [classFiles] and no more pending entries from .jar files
-             * in [zipClassEntries].
-             */
-            private var classPathIndex: Int = 0
-
-            /**
-             * A list of .class files to process; the next one is at
-             * [classFileIndex]. This means that the current [classPath]
-             * entry was a directory, and we read in all the .class
-             * files from that directory which we need to process next.
-             */
-            private var classFiles: List<File> = emptyList()
-
-            /**
-             * The index in the [classFiles] list of .class files to
-             * process next.
-             */
-            private var classFileIndex: Int = 0
-
-            /**
-             * The current class path entry was a .jar file, and we
-             * read in a bunch of [ClassEntry] entries from it which we
-             * need to return next. (For .jar files we construct actual
-             * [ClassEntry] objects instead of lazily constructing
-             * each from .class files to avoid having to keep around
-             * a [ZipFile] and incrementally read from its stream; we
-             * want to make sure that the file gets closed, and with the
-             * iterator constract there isn't a good way to ensure that
-             * it's done.
-             */
-            private var zipClassEntries: List<ClassEntry> = emptyList()
-
-            /**
-             * The index in the [zipClassEntries] list to return next.
-             */
-            private var zipClassEntriesIndex: Int = 0
-
-            /** The next entry to return from [next]. */
-            var next: ClassEntry? = null
-            init {
-                next = findNext()
+            if (classPath.isEmpty()) {
+                return emptyIterator()
             }
 
-            override fun hasNext(): Boolean {
-                return next != null
-            }
-
-            override fun next(): ClassEntry {
-                val result = this.next ?: throw NoSuchElementException()
-                // Compute the next entry here such that hasNext() can easily know
-                // whether there is an entry (the class path may be non-empty, but for example
-                // the directories can be empty and jar files can be empty; we don't really
-                // know if there are more entries until we actually search for it.
-                this.next = findNext()
-                return result
-            }
-
-            private fun findNext(): ClassEntry? {
-                if (classFiles.isNotEmpty()) {
-                    val classFile = classFiles[classFileIndex++]
-                    if (classFileIndex == classFiles.size) {
-                        classFiles = emptyList() // TODO: Reset index?
-                    }
-                    return try {
-                        val bytes = client.readBytes(classFile)
-                        ClassEntry(classFile, null, classPath[classPathIndex - 1], bytes) // -1: we've already ++'ed
-                    } catch (e: IOException) {
-                        client.log(e, null)
-                        findNext()
-                    }
-                }
-                if (zipClassEntries.isNotEmpty()) {
-                    val entry = zipClassEntries[zipClassEntriesIndex++]
-                    if (zipClassEntriesIndex == zipClassEntries.size) {
-                        zipClassEntries = emptyList() // TODO: Reset index?
-                    }
-                    return entry
-                }
-
-                while (classPathIndex < classPath.size) {
-                    val classPathEntry = classPath[classPathIndex++]
+            val lazySequence = sequence {
+                for (classPathEntry in classPath) {
                     val path = classPathEntry.path
                     if (path.endsWith(DOT_JAR) && classPathEntry.isFile) {
-                        zipClassEntries = fromClassPath(client, listOf(classPathEntry))
-                        if (zipClassEntries.isNotEmpty()) {
-                            zipClassEntriesIndex = 0
-                            return findNext()
-                        }
-                        // empty jar -- continue through class path
+                        // For .jar files we construct all [ClassEntry] objects
+                        // instead of lazily constructing each from .class files
+                        // to avoid having to keep around a [ZipFile] and incrementally
+                        // read from its stream; we want to make sure that the file
+                        // gets closed, and with the iterator contract there isn't
+                        // a good way to ensure that it's done.
+                        val zipClassEntries = fromClassPath(client, listOf(classPathEntry))
+                        yieldAll(zipClassEntries)
                     } else if (classPathEntry.isDirectory) {
-                        val files = ArrayList<File>(64)
-                        addClassFiles(classPathEntry, files)
-                        if (files.isNotEmpty()) {
-                            files.sort()
-                            classFiles = files
-                            classFileIndex = 0
-                            return findNext()
+                        val classFiles = ArrayList<File>(64)
+                        addClassFiles(classPathEntry, classFiles)
+                        classFiles.sort()
+                        for (classFile in classFiles) {
+                            try {
+                                val bytes = client.readBytes(classFile)
+                                val classEntry = ClassEntry(classFile, null, classPathEntry, bytes)
+                                yield(classEntry)
+                            } catch (e: IOException) {
+                                client.log(e, null)
+                            }
                         }
-                        // empty class folder -- continue through classpath
                     } else if (!path.endsWith(DOT_SRCJAR)) {
                         client.log(null, "Ignoring class path entry %1\$s", classPathEntry)
                     }
                 }
-
-                return null
             }
+
+            return lazySequence.asIterable().iterator()
         }
 
         /**
