@@ -28,6 +28,12 @@ import com.android.prefs.AndroidLocationsSingleton
 import com.android.sdklib.SdkVersionInfo
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
+import com.android.sdklib.repository.IdDisplay
+import com.android.sdklib.repository.targets.SystemImage.ANDROID_TV_TAG
+import com.android.sdklib.repository.targets.SystemImage.AUTOMOTIVE_PLAY_STORE_TAG
+import com.android.sdklib.repository.targets.SystemImage.AUTOMOTIVE_TAG
+import com.android.sdklib.repository.targets.SystemImage.GOOGLE_TV_TAG
+import com.android.sdklib.repository.targets.SystemImage.WEAR_TAG
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
@@ -195,6 +201,15 @@ class LocalEmulatorProvisionerPlugin(
       abi = Abi.getEnum(avdInfo.abiType)
       avdName = avdInfo.name
       displayName = avdInfo.displayName
+      deviceType = avdInfo.tag.toDeviceType()
+    }
+
+  private fun IdDisplay.toDeviceType(): DeviceType =
+    when (this) {
+      ANDROID_TV_TAG, GOOGLE_TV_TAG -> DeviceType.TV
+      AUTOMOTIVE_TAG, AUTOMOTIVE_PLAY_STORE_TAG -> DeviceType.AUTOMOTIVE
+      WEAR_TAG -> DeviceType.WEAR
+      else -> DeviceType.HANDHELD
     }
 
   private fun refreshDevices() {
