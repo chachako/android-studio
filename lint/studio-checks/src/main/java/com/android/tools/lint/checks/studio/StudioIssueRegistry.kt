@@ -71,6 +71,7 @@ class StudioIssueRegistry : IssueRegistry() {
       CheckResultDetector.CHECK_RESULT,
       ExternalAnnotationsDetector.ISSUE,
       FileComparisonDetector.ISSUE,
+      ForbiddenStudioCallDetector.ADD_TO_STDLIB_USAGE,
       ForbiddenStudioCallDetector.INTERN,
       ForbiddenStudioCallDetector.FILES_COPY,
       ForbiddenStudioCallDetector.MOCKITO_WHEN,

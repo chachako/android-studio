@@ -18,6 +18,7 @@
 
 package com.android.tools.lint.checks.studio
 
+import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import org.junit.Test
@@ -180,4 +181,106 @@ class ForbiddenStudioCallDetectorTest {
                 """
       )
   }
+
+  @Test
+  fun testAddToStdlibStarImport() {
+    studioLint()
+      .files(
+        kotlin(
+          """
+                    package test.pkg
+                    import org.jetbrains.kotlin.utils.addToStdlib.*
+
+                    fun test1(items: List<Iterable<*>>): String {
+                      val tmp = items.firstNotNullOf { _ -> "" } // OK
+                      return items.firstIsInstanceOrNull() // ERROR 1
+                    }
+
+                    fun test2(item: Number): Int? {
+                      val tmp: Int? = item.safeAs<Int>() // ERROR 2
+                      return tmp?.plus(1)
+                    }
+
+                    fun test3(occurrences: Array<Long>): Long {
+                      return occurrences.sumByLong { it + 1 } // ERROR 3
+                    }
+                    """
+        ),
+        addToStdlibStub,
+      )
+      .issues(ForbiddenStudioCallDetector.ADD_TO_STDLIB_USAGE)
+      .run()
+      .expect(
+        """
+                src/test/pkg/test.kt:7: Warning: Avoid using methods from the unstable addToStdlib package [AddToStdlibUsage]
+                                      return items.firstIsInstanceOrNull() // ERROR 1
+                                                   ~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/test.kt:11: Warning: Avoid using methods from the unstable addToStdlib package [AddToStdlibUsage]
+                                      val tmp: Int? = item.safeAs<Int>() // ERROR 2
+                                                           ~~~~~~~~~~~~~
+                src/test/pkg/test.kt:16: Warning: Avoid using methods from the unstable addToStdlib package [AddToStdlibUsage]
+                                      return occurrences.sumByLong { it + 1 } // ERROR 3
+                                                         ~~~~~~~~~~~~~~~~~~~~
+                0 errors, 3 warnings
+                """
+      )
+  }
+
+  @Test
+  fun testAddToStdlibMultipleImports() {
+    studioLint()
+      .files(
+        kotlin(
+          """
+                    package test.pkg
+                    import org.jetbrains.kotlin.utils.addToStdlib.safeAs
+                    import org.jetbrains.kotlin.utils.addToStdlib.sumByLong
+
+                    fun test3(occurrences: Sequence<Long>): Long {
+                      return occurrences.sumByLong { it + 1 }  // ERROR 4
+                    }
+
+                    fun test2(item: Number): Int? {
+                      val tmp: Int? = item.safeAs<Int>()  // ERROR 5
+                      return tmp?.plus(1)
+                    }
+
+"""
+        ),
+        addToStdlibStub,
+      )
+      .issues(ForbiddenStudioCallDetector.ADD_TO_STDLIB_USAGE)
+      .run()
+      .expect(
+        """
+                src/test/pkg/test.kt:7: Warning: Avoid using methods from the unstable addToStdlib package [AddToStdlibUsage]
+                                      return occurrences.sumByLong { it + 1 }  // ERROR 4
+                                                         ~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/test.kt:11: Warning: Avoid using methods from the unstable addToStdlib package [AddToStdlibUsage]
+                                      val tmp: Int? = item.safeAs<Int>()  // ERROR 5
+                                                           ~~~~~~~~~~~~~
+                0 errors, 2 warnings
+                """
+      )
+  }
+
+  private val addToStdlibStub: TestFile =
+    kotlin(
+        "org/jetbrains/kotlin/utils/addToStdlib.kt",
+        """
+                package org.jetbrains.kotlin.utils.addToStdlib
+
+                import java.util.*
+
+                inline fun <reified T : Any> Sequence<*>.firstIsInstanceOrNull(): T?
+                inline fun <reified T : Any> Iterable<*>.firstIsInstanceOrNull(): T?
+                inline fun <reified T : Any> Array<*>.firstIsInstanceOrNull(): T?
+
+                inline fun <T> Iterable<T>.sumByLong(selector: (T) -> Long): Long
+
+                inline fun <reified T : Any> Any?.safeAs(): T?
+
+                """
+      )
+      .within("src")
 }

@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks.studio
 
+import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Category.Companion.CORRECTNESS
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -35,6 +36,20 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
   companion object Issues {
     private val IMPLEMENTATION =
       Implementation(ForbiddenStudioCallDetector::class.java, Scope.JAVA_FILE_SCOPE)
+
+    const val ADD_TO_STDLIB_PACKAGE_FQ_NAME = "org.jetbrains.kotlin.utils.addToStdlib"
+
+    @JvmField
+    val ADD_TO_STDLIB_USAGE =
+      Issue.create(
+        id = "AddToStdlibUsage",
+        briefDescription = "Do not use `addToStdlib`",
+        explanation = "The `addToStdlib` package is unstable and should be avoided.",
+        category = CORRECTNESS,
+        severity = Severity.WARNING,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION,
+      )
 
     @JvmField
     val INTERN =
@@ -89,6 +104,26 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION
       )
+  }
+
+  override fun getApplicableUastTypes() = listOf(UCallExpression::class.java)
+
+  override fun createUastHandler(context: JavaContext): UElementHandler {
+    return object : UElementHandler() {
+      override fun visitCallExpression(node: UCallExpression) {
+        val resolved = node.resolve() ?: return
+        if (
+          context.evaluator.getPackage(resolved)?.qualifiedName == ADD_TO_STDLIB_PACKAGE_FQ_NAME
+        ) {
+          context.report(
+            ADD_TO_STDLIB_USAGE,
+            node,
+            context.getCallLocation(node, includeReceiver = false, includeArguments = true),
+            "Avoid using methods from the unstable `addToStdlib` package"
+          )
+        }
+      }
+    }
   }
 
   override fun getApplicableMethodNames(): List<String> = listOf("intern", "copy", "when")
