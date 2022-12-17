@@ -4,6 +4,15 @@ This chapter lists recent changes to lint that affect users of lint.
 For information about internal improvements and API changes affecting
 lint check authors, see the API Guide.
 
+**8.1**
+
+* New built-in lint-checks:
+
+  Issue ID                          | Summary
+  ----------------------------------|-----------------------------------
+  `UnspecifiedRegisterReceiverFlag` | Missing `registerReceiver()` exported flag
+  `UnsafeImplicitIntentLaunch`      | Implicit intent matches an internal non-exported component
+
 **8.0**
 
 * New built-in lint-checks:
@@ -11,7 +20,7 @@ lint check authors, see the API Guide.
   Issue ID                          | Summary
   ----------------------------------|-----------------------------------
   `ChromeOsOnConfigurationChanged`  | ChromeOS performance checks in onConfigurationChanged()
-  `UnspecifiedRegisterReceiverFlag` | Missing `registerReceiver()` exported flag 
+  `SetAndClearCommunicationDevice`  | Missing `clearCommunicationDevice()` after set
 
   * Lint's API check now supports SDK extensions. The version checking
     utilities (VersionChecks, ApiConstraint) have also been improved

@@ -15,7 +15,6 @@
  */
 package com.android.tools.lint.checks.infrastructure
 
-import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
 import com.android.tools.lint.checks.infrastructure.TestMode.Companion.UI_INJECTION_HOST
@@ -144,33 +143,46 @@ open class TestMode(
             // Delete sources for any compiled files since when analyzing a project
             // you can only see the local sources.
             for (project in projects) {
-                for (file in project.files) {
+                // If we're testing a check that only analyzes bytecode, don't delete sources
+                // or bytecode
+                if (context.task.issues == null || context.task.issues.all { it.implementation.classOnly() }) {
+                    return
+                }
+
+                val projectFiles = project.files
+                for (file in projectFiles) {
                     // TODO: Consider whether I need to remove sources from within jars too?
                     // Check whether resolve finds them first.
 
-                    if (file !is CompiledSourceFile) {
+                    val sources: List<TestFile>
+                    val classFiles: List<String>
+                    if (file is BytecodeTestFile) {
+                        if (file.getSources().any { it in projectFiles }) {
+                            // Unusual, but see NotificationPermissionDetectorTest#testClassAndSourceFileUsage
+                            // where we're testing the combination of byte code and source code where the
+                            // byte code compiled source is aliasing an actual source which would get deleted.
+                            continue
+                        }
+                        sources = if (deleteSourceFiles) file.getSources() else emptyList()
+                        classFiles = if (deleteBinaryFiles) file.getGeneratedPaths() else emptyList()
+                    } else {
                         continue
                     }
 
-                    // If we're testing a check that only analyzes bytecode, don't delete sources
-                    // or bytecode
-                    if (context.task.issues.all { it.implementation.classOnly() }) {
-                        return
-                    }
-
-                    if (deleteSourceFiles && !file.targetRelativePath.endsWith(DOT_JAR)) {
+                    if (deleteSourceFiles) {
                         for (dir in context.projectFolders) {
-                            val source = File(dir, file.source.targetPath)
-                            if (source.exists()) {
-                                source.delete()
-                                break
+                            for (testFile in sources) {
+                                val source = File(dir, testFile.targetPath)
+                                if (source.exists()) {
+                                    source.delete()
+                                }
                             }
                         }
                     }
                     if (deleteBinaryFiles) {
-                        for (classTestFile in file.classFiles) {
+                        for (classTestFile in classFiles) {
                             for (dir in context.projectFolders) {
-                                val classFile = File(dir, classTestFile.targetPath)
+                                val classFile = File(dir, classTestFile)
                                 if (classFile.exists()) {
                                     classFile.delete()
                                     break
@@ -236,7 +248,7 @@ open class TestMode(
             override fun applies(context: TestModeContext): Boolean {
                 return context.projects.any {
                     it.files.any { file ->
-                        file is CompiledSourceFile && file.type == CompiledSourceFile.Type.SOURCE_AND_BYTECODE
+                        file is BytecodeTestFile && file.type == BytecodeTestFile.Type.SOURCE_AND_BYTECODE
                     }
                 }
             }

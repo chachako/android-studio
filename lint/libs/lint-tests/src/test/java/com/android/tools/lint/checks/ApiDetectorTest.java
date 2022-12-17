@@ -20,6 +20,7 @@ import static com.android.tools.lint.checks.ApiDetector.INLINED;
 import static com.android.tools.lint.checks.ApiDetector.KEY_REQUIRES_API;
 import static com.android.tools.lint.checks.ApiDetector.REPEATED_API_ANNOTATION_REQUIRES_ALL;
 import static com.android.tools.lint.checks.ApiDetector.UNSUPPORTED;
+import static com.android.tools.lint.checks.infrastructure.TestFiles.binaryStub;
 import static com.android.tools.lint.checks.infrastructure.TestFiles.rClass;
 import static com.android.tools.lint.checks.infrastructure.TestMode.PARTIAL;
 import static com.android.tools.lint.detector.api.VersionChecksTestKt.getRequiresExtensionStub;
@@ -8665,6 +8666,51 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "    state.label      // WARN 2\n"
                                 + "          ~~~~~\n"
                                 + "2 errors, 0 warnings");
+    }
+
+    public void testSyntheticConstructorParameter() {
+        // Test which makes sure that when we compute a call to a constructor
+        // on an inner class (which is not static), we correctly include a synthetic
+        // parameter to the outer class as argument 0 and match that to the database.
+
+        // "android.test.api": this is not actually an Android API. There are a
+        // couple dozen examples of synthetic constructors on inner classes in the
+        // SDK surface, but none of them have a constructor unique since attribute
+        // which we'd need to make sure we're really targeting the constructor, so
+        // we're using a made up example instead.
+        ApiLookupTest.runApiCheckWithCustomLookup(
+                        () ->
+                                lint().files(
+                                                binaryStub(
+                                                        "libs/code.jar",
+                                                        new TestFile[] {
+                                                            java(
+                                                                    ""
+                                                                            + "package android.test.api;\n"
+                                                                            + "\n"
+                                                                            + "public class Outer {\n"
+                                                                            + "    public class Inner extends Outer {\n"
+                                                                            + "        public Inner(float f) { }\n"
+                                                                            + "    }\n"
+                                                                            + "}")
+                                                        },
+                                                        true),
+                                                java(
+                                                        ""
+                                                                + "package test.pkg;\n"
+                                                                + "import android.test.api.Outer;\n"
+                                                                + "import android.test.api.Outer.Inner;\n"
+                                                                + "public class Test {\n"
+                                                                + "    public static void test(Outer outer) {\n"
+                                                                + "        outer.new Inner(1f);\n"
+                                                                + "    }\n"
+                                                                + "}")))
+                .expect(
+                        ""
+                                + "src/test/pkg/Test.java:6: Error: Call requires API level 32 (current min is 1): new android.test.api.Outer.Inner [NewApi]\n"
+                                + "        outer.new Inner(1f);\n"
+                                + "        ~~~~~~~~~~~~~~~\n"
+                                + "1 errors, 0 warnings");
     }
 
     public void testNonConstantExpression() {

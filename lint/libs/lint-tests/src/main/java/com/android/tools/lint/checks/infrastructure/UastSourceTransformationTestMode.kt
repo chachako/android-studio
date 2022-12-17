@@ -66,8 +66,8 @@ abstract class UastSourceTransformationTestMode(description: String, testMode: S
     override fun applies(context: TestModeContext): Boolean {
         return context.task.incrementalFileName == null && context.projects.any { project ->
             project.files.any { file ->
-                if (file is CompiledSourceFile && file.type == CompiledSourceFile.Type.SOURCE_AND_BYTECODE)
-                    isRelevantFile(file.source)
+                if (file is BytecodeTestFile && file.type == BytecodeTestFile.Type.SOURCE_AND_BYTECODE)
+                    file.getSources().any { isRelevantFile(it) }
                 else
                     isRelevantFile(file)
             }

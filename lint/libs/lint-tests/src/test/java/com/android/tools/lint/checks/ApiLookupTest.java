@@ -177,6 +177,15 @@ public class ApiLookupTest extends AbstractCheckTest {
                 9, getMethodVersion("java/io/IOException", "<init>", "(Ljava/lang/Throwable;)V"));
     }
 
+    public void testSyntheticConstructorParameter() {
+        assertEquals(
+                11,
+                getMethodVersion(
+                        "android/content/Loader$ForceLoadContentObserver",
+                        "<init>",
+                        "(Landroid/content/Loader;)"));
+    }
+
     public void testDeprecatedFields() {
         // Not deprecated:
         assertEquals(-1, getFieldDeprecatedIn("android/Manifest$permission", "GET_PACKAGE_SIZE"));
@@ -750,6 +759,18 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "                <field name=\"DURATION_MILLIS\"/>\n"
                         + "                <field name=\"MIME_TYPE\"/>\n"
                         + "                <field name=\"SIZE\"/>\n"
+                        + "        </class>\n"
+                        // Special test case for ApiDetectorTest#testSyntheticConstructorParameter
+                        // with a synthetic
+                        // constructor parameter to make sure we include those when computing
+                        // signatures
+                        + "        <class name=\"android/test/api/Outer\" since=\"28\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"android/test/api/Outer$Inner\" since=\"29\">\n"
+                        + "                <extends name=\"android/test/api/Outer\"/>\n"
+                        + "                <method name=\"&lt;init>(Landroid/test/api/Outer;F)V\" since=\"32\"/>\n"
                         + "        </class>\n"
                         + "</api>\n";
         File xml = File.createTempFile("api-versions", "xml");

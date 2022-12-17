@@ -42,30 +42,28 @@ import java.util.Arrays
 
 internal class CompiledSourceFile(
     into: String,
-    internal val type: Type,
+    override val type: BytecodeTestFile.Type,
     /** The test source file for this compiled file. */
     val source: TestFile,
     private val checksum: Long?,
     private val encodedFiles: Array<out String>
-) : TestFile() {
+) : TestFile(), BytecodeTestFile {
 
     init {
-        to(into)
+        to(if (isArtifact(into)) artifactToJar(into) else into)
     }
 
-    /** The type of test file to create. */
-    internal enum class Type {
-        BYTECODE_ONLY, SOURCE_AND_BYTECODE, RESOURCE
-    }
-
-    val files: List<TestFile >
-        get() {
-            val files = ArrayList(classFiles)
-            if (type == Type.SOURCE_AND_BYTECODE || type == Type.RESOURCE) {
-                files.add(source)
-            }
-            return files
+    /**
+     * Returns the list of files to be packaged/created (the bytecode
+     * and based on the [type], optionally sources)
+     */
+    fun getPackagedFiles(): List<TestFile> {
+        val files = ArrayList(getBytecodeFiles())
+        if (type == BytecodeTestFile.Type.RESOURCE) {
+            files.add(source)
         }
+        return files
+    }
 
     /**
      * Computes a hash of the source file and the binary contents
@@ -86,7 +84,14 @@ internal class CompiledSourceFile(
 
     @Throws(IOException::class)
     override fun createFile(targetDir: File): File {
-        val files = files
+        if (type == BytecodeTestFile.Type.SOURCE_AND_BYTECODE) {
+            val path = source.targetRelativePath
+            if (path.endsWith(DOT_JAVA) || path.endsWith(DOT_KT)) {
+                source.createFile(targetDir)
+            }
+        }
+
+        val files = getPackagedFiles()
         val array = files.toTypedArray()
         return if (targetRelativePath.endsWith(DOT_JAR)) {
             JarTestFile(targetRelativePath).files(*array).createFile(targetDir)
@@ -106,10 +111,22 @@ internal class CompiledSourceFile(
      * author is running test without knowing the binary contents yet)
      */
     fun isMissingClasses(): Boolean {
-        if (type == Type.RESOURCE) {
+        if (type == BytecodeTestFile.Type.RESOURCE) {
             return false
         }
         return encodedFiles.isEmpty() || encodedFiles.size == 1 && encodedFiles[0].isEmpty()
+    }
+
+    override fun getSources(): List<TestFile> {
+        return listOf(source)
+    }
+
+    override fun getGeneratedPaths(): List<String> {
+        return if (targetRelativePath.endsWith(DOT_JAR)) {
+            listOf(targetRelativePath)
+        } else {
+            getBytecodeFiles().map { it.targetRelativePath }.toList()
+        }
     }
 
     /**
@@ -307,7 +324,7 @@ internal class CompiledSourceFile(
         // Create the test file declaration, e.g. bytecode("target", ...
         val declaration = StringBuilder()
         declaration.indent(indent)
-        declaration.append(if (type == Type.SOURCE_AND_BYTECODE) "compiled" else "bytecode")
+        declaration.append(if (type == BytecodeTestFile.Type.SOURCE_AND_BYTECODE) "compiled" else "bytecode")
         declaration.append("(\n")
         indent++
         declaration.indent(indent)
@@ -423,53 +440,59 @@ internal class CompiledSourceFile(
         return true
     }
 
+    private var bytecodeFiles: List<TestFile>? = null
+
     /**
      * Returns the list of binary test class files currently included in
      * this compiled source file.
      */
-    val classFiles: List<TestFile>
-        get() {
-            val classFiles = ArrayList<TestFile>()
-            for (originalEncoded in encodedFiles) {
-                val encoded = originalEncoded.trimIndent()
-                val index = encoded.indexOf(':')
-                assertTrue(
-                    "Expected encoded binary file to start with a colon " +
-                        "separated filename",
-                    index != -1
-                )
-                val path = encoded.substring(0, index).replace('＄', '$').trim()
-                val bytes = encoded.substring(index + 1).trim()
-                val producer = TestFiles.getByteProducerForBase64gzip(bytes)
-                val target =
-                    if (targetRelativePath.endsWith(DOT_JAR)) path else "$targetRelativePath/$path"
-                val classFile = BinaryTestFile(target, producer)
-                classFiles.add(classFile)
-            }
+    override fun getBytecodeFiles(): List<TestFile> {
+        return bytecodeFiles
+            ?: createBytecodeFiles().also { bytecodeFiles = it }
+    }
 
-            if (checksum != null) {
-                val actualChecksum = computeCheckSum(
-                    source.contents,
-                    classFiles.sortedBy { it.targetRelativePath }.map {
-                        (it as BinaryTestFile).binaryContents
-                    }.toList()
-                )
-                // We only create integer checksums to keep the fingerprints short
-                if (checksum.toInt() != actualChecksum) {
-                    fail(
-                        "The checksum does not match for ${source.targetRelativePath};\n" +
-                            "expected " +
-                            "0x${Integer.toHexString(checksum.toInt())} but was " +
-                            "0x${Integer.toHexString(actualChecksum)}.\n" +
-                            "Has the source file been changed without updating the binaries?\n" +
-                            "Don't just update the checksum -- delete the binary file arguments and " +
-                            "re-run the test first!"
-                    )
-                }
-            }
-
-            return classFiles
+    private fun createBytecodeFiles(): List<TestFile> {
+        val classFiles = ArrayList<TestFile>()
+        for (originalEncoded in encodedFiles) {
+            val encoded = originalEncoded.trimIndent()
+            val index = encoded.indexOf(':')
+            assertTrue(
+                "Expected encoded binary file to start with a colon " +
+                    "separated filename",
+                index != -1
+            )
+            val path = encoded.substring(0, index).replace('＄', '$').trim()
+            val bytes = encoded.substring(index + 1).trim()
+            val producer = TestFiles.getByteProducerForBase64gzip(bytes)
+            val target =
+                if (targetRelativePath.endsWith(DOT_JAR)) path else "$targetRelativePath/$path"
+            val classFile = BinaryTestFile(target, producer)
+            classFiles.add(classFile)
         }
+
+        if (checksum != null) {
+            val actualChecksum = computeCheckSum(
+                source.contents,
+                classFiles.sortedBy { it.targetRelativePath }.map {
+                    (it as BinaryTestFile).binaryContents
+                }.toList()
+            )
+            // We only create integer checksums to keep the fingerprints short
+            if (checksum.toInt() != actualChecksum) {
+                fail(
+                    "The checksum does not match for ${source.targetRelativePath};\n" +
+                        "expected " +
+                        "0x${Integer.toHexString(checksum.toInt())} but was " +
+                        "0x${Integer.toHexString(actualChecksum)}.\n" +
+                        "Has the source file been changed without updating the binaries?\n" +
+                        "Don't just update the checksum -- delete the binary file arguments and " +
+                        "re-run the test first!"
+                )
+            }
+        }
+
+        return classFiles
+    }
 
     companion object {
         /**
@@ -513,7 +536,7 @@ internal class CompiledSourceFile(
                     // Combine multiple class files into a single jar
                     val allFiles = ArrayList<TestFile>()
                     for (file in files) {
-                        allFiles.addAll(file.files)
+                        allFiles.addAll(file.getPackagedFiles())
                     }
                     val array = allFiles.toTypedArray()
                     JarTestFile(target).files(*array).createFile(targetDir)

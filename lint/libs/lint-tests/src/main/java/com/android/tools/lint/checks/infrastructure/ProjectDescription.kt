@@ -17,10 +17,13 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants
+import com.android.SdkConstants.ANDROID_MANIFEST_XML
+import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_KT
 import com.android.tools.lint.checks.infrastructure.TestFile.GradleTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.JavaTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.KotlinTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.XmlTestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.LibraryReferenceTestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.xml
 import com.android.utils.NullLogger
@@ -29,7 +32,6 @@ import org.junit.Assert
 import org.junit.Assert.fail
 import java.io.File
 import java.io.IOException
-import java.util.ArrayList
 
 /** A description of a lint test project. */
 class ProjectDescription : Comparable<ProjectDescription> {
@@ -191,7 +193,7 @@ class ProjectDescription : Comparable<ProjectDescription> {
     fun ensureUnique() {
         val targets = mutableSetOf<String>()
         for (file in files) {
-            if (file is CompiledSourceFile) {
+            if (file is BytecodeTestFile) {
                 continue // Not a single file; will potentially expand into a number of class files
             }
             val added = targets.add(file.targetRelativePath)
@@ -296,32 +298,14 @@ class ProjectDescription : Comparable<ProjectDescription> {
             var missingClasses = false
             for (fp in testFiles) {
                 if (haveGradle) {
-                    if (SdkConstants.ANDROID_MANIFEST_XML == fp.targetRelativePath) {
-                        // The default should be src/main/AndroidManifest.xml, not just
-                        // AndroidManifest.xml
-                        // fp.to("src/main/AndroidManifest.xml");
-                        fp.within("src/main")
-                    } else if (fp is JavaTestFile &&
-                        fp.targetRootFolder != null && fp.targetRootFolder == "src"
-                    ) {
-                        fp.within("src/main/java")
-                    } else if (fp is KotlinTestFile &&
-                        fp.targetRootFolder != null && fp.targetRootFolder == "src"
-                    ) {
-                        fp.within("src/main/kotlin")
-                    } else if (fp is CompiledSourceFile && fp.source is JavaTestFile &&
-                        fp.source.targetRootFolder == "src"
-                    ) {
-                        fp.within("src/main/java")
-                    } else if (fp is CompiledSourceFile && fp.source is KotlinTestFile &&
-                        fp.source.targetRootFolder == "src"
-                    ) {
-                        fp.within("src/main/kotlin")
-                    }
+                    fp.adjustGradleSourceSet()
                 }
                 if (fp is LibraryReferenceTestFile) {
                     jars.add(fp.file.path)
                     continue
+                } else if ((fp is BytecodeTestFile) && fp.targetRelativePath.endsWith(DOT_JAR)) {
+                    // Add .jar files into .classpath
+                    jars.add(fp.targetRelativePath)
                 }
 
                 if (fp is CompiledSourceFile) {
@@ -334,6 +318,19 @@ class ProjectDescription : Comparable<ProjectDescription> {
                         missingClasses = true
                     }
                     continue
+                } else if (fp is StubClassFile) {
+                    fp.task = this
+                    if (!allowKotlinClassStubs &&
+                        fp.stubSources.any { it.targetRelativePath.endsWith(DOT_KT) }
+                    ) {
+                        error(
+                            "You cannot use Kotlin in a binaryStub or mavenLibrary unless you also turn on\n" +
+                                "`lint().allowKotlinClassStubs(true)`. Kotlin stubs work in general, but module\n" +
+                                "metadata is still missing, which means that if your test relies on this metadata\n" +
+                                "(for example to call package level functions from Kotlin, or to access things like\n" +
+                                "default values or inline methods), that will not work."
+                        )
+                    }
                 }
 
                 fp.createFile(projectDir)
@@ -368,7 +365,7 @@ class ProjectDescription : Comparable<ProjectDescription> {
             val manifest: File = if (haveGradle) {
                 File(projectDir, "src/main/AndroidManifest.xml")
             } else {
-                File(projectDir, SdkConstants.ANDROID_MANIFEST_XML)
+                File(projectDir, ANDROID_MANIFEST_XML)
             }
             if (project.type !== Type.JAVA) {
                 addManifestFileIfNecessary(manifest)
@@ -411,6 +408,25 @@ class ProjectDescription : Comparable<ProjectDescription> {
                 sb.append("</lint>")
                 val config = xml("lint.xml", sb.toString())
                 config.createFile(projectDir)
+            }
+        }
+
+        private fun TestFile.adjustGradleSourceSet() {
+            if (ANDROID_MANIFEST_XML == targetRelativePath) {
+                // The default should be src/main/AndroidManifest.xml, not just
+                // AndroidManifest.xml
+                // fp.to("src/main/AndroidManifest.xml");
+                within("src/main")
+            } else if (this is JavaTestFile && targetRootFolder == "src") {
+                within("src/main/java")
+            } else if (this is KotlinTestFile && targetRootFolder == "src") {
+                within("src/main/kotlin")
+            } else if (this is XmlTestFile && targetRootFolder == "res") {
+                within("src/main/res")
+            } else if (this is BytecodeTestFile) {
+                for (source in getSources()) {
+                    source.adjustGradleSourceSet()
+                }
             }
         }
 

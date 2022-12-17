@@ -226,7 +226,7 @@ class ResolveCheckerTest {
             compiled(
                 "libs/remember.jar",
                 kotlin(
-                    "androidx/compose/runtime/Remember.kt",
+                    "src/androidx/compose/runtime/Remember.kt",
                     """
                     package androidx.compose.runtime
 

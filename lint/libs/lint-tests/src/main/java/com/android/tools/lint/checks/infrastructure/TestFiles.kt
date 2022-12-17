@@ -33,6 +33,7 @@ import com.android.tools.lint.checks.infrastructure.TestFile.KotlinTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.ManifestTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.PropertyTestFile
 import com.android.tools.lint.checks.infrastructure.TestFile.XmlTestFile
+import com.android.tools.lint.client.api.JavaEvaluator
 import com.google.common.base.Joiner
 import com.google.common.base.Splitter
 import com.google.common.io.ByteStreams
@@ -434,6 +435,101 @@ object TestFiles {
         return JarTestFile(to)
     }
 
+    @JvmStatic
+    fun binaryStub(
+        into: String,
+        vararg source: TestFile,
+        byteOnly: Boolean = true
+    ): TestFile {
+        return binaryStub(into, source.toList(), emptyList(), byteOnly)
+    }
+
+    /**
+     * Creates a **class file** from a simple stub source file which
+     * gets interpreted by lint's test infrastructure and "compiled"
+     * into an actual class file. This lets unit tests more accurately
+     * test what happens at runtime (for example, parameter names are
+     * available when you resolve calls into source, but not into class
+     * files), without having to actually compile and maintain binary
+     * test files.
+     *
+     * The [stubSources] are the source files to be used for the
+     * library. The [compileOnly] sources are ones that may define APIs
+     * referenced by the [stubSources], but which should not be packaged
+     * in the jar. If [byteOnly] is false, it will run this test both
+     * with the source code available, and without.
+     */
+    @JvmStatic
+    fun binaryStub(
+        into: String,
+        /** The test source files to be stubbed */
+        stubSources: List<TestFile>,
+        /**
+         * Any library-only (needed for compilation, but not to be
+         * packaged) dependencies
+         */
+        compileOnly: List<TestFile> = emptyList(),
+        byteOnly: Boolean = true
+    ): TestFile {
+        val default = if (byteOnly) BytecodeTestFile.Type.BYTECODE_ONLY else BytecodeTestFile.Type.SOURCE_AND_BYTECODE
+        val type = getCompileType(default, *stubSources.toTypedArray())
+        return StubClassFile(into, type, stubSources, compileOnly)
+    }
+
+    /**
+     * Creates a simple binary "Maven jar library artifact". Given some
+     * simple Java stubs for the APIs the library should contain, and
+     * an artifact address, this will perform simple "compilation" of
+     * the stub APIs into a binary jar, and will locate this jar file
+     * in the right place for lint to discover it and associate it
+     * (via [JavaEvaluator.findOwnerLibrary]) with the right artifact.
+     *
+     * The [stubSources] are the source files to be used for the
+     * library. The [compileOnly] sources are ones that may define APIs
+     * referenced by the [stubSources], but which should not be packaged
+     * in the jar. If [byteOnly] is false, it will run this test both
+     * with the source code available, and without.
+     */
+    @JvmStatic
+    fun mavenLibrary(
+        artifact: String,
+        /** The test source files to be stubbed */
+        stubSources: List<TestFile>,
+        /**
+         * Any library-only (needed for compilation, but not to be
+         * packaged) dependencies
+         */
+        compileOnly: List<TestFile> = emptyList(),
+        byteOnly: Boolean = true
+        // TODO: Preserve artifact name, and then in test infrastructure, make sure
+        // all exploded-aar files are accounted for in the dependency graph!
+        // Maybe even build dependency graph here with a PomBuilder?
+    ): TestFile {
+        val default = if (byteOnly) BytecodeTestFile.Type.BYTECODE_ONLY else BytecodeTestFile.Type.SOURCE_AND_BYTECODE
+        val type = getCompileType(default, *stubSources.toTypedArray())
+        return MavenLibrary(artifact, type, stubSources, compileOnly)
+    }
+
+    /**
+     * Creates a simple binary "Maven jar library artifact". Given some
+     * simple Java stubs for the APIs the library should contain, and
+     * an artifact address, this will perform simple "compilation" of
+     * the stub APIs into a binary jar, and will locate this jar file
+     * in the right place for lint to discover it and associate it
+     * (via [JavaEvaluator.findOwnerLibrary]) with the right artifact.
+     */
+    @JvmStatic
+    fun mavenLibrary(
+        artifact: String,
+        /** The test source files to be stubbed */
+        vararg files: TestFile,
+        byteOnly: Boolean = true
+    ): TestFile {
+        val default = if (byteOnly) BytecodeTestFile.Type.BYTECODE_ONLY else BytecodeTestFile.Type.SOURCE_AND_BYTECODE
+        val type = getCompileType(default, *files)
+        return MavenLibrary(artifact, type, listOf(*files), emptyList())
+    }
+
     @Deprecated("") // Use the method with the checksum instead
     @JvmStatic
     fun compiled(
@@ -441,7 +537,7 @@ object TestFiles {
         source: TestFile,
         vararg encoded: String
     ): TestFile {
-        val type = getCompileType(CompiledSourceFile.Type.SOURCE_AND_BYTECODE, source)
+        val type = getCompileType(BytecodeTestFile.Type.SOURCE_AND_BYTECODE, source)
         return CompiledSourceFile(into, type, source, null, encoded)
     }
 
@@ -452,7 +548,7 @@ object TestFiles {
         checksum: Long,
         vararg encoded: String
     ): TestFile {
-        val type = getCompileType(CompiledSourceFile.Type.SOURCE_AND_BYTECODE, source)
+        val type = getCompileType(BytecodeTestFile.Type.SOURCE_AND_BYTECODE, source)
         return CompiledSourceFile(into, type, source, checksum, encoded)
     }
 
@@ -463,7 +559,7 @@ object TestFiles {
         source: TestFile,
         vararg encoded: String
     ): TestFile {
-        val type = getCompileType(CompiledSourceFile.Type.BYTECODE_ONLY, source)
+        val type = getCompileType(BytecodeTestFile.Type.BYTECODE_ONLY, source)
         return CompiledSourceFile(into, type, source, null, encoded)
     }
 
@@ -474,18 +570,18 @@ object TestFiles {
         checksum: Long,
         vararg encoded: String
     ): TestFile {
-        val type = getCompileType(CompiledSourceFile.Type.BYTECODE_ONLY, source)
+        val type = getCompileType(BytecodeTestFile.Type.BYTECODE_ONLY, source)
         return CompiledSourceFile(into, type, source, checksum, encoded)
     }
 
-    private fun getCompileType(default: CompiledSourceFile.Type, vararg sources: TestFile): CompiledSourceFile.Type {
+    private fun getCompileType(default: BytecodeTestFile.Type, vararg sources: TestFile): BytecodeTestFile.Type {
         for (source in sources) {
             val targetRelativePath = source.targetRelativePath
             if (targetRelativePath.endsWith(DOT_JAVA) || targetRelativePath.endsWith(DOT_KT)) {
                 return default
             }
         }
-        return CompiledSourceFile.Type.RESOURCE
+        return BytecodeTestFile.Type.RESOURCE
     }
 
     @JvmStatic

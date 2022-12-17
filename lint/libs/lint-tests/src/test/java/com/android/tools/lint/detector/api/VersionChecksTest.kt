@@ -20,6 +20,7 @@ import com.android.tools.lint.checks.ApiDetector
 import com.android.tools.lint.checks.ApiLookupTest
 import com.android.tools.lint.checks.SdkIntDetector
 import com.android.tools.lint.checks.infrastructure.TestFile
+import com.android.tools.lint.checks.infrastructure.TestFiles.binaryStub
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestMode
@@ -3811,29 +3812,35 @@ class VersionChecksTest : AbstractCheckTest() {
                     get() = false
                 """
             ),
-            java(
-                """
-                package test.pkg;
+            binaryStub(
+                "libs/library.jar",
+                stubSources = listOf(
+                    java(
+                        """
+                        package test.pkg;
 
-                import android.os.Build;
+                        import android.os.Build;
 
-                import androidx.annotation.ChecksSdkIntAtLeast;
+                        import androidx.annotation.ChecksSdkIntAtLeast;
 
-                public class Constants {
-                    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-                    public static boolean getVersionCheck2() {
-                        return false;
-                    }
+                        public class Constants {
+                            @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+                            public static boolean getVersionCheck2() {
+                                return false;
+                            }
 
-                    @ChecksSdkIntAtLeast(parameter = 2)
-                    public static boolean getVersionCheck3(String sample, boolean sample2, int apiLevel) {
-                        return false;
-                    }
+                            @ChecksSdkIntAtLeast(parameter = 2)
+                            public static boolean getVersionCheck3(String sample, boolean sample2, int apiLevel) {
+                                return false;
+                            }
 
-                    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-                    public static final boolean SUPPORTS_LETTER_SPACING = Boolean.getBoolean("foo");
-                }
-                """
+                            @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+                            public static final boolean SUPPORTS_LETTER_SPACING = Boolean.getBoolean("foo");
+                        }
+                        """
+                    )
+                ),
+                compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
             ),
             SUPPORT_ANNOTATIONS_JAR
         )

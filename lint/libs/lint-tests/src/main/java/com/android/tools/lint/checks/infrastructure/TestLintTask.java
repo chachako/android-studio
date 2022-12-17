@@ -152,6 +152,7 @@ public class TestLintTask {
     boolean includeSelectionMarkers = true;
     boolean allowAbsolutePathsInMessages = false;
     boolean allowNonAlphabeticalFixOrder = false;
+    boolean allowKotlinClassStubs = false;
 
     /** Creates a new lint test task */
     public TestLintTask() {
@@ -278,6 +279,19 @@ public class TestLintTask {
      */
     public TestLintTask allowNonAlphabeticalFixOrder(boolean allowNonAlphabeticalFixOrder) {
         this.allowNonAlphabeticalFixOrder = allowNonAlphabeticalFixOrder;
+        return this;
+    }
+
+    /**
+     * Sets whether lint should allow binary stub files (see {@link TestFiles#binaryStub} and {@link
+     * TestFiles#mavenLibrary} to be constructed from Kotlin files (which are only partially
+     * supported.)
+     *
+     * @param allowKotlinClassStubs whether to allow Kotlin stubs in binary test files
+     * @return this, for constructor chaining
+     */
+    public TestLintTask allowKotlinClassStubs(boolean allowKotlinClassStubs) {
+        this.allowKotlinClassStubs = allowKotlinClassStubs;
         return this;
     }
 

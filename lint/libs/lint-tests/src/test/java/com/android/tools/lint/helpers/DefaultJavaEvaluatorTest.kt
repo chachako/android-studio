@@ -445,8 +445,8 @@ class DefaultJavaEvaluatorTest {
             full:   test2(Ljava.util.List;)Ljava.util.List;
 
             Inner(int i):
-            simple: (I)
-            full:   LTest;<init>(I)V
+            simple: (LTest;I)
+            full:   <init>(LTest;I)V
 
             void inner():
             simple: ()

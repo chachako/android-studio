@@ -46,7 +46,7 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 import java.io.StringWriter
 
-fun JavaContext.checkFile(root: UFile?, task: TestLintTask) {
+fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = false) {
     root ?: error("Failure processing source ${project.getRelativePath(file)}: No UAST AST created")
     val error = PsiTreeUtil.findChildOfType(
         root.sourcePsi,
@@ -240,8 +240,17 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask) {
                 )
             }
 
-            message.append(
-                """
+            if (isStub) {
+                message.append(
+                    """
+                    This means one of the APIs in the stub are referencing APIs which need
+                    to be provided via the `compileOnly=` list of test files.
+
+                    """.trimIndent()
+                )
+            } else {
+                message.append(
+                    """
                     This usually means that the unit test needs to declare a stub file or
                     placeholder with the expected signature such that type resolving works.
 
@@ -249,8 +258,9 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask) {
                     this unit test as allowing resolution errors by setting
                     `allowCompilationErrors()`.
 
-                """.trimIndent()
-            )
+                    """.trimIndent()
+                )
+            }
 
             if (isImport) {
                 message.append(

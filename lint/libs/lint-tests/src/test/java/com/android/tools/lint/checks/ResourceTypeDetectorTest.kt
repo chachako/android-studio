@@ -16,8 +16,6 @@
 
 package com.android.tools.lint.checks
 
-import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
-import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector

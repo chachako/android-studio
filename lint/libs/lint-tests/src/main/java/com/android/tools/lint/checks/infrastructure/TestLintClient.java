@@ -872,7 +872,7 @@ public class TestLintClient extends LintCliClient {
                 UFile file = super.parse(context);
 
                 if (!task.allowCompilationErrors) {
-                    ResolveCheckerKt.checkFile(context, file, task);
+                    ResolveCheckerKt.checkFile(context, file, task, false);
                 }
 
                 return file;

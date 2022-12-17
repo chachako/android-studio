@@ -143,8 +143,12 @@ internal class ProjectDescriptionList(
                     // move the test file over and update target path
                     newProject.files = Lists.asList(file, newProject.files).toTypedArray()
                     file.targetRelativePath = file.targetRelativePath.substring(name.length + 4)
-                    if (file is CompiledSourceFile && file.source.targetRelativePath.startsWith("../$name/")) {
-                        file.source.targetRelativePath = file.source.targetRelativePath.substring(name.length + 4)
+                    if (file is BytecodeTestFile) {
+                        for (source in file.getSources()) {
+                            if (source.targetRelativePath.startsWith("../$name/")) {
+                                source.targetRelativePath = source.targetRelativePath.substring(name.length + 4)
+                            }
+                        }
                     }
                 } else {
                     filtered.add(file)

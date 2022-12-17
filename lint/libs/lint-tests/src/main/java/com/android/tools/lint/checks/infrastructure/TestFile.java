@@ -18,6 +18,7 @@ package com.android.tools.lint.checks.infrastructure;
 
 import static com.android.SdkConstants.DOT_GIF;
 import static com.android.SdkConstants.DOT_GRADLE;
+import static com.android.SdkConstants.DOT_JAR;
 import static com.android.SdkConstants.DOT_JAVA;
 import static com.android.SdkConstants.DOT_JPEG;
 import static com.android.SdkConstants.DOT_JPG;
@@ -32,6 +33,7 @@ import static com.android.utils.SdkUtils.escapePropertyValue;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.ide.common.repository.GradleCoordinate;
 import com.android.utils.SdkUtils;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -330,8 +332,22 @@ public class TestFile {
         }
     }
 
+    static boolean isArtifact(@NonNull String path) {
+        return !path.endsWith(DOT_JAR)
+                && path.indexOf(':') != -1
+                && GradleCoordinate.parseCoordinateString(path) != null;
+    }
+
+    @NonNull
+    static String artifactToJar(@NonNull String artifact) {
+        // e.g.
+        // build/intermediates/exploded-aar/com.android.support.constraint/constraint-layout/1.0.0-beta3/jars/classes.jar
+        String path = artifact.replace(':', '/');
+        return "build/intermediates/exploded-aar/" + path + "/jars/classes.jar";
+    }
+
     public static class JarTestFile extends TestFile {
-        private final List<TestFile> files = Lists.newArrayList();
+        protected final List<TestFile> files = Lists.newArrayList();
         private final Map<TestFile, String> path = Maps.newHashMap();
 
         public JarTestFile(@NonNull String to) {

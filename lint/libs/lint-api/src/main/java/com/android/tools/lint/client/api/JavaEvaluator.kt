@@ -36,6 +36,7 @@ import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiEllipsisType
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiMethodCallExpression
@@ -492,18 +493,6 @@ class JavaEvaluator {
 
         if (includeName) {
             if (method.isConstructor) {
-                val declaringClass = method.containingClass
-                if (declaringClass != null) {
-                    val outerClass = declaringClass.containingClass
-                    if (outerClass != null) {
-                        // declaring class is an inner class
-                        if (!declaringClass.hasModifierProperty(PsiModifier.STATIC)) {
-                            if (!appendJvmEquivalentTypeName(signature, outerClass)) {
-                                return null
-                            }
-                        }
-                    }
-                }
                 signature.append(CONSTRUCTOR_NAME)
             } else {
                 signature.append(method.name)
@@ -511,6 +500,22 @@ class JavaEvaluator {
         }
 
         signature.append('(')
+
+        if (method.isConstructor) {
+            val containingClass = method.containingClass
+            // Is the class containing this constructor itself an instance inner class?
+            if (containingClass != null) {
+                val outerClass = containingClass.containingClass
+                if (outerClass != null) {
+                    if (method.containingClass?.modifierList?.hasModifierProperty(PsiModifier.STATIC) != true) {
+                        // If so, we also have an implicit parameter to the outer class instance
+                        if (!appendJvmEquivalentSignature(signature, getClassType(outerClass))) {
+                            return null
+                        }
+                    }
+                }
+            }
+        }
 
         for (psiParameter in method.parameterList.parameters) {
             if (!appendJvmEquivalentSignature(signature, psiParameter.type)) {
@@ -526,6 +531,28 @@ class JavaEvaluator {
             } else {
                 signature.append('V')
             }
+        }
+        return signature.toString()
+    }
+
+    open fun getFieldDescription(field: PsiField): String? {
+        val signature = StringBuilder()
+        if (!appendJvmEquivalentSignature(signature, field.type)) {
+            return null
+        }
+        return signature.toString()
+    }
+
+    @Deprecated(
+        "Most lint APIs (such as ApiLookup) no longer require internal JVM method\n" +
+            "      descriptions and accept JVM equivalent descriptions that can be obtained by calling the\n" +
+            "      {@link #getFieldDescription} method."
+    )
+    fun getInternalDescription(field: PsiField): String? {
+        val signature = StringBuilder()
+        @Suppress("DEPRECATION")
+        if (!appendJvmSignature(signature, field.type)) {
+            return null
         }
         return signature.toString()
     }
@@ -568,31 +595,15 @@ class JavaEvaluator {
             "      descriptions and accept JVM equivalent descriptions that can be obtained by calling the\n" +
             "      {@link #getMethodDescription} method."
     )
-    open fun getInternalDescription(
+    fun getInternalDescription(
         method: PsiMethod,
-        includeName: Boolean,
-        includeReturn: Boolean
+        includeName: Boolean = false,
+        includeReturn: Boolean = true
     ): String? {
-        assert(!includeName) // not yet tested
-        assert(!includeReturn) // not yet tested
-
         val signature = StringBuilder()
 
         if (includeName) {
             if (method.isConstructor) {
-                val declaringClass = method.containingClass
-                if (declaringClass != null) {
-                    val outerClass = declaringClass.containingClass
-                    if (outerClass != null) {
-                        // declaring class is an inner class
-                        if (!declaringClass.hasModifierProperty(PsiModifier.STATIC)) {
-                            @Suppress("DEPRECATION")
-                            if (!appendJvmTypeName(signature, outerClass)) {
-                                return null
-                            }
-                        }
-                    }
-                }
                 signature.append(CONSTRUCTOR_NAME)
             } else {
                 signature.append(method.name)
@@ -600,6 +611,23 @@ class JavaEvaluator {
         }
 
         signature.append('(')
+
+        if (method.isConstructor) {
+            val containingClass = method.containingClass
+            // Is the class containing this constructor itself an instance inner class?
+            if (containingClass != null) {
+                val outerClass = containingClass.containingClass
+                if (outerClass != null) {
+                    if (method.containingClass?.modifierList?.hasModifierProperty(PsiModifier.STATIC) != true) {
+                        // If so, we also have an implicit parameter to the outer class instance
+                        @Suppress("DEPRECATION")
+                        if (!appendJvmTypeName(signature, outerClass)) {
+                            return null
+                        }
+                    }
+                }
+            }
+        }
 
         for (psiParameter in method.parameterList.parameters) {
             @Suppress("DEPRECATION")
