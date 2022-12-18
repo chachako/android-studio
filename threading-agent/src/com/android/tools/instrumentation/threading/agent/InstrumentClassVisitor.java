@@ -37,7 +37,7 @@ public class InstrumentClassVisitor extends ClassVisitor {
             @NonNull AnnotationMappings annotationMappings,
             @NonNull String className,
             @NonNull ClassVisitor classVisitor) {
-        super(Opcodes.ASM7, classVisitor);
+        super(Opcodes.ASM9, classVisitor);
         this.annotationMappings = annotationMappings;
         this.className = className;
     }
