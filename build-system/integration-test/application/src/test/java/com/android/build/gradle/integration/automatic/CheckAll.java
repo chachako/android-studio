@@ -151,6 +151,7 @@ public class CheckAll {
                     "lintCustomLocalAndPublishRules", // contains integ test for lint itself
                     "simpleCompositeBuild", // broken composite build project.
                     "multiCompositeBuild", // too complex composite build project to setup
-                    "sourceDependency" // not set up fully, just used for sync tests
+                    "sourceDependency", // not set up fully, just used for sync tests
+                    "kotlinMultiplatform" // TODO(b/243387425): enable when the prototype is moved to gradle-core
                     );
 }

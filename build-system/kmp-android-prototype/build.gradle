@@ -47,3 +47,10 @@ publishing {
 project.ext.pomName = 'Gradle Plug-in for Android'
 project.ext.pomDesc = 'Gradle plug-in to build Android applications.'
 project.ext.customArtifactId = 'kmp-android-prototype'
+
+tasks.register('zipKmpJar', Zip) {
+    it.from(rootProject.ext.localRepo)
+    it.destinationDirectory = rootProject.ext.androidHostDist
+    it.archiveFileName = "kmp_prototype.zip"
+    it.dependsOn(tasks.getByName("publish"))
+}

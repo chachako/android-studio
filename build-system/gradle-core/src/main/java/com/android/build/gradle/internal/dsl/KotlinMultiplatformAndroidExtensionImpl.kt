@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreLocati
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.builder.core.BuilderConstants
 import com.android.builder.core.LibraryRequest
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.signing.DefaultSigningConfig
@@ -64,7 +65,7 @@ abstract class KotlinMultiplatformAndroidExtensionImpl @Inject @WithLazyInitiali
     )
 
     var signingConfig = dslServices.newDecoratedInstance(
-        SigningConfig::class.java, "kotlinAndroidInstrumentation", dslServices
+        SigningConfig::class.java, BuilderConstants.DEBUG, dslServices
     )
 
     override fun testSigningConfig(action: ApkSigningConfig.() -> Unit) {

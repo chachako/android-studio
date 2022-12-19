@@ -356,6 +356,9 @@ class GradleTestProject @JvmOverloads internal constructor(
     val buildFile: File
         get() = File(location.projectDir, "build.gradle")
 
+    val ktsBuildFile: File
+        get() = File(location.projectDir, "build.gradle.kts")
+
     val projectDir: File
         get() = location.projectDir
 
