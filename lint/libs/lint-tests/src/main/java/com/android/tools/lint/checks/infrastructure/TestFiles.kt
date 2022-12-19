@@ -13,546 +13,541 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.lint.checks.infrastructure
 
-package com.android.tools.lint.checks.infrastructure;
+import com.android.SdkConstants.ANDROID_MANIFEST_XML
+import com.android.SdkConstants.DOT_JAVA
+import com.android.SdkConstants.DOT_KT
+import com.android.SdkConstants.DOT_XML
+import com.android.SdkConstants.FN_BUILD_GRADLE
+import com.android.resources.ResourceType
+import com.android.resources.ResourceUrl
+import com.android.tools.lint.checks.infrastructure.TestFile.BinaryTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.ByteProducer
+import com.android.tools.lint.checks.infrastructure.TestFile.BytecodeProducer
+import com.android.tools.lint.checks.infrastructure.TestFile.GradleTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.ImageTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.JarTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.JavaTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.KotlinTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.ManifestTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.PropertyTestFile
+import com.android.tools.lint.checks.infrastructure.TestFile.XmlTestFile
+import com.google.common.base.Joiner
+import com.google.common.base.Splitter
+import com.google.common.io.ByteStreams
+import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toUpperCaseAsciiOnly
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.fail
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.Base64
+import java.util.EnumMap
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+import java.util.zip.ZipException
 
-import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
-import static com.android.SdkConstants.DOT_JAVA;
-import static com.android.SdkConstants.DOT_KT;
-import static com.android.SdkConstants.DOT_XML;
-import static com.android.SdkConstants.FN_BUILD_GRADLE;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import com.android.annotations.NonNull;
-import com.android.resources.ResourceType;
-import com.android.resources.ResourceUrl;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.io.ByteStreams;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import kotlin.io.FilesKt;
-import org.intellij.lang.annotations.Language;
-import org.jetbrains.kotlin.util.capitalizeDecapitalize.CapitalizeDecapitalizeKt;
-
-/** A utility class which provides unit test file descriptions */
-public class TestFiles {
-
-    private TestFiles() {}
-
-    @NonNull
-    public static TestFile file() {
-        return new TestFile();
+/** A utility class which provides unit test file descriptions. */
+object TestFiles {
+    @JvmStatic
+    fun file(): TestFile {
+        return TestFile()
     }
 
-    @NonNull
-    public static TestFile source(@NonNull String to, @NonNull String source) {
-        return file().to(to).withSource(source);
+    @JvmStatic
+    fun source(to: String, source: String): TestFile {
+        return file().to(to).withSource(source)
     }
 
-    @NonNull
-    public static TestFile java(@NonNull String to, @NonNull @Language("JAVA") String source) {
-        return TestFile.JavaTestFile.create(to, source);
+    @JvmStatic
+    fun java(to: String, @Language("JAVA") source: String): TestFile {
+        return JavaTestFile.create(to, source)
     }
 
-    @NonNull
-    public static TestFile java(@NonNull @Language("JAVA") String source) {
-        return TestFile.JavaTestFile.create(source);
+    @JvmStatic
+    fun java(@Language("JAVA") source: String): TestFile {
+        return JavaTestFile.create(source)
     }
 
-    @NonNull
-    public static TestFile kt(@NonNull @Language("kotlin") String source) {
-        return kotlin(source);
+    @JvmStatic
+    fun kt(@Language("kotlin") source: String): TestFile {
+        return kotlin(source)
     }
 
-    @NonNull
-    public static TestFile kt(@NonNull String to, @NonNull @Language("kotlin") String source) {
-        return kotlin(to, source);
+    @JvmStatic
+    fun kt(to: String, @Language("kotlin") source: String): TestFile {
+        return kotlin(to, source)
     }
 
-    @NonNull
-    public static TestFile kotlin(@NonNull @Language("kotlin") String source) {
-        return TestFile.KotlinTestFile.create(source);
+    @JvmStatic
+    fun kotlin(@Language("kotlin") source: String): TestFile {
+        return KotlinTestFile.create(source)
     }
 
-    @NonNull
-    public static TestFile kotlin(@NonNull String to, @NonNull @Language("kotlin") String source) {
-        return TestFile.KotlinTestFile.create(to, source);
+    @JvmStatic
+    fun kotlin(to: String, @Language("kotlin") source: String): TestFile {
+        return KotlinTestFile.create(to, source)
     }
 
-    @NonNull
-    public static TestFile xml(@NonNull String to, @NonNull @Language("XML") String source) {
-        if (!to.endsWith(DOT_XML)) {
-            throw new IllegalArgumentException("Expected .xml suffix for XML test file");
-        }
-
-        return TestFile.XmlTestFile.create(to, source);
+    @JvmStatic
+    fun xml(to: String, @Language("XML") source: String): TestFile {
+        require(to.endsWith(DOT_XML)) { "Expected .xml suffix for XML test file" }
+        return XmlTestFile.create(to, source)
     }
 
-    @NonNull
-    public static TestFile copy(
-            @NonNull String from, @NonNull TestResourceProvider resourceProvider) {
-        return file().from(from, resourceProvider).to(from);
+    @JvmStatic
+    fun copy(from: String, resourceProvider: TestResourceProvider): TestFile {
+        return file().from(from, resourceProvider).to(from)
     }
 
-    @NonNull
-    public static TestFile copy(
-            @NonNull String from,
-            @NonNull String to,
-            @NonNull TestResourceProvider resourceProvider) {
-        return file().from(from, resourceProvider).to(to);
+    @JvmStatic
+    fun copy(from: String, to: String, resourceProvider: TestResourceProvider): TestFile {
+        return file().from(from, resourceProvider).to(to)
     }
 
-    @NonNull
-    public static TestFile.GradleTestFile gradle(
-            @NonNull String to, @NonNull @Language("Groovy") String source) {
-        return new TestFile.GradleTestFile(to, source);
+    @JvmStatic
+    fun gradle(to: String, @Language("Groovy") source: String): GradleTestFile {
+        return GradleTestFile(to, source)
     }
 
-    @NonNull
-    public static TestFile.GradleTestFile gradle(@NonNull @Language("Groovy") String source) {
-        return new TestFile.GradleTestFile(FN_BUILD_GRADLE, source);
+    @JvmStatic
+    fun gradle(@Language("Groovy") source: String): GradleTestFile {
+        return GradleTestFile(FN_BUILD_GRADLE, source)
     }
 
-    @NonNull
-    public static TestFile.ManifestTestFile manifest() {
-        return new TestFile.ManifestTestFile();
+    @JvmStatic
+    fun manifest(): ManifestTestFile {
+        return ManifestTestFile()
     }
 
-    @NonNull
-    public static TestFile manifest(@NonNull @Language("XML") String source) {
-        return TestFiles.source(ANDROID_MANIFEST_XML, source);
+    @JvmStatic
+    fun manifest(@Language("XML") source: String): TestFile {
+        return source(ANDROID_MANIFEST_XML, source)
     }
 
-    @NonNull
-    public static TestFile.PropertyTestFile projectProperties() {
-        return new TestFile.PropertyTestFile();
+    @JvmStatic
+    fun projectProperties(): PropertyTestFile {
+        return PropertyTestFile()
     }
 
-    @NonNull
-    public static TestFile.BinaryTestFile bytecode(
-            @NonNull String to, @NonNull TestFile.BytecodeProducer producer) {
-        return new TestFile.BinaryTestFile(to, producer);
+    @JvmStatic
+    fun bytecode(to: String, producer: BytecodeProducer): BinaryTestFile {
+        return BinaryTestFile(to, producer)
     }
 
-    @NonNull
-    public static TestFile rClass(@NonNull String pkg, @NonNull String... urls) {
+    @JvmStatic
+    fun rClass(pkg: String, vararg urls: String): TestFile {
         if (ResourceUrl.parse(pkg) != null) {
-            fail("The argument in rClass should be a package! (was " + pkg + ")");
+            fail("The argument in rClass should be a package! (was $pkg)")
         }
-        int id = 0x7f040000;
-        StringBuilder sb = new StringBuilder();
-        sb.append("package ").append(pkg).append(";\n");
-        sb.append("public final class R {\n");
-        Map<ResourceType, List<ResourceUrl>> map = new HashMap<>();
-        for (String url : urls) {
-            ResourceUrl reference = ResourceUrl.parse(url);
-            assertNotNull("Resource reference was not a valid URL: " + url, reference);
-            List<ResourceUrl> list = map.computeIfAbsent(reference.type, o -> new ArrayList<>());
-            list.add(reference);
+        var id = 0x7f040000
+        val sb = StringBuilder()
+        sb.append("package ").append(pkg).append(";\n")
+        sb.append("public final class R {\n")
+        val map: MutableMap<ResourceType, MutableList<ResourceUrl?>> = EnumMap(ResourceType::class.java)
+        for (url in urls) {
+            val reference = ResourceUrl.parse(url)
+            assertNotNull("Resource reference was not a valid URL: $url", reference)
+            val list = map.computeIfAbsent(reference!!.type) { _: ResourceType? -> ArrayList() }
+            list.add(reference)
         }
-        for (ResourceType type : ResourceType.values()) {
-            List<ResourceUrl> resources = map.get(type);
-            if (resources == null) {
-                continue;
-            }
-            sb.append("    public static final class ").append(type).append(" {\n");
-            for (ResourceUrl resource : resources) {
+        for (type in ResourceType.values()) {
+            val resources = map[type] ?: continue
+            sb.append("    public static final class ").append(type).append(" {\n")
+            for (resource in resources) {
                 sb.append("        public static final int ")
-                        .append(resource.name)
-                        .append(" = 0x")
-                        .append(Integer.toHexString(id++))
-                        .append(";\n");
+                    .append(resource!!.name)
+                    .append(" = 0x")
+                    .append(Integer.toHexString(id++))
+                    .append(";\n")
             }
-            sb.append("    }\n");
+            sb.append("    }\n")
         }
-        sb.append("}");
-        return java(sb.toString());
+        sb.append("}")
+        return java(sb.toString())
     }
 
-    @NonNull
-    public static TestFile.BinaryTestFile bytes(@NonNull String to, @NonNull byte[] bytes) {
-        TestFile.BytecodeProducer producer =
-                new TestFile.BytecodeProducer() {
-                    @NonNull
-                    @Override
-                    public byte[] produce() {
-                        return bytes;
-                    }
-                };
-        return new TestFile.BinaryTestFile(to, producer);
+    @JvmStatic
+    fun bytes(to: String, bytes: ByteArray): BinaryTestFile {
+        val producer: BytecodeProducer = object : BytecodeProducer() {
+            override fun produce(): ByteArray {
+                return bytes
+            }
+        }
+        return BinaryTestFile(to, producer)
     }
 
-    @NonNull
-    public static String toBase64(@NonNull byte[] bytes) {
-        String base64 = Base64.getEncoder().encodeToString(bytes);
-        return "\"\"\n+ \""
-                + Joiner.on("\"\n+ \"").join(Splitter.fixedLength(60).split(base64))
-                + "\"";
+    @JvmStatic
+    fun toBase64(bytes: ByteArray): String {
+        val base64 = Base64.getEncoder().encodeToString(bytes)
+        return "\"\"\n+ \"" +
+            Joiner.on("\"\n+ \"").join(Splitter.fixedLength(60).split(base64)) +
+            "\""
     }
 
     // Backwards compat: default to Java formatting
-    public static String toBase64gzip(@NonNull byte[] bytes) {
-        return toBase64gzipJava(bytes, 0, false, true);
+    @JvmStatic
+    fun toBase64gzip(bytes: ByteArray): String {
+        return toBase64gzipJava(bytes, 0, indentStart = false, includeEmptyPrefix = true)
     }
 
-    public static String toBase64gzipJava(
-            @NonNull byte[] bytes, int indent, boolean indentStart, boolean includeEmptyPrefix) {
-        String base64 = toBase64gzipString(bytes);
-        StringBuilder indentString = new StringBuilder();
-        for (int i = 0; i < indent; i++) {
-            indentString.append(' ');
+    @JvmStatic
+    fun toBase64gzipJava(
+        bytes: ByteArray,
+        indent: Int,
+        indentStart: Boolean,
+        includeEmptyPrefix: Boolean
+    ): String {
+        val base64 = toBase64gzipString(bytes)
+        val indentString = StringBuilder()
+        for (i in 0 until indent) {
+            indentString.append(' ')
         }
-
-        Iterable<String> lines = Splitter.fixedLength(60).split(base64);
-        StringBuilder result = new StringBuilder();
+        val lines = Splitter.fixedLength(60).split(base64)
+        val result = StringBuilder()
         if (indentStart) {
-            result.append(indentString);
+            result.append(indentString)
         }
         if (includeEmptyPrefix) {
-            result.append("\"\" +\n");
-            result.append(indentString);
+            result.append("\"\" +\n")
+            result.append(indentString)
         }
-        result.append("\"");
-        String separator = "\" +\n" + indentString + "\"";
-        result.append(Joiner.on(separator).join(lines));
-        result.append("\"");
-        return result.toString();
+        result.append("\"")
+        val separator = "\" +\n$indentString\""
+        result.append(Joiner.on(separator).join(lines))
+        result.append("\"")
+        return result.toString()
     }
 
-    public static String toBase64gzipKotlin(
-            @NonNull byte[] bytes, int indent, boolean indentStart, boolean includeQuotes) {
-        String base64 = toBase64gzipString(bytes).replace('$', '＄');
-        StringBuilder indentString = new StringBuilder();
-        for (int i = 0; i < indent; i++) {
-            indentString.append(' ');
+    @JvmStatic
+    fun toBase64gzipKotlin(
+        bytes: ByteArray,
+        indent: Int,
+        indentStart: Boolean,
+        includeQuotes: Boolean
+    ): String {
+        val base64 = toBase64gzipString(bytes).replace('$', '＄')
+        val indentString = StringBuilder()
+        for (i in 0 until indent) {
+            indentString.append(' ')
         }
-        Iterable<String> lines = Splitter.fixedLength(60).split(base64);
-        StringBuilder result = new StringBuilder();
+        val lines = Splitter.fixedLength(60).split(base64)
+        val result = StringBuilder()
         if (indentStart) {
-            result.append(indentString);
+            result.append(indentString)
         }
         if (includeQuotes) {
-            result.append("\"\"\"\n");
-            result.append(indentString);
+            result.append("\"\"\"\n")
+            result.append(indentString)
         }
-        result.append(Joiner.on("\n" + indentString.toString()).join(lines));
+        result.append(Joiner.on("\n" + indentString.toString()).join(lines))
         if (includeQuotes) {
-            result.append("\"\"\"");
+            result.append("\"\"\"")
         }
-        result.append("\n");
-        return result.toString();
+        result.append("\n")
+        return result.toString()
     }
 
-    private static String toBase64gzipString(@NonNull byte[] bytes) {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            try (GZIPOutputStream stream = new GZIPOutputStream(out)) {
-                stream.write(bytes);
-            }
-            bytes = out.toByteArray();
-            return Base64.getEncoder().encodeToString(bytes).replace('$', '＄');
-        } catch (IOException ignore) {
-            // Can't happen on a ByteArrayInputStream
-            return "";
-        }
+    private fun toBase64gzipString(bytes: ByteArray): String {
+        val out = ByteArrayOutputStream()
+        GZIPOutputStream(out).use { stream -> stream.write(bytes) }
+        val gzipped = out.toByteArray()
+        return Base64.getEncoder().encodeToString(gzipped).replace('$', '＄')
     }
 
-    @NonNull
-    public static String toBase64(@NonNull File file) {
-        return toBase64(FilesKt.readBytes(file));
+    @JvmStatic
+    fun toBase64(file: File): String {
+        return toBase64(file.readBytes())
     }
 
-    @NonNull
-    public static String toBase64gzip(@NonNull File file) {
-        return toBase64gzip(FilesKt.readBytes(file));
+    @JvmStatic
+    fun toBase64gzip(file: File): String {
+        return toBase64gzip(file.readBytes())
     }
 
-    @NonNull
-    public static String toHexBytes(@NonNull File file) {
-        return toHexBytes(FilesKt.readBytes(file));
-    }
-
-    /** Creates the string to initialize a {@link #hexBytes(String, String)} test file with. */
-    @NonNull
-    public static String toHexBytes(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        int column = 0;
-        sb.append('"');
-        for (byte b : bytes) {
-            int i = b & 0xFF;
-            String hex = Integer.toHexString(i);
-            hex = CapitalizeDecapitalizeKt.toUpperCaseAsciiOnly(hex);
-            if (hex.length() == 1) {
-                sb.append('0');
-            }
-            sb.append(hex);
-
-            column += 2;
-            if (column > 60) {
-                sb.append("\\n\" +\n\"");
-                column = 0;
-            }
-        }
-        sb.append('"');
-        return sb.toString();
+    @JvmStatic
+    fun toHexBytes(file: File): String {
+        return toHexBytes(file.readBytes())
     }
 
     /**
-     * Creates a test file from the given base64 data. To create this data, use {@link
-     * #toBase64(File)} or {@link #toBase64(byte[])}, for example via
+     * Creates the string to initialize a [.hexBytes] test file with.
+     */
+    @JvmStatic
+    fun toHexBytes(bytes: ByteArray): String {
+        val sb = StringBuilder()
+        var column = 0
+        sb.append('"')
+        for (b in bytes) {
+            val i = b.toInt() and 0xFF
+            var hex = Integer.toHexString(i)
+            hex = hex.toUpperCaseAsciiOnly()
+            if (hex.length == 1) {
+                sb.append('0')
+            }
+            sb.append(hex)
+            column += 2
+            if (column > 60) {
+                sb.append("\\n\" +\n\"")
+                column = 0
+            }
+        }
+        sb.append('"')
+        return sb.toString()
+    }
+
+    /**
+     * Creates a test file from the given base64 data. To create this
+     * data, use [ ][.toBase64] or [.toBase64], for example via
      *
-     * <pre>{@code assertEquals("", toBase64(new File("path/to/your.class")));}</pre>
+     * ```
+     * `assertEquals("", toBase64(new File("path/to/your.class")));`
+     * ```
      *
      * @param to the file to write as
      * @param encoded the encoded data
      * @return the new test file
-     * @deprecated Use {@link #base64gzip(String, String)} instead
      */
-    @Deprecated
-    public static TestFile.BinaryTestFile base64(@NonNull String to, @NonNull String encoded) {
-        encoded = encoded.replace('＄', '$');
-        final byte[] bytes = Base64.getDecoder().decode(encoded);
-        return new TestFile.BinaryTestFile(
-                to,
-                new TestFile.BytecodeProducer() {
-                    @NonNull
-                    @Override
-                    public byte[] produce() {
-                        return bytes;
-                    }
-                });
+    @JvmStatic
+    @Deprecated("Use {@link #base64gzip(String, String)} instead")
+    fun base64(to: String, encoded: String): BinaryTestFile {
+        val escaped = encoded.replace('＄', '$')
+        val bytes = Base64.getDecoder().decode(escaped)
+        return BinaryTestFile(
+            to,
+            object : BytecodeProducer() {
+                override fun produce(): ByteArray {
+                    return bytes
+                }
+            }
+        )
     }
 
     /**
-     * Decodes base64 strings into gzip data, then decodes that into a data file. To create this
-     * data, use {@link #toBase64gzip(File)} or {@link #toBase64gzip(byte[])}, for example via
+     * Decodes base64 strings into gzip data, then decodes that into
+     * a data file. To create this data, use [.toBase64gzip] or
+     * [.toBase64gzip], for example via
      *
-     * <pre>{@code assertEquals("", toBase64gzip(new File("path/to/your.class")));}</pre>
+     * ```
+     * `assertEquals("", toBase64gzip(new File("path/to/your.class")));`
+     * ```
      */
-    @NonNull
-    public static TestFile.BinaryTestFile base64gzip(@NonNull String to, @NonNull String encoded) {
-        return new TestFile.BinaryTestFile(to, getByteProducerForBase64gzip(encoded));
+    @JvmStatic
+    fun base64gzip(to: String, encoded: String): BinaryTestFile {
+        return BinaryTestFile(to, getByteProducerForBase64gzip(encoded))
     }
 
     /**
-     * Creates a bytecode producer which takes an encoded base64gzip string and returns the
-     * uncompressed de-base64'ed byte array
+     * Creates a bytecode producer which takes an encoded base64gzip
+     * string and returns the uncompressed de-base64'ed byte array.
      */
-    @NonNull
-    public static TestFile.ByteProducer getByteProducerForBase64gzip(@NonNull String encoded) {
-        encoded =
-                encoded
-                        // Recover any $'s we've converted to ＄ to better handle Kotlin raw strings
-                        .replace('＄', '$')
-                        // Whitespace is not significant in base64 but isn't handled properly by
-                        // the base64 decoder
-                        .replace(" ", "")
-                        .replace("\n", "")
-                        .replace("\t", "");
-        byte[] bytes = Base64.getDecoder().decode(encoded);
-
+    @JvmStatic
+    fun getByteProducerForBase64gzip(encoded: String): ByteProducer {
+        val escaped = encoded // Recover any $'s we've converted to ＄ to better handle Kotlin raw strings
+            .replace('＄', '$') // Whitespace is not significant in base64 but isn't handled properly by
+            // the base64 decoder
+            .replace(" ", "")
+            .replace("\n", "")
+            .replace("\t", "")
+        val gzipBytes = Base64.getDecoder().decode(escaped)
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-            GZIPInputStream stream = new GZIPInputStream(in);
-            bytes = ByteStreams.toByteArray(stream);
-        } catch (IOException ignore) {
-            // Can't happen on a ByteArrayInputStream
-        }
-
-        byte[] finalBytes = bytes;
-        return new TestFile.BytecodeProducer() {
-            @NonNull
-            @Override
-            public byte[] produce() {
-                return finalBytes;
+            val stream = GZIPInputStream(ByteArrayInputStream(gzipBytes))
+            val bytes = ByteStreams.toByteArray(stream)
+            return object : BytecodeProducer() {
+                override fun produce(): ByteArray {
+                    return bytes
+                }
             }
-        };
+        } catch (e: ZipException) {
+            val message = "The unit test data is not in gzip format. Perhaps this was\n" +
+                "encoded using base64() instead of base64gzip? If so, the base64gzip data\n" +
+                "should have been:\n${toBase64gzip(gzipBytes)}"
+            error(message)
+        }
     }
 
     /**
-     * Decodes hex byte strings into the original byte array. To create this data, use {@link
-     * #toHexBytes(File)} or {@link #toHexBytes(byte[])}, for example via
+     * Decodes hex byte strings into the original byte array. To create
+     * this data, use [ ][.toHexBytes] or [.toHexBytes], for example via
      *
-     * <pre>{@code assertEquals("", toHexBytes(new File("path/to/your.class")));}</pre>
+     * ```
+     * `assertEquals("", toHexBytes(new File("path/to/your.class")));`
+     * ```
      *
-     * Normally you'll be using {@link #base64gzip(String, String)} test files, since these are much
-     * more compact. The main use case for hex byte files is very clearly seeing the binary contents
-     * in the test description, and perhaps modifying these slightly (for example, to deliberately
-     * change a field in a file format like a class file.)
+     * Normally you'll be using [.base64gzip] test files, since these
+     * are much more compact. The main use case for hex byte files is
+     * very clearly seeing the binary contents in the test description,
+     * and perhaps modifying these slightly (for example, to
+     * deliberately change a field in a file format like a class file.)
      */
-    @NonNull
-    public static TestFile.BinaryTestFile hexBytes(@NonNull String to, @NonNull String encoded) {
-        return new TestFile.BinaryTestFile(to, getByteProducerForHexBytes(encoded));
+    @JvmStatic
+    fun hexBytes(to: String, encoded: String): BinaryTestFile {
+        return BinaryTestFile(to, getByteProducerForHexBytes(encoded))
     }
 
     /**
-     * Creates a bytecode producer which takes an encoded hex bytes string and returns the decoded
-     * byte array.
+     * Creates a bytecode producer which takes an encoded hex bytes
+     * string and returns the decoded byte array.
      */
-    @NonNull
-    public static TestFile.ByteProducer getByteProducerForHexBytes(@NonNull String encoded) {
-        encoded = encoded.replace(" ", "").replace("\n", "").replace("\t", "");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        for (int i = 0; i < encoded.length(); i += 2) {
-            int b = Integer.parseInt(encoded.substring(i, i + 2), 16);
-            out.write(b);
+    @JvmStatic
+    fun getByteProducerForHexBytes(encoded: String): ByteProducer {
+        val escaped = encoded.replace(" ", "").replace("\n", "").replace("\t", "")
+        val out = ByteArrayOutputStream()
+        var i = 0
+        while (i < escaped.length) {
+            val b = escaped.substring(i, i + 2).toInt(16)
+            out.write(b)
+            i += 2
         }
-
-        byte[] finalBytes = out.toByteArray();
-        return new TestFile.BytecodeProducer() {
-            @NonNull
-            @Override
-            public byte[] produce() {
-                return finalBytes;
+        val finalBytes = out.toByteArray()
+        return object : BytecodeProducer() {
+            override fun produce(): ByteArray {
+                return finalBytes
             }
-        };
-    }
-
-    public static TestFile classpath(String... extraLibraries) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(
-                ""
-                        + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                        + "<classpath>\n"
-                        + "\t<classpathentry kind=\"src\" path=\"src\"/>\n"
-                        + "\t<classpathentry kind=\"src\" path=\"gen\"/>\n"
-                        + "\t<classpathentry kind=\"con\" path=\"com.android.ide.eclipse.adt.ANDROID_FRAMEWORK\"/>\n"
-                        + "\t<classpathentry kind=\"con\" path=\"com.android.ide.eclipse.adt.LIBRARIES\"/>\n"
-                        + "\t<classpathentry kind=\"output\" path=\"bin/classes\"/>\n"
-                        + "\t<classpathentry kind=\"output\" path=\"build/intermediates/javac/debug/classes\"/>\n");
-        for (String path : extraLibraries) {
-            sb.append("\t<classpathentry kind=\"lib\" path=\"").append(path).append("\"/>\n");
         }
-        sb.append("</classpath>\n");
-        return source(".classpath", sb.toString());
     }
 
-    @NonNull
-    public static TestFile.JarTestFile jar(@NonNull String to) {
-        return new TestFile.JarTestFile(to);
+    @JvmStatic
+    fun classpath(vararg extraLibraries: String?): TestFile {
+        //language=TEXT
+        val newline = "\n"
+        val source =
+            //language=XML
+            "" +
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<classpath>\n" +
+                "    <classpathentry kind=\"src\" path=\"src\"/>\n" +
+                "    <classpathentry kind=\"src\" path=\"gen\"/>\n" +
+                "    <classpathentry kind=\"con\" path=\"com.android.ide.eclipse.adt.ANDROID_FRAMEWORK\"/>\n" +
+                "    <classpathentry kind=\"con\" path=\"com.android.ide.eclipse.adt.LIBRARIES\"/>\n" +
+                "    <classpathentry kind=\"output\" path=\"bin/classes\"/>\n" +
+                "    <classpathentry kind=\"output\" path=\"build/intermediates/javac/debug/classes\"/>\n" +
+                extraLibraries.joinToString(newline) { "    <classpathentry kind=\"lib\" path=\"$it\"/>" } +
+                "\n</classpath>"
+        return source(".classpath", source)
     }
 
-    @Deprecated // Use the method with the checksum instead
-    public static CompiledSourceFile compiled(
-            @NonNull String into, @NonNull TestFile source, @NonNull String... encoded) {
-        CompiledSourceFile.Type type =
-                source.targetRelativePath.endsWith(DOT_JAVA)
-                                || source.targetRelativePath.endsWith(DOT_KT)
-                        ? CompiledSourceFile.Type.SOURCE_AND_BYTECODE
-                        : CompiledSourceFile.Type.RESOURCE;
-        return new CompiledSourceFile(into, type, source, null, encoded);
+    @JvmStatic
+    fun jar(to: String): JarTestFile {
+        return JarTestFile(to)
     }
 
-    public static CompiledSourceFile compiled(
-            @NonNull String into,
-            @NonNull TestFile source,
-            long checksum,
-            @NonNull String... encoded) {
-        CompiledSourceFile.Type type =
-                source.targetRelativePath.endsWith(DOT_JAVA)
-                                || source.targetRelativePath.endsWith(DOT_KT)
-                        ? CompiledSourceFile.Type.SOURCE_AND_BYTECODE
-                        : CompiledSourceFile.Type.RESOURCE;
-        return new CompiledSourceFile(into, type, source, checksum, encoded);
+    @Deprecated("") // Use the method with the checksum instead
+    @JvmStatic
+    fun compiled(
+        into: String,
+        source: TestFile,
+        vararg encoded: String
+    ): TestFile {
+        val type = getCompileType(CompiledSourceFile.Type.SOURCE_AND_BYTECODE, source)
+        return CompiledSourceFile(into, type, source, null, encoded)
     }
 
-    @Deprecated // Use the method with the checksum instead
-    public static CompiledSourceFile bytecode(
-            @NonNull String into, @NonNull TestFile source, @NonNull String... encoded) {
-        CompiledSourceFile.Type type =
-                source.targetRelativePath.endsWith(DOT_JAVA)
-                                || source.targetRelativePath.endsWith(DOT_KT)
-                        ? CompiledSourceFile.Type.BYTECODE_ONLY
-                        : CompiledSourceFile.Type.RESOURCE;
-        return new CompiledSourceFile(into, type, source, null, encoded);
+    @JvmStatic
+    fun compiled(
+        into: String,
+        source: TestFile,
+        checksum: Long,
+        vararg encoded: String
+    ): TestFile {
+        val type = getCompileType(CompiledSourceFile.Type.SOURCE_AND_BYTECODE, source)
+        return CompiledSourceFile(into, type, source, checksum, encoded)
     }
 
-    public static CompiledSourceFile bytecode(
-            @NonNull String into,
-            @NonNull TestFile source,
-            long checksum,
-            @NonNull String... encoded) {
-        CompiledSourceFile.Type type =
-                source.targetRelativePath.endsWith(DOT_JAVA)
-                                || source.targetRelativePath.endsWith(DOT_KT)
-                        ? CompiledSourceFile.Type.BYTECODE_ONLY
-                        : CompiledSourceFile.Type.RESOURCE;
-        return new CompiledSourceFile(into, type, source, checksum, encoded);
+    @Deprecated("") // Use the method with the checksum instead
+    @JvmStatic
+    fun bytecode(
+        into: String,
+        source: TestFile,
+        vararg encoded: String
+    ): TestFile {
+        val type = getCompileType(CompiledSourceFile.Type.BYTECODE_ONLY, source)
+        return CompiledSourceFile(into, type, source, null, encoded)
     }
 
-    @NonNull
-    public static TestFile.JarTestFile jar(@NonNull String to, @NonNull TestFile... files) {
-        if (!to.endsWith("jar") // don't insist on .jar since we're also supporting .srcjar etc
-                && !to.endsWith("zip")) {
-            throw new IllegalArgumentException("Expected .jar suffix for jar test file");
+    @JvmStatic
+    fun bytecode(
+        into: String,
+        source: TestFile,
+        checksum: Long,
+        vararg encoded: String
+    ): TestFile {
+        val type = getCompileType(CompiledSourceFile.Type.BYTECODE_ONLY, source)
+        return CompiledSourceFile(into, type, source, checksum, encoded)
+    }
+
+    private fun getCompileType(default: CompiledSourceFile.Type, vararg sources: TestFile): CompiledSourceFile.Type {
+        for (source in sources) {
+            val targetRelativePath = source.targetRelativePath
+            if (targetRelativePath.endsWith(DOT_JAVA) || targetRelativePath.endsWith(DOT_KT)) {
+                return default
+            }
         }
-
-        TestFile.JarTestFile jar = new TestFile.JarTestFile(to);
-        jar.files(files);
-        return jar;
+        return CompiledSourceFile.Type.RESOURCE
     }
 
-    public static TestFile.ImageTestFile image(@NonNull String to, int width, int height) {
-        return new TestFile.ImageTestFile(to, width, height);
+    @JvmStatic
+    fun jar(to: String, vararg files: TestFile): JarTestFile {
+        // don't insist on .jar since we're also supporting .srcjar etc
+        require(to.endsWith("jar") || to.endsWith("zip")) { "Expected .jar suffix for jar test file" }
+        val jar = JarTestFile(to)
+        jar.files(*files)
+        return jar
     }
 
-    public static TestFile[] getLintClassPath() throws IOException {
-        List<TestFile> paths = new ArrayList<>();
-        List<File> libraries = KotlinClasspathKt.findFromRuntimeClassPath(TestFiles::isLintJar);
+    @JvmStatic
+    fun image(to: String, width: Int, height: Int): ImageTestFile {
+        return ImageTestFile(to, width, height)
+    }
 
-        for (File file : libraries) {
-            TestFile testFile = new LibraryReferenceTestFile(file);
-            paths.add(testFile);
+    @JvmStatic
+    fun getLintClassPath(): Array<TestFile> {
+        val paths: MutableList<TestFile> = ArrayList()
+        val libraries = findFromRuntimeClassPath { isLintJar(it) }
+        for (file in libraries) {
+            val testFile: TestFile = LibraryReferenceTestFile(file)
+            paths.add(testFile)
         }
-
-        return paths.toArray(new TestFile[0]);
+        return paths.toTypedArray()
     }
 
-    private static boolean isLintJar(File file) {
-        String name = file.getName();
-        return name.startsWith("lint-")
-                || name.startsWith("kotlin-compiler")
-                || name.startsWith("uast-")
-                || name.startsWith("intellij-core")
-                || name.endsWith("uast.jar") // bazel
-                || name.startsWith("android.sdktools.lint") // IJ ADT
-                || name.endsWith(".lint-api-base") // IJ BASE
-                || name.endsWith("lint-api.jar") // bazel
-                || name.endsWith(".lint.checks-base") // IJ
-                || name.endsWith("lint-checks.jar") // bazel
-                || name.endsWith(".lint-model-base") // IJ
-                || name.endsWith("lint-model.jar") // bazel
-                || name.startsWith("lint-model") // Gradle
-                || name.endsWith(".testutils")
-                || name.endsWith("testutils.jar")
-                || name.startsWith("testutils-")
-                || name.endsWith(".lint.tests")
-                || name.endsWith("lint-tests.jar") // bazel
-                || (name.equals("main") && file.getPath().contains("lint-tests")) // Gradle
-                || name.endsWith(".lint.cli");
+    private fun isLintJar(file: File): Boolean {
+        val name = file.name
+        return (
+            (
+                name.startsWith("lint-") ||
+                    name.startsWith("kotlin-compiler") ||
+                    name.startsWith("uast-") ||
+                    name.startsWith("intellij-core") ||
+                    name.endsWith("uast.jar") || // bazel
+                    name.startsWith("android.sdktools.lint") || // IJ ADT
+                    name.endsWith(".lint-api-base") || // IJ BASE
+                    name.endsWith("lint-api.jar") || // bazel
+                    name.endsWith(".lint.checks-base") || // IJ
+                    name.endsWith("lint-checks.jar") || // bazel
+                    name.endsWith(".lint-model-base") || // IJ
+                    name.endsWith("lint-model.jar") || // bazel
+                    name.startsWith("lint-model") || // Gradle
+                    name.endsWith(".testutils") ||
+                    name.endsWith("testutils.jar") ||
+                    name.startsWith("testutils-") ||
+                    name.endsWith(".lint.tests") ||
+                    name.endsWith("lint-tests.jar") || name == "main" && file.path.contains("lint-tests")
+                ) || // Gradle
+                name.endsWith(".lint.cli")
+            )
     }
 
-    public static class LibraryReferenceTestFile extends TestFile {
-        public final File file;
+    class LibraryReferenceTestFile(to: String, file: File) : TestFile() {
+        val file: File
 
-        public LibraryReferenceTestFile(@NonNull File file) {
-            this(file.getPath(), file);
-        }
+        constructor(file: File) : this(file.path, file)
 
-        public LibraryReferenceTestFile(@NonNull String to, @NonNull File file) {
-            this.targetRelativePath = to;
-            this.file = file;
+        init {
+            targetRelativePath = to
+            this.file = file
         }
     }
 }

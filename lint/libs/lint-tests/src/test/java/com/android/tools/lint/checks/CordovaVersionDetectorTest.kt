@@ -100,8 +100,9 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
      * class.
      */
     fun testVulnerableCordovaVersionInClasses() {
+        @Suppress("DEPRECATION") // this test still uses base64 instead of base64zip (and tests that it continues to work)
         lint().files(
-            base64gzip(
+            base64(
                 "bin/classes/org/apache/cordova/Device.class",
                 "" +
                     "yv66vgAAADIAFAoABQAPCAAQCQAEABEHABIHABMBAA5jb3Jkb3ZhVmVyc2lv" +
@@ -132,14 +133,12 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
             base64gzip(
                 "bin/classes/org/apache/cordova/Device.class",
                 "" +
-                    "yv66vgAAADIAFAoABQAPCAAQCQAEABEHABIHABMBAA5jb3Jkb3ZhVmVyc2lv" +
-                    "bgEAEkxqYXZhL2xhbmcvU3RyaW5nOwEABjxpbml0PgEAAygpVgEABENvZGUB" +
-                    "AA9MaW5lTnVtYmVyVGFibGUBAAg8Y2xpbml0PgEAClNvdXJjZUZpbGUBAAtE" +
-                    "ZXZpY2UuamF2YQwACAAJAQAFMi43LjAMAAYABwEAGW9yZy9hcGFjaGUvY29y" +
-                    "ZG92YS9EZXZpY2UBABBqYXZhL2xhbmcvT2JqZWN0ACEABAAFAAAAAQAJAAYA" +
-                    "BwAAAAIAAQAIAAkAAQAKAAAAHQABAAEAAAAFKrcAAbEAAAABAAsAAAAGAAEA" +
-                    "AAAEAAgADAAJAAEACgAAAB4AAQAAAAAABhICswADsQAAAAEACwAAAAYAAQAA" +
-                    "AAUAAQANAAAAAgAO"
+                    "H4sIAAAAAAAA/12PvU7DQBCEZxP/xyTB0FCARAcUNkpDQUQDooqgCEp/vpzM" +
+                    "RcaHDsfvFVEgUfAAPBRibSKQaGb35r4d7X5+vX8AmGA/gotRgHEIB7s+Eh97" +
+                    "hKE0dmkasVD2RZuKkMxWohFZKaoim9dWV8UlwZvqStdXhP7J6YLgXJulIoxm" +
+                    "ulJ366dc2QeRl+wEU1luyWhu1laqW936gxvVaKnSNjpGgJDgTtKL9DyGB59w" +
+                    "YGyRiWchH1W2XSj7GSGM//a5z1dK1jjmA1y+iRC249z1uOdU1ohfh1yJq3v2" +
+                    "Btp04IDV60yHwfgXPeo8/kt6r+j/Z13WnS5++A0madraRwEAAA=="
             ),
             source(
                 "assets/www/cordova.js.4.0.android",
@@ -162,8 +161,9 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
      * CordovaWebView.class.
      */
     fun testVulnerableVersionInWebView() {
+        @Suppress("DEPRECATION")
         lint().files(
-            base64gzip(
+            base64(
                 "bin/classes/org/apache/cordova/CordovaWebView.class",
                 "" +
                     "yv66vgAAADIAEgoAAwAOBwAPBwAQAQAPQ09SRE9WQV9WRVJTSU9OAQASTGph" +

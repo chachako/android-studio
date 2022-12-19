@@ -531,7 +531,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
      * <p>Note: To include <b>both</b> the source <b>and</b> the bytecode, use {@link
      * #compiled(String, TestFile, String...)} instead.
      */
-    public static CompiledSourceFile bytecode(
+    public static TestFile bytecode(
             @NonNull String into,
             @NonNull TestFile source,
             long checksum,
@@ -545,7 +545,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
      * @deprecated Use the version with a checksum instead
      */
     @Deprecated
-    public static CompiledSourceFile bytecode(
+    public static TestFile bytecode(
             @NonNull String into, @NonNull TestFile source, @NonNull String... encoded) {
         return TestFiles.bytecode(into, source, encoded);
     }
@@ -567,7 +567,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
      * <p>Note: To only include the bytecode, not the source, use {@link #bytecode(String, TestFile,
      * String...)} instead.
      */
-    public static CompiledSourceFile compiled(
+    public static TestFile compiled(
             @NonNull String into,
             @NonNull TestFile source,
             long checksum,
@@ -581,7 +581,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
      * @deprecated Use the version with a checksum instead
      */
     @Deprecated
-    public static CompiledSourceFile compiled(
+    public static TestFile compiled(
             @NonNull String into, @NonNull TestFile source, @NonNull String... encoded) {
         return TestFiles.compiled(into, source, encoded);
     }
@@ -864,11 +864,9 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
                         if (file != null) {
                             PsiErrorElement error =
                                     PsiTreeUtil.findChildOfType(
-                                            file.getPsi(), PsiErrorElement.class);
+                                            file.getSourcePsi(), PsiErrorElement.class);
                             if (error != null) {
                                 fail("Found error element " + error);
-                                // TODO: Use ECJ parser to produce build errors with better
-                                // error messages, source offsets, etc?
                             }
                         } else {
                             fail("Failure processing source " + context.file);

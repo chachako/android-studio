@@ -28,18 +28,12 @@ class DosLineEndingDetectorTest : AbstractCheckTest() {
             base64gzip(
                 "res/layout/crcrlf.xml",
                 "" +
-                    "PFJlbGF0aXZlTGF5b3V0IHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFz" +
-                    "LmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCINCiAgICB4bWxuczp0b29s" +
-                    "cz0iaHR0cDovL3NjaGVtYXMuYW5kcm9pZC5jb20vdG9vbHMiDQogICAgYW5k" +
-                    "cm9pZDpsYXlvdXRfd2lkdGg9Im1hdGNoX3BhcmVudCINCiAgICBhbmRyb2lk" +
-                    "OmxheW91dF9oZWlnaHQ9Im1hdGNoX3BhcmVudCIgPg0KDQ0KICAgIDxUZXh0" +
-                    "Vmlldw0KICAgICAgICBhbmRyb2lkOmxheW91dF93aWR0aD0id3JhcF9jb250" +
-                    "ZW50Ig0KICAgICAgICBhbmRyb2lkOmxheW91dF9oZWlnaHQ9IndyYXBfY29u" +
-                    "dGVudCINCiAgICAgICAgYW5kcm9pZDpsYXlvdXRfY2VudGVySG9yaXpvbnRh" +
-                    "bD0idHJ1ZSINCiAgICAgICAgYW5kcm9pZDpsYXlvdXRfY2VudGVyVmVydGlj" +
-                    "YWw9InRydWUiDQogICAgICAgIGFuZHJvaWQ6dGV4dD0iSGVsbG8iDQogICAg" +
-                    "ICAgIHRvb2xzOmNvbnRleHQ9Ii5NYWluQWN0aXZpdHkiIC8+DQoNCjwvUmVs" +
-                    "YXRpdmVMYXlvdXQ+DQo="
+                    "H4sIAAAAAAAA/42Ry2rDMBBF9wb/g9EHWHtjB7LLItmEkK0Z5KEaKktGGtdx" +
+                    "vz7yA5qE1o12uvdc5lWe0QDTFx5hdD1nt9bYUIBtvKOmEpq5K6QMSmMLIV/1" +
+                    "XLlWQvcpPQa5aiJNsviWPDtnwmZ6JtbMqhdmbqEeqGFdiRZY6boDj5Z/BzXS" +
+                    "h+YXMtulSbrg5QVvfCUclu/fpQYPXa2c5Z9SG+Xeo1V00R+cp++IgqkE+x7/" +
+                    "46/omdQGzXGkShzQGPfgztss5p4mOz8B2b2KZyUeRSanlSSlfD51FO+BbabY" +
+                    "/QEAAA=="
             )
         ).run().expect(
             """
@@ -56,19 +50,12 @@ class DosLineEndingDetectorTest : AbstractCheckTest() {
             base64gzip(
                 "res/layout/crcrlf_ignore.xml",
                 "" +
-                    "PFJlbGF0aXZlTGF5b3V0IHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFz" +
-                    "LmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCINCiAgICB4bWxuczp0b29s" +
-                    "cz0iaHR0cDovL3NjaGVtYXMuYW5kcm9pZC5jb20vdG9vbHMiDQogICAgYW5k" +
-                    "cm9pZDpsYXlvdXRfd2lkdGg9Im1hdGNoX3BhcmVudCINCiAgICBhbmRyb2lk" +
-                    "OmxheW91dF9oZWlnaHQ9Im1hdGNoX3BhcmVudCINCiAgICB0b29sczppZ25v" +
-                    "cmU9Ik1hbmdsZWRDUkxGIiA+DQoNDQogICAgPFRleHRWaWV3DQogICAgICAg" +
-                    "IGFuZHJvaWQ6bGF5b3V0X3dpZHRoPSJ3cmFwX2NvbnRlbnQiDQogICAgICAg" +
-                    "IGFuZHJvaWQ6bGF5b3V0X2hlaWdodD0id3JhcF9jb250ZW50Ig0KICAgICAg" +
-                    "ICBhbmRyb2lkOmxheW91dF9jZW50ZXJIb3Jpem9udGFsPSJ0cnVlIg0KICAg" +
-                    "ICAgICBhbmRyb2lkOmxheW91dF9jZW50ZXJWZXJ0aWNhbD0idHJ1ZSINCiAg" +
-                    "ICAgICAgYW5kcm9pZDp0ZXh0PSJAc3RyaW5nL2FwcF9uYW1lIg0KICAgICAg" +
-                    "ICB0b29sczpjb250ZXh0PSIuTWFpbkFjdGl2aXR5IiAvPg0KDQogICAgDQog" +
-                    "ICAgDQogICAgDQogICAgDQo8L1JlbGF0aXZlTGF5b3V0Pg0K"
+                    "H4sIAAAAAAAA/42SwWrEIBCG7wt5h+ADxHuIpaVQeti9LGWvYTBDHGpUdHaz" +
+                    "26evmwTaQprWg+Dv9+vvOM0RLTBdcA83f+byOliXanBd9NQpYZhDLWXSBgdI" +
+                    "1aJX2g8SwruMmOSiiWJX5jH72XubNt0TsXgWvbZThHakjo0SA7A2bYCIjtdB" +
+                    "g9QbXiWn42vqnY+oxAFcb7F7Pu5fRPlQ7IoZat7wyifCcV7+HmWMEFrtHX9d" +
+                    "sBHnf7TOuxhffaSPjIJVguMZ/+JPGJn0Bs35SUo8Jo7k+vxHoXUwfAfnykzx" +
+                    "7mR1AHJPOncA8U2U8l6diV2bG/mzWzL8CZ0ik0FAAgAA"
             )
         ).run().expectClean()
     }

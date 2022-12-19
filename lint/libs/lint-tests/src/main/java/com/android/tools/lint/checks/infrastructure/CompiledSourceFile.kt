@@ -46,7 +46,7 @@ internal class CompiledSourceFile(
     /** The test source file for this compiled file. */
     val source: TestFile,
     private val checksum: Long?,
-    private val encodedFiles: Array<String>
+    private val encodedFiles: Array<out String>
 ) : TestFile() {
 
     init {
@@ -374,12 +374,12 @@ internal class CompiledSourceFile(
 
             val path = binaryFile.path.substring(classesDir.path.length + 1)
             java.indent(indent).append("\"").append(path).append(":\" +\n")
-            java.append(toBase64gzipJava(bytes, indent * 4, true, false))
+            java.append(toBase64gzipJava(bytes, indent * 4, indentStart = true, includeEmptyPrefix = false))
 
             indent--
             kotlin.indent(indent).append("\"\"\"\n")
             kotlin.indent(indent).append(path.replace('$', '＄')).append(":\n")
-            kotlin.append(toBase64gzipKotlin(bytes, indent * 4, true, false))
+            kotlin.append(toBase64gzipKotlin(bytes, indent * 4, true, includeQuotes = false))
             kotlin.indent(indent).append("\"\"\"")
             indent++
         }
