@@ -50,13 +50,13 @@ Status StartNativeSample::ExecuteOn(Daemon* daemon) {
 
     Event start_event;
     start_event.set_pid(command().pid());
-    start_event.set_kind(Event::MEMORY_NATIVE_SAMPLE_CAPTURE);
+    start_event.set_kind(Event::MEM_TRACE);
     start_event.set_command_id(command().command_id());
     start_event.set_group_id(start_timestamp);
     start_event.set_timestamp(start_timestamp);
-    auto* dump_info = start_event.mutable_memory_native_sample();
-    dump_info->set_start_time(start_timestamp);
-    dump_info->set_end_time(LLONG_MAX);
+    auto* dump_info = start_event.mutable_memory_trace_info();
+    dump_info->set_from_timestamp(start_timestamp);
+    dump_info->set_to_timestamp(LLONG_MAX);
     events_to_send.push_back(start_event);
 
   } else {

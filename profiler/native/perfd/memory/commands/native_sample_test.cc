@@ -143,10 +143,10 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
                             [this] { return events_.size() == 3; }));
   }
   // event 0 is the Session we can skip it.
-  EXPECT_EQ(events_[1].kind(), proto::Event::MEMORY_NATIVE_SAMPLE_CAPTURE);
-  EXPECT_TRUE(events_[1].has_memory_native_sample());
-  EXPECT_EQ(events_[1].memory_native_sample().start_time(), 10);
-  EXPECT_EQ(events_[1].memory_native_sample().end_time(), LLONG_MAX);
+  EXPECT_EQ(events_[1].kind(), proto::Event::MEM_TRACE);
+  EXPECT_TRUE(events_[1].has_memory_trace_info());
+  EXPECT_EQ(events_[1].memory_trace_info().from_timestamp(), 10);
+  EXPECT_EQ(events_[1].memory_trace_info().to_timestamp(), LLONG_MAX);
 
   EXPECT_EQ(events_[2].kind(), proto::Event::TRACE_STATUS);
   EXPECT_TRUE(events_[2].has_trace_status());
@@ -177,10 +177,10 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
   EXPECT_EQ(events_[3].trace_status().trace_stop_status().error_message(), "");
   EXPECT_TRUE(events_[3].is_ended());
 
-  EXPECT_EQ(events_[4].kind(), proto::Event::MEMORY_NATIVE_SAMPLE_CAPTURE);
-  EXPECT_TRUE(events_[4].has_memory_native_sample());
-  EXPECT_EQ(events_[4].memory_native_sample().start_time(), 10);
-  EXPECT_EQ(events_[4].memory_native_sample().end_time(), 20);
+  EXPECT_EQ(events_[4].kind(), proto::Event::MEM_TRACE);
+  EXPECT_TRUE(events_[4].has_memory_trace_info());
+  EXPECT_EQ(events_[4].memory_trace_info().from_timestamp(), 10);
+  EXPECT_EQ(events_[4].memory_trace_info().to_timestamp(), 20);
   EXPECT_TRUE(events_[4].is_ended());
 }
 

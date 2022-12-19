@@ -19,6 +19,8 @@ package profiler.proto;
 option java_package = "com.android.tools.profiler.proto";
 option java_outer_classname = "Memory";
 
+import "trace.proto";
+
 message MemoryUsageData {
   int32 java_mem = 1;
   int32 native_mem = 2;
@@ -413,4 +415,13 @@ message MemoryNativeSampleData {
   int64 start_time = 1;
   // Device time in ms the trace was stopped.
   int64 end_time = 2;
+}
+
+message MemoryTraceInfo {
+  int64 trace_id = 1;
+  int64 from_timestamp = 2;  // inclusive
+  int64 to_timestamp = 3;    // inclusive
+  TraceConfiguration configuration = 4;
+  TraceStartStatus start_status = 5;
+  TraceStopStatus stop_status = 6;
 }
