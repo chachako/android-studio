@@ -170,5 +170,4 @@ object CLDR36Database : PluralsDatabase(
             else -> null
         }
     }
-
 }

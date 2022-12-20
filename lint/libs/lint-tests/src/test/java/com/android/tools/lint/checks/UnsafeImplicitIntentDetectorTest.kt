@@ -63,7 +63,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.java line 10: Set package name:
             @@ -10 +10
             -         Intent intent = new Intent("some.fake.action.LAUNCH");
@@ -72,7 +73,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -10 +10
             -         Intent intent = new Intent("some.fake.action.LAUNCH");
             +         Intent intent = new Intent("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity");
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentMatchesNonExportedComponent_actionSetFromSetter() {
@@ -119,7 +121,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.java line 11: Set package name:
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
@@ -128,7 +131,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
             +         intent.setAction("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity");
-        """)
+        """
+        )
     }
 
     fun testIntentMatchesNonExportedComponent_explicitViaSetClass_actionSetFromConstructor() {
@@ -517,7 +521,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.java line 11: Set package name:
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
@@ -526,7 +531,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
             +         intent.setAction("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity");
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentDoesNotMatchNonExportedComponent_actionSetFromConstructorThenSetter() {
@@ -659,7 +665,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.java line 10: Set package name:
             @@ -10 +10
             -         Intent intent = new Intent("some.fake.action.LAUNCH");
@@ -668,7 +675,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -10 +10
             -         Intent intent = new Intent("some.fake.action.LAUNCH");
             +         Intent intent = new Intent("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity");
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentMatchesNonExportedComponent_actionSetFromSetter_onTheFlyAnalysis() {
@@ -715,7 +723,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.java line 11: Set package name:
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
@@ -724,7 +733,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
             +         intent.setAction("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity");
-        """)
+        """
+        )
     }
 
     fun testIntentMatchesNonExportedComponent_explicitViaSetClass_actionSetFromConstructor_onTheFlyAnalysis() {
@@ -1113,7 +1123,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.java line 11: Set package name:
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
@@ -1122,7 +1133,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -11 +11
             -         intent.setAction("some.fake.action.LAUNCH");
             +         intent.setAction("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity");
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentDoesNotMatchNonExportedComponent_actionSetFromConstructorThenSetter_onTheFlyAnalysis() {
@@ -1255,7 +1267,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.kt line 10: Set package name:
             @@ -10 +10
             -         intent.setAction("some.fake.action.LAUNCH")
@@ -1264,7 +1277,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -10 +10
             -         intent.setAction("some.fake.action.LAUNCH")
             +         intent.setAction("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity")
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentMatchesNonExportedComponent_actionSetFromSetter_kotlin_onTheFlyAnalysis() {
@@ -1310,7 +1324,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.kt line 10: Set package name:
             @@ -10 +10
             -         intent.setAction("some.fake.action.LAUNCH")
@@ -1319,7 +1334,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -10 +10
             -         intent.setAction("some.fake.action.LAUNCH")
             +         intent.setAction("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity")
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentMatchesNonExportedComponent_actionSetFromConstructor_kotlin() {
@@ -1364,7 +1380,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.kt line 9: Set package name:
             @@ -9 +9
             -         val intent = Intent("some.fake.action.LAUNCH")
@@ -1373,7 +1390,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -9 +9
             -         val intent = Intent("some.fake.action.LAUNCH")
             +         val intent = Intent("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity")
-        """)
+        """
+        )
     }
 
     fun testImplicitIntentMatchesNonExportedComponent_actionSetFromConstructor_kotlin_onTheFlyAnalysis() {
@@ -1418,7 +1436,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs("""
+        ).expectFixDiffs(
+            """
             Fix for src/test/pkg/TestActivity.kt line 9: Set package name:
             @@ -9 +9
             -         val intent = Intent("some.fake.action.LAUNCH")
@@ -1427,6 +1446,7 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
             @@ -9 +9
             -         val intent = Intent("some.fake.action.LAUNCH")
             +         val intent = Intent("some.fake.action.LAUNCH").setClassName("test.pkg", "test.pkg.TestActivity")
-        """)
+        """
+        )
     }
 }

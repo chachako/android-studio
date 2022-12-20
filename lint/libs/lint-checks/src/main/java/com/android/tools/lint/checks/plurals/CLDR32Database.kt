@@ -164,5 +164,4 @@ object CLDR32Database : PluralsDatabase(
             else -> null
         }
     }
-
 }

@@ -86,7 +86,8 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner, XmlScanner {
     override fun visitConstructor(context: JavaContext, node: UCallExpression, constructor: PsiMethod) {
         if (context.evaluator.parametersMatch(constructor, CLASS_CONTEXT, TYPE_CLASS)) return
         val action: String? = node.valueArguments.firstOrNull()?.let {
-            ConstantEvaluator.evaluateString(context, it, false) }
+            ConstantEvaluator.evaluateString(context, it, false)
+        }
         if (context.isGlobalAnalysis()) {
             val mainProject = context.mainProject
             val mergedManifest = mainProject.mergedManifest
@@ -102,8 +103,12 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner, XmlScanner {
                 then you should use an explicit intent.
                 """.trimIndent()
                 val actualLocation = location ?: context.getLocation(node)
-                context.report(Incident(ISSUE, actualLocation, message,
-                    buildQuickFix(context, actualLocation, actions[actualAction]!!)))
+                context.report(
+                    Incident(
+                        ISSUE, actualLocation, message,
+                        buildQuickFix(context, actualLocation, actions[actualAction]!!)
+                    )
+                )
             }
         } else {
             val (isIntentImplicit, actionFromSetAction, location) = isIntentImplicit(node, context)
@@ -163,8 +168,12 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner, XmlScanner {
             then you should use an explicit intent.
             """.trimIndent()
             val location = locations.getLocation(intent)
-            context.report(Incident(ISSUE, location!!, message,
-                buildQuickFix(context, location, packages[intentAction]!!)))
+            context.report(
+                Incident(
+                    ISSUE, location!!, message,
+                    buildQuickFix(context, location, packages[intentAction]!!)
+                )
+            )
         }
     }
 
@@ -174,8 +183,9 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner, XmlScanner {
         var location: Location? = null
         val visitor = object : DataFlowAnalyzer(setOf(node)) {
             override fun receiver(call: UCallExpression) {
-                if (call.methodName == "setComponent" || call.methodName == "setClass"
-                    || call.methodName == "setPackage" || call.methodName == "setClassName") {
+                if (call.methodName == "setComponent" || call.methodName == "setClass" ||
+                    call.methodName == "setPackage" || call.methodName == "setClassName"
+                ) {
                     isIntentImplicit = false
                 }
                 if (call.methodName == "setAction") {

@@ -66,7 +66,8 @@ abstract class PluralsDatabase(private val languageCodes: Array<String>, private
     }
 
     fun hasMultipleValuesForQuantity(
-        language: String, quantity: Quantity
+        language: String,
+        quantity: Quantity
     ): Boolean {
         return when (quantity) {
             Quantity.one -> getFlags(language) and FLAG_MULTIPLE_ONE != 0

@@ -120,7 +120,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
             // Deliberately crashing lint check
             *JarFileIssueRegistryTest.lintApiStubs,
 
-            )
+        )
             .allowSystemErrors(true)
             .allowExceptions(true)
             .testModes(TestMode.PARTIAL)
@@ -139,7 +139,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
         AndroidManifest.xml:3: Also appears here
         <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
          ~~~~~~~~
-                    """.trimIndent()
+                        """.trimIndent()
                     )
                 }
             )
@@ -490,14 +490,14 @@ class LintDriverCrashTest : AbstractCheckTest() {
                 override fun visitFile(node: UFile) {
                     throw LinkageError(
                         "loader constraint violation: when resolving field " +
-                                "\"QUALIFIER_SPLITTER\" the class loader (instance of " +
-                                "com/android/tools/lint/gradle/api/DelegatingClassLoader) of the " +
-                                "referring class, " +
-                                "com/android/ide/common/resources/configuration/FolderConfiguration, " +
-                                "and the class loader (instance of " +
-                                "org/gradle/internal/classloader/VisitableURLClassLoader) for the " +
-                                "field's resolved type, com/google/common/base/Splitter, have " +
-                                "different Class objects for that type"
+                            "\"QUALIFIER_SPLITTER\" the class loader (instance of " +
+                            "com/android/tools/lint/gradle/api/DelegatingClassLoader) of the " +
+                            "referring class, " +
+                            "com/android/ide/common/resources/configuration/FolderConfiguration, " +
+                            "and the class loader (instance of " +
+                            "org/gradle/internal/classloader/VisitableURLClassLoader) for the " +
+                            "field's resolved type, com/google/common/base/Splitter, have " +
+                            "different Class objects for that type"
                     )
                 }
             }

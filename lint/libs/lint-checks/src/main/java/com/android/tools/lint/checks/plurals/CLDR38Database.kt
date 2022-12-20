@@ -15,7 +15,6 @@
  */
 package com.android.tools.lint.checks.plurals
 
-import com.android.sdklib.AndroidVersion
 import com.android.sdklib.AndroidVersion.VersionCodes
 import com.android.tools.lint.checks.PluralsDatabase
 
@@ -175,5 +174,4 @@ object CLDR38Database : PluralsDatabase(
             else -> null
         }
     }
-
 }

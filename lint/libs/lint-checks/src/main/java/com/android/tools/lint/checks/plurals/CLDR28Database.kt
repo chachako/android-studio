@@ -164,5 +164,4 @@ object CLDR28Database : PluralsDatabase(
             else -> null
         }
     }
-
 }
