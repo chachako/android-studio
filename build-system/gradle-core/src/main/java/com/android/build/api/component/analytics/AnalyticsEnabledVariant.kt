@@ -118,8 +118,18 @@ abstract class AnalyticsEnabledVariant (
             return userVisibleExternalNativeBuild
         }
 
+    private val userVisibleUnitTest: AnalyticsEnabledUnitTest? by lazy {
+        delegate.unitTest?.let {
+            objectFactory.newInstance(
+                AnalyticsEnabledUnitTest::class.java,
+                it,
+                stats
+            )
+        }
+    }
+
     override val unitTest: UnitTest?
-        get() = delegate.unitTest
+        get() = userVisibleUnitTest
 
     override fun <T> getExtension(type: Class<T>): T? {
         stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =

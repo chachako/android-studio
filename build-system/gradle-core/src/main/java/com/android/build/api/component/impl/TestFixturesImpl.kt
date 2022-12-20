@@ -17,18 +17,12 @@
 package com.android.build.api.component.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
-import com.android.build.api.component.analytics.AnalyticsEnabledTestFixtures
-import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.AndroidVersion
-import com.android.build.api.variant.Component
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.JavaCompilation
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.TestFixtures
-import com.android.build.api.variant.Variant
-import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.gradle.internal.component.PublishableCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
@@ -43,7 +37,6 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.publishing.VariantPublishingInfo
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
-import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.AarMetadataTask.Companion.DEFAULT_MIN_AGP_VERSION
@@ -54,7 +47,6 @@ import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.builder.core.BuilderConstants
 import com.android.utils.appendCapitalized
 import com.android.utils.capitalizeAndAppend
-import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -144,22 +136,6 @@ open class TestFixturesImpl @Inject constructor(
 
     override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig?
         get() = mainVariant.manifestPlaceholdersCreationConfig
-
-    override fun <T : Component> createUserVisibleVariantObject(
-        projectServices: ProjectServices,
-        operationsRegistrar: VariantApiOperationsRegistrar<out CommonExtension<*, *, *, *>, out VariantBuilder, out Variant>,
-        stats: GradleBuildVariant.Builder?
-    ): T {
-        return if (stats == null) {
-            this as T
-        } else {
-            projectServices.objectFactory.newInstance(
-                AnalyticsEnabledTestFixtures::class.java,
-                this,
-                stats
-            ) as T
-        }
-    }
 
     override val resValues: MapProperty<ResValue.Key, ResValue> by lazy {
         resValuesCreationConfig?.resValues

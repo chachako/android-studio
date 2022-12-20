@@ -35,7 +35,6 @@ import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
 import com.android.build.api.variant.impl.HasAndroidTest
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.InternalVariantBuilder
-import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.api.ReadOnlyObjectProvider
@@ -859,10 +858,9 @@ class VariantManager<
 
                 // Now that unitTest and/or androidTest have been created and added to the main
                 // user visible variant object, we can run the onVariants() actions
-                val userVisibleVariant = (variant as VariantImpl<*>)
-                    .createUserVisibleVariantObject<Variant>(projectServices,
-                        variantApiOperationsRegistrar,
-                        variantInfo.stats)
+                val userVisibleVariant = variant.createUserVisibleVariantObject<Variant>(
+                    variantInfo.stats
+                )
 
                 // The variant object is created, let's create the user extension variant scoped objects
                 // and store them in our newly created variant object.

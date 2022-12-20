@@ -22,8 +22,6 @@ import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.features.DexingCreationConfigImpl
 import com.android.build.api.component.impl.getAndroidResources
 import com.android.build.api.component.impl.isTestApk
-import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
@@ -32,8 +30,6 @@ import com.android.build.api.variant.Component
 import com.android.build.api.variant.DependenciesInfo
 import com.android.build.api.variant.DependenciesInfoBuilder
 import com.android.build.api.variant.Renderscript
-import com.android.build.api.variant.Variant
-import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.VariantOutputConfiguration
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
@@ -43,7 +39,6 @@ import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.publishing.VariantPublishingInfo
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
-import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
@@ -226,14 +221,12 @@ open class ApplicationVariantImpl @Inject constructor(
     }
 
     override fun <T : Component> createUserVisibleVariantObject(
-            projectServices: ProjectServices,
-            operationsRegistrar: VariantApiOperationsRegistrar<out CommonExtension<*, *, *, *>, out VariantBuilder, out Variant>,
             stats: GradleBuildVariant.Builder?
     ): T =
         if (stats == null) {
             this as T
         } else {
-            projectServices.objectFactory.newInstance(
+            services.newInstance(
                 AnalyticsEnabledApplicationVariant::class.java,
                 this,
                 stats
