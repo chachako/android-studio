@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.cxx.gradle.generator.CxxMetadataGenerat
 import com.android.build.gradle.internal.cxx.gradle.generator.createCxxMetadataGenerator
 import com.android.build.gradle.internal.cxx.logging.IssueReporterLoggingEnvironment
 import com.android.build.gradle.internal.cxx.model.CxxAbiModel
+import com.android.build.gradle.internal.cxx.model.metadataGenerationTimingFolder
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -39,6 +40,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.process.ExecOperations
@@ -60,6 +62,14 @@ abstract class ExternalNativeBuildJsonTask @Inject constructor(
 
     @get:Internal
     internal lateinit var abi: CxxAbiModel
+
+    /**
+     * Specify at least one output in order to avoid having the clean task run in parallel with
+     * this task. See http://b/262059864 for more details.
+     */
+    @Optional
+    @OutputDirectory
+    fun getMetadataGenerationTimingFolder()  = abi.metadataGenerationTimingFolder
 
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
