@@ -44,6 +44,7 @@ import com.android.build.gradle.internal.plugins.BasePlugin
 import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.profile.AnalyticsUtil
+import com.android.build.gradle.internal.profile.NoOpAnalyticsService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.ProjectInfo
@@ -59,6 +60,7 @@ import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.TaskCreationServicesImpl
 import com.android.build.gradle.options.Option
 import com.android.build.gradle.options.ProjectOptionService
+import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.options.SyncOptions
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.Action
@@ -397,16 +399,21 @@ abstract class LintPlugin : Plugin<Project> {
     }
 
     private fun registerBuildServices(project: Project) {
-        val configuratorService =
-            AnalyticsConfiguratorService.RegistrationAction(project).execute().get()
-        AnalyticsService.RegistrationAction(project, configuratorService, listenerRegistry).execute()
-        configuratorService.getProjectBuilder(project.path)?.let {
-            it
-                .setAndroidPluginVersion(ANDROID_GRADLE_PLUGIN_VERSION)
-                .setPluginGeneration(GradleBuildProject.PluginGeneration.FIRST)
-                .setOptions(AnalyticsUtil.toProto(projectServices.projectOptions))
-        }
+        val projectOptions: ProjectOptions = projectServices.projectOptions
+        if (projectOptions.isAnalyticsEnabled) {
+            val configuratorService =
+                AnalyticsConfiguratorService.RegistrationAction(project).execute().get()
+            configuratorService.getProjectBuilder(project.path)?.let {
+                it.setAndroidPluginVersion(ANDROID_GRADLE_PLUGIN_VERSION)
+                    .setPluginGeneration(GradleBuildProject.PluginGeneration.FIRST)
+                    .setOptions(AnalyticsUtil.toProto(projectServices.projectOptions))
+            }
+            AnalyticsService.RegistrationAction(project, configuratorService, listenerRegistry)
+                .execute()
 
+        } else {
+            NoOpAnalyticsService.RegistrationAction(project).execute()
+        }
 
         val stringCachingService = StringCachingBuildService.RegistrationAction(project).execute()
         val mavenCoordinatesCacheBuildService =
