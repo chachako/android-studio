@@ -19,8 +19,11 @@
 package com.android.build.api.component.impl
 
 import com.android.build.api.variant.AndroidResources
+import com.android.build.api.variant.AndroidVersion
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.LibraryCreationConfig
+import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
@@ -83,3 +86,10 @@ internal fun<T> ComponentCreationConfig.warnAboutAccessingVariantApiValueForDisa
     )
     return value
 }
+
+internal fun NestedComponentCreationConfig.getMainTargetSdkVersion(): AndroidVersion =
+    when (mainVariant) {
+        is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersion
+        is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkVersion
+        else -> minSdkVersion
+    }

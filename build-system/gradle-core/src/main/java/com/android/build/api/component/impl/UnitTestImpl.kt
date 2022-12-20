@@ -87,6 +87,13 @@ open class UnitTestImpl @Inject constructor(
         internalServices.providerOf(String::class.java, dslInfo.applicationId)
 
     /**
+     * In unit tests, we don't produce an apk. However, we still need to set the target sdk version
+     * in the test manifest as robolectric depends on it.
+     */
+    override val targetSdkVersion: AndroidVersion
+        get() = getMainTargetSdkVersion()
+
+    /**
      * Return the default runner as with unit tests, there is no dexing. However aapt2 requires
      * the instrumentation tag to be present in the merged manifest to process android resources.
      */

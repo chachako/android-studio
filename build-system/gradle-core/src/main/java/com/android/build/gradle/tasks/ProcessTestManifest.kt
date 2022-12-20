@@ -22,7 +22,6 @@ import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.getApiString
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
-import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
@@ -479,7 +478,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 )
             )
             task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
-
+            task.targetSdkVersion.setDisallowChanges(creationConfig.targetSdkVersion.getApiString())
 
             task.testApplicationId.setDisallowChanges(creationConfig.applicationId)
             task.testedApplicationId.setDisallowChanges(creationConfig.testedApplicationId)
@@ -487,7 +486,6 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
 
             task.instrumentationRunner.setDisallowChanges(creationConfig.instrumentationRunner)
             if (creationConfig is InstrumentedTestCreationConfig) {
-                task.targetSdkVersion.set(creationConfig.targetSdkVersion.getApiString())
                 task.handleProfiling.set(creationConfig.handleProfiling)
                 task.functionalTest.set(creationConfig.functionalTest)
                 task.testLabel.set(creationConfig.testLabel)
@@ -495,7 +493,6 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             task.handleProfiling.disallowChanges()
             task.functionalTest.disallowChanges()
             task.testLabel.disallowChanges()
-            task.targetSdkVersion.disallowChanges()
 
             task.manifests = creationConfig
                 .variantDependencies

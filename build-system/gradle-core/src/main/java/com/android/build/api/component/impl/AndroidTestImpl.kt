@@ -109,11 +109,7 @@ open class AndroidTestImpl @Inject constructor(
         get() = mainVariant.minSdkVersion
 
     override val targetSdkVersion: AndroidVersion
-        get() = when (mainVariant) {
-            is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersion
-            is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkVersion
-            else -> minSdkVersion
-        }
+        get() = getMainTargetSdkVersion()
     override val targetSdkVersionOverride: AndroidVersion?
         get() = when (mainVariant) {
             is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersionOverride

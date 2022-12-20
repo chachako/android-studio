@@ -324,6 +324,28 @@ class ProcessTestManifestTest {
         assertThat(manifestFile).contains("android:label=\"unit test from tested variant\"")
     }
 
+    @Test
+    fun testUnitTestManifestContainsTargetSdkVersion() {
+        project.buildFile.appendText("""
+            android {
+                testOptions {
+                    unitTests {
+                        includeAndroidResources = true
+                    }
+                }
+            }
+            androidComponents {
+                beforeVariants(selector().all(), { variant ->
+                    variant.targetSdk = 22
+                })
+            }
+        """.trimIndent())
+        val result = project.executor().run("processReleaseUnitTestManifest")
+        assertTrue { result.failedTasks.isEmpty()}
+        val manifestFile = project.file("build/intermediates/packaged_manifests/releaseUnitTest/AndroidManifest.xml")
+        assertThat(manifestFile).contains("android:targetSdkVersion=\"22\"")
+    }
+
     /**
      * Test that the testNamespace is used to create the fully qualified namespace when
      * ".TestActivity" is used as a class shorthand in the androidTest manifest.
