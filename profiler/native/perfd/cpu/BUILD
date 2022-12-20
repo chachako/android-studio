@@ -68,7 +68,7 @@ cc_test(
         "//tools/base/profiler/native/testdata:perfd/cpu",
     ],
     linkopts = [
-        "-ldl",  # Needed for dladdr referenced in TermincationService
+        "-ldl",  # Needed for dladdr referenced in TerminationService
     ],
     linkstatic = 1,
     tags = ["no_windows"],

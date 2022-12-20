@@ -36,7 +36,10 @@ cc_library(
     tags = ["no_windows"],
     deps = [
         "//tools/base/profiler/native/perfd:perfd_internal_headers",
+        "//tools/base/profiler/native/perfd/common:atrace",
         "//tools/base/profiler/native/perfd/common:perfetto",
+        "//tools/base/profiler/native/perfd/common:simpleperf",
+        "//tools/base/profiler/native/perfd/common:trace_manager",
         "//tools/base/transport/native/daemon",
         "//tools/base/transport/native/utils",
         "//tools/base/transport/proto:cc_proto",
@@ -57,6 +60,9 @@ cc_test(
     ],
     data = [
         "//tools/base/profiler/native/testdata:perfd/memory",
+    ],
+    linkopts = [
+        "-ldl",  # Needed for dladdr referenced in TerminationService
     ],
     linkstatic = 1,
     tags = ["no_windows"],

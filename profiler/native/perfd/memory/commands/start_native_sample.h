@@ -17,6 +17,7 @@
 #define PERFD_MEMORY_COMMANDS_START_NATIVE_SAMPLE_H
 
 #include "daemon/daemon.h"
+#include "perfd/common/trace_manager.h"
 #include "perfd/memory/native_heap_manager.h"
 #include "perfd/sessions/sessions_manager.h"
 #include "proto/commands.pb.h"
@@ -25,17 +26,16 @@ namespace profiler {
 
 class StartNativeSample : public CommandT<StartNativeSample> {
  public:
-  StartNativeSample(const proto::Command& command,
-                    NativeHeapManager* heap_sampler,
+  StartNativeSample(const proto::Command& command, TraceManager* trace_manager,
                     SessionsManager* sessions_manager)
       : CommandT(command),
-        heap_sampler_(heap_sampler),
+        trace_manager_(trace_manager),
         sessions_manager_(sessions_manager) {}
 
   static Command* Create(const proto::Command& command,
-                         NativeHeapManager* heap_sampler,
+                         TraceManager* trace_manager,
                          SessionsManager* sessions_manager) {
-    return new StartNativeSample(command, heap_sampler, sessions_manager);
+    return new StartNativeSample(command, trace_manager, sessions_manager);
   }
 
   // Starts recording a heapprofd sample. This generates a single event.
@@ -45,8 +45,8 @@ class StartNativeSample : public CommandT<StartNativeSample> {
   virtual grpc::Status ExecuteOn(Daemon* daemon) override;
 
  private:
-  NativeHeapManager* heap_sampler_;
   SessionsManager* sessions_manager_;
+  TraceManager* trace_manager_;
 };
 
 }  // namespace profiler

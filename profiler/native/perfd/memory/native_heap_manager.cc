@@ -30,19 +30,18 @@ namespace profiler {
 
 NativeHeapManager::~NativeHeapManager() {}
 
-bool NativeHeapManager::StartSample(int64_t id, const StartNativeSample& config,
+bool NativeHeapManager::StartSample(int64_t id,
+                                    const StartNativeSample& start_command,
                                     string* error_message) {
   if (is_ongoing_capture_) {
     return true;
   }
-  perfetto::protos::TraceConfig traceConfig =
-      PerfettoManager::BuildHeapprofdConfig(
-          config.app_name(), config.sampling_interval_bytes(),
-          config.continuous_dump_interval_ms(),
-          config.shared_memory_buffer_bytes());
+
+  auto config = start_command.configuration();
+
   bool success = perfetto_manager_.StartProfiling(
-      config.app_name(), config.abi_cpu_arch(), traceConfig, config.temp_path(),
-      error_message);
+      config.app_name(), config.abi_cpu_arch(), config.perfetto_options(),
+      config.temp_path(), error_message);
   ongoing_capture_path_ = config.temp_path();
   is_ongoing_capture_ = success;
   ongoing_capture_id_ = id;

@@ -32,7 +32,7 @@ class NativeHeapManager {
   ~NativeHeapManager();
 
   bool StartSample(int64_t ongoing_capture_id,
-                   const proto::StartNativeSample& config,
+                   const proto::StartNativeSample& start_command,
                    std::string* error_message);
   bool StopSample(int64_t capture_id, std::string* error_message);
 

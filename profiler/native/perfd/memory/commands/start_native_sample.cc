@@ -26,50 +26,56 @@ using std::string;
 namespace profiler {
 
 Status StartNativeSample::ExecuteOn(Daemon* daemon) {
-  auto& config = command().start_native_sample();
+  auto& start_command = command().start_native_sample();
   // Used as the group id for this heap dump's events.
   // The raw bytes will be available in the file cache via this id.
-  int64_t start_timestamp = daemon->clock()->GetCurrentTime();
-  string error_message;
-  bool sample_started =
-      heap_sampler_->StartSample(start_timestamp, config, &error_message);
-  std::vector<Event> events_to_send;
+  int64_t start_timestamp;
+  if (start_command.has_api_start_metadata()) {
+    start_timestamp = start_command.api_start_metadata().start_timestamp();
+  } else {
+    start_timestamp = daemon->clock()->GetCurrentTime();
+  }
+
+  TraceStartStatus start_status;
+  auto* capture = trace_manager_->StartCapture(
+      start_timestamp, start_command.configuration(), &start_status);
+
   Event status_event;
   status_event.set_pid(command().pid());
   status_event.set_kind(Event::TRACE_STATUS);
   status_event.set_command_id(command().command_id());
-  status_event.set_is_ended(true);
-  status_event.set_group_id(start_timestamp);
-  status_event.set_timestamp(start_timestamp);
+  start_status.set_start_time_ns(start_timestamp);
+  status_event.mutable_trace_status()->mutable_trace_start_status()->CopyFrom(
+      start_status);
 
-  auto* status =
-      status_event.mutable_trace_status()->mutable_trace_start_status();
-  if (sample_started) {
-    status->set_status(TraceStartStatus::SUCCESS);
-    status->set_start_time_ns(start_timestamp);
+  std::vector<Event> events_to_send;
 
+  if (capture != nullptr) {
     Event start_event;
     start_event.set_pid(command().pid());
     start_event.set_kind(Event::MEM_TRACE);
     start_event.set_command_id(command().command_id());
     start_event.set_group_id(start_timestamp);
+    start_event.set_is_ended(false);
     start_event.set_timestamp(start_timestamp);
-    auto* dump_info = start_event.mutable_memory_trace_info();
-    dump_info->set_from_timestamp(start_timestamp);
-    dump_info->set_to_timestamp(LLONG_MAX);
+    auto* trace_info = start_event.mutable_memory_trace_info();
+    trace_info->set_trace_id(capture->trace_id);
+    trace_info->set_from_timestamp(start_timestamp);
+    trace_info->set_to_timestamp(LLONG_MAX);
+    trace_info->mutable_configuration()->CopyFrom(capture->configuration);
+    trace_info->mutable_start_status()->CopyFrom(capture->start_status);
+    events_to_send.push_back(status_event);
     events_to_send.push_back(start_event);
-
   } else {
-    status->set_status(TraceStartStatus::FAILURE);
-    status->set_error_message(error_message);
+    events_to_send.push_back(status_event);
   }
-  events_to_send.push_back(status_event);
   // For the case of startup tracing, the command could be sent before 
   // the session is created. Either send the events if the session
   // is already alive or queue the events to be sent when the session is
   // created.
-  sessions_manager_->SendOrQueueEventsForSession(daemon, config.app_name(),
-                                                 events_to_send);
+  sessions_manager_->SendOrQueueEventsForSession(
+      daemon, start_command.configuration().app_name(), events_to_send);
+
   return Status::OK;
 }
 
