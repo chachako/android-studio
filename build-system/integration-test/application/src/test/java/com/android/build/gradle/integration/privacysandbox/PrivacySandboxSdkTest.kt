@@ -31,11 +31,13 @@ import com.android.build.gradle.options.StringOption
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.ide.common.signing.KeystoreHelper
+import com.android.testutils.TestUtils
 import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
+import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.utils.FileUtils
 import com.android.utils.StdLogger
 import com.google.common.truth.Truth.assertThat
@@ -44,8 +46,11 @@ import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Objects
+import java.util.zip.ZipFile
+import kotlin.io.path.name
 import kotlin.io.path.readText
 
 /** Smoke integration tests for the privacy sandbox SDK production and consumption */
@@ -81,32 +86,32 @@ class PrivacySandboxSdkTest {
 
         Dex(dexLocation).also { dex ->
             assertThat(dex.classes.keys).containsAtLeast(
-                "Lcom/example/androidlib1/Example;",
-                "Lcom/example/androidlib2/Example;",
+                "Lcom/example/sdkImplA/Example;",
+                "Lcom/example/androidlib/Example;",
                 "Lcom/externaldep/externaljar/ExternalClass;"
             )
-            assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains(
+            assertThat(dex.classes["Lcom/example/sdkImplA/Example;"]!!.methods.map { it.name }).contains(
                 "f1")
-            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+            assertThat(dex.classes["Lcom/example/androidlib/Example;"]!!.methods.map { it.name }).contains(
                 "f2")
-            assertThat(dex.classes["Lcom/example/androidlib1/R\$string;"]!!.fields.map { it.name }).containsExactly(
-                "string_from_android_lib_1")
+            assertThat(dex.classes["Lcom/example/sdkImplA/R\$string;"]!!.fields.map { it.name }).containsExactly(
+                "string_from_sdk_impl_a")
         }
 
         // Check incremental changes are handled
         TestFileUtils.searchAndReplace(
-            project.getSubproject("android-lib1")
-                .file("src/main/java/com/example/androidlib1/Example.java"),
-            "public void f1() {}",
-            "public void g() {}"
+            project.getSubproject("sdk-impl-a")
+                .file("src/main/java/com/example/sdkImplA/Example.kt"),
+            "fun f1() {}",
+            "fun g() {}"
         )
 
         executor().run(":privacy-sandbox-sdk:minifyBundleWithR8")
 
         Dex(dexLocation).also { dex ->
-            assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains(
+            assertThat(dex.classes["Lcom/example/sdkImplA/Example;"]!!.methods.map { it.name }).contains(
                 "g")
-            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+            assertThat(dex.classes["Lcom/example/androidlib/Example;"]!!.methods.map { it.name }).contains(
                 "f2")
         }
     }
@@ -128,22 +133,22 @@ class PrivacySandboxSdkTest {
 
         Dex(dexLocation).also { dex ->
             assertThat(dex.classes.keys).doesNotContain(
-                "Lcom/example/androidlib1/Example;"
+                "Lcom/example/sdkImplA/Example;"
             )
             assertThat(dex.classes.keys).contains(
-                "Lcom/example/androidlib2/Example;",
+                "Lcom/example/androidlib/Example;",
             )
-            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+            assertThat(dex.classes["Lcom/example/androidlib/Example;"]!!.methods.map { it.name }).contains(
                 "f2")
             // none of the resources should be removed
-            assertThat(dex.classes["Lcom/example/androidlib1/R\$string;"]!!.fields.map { it.name }).containsExactly(
-                "string_from_android_lib_1")
+            assertThat(dex.classes["Lcom/example/sdkImplA/R\$string;"]!!.fields.map { it.name }).containsExactly(
+                "string_from_sdk_impl_a")
         }
 
         // Check incremental changes are handled
         TestFileUtils.searchAndReplace(
-            project.getSubproject("android-lib2")
-                .file("src/main/java/com/example/androidlib2/Example.java"),
+            project.getSubproject("android-lib")
+                .file("src/main/java/com/example/androidlib/Example.java"),
             "public void f2() {}",
             "public void g() {}"
         )
@@ -151,7 +156,7 @@ class PrivacySandboxSdkTest {
         executor().run(":privacy-sandbox-sdk:minifyBundleWithR8")
 
         Dex(dexLocation).also { dex ->
-            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+            assertThat(dex.classes["Lcom/example/androidlib/Example;"]!!.methods.map { it.name }).contains(
                 "g")
         }
     }
@@ -201,7 +206,7 @@ class PrivacySandboxSdkTest {
             ) { modules ->
 
                 modules.contains("base/dex/classes.dex")
-                modules.contains("base/assets/asset_from_androidlib1.txt")
+                modules.contains("base/assets/asset_from_sdkImplA.txt")
                 modules.contains("base/manifest/AndroidManifest.xml")
                 modules.contains("base/resources.pb")
                 modules.contains("base/root/my_java_resource.txt")
@@ -252,14 +257,14 @@ class PrivacySandboxSdkTest {
     fun testConsumptionViaBundle() {
         // TODO(b/235469089) expand this to verify installation also
 
-        //Add service to android-lib1
-        val pkg = FileUtils.join(project.getSubproject("android-lib1").mainSrcDir,
+        //Add service to sdk-impl-a
+        val pkg = FileUtils.join(project.getSubproject("sdk-impl-a").mainSrcDir,
                 "com",
                 "example",
-                "androidlib1")
+                "sdkImplA")
         val mySdkFile = File(pkg, "MySdk.kt")
         mySdkFile.writeText(
-                "package com.example.androidlib1\n" +
+                "package com.example.sdkImplA\n" +
                         "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
                         "   @PrivacySandboxService\n" +
                         "   public interface MySdk {\n" +
@@ -278,13 +283,13 @@ class PrivacySandboxSdkTest {
                         "standalone.apk")
 
         Apk(privacySandboxSdkApk).use {
-            assertThat(it).containsClass(ANDROID_LIB1_CLASS)
-            assertThat(it).containsClass("Lcom/example/androidlib2/Example;")
-            assertThat(it).containsClass("Lcom/externaldep/externaljar/ExternalClass;")
-            assertThat(it).containsClass("Lcom/example/androidlib1/R\$string;")
-            assertThat(it).containsClass("Lcom/example/androidlib1/R;")
-            assertThat(it).containsClass("Lcom/example/androidlib2/R;")
+            assertThat(it).containsClass(SDK_IMPL_A_CLASS)
+            assertThat(it).containsClass("Lcom/example/androidlib/Example;")
+            assertThat(it).containsClass("Lcom/example/androidlib/R;")
             assertThat(it).containsClass("Lcom/example/privacysandboxsdk/RPackage;")
+            assertThat(it).containsClass("Lcom/example/sdkImplA/R\$string;")
+            assertThat(it).containsClass("Lcom/example/sdkImplA/R;")
+            assertThat(it).containsClass("Lcom/externaldep/externaljar/ExternalClass;")
         }
 
         // Check building the bundle to deploy to UpsideDownCake
@@ -310,7 +315,7 @@ class PrivacySandboxSdkTest {
         Apk(baseMaster3Apk).use {
             assertThat(it).exists()
             assertThat(it).containsClass("Lcom/example/privacysandboxsdk/consumer/R;")
-            assertThat(it).doesNotContainClass(ANDROID_LIB1_CLASS)
+            assertThat(it).doesNotContainClass(SDK_IMPL_A_CLASS)
             val manifestContent = ApkSubject.getManifestContent(it.file)
             val manifestContentStr = manifestContent.joinToString("\n")
             certDigest = certDigestPattern.find(manifestContentStr)?.value!!
@@ -345,7 +350,7 @@ class PrivacySandboxSdkTest {
                     .hasExactFields(mutableSetOf("packageId"))
             val rPackageClass = it.getClass("Lcom/example/privacysandboxsdk/RPackage;")
             assertThat(rPackageClass.fields.single().initialValue?.toString()).isEqualTo("0x7e000000")
-            assertThat(it).doesNotContainClass(ANDROID_LIB1_CLASS)
+            assertThat(it).doesNotContainClass(SDK_IMPL_A_CLASS)
             val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n")
             assertThat(manifestContent).doesNotContain(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
             assertThat(manifestContent).doesNotContain(MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE)
@@ -357,6 +362,7 @@ class PrivacySandboxSdkTest {
 
     @Test
     fun testConsumptionViaApk() {
+        declarePrivacySandboxSdkServiceOnSdkA()
         val model =
                 modelV2().with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, true)
                         .fetchModels().container.getProject(":example-app")
@@ -416,7 +422,7 @@ class PrivacySandboxSdkTest {
                         StdLogger(StdLogger.Level.INFO))
         Apk(File(sdkApks.single().elements.single().outputFile)).use {
             assertThat(it).exists()
-            assertThat(it).containsClass(ANDROID_LIB1_CLASS)
+            assertThat(it).containsClass(SDK_IMPL_A_CLASS)
             assertThat(it).doesNotContain(RUNTIME_ENABLED_SDK_TABLE_ASSET_FOR_COMPAT)
         }
 
@@ -437,14 +443,14 @@ class PrivacySandboxSdkTest {
 
     @Test
     fun checkKsp() {
-        val androidLib1 = project.getSubproject("android-lib1")
+        val sdkImplA = project.getSubproject("sdk-impl-a")
         val pkg =
-                FileUtils.join(androidLib1.mainSrcDir, "com", "example", "androidlib1")
+                FileUtils.join(sdkImplA.mainSrcDir, "com", "example", "sdkImplA")
         val mySdkFile = File(pkg, "MySdk.kt")
 
         // Invalid usage of @PrivacySandboxSdk as interface contains two methods with the same name.
         mySdkFile.writeText(
-                "package com.example.androidlib1\n" +
+                "package com.example.sdkImplA\n" +
                         "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
                         "   @PrivacySandboxService\n" +
                         "   public interface MySdk {\n" +
@@ -453,19 +459,19 @@ class PrivacySandboxSdkTest {
                         "   }\n"
         )
 
-        executor().expectFailure().run("android-lib1:build")
+        executor().expectFailure().run("sdk-impl-a:build")
 
         mySdkFile.writeText(
-                "package com.example.androidlib1\n" +
+                "package com.example.sdkImplA\n" +
                         "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
                         "   @PrivacySandboxService\n" +
                         "   public interface MySdk {\n" +
                         "       suspend fun doStuff(x: Int, y: Int): String\n" +
                         "   }\n"
         )
-        executor().run("android-lib1:build")
+        executor().run("sdk-impl-a:build")
 
-        val kspDir = FileUtils.join(androidLib1.generatedDir, "ksp")
+        val kspDir = FileUtils.join(sdkImplA.generatedDir, "ksp")
         assertThat(kspDir.exists()).isTrue()
     }
 
@@ -544,7 +550,7 @@ class PrivacySandboxSdkTest {
             // Not an exhaustive list of expected entries.
             assertThat(entries).containsAtLeast(
                     "/AndroidManifest.xml",
-                    "/assets/asset_from_androidlib1.txt",
+                    "/assets/asset_from_sdkImplA.txt",
                     "/assets/RuntimeEnabledSdk-com.example.privacysandboxsdk/CompatSdkConfig.xml",
                     "/META-INF/MANIFEST.MF",
                     "/META-INF/BNDLTOOL.RSA",
@@ -630,10 +636,105 @@ class PrivacySandboxSdkTest {
         // Other tests verify behaviour with publication and consumption enabled.
     }
 
+    @Test
+    fun testSdkToSdk() {
+        // There is usage of the privacy-sandbox-sdk-b Shim generated symbols in
+        // privacy-sandbox-sdk, therefore the test passes if the project compiles.
+        TestFileUtils.searchAndReplace(
+                project.getSubproject(":sdk-impl-a")
+                        .mainSrcDir.resolve("com/example/sdkImplA/Example.kt"),
+                "companion object {}",
+                "companion object {\n" +
+                        "    val useSymbolFromPrivacySandboxB = object : com.example.sdkImplB.MySdkB {\n" +
+                        "        override suspend fun f1(p1: Int): Int {\n" +
+                        "            return p1\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}")
+        executor().run(":sdk-impl-a:assembleDebug")
+
+        val aar =
+                FileUtils.join(project.getSubproject(":sdk-impl-a").outputDir,
+                        "aar",
+                        "sdk-impl-a-debug.aar")
+        Apk(aar).use { sdkImplAAar ->
+            val entries = sdkImplAAar.entries.map { it.name }
+            assertThat(entries).contains(
+                    SdkConstants.FN_CLASSES_JAR
+            )
+            ZipFile(sdkImplAAar.getEntryAsFile("/${SdkConstants.FN_CLASSES_JAR}")
+                    .toFile()).use { sdkImplAClassesJar ->
+                assertThat(sdkImplAClassesJar.entries()
+                        .toList()
+                        .map { it.name }
+                        .filter { it.endsWith(SdkConstants.EXT_CLASS) }).containsExactly(
+                        "com/example/sdkImplA/Example\$Companion\$useSymbolFromPrivacySandboxB$1.class",
+                        "com/example/sdkImplA/Example\$Companion.class",
+                        "com/example/sdkImplA/Example.class"
+                )
+            }
+        }
+
+        executor().run(":example-app:buildPrivacySandboxSdkApksForDebug")
+
+        val standaloneSdkApk =
+                project.getSubproject(":example-app")
+                        .getIntermediateFile(InternalArtifactType.EXTRACTED_APKS_FROM_PRIVACY_SANDBOX_SDKs.getFolderName(),
+                                "debug",
+                                "buildPrivacySandboxSdkApksForDebug",
+                                "privacy-sandbox-sdk",
+                                "standalone.apk")
+        val protoApkDump =
+                AaptInvoker(TestUtils.getAapt2(), StdLogger(StdLogger.Level.VERBOSE)).dumpResources(
+                        standaloneSdkApk)
+        val dumpedRes =
+                protoApkDump.map { it.trim().removeSuffix(" PUBLIC") }
+                        .filter { it.startsWith("resource") }
+                        .map { it.substringAfterLast("/") }
+        // Verify that resources from non directly used SDKs are excluded from the APK.
+        assertThat(dumpedRes).contains("string_from_sdk_impl_a")
+        assertThat(dumpedRes).doesNotContain("string_from_sdk_impl_b")
+
+        // Verify resources from an SDK are not able to be referenced from another SDK.
+        val sdkImplAResValues = FileUtils.join(
+                project.getSubproject(":sdk-impl-a").mainResDir, "values")
+        sdkImplAResValues.also {
+            it.mkdirs()
+            // Referencing a resource from another SDK should not be possible, expect a failure
+            File(it, "strings.xml").writeText("""
+              <resources>
+                <string name="ref_to_sdk_lib_b">@string/string_from_sdk_impl_b</string>
+              </resources>""".trimIndent()
+            )
+        }
+        val buildFailureDuringResourceLinking =
+                executor().expectFailure().run(":privacy-sandbox-sdk:linkPrivacySandboxResources")
+        buildFailureDuringResourceLinking.assertErrorContains(
+                "error: resource string/string_from_sdk_impl_b (aka com.example.privacysandboxsdk:string/string_from_sdk_impl_b) not found.")
+        Files.delete(sdkImplAResValues.resolve("strings.xml").toPath())
+    }
+
+    private fun declarePrivacySandboxSdkServiceOnSdkA() {
+        //Add service to sdk-impl-a
+        val pkg = FileUtils.join(project.getSubproject("sdk-impl-a").mainSrcDir,
+                "com",
+                "example",
+                "sdkImplA")
+        val mySdkFile = File(pkg, "MySdk.kt")
+        mySdkFile.writeText(
+                "package com.example.sdkImplA\n" +
+                        "import androidx.privacysandbox.tools.PrivacySandboxService\n" +
+                        "   @PrivacySandboxService\n" +
+                        "   public interface MySdk {\n" +
+                        "       suspend fun foo(bar: Int): String\n" +
+                        "   }\n"
+        )
+    }
+
     companion object {
 
         private val certDigestPattern = Regex("([0-9A-F]{2}:){31}[0-9A-F]{2}")
-        private const val ANDROID_LIB1_CLASS = "Lcom/example/androidlib1/Example;"
+        private const val SDK_IMPL_A_CLASS = "Lcom/example/sdkImplA/Example;"
         private const val USES_SDK_LIBRARY_MANIFEST_ELEMENT = "uses-sdk-library"
         private const val MY_PRIVACY_SANDBOX_SDK_MANIFEST_PACKAGE =
                 "=\"com.example.privacysandboxsdk\""

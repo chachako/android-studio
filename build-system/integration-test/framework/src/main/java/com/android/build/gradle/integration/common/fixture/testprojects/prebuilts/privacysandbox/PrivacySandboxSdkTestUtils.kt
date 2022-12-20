@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.SubProje
 import com.android.build.gradle.integration.common.fixture.testprojects.TestProjectBuilder
 import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.sdklib.BuildToolInfo
+import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_TESTS
 
 private val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
         .replace("""\""", """\\""")
@@ -46,11 +47,11 @@ fun TestProjectBuilder.privacySandboxSdkLibraryProject(path: String, action: Sub
             defaultCompileSdk()
         }
         dependencies {
+            implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
             implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxVersion")
             implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:$androidxPrivacySandboxVersion")
             implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:$androidxPrivacySandboxVersion")
-
 
             ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxVersion")
             ksp("androidx.annotation:annotation:1.6.0")
