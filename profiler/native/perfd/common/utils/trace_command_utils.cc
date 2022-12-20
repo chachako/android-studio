@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "perfd/cpu/commands/trace_command_utils.h"
+#include "trace_command_utils.h"
 
 using profiler::proto::Event;
 

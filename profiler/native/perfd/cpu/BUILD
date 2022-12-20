@@ -5,7 +5,6 @@ cc_library(
     srcs = [
         "commands/start_cpu_trace.cc",
         "commands/stop_cpu_trace.cc",
-        "commands/trace_command_utils.cc",
         "cpu_cache.cc",
         "cpu_collector.cc",
         "cpu_config.cc",
@@ -18,7 +17,6 @@ cc_library(
     hdrs = [
         "commands/start_cpu_trace.h",
         "commands/stop_cpu_trace.h",
-        "commands/trace_command_utils.h",
         "cpu_cache.h",
         "cpu_collector.h",
         "cpu_config.h",

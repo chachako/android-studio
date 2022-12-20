@@ -15,7 +15,7 @@
  */
 #include "start_cpu_trace.h"
 
-#include "perfd/cpu/commands/trace_command_utils.h"
+#include "perfd/common/utils/trace_command_utils.h"
 #include "perfd/sessions/sessions_manager.h"
 #include "proto/trace.pb.h"
 

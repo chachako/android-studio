@@ -17,7 +17,7 @@
 
 #include <sstream>
 #include "perfd/common/capture_info.h"
-#include "perfd/cpu/commands/trace_command_utils.h"
+#include "perfd/common/utils/trace_command_utils.h"
 #include "proto/cpu.pb.h"
 #include "utils/fs/disk_file_system.h"
 #include "utils/process_manager.h"
