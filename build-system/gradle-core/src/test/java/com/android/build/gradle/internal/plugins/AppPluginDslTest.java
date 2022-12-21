@@ -216,32 +216,6 @@ public class AppPluginDslTest {
     }
 
     @Test
-    public void testPostprocessingBlock_mixingDsls_newOld() throws Exception {
-        BuildType release = android.getBuildTypes().getByName("release");
-        release.getPostprocessing().setCodeShrinker("r8");
-
-        try {
-            release.setMinifyEnabled(true);
-            fail();
-        } catch (Exception e) {
-            assertThat(e.getMessage()).contains("setMinifyEnabled");
-        }
-    }
-
-    @Test
-    public void testPostprocessingBlock_mixingDsls_oldNew() throws Exception {
-        BuildType release = android.getBuildTypes().getByName("release");
-        release.setMinifyEnabled(true);
-
-        try {
-            release.getPostprocessing().setCodeShrinker("android_gradle");
-            fail();
-        } catch (Exception e) {
-            assertThat(e.getMessage()).contains("setMinifyEnabled");
-        }
-    }
-
-    @Test
     public void testPostprocessingBlock_noCodeShrinking_oldDsl() throws Exception {
         BuildType release = android.getBuildTypes().getByName("release");
         release.setShrinkResources(true);

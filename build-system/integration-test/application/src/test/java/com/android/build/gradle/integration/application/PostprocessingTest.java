@@ -28,7 +28,6 @@ import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.BuildTypeContainer;
-import com.android.builder.model.SyncIssue;
 import com.android.utils.FileUtils;
 import com.google.common.io.Files;
 import java.io.File;
@@ -44,18 +43,14 @@ public class PostprocessingTest {
                     .create();
 
     @Test
-    public void model_syncErrors() throws Exception {
+    public void model_NoSyncErrors() throws Exception {
         TestFileUtils.appendToFile(
                 project.getBuildFile(),
                 "android.buildTypes.release { postprocessing.removeUnusedCode = true; minifyEnabled = true\n }");
 
         ModelContainer<AndroidProject> container =
                 project.model().ignoreSyncIssues().fetchAndroidProjects();
-        ModelContainerSubject.assertThat(container)
-                .rootBuild()
-                .onlyProject()
-                .hasSingleIssue(
-                        SyncIssue.SEVERITY_ERROR, SyncIssue.TYPE_GENERIC, "setMinifyEnabled");
+        ModelContainerSubject.assertThat(container).rootBuild().onlyProject().hasNoIssues();
     }
 
     @Test

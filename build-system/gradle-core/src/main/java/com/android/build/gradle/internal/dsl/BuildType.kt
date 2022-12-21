@@ -125,7 +125,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
             return this.externalNativeBuild
         }
 
-    private val _postProcessing: PostProcessingBlock = dslServices.newInstance(
+    val _postProcessing: PostProcessingBlock = dslServices.newInstance(
         PostProcessingBlock::class.java,
         dslServices,
         componentType
@@ -243,7 +243,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         enableUnitTestCoverage = thatBuildType.enableUnitTestCoverage
         enableAndroidTestCoverage = thatBuildType.enableAndroidTestCoverage
         externalNativeBuildOptions._initWith(thatBuildType.externalNativeBuildOptions)
-        _postProcessing.initWith(that.postprocessing)
+        _postProcessing.initWith(that._postProcessing)
         isCrunchPngs = thatBuildType.isCrunchPngs
         isCrunchPngsDefault = thatBuildType.isCrunchPngsDefault
         setMatchingFallbacks(thatBuildType.matchingFallbacks)
@@ -465,22 +465,17 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         action.invoke(shaders)
     }
 
-    override var isMinifyEnabled: Boolean = false
+    override var isMinifyEnabled: Boolean
         get() =
             // Try to return a sensible value for the model and other Gradle plugins inspecting the DSL.
-            if (_postProcessingConfiguration != PostProcessingConfiguration.POSTPROCESSING_BLOCK) {
-                field
-            } else {
-                (_postProcessing.isRemoveUnusedCode ||
-                        _postProcessing.isObfuscate ||
-                        _postProcessing.isOptimizeCode)
-            }
+            _postProcessing.isRemoveUnusedCode ||
+                    _postProcessing.isObfuscate ||
+                    _postProcessing.isOptimizeCode
+
         set(value) {
-            checkPostProcessingConfiguration(
-                PostProcessingConfiguration.OLD_DSL,
-                "setMinifyEnabled"
-            )
-            field = value
+            _postProcessing.isRemoveUnusedCode = value
+            _postProcessing.isObfuscate = value
+            _postProcessing.isOptimizeCode = value
         }
 
     /**
@@ -491,18 +486,10 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
     override var isShrinkResources: Boolean
         get() =
             // Try to return a sensible value for the model and other Gradle plugins inspecting the DSL.
-            if (_postProcessingConfiguration != PostProcessingConfiguration.POSTPROCESSING_BLOCK) {
-                _shrinkResources
-            } else {
-                _postProcessing.isRemoveUnusedResources
-            }
+            _postProcessing.isRemoveUnusedResources
         set(value) {
             checkShrinkResourceEligibility(componentType, dslServices, value)
-            checkPostProcessingConfiguration(
-                PostProcessingConfiguration.OLD_DSL,
-                "setShrinkResources"
-            )
-            this._shrinkResources = value
+            _postProcessing.isRemoveUnusedResources = value
         }
 
     /**
@@ -525,14 +512,17 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
 
     abstract override var isCrunchPngs: Boolean?
 
+    var postProcessingBlockUsed = false
+
     /** This DSL is incubating and subject to change.  */
     @get:Internal
     @get:Incubating
     override val postprocessing: PostProcessingBlock
         get() {
-            checkPostProcessingConfiguration(
-                PostProcessingConfiguration.POSTPROCESSING_BLOCK, "getPostProcessing"
-            )
+            if (!postProcessingBlockUsed) {
+                postProcessingBlockUsed = true
+                _postProcessing.isRemoveUnusedCode = true
+            }
             return _postProcessing
         }
 
@@ -540,21 +530,16 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
     @Incubating
     @Internal
     fun postprocessing(action: Action<PostProcessingBlock>) {
-        checkPostProcessingConfiguration(
-            PostProcessingConfiguration.POSTPROCESSING_BLOCK, "postProcessing"
-        )
+        if (!postProcessingBlockUsed) {
+            postProcessingBlockUsed = true
+            _postProcessing.isRemoveUnusedCode = true
+        }
         action.execute(_postProcessing)
     }
 
     override fun postprocessing(action: PostProcessing.() -> Unit) {
         postprocessing(Action { action.invoke(it) })
     }
-
-    /** Describes how postProcessing was configured. Not to be used from the DSL.  */
-    // TODO(b/140406102): Should be internal.
-    val postProcessingConfiguration: PostProcessingConfiguration
-        // If the user didn't configure anything, stick to the old DSL.
-        get() = _postProcessingConfiguration ?: PostProcessingConfiguration.OLD_DSL
 
     /**
      * Checks that the user is consistently using either the new or old DSL for configuring bytecode

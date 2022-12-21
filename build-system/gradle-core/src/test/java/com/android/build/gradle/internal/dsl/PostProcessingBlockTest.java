@@ -63,7 +63,7 @@ public class PostProcessingBlockTest {
         assertThat(options.getCodeShrinkerEnum()).isEqualTo(CodeShrinker.R8);
         assertThat(options.isObfuscate()).isFalse();
         assertThat(options.isOptimizeCode()).isFalse();
-        assertThat(options.isRemoveUnusedCode()).isTrue();
+        assertThat(options.isRemoveUnusedCode()).isFalse();
         assertThat(options.isRemoveUnusedResources()).isFalse();
         assertThat(options.getProguardFiles(EXPLICIT)).isEmpty();
         assertThat(options.getProguardFiles(TEST)).isEmpty();

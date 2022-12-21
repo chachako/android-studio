@@ -117,8 +117,6 @@ class BuildTypeTest {
             copy.initWith(original)
             // Ndk and ndkConfig refer to the same object
             original.ndk
-            // Manually call getters that don't need to be copied.
-            original.postProcessingConfiguration
             // Covered by original.isDefault
             original.getIsDefault()
             // Uses the private _isDefault
@@ -127,6 +125,8 @@ class BuildTypeTest {
             original.isUseProguard
             // Covered by externalNativeBuildOptions
             original.externalNativeBuild
+            original.postProcessingBlockUsed
+            original.postprocessing
         }
     }
 
