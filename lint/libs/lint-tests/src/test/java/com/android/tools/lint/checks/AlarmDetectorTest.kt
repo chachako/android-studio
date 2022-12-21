@@ -70,4 +70,37 @@ class AlarmDetectorTest : AbstractCheckTest() {
             """
         )
     }
+
+    fun testExactAlarmPermissions() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="32" />
+                </manifest>
+                """
+            ).indented()
+        ).run().expect(
+            """
+            AndroidManifest.xml:2: Error: USE_EXACT_ALARM can only be used when targeting API level 33 or higher [ExactAlarm]
+                <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            1 errors, 0 warnings
+            """
+        )
+    }
+
+    fun testExactAlarmPermissionsClean() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="33" />
+                </manifest>
+                """
+            ).indented()
+        ).run().expectClean()
+    }
 }
