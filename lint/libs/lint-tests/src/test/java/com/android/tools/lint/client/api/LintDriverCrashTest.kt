@@ -102,6 +102,44 @@ class LintDriverCrashTest : AbstractCheckTest() {
         LintDriver.clearCrashCount()
     }
 
+    fun testErrorThrownInSuperClass() {
+        // Regression test for 263289356
+        lint().files(
+            xml("res/layout/foo.xml", "<LinearLayout/>"),
+            java(
+                """
+                    package test.pkg;
+                    @SuppressWarnings("ALL") class Foo {
+                    }
+                    """
+            )
+        )
+            .allowSystemErrors(true)
+            .allowExceptions(true)
+            //.detector(CrashingInheritorDetector())
+            .issues(CrashingInheritorDetector.CRASHING_ISSUE)
+            .testModes(TestMode.DEFAULT)
+            .run()
+            .check(
+                {
+                    assertThat(it).contains("Foo.java: Error: Unexpected failure during lint analysis of Foo.java (this is a bug in lint or one of the libraries it depends on)")
+                    assertThat(it).contains("The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingInheritorDetector.")
+                    assertThat(it).contains(
+                        """
+                        The crash seems to involve the detector com.android.tools.lint.client.api.LintDriverCrashTest＄CrashingInheritorDetector.
+                        You can try disabling it with something like this:
+                            android {
+                                lint {
+                                    disable "_TestCrashInheritor"
+                                }
+                            }
+                        """.trimIndent()
+                    )
+                }
+            )
+        LintDriver.clearCrashCount()
+    }
+
     fun testSavePartialResults() {
         // Regression test for https://issuetracker.google.com/192484319
         // If a detector crashes, that should not invalidate any other results from the module
@@ -260,7 +298,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
 
     override fun getDetector(): Detector = CrashingDetector()
 
-    class CrashingDetector : Detector(), SourceCodeScanner {
+    open class CrashingDetector : Detector(), SourceCodeScanner {
 
         override fun getApplicableUastTypes(): List<Class<out UElement>> =
             listOf(UFile::class.java)
@@ -280,6 +318,26 @@ class LintDriverCrashTest : AbstractCheckTest() {
                 .create(
                     "_TestCrash", "test", "test", Category.LINT, 10, Severity.FATAL,
                     Implementation(CrashingDetector::class.java, Scope.JAVA_FILE_SCOPE)
+                )
+        }
+    }
+
+    class CrashingInheritorDetector : CrashingDetector() {
+
+        override fun createUastHandler(context: JavaContext): UElementHandler {
+            val superHandler = super.createUastHandler(context)
+
+            return object : UElementHandler() {
+                override fun visitFile(node: UFile) = superHandler.visitFile(node)
+            }
+        }
+
+        companion object {
+            @Suppress("LintImplTextFormat")
+            val CRASHING_ISSUE = Issue
+                .create(
+                    "_TestCrashInheritor", "test", "test", Category.LINT, 10, Severity.FATAL,
+                    Implementation(CrashingInheritorDetector::class.java, Scope.JAVA_FILE_SCOPE)
                 )
         }
     }

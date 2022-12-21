@@ -3881,25 +3881,21 @@ class LintDriver(
             throwable: Throwable,
             driver: LintDriver
         ): kotlin.Pair<String, List<Issue>>? {
-            for (frame in throwable.stackTrace) {
-                val className = frame.className
-                if (className.startsWith("com.android.tools.lint.detector.api.")) {
-                    // Called inherited Detector method; not interested in this one
-                    continue
-                }
-                if (className.endsWith("Detector") || className.contains("Detector$")) {
-                    val issues = getDetectorIssues(className, driver)
-                    val detector = if (issues.isNotEmpty()) {
-                        issues.first().implementation.detectorClass.name
-                    } else {
-                        className
-                    }
-                    return Pair(detector, issues)
-                }
-            }
+            val issueMap = driver.registry.issues.groupBy { it.implementation.detectorClass.name }
 
-            return null
+            fun getDetectorName(className: String): String? =
+                if (issueMap.contains(className)) className
+                else when (val prefix = className.substringBeforeLast("$", "")) {
+                    "" -> null
+                    else -> getDetectorName(prefix)
+                }
+
+            return when (val detectorName = throwable.stackTrace.firstNotNullOfOrNull { getDetectorName(it.className) }) {
+                null -> null
+                else -> Pair(detectorName, issueMap[detectorName]!!)
+            }
         }
+
 
         /**
          * Returns the issues associated with the given detector class.
