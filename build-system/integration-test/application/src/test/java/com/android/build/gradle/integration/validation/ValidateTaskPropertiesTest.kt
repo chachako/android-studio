@@ -31,6 +31,7 @@ import java.io.File
 /**
  * Runs Gradle's task properties validation task on the Android Gradle Plugin.
  */
+@Suppress("UnstableApiUsage")
 class ValidateTaskPropertiesTest {
 
     @Rule
@@ -45,14 +46,21 @@ class ValidateTaskPropertiesTest {
     fun before() {
         val classes = tmp.root.resolve("Classes")
         val classLoader = BaseExtension::class.java.classLoader
-        val classesList: List<Class<*>> =
-            ClassPath.from(classLoader)
+        val classPathInfo = ClassPath.from(classLoader)
+        val classesList: List<Class<*>> = classPathInfo
                 .getTopLevelClassesRecursive("com.android.build.gradle")
                 .map { it.load() }
         TestInputsGenerator.pathWithClasses(classes.toPath(), classesList)
 
-        val paths = System.getProperty("java.class.path")
-                .split(System.getProperty("path.separator"));
+        val paths = classPathInfo.resources.map { it.url() }
+            .mapNotNull {
+                val url = it.toString()
+                if (url.toString().startsWith("jar:file:")) {
+                    url.substringAfter("jar:file:").substringBeforeLast("!")
+                } else {
+                    null
+                }
+            }.toSet()
 
         // The validatePlugins task fails when the java class path contains more than
         // 250 parts. As a workaround, we remove the class path parts that are irrelevant.
