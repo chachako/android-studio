@@ -39,7 +39,7 @@ class FlightRecorderRule(private val sizeLimit: Int = 1000) : ExternalResource()
                     base.evaluate()
                 } catch (e: Throwable) {
                     FlightRecorder.log(
-                        "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed with $e")
+                        "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed with ${TraceUtils.getStackTrace(e)}")
                     FlightRecorder.print()
                     throw e
                 } finally {
