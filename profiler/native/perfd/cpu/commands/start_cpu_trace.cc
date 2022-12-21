@@ -51,7 +51,8 @@ Status StartCpuTrace::ExecuteOn(Daemon* daemon) {
 
   vector<Event> events_to_send;
   if (capture != nullptr) {
-    Event event = PopulateCpuTraceEvent(*capture, command(), false);
+    Event event =
+        PopulateTraceEvent(*capture, command(), Event::CPU_TRACE, false);
     status_event.set_group_id(capture->trace_id);
 
     events_to_send.push_back(status_event);

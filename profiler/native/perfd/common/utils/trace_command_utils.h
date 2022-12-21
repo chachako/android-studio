@@ -22,9 +22,13 @@
 
 namespace profiler {
 
-profiler::proto::Event PopulateCpuTraceEvent(
+profiler::proto::Event PopulateTraceEvent(
     const CaptureInfo& capture, const profiler::proto::Command& command_data,
-    bool is_end);
+    proto::Event_Kind event_kind, bool is_end);
+
+profiler::proto::Event PopulateTraceStatusEvent(
+    const profiler::proto::Command& command_data,
+    const proto::Event_Kind event_kind, const CaptureInfo* capture);
 
 }  // namespace profiler
 

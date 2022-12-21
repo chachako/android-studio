@@ -34,27 +34,6 @@ namespace {
 // "cache/complete" is where the generic bytes rpc fetches contents
 constexpr char kCacheLocation[] = "cache/complete/";
 
-Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
-                               const CaptureInfo* capture) {
-  Event status_event;
-  status_event.set_pid(command_data.pid());
-  status_event.set_kind(Event::TRACE_STATUS);
-  status_event.set_command_id(command_data.command_id());
-
-  auto* stop_status =
-      status_event.mutable_trace_status()->mutable_trace_stop_status();
-  if (capture == nullptr) {
-    stop_status->set_error_message("No ongoing capture exists");
-    stop_status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
-  } else {
-    status_event.set_group_id(capture->trace_id);
-    // This event is to acknowledgethe stop command. It doesn't have the full
-    // result. Since UNSPECIFIED is the default value, it is actually an no-op.
-    stop_status->set_status(TraceStopStatus::UNSPECIFIED);
-  }
-  return status_event;
-}
-
 // Helper function to stop the tracing. This function works in the async
 // environment because it doesn't require a |profiler::StopCpuTrace| object.
 void Stop(Daemon* daemon, const profiler::proto::Command command_data,
@@ -72,7 +51,8 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
 
   // Send TRACE_STATUS event right away.
   const auto* ongoing = trace_manager->GetOngoingCapture(app_name);
-  Event status_event = PopulateTraceStatusEvent(command_data, ongoing);
+  Event status_event =
+      PopulateTraceStatusEvent(command_data, Event::CPU_TRACE, ongoing);
   daemon->buffer()->Add(status_event);
   if (ongoing == nullptr) return;
 
@@ -106,7 +86,8 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
             "Failed to read trace from device");
       }
     }
-    Event trace_event = PopulateCpuTraceEvent(*capture, command_data, true);
+    Event trace_event =
+        PopulateTraceEvent(*capture, command_data, Event::CPU_TRACE, true);
     daemon->buffer()->Add(trace_event);
   } else {
     // When execution reaches here, a TRACE_STATUS event has been sent

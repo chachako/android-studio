@@ -15,6 +15,7 @@
  */
 #include "stop_native_sample.h"
 
+#include "perfd/common/utils/trace_command_utils.h"
 #include "proto/memory_data.pb.h"
 #include "proto/trace.pb.h"
 
@@ -42,20 +43,12 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
   }
 
   const auto* ongoing = trace_manager_->GetOngoingCapture(app_name);
-
-  Event status_event;
-  status_event.set_pid(command().pid());
-  status_event.set_kind(Event::TRACE_STATUS);
-  status_event.set_command_id(command().command_id());
-  status_event.set_is_ended(true);
-  status_event.set_timestamp(stop_timestamp);
+  Event status_event =
+      PopulateTraceStatusEvent(command(), Event::MEM_TRACE, ongoing);
   auto* stop_status =
       status_event.mutable_trace_status()->mutable_trace_stop_status();
 
   if (ongoing == nullptr) {
-    stop_status->set_error_message("No ongoing capture exists");
-    stop_status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
-
     daemon->buffer()->Add(status_event);
     return Status::OK;
   }
@@ -64,7 +57,6 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
   TraceStopStatus status;
   auto* capture = trace_manager_->StopCapture(
       stop_timestamp, app_name, stop_command.need_trace_response(), &status);
-
   stop_status->CopyFrom(status);
 
   daemon->buffer()->Add(status_event);
@@ -96,16 +88,8 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
             "Failed to read trace from device");
       }
     }
-    Event trace_event;
-    trace_event.set_pid(command().pid());
-    trace_event.set_kind(Event::MEM_TRACE);
-    trace_event.set_command_id(command().command_id());
-    trace_event.set_group_id(capture->start_timestamp);
-    trace_event.set_timestamp(stop_timestamp);
-    trace_event.set_is_ended(true);
-    auto* trace_info = trace_event.mutable_memory_trace_info();
-    trace_info->set_from_timestamp(capture->start_timestamp);
-    trace_info->set_to_timestamp(stop_timestamp);
+    Event trace_event =
+        PopulateTraceEvent(*capture, command(), Event::MEM_TRACE, true);
     daemon->buffer()->Add(trace_event);
   } else {
     // When execution reaches here, a TRACE_STATUS event has been sent

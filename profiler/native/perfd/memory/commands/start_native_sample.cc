@@ -15,6 +15,7 @@
  */
 #include "start_native_sample.h"
 
+#include "perfd/common/utils/trace_command_utils.h"
 #include "proto/memory_data.pb.h"
 #include "proto/trace.pb.h"
 
@@ -49,23 +50,13 @@ Status StartNativeSample::ExecuteOn(Daemon* daemon) {
       start_status);
 
   std::vector<Event> events_to_send;
-
   if (capture != nullptr) {
-    Event start_event;
-    start_event.set_pid(command().pid());
-    start_event.set_kind(Event::MEM_TRACE);
-    start_event.set_command_id(command().command_id());
-    start_event.set_group_id(start_timestamp);
-    start_event.set_is_ended(false);
-    start_event.set_timestamp(start_timestamp);
-    auto* trace_info = start_event.mutable_memory_trace_info();
-    trace_info->set_trace_id(capture->trace_id);
-    trace_info->set_from_timestamp(start_timestamp);
-    trace_info->set_to_timestamp(LLONG_MAX);
-    trace_info->mutable_configuration()->CopyFrom(capture->configuration);
-    trace_info->mutable_start_status()->CopyFrom(capture->start_status);
+    Event event =
+        PopulateTraceEvent(*capture, command(), Event::MEM_TRACE, false);
+    status_event.set_group_id(capture->start_timestamp);
+
     events_to_send.push_back(status_event);
-    events_to_send.push_back(start_event);
+    events_to_send.push_back(event);
   } else {
     events_to_send.push_back(status_event);
   }
