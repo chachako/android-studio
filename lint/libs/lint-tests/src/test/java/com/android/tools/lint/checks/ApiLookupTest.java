@@ -16,7 +16,7 @@
 
 package com.android.tools.lint.checks;
 
-import static com.android.tools.lint.checks.ApiLookup.XML_FILE_PATH;
+import static com.android.tools.lint.checks.ApiClass.STRIP_MEMBERS;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -127,8 +127,7 @@ public class ApiLookupTest extends AbstractCheckTest {
         assertEquals(-1, getFieldVersion("foo/Bar", "FOOBAR"));
         // Field lookup: Unknown field
         assertEquals(
-                ApiClass.STRIP_MEMBERS ? 1 : -1,
-                getFieldVersion("android/Manifest$permission", "FOOBAR"));
+                STRIP_MEMBERS ? 1 : -1, getFieldVersion("android/Manifest$permission", "FOOBAR"));
         // Method lookup: Unknown class
         assertEquals(
                 -1,
@@ -138,14 +137,14 @@ public class ApiLookupTest extends AbstractCheckTest {
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         // Method lookup: Unknown name
         assertEquals(
-                ApiClass.STRIP_MEMBERS ? 1 : -1,
+                STRIP_MEMBERS ? 1 : -1,
                 getMethodVersion(
                         "android/graphics/drawable/BitmapDrawable",
                         "foo",
                         "(Landroid/content/res/Resources;Ljava/lang/String;)V"));
         // Method lookup: Unknown argument list
         assertEquals(
-                ApiClass.STRIP_MEMBERS ? 1 : -1,
+                STRIP_MEMBERS ? 1 : -1,
                 getMethodVersion("android/graphics/drawable/BitmapDrawable", "<init>", "(I)V"));
     }
 
@@ -300,6 +299,37 @@ public class ApiLookupTest extends AbstractCheckTest {
         assertEquals(11, getCastVersion("android/animation/Animator", "java/lang/Cloneable"));
         assertEquals(
                 22, getCastVersion("android/animation/StateListAnimator", "java/lang/Cloneable"));
+
+        // Inherited interfaces
+
+        assertEquals(
+                3,
+                getCastVersion(
+                        "android/opengl/GLSurfaceView", "android/content/ComponentCallbacks"));
+        assertEquals(
+                3,
+                getCastVersion(
+                        "android/opengl/GLSurfaceView", "android/view/SurfaceHolder$Callback"));
+        assertEquals(
+                11,
+                getCastVersion("android/app/DialogFragment", "android/content/ComponentCallbacks"));
+        assertEquals(1, getCastVersion("android/widget/ArrayAdapter", "android/widget/Adapter"));
+        assertEquals(
+                23,
+                getCastVersion(
+                        "android/widget/ArrayAdapter", "android/widget/ThemedSpinnerAdapter"));
+        assertEquals(
+                1, getCastVersion("android/widget/ArrayAdapter", "android/widget/SpinnerAdapter"));
+        assertEquals(
+                24,
+                getCastVersion("android/content/ContentProviderClient", "java/lang/AutoCloseable"));
+        assertEquals(
+                5,
+                getCastVersion(
+                        "android/content/ContentProviderClient", "java.io.Closeable")); // CHECK
+        assertEquals(
+                28, getCastVersion("android.net.LocalServerSocket", "java.lang.AutoCloseable"));
+        assertEquals(28, getCastVersion("android.net.LocalServerSocket", "java.io.Closeable"));
     }
 
     public void testSuperClassCast() {
@@ -432,9 +462,14 @@ public class ApiLookupTest extends AbstractCheckTest {
         ApiLookup.dispose();
     }
 
-    private static final boolean CHECK_DEPRECATED = true;
-
     private static void assertSameApi(String desc, int expected, int actual) {
+        assertSameApi(desc, expected, actual, false);
+    }
+
+    private static void assertSameApi(String desc, int expected, int actual, boolean allowMissing) {
+        if (allowMissing && actual == -1) {
+            return;
+        }
         assertEquals(desc, expected, actual);
     }
 
@@ -480,24 +515,14 @@ public class ApiLookupTest extends AbstractCheckTest {
         assertEquals(1, getClassDeprecatedIn("java/io/LineNumberInputStream"));
     }
 
-    // Flaky test - http://b.android.com/225879
-    @SuppressWarnings("unused")
     public void testFindEverything() {
         // Load the API versions file and look up every single method/field/class in there
         // (provided since != 1) and also check the deprecated calls.
-
-        File file = createClient().findResource(XML_FILE_PATH);
-        if (file == null || !file.exists()) {
-            return;
-        }
-
+        File file = mDb.xmlFile;
         Api<ApiClass> info = Api.parseApi(file);
         for (ApiClass cls : info.getClasses().values()) {
             int classSince = cls.getSince();
             String className = cls.getName();
-            if (className.startsWith("android/support/")) {
-                continue;
-            }
             assertSameApi(className, classSince, getClassVersion(className));
 
             for (String method : cls.getAllMethods(info)) {
@@ -512,46 +537,81 @@ public class ApiLookupTest extends AbstractCheckTest {
                 assertSameApi(method, since, getFieldVersion(className, method));
             }
 
-            for (Pair<String, Integer> pair : cls.getInterfaces()) {
+            for (Pair<String, Integer> pair : cls.getAllInterfaces(info)) {
                 String interfaceName = pair.getFirst();
                 int api = pair.getSecond();
                 assertSameApi(interfaceName, api, getCastVersion(className, interfaceName));
             }
         }
 
-        if (CHECK_DEPRECATED) {
-            for (ApiClass cls : info.getClasses().values()) {
-                int classDeprecatedIn = cls.getDeprecatedIn();
-                String className = cls.getName();
-                if (className.startsWith("android/support/")) {
-                    continue;
-                }
-                if (classDeprecatedIn >= 1) {
-                    assertSameApi(className, classDeprecatedIn, getClassDeprecatedIn(className));
-                } else {
-                    assertSameApi(className, -1, getClassDeprecatedIn(className));
-                }
+        // Check Deprecated In
+        for (ApiClass cls : info.getClasses().values()) {
+            int classDeprecatedIn = cls.getDeprecatedIn();
+            String className = cls.getName();
+            if (classDeprecatedIn >= 1) {
+                assertSameApi(className, classDeprecatedIn, getClassDeprecatedIn(className));
+            } else {
+                assertSameApi(className, -1, getClassDeprecatedIn(className));
+            }
 
-                for (String method : cls.getAllMethods(info)) {
-                    int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
-                    if (deprecatedIn == 0) {
-                        deprecatedIn = -1;
-                    }
-                    int index = method.indexOf('(');
-                    String name = method.substring(0, index);
-                    String desc = method.substring(index);
-                    assertSameApi(
-                            method + " in " + className,
-                            deprecatedIn,
-                            getMethodDeprecatedIn(className, name, desc));
+            for (String method : cls.getAllMethods(info)) {
+                int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
+                if (deprecatedIn == 0) {
+                    deprecatedIn = -1;
                 }
-                for (String method : cls.getAllFields(info)) {
-                    int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
-                    if (deprecatedIn == 0) {
-                        deprecatedIn = -1;
-                    }
-                    assertSameApi(method, deprecatedIn, getFieldDeprecatedIn(className, method));
+                int index = method.indexOf('(');
+                String name = method.substring(0, index);
+                String desc = method.substring(index);
+                assertSameApi(
+                        method + " in " + className,
+                        deprecatedIn,
+                        getMethodDeprecatedIn(className, name, desc),
+                        STRIP_MEMBERS);
+            }
+            for (String method : cls.getAllFields(info)) {
+                int deprecatedIn = cls.getMemberDeprecatedIn(method, info);
+                if (deprecatedIn == 0) {
+                    deprecatedIn = -1;
                 }
+                assertSameApi(
+                        method,
+                        deprecatedIn,
+                        getFieldDeprecatedIn(className, method),
+                        STRIP_MEMBERS);
+            }
+        }
+
+        // Check Removed In
+        for (ApiClass cls : info.getClasses().values()) {
+            int classRemovedIn = cls.getRemovedIn();
+            String className = cls.getName();
+            if (classRemovedIn >= 1) {
+                assertSameApi(className, classRemovedIn, getClassRemovedIn(className));
+            } else {
+                assertSameApi(className, -1, getClassRemovedIn(className));
+            }
+
+            for (String method : cls.getAllMethods(info)) {
+                int removedIn = cls.getMemberRemovedIn(method, info);
+                if (removedIn == 0) {
+                    removedIn = -1;
+                }
+                int index = method.indexOf('(');
+                String name = method.substring(0, index);
+                String desc = method.substring(index);
+                assertSameApi(
+                        method + " in " + className,
+                        removedIn,
+                        getMethodRemovedIn(className, name, desc),
+                        STRIP_MEMBERS);
+            }
+            for (String method : cls.getAllFields(info)) {
+                int removedIn = cls.getMemberRemovedIn(method, info);
+                if (removedIn == 0) {
+                    removedIn = -1;
+                }
+                assertSameApi(
+                        method, removedIn, getFieldRemovedIn(className, method), STRIP_MEMBERS);
             }
         }
     }
@@ -601,6 +661,22 @@ public class ApiLookupTest extends AbstractCheckTest {
         assertEquals(
                 "android.os.ext.SdkExtensions.AD_SERVICES",
                 lookup.getSdkExtensionField(1000000, true));
+    }
+
+    public void testComputeAllInterfaces() throws IOException {
+        getTempDir();
+        ApiLookup lookup = ApiLookupTest.createMultiSdkLookup(true, false);
+        /*
+          A implements B since 10
+          A implements C since 3
+          B implements D since 1
+          C implements B since 5
+          Computing interfaces from A:
+          B:10, D:10, C:3, ... when we get to B from C we need to correct it from B:10 to B:5 and from D:10 to D:5
+        */
+        assertEquals(5, lookup.getValidCastVersions("A", "D").min());
+        assertEquals(3, lookup.getValidCastVersions("A", "C").min());
+        assertEquals(5, lookup.getValidCastVersions("A", "B").min());
     }
 
     @FunctionalInterface
@@ -771,6 +847,29 @@ public class ApiLookupTest extends AbstractCheckTest {
                         + "        <class name=\"android/test/api/Outer$Inner\" since=\"29\">\n"
                         + "                <extends name=\"android/test/api/Outer\"/>\n"
                         + "                <method name=\"&lt;init>(Landroid/test/api/Outer;F)V\" since=\"32\"/>\n"
+                        + "        </class>\n"
+                        // Test scenario used by #testComputeAllInterfaces() to make sure we
+                        // properly handle "diamond shaped" interface hierarchies.
+                        // A implements B and C, C implements B, B implements D
+                        + "        <class name=\"A\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <implements name=\"B\" since=\"10\"/>"
+                        + "                <implements name=\"C\" since=\"3\"/>"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"B\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <implements name=\"D\" since=\"1\"/>"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"C\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <implements name=\"B\" since=\"5\"/>"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
+                        + "        </class>\n"
+                        + "        <class name=\"D\" since=\"1\">\n"
+                        + "                <extends name=\"java/lang/Object\"/>\n"
+                        + "                <method name=\"&lt;init>()V\"/>\n"
                         + "        </class>\n"
                         + "</api>\n";
         File xml = File.createTempFile("api-versions", "xml");

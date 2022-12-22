@@ -399,6 +399,69 @@ public final class ApiClass extends ApiClassBase {
     }
 
     @NonNull
+    public List<Pair<String, Integer>> getAllInterfaces(Api<? extends ApiClassBase> info) {
+        if (!mInterfaces.isEmpty()) {
+            List<Pair<String, Integer>> interfaces = new ArrayList<>();
+            addAllInterfaces(info, interfaces, getSince(), new HashMap<>());
+            return interfaces;
+        }
+        return mInterfaces;
+    }
+
+    private void addAllInterfaces(
+            Api<? extends ApiClassBase> info,
+            List<Pair<String, Integer>> list,
+            int since,
+            Map<String, Integer> processed) {
+        processed.put(getName(), since);
+        since = Math.max(since, getSince());
+        addAllInterfaces(info, list, since, processed, mInterfaces, true);
+        addAllInterfaces(info, list, since, processed, mSuperClasses, false);
+    }
+
+    private void addAllInterfaces(
+            Api<? extends ApiClassBase> info,
+            List<Pair<String, Integer>> list,
+            int since,
+            Map<String, Integer> processed,
+            List<Pair<String, Integer>> classes,
+            boolean isInterface) {
+        for (Pair<String, Integer> classAndVersion : classes) {
+            String className = classAndVersion.getFirst();
+            if (className.equals("java/lang/Object")) {
+                continue;
+            }
+            int sinceMax = Math.max(since, classAndVersion.getSecond());
+            if (isInterface) {
+                addInterface(className, sinceMax, list);
+            }
+
+            Integer processedSince = processed.get(className);
+            if (processedSince == null || processedSince > sinceMax) {
+                ApiClassBase cls = info.getClass(className);
+                if (cls instanceof ApiClass) {
+                    ((ApiClass) cls).addAllInterfaces(info, list, sinceMax, processed);
+                }
+            }
+        }
+    }
+
+    private void addInterface(String interfaceName, int since, List<Pair<String, Integer>> list) {
+        // linear list rather than set because this is expected to be a short list
+        for (int i = 0, n = list.size(); i < n; i++) {
+            Pair<String, Integer> pair = list.get(i);
+            if (pair.getFirst().equals(interfaceName)) {
+                if (since < pair.getSecond()) {
+                    list.set(i, Pair.of(interfaceName, since));
+                }
+                return;
+            }
+        }
+
+        list.add(Pair.of(interfaceName, since));
+    }
+
+    @NonNull
     List<Pair<String, Integer>> getSuperClasses() {
         return mSuperClasses;
     }
@@ -442,7 +505,10 @@ public final class ApiClass extends ApiClassBase {
             ApiClass cls = info.getClass(superClass.getFirst());
             if (cls == null) {
                 throw new RuntimeException(
-                        "could not find " + superClass.getFirst() + " for " + getName());
+                        "Incomplete database file: could not resolve super class "
+                                + superClass.getFirst()
+                                + " from "
+                                + getName());
             }
             cls.addAllFields(info, set);
         }
@@ -524,7 +590,7 @@ public final class ApiClass extends ApiClassBase {
         String sdks = getSdks();
         writeSinceDeprecatedInRemovedIn(info, buffer, since, deprecatedIn, removedIn, sdks);
 
-        List<Pair<String, Integer>> interfaces = getInterfaces();
+        List<Pair<String, Integer>> interfaces = getAllInterfaces(info);
         int count = 0;
         if (!interfaces.isEmpty()) {
             for (Pair<String, Integer> pair : interfaces) {
@@ -572,7 +638,16 @@ public final class ApiClass extends ApiClassBase {
 
         initializeMembers(info);
 
-        estimatedSize += 2 + 4 * (getInterfaces().size());
+        // Estimate the size of interfaces; this should be
+        //  2 + 4 * (getAllInterfaces(info).size());
+        // but getAllInterfaces() isn't cheap, and we really don't need
+        // this precision here. For the entire SDK, the average number of
+        // interfaces is 0.5 interfaces per class -- there are some that
+        // inherit quite a few (12 is the current max), but the average
+        // is 3237 / 5839. So for now we'll just set aside one interface
+        // per class.
+        estimatedSize += 6;
+
         if (getSuperClasses().size() > 1) {
             estimatedSize += 2 + 4 * (getSuperClasses().size());
         }

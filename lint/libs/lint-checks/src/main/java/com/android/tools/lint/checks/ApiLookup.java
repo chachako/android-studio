@@ -87,6 +87,8 @@ public class ApiLookup extends ApiDatabase {
     @VisibleForTesting static final boolean DEBUG_FORCE_REGENERATE_BINARY = false;
 
     private static final Map<AndroidVersion, SoftReference<ApiLookup>> instances = new HashMap<>();
+    /** The API database this lookup is based on */
+    @NonNull public final File xmlFile;
 
     /**
      * Returns an instance of the API database
@@ -318,6 +320,7 @@ public class ApiLookup extends ApiDatabase {
     /** Use one of the {@link #get} factory methods instead. */
     private ApiLookup(
             @NonNull LintClient client, @NonNull File xmlFile, @Nullable File binaryFile) {
+        this.xmlFile = xmlFile;
         if (binaryFile != null) {
             readData(client, binaryFile, cacheCreator(xmlFile), API_LOOKUP_BINARY_FORMAT_VERSION);
             initializeApiConstraints();

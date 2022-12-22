@@ -132,6 +132,7 @@ import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiSuperExpression
 import com.intellij.psi.PsiType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.TypeConversionUtil
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UArrayAccessExpression
@@ -1841,12 +1842,19 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                                 if (provider != null) {
                                     val methodOwner = evaluator.getQualifiedName(provider)
                                     if (methodOwner != null) {
-                                        val methodApi = apiDatabase.getMethodVersions(
-                                            methodOwner, name, desc
-                                        )
+                                        val methodApi = apiDatabase.getMethodVersions(methodOwner, name, desc)
                                         if (methodApi == ApiConstraint.UNKNOWN || minSdk.isAtLeast(methodApi)) {
-                                            // Yes, we found another call that doesn't have an API requirement
-                                            return
+                                            val interfaceRequirement = if (provider.isInterface) {
+                                                apiDatabase.getValidCastVersions(owner, methodOwner)
+                                            } else {
+                                                ApiConstraint.UNKNOWN
+                                            }
+                                            if (interfaceRequirement == ApiConstraint.UNKNOWN || minSdk.isAtLeast(interfaceRequirement)) {
+                                                return
+                                            }
+                                            // TODO: It would be nice to incorporate this constraint in the message
+                                            // somehow (e.g. "method is available via AutoCloseable interface, but that
+                                            // requires SDK INT >= 31").
                                         }
                                     }
                                 }
@@ -2042,9 +2050,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
         override fun visitLocalVariable(node: ULocalVariable) {
             val initializer = node.uastInitializer ?: return
-
             val initializerType = initializer.getExpressionType() as? PsiClassType ?: return
-
             val interfaceType = node.type
 
             if (interfaceType !is PsiClassType) {
@@ -2134,6 +2140,28 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         requires = api, min = minSdk, desugaring = Desugaring.TRY_WITH_RESOURCES
                     )
                 }
+            }
+
+            // Check close-availability on the API which may have been introduced at a later API level
+            for (resource in resourceList) {
+                val classType = TypeConversionUtil.erasure(resource.type) as? PsiClassType ?: continue
+                val qualifiedName = context.evaluator.getQualifiedName(classType) ?: continue
+                val api = apiDatabase?.getMethodVersions(qualifiedName, "close", "()") ?: continue
+                var minSdk = getMinSdk(context) ?: continue
+                if (minSdk.isAtLeast(api)) {
+                    continue
+                }
+                val (suppressed, localMinSdk) = getSuppressed(context, api, node, minSdk)
+                if (suppressed) {
+                    continue
+                }
+                minSdk = max(minSdk, localMinSdk)
+                val location = context.getLocation(resource as UElement)
+                val message = "Implicit `${classType.name}.close()` call from try-with-resources requires API level ${api.minString()} (current min is %1\$s)"
+                report(
+                    UNSUPPORTED, resource, location, message, apiLevelFix(api, minSdk), qualifiedName,
+                    requires = api, min = minSdk
+                )
             }
 
             for (catchClause in node.catchClauses) {

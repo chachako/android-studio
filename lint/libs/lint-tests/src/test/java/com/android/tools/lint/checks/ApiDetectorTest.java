@@ -40,6 +40,7 @@ import com.android.tools.lint.detector.api.Project;
 import com.android.tools.lint.detector.api.Severity;
 import org.intellij.lang.annotations.Language;
 
+@SuppressWarnings("TextBlockMigration")
 public class ApiDetectorTest extends AbstractCheckTest {
 
     @Override
@@ -4263,6 +4264,33 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expect(expected);
     }
 
+    public void testCastVariable() {
+        lint().files(
+                        manifest().minSdk(21),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "class Test {\n"
+                                        + "    public void testCast(android.util.ArraySet<String> arraySet) {\n"
+                                        + "        java.util.Collection<String> collection = arraySet; // ERROR 1: Interfaced added in 23\n"
+                                        + "    }\n"
+                                        + "    public void testCast2(android.util.ArraySet arraySet) {\n"
+                                        + "        java.util.Collection<String> collection = arraySet; // ERROR 2: Interfaced added in 23\n"
+                                        + "    }\n"
+                                        + "}"))
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/Test.java:5: Error: Cast from ArraySet to Collection requires API level 23 (current min is 21) [NewApi]\n"
+                                + "        java.util.Collection<String> collection = arraySet; // ERROR 1: Interfaced added in 23\n"
+                                + "                                                  ~~~~~~~~\n"
+                                + "src/test/pkg/Test.java:8: Error: Cast from ArraySet to Collection requires API level 23 (current min is 21) [NewApi]\n"
+                                + "        java.util.Collection<String> collection = arraySet; // ERROR 2: Interfaced added in 23\n"
+                                + "                                                  ~~~~~~~~\n"
+                                + "2 errors, 0 warnings");
+    }
+
     public void testInstanceofCast() {
         lint().files(
                         manifest().minSdk(21),
@@ -4317,13 +4345,19 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
+                                + "src/test/pkg/CastTest.java:20: Error: Call requires API level 24 (current min is 21): android.media.AudioFormat#describeContents [NewApi]\n"
+                                + "        format.describeContents(); // ERROR - requires 24 because Parcelable method\n"
+                                + "               ~~~~~~~~~~~~~~~~\n"
                                 + "src/test/pkg/CastTest.java:21: Error: Cast from AudioFormat to Parcelable requires API level 24 (current min is 21) [NewApi]\n"
                                 + "        Parcelable parcel = format; // ERROR - implicit cast requires 24\n"
                                 + "                            ~~~~~~\n"
+                                + "src/test/pkg/CastTest2.kt:17: Error: Call requires API level 24 (current min is 21): android.media.AudioFormat#describeContents [NewApi]\n"
+                                + "        format.describeContents() // ERROR - requires 24 because Parcelable method\n"
+                                + "               ~~~~~~~~~~~~~~~~\n"
                                 + "src/test/pkg/CastTest2.kt:18: Error: Cast from AudioFormat to Parcelable requires API level 24 (current min is 21) [NewApi]\n"
                                 + "        val parcel: Parcelable = format // ERROR - implicit cast requires 24\n"
                                 + "                                 ~~~~~~\n"
-                                + "2 errors, 0 warnings");
+                                + "4 errors, 0 warnings");
     }
 
     @SuppressWarnings({
@@ -5325,6 +5359,202 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void testTryWithResourcesOk() {
+        // Now always desugared
+        lint().files(
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import java.io.BufferedReader;\n"
+                                        + "import java.io.FileReader;\n"
+                                        + "import java.io.IOException;\n"
+                                        + "\n"
+                                        + "public class TryWithResources {\n"
+                                        + "    public String testTryWithResources(String path) throws IOException {\n"
+                                        + "        try (BufferedReader br = new BufferedReader(new FileReader(path))) {\n"
+                                        + "            return br.readLine();\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "}\n"))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expectClean();
+    }
+
+    public void test263526227() {
+        // Regression test for
+        // 263526227: Lint doesn't check valid casts for call receivers
+        lint().files(
+                        manifest().minSdk(24),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "import android.content.res.TypedArray;\n"
+                                        + "public class Test {\n"
+                                        + "    public void testAutoCloseable(TypedArray array) {\n"
+                                        + "        array.close(); // ERROR 1\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "}"))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/Test.java:5: Error: Call requires API level 31 (current min is 24): android.content.res.TypedArray#close [NewApi]\n"
+                                + "        array.close(); // ERROR 1\n"
+                                + "              ~~~~~\n"
+                                + "1 errors, 0 warnings");
+    }
+
+    public void test263526184() {
+        // Regression test for 263526184: Lint only checks safe casts for directly implemented
+        // interfaces, not inherited ones
+        //noinspection UnnecessaryLocalVariable
+        lint().files(
+                        manifest().minSdk(24),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.net.LocalServerSocket;\n"
+                                        + "import java.io.Closeable;\n"
+                                        + "import java.io.IOException;\n"
+                                        + "\n"
+                                        + "public class TryTest {\n"
+                                        + "    public void testAutoVsCloseable(LocalServerSocket socket) {\n"
+                                        + "        Closeable closeable = socket; // ERROR 1: requires API 28\n"
+                                        + "        AutoCloseable closeable2 = socket; // ERROR 2: requires max(API 28, API 19)\n"
+                                        + "    }\n"
+                                        + "}"))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/TryTest.java:9: Error: Cast from LocalServerSocket to Closeable requires API level 28 (current min is 24) [NewApi]\n"
+                                + "        Closeable closeable = socket; // ERROR 1: requires API 28\n"
+                                + "                              ~~~~~~\n"
+                                + "src/test/pkg/TryTest.java:10: Error: Cast from LocalServerSocket to AutoCloseable requires API level 28 (current min is 24) [NewApi]\n"
+                                + "        AutoCloseable closeable2 = socket; // ERROR 2: requires max(API 28, API 19)\n"
+                                + "                                   ~~~~~~\n"
+                                + "2 errors, 0 warnings");
+    }
+
+    public void testTryWithResourcesAutoCloseJava() {
+        // Regression test for 262851206: TypedArray#close (API 31) not desugared but AS does not
+        // display warning when used in try-with-resources
+        //noinspection CatchMayIgnoreException
+        lint().files(
+                        manifest().minSdk(24),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.content.res.TypedArray;\n"
+                                        + "import android.net.LocalServerSocket;\n"
+                                        + "\n"
+                                        + "import java.io.Closeable;\n"
+                                        + "import java.io.IOException;\n"
+                                        + "\n"
+                                        + "public class TryTest {\n"
+                                        + "    public void testAutoCloseable() {\n"
+                                        + "        try (TypedArray array = createArray(); // ERROR 1\n"
+                                        + "             TypedArray array2 = createArray()) { // ERROR 2\n"
+                                        + "            array.getDrawable(0);\n"
+                                        + "        } // TypedArray#close implicitly called, crash on API < 31\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    public void testCloseable() {\n"
+                                        + "        try {\n"
+                                        + "            createSocket().close(); // OK: close since 1\n"
+                                        + "            try (LocalServerSocket socket = createSocket()) { // OK: AutoCloseable since 28 but close() since 1\n"
+                                        + "                socket.accept();\n"
+                                        + "            }\n"
+                                        + "        } catch (IOException ignore) {\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    public TypedArray createArray() {\n"
+                                        + "        return null;\n"
+                                        + "    }\n"
+                                        + "    public LocalServerSocket createSocket() {\n"
+                                        + "        return null;\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "}"))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/TryTest.java:11: Error: Implicit TypedArray.close() call from try-with-resources requires API level 31 (current min is 24) [NewApi]\n"
+                                + "        try (TypedArray array = createArray(); // ERROR 1\n"
+                                + "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                                + "src/test/pkg/TryTest.java:12: Error: Implicit TypedArray.close() call from try-with-resources requires API level 31 (current min is 24) [NewApi]\n"
+                                + "             TypedArray array2 = createArray()) { // ERROR 2\n"
+                                + "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                                + "2 errors, 0 warnings");
+    }
+
+    public void testTryWithResourcesAutoCloseKotlin() {
+        lint().files(
+                        manifest().minSdk(24),
+                        kotlin(
+                                ""
+                                        + "package test.pkg\n"
+                                        + "\n"
+                                        + "import android.content.res.TypedArray\n"
+                                        + "import android.net.LocalServerSocket\n"
+                                        + "import java.io.Closeable\n"
+                                        + "import java.io.IOException\n"
+                                        + "\n"
+                                        + "class TryTest {\n"
+                                        + "    fun testAutoCloseable() {\n"
+                                        + "        createArray().close() // ERROR 1\n"
+                                        + "        createArray().use { array -> // ERROR 2\n"
+                                        + "            array.getDrawable(0)\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    fun testAutoVsCloseable(socket: LocalServerSocket) {\n"
+                                        + "        val closeable: Closeable = socket // ERROR 3: requires API 28\n"
+                                        + "        val closeable2: AutoCloseable = socket // ERROR 4: requires max(API 28, API 19)\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    fun testCloseable() {\n"
+                                        + "        try {\n"
+                                        + "            createSocket().close() // OK: since 1\n"
+                                        + "            createSocket().use { socket ->  // ERROR 5: Requires API 28\n"
+                                        + "                socket.accept()\n"
+                                        + "            }\n"
+                                        + "        } catch (ignore: IOException) {\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    private fun createArray(): TypedArray = TODO()\n"
+                                        + "    private fun createSocket(): LocalServerSocket = TODO()\n"
+                                        + "}"))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/TryTest.kt:10: Error: Call requires API level 31 (current min is 24): android.content.res.TypedArray#close [NewApi]\n"
+                                + "        createArray().close() // ERROR 1\n"
+                                + "                      ~~~~~\n"
+                                + "src/test/pkg/TryTest.kt:11: Error: Implicit cast from TypedArray to AutoCloseable requires API level 31 (current min is 24) [NewApi]\n"
+                                + "        createArray().use { array -> // ERROR 2\n"
+                                + "                      ~~~\n"
+                                + "src/test/pkg/TryTest.kt:17: Error: Cast from LocalServerSocket to Closeable requires API level 28 (current min is 24) [NewApi]\n"
+                                + "        val closeable: Closeable = socket // ERROR 3: requires API 28\n"
+                                + "                                   ~~~~~~\n"
+                                + "src/test/pkg/TryTest.kt:18: Error: Cast from LocalServerSocket to AutoCloseable requires API level 28 (current min is 24) [NewApi]\n"
+                                + "        val closeable2: AutoCloseable = socket // ERROR 4: requires max(API 28, API 19)\n"
+                                + "                                        ~~~~~~\n"
+                                + "src/test/pkg/TryTest.kt:24: Error: Implicit cast from LocalServerSocket to Closeable requires API level 28 (current min is 24) [NewApi]\n"
+                                + "            createSocket().use { socket ->  // ERROR 5: Requires API 28\n"
+                                + "                           ~~~\n"
+                                + "5 errors, 0 warnings");
+    }
+
     public void testExceptionHandlingDalvik() {
         // Regression test for 131349148: Dalvik: java.lang.VerifyError
         lint().files(
@@ -5445,9 +5675,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "7 errors, 0 warnings");
     }
 
-    @SuppressWarnings("all") // Sample code
     public void testConcurrentHashMapUsage() {
-        ApiLookup lookup = ApiLookup.get(createClient());
         String expected =
                 ""
                         + "src/test/pkg/MapUsage.java:7: Error: The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 1); to work around this, add an explicit cast to (Map) before the keySet call. [NewApi]\n"
@@ -9390,46 +9618,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                             + "\n"
                             + "</resources>\n");
 
-    @SuppressWarnings("all") // Sample code
-    private TestFile tryWithResources =
-            java(
-                    ""
-                            + "package test.pkg;\n"
-                            + "\n"
-                            + "import java.io.BufferedReader;\n"
-                            + "import java.io.FileReader;\n"
-                            + "import java.io.IOException;\n"
-                            + "\n"
-                            + "public class TryWithResources {\n"
-                            + "    public String testTryWithResources(String path) throws IOException {\n"
-                            + "        try (BufferedReader br = new BufferedReader(new FileReader(path))) {\n"
-                            + "            return br.readLine();\n"
-                            + "        }\n"
-                            + "    }\n"
-                            + "}\n");
-
-    @SuppressWarnings("all") // Sample code
-    private TestFile multiCatch =
-            java(
-                    ""
-                            + "package test.pkg;\n"
-                            + "\n"
-                            + "import java.io.IOException;\n"
-                            + "import java.lang.reflect.InvocationTargetException;\n"
-                            + "\n"
-                            + "public class MultiCatch {\n"
-                            + "    public void testMultiCatch() {\n"
-                            + "        try {\n"
-                            + "            Class.forName(\"java.lang.Integer\").getMethod(\"toString\").invoke(null);\n"
-                            + "        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {\n"
-                            + "            e.printStackTrace();\n"
-                            + "        } catch (ClassNotFoundException e) {\n"
-                            + "            e.printStackTrace();\n"
-                            + "        }\n"
-                            + "    }\n"
-                            + "}\n");
-
-    @SuppressWarnings("all") // Sample code
     private TestFile mVector =
             xml(
                     "res/drawable/vector.xml",
