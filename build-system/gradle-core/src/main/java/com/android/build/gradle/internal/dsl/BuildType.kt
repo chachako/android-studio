@@ -130,8 +130,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         dslServices,
         componentType
     )
-    private var _postProcessingConfiguration: PostProcessingConfiguration? = null
-    private var postProcessingDslMethodUsed: String? = null
+
     private var _shrinkResources = false
 
     /*
@@ -309,13 +308,11 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         }
 
     override fun proguardFile(proguardFile: Any): BuildType {
-        checkPostProcessingConfiguration(PostProcessingConfiguration.OLD_DSL, "proguardFile")
         proguardFiles.add(dslServices.file(proguardFile))
         return this
     }
 
     override fun proguardFiles(vararg files: Any): BuildType {
-        checkPostProcessingConfiguration(PostProcessingConfiguration.OLD_DSL, "proguardFiles")
         for (file in files) {
             proguardFile(file)
         }
@@ -336,7 +333,6 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
      * full path to the files. They are identical except for enabling optimizations.
      */
     override fun setProguardFiles(proguardFileIterable: Iterable<*>): BuildType {
-        checkPostProcessingConfiguration(PostProcessingConfiguration.OLD_DSL, "setProguardFiles")
         val replacementFiles = Iterables.toArray(proguardFileIterable, Any::class.java)
         proguardFiles.clear()
         proguardFiles(
@@ -350,13 +346,11 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
 
 
     override fun testProguardFile(proguardFile: Any): BuildType {
-        checkPostProcessingConfiguration(PostProcessingConfiguration.OLD_DSL, "testProguardFile")
         testProguardFiles.add(dslServices.file(proguardFile))
         return this
     }
 
     override fun testProguardFiles(vararg proguardFiles: Any): BuildType {
-        checkPostProcessingConfiguration(PostProcessingConfiguration.OLD_DSL, "testProguardFiles")
         for (proguardFile in proguardFiles) {
             testProguardFile(proguardFile)
         }
@@ -370,9 +364,6 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
      * Test code needs to be processed to apply the same obfuscation as was done to main code.
      */
     fun setTestProguardFiles(files: Iterable<*>): BuildType {
-        checkPostProcessingConfiguration(
-            PostProcessingConfiguration.OLD_DSL, "setTestProguardFiles"
-        )
         testProguardFiles.clear()
         testProguardFiles(
             *Iterables.toArray(
@@ -387,17 +378,11 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         get() = super.consumerProguardFiles
 
     override fun consumerProguardFile(proguardFile: Any): BuildType {
-        checkPostProcessingConfiguration(
-            PostProcessingConfiguration.OLD_DSL, "consumerProguardFile"
-        )
         consumerProguardFiles.add(dslServices.file(proguardFile))
         return this
     }
 
     override fun consumerProguardFiles(vararg proguardFiles: Any): BuildType {
-        checkPostProcessingConfiguration(
-            PostProcessingConfiguration.OLD_DSL, "consumerProguardFiles"
-        )
         for (proguardFile in proguardFiles) {
             consumerProguardFile(proguardFile)
         }
@@ -418,9 +403,6 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
      * This is only valid for Library project. This is ignored in Application project.
      */
     fun setConsumerProguardFiles(proguardFileIterable: Iterable<*>): BuildType {
-        checkPostProcessingConfiguration(
-            PostProcessingConfiguration.OLD_DSL, "setConsumerProguardFiles"
-        )
         consumerProguardFiles.clear()
         consumerProguardFiles(
             *Iterables.toArray(
@@ -519,10 +501,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
     @get:Incubating
     override val postprocessing: PostProcessingBlock
         get() {
-            if (!postProcessingBlockUsed) {
-                postProcessingBlockUsed = true
-                _postProcessing.isRemoveUnusedCode = true
-            }
+            checkPostProcessingConfiguration()
             return _postProcessing
         }
 
@@ -530,10 +509,7 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
     @Incubating
     @Internal
     fun postprocessing(action: Action<PostProcessingBlock>) {
-        if (!postProcessingBlockUsed) {
-            postProcessingBlockUsed = true
-            _postProcessing.isRemoveUnusedCode = true
-        }
+        checkPostProcessingConfiguration()
         action.execute(_postProcessing)
     }
 
@@ -541,39 +517,10 @@ abstract class BuildType @Inject @WithLazyInitialization(methodName="lazyInit") 
         postprocessing(Action { action.invoke(it) })
     }
 
-    /**
-     * Checks that the user is consistently using either the new or old DSL for configuring bytecode
-     * postProcessing.
-     */
-    private fun checkPostProcessingConfiguration(
-        used: PostProcessingConfiguration,
-        methodName: String
-    ) {
-        if (!dslChecksEnabled) {
-            return
-        }
-        if (_postProcessingConfiguration == null) {
-            _postProcessingConfiguration = used
-            postProcessingDslMethodUsed = methodName
-        } else if (_postProcessingConfiguration != used) {
-            Preconditions.checkNotNull(postProcessingDslMethodUsed)
-            val message: String = when (used) {
-                PostProcessingConfiguration.POSTPROCESSING_BLOCK -> // TODO: URL with more details.
-                    String.format(
-                        "The `postProcessing` block cannot be used with together with the `%s` method.",
-                        postProcessingDslMethodUsed
-                    )
-                PostProcessingConfiguration.OLD_DSL -> // TODO: URL with more details.
-                    String.format(
-                        "The `%s` method cannot be used with together with the `postProcessing` block.",
-                        methodName
-                    )
-            }
-            dslServices.issueReporter.reportError(
-                IssueReporter.Type.GENERIC,
-                message,
-                methodName
-            )
+    private fun checkPostProcessingConfiguration() {
+        if (!postProcessingBlockUsed) {
+            postProcessingBlockUsed = true
+            _postProcessing.isRemoveUnusedCode = true
         }
     }
 
