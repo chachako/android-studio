@@ -17,6 +17,7 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AarMetadata
+import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.JniLibsPackaging
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.Packaging
@@ -113,5 +114,27 @@ class AnalyticsEnabledLibraryVariantTest {
             )
         )
         Mockito.verify(delegate, Mockito.times(1)).testFixtures
+    }
+
+    @Test
+    fun androidTest() {
+        val androidTest = Mockito.mock(AndroidTest::class.java)
+        Mockito.`when`(androidTest.pseudoLocalesEnabled).thenReturn(FakeGradleProperty(false))
+        Mockito.`when`(delegate.androidTest).thenReturn(androidTest)
+
+        proxy.androidTest.let {
+            Truth.assertThat(it?.pseudoLocalesEnabled?.get()).isEqualTo(false)
+        }
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.map { it.type }
+        ).containsExactlyElementsIn(
+            listOf(
+                VariantPropertiesMethodType.ANDROID_TEST_VALUE,
+                VariantPropertiesMethodType.VARIANT_PSEUDOLOCALES_ENABLED_VALUE,
+            )
+        )
+        Mockito.verify(delegate, Mockito.times(1)).androidTest
     }
 }
