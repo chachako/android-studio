@@ -213,7 +213,7 @@ DATA = [
     "androidx.core:core-ktx:1.3.0",
     "androidx.core:core-ktx:1.3.2",
     "androidx.core:core-ktx:1.6.0",
-    "androidx.core:core-ktx:1.8.0",
+    "androidx.core:core-ktx:1.9.0",
     "androidx.customview:customview-poolingcontainer:1.0.0-beta01",
     "androidx.databinding:viewbinding:7.2.0",
     "androidx.fragment:fragment:1.3.0",
