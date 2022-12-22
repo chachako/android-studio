@@ -132,7 +132,7 @@ class LocalEmulatorProvisionerPluginTest {
 
     yieldUntil { provisioner.devices.value.size == 2 }
     val devices = provisioner.devices.value
-    assertThat(devices.map { it.state.properties.title() })
+    assertThat(devices.map { it.state.properties.title })
       .containsExactly("Fake Device 1", "Fake Device 2")
     checkProperties(devices[0].state.properties as LocalEmulatorProperties)
   }
@@ -147,7 +147,7 @@ class LocalEmulatorProvisionerPluginTest {
     avdManager.deleteAvd(avds[0])
 
     yieldUntil { provisioner.devices.value.size == n - 1 }
-    val displayNames = provisioner.devices.value.map { it.state.properties.title() }
+    val displayNames = provisioner.devices.value.map { it.state.properties.title }
     assertThat(displayNames).doesNotContain(avds[0].displayName)
     assertThat(displayNames).contains(avds[1].displayName)
   }
@@ -163,7 +163,7 @@ class LocalEmulatorProvisionerPluginTest {
 
     yieldUntil { handle.state.connectedDevice != null }
 
-    assertThat(provisioner.devices.value.map { it.state.properties.title() })
+    assertThat(provisioner.devices.value.map { it.state.properties.title })
       .containsExactly("Fake Device 1")
     val properties = provisioner.devices.value[0].state.properties as LocalEmulatorProperties
     checkProperties(properties)
@@ -177,7 +177,7 @@ class LocalEmulatorProvisionerPluginTest {
     yieldUntil { handle.state.connectedDevice == null }
 
     assertThat(handle.state).isInstanceOf(Disconnected::class.java)
-    assertThat(provisioner.devices.value.map { it.state.properties.title() })
+    assertThat(provisioner.devices.value.map { it.state.properties.title })
       .containsExactly("Fake Device 1")
   }
 

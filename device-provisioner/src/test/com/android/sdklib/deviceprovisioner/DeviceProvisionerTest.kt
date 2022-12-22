@@ -176,7 +176,7 @@ class DeviceProvisionerTest {
 
           val handle = handles[0]
           assertThat(handle.state).isInstanceOf(Connected::class.java)
-          assertThat(handle.state.properties.title())
+          assertThat(handle.state.properties.title)
             .isEqualTo("Unknown device (${SerialNumbers.physicalUsb})")
 
           handle

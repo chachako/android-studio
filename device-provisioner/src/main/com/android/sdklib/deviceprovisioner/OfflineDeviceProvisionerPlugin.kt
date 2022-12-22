@@ -82,7 +82,8 @@ private class OfflineDeviceHandle(device: OfflineConnectedDevice) : DeviceHandle
     MutableStateFlow(Connected(OfflineDeviceProperties(device.serialNumber), device))
 }
 
-class OfflineDeviceProperties(val serialNumber: String) :
-  DeviceProperties by DeviceProperties.Builder().buildBase() {
-  override fun title() = "Unknown device ($serialNumber)"
+class OfflineDeviceProperties(
+  val serialNumber: String,
+) : DeviceProperties by DeviceProperties.Builder().buildBase() {
+  override val title = "Unknown device ($serialNumber)"
 }

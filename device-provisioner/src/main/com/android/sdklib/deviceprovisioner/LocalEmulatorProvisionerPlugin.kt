@@ -336,18 +336,19 @@ class LocalEmulatorProperties(
   val avdName: String,
   val displayName: String
 ) : DeviceProperties by base {
-  class Builder : DeviceProperties.Builder() {
-    var avdName: String? = null
-    var displayName: String? = null
-  }
 
-  override fun title() = displayName
+  override val title = displayName
 
   companion object {
     fun build(block: Builder.() -> Unit) =
       Builder().apply(block).run {
         LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
       }
+  }
+
+  class Builder : DeviceProperties.Builder() {
+    var avdName: String? = null
+    var displayName: String? = null
   }
 }
 

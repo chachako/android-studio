@@ -16,8 +16,11 @@
 package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.DevicePropertyNames.RO_BUILD_CHARACTERISTICS
+import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_CODENAME
 import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_RELEASE
 import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_SDK
+import com.android.adblib.DevicePropertyNames.RO_MANUFACTURER
+import com.android.adblib.DevicePropertyNames.RO_MODEL
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MODEL
@@ -43,7 +46,7 @@ interface DeviceProperties {
   val androidVersion: AndroidVersion?
   /** The user-visible version of Android, like "7.1" or "11". */
   val androidRelease: String?
-  /** The class of hardware of the device, e.g. phone, TV, auto. */
+  /** The class of hardware of the device, e.g. handheld, TV, auto. */
   val deviceType: DeviceType?
 
   /**
@@ -51,6 +54,21 @@ interface DeviceProperties {
    * used for disambiguating this device from others with similar properties.
    */
   val disambiguator: String?
+
+  /** Default implementation of device title; may be overridden. */
+  val title: String
+    get() {
+      return when {
+        manufacturer.isNullOrBlank() -> model ?: "Unknown"
+        model.isNullOrBlank() -> "$manufacturer Device"
+        else -> "$manufacturer $model"
+      }
+    }
+
+  companion object {
+    /** Builds a basic DeviceProperties instance with no additional fields. */
+    fun build(block: Builder.() -> Unit): DeviceProperties = Builder().apply(block).buildBase()
+  }
 
   open class Builder {
 
@@ -63,11 +81,11 @@ interface DeviceProperties {
     var deviceType: DeviceType? = null
 
     fun readCommonProperties(properties: Map<String, String>) {
-      manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties["ro.manufacturer"]
-      model = properties[RO_PRODUCT_MODEL] ?: properties["ro.model"]
+      manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
+      model = properties[RO_PRODUCT_MODEL] ?: properties[RO_MODEL]
       androidVersion =
         properties[RO_BUILD_VERSION_SDK]?.toIntOrNull()?.let { sdk ->
-          AndroidVersion(sdk, properties["ro.build.version.codename"])
+          AndroidVersion(sdk, properties[RO_BUILD_VERSION_CODENAME])
         }
       abi = properties[RO_PRODUCT_CPU_ABI]?.let { Abi.getEnum(it) }
       androidRelease = properties[RO_BUILD_VERSION_RELEASE]
@@ -94,22 +112,6 @@ interface DeviceProperties {
     override val disambiguator: String?,
     override val deviceType: DeviceType?
   ) : DeviceProperties
-
-  /** Default implementation of device title; may be overridden. */
-  fun title(): String =
-    when {
-      manufacturer.isNullOrBlank() -> model ?: "Unknown"
-      else ->
-        when {
-          model.isNullOrBlank() -> "$manufacturer Device"
-          else -> "$manufacturer $model"
-        }
-    }
-
-  companion object {
-    /** Builds a basic DeviceProperties instance with no additional fields. */
-    fun build(block: Builder.() -> Unit): DeviceProperties = Builder().apply(block).buildBase()
-  }
 }
 
 /**
