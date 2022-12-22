@@ -195,22 +195,6 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         checkPackagedGlobal(exceptionGlobalDex)
     }
 
-
-    // basic check for disabling global synthetics generation
-    @Test
-    fun testDisableGlobalSynthetics() {
-        createExceptionGlobalSourceFile(
-            app.mainSrcDir.resolve("com/example/app/$exceptionGlobalTriggerClass.java"),
-            "com.example.app",
-            exceptionGlobalTriggerClass
-        )
-        executor()
-            .with(BooleanOption.ENABLE_GLOBAL_SYNTHETICS, false)
-            .run("assembleDebug")
-
-        checkPackagedGlobal(exceptionGlobalDex, 0)
-    }
-
     // Regression test for b/257488927
     @Test
     fun minSdkVersionConsistent() {

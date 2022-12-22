@@ -222,7 +222,6 @@ enum class BooleanOption(
     ENABLE_DEXING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
     ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform.desugaring", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
     ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS("android.enableDexingArtifactTransformForExternalLibs", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-    ENABLE_GLOBAL_SYNTHETICS("android.enableGlobalSyntheticsGeneration", true, FeatureStage.SoftlyEnforced(VERSION_8_1)),
 
     /* -------------------
      * DEPRECATED FEATURES
@@ -548,6 +547,12 @@ enum class BooleanOption(
         "android.bundle.enableUncompressedNativeLibs",
         true,
         FeatureStage.Enforced(Version.VERSION_8_0)
+    ),
+
+    ENABLE_GLOBAL_SYNTHETICS(
+            "android.enableGlobalSyntheticsGeneration",
+            true,
+            FeatureStage.Enforced(Version.VERSION_8_1)
     ),
 
     /* ----------------
