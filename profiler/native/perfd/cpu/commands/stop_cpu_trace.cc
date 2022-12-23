@@ -103,7 +103,7 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
     trace_event.set_group_id(trace_id);
     trace_event.set_is_ended(true);
     trace_event.set_command_id(command_data.command_id());
-    trace_event.mutable_cpu_trace()
+    trace_event.mutable_trace_data()
         ->mutable_trace_ended()
         ->mutable_trace_info()
         ->mutable_stop_status()

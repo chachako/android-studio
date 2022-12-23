@@ -92,34 +92,6 @@ message CpuThreadData {
   State state = 3;
 }
 
-
-
-// A CpuTraceInfo contains the information regarding a trace
-// and should be returned if its time overlaps with the request time range.
-message CpuTraceInfo {
-  int64 trace_id = 1;
-  int64 from_timestamp = 2;  // inclusive
-  int64 to_timestamp = 3;    // inclusive
-  TraceConfiguration configuration = 4;
-  TraceStartStatus start_status = 5;
-  TraceStopStatus stop_status = 6;
-}
-
-message CpuTraceData {
-  message TraceStarted {
-    CpuTraceInfo trace_info = 1;
-  }
-
-  message TraceEnded {
-    CpuTraceInfo trace_info = 1;
-  }
-
-  oneof union {
-    TraceStarted trace_started = 1;
-    TraceEnded trace_ended = 2;
-  }
-}
-
 message StartCpuTrace {
   // Agent is responsible for providing these additional info for API-
   // initiated tracing.

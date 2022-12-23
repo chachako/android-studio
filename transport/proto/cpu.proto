@@ -73,7 +73,7 @@ message GetTraceInfoRequest {
 }
 
 message GetTraceInfoResponse {
-  repeated CpuTraceInfo trace_info = 1;
+  repeated TraceInfo trace_info = 1;
 }
 
 message Thread {

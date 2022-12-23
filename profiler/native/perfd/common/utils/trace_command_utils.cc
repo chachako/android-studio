@@ -39,10 +39,10 @@ Event PopulateTraceEvent(const CaptureInfo& capture,
 
   if (event_kind == Event::CPU_TRACE) {
     event.set_group_id(capture.trace_id);
-    auto* trace_info = is_end ? event.mutable_cpu_trace()
+    auto* trace_info = is_end ? event.mutable_trace_data()
                                     ->mutable_trace_ended()
                                     ->mutable_trace_info()
-                              : event.mutable_cpu_trace()
+                              : event.mutable_trace_data()
                                     ->mutable_trace_started()
                                     ->mutable_trace_info();
     trace_info->set_trace_id(capture.trace_id);

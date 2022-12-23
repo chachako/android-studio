@@ -157,11 +157,11 @@ TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
   EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
   EXPECT_EQ(events_[2].kind(), proto::Event::CPU_TRACE);
   EXPECT_FALSE(events_[2].is_ended());
-  EXPECT_TRUE(events_[2].has_cpu_trace());
-  EXPECT_TRUE(events_[2].cpu_trace().has_trace_started());
+  EXPECT_TRUE(events_[2].has_trace_data());
+  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
   EXPECT_TRUE(MessageDifferencer::Equals(
       trace_config_,
-      events_[2].cpu_trace().trace_started().trace_info().configuration()));
+      events_[2].trace_data().trace_started().trace_info().configuration()));
 
   // Execute the end command
   command.set_type(proto::Command::STOP_CPU_TRACE);
@@ -182,11 +182,11 @@ TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
   EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
   EXPECT_EQ(events_[4].kind(), proto::Event::CPU_TRACE);
   EXPECT_TRUE(events_[4].is_ended());
-  EXPECT_TRUE(events_[4].has_cpu_trace());
-  EXPECT_TRUE(events_[4].cpu_trace().has_trace_ended());
+  EXPECT_TRUE(events_[4].has_trace_data());
+  EXPECT_TRUE(events_[4].trace_data().has_trace_ended());
   EXPECT_TRUE(MessageDifferencer::Equals(
       trace_config_,
-      events_[4].cpu_trace().trace_ended().trace_info().configuration()));
+      events_[4].trace_data().trace_ended().trace_info().configuration()));
 }
 
 TEST_F(CpuTraceCommandsTest, FailToStartCapture) {

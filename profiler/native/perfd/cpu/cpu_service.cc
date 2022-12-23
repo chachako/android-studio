@@ -42,13 +42,13 @@ using profiler::proto::CpuStartRequest;
 using profiler::proto::CpuStartResponse;
 using profiler::proto::CpuStopRequest;
 using profiler::proto::CpuStopResponse;
-using profiler::proto::CpuTraceInfo;
 using profiler::proto::CpuUsageData;
 using profiler::proto::GetThreadsRequest;
 using profiler::proto::GetThreadsResponse;
 using profiler::proto::GetTraceInfoRequest;
 using profiler::proto::GetTraceInfoResponse;
 using profiler::proto::TraceConfiguration;
+using profiler::proto::TraceInfo;
 using profiler::proto::TraceMode;
 using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
@@ -128,7 +128,7 @@ grpc::Status CpuServiceImpl::GetTraceInfo(ServerContext* context,
   const vector<CaptureInfo>& data = trace_manager_->GetCaptures(
       app_name, request->from_timestamp(), request->to_timestamp());
   for (const auto& datum : data) {
-    CpuTraceInfo* info = response->add_trace_info();
+    TraceInfo* info = response->add_trace_info();
     info->mutable_configuration()->CopyFrom(datum.configuration);
     info->set_from_timestamp(datum.start_timestamp);
     info->set_to_timestamp(datum.end_timestamp);

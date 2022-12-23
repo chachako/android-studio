@@ -178,7 +178,10 @@ message Event {
 
     // Profiler Prefix = 100
     SessionData session = 101;
+    // Poulated when |kind| is |TRACE_STATUS|
     TraceStatusData trace_status = 102;
+    // Populated when |kind| is a non-status, trace-related event.
+    TraceData trace_data = 103;
 
     // Network Profiler Prefix = 200
     // Populated when |kind| is |NETWORK_SPEED|
@@ -196,7 +199,6 @@ message Event {
     CpuUsageData cpu_usage = 301;
     CpuThreadData cpu_thread = 302;
     CpuCoreConfigData cpu_core_config = 303;
-    CpuTraceData cpu_trace = 304;
 
     // Memory Profiler Prefix = 400
     MemoryUsageData memory_usage = 401;

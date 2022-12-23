@@ -21,6 +21,36 @@ option java_outer_classname = "Trace";
 
 import "protos/perfetto/config/perfetto_config.proto";
 
+// A TraceInfo contains the information regarding a trace
+// and should be returned if its time overlaps with the request time range.
+message TraceInfo {
+  int64 trace_id = 1;
+  int64 from_timestamp = 2;  // inclusive
+  int64 to_timestamp = 3;    // inclusive
+  TraceConfiguration configuration = 4;
+  TraceStartStatus start_status = 5;
+  TraceStopStatus stop_status = 6;
+}
+
+// A TraceData contains a TraceInfo message, wrapped in either
+// a TraceStarted or TraceEnded message to indicate whether the
+// data is tied to the start or end of a trace. This is the data
+// type tied to a cpu and memory trace events.
+message TraceData {
+  message TraceStarted {
+    TraceInfo trace_info = 1;
+  }
+
+  message TraceEnded {
+    TraceInfo trace_info = 1;
+  }
+
+  oneof union {
+    TraceStarted trace_started = 1;
+    TraceEnded trace_ended = 2;
+  }
+}
+
 message TraceStartStatus {
   enum Status {
     UNSPECIFIED = 0;
