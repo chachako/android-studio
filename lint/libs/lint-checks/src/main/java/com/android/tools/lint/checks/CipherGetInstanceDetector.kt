@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.detector.api.ApiConstraint
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.Context
@@ -28,6 +29,7 @@ import com.android.tools.lint.detector.api.LintMap
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.VersionChecks.Companion.getOuterVersionCheckConstraint
 import com.google.common.collect.Sets
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
@@ -121,6 +123,11 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
         provider: String
     ) {
         if (provider == "BC") {
+            val atLeastP = ApiConstraint.get(28)
+            val constraint = getOuterVersionCheckConstraint(context, call)
+            if (constraint != null && constraint != ApiConstraint.UNKNOWN && constraint.not().alwaysAtLeast(atLeastP)) {
+                return
+            }
             val incident = Incident(DEPRECATED_PROVIDER, call, context.getLocation(node), "")
             context.report(incident, map())
         }

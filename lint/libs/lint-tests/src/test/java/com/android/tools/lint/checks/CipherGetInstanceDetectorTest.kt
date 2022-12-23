@@ -227,7 +227,7 @@ class CipherGetInstanceDetectorTest : AbstractCheckTest() {
         ).run().expect(expected)
     }
 
-    fun testDeprecatedProviderPorHigher() {
+    fun testDeprecatedProviderForHigher() {
         val expected =
             """
             src/test/pkg/BCProviderTest.java:8: Warning: The BC provider is deprecated and as of Android P this method will throw a NoSuchAlgorithmException. To fix this you should stop specifying a provider and use the default implementation [DeprecatedProvider]
@@ -252,5 +252,50 @@ class CipherGetInstanceDetectorTest : AbstractCheckTest() {
                 """
             ).indented()
         ).run().expect(expected)
+    }
+
+    fun test263115741() {
+        lint().files(
+            manifest().targetSdk(28),
+            java(
+                """
+                package test.pkg;
+
+                import static android.os.Build.VERSION.SDK_INT;
+                import static android.os.Build.VERSION_CODES.O_MR1;
+                import static android.os.Build.VERSION_CODES.P;
+                import static android.os.Build.VERSION_CODES.Q;
+
+                import java.security.NoSuchAlgorithmException;
+                import java.security.NoSuchProviderException;
+
+                import javax.crypto.Cipher;
+                import javax.crypto.NoSuchPaddingException;
+
+                public class TestCipher {
+                    public void test() throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException {
+                        final Cipher cipher1 = SDK_INT >= O_MR1 ?
+                                Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding") :
+                                Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding", "BC"); // OK 1
+
+                        final Cipher cipher2 = SDK_INT >= P ?
+                                Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding") :
+                                Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding", "BC"); // OK 2
+
+                        final Cipher cipher3 = SDK_INT >= Q ?
+                                Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding") :
+                                Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding", "BC"); // ERROR
+                    }
+                }
+                """
+            ).indented()
+        ).run().expect(
+            """
+            src/test/pkg/TestCipher.java:26: Warning: The BC provider is deprecated and as of Android P this method will throw a NoSuchAlgorithmException. To fix this you should stop specifying a provider and use the default implementation [DeprecatedProvider]
+                            Cipher.getInstance("RSA/NONE/OAEPWithSHA256AndMGF1Padding", "BC"); // ERROR
+                                                                                        ~~~~
+            0 errors, 1 warnings
+            """
+        )
     }
 }
