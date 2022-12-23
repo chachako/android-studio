@@ -67,6 +67,11 @@ public class GroovyGradleVisitor extends GradleVisitor {
             // handle. This happens for example when running lint in build-system/tests/api/.
             // This is a lint limitation rather than a user error, so don't complain
             // about these. Consider reporting a Issue#LINT_ERROR.
+
+            // From tests we want to see this!
+            if (LintClient.isUnitTest()) {
+                t.printStackTrace();
+            }
         }
     }
 
