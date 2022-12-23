@@ -53,7 +53,6 @@ filegroup(
         "//tools/adt/idea/build-attribution:__pkg__",
         "//tools/adt/idea/compose-designer:__pkg__",
         "//tools/adt/idea/designer:__pkg__",
-        "//tools/adt/idea/layout-inspector:__pkg__",
         "//tools/adt/idea/old-agp-tests:__pkg__",
         "//tools/adt/idea/project-system-gradle-upgrade:__pkg__",
         "//tools/adt/idea/sync-perf-tests:__pkg__",
