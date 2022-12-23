@@ -77,9 +77,9 @@ internal class SourceDirectoriesImplTest {
 
     @Test
     fun testAsFileTree() {
-        Mockito.`when`(variantServices.fileTree()).thenReturn(
-            project.objects.fileTree(),
-            project.objects.fileTree(),
+        Mockito.`when`(variantServices.fileTreeFactory()).thenReturn(
+            { project.objects.fileTree() },
+            { project.objects.fileTree() },
         )
         val addedSourceFromTask = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
         val addedSrcDir = temporaryFolder.newFolder("somewhere/safe")
