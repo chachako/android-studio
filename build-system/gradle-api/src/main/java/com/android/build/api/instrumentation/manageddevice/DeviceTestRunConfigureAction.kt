@@ -85,7 +85,6 @@ interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunI
      * test run action.
      *
      * @param deviceDSL The DSL for the individual device for the test task.
-     * @param objects Object factory available for convenience to instantiate the TestRunInput.
      *
      * @return The cacheable inputs for the test task. This will be consumed as part of the
      * [test run action][DeviceTestRunTaskAction]. As specified by the [ManagedDeviceTestRunFactory]
@@ -93,5 +92,5 @@ interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunI
      * @suppress Do not use from production code.This API exposed for prototype.
      */
     @Incubating
-    fun configureTaskInput(deviceDSL: DeviceT, objects: ObjectFactory): InputT
+    fun configureTaskInput(deviceDSL: DeviceT): InputT
 }

@@ -66,20 +66,19 @@ import org.gradle.api.model.ObjectFactory
  * ```
  *
  * @param DeviceT: The interface of the Custom Managed Device this configure action corresponds to.
- * @param InputT: The specialized [DeviceSetupInput] this configuration action generates for the
+ * @param SetupInputT: The specialized [DeviceSetupInput] this configuration action generates for the
  * instrumentation test task.
  *
  * @suppress Do not use from production code. All properties in this interface are exposed for
  * prototype.
  */
 @Incubating
-interface DeviceSetupConfigureAction <DeviceT : Device, InputT: DeviceSetupInput> {
+interface DeviceSetupConfigureAction <DeviceT : Device, SetupInputT: DeviceSetupInput> {
 
     /**
      * Generates the inputs into the test setup task to be consumed by the setup task action.
      *
      * @param deviceDSL The DSL for the individual managed device being setup.
-     * @param objects Object factory available for convenience to instantiate the Setup Input.
      *
      * @return The inputs for the Setup Task. This will be consumed as part of the
      * setup action. As specified by the ManagedDeviceSetupFactory.
@@ -87,5 +86,5 @@ interface DeviceSetupConfigureAction <DeviceT : Device, InputT: DeviceSetupInput
      * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @Incubating
-    fun configureTaskInput(deviceDSL: DeviceT, objects: ObjectFactory): InputT
+    fun configureTaskInput(deviceDSL: DeviceT): SetupInputT
 }

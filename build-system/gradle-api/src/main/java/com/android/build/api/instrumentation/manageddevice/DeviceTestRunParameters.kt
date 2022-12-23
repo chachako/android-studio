@@ -43,17 +43,6 @@ interface DeviceTestRunParameters<InputT: DeviceTestRunInput> {
     val deviceInput: InputT
 
     /**
-     * The output from the [DeviceSetupTaskAction] for managed device the test is
-     * being run on.
-     *
-     * This input into the [TaskAction][DeviceTestRunTaskAction] is optional and will
-     * be not be present if the implementation of the Custom Managed Device does not
-     * implement the [ManagedDeviceSetupFactory].
-     */
-    @get: Incubating
-    val setupResult: RegularFileProperty
-
-    /**
      * All inputs for the Test Run independent of the type of managed device.
      *
      * See [TestRunData].

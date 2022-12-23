@@ -51,7 +51,7 @@ import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig;
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl;
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig;
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig;
-import com.android.build.gradle.internal.testing.CustomManagedDeviceRegistry;
+import com.android.build.gradle.internal.testing.ManagedDeviceRegistry;
 import com.android.build.gradle.internal.variant.ApplicationVariantFactory;
 import com.android.build.gradle.internal.variant.ComponentInfo;
 import com.android.build.gradle.internal.variant.VariantModel;
@@ -189,7 +189,7 @@ public class AppPlugin
         public ApplicationAndroidComponentsExtensionImplCompat(
                 @NonNull DslServices dslServices,
                 @NonNull SdkComponents sdkComponents,
-                @NonNull CustomManagedDeviceRegistry deviceRegistry,
+                @NonNull ManagedDeviceRegistry deviceRegistry,
                 @NonNull
                         VariantApiOperationsRegistrar<
                                         ApplicationExtension,
@@ -242,8 +242,7 @@ public class AppPlugin
                                 ApplicationAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
-                                new CustomManagedDeviceRegistry(
-                                        project.provider(getExtension()::getTestOptions)),
+                                new ManagedDeviceRegistry(getExtension().getTestOptions()),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 

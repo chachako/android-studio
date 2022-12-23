@@ -20,18 +20,24 @@ import com.android.build.api.dsl.Device
 import org.gradle.api.Incubating
 
 /**
- * Class containing all information regarding the DSL for a new Custom Managed Device Type. For
- * use with the [CustomManagedDeviceRegistry].
- *
- * @param deviceApi The api interface for the Custom Managed Device, which should be visible to
- *     developers using the DSL.
- * @param deviceImpl the actual implementation of the [deviceApi] class.
+ * Registry for Managed Device types.
  *
  * @suppress Do not use from production code. All properties in this interface are exposed for
  * prototype.
  */
 @Incubating
-class ManagedDeviceDslRegistration <DeviceT : Device> @Incubating constructor(
-    @get:Incubating val deviceApi : Class<DeviceT>,
-    @get:Incubating val deviceImpl : Class<out DeviceT>
-)
+interface ManagedDeviceRegistry {
+
+    /**
+     * Registers a new managed device type.
+     *
+     * @param DeviceT The api interface for the Custom Managed Device in the DSL.
+     * @param dslInterface The DSL interface class for this managed device.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
+     */
+    @Incubating
+    fun <DeviceT: Device> registerDeviceType(
+        dslInterface : Class<DeviceT>,
+        setupBlock: (DeviceDslRegistration<DeviceT>).() -> Unit)
+}

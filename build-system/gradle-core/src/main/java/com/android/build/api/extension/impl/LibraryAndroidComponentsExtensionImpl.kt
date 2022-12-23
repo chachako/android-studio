@@ -18,7 +18,7 @@ package com.android.build.api.extension.impl
 
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.SdkComponents
-import com.android.build.api.instrumentation.manageddevice.CustomManagedDeviceRegistry
+import com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.LibraryVariantBuilder
@@ -27,15 +27,15 @@ import com.android.build.gradle.internal.services.DslServices
 open class LibraryAndroidComponentsExtensionImpl(
         dslServices: DslServices,
         sdkComponents: SdkComponents,
-        deviceRegistry: CustomManagedDeviceRegistry,
+        managedDeviceRegistry: ManagedDeviceRegistry,
         variantApiOperationsRegistrar: VariantApiOperationsRegistrar<LibraryExtension, LibraryVariantBuilder, LibraryVariant>,
         libraryExtension: LibraryExtension
 ):
         LibraryAndroidComponentsExtension,
         AndroidComponentsExtensionImpl<LibraryExtension, LibraryVariantBuilder, LibraryVariant>(
-                dslServices,
-                sdkComponents,
-                deviceRegistry,
-                variantApiOperationsRegistrar,
-                libraryExtension
+            dslServices,
+            sdkComponents,
+            managedDeviceRegistry,
+            variantApiOperationsRegistrar,
+            libraryExtension
         )
