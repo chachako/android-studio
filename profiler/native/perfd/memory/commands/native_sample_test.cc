@@ -168,7 +168,7 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
   EXPECT_EQ(events_[1].trace_status().trace_start_status().start_time_ns(), 10);
   EXPECT_EQ(events_[1].trace_status().trace_start_status().error_message(), "");
 
-  EXPECT_EQ(events_[2].kind(), proto::Event::MEM_TRACE);
+  EXPECT_EQ(events_[2].kind(), proto::Event::MEMORY_TRACE);
   EXPECT_TRUE(events_[2].has_trace_data());
   EXPECT_TRUE(events_[2].trace_data().has_trace_started());
   EXPECT_EQ(
@@ -201,7 +201,7 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
   EXPECT_EQ(events_[3].trace_status().trace_stop_status().error_message(), "");
   EXPECT_TRUE(events_[3].is_ended());
 
-  EXPECT_EQ(events_[4].kind(), proto::Event::MEM_TRACE);
+  EXPECT_EQ(events_[4].kind(), proto::Event::MEMORY_TRACE);
   EXPECT_TRUE(events_[4].has_trace_data());
   EXPECT_TRUE(events_[4].trace_data().has_trace_ended());
   EXPECT_EQ(events_[4].trace_data().trace_ended().trace_info().from_timestamp(),

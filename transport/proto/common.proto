@@ -98,7 +98,7 @@ message Event {
     // no specified group id.
     MEMORY_ALLOC_STATS = 411;
     // group_id: capture id (start timestamp)
-    MEM_TRACE = 412;
+    MEMORY_TRACE = 412;
 
     // Energy Profiler Prefix = 500
     // no specified group id.

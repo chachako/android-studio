@@ -52,7 +52,7 @@ Status StartNativeSample::ExecuteOn(Daemon* daemon) {
   std::vector<Event> events_to_send;
   if (capture != nullptr) {
     Event event =
-        PopulateTraceEvent(*capture, command(), Event::MEM_TRACE, false);
+        PopulateTraceEvent(*capture, command(), Event::MEMORY_TRACE, false);
     status_event.set_group_id(capture->start_timestamp);
 
     events_to_send.push_back(status_event);

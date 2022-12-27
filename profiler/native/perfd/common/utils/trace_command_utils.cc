@@ -35,7 +35,7 @@ Event PopulateTraceEvent(const CaptureInfo& capture,
     event.set_timestamp(capture.start_timestamp);
   }
 
-  assert(event_kind == Event::CPU_TRACE || event_kind == Event::MEM_TRACE);
+  assert(event_kind == Event::CPU_TRACE || event_kind == Event::MEMORY_TRACE);
 
   auto* trace_info = is_end ? event.mutable_trace_data()
                                   ->mutable_trace_ended()
@@ -57,7 +57,7 @@ Event PopulateTraceEvent(const CaptureInfo& capture,
     // CPU trace uses capture's trace id as the group id.
     event.set_group_id(capture.trace_id);
   } else {
-    // event_kind is MEM_TRACE
+    // event_kind is MEMORY_TRACE
     // Memory trace uses start timestamp of trace as group id.
     event.set_group_id(capture.start_timestamp);
     if (!is_end) {
@@ -87,7 +87,7 @@ Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
     if (event_kind == Event::CPU_TRACE) {
       status_event.set_group_id(capture->trace_id);
     } else {
-      // Event is for memory tracing, event_kind == MEM_TRACE
+      // Event is for memory tracing, event_kind == MEMORY_TRACE
       status_event.set_group_id(capture->start_timestamp);
     }
     // This event is to acknowledgethe stop command. It doesn't have the full

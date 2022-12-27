@@ -44,7 +44,7 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
 
   const auto* ongoing = trace_manager_->GetOngoingCapture(app_name);
   Event status_event =
-      PopulateTraceStatusEvent(command(), Event::MEM_TRACE, ongoing);
+      PopulateTraceStatusEvent(command(), Event::MEMORY_TRACE, ongoing);
   auto* stop_status =
       status_event.mutable_trace_status()->mutable_trace_stop_status();
 
@@ -89,7 +89,7 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
       }
     }
     Event trace_event =
-        PopulateTraceEvent(*capture, command(), Event::MEM_TRACE, true);
+        PopulateTraceEvent(*capture, command(), Event::MEMORY_TRACE, true);
     daemon->buffer()->Add(trace_event);
   } else {
     // When execution reaches here, a TRACE_STATUS event has been sent
@@ -101,7 +101,7 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
 
     Event trace_event;
     trace_event.set_pid(command().pid());
-    trace_event.set_kind(Event::MEM_TRACE);
+    trace_event.set_kind(Event::MEMORY_TRACE);
     trace_event.set_group_id(capture->start_timestamp);
     trace_event.set_is_ended(true);
     trace_event.set_command_id(command().command_id());

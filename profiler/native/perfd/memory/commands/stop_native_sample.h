@@ -35,7 +35,7 @@ class StopNativeSample : public CommandT<StopNativeSample> {
 
   // Stops an ongoing heapprofd recording.  This generates two events.
   // 1) |TRACE_STATUS| indicating that the capture has stopped
-  // recording. 2) |MEM_TRACE| with the capture id start time
+  // recording. 2) |MEMORY_TRACE| with the capture id start time
   // and end time for the ui.
   virtual grpc::Status ExecuteOn(Daemon* daemon) override;
 
