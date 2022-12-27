@@ -324,4 +324,35 @@ class UselessViewDetectorTest : AbstractCheckTest() {
             ).indented()
         ).run().expectClean()
     }
+
+    fun testTags() {
+        // Regression test for 263416987
+        lint().files(
+            xml(
+                "res/layout/layout.xml",
+                """
+                <test.pkg.CardContainerView
+                  xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="@drawable/card_container_drawable"
+                  android:elevation="30dp"
+                  android:outlineProvider="paddedBounds">
+                  <!-- Container view that fragments are attached to. -->
+                  <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <tag android:id="@id/card_container_fragment_container" android:value="true"/>
+                  </FrameLayout>
+                  <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingTop="12dp"
+                    android:tag="fragment_container">
+                  </FrameLayout>
+                </test.pkg.CardContainerView>
+                """
+            ).indented()
+        ).run().expectClean()
+    }
 }

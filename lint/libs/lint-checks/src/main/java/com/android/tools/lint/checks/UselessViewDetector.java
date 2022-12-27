@@ -28,6 +28,7 @@ import static com.android.SdkConstants.ATTR_PADDING_RIGHT;
 import static com.android.SdkConstants.ATTR_PADDING_START;
 import static com.android.SdkConstants.ATTR_PADDING_TOP;
 import static com.android.SdkConstants.ATTR_STYLE;
+import static com.android.SdkConstants.ATTR_TAG;
 import static com.android.SdkConstants.FRAME_LAYOUT;
 import static com.android.SdkConstants.GRID_LAYOUT;
 import static com.android.SdkConstants.GRID_VIEW;
@@ -276,6 +277,10 @@ public class UselessViewDetector extends LayoutDetector {
         }
 
         if (element == context.document.getDocumentElement()) {
+            return;
+        }
+
+        if (element.hasAttributeNS(ANDROID_URI, ATTR_TAG)) {
             return;
         }
 
