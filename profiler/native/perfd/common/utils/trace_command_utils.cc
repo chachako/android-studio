@@ -37,35 +37,33 @@ Event PopulateTraceEvent(const CaptureInfo& capture,
 
   assert(event_kind == Event::CPU_TRACE || event_kind == Event::MEM_TRACE);
 
+  auto* trace_info = is_end ? event.mutable_trace_data()
+                                  ->mutable_trace_ended()
+                                  ->mutable_trace_info()
+                            : event.mutable_trace_data()
+                                  ->mutable_trace_started()
+                                  ->mutable_trace_info();
+
+  trace_info->set_trace_id(capture.trace_id);
+  trace_info->set_from_timestamp(capture.start_timestamp);
+  trace_info->set_to_timestamp(capture.end_timestamp);
+  trace_info->mutable_configuration()->CopyFrom(capture.configuration);
+  trace_info->mutable_start_status()->CopyFrom(capture.start_status);
+  if (is_end) {
+    trace_info->mutable_stop_status()->CopyFrom(capture.stop_status);
+  }
+
   if (event_kind == Event::CPU_TRACE) {
+    // CPU trace uses capture's trace id as the group id.
     event.set_group_id(capture.trace_id);
-    auto* trace_info = is_end ? event.mutable_trace_data()
-                                    ->mutable_trace_ended()
-                                    ->mutable_trace_info()
-                              : event.mutable_trace_data()
-                                    ->mutable_trace_started()
-                                    ->mutable_trace_info();
-    trace_info->set_trace_id(capture.trace_id);
-    trace_info->set_from_timestamp(capture.start_timestamp);
-    trace_info->set_to_timestamp(capture.end_timestamp);
-    trace_info->mutable_configuration()->CopyFrom(capture.configuration);
-    trace_info->mutable_start_status()->CopyFrom(capture.start_status);
-    if (is_end) {
-      trace_info->mutable_stop_status()->CopyFrom(capture.stop_status);
-    }
   } else {
     // event_kind is MEM_TRACE
+    // Memory trace uses start timestamp of trace as group id.
     event.set_group_id(capture.start_timestamp);
-    auto* trace_info = event.mutable_memory_trace_info();
-    trace_info->set_trace_id(capture.trace_id);
-    trace_info->set_from_timestamp(capture.start_timestamp);
-    if (is_end) {
-      trace_info->set_to_timestamp(capture.end_timestamp);
-    } else {
+    if (!is_end) {
+      // LLONG_MAX as to timestamp indicates ongoing trace for memory tracing.
       trace_info->set_to_timestamp(LLONG_MAX);
     }
-    trace_info->mutable_configuration()->CopyFrom(capture.configuration);
-    trace_info->mutable_start_status()->CopyFrom(capture.start_status);
   }
 
   return event;

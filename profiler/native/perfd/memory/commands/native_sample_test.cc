@@ -169,9 +169,13 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
   EXPECT_EQ(events_[1].trace_status().trace_start_status().error_message(), "");
 
   EXPECT_EQ(events_[2].kind(), proto::Event::MEM_TRACE);
-  EXPECT_TRUE(events_[2].has_memory_trace_info());
-  EXPECT_EQ(events_[2].memory_trace_info().from_timestamp(), 10);
-  EXPECT_EQ(events_[2].memory_trace_info().to_timestamp(), LLONG_MAX);
+  EXPECT_TRUE(events_[2].has_trace_data());
+  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
+  EXPECT_EQ(
+      events_[2].trace_data().trace_started().trace_info().from_timestamp(),
+      10);
+  EXPECT_EQ(events_[2].trace_data().trace_started().trace_info().to_timestamp(),
+            LLONG_MAX);
 
   // Execute the stop command
   clock_.SetCurrentTime(20);
@@ -180,7 +184,6 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
       ->mutable_configuration()
       ->mutable_perfetto_options();
 
-  // command.mutable_memory_trace_info()->set_from_timestamp(10);
   StopNativeSample::Create(command, &trace_manager)->ExecuteOn(daemon_.get());
   {
     std::unique_lock<std::mutex> lock(mutex);
@@ -199,9 +202,12 @@ TEST_F(NativeSampleTest, CommandsGeneratesEvents) {
   EXPECT_TRUE(events_[3].is_ended());
 
   EXPECT_EQ(events_[4].kind(), proto::Event::MEM_TRACE);
-  EXPECT_TRUE(events_[4].has_memory_trace_info());
-  EXPECT_EQ(events_[4].memory_trace_info().from_timestamp(), 10);
-  EXPECT_EQ(events_[4].memory_trace_info().to_timestamp(), 20);
+  EXPECT_TRUE(events_[4].has_trace_data());
+  EXPECT_TRUE(events_[4].trace_data().has_trace_ended());
+  EXPECT_EQ(events_[4].trace_data().trace_ended().trace_info().from_timestamp(),
+            10);
+  EXPECT_EQ(events_[4].trace_data().trace_ended().trace_info().to_timestamp(),
+            20);
   EXPECT_TRUE(events_[4].is_ended());
 }
 

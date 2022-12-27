@@ -212,7 +212,6 @@ message Event {
     MemoryAllocEventsData memory_alloc_events = 409;
     MemoryJniRefData memory_jni_ref_events = 410;
     MemoryAllocStatsData memory_alloc_Stats = 411;
-    MemoryTraceInfo memory_trace_info = 412;
 
     // Energy Profiler Prefix = 500
     // Energy consumption calculated from CPU, network and location activities.

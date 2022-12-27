@@ -105,8 +105,11 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
     trace_event.set_group_id(capture->start_timestamp);
     trace_event.set_is_ended(true);
     trace_event.set_command_id(command().command_id());
-    trace_event.mutable_memory_trace_info()->mutable_stop_status()->CopyFrom(
-        status);
+    trace_event.mutable_trace_data()
+        ->mutable_trace_ended()
+        ->mutable_trace_info()
+        ->mutable_stop_status()
+        ->CopyFrom(status);
     daemon->buffer()->Add(trace_event);
   }
 
