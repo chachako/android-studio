@@ -546,7 +546,7 @@ enum class BooleanOption(
     ENABLE_UNCOMPRESSED_NATIVE_LIBS_IN_BUNDLE(
         "android.bundle.enableUncompressedNativeLibs",
         true,
-        FeatureStage.Enforced(Version.VERSION_8_0)
+        FeatureStage.Enforced(Version.VERSION_8_1)
     ),
 
     ENABLE_GLOBAL_SYNTHETICS(
