@@ -28,10 +28,7 @@ android_cc_binary(
         "armeabi-v7a",
         "arm64-v8a",
     ],
-    binary = select({
-        "//tools/base/bazel:windows": ":coroutine_debugger_agent.so.stripped.exe",
-        "//conditions:default": ":coroutine_debugger_agent.so.stripped",
-    }),
+    binary = ":coroutine_debugger_agent.so.stripped",
     filename = "coroutine_debugger_agent.so",
     visibility = ["//visibility:public"],
 )
