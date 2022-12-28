@@ -71,6 +71,7 @@ import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
+import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.internal.acceptList
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.toUElement
@@ -606,6 +607,29 @@ fun UElement.nextStatement(): UExpression? {
     }
 
     return null
+}
+
+/**
+ * Returns the current statement. If you for example have
+ * `foo.bar.baz();` and you invoke this on `bar`, it will
+ * return the top level UQualifiedReferenceExpression.
+ */
+fun UElement.statement(): UExpression? {
+    var prev = this.getParentOfType<UExpression>(false) ?: return null
+    var curr = prev.uastParent
+    while (curr != null) {
+        if (curr is UBlockExpression || curr !is UExpression) {
+            return if (prev is UParenthesizedExpression) {
+                prev.expression
+            } else {
+                prev
+            }
+        }
+        prev = curr
+        curr = curr.uastParent
+    }
+
+    return prev
 }
 
 /**

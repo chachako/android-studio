@@ -20,10 +20,43 @@ package com.android.tools.lint.checks.studio
 
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.android.tools.lint.checks.infrastructure.TestMode
 import org.junit.Test
 
 class NoOpDetectorTest {
+    @Test
+    fun testDocumentationExample() {
+        studioLint().files(
+            kotlin(
+                """
+                class Test {
+                    fun test(s: String, o: Any) {
+                       s === o                // ERROR 1
+                       o.toString()           // ERROR 2
+                       s.length               // ERROR 3
+                    }
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .run().expect(
+                """
+                src/Test.kt:3: Warning: This reference is unused: s === o [NoOp]
+                       s === o                // ERROR 1
+                       ~~~~~~~
+                src/Test.kt:4: Warning: This call result is unused: toString [NoOp]
+                       o.toString()           // ERROR 2
+                       ~~~~~~~~~~~~
+                src/Test.kt:5: Warning: This reference is unused: length [NoOp]
+                       s.length               // ERROR 3
+                         ~~~~~~
+                0 errors, 3 warnings
+                """
+            )
+    }
 
+    @Suppress("RemoveRedundantCallsOfConversionMethods", "DefaultAnnotationParam")
     @Test
     fun testProblems() {
         studioLint()
@@ -140,6 +173,16 @@ class NoOpDetectorTest {
                 ).indented(),
                 java(
                     """
+                    import java.net.HttpURLConnection;
+                    public class TestStreams {
+                        public void test(HttpURLConnection urlConnection) throws Exception {
+                            urlConnection.getInputStream(); // has side effect, so is not a no-op (shouldn't be flagged)
+                        }
+                    }
+                    """
+                ).indented(),
+                java(
+                    """
                     package com.android.annotations;
                     import java.lang.annotation.Retention;
                     import java.lang.annotation.RetentionPolicy;
@@ -151,12 +194,12 @@ class NoOpDetectorTest {
                 ).indented(),
                 java(
                     """
-                package org.junit;
-                public @interface Test {
-                    Class<? extends Throwable> expected() default None.class;
-                    long timeout() default 0L;
-                }
-                """
+                    package org.junit;
+                    public @interface Test {
+                        Class<? extends Throwable> expected() default None.class;
+                        long timeout() default 0L;
+                    }
+                    """
                 ).indented(),
                 java(
                     """
@@ -170,6 +213,7 @@ class NoOpDetectorTest {
                 ).indented()
             )
             .issues(NoOpDetector.ISSUE)
+            .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, true)
             .run()
             .expect(
                 """
@@ -215,5 +259,642 @@ class NoOpDetectorTest {
                 0 errors, 13 warnings
                 """
             )
+    }
+
+    @Suppress("StringOperationCanBeSimplified", "ResultOfMethodCallIgnored")
+    @Test
+    fun testStringMethods() {
+        studioLint().files(
+            kotlin(
+                """
+                class Test {
+                    fun test(s: String, o: Any) {
+                       o.toString()           // ERROR 1
+                       s.trim()               // ERROR 2
+                       s.subSequence(0)       // ERROR 3
+                       s.length               // ERROR 4
+                    }
+                }
+                """
+            ).indented(),
+            java(
+                """
+                    import java.util.Locale;
+                    class Test2 {
+                        void test(String s) {
+                            s.toString();                // ERROR 5
+                            s.toLowerCase();             // ERROR 6
+                            s.toLowerCase(Locale.ROOT);  // ERROR 7
+                            s.length();                  // ERROR 8
+                        }
+
+                        public void testStringCopy(String prefix, String relativeResourcePath) {
+                            int prefixLength = prefix.length();
+                            int pathLength = relativeResourcePath.length();
+                            char[] result = new char[prefixLength + pathLength];
+                            prefix.getChars(0, prefixLength, result, 0); // OK 1 -- not a getter
+                            relativeResourcePath.getChars(0, pathLength, result, prefixLength); // OK 2
+                        }
+                    }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .run().expect(
+                """
+                src/Test.kt:3: Warning: This call result is unused: toString [NoOp]
+                       o.toString()           // ERROR 1
+                       ~~~~~~~~~~~~
+                src/Test.kt:4: Warning: This call result is unused: trim [NoOp]
+                       s.trim()               // ERROR 2
+                       ~~~~~~~~
+                src/Test.kt:5: Warning: This call result is unused: subSequence [NoOp]
+                       s.subSequence(0)       // ERROR 3
+                       ~~~~~~~~~~~~~~~~
+                src/Test.kt:6: Warning: This reference is unused: length [NoOp]
+                       s.length               // ERROR 4
+                         ~~~~~~
+                src/Test2.java:4: Warning: This call result is unused: toString [NoOp]
+                        s.toString();                // ERROR 5
+                        ~~~~~~~~~~~~
+                src/Test2.java:5: Warning: This call result is unused: toLowerCase [NoOp]
+                        s.toLowerCase();             // ERROR 6
+                        ~~~~~~~~~~~~~~~
+                src/Test2.java:6: Warning: This call result is unused: toLowerCase [NoOp]
+                        s.toLowerCase(Locale.ROOT);  // ERROR 7
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/Test2.java:7: Warning: This call result is unused: length [NoOp]
+                        s.length();                  // ERROR 8
+                        ~~~~~~~~~~
+                0 errors, 8 warnings
+                """
+            )
+    }
+
+    @Suppress("RemoveRedundantCallsOfConversionMethods")
+    @Test
+    fun testBuiltinImmutables() {
+        studioLint().files(
+            kotlin(
+                """
+                class Test {
+                    fun test(s: String, o: Any) {
+                        Integer.valueOf("5")                       // ERROR 1
+                        java.lang.Boolean.valueOf("true")          // ERROR 2
+                        java.lang.Integer.toHexString(5)           // ERROR 3
+                        java.lang.Float.compare(1f, 2f)            // ERROR 4
+
+                        // These are currently not recognized because resolving into the
+                        // primitive wrapper classes isn't working
+                        java.lang.Integer.valueOf("5").inc()       // ERROR 5
+                        3.toInt()                                  // ERROR 6
+                        true.not()                                 // ERROR 7
+                        3f.toLong()                                // ERROR 8
+                    }
+                    fun test(b: Boolean, i: Int) {
+                        // TODO: These are not yet flagged because call.resolve() does
+                        // not locate the methods
+                        b.or(b)     // ERROR 9
+                        i.and(i)    // ERROR 10
+                    }
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .run().expect(
+                """
+                src/Test.kt:3: Warning: This call result is unused: valueOf [NoOp]
+                        Integer.valueOf("5")                       // ERROR 1
+                        ~~~~~~~~~~~~~~~~~~~~
+                src/Test.kt:4: Warning: This call result is unused: valueOf [NoOp]
+                        java.lang.Boolean.valueOf("true")          // ERROR 2
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/Test.kt:5: Warning: This call result is unused: toHexString [NoOp]
+                        java.lang.Integer.toHexString(5)           // ERROR 3
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/Test.kt:6: Warning: This call result is unused: compare [NoOp]
+                        java.lang.Float.compare(1f, 2f)            // ERROR 4
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 4 warnings
+                """
+            )
+    }
+
+    @Test
+    fun testLiterals() {
+        studioLint().files(
+            kotlin(
+                """
+                class Test {
+                    fun test(s: String, o: Any) {
+                        true
+                        1
+                        "test"
+                    }
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .skipTestModes(TestMode.UI_INJECTION_HOST)
+            .run().expect(
+                """
+                src/Test.kt:3: Warning: This reference is unused: true [NoOp]
+                        true
+                        ~~~~
+                src/Test.kt:4: Warning: This reference is unused: 1 [NoOp]
+                        1
+                        ~
+                src/Test.kt:5: Warning: This reference is unused: test [NoOp]
+                        "test"
+                         ~~~~
+                0 errors, 3 warnings
+                """
+            )
+    }
+
+    @Suppress("SimplifyBooleanWithConstants")
+    @Test
+    fun testBinaryOperators() {
+        studioLint().files(
+            kotlin(
+                """
+                class Test {
+                    fun test(s: String, o: Any) {
+                       s === o                // ERROR 1
+                       1 + 2                  // ERROR 2
+                       x = 0                  // OK 1
+                       test() || test()       // OK 2
+                       pure() || true         // ERROR 3
+                    }
+                    private var x = -1
+                    fun test(): Boolean { println("side effect") }
+                    fun pure(): Boolean { return true }
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .run().expect(
+                """
+                src/Test.kt:3: Warning: This reference is unused: s === o [NoOp]
+                       s === o                // ERROR 1
+                       ~~~~~~~
+                src/Test.kt:4: Warning: This reference is unused: 1 + 2 [NoOp]
+                       1 + 2                  // ERROR 2
+                       ~~~~~
+                src/Test.kt:7: Warning: This reference is unused: pure() || true [NoOp]
+                       pure() || true         // ERROR 3
+                       ~~~~~~~~~~~~~~
+                0 errors, 3 warnings
+                """
+            )
+    }
+
+    @Test
+    fun testDeliberateThrow1() {
+        // Based on the no-op scenario `OtherOperationType.valueOf` call in com.android.manifmerger.XmlElement
+        studioLint().files(
+            java(
+                """
+                import java.util.Locale;
+
+                public class EnumSideEffect {
+                    enum Test { A, B }
+                    void test(String[] names) {
+                        for (String name : names) {
+                            try {
+                                Test.valueOf(name);
+                                continue;
+                            } catch (IllegalArgumentException e) {
+                                e.printStackTrace();
+                            }
+                            System.out.println("test");
+                        }
+                    }
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testDeliberateThrow2() {
+        // Based on the no-op scenario `OtherOperationType.valueOf` call in com.android.manifmerger.XmlElement
+        studioLint().files(
+            java(
+                """
+                package org.junit;
+
+                public class Assert {
+                    public static void fail(String message) {
+                        throw new AssertionError(message);
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                import org.junit.Assert
+
+                class Test : Assert() {
+                    lateinit var clientName: String
+                    fun test() {
+                        try {
+                            clientName
+                            fail("Expected accessing client name before initialization to fail")
+                        } catch (t: UninitializedPropertyAccessException) {
+                            // pass
+                        }
+                    }
+                }
+                """
+            )
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testQualifiedReferences() {
+        studioLint().files(
+            kotlin(
+                """
+                class Node {
+                    lateinit var next: Node
+                    override val prev: Node
+                      get() = TODO()
+                }
+                fun test(node: Node) {
+                    node                       // ERROR 1
+                    node.next                  // ERROR 2
+                    node.next.next.next.next   // ERROR 3
+                    node.next.prev.next        // ERROR 4 (prev may have side effect, but not last next)
+                    node.prev                  // OK 1
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, true)
+            .run().expect(
+                """
+                src/Node.kt:7: Warning: This reference is unused: node [NoOp]
+                    node                       // ERROR 1
+                    ~~~~
+                src/Node.kt:8: Warning: This reference is unused: next [NoOp]
+                    node.next                  // ERROR 2
+                         ~~~~
+                src/Node.kt:9: Warning: This reference is unused: next [NoOp]
+                    node.next.next.next.next   // ERROR 3
+                                        ~~~~
+                src/Node.kt:10: Warning: This reference is unused: next [NoOp]
+                    node.next.prev.next        // ERROR 4 (prev may have side effect, but not last next)
+                                   ~~~~
+                0 errors, 4 warnings
+                """
+            )
+    }
+
+    @Test
+    fun testNoGettersWithOptionOff() {
+        studioLint().files(
+            kotlin(
+                """
+                class Node {
+                    lateinit var next: Node
+                }
+                fun test(node: Node) {
+                    node.next
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, false)
+            .run().expectClean()
+    }
+
+    @Test
+    fun testPropertyAccessOfJavaMethod() {
+        studioLint().files(
+            java(
+                """
+                public abstract class Parent {
+                    public int getChildCount() {
+                        throw new UnsupportedOperationException();
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                class Child : Parent() {
+                    fun expandNode() {
+                        childCount
+                    }
+                }
+                """
+            ).indented()
+        )
+            .issues(NoOpDetector.ISSUE)
+            .run().expectClean()
+    }
+
+    @Suppress("RedundantUnitExpression")
+    @Test
+    fun testRedundantUnit() {
+        // In many cases there are explicit "Unit" expressions at the end of a lambda etc;
+        // these are often redundant (and IntelliJ already flags them as such), so we'll
+        // consider these deliberate choices to be explicit about the return value rather
+        // than redundant constructs.
+        studioLint().files(
+            kotlin(
+                """
+                package com.example.myapplication
+
+                fun onIssuesChange(parentDisposable: Any?, listener: () -> Unit) {
+                }
+
+                class Test {
+                    fun test() {
+                        onIssuesChange(this) {
+                            Unit
+                        }
+                    }
+                }
+                """
+            )
+        )
+            .issues(NoOpDetector.ISSUE)
+            .run().expectClean()
+    }
+
+    @Suppress("CatchMayIgnoreException")
+    @Test
+    fun testCanonicalize() {
+        // First, should skip because try/catch.
+        // Second, should skip because method throws exceptions!
+        studioLint().files(
+            kotlin(
+                """
+                import java.io.File
+                import java.lang.RuntimeException
+
+                fun check(file: File) {
+                    try {
+                        file.parentFile
+                    } catch (e: RuntimeException) {
+                    }
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testThrowsException() {
+        studioLint().files(
+            kotlin(
+                """
+                import java.io.File
+                fun checkCanonicalize(file: File) {
+                    // If a method throws exceptions, we may be relying on side effects
+                    file.canonicalFile
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testUnresolvedLambda() {
+        // Regression test for b/254674801
+        studioLint().files(
+            kotlin(
+                """
+                fun test() {
+                    "test".someFilter { it == 'a' }
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testAtomicIntegers() {
+        studioLint().files(
+            java(
+                """
+                import java.util.concurrent.atomic.AtomicInteger;
+                import java.util.concurrent.atomic.AtomicLong;
+
+                public class JavaTest {
+                    public void testIntegers(AtomicInteger i, AtomicLong l) {
+                        l.getAndIncrement(); // OK 1
+                        i.getAndIncrement(); // OK 2
+                    }
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testStaticFieldInitialization() {
+        // Regression test for b/232719934
+        studioLint().files(
+            kotlin(
+                """
+                open class UastBinaryExpressionWithTypeKind(val name: String) {
+                    companion object {
+                        @JvmField
+                        val UNKNOWN = UastBinaryExpressionWithTypeKind("<unknown>")
+                    }
+                }
+
+                class ApiDetectorKotlin {
+                    init {
+                        UastBinaryExpressionWithTypeKind.UNKNOWN // trigger UastBinaryExpressionWithTypeKind.<clinit>
+                    }
+                }
+                """
+            ).indented(),
+            java(
+                """
+                class ApiDetectorJava {
+                    static {
+                        UastBinaryExpressionWithTypeKind.UNKNOWN.getName(); // trigger UastBinaryExpressionWithTypeKind.<clinit>
+                    }
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testObjectInitialization() {
+        studioLint().files(
+            kotlin(
+                """
+                fun connectUiAutomation(init: Boolean) {
+                    if (init) {
+                        ShellImpl // force initialization
+                    }
+                }
+
+                private object ShellImpl
+                """
+            ).indented(),
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Suppress("CatchMayIgnoreException")
+    @Test
+    fun testTryParse() {
+        studioLint().files(
+            java(
+                """
+                class TryParse {
+                    public void test(String s) {
+                        try {
+                            Integer.parseInt(s.substring(4), 16);
+                            return s;
+                        } catch (NumberFormatException e) {}
+
+                        try {
+                            Double.parseDouble(entryValue);
+                            return entryValue;
+                        } catch (NumberFormatException e) {
+                        }
+
+                        String[] parts = s.split(",");
+                        if (parts.length == 2) {
+                            try {
+                                // Ensure both parts are doubles.
+                                Double.parseDouble(parts[0]);
+                                Double.parseDouble(parts[1]);
+                                return true;
+                            } catch (NumberFormatException e) {
+                                // Values are not Doubles.
+                            }
+                        }
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                internal fun parseIntValue(value: String): IntValue? {
+                    try {
+                        if (value.startsWith("0x")) {
+                            Integer.parseUnsignedInt(value.substring(2), 16)
+                        } else {
+                            Integer.parseInt(value)
+                        }
+                    } catch (ex: NumberFormatException) {
+                        return null
+                    }
+                    return IntValue(value)
+                }
+                """
+            )
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testMutableStateOf() {
+        studioLint().files(
+            kotlin(
+                """
+                package androidx.compose.runtime
+                interface State<out T> {
+                    val value: T
+                }
+                interface MutableState<T> : State<T> {
+                    override var value: T
+                    operator fun component1(): T
+                    operator fun component2(): (T) -> Unit
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                import androidx.compose.runtime.MutableState
+                fun test(redrawSignal: MutableState<Unit>) {
+                    redrawSignal.value // <-- value read to redraw if needed
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Suppress("IntroduceWhenSubject")
+    @Test
+    fun testElseReturn() {
+        studioLint().files(
+            kotlin(
+                """
+                fun test(s: String, b: Boolean): Int {
+                    when {
+                        s == "1" -> return 1
+                        s == "2" -> b || return 0
+                    }
+                    return -1
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testSuper() {
+        // Deliberately ignoring explicit super calls
+        studioLint().files(
+            java(
+                """
+                package test.pkg;
+                public class Parent {
+                    public Parent() {
+                    }
+                    public String getFoo() { return "foo"; }
+                }
+                """
+            ).indented(),
+            java(
+                """
+                package test.pkg;
+                public class Child extends Parent {
+                    public Child() {
+                    }
+                    public String getFoo() {
+                        super.getFoo();
+                    }
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
+    }
+
+    @Test
+    fun testLazyInitialization() {
+        studioLint().files(
+            kotlin(
+                """
+                import java.util.logging.Level
+                import java.util.logging.Logger
+
+                private val initLog by lazy {
+                    val root = Logger.getLogger("")
+                    if (root.handlers.isEmpty()) {
+                        root.level = Level.INFO
+                    }
+                }
+
+                private fun doSomething() {
+                    initLog
+                }
+                """
+            ).indented()
+        ).issues(NoOpDetector.ISSUE).run().expectClean()
     }
 }

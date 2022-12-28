@@ -35,6 +35,7 @@ import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.nextStatement
 import com.android.tools.lint.detector.api.previousStatement
+import com.android.tools.lint.detector.api.statement
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
@@ -44,8 +45,10 @@ import com.intellij.psi.PsiWildcardType
 import org.jetbrains.uast.UAnnotationMethod
 import org.jetbrains.uast.UAnonymousClass
 import org.jetbrains.uast.UBlockExpression
+import org.jetbrains.uast.UBreakExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClassInitializer
+import org.jetbrains.uast.UContinueExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UIfExpression
@@ -54,8 +57,10 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UResolvable
+import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USwitchClauseExpressionWithBody
 import org.jetbrains.uast.USwitchExpression
+import org.jetbrains.uast.UTryExpression
 import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.skipParenthesizedExprUp
@@ -193,9 +198,11 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
          */
         fun expectsSideEffect(context: JavaContext, element: UElement): Boolean {
             val containingMethod = element.getParentOfType(UMethod::class.java)
+            val statement = element.statement() ?: element
 
             // (1) try { annotated(); fail()/error()/throw X } catch { }
-            val nextStatement = element.nextStatement()?.findSelector()
+            val nextStatement = statement.nextStatement()?.findSelector()
+
             if (nextStatement is UCallExpression) {
                 val methodName = nextStatement.methodName
                 // (Ideally we'd look for the Kotlin type `Nothing` here instead of checking
@@ -204,6 +211,16 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                 if (methodName == "fail" || methodName == "error" || methodName == "TODO") {
                     return true
                 }
+            } else if ((nextStatement == null || nextStatement is UContinueExpression || nextStatement is UBreakExpression || nextStatement is UReturnExpression) &&
+                parentIsTryBlock(statement)
+            ) {
+                // Something like a
+                //    try {
+                //       call_should_fail();
+                //       continue;
+                //    } catch (Throwable t) {
+                //       // yep, it did...
+                return true
             }
 
             // (2) @Test(expect=Exception.class) method() { ...; annotated(); ... }
@@ -279,6 +296,11 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             return false
         }
 
+        private fun parentIsTryBlock(statement: UElement): Boolean {
+            val parent = skipParenthesizedExprUp(statement.uastParent)
+            return parent is UBlockExpression && skipParenthesizedExprUp(parent.uastParent) is UTryExpression
+        }
+
         private fun isThrowingRunnable(s: String): Boolean {
             // See Matchers.CLASSES_CONSIDERED_THROWING in errorprone
             return when (s) {
@@ -350,9 +372,22 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                 if (parent is ULambdaExpression && isKotlin(sourcePsi)) {
                     val expressionType = parent.getExpressionType()?.canonicalText
                     if (expressionType != null &&
+                        !expressionType.contains("error.NonExistentClass") && // some type of resolve problem
                         expressionType.startsWith("kotlin.jvm.functions.Function") &&
                         expressionType.endsWith("kotlin.Unit>")
                     ) {
+                        val call = skipParenthesizedExprUp(parent.uastParent) as? UCallExpression
+                        if (call != null && call.resolve() == null) {
+                            // This is a lambda being passed to a call which we can't resolve.
+                            // In this case, UAST may have mapped the lambda type incorrectly
+                            // (e.g. there are cases where you're calling for example,
+                            //   String.takeIf { lambda }
+                            // where takeIf takes a predicate, (T) -> Boolean, yet the UAST
+                            // mapped type (when the resolve fails) is
+                            //   kotlin.jvm.functions.Function0<? extends kotlin.Unit>
+                            return false
+                        }
+
                         // We know that this lambda does not return anything so the value is unused
                         return true
                     }

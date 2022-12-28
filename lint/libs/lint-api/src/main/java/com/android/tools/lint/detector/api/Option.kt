@@ -193,7 +193,7 @@ class BooleanOption(
     description: String,
 
     /** The default value, if any. */
-    val defaultValue: Boolean = false,
+    var defaultValue: Boolean = false,
 
     /** Longer explanation. See [Option.explanation] */
     explanation: String? = null

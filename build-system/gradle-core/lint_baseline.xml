@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 8.0.0-dev">
+<issues format="5" by="lint 8.1.0-dev">
 
     <issue
         id="CheckResult"
@@ -14,10 +14,10 @@
         message="Suspicious indentation: This is indented but is not nested under the previous expression (`if (configurationPar`...)">
         <location
             file="src/main/java/com/android/build/gradle/internal/cxx/configure/CxxCreateGradleTasks.kt"
-            line="95"/>
+            line="96"/>
         <location
             file="src/main/java/com/android/build/gradle/internal/cxx/configure/CxxCreateGradleTasks.kt"
-            line="94"/>
+            line="95"/>
     </issue>
 
     <issue
@@ -89,7 +89,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledLibraryVariant.kt"
-            line="57"/>
+            line="71"/>
     </issue>
 
     <issue
@@ -97,7 +97,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/analytics/AnalyticsEnabledLibraryVariant.kt"
-            line="74"/>
+            line="88"/>
     </issue>
 
     <issue
@@ -129,7 +129,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="54"/>
+            line="55"/>
     </issue>
 
     <issue
@@ -137,7 +137,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="60"/>
+            line="61"/>
     </issue>
 
     <issue
@@ -145,7 +145,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="73"/>
+            line="74"/>
     </issue>
 
     <issue
@@ -153,7 +153,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/AndroidPluginBaseServices.kt"
-            line="96"/>
+            line="97"/>
     </issue>
 
     <issue
@@ -177,7 +177,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/AndroidTestComponentDslInfoImpl.kt"
-            line="69"/>
+            line="64"/>
     </issue>
 
     <issue
@@ -185,7 +185,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/AndroidTestComponentDslInfoImpl.kt"
-            line="126"/>
+            line="106"/>
     </issue>
 
     <issue
@@ -193,7 +193,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/AndroidTestComponentDslInfoImpl.kt"
-            line="137"/>
+            line="117"/>
     </issue>
 
     <issue
@@ -201,7 +201,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
-            line="132"/>
+            line="125"/>
     </issue>
 
     <issue
@@ -209,7 +209,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
-            line="140"/>
+            line="133"/>
     </issue>
 
     <issue
@@ -217,7 +217,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
-            line="148"/>
+            line="141"/>
     </issue>
 
     <issue
@@ -249,7 +249,15 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="99"/>
+            line="91"/>
+    </issue>
+
+    <issue
+        id="AvoidByLazy"
+        message="Avoid `by lazy` for simple lazy initialization">
+        <location
+            file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
+            line="98"/>
     </issue>
 
     <issue
@@ -265,22 +273,6 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="114"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
-        <location
-            file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="123"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/instrumentation/AsmInstrumentationManager.kt"
             line="115"/>
     </issue>
 
@@ -288,8 +280,8 @@
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization">
         <location
-            file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="171"/>
+            file="src/main/java/com/android/build/gradle/internal/instrumentation/AsmInstrumentationManager.kt"
+            line="116"/>
     </issue>
 
     <issue
@@ -297,7 +289,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="179"/>
+            line="173"/>
     </issue>
 
     <issue
@@ -305,7 +297,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="194"/>
+            line="181"/>
     </issue>
 
     <issue
@@ -313,7 +305,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="200"/>
+            line="196"/>
     </issue>
 
     <issue
@@ -321,7 +313,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="220"/>
+            line="202"/>
     </issue>
 
     <issue
@@ -329,7 +321,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="239"/>
+            line="223"/>
     </issue>
 
     <issue
@@ -337,7 +329,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="253"/>
+            line="242"/>
     </issue>
 
     <issue
@@ -345,7 +337,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="260"/>
+            line="256"/>
     </issue>
 
     <issue
@@ -353,7 +345,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="269"/>
+            line="263"/>
     </issue>
 
     <issue
@@ -361,7 +353,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="273"/>
+            line="272"/>
     </issue>
 
     <issue
@@ -369,7 +361,15 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
-            line="294"/>
+            line="276"/>
+    </issue>
+
+    <issue
+        id="AvoidByLazy"
+        message="Avoid `by lazy` for simple lazy initialization">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/plugins/BasePlugin.kt"
+            line="297"/>
     </issue>
 
     <issue
@@ -401,7 +401,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/dsl/CommonExtensionImpl.kt"
-            line="65"/>
+            line="66"/>
     </issue>
 
     <issue
@@ -425,7 +425,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="167"/>
+            line="159"/>
     </issue>
 
     <issue
@@ -433,7 +433,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="290"/>
+            line="237"/>
     </issue>
 
     <issue
@@ -441,7 +441,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="364"/>
+            line="311"/>
     </issue>
 
     <issue
@@ -449,7 +449,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="373"/>
+            line="321"/>
     </issue>
 
     <issue
@@ -457,7 +457,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="404"/>
+            line="352"/>
     </issue>
 
     <issue
@@ -465,7 +465,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/cxx/gradle/generator/CxxConfigurationModel.kt"
-            line="76"/>
+            line="81"/>
     </issue>
 
     <issue
@@ -489,7 +489,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/DynamicFeatureVariantImpl.kt"
-            line="118"/>
+            line="111"/>
     </issue>
 
     <issue
@@ -497,7 +497,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/DynamicFeatureVariantImpl.kt"
-            line="122"/>
+            line="115"/>
     </issue>
 
     <issue
@@ -577,7 +577,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="92"/>
+            line="95"/>
     </issue>
 
     <issue
@@ -585,7 +585,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="178"/>
+            line="181"/>
     </issue>
 
     <issue
@@ -593,7 +593,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="221"/>
+            line="224"/>
     </issue>
 
     <issue
@@ -601,7 +601,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="228"/>
+            line="231"/>
     </issue>
 
     <issue
@@ -649,7 +649,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/v2/NativeModelBuilder.kt"
-            line="71"/>
+            line="73"/>
     </issue>
 
     <issue
@@ -657,7 +657,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/v2/NativeModelBuilder.kt"
-            line="75"/>
+            line="77"/>
     </issue>
 
     <issue
@@ -681,7 +681,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/plugins/PrivacySandboxSdkPlugin.kt"
-            line="96"/>
+            line="97"/>
     </issue>
 
     <issue
@@ -809,7 +809,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/TestProjectVariantDslInfoImpl.kt"
-            line="124"/>
+            line="82"/>
     </issue>
 
     <issue
@@ -817,7 +817,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/TestProjectVariantDslInfoImpl.kt"
-            line="137"/>
+            line="95"/>
     </issue>
 
     <issue
@@ -825,7 +825,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/TestProjectVariantDslInfoImpl.kt"
-            line="161"/>
+            line="119"/>
     </issue>
 
     <issue
@@ -833,7 +833,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="91"/>
+            line="84"/>
     </issue>
 
     <issue
@@ -841,7 +841,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="97"/>
+            line="90"/>
     </issue>
 
     <issue
@@ -849,7 +849,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="107"/>
+            line="100"/>
     </issue>
 
     <issue
@@ -857,7 +857,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="123"/>
+            line="116"/>
     </issue>
 
     <issue
@@ -865,7 +865,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/UnitTestComponentDslInfoImpl.kt"
-            line="56"/>
+            line="54"/>
     </issue>
 
     <issue
@@ -881,7 +881,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/VariantDslInfoImpl.kt"
-            line="134"/>
+            line="91"/>
     </issue>
 
     <issue
@@ -889,7 +889,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantImpl.kt"
-            line="139"/>
+            line="130"/>
     </issue>
 
     <issue
@@ -897,7 +897,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/api/variant/impl/VariantImpl.kt"
-            line="231"/>
+            line="206"/>
     </issue>
 
     <issue
@@ -953,7 +953,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="311"/>
+            line="310"/>
     </issue>
 
     <issue
@@ -961,7 +961,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="321"/>
+            line="320"/>
     </issue>
 
     <issue
@@ -969,7 +969,7 @@
         message="Avoid `by lazy` for simple lazy initialization">
         <location
             file="src/main/java/com/android/build/gradle/internal/variant/VariantPathHelper.kt"
-            line="326"/>
+            line="325"/>
     </issue>
 
     <issue
@@ -998,50 +998,10 @@
 
     <issue
         id="NoOp"
-        message="This reference is unused: name">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/tasks/DependencyReportTask.kt"
-            line="51"/>
-    </issue>
-
-    <issue
-        id="NoOp"
-        message="This reference is unused: name">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/tasks/DependencyReportTask.kt"
-            line="58"/>
-    </issue>
-
-    <issue
-        id="NoOp"
-        message="This reference is unused: name">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/variant/DimensionCombinator.kt"
-            line="82"/>
-    </issue>
-
-    <issue
-        id="NoOp"
         message="This reference is unused: FD_OUTPUT">
         <location
             file="src/main/java/com/android/build/gradle/tasks/FusedLibraryManifestMergerTask.kt"
             line="176"/>
-    </issue>
-
-    <issue
-        id="NoOp"
-        message="This reference is unused: isMinifyEnabled">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/tasks/factory/GlobalTaskCreationConfigImpl.kt"
-            line="186"/>
-    </issue>
-
-    <issue
-        id="NoOp"
-        message="This reference is unused: canonicalFile">
-        <location
-            file="src/main/java/com/android/build/gradle/internal/cxx/json/Lint.kt"
-            line="123"/>
     </issue>
 
     <issue
@@ -1057,7 +1017,7 @@
         message="Avoid using `org.gradle.api.Project.exec` as it is incompatible with Gradle instant execution.">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/v2/NativeModelBuilder.kt"
-            line="63"/>
+            line="65"/>
     </issue>
 
     <issue
@@ -1089,7 +1049,7 @@
         message="This method should only be accessed from tests or within private scope">
         <location
             file="src/main/java/com/android/build/gradle/internal/res/LinkApplicationAndroidResourcesTask.kt"
-            line="866"/>
+            line="897"/>
     </issue>
 
     <issue
@@ -1217,7 +1177,7 @@
         message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.">
         <location
             file="src/main/java/com/android/build/gradle/internal/ide/SourceProviderImpl.java"
-            line="213"/>
+            line="211"/>
     </issue>
 
     <issue
@@ -1233,7 +1193,7 @@
         message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/BundleToApkTask.kt"
-            line="113"/>
+            line="121"/>
     </issue>
 
     <issue
@@ -1241,7 +1201,7 @@
         message="Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/BundleToStandaloneApkTask.kt"
-            line="125"/>
+            line="126"/>
     </issue>
 
     <issue
