@@ -153,7 +153,6 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 FullBackupContentDetector.ISSUE,
                 GestureBackNavDetector.ISSUE,
                 GetContentDescriptionOverrideDetector.ISSUE,
-                GetSignaturesDetector.ISSUE,
                 GradleDetector.ACCIDENTAL_OCTAL,
                 GradleDetector.AGP_DEPENDENCY,
                 GradleDetector.ANNOTATION_PROCESSOR_ON_COMPILE_PATH,
@@ -550,7 +549,11 @@ open class BuiltinIssueRegistry : IssueRegistry() {
         // a no-op forever for Gradle where these attributes are
         // specified in build files rather than the manifest and
         // injected at build time.
-        "UsesMinSdkAttributes"
+        "UsesMinSdkAttributes",
+
+        // Obsolete at this point (and the associated learn-more
+        // URL is now unavailable, see b/259295923)
+        "PackageManagerGetSignatures"
     )
 
     override fun getIssueCapacity(scope: EnumSet<Scope>): Int {
