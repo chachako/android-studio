@@ -116,7 +116,6 @@ class LintDriverCrashTest : AbstractCheckTest() {
         )
             .allowSystemErrors(true)
             .allowExceptions(true)
-            //.detector(CrashingInheritorDetector())
             .issues(CrashingInheritorDetector.CRASHING_ISSUE)
             .testModes(TestMode.DEFAULT)
             .run()

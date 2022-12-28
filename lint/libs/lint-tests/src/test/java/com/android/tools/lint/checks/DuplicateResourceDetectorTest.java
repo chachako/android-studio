@@ -383,6 +383,35 @@ public class DuplicateResourceDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void testIncorrectConfiguration() {
+        // Regression test for b/231227010
+        String expected =
+                ""
+                        + "res/values/config.xml:2: Error: config has already been defined in this folder. If you are trying to create qualified resources, they should be created in separate directories, such as values-v30. See https://developer.android.com/guide/topics/resources/providing-resources.html#AlternativeResources. [DuplicateDefinition]\n"
+                        + "    <string name=\"config\">App Name</string>\n"
+                        + "            ~~~~~~~~~~~~~\n"
+                        + "    res/values/config-v30.xml:2: Previously defined here\n"
+                        + "    <string name=\"config\">App Name</string>\n"
+                        + "            ~~~~~~~~~~~~~\n"
+                        + "1 errors, 0 warnings";
+        //noinspection all // Sample code
+        lint().files(
+                        xml(
+                                "res/values/config.xml",
+                                ""
+                                        + "<resources>\n"
+                                        + "    <string name=\"config\">App Name</string>\n"
+                                        + "</resources>"),
+                        xml(
+                                "res/values/config-v30.xml",
+                                ""
+                                        + "<resources>\n"
+                                        + "    <string name=\"config\">App Name</string>\n"
+                                        + "</resources>"))
+                .run()
+                .expect(expected);
+    }
+
     @SuppressWarnings("all") // Sample code
     private TestFile customattr =
             xml(

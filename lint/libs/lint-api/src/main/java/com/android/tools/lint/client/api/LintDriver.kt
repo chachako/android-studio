@@ -3896,7 +3896,6 @@ class LintDriver(
             }
         }
 
-
         /**
          * Returns the issues associated with the given detector class.
          */

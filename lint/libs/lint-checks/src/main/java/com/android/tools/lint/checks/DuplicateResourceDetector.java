@@ -25,6 +25,7 @@ import static com.android.ide.common.resources.ResourcesUtil.resourceNameToField
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceUrl;
@@ -238,15 +239,30 @@ public class DuplicateResourceDetector extends ResourceXmlDetector {
             if (!name.equals(originalName)) {
                 message += " (`" + name + "` is equivalent to `" + originalName + "`)";
             }
+
+            FolderConfiguration configuration = getConfiguration(context.file);
             Location location = context.getLocation(attribute);
             List<Pair<String, Handle>> list = mLocations.get(type);
             for (Pair<String, Handle> pair : list) {
                 if (name.equals(pair.getFirst())) {
                     Location secondary = pair.getSecond().resolve();
+                    if (configuration == null) {
+                        configuration = getConfiguration(secondary.getFile());
+                    }
                     secondary.setMessage("Previously defined here");
                     location.setSecondary(secondary);
                 }
             }
+
+            if (configuration != null) {
+                message +=
+                        ". If you are trying to create qualified resources, they should be created in separate directories, "
+                                + "such as `"
+                                + configuration.getFolderName(ResourceFolderType.VALUES)
+                                + "`. See "
+                                + "https://developer.android.com/guide/topics/resources/providing-resources.html#AlternativeResources.";
+            }
+
             context.report(ISSUE, attribute, location, message);
         } else {
             names.add(name);
@@ -255,6 +271,16 @@ public class DuplicateResourceDetector extends ResourceXmlDetector {
             Location.Handle handle = context.createLocationHandle(attribute);
             list.add(Pair.of(name, handle));
         }
+    }
+
+    @Nullable
+    private static FolderConfiguration getConfiguration(@NonNull File file) {
+        String fileBaseName = Lint.getBaseName(file.getName());
+        int dash = fileBaseName.indexOf('-');
+        if (dash != -1) {
+            return FolderConfiguration.getConfigForFolder(fileBaseName);
+        }
+        return null;
     }
 
     private static void checkUniqueNames(XmlContext context, Element parent) {
