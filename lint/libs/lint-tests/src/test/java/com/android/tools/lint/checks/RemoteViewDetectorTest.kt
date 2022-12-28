@@ -118,4 +118,47 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
             rClass("test.pkg", "@layout/test")
         ).run().expectClean()
     }
+
+    fun testFullyQualifiedBuiltinViews() {
+        // Regression test for 233226291
+        lint().files(
+            rClass("test.pkg", "@layout/cct_article_toolbar"),
+            java(
+                """
+                package test.pkg;
+
+                import android.content.Context;
+                import android.widget.RemoteViews;
+
+                public class ArticleCustomTab {
+                    private Context context;
+
+                    public void buildSecondaryToolbar() {
+                        RemoteViews remoteViews =
+                                new RemoteViews(context.getPackageName(), R.layout.cct_article_toolbar);
+                    }
+                }
+                """
+            ),
+            xml(
+                "res/layout/cct_article_toolbar.xml",
+                """
+                <android.widget.RelativeLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:theme="@style/Theme.MaterialComponents.DayNight">
+                  <android.widget.LinearLayout
+                      android:id="@+id/hero_action_button"
+                      android:minWidth="@dimen/min_touch_size"
+                      android:minHeight="@dimen/min_touch_size"
+                      android:background="@drawable/card_action_button_oval_bg">
+                  </android.widget.LinearLayout>
+                </android.widget.RelativeLayout>
+                """
+            ).indented()
+
+        ).run().expectClean()
+    }
 }

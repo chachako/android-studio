@@ -20,6 +20,8 @@ import com.android.SdkConstants.ANDROID_PKG
 import com.android.SdkConstants.REQUEST_FOCUS
 import com.android.SdkConstants.VIEW_INCLUDE
 import com.android.SdkConstants.VIEW_MERGE
+import com.android.SdkConstants.VIEW_PKG_PREFIX
+import com.android.SdkConstants.WIDGET_PKG_PREFIX
 import com.android.ide.common.rendering.api.ResourceNamespace.TODO
 import com.android.resources.ResourceType.LAYOUT
 import com.android.tools.lint.checks.RtlDetector.getFolderVersion
@@ -124,6 +126,9 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
     }
 
     private fun isSupportedTag(tag: String, min: Int): Boolean {
+        if (tag.startsWith(VIEW_PKG_PREFIX) || tag.startsWith(WIDGET_PKG_PREFIX)) {
+            return isSupportedTag(tag.substringAfterLast('.'), min)
+        }
         return when (tag) {
             "AdapterViewFlipper",
             "FrameLayout",
