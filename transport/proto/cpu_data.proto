@@ -92,34 +92,6 @@ message CpuThreadData {
   State state = 3;
 }
 
-message StartCpuTrace {
-  // Agent is responsible for providing these additional info for API-
-  // initiated tracing.
-  message ApiStartTracingMetaData {
-    int64 start_timestamp = 1;
-  }
-  TraceConfiguration configuration = 1;
-  // Set only if configuration's initiation_type is |INITIATED_BY_API|.
-  ApiStartTracingMetaData api_start_metadata = 2;
-}
-
-message StopCpuTrace {
-  // Agent is responsible for providing these additional info for API-
-  // initiated tracing.
-  message ApiStopTracingMetaData {
-    int64 stop_timestamp = 1;
-    // A name of trace's content that's unique during the lifetime of the
-    // process. The daemon is responsible for storing the content in the generic
-    // cache that can be referenced via the trace's id.
-    string trace_name = 2;
-  }
-  TraceConfiguration configuration = 1;
-  // Set only if configuration's initiation_type is |INITIATED_BY_API|.
-  ApiStopTracingMetaData api_stop_metadata = 2;
-  // Whether the command needs to wait and parse the trace content.
-  bool need_trace_response = 3;
-}
-
 // Data for the CpuCoreConfig command.
 message CpuCoreConfigData {
   repeated CpuCoreConfig core_configs = 1;

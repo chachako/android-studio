@@ -24,6 +24,7 @@ import "common.proto";
 import "cpu_data.proto";
 import "echo.proto";
 import "memory_data.proto";
+import "trace.proto";
 
 message Command {
   enum CommandType {
@@ -40,8 +41,8 @@ message Command {
     // Network Profiler Prefix = 200
 
     // Cpu Profiler Prefix = 300
-    START_CPU_TRACE = 301;
-    STOP_CPU_TRACE = 302;
+    START_TRACE = 301;
+    STOP_TRACE = 302;
     GET_CPU_CORE_CONFIG = 303;
 
     // Memory Profiler Prefix = 400
@@ -92,8 +93,8 @@ message Command {
     // Network Profiler Prefix = 200
 
     // Cpu Profiler Prefix = 300
-    StartCpuTrace start_cpu_trace = 301;
-    StopCpuTrace stop_cpu_trace = 302;
+    StartTrace start_trace = 301;
+    StopTrace stop_trace = 302;
     GetCpuCoreConfig get_cpu_core_config = 303;
 
     // Memory Profiler Prefix = 400

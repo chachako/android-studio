@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef PERFD_COMMANDS_START_CPU_TRACE_H
-#define PERFD_COMMANDS_START_CPU_TRACE_H
+#ifndef PERFD_COMMANDS_START_TRACE_H
+#define PERFD_COMMANDS_START_TRACE_H
 
 #include "daemon/daemon.h"
 #include "perfd/common/trace_manager.h"
@@ -24,10 +24,10 @@ namespace profiler {
 
 class SessionsManager;
 
-class StartCpuTrace : public CommandT<StartCpuTrace> {
+class StartTrace : public CommandT<StartTrace> {
  public:
-  StartCpuTrace(const proto::Command& command, TraceManager* trace_manager,
-                SessionsManager* sessions_manager)
+  StartTrace(const proto::Command& command, TraceManager* trace_manager,
+             SessionsManager* sessions_manager)
       : CommandT(command),
         trace_manager_(trace_manager),
         sessions_manager_(sessions_manager) {}
@@ -35,7 +35,7 @@ class StartCpuTrace : public CommandT<StartCpuTrace> {
   static Command* Create(const proto::Command& command,
                          TraceManager* trace_manager,
                          SessionsManager* sessions_manager) {
-    return new StartCpuTrace(command, trace_manager, sessions_manager);
+    return new StartTrace(command, trace_manager, sessions_manager);
   }
 
   virtual grpc::Status ExecuteOn(Daemon* daemon) override;
@@ -47,4 +47,4 @@ class StartCpuTrace : public CommandT<StartCpuTrace> {
 
 }  // namespace profiler
 
-#endif  // PERFD_COMMANDS_START_CPU_TRACE_H
+#endif  // PERFD_COMMANDS_START_TRACE_H

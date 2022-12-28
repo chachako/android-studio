@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef PERFD_COMMANDS_STOP_CPU_TRACE_H
-#define PERFD_COMMANDS_STOP_CPU_TRACE_H
+#ifndef PERFD_COMMANDS_STOP_TRACE_H
+#define PERFD_COMMANDS_STOP_TRACE_H
 
 #include "daemon/daemon.h"
 #include "perfd/common/trace_manager.h"
@@ -22,14 +22,14 @@
 
 namespace profiler {
 
-class StopCpuTrace : public CommandT<StopCpuTrace> {
+class StopTrace : public CommandT<StopTrace> {
  public:
-  StopCpuTrace(const proto::Command& command, TraceManager* trace_manager)
+  StopTrace(const proto::Command& command, TraceManager* trace_manager)
       : CommandT(command), trace_manager_(trace_manager) {}
 
   static Command* Create(const proto::Command& command,
                          TraceManager* trace_manager) {
-    return new StopCpuTrace(command, trace_manager);
+    return new StopTrace(command, trace_manager);
   }
 
   virtual grpc::Status ExecuteOn(Daemon* daemon) override;
@@ -40,4 +40,4 @@ class StopCpuTrace : public CommandT<StopCpuTrace> {
 
 }  // namespace profiler
 
-#endif  // PERFD_COMMANDS_STOP_CPU_TRACE_H
+#endif  // PERFD_COMMANDS_STOP_TRACE_H

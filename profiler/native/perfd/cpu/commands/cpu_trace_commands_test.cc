@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "start_cpu_trace.h"
-#include "stop_cpu_trace.h"
+#include "start_trace.h"
+#include "stop_trace.h"
 
 #include <gtest/gtest.h>
 #include "daemon/event_writer.h"
@@ -130,11 +130,10 @@ class CpuTraceCommandsTest : public testing::Test {
 
 TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
   proto::Command command;
-  command.set_type(proto::Command::START_CPU_TRACE);
-  auto* start = command.mutable_start_cpu_trace();
+  command.set_type(proto::Command::START_TRACE);
+  auto* start = command.mutable_start_trace();
   start->mutable_configuration()->CopyFrom(trace_config_);
-  StartCpuTrace::Create(command, trace_manager_.get(),
-                        SessionsManager::Instance())
+  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
       ->ExecuteOn(daemon_.get());
 
   std::mutex mutex;
@@ -164,10 +163,10 @@ TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
       events_[2].trace_data().trace_started().trace_info().configuration()));
 
   // Execute the end command
-  command.set_type(proto::Command::STOP_CPU_TRACE);
-  auto* stop = command.mutable_stop_cpu_trace();
+  command.set_type(proto::Command::STOP_TRACE);
+  auto* stop = command.mutable_stop_trace();
   stop->mutable_configuration()->CopyFrom(trace_config_);
-  StopCpuTrace::Create(command, trace_manager_.get())->ExecuteOn(daemon_.get());
+  StopTrace::Create(command, trace_manager_.get())->ExecuteOn(daemon_.get());
 
   {
     std::unique_lock<std::mutex> lock(mutex);
@@ -191,13 +190,12 @@ TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
 
 TEST_F(CpuTraceCommandsTest, FailToStartCapture) {
   proto::Command command;
-  command.set_type(proto::Command::START_CPU_TRACE);
-  auto* start = command.mutable_start_cpu_trace();
+  command.set_type(proto::Command::START_TRACE);
+  auto* start = command.mutable_start_trace();
   start->mutable_configuration()->CopyFrom(trace_config_);
   // Start trace will fail due to perfetto already running.
   perfetto_->SetPerfettoState(true);
-  StartCpuTrace::Create(command, trace_manager_.get(),
-                        SessionsManager::Instance())
+  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
       ->ExecuteOn(daemon_.get());
 
   std::mutex mutex;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "stop_cpu_trace.h"
+#include "stop_trace.h"
 
 #include <sstream>
 #include "perfd/common/capture_info.h"
@@ -35,10 +35,10 @@ namespace {
 constexpr char kCacheLocation[] = "cache/complete/";
 
 // Helper function to stop the tracing. This function works in the async
-// environment because it doesn't require a |profiler::StopCpuTrace| object.
+// environment because it doesn't require a |profiler::StopTrace| object.
 void Stop(Daemon* daemon, const profiler::proto::Command command_data,
           TraceManager* trace_manager) {
-  auto& stop_command = command_data.stop_cpu_trace();
+  auto& stop_command = command_data.stop_trace();
   const std::string& app_name = stop_command.configuration().app_name();
 
   int64_t stop_timestamp;
@@ -114,7 +114,7 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
 
 }  // namespace
 
-Status StopCpuTrace::ExecuteOn(Daemon* daemon) {
+Status StopTrace::ExecuteOn(Daemon* daemon) {
   // In order to make this command to return immediately, start a new
   // detached thread to stop CPU recording which which may take several seconds.
   // For example, we may need to wait for several seconds before the trace files
@@ -125,7 +125,7 @@ Status StopCpuTrace::ExecuteOn(Daemon* daemon) {
   profiler::proto::Command command_data = command();
   TraceManager* trace_manager = trace_manager_;
   std::thread worker([daemon, command_data, trace_manager]() {
-    SetThreadName("Studio:StopCpuTrace");
+    SetThreadName("Studio:StopTrace");
     Stop(daemon, command_data, trace_manager);
   });
   worker.detach();

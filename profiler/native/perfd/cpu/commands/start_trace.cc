@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "start_cpu_trace.h"
+#include "start_trace.h"
 
 #include "perfd/common/utils/trace_command_utils.h"
 #include "perfd/sessions/sessions_manager.h"
@@ -28,8 +28,8 @@ using std::vector;
 
 namespace profiler {
 
-Status StartCpuTrace::ExecuteOn(Daemon* daemon) {
-  auto& start_command = command().start_cpu_trace();
+Status StartTrace::ExecuteOn(Daemon* daemon) {
+  auto& start_command = command().start_trace();
 
   int64_t start_timestamp;
   if (start_command.has_api_start_metadata()) {

@@ -180,3 +180,52 @@ message ArtOptions {
   // Art-based traces can be either.
   TraceMode trace_mode = 3;
 }
+
+// The profiler type of trace being taken. Used to differentiate
+// between start/stop trace command sources and determine the
+// correct respective trace event kind to send.
+// TODO (b/263903182): Refactor studio & base side to have start/stop
+// trace commands be TraceType-agnostic.
+enum ProfilerType {
+  UNSPECIFIED = 0;
+  CPU = 1;
+  MEMORY = 2;
+}
+
+// The command to initiate a trace/capture. 
+// It contains metadata for api initiated tracing and configuration 
+// information for the trace to be captured. 
+message StartTrace {
+  // Agent is responsible for providing these additional info for API-
+  // initiated tracing.
+  message ApiStartTracingMetaData {
+    int64 start_timestamp = 1;
+  }
+  TraceConfiguration configuration = 1;
+  // Set only if configuration's initiation_type is |INITIATED_BY_API|.
+  ApiStartTracingMetaData api_start_metadata = 2;
+  // Set to identify which profiler will initiates this command.
+  ProfilerType profiler_type = 4;
+}
+
+// The command to terminate an ongoing trace/capture. 
+// It contains metadata for api initiated tracing and configuration 
+// information for the ongoing capture it is sent to terminate.
+message StopTrace {
+  // Agent is responsible for providing these additional info for API-
+  // initiated tracing.
+  message ApiStopTracingMetaData {
+    int64 stop_timestamp = 1;
+    // A name of trace's content that's unique during the lifetime of the
+    // process. The daemon is responsible for storing the content in the generic
+    // cache that can be referenced via the trace's id.
+    string trace_name = 2;
+  }
+  TraceConfiguration configuration = 1;
+  // Set only if configuration's initiation_type is |INITIATED_BY_API|.
+  ApiStopTracingMetaData api_stop_metadata = 2;
+  // Whether the command needs to wait and parse the trace content.
+  bool need_trace_response = 3;
+  // Set to identify which profiler initiates this command.
+  ProfilerType profiler_type = 4;
+}

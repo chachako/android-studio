@@ -158,10 +158,10 @@ void TraceMonitor::SubmitStartEvent(int32_t tid, const string& fixed_path) {
         {[this, timestamp](AgentService::Stub& stub, ClientContext& ctx) {
           SendCommandRequest request;
           auto* command = request.mutable_command();
-          command->set_type(Command::START_CPU_TRACE);
+          command->set_type(Command::START_TRACE);
           command->set_pid(getpid());
 
-          auto* start = command->mutable_start_cpu_trace();
+          auto* start = command->mutable_start_trace();
           auto* metadata = start->mutable_api_start_metadata();
           metadata->set_start_timestamp(timestamp);
 
@@ -241,9 +241,9 @@ void TraceMonitor::SubmitStopEvent(int tid) {
                                               ClientContext& ctx) mutable {
           SendCommandRequest request;
           auto* command = request.mutable_command();
-          command->set_type(Command::STOP_CPU_TRACE);
+          command->set_type(Command::STOP_TRACE);
           command->set_pid(pid);
-          auto* stop = command->mutable_stop_cpu_trace();
+          auto* stop = command->mutable_stop_trace();
           auto* metadata = stop->mutable_api_stop_metadata();
           metadata->set_stop_timestamp(timestamp);
           metadata->set_trace_name(payload_name);
