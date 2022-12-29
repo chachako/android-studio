@@ -5555,6 +5555,97 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "5 errors, 0 warnings");
     }
 
+    @SuppressWarnings("EmptyTryBlock")
+    public void testAutoCloseFromLibraryOk() {
+        lint().files(
+                        manifest().minSdk(24),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.app.Activity;\n"
+                                        + "import androidx.test.core.app.ActivityScenario;\n"
+                                        + "import java.io.IOException;\n"
+                                        + "\n"
+                                        + "public class ActivityCompatTest {\n"
+                                        + "    class TestActivity extends Activity {\n"
+                                        + "    }\n"
+                                        + "    public void test() {\n"
+                                        + "        try (ActivityScenario<TestActivity> scenario =\n"
+                                        + "                     ActivityScenario.launch(TestActivity.class)) {\n"
+                                        + "        } catch (IOException e) {\n"
+                                        + "            throw new RuntimeException(e);\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "}"),
+                        binaryStub(
+                                "libs/activity-scenario.jar",
+                                new TestFile[] {
+                                    java(
+                                            ""
+                                                    + "package androidx.test.core.app;\n"
+                                                    + "\n"
+                                                    + "import android.app.Activity;\n"
+                                                    + "\n"
+                                                    + "import java.io.Closeable;\n"
+                                                    + "\n"
+                                                    + "public abstract class ActivityScenario<A extends Activity> implements AutoCloseable, Closeable {\n"
+                                                    + "\n"
+                                                    + "    public static <A extends Activity> ActivityScenario<A> launch(Class<A> activityClass) {\n"
+                                                    + "        return null;\n"
+                                                    + "    }\n"
+                                                    + "}")
+                                },
+                                true))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expectClean();
+    }
+
+    @SuppressWarnings("EmptyTryBlock")
+    public void testAutoCloseFromLibraryInherited() {
+        lint().files(
+                        manifest().minSdk(21),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "import test.pkg.lib.MyDrmClient;\n"
+                                        + "\n"
+                                        + "public class TryWithResourcesTest {\n"
+                                        + "    private MyDrmClient createHelper() {\n"
+                                        + "        return null;\n"
+                                        + "    }\n"
+                                        + "    public void test() {\n"
+                                        + "        try (MyDrmClient helper = createHelper()) { // requires 24\n"
+                                        + "\n"
+                                        + "        }\n"
+                                        + "    }\n"
+                                        + "}"),
+                        binaryStub(
+                                "libs/drm.jar",
+                                new TestFile[] {
+                                    java(
+                                            "package test.pkg.lib;\n"
+                                                    + "\n"
+                                                    + "import android.content.Context;\n"
+                                                    + "\n"
+                                                    + "public class MyDrmClient extends android.drm.DrmManagerClient { // since 11, AutoCloseable since 24, no close method\n"
+                                                    + "    public MyDrmClient(Context context) {\n"
+                                                    + "        super(context);\n"
+                                                    + "    }\n"
+                                                    + "}\n")
+                                },
+                                false))
+                .checkMessage(this::checkReportedError)
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/TryWithResourcesTest.java:9: Error: Implicit MyDrmClient.close() call from try-with-resources requires API level 24 (current min is 21) [NewApi]\n"
+                                + "        try (MyDrmClient helper = createHelper()) { // requires 24\n"
+                                + "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                                + "1 errors, 0 warnings");
+    }
+
     public void testExceptionHandlingDalvik() {
         // Regression test for 131349148: Dalvik: java.lang.VerifyError
         lint().files(

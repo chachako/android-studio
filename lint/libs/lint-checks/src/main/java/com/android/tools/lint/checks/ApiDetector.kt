@@ -2145,8 +2145,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             // Check close-availability on the API which may have been introduced at a later API level
             for (resource in resourceList) {
                 val classType = TypeConversionUtil.erasure(resource.type) as? PsiClassType ?: continue
-                val qualifiedName = context.evaluator.getQualifiedName(classType) ?: continue
-                val api = apiDatabase?.getMethodVersions(qualifiedName, "close", "()") ?: continue
+                val psiClass = classType.resolve() ?: continue
+                val closeMethod = psiClass.findMethodsByName("close", true).firstOrNull { !it.hasParameters() } ?: continue
+                val containingClass = closeMethod.containingClass?.qualifiedName ?: continue
+                val api = apiDatabase?.getMethodVersions(containingClass, "close", "()") ?: continue
+                if (api == ApiConstraint.UNKNOWN) {
+                    continue
+                }
                 var minSdk = getMinSdk(context) ?: continue
                 if (minSdk.isAtLeast(api)) {
                     continue
@@ -2159,7 +2164,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                 val location = context.getLocation(resource as UElement)
                 val message = "Implicit `${classType.name}.close()` call from try-with-resources requires API level ${api.minString()} (current min is %1\$s)"
                 report(
-                    UNSUPPORTED, resource, location, message, apiLevelFix(api, minSdk), qualifiedName,
+                    UNSUPPORTED, resource, location, message, apiLevelFix(api, minSdk), classType.canonicalText,
                     requires = api, min = minSdk
                 )
             }
