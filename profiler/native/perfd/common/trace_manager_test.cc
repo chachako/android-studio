@@ -33,6 +33,7 @@ using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
 
 using std::string;
+using testing::DoAll;
 using testing::HasSubstr;
 using testing::Return;
 using testing::SaveArg;
