@@ -17,9 +17,11 @@
 package com.android.tools.firebase.testlab.gradle
 
 import com.android.build.api.AndroidPluginVersion
-import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.api.AndroidBasePlugin
+import com.android.tools.firebase.testlab.gradle.device.TestRunConfigureAction
+import com.android.tools.firebase.testlab.gradle.device.TestRunTaskAction
+import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import org.gradle.api.Plugin
@@ -34,18 +36,36 @@ class TestLabGradlePlugin : Plugin<Project> {
         project.plugins.withType(AndroidBasePlugin::class.java) {
             val agpVersion =
                 project.extensions.getByType(AndroidComponentsExtension::class.java).pluginVersion
-            if (agpVersion < AndroidPluginVersion(8, 0, 0).alpha(2)) {
-                error("Android Gradle plugin version 8.0.0-alpha02 or higher is required." +
+            if (agpVersion < AndroidPluginVersion(8, 1, 0).alpha(8)) {
+                error("Android Gradle plugin version 8.1.0-alpha08 or higher is required." +
                               " Current version is $agpVersion.")
             }
 
-            val androidExtension = project.extensions.getByType(CommonExtension::class.java)
-            androidExtension.testOptions.managedDevices.devices.registerBinding(
-                ManagedDevice::class.java,
-                ManagedDeviceImpl::class.java
-            )
+            registerTestLabBuildServiceIfAbsent(project)
+
+            // Registering with the Device registry will take care of the test options binding.
+            project.extensions.getByType(AndroidComponentsExtension::class.java)
+                .managedDeviceRegistry.registerDeviceType(ManagedDevice::class.java) {
+                    dslImplementationClass = ManagedDeviceImpl::class.java
+                    setTestRunActions(
+                        TestRunConfigureAction::class.java, TestRunTaskAction::class.java)
+                }
 
             project.extensions.create("firebaseTestLab", TestLabGradlePluginExtension::class.java)
         }
+    }
+
+    private fun registerTestLabBuildServiceIfAbsent(project: Project) {
+        TestLabBuildService.RegistrationAction(project.providers) {
+            val testLabExtension = project
+                .extensions
+                .getByType(TestLabGradlePluginExtension::class.java)
+            if (testLabExtension.serviceAccountCredentials.isPresent) {
+                testLabExtension.serviceAccountCredentials.get().asFile
+            } else {
+                TestLabBuildService.RegistrationAction.getGcloudCredentialsFile()
+            }
+
+        }.registerIfAbsent(project.gradle.sharedServices)
     }
 }

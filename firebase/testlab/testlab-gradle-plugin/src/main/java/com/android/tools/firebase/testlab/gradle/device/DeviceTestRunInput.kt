@@ -14,31 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.tools.firebase.testlab.gradle
+package com.android.tools.firebase.testlab.gradle.device
 
-import com.google.firebase.testlab.gradle.ManagedDevice
+import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.Orientation
-import javax.inject.Inject
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 
-/**
- * Implementation for [ManagedDevice] to be registered with the
- * Android Plugin for Gradle
- */
-open class ManagedDeviceImpl @Inject constructor(private val name: String) : ManagedDevice {
-    @Internal
-    override fun getName(): String = name
+abstract class DeviceTestRunInput:
+    com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput {
 
-    @get:Input
-    override var device = ""
+    @get: Input
+    abstract val device: Property<String>
 
-    @get:Input
-    override var apiLevel = -1
+    @get: Input
+    abstract val apiLevel: Property<Int>
 
-    @get:Input
-    override var orientation = Orientation.DEFAULT
+    @get: Input
+    abstract val orientation: Property<Orientation>
 
-    @get:Input
-    override var locale = "en-US"
+    @get: Input
+    abstract val locale: Property<String>
+
+    @get: Internal
+    abstract val buildService: Property<TestLabBuildService>
 }

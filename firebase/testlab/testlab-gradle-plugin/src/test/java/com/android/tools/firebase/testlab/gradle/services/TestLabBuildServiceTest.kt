@@ -16,8 +16,15 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
+import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
+import java.io.File
 import org.gradle.api.Action
+import org.gradle.api.Transformer
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.api.services.BuildServiceSpec
 import org.junit.Rule
@@ -26,7 +33,6 @@ import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.Mockito.argThat
-import org.mockito.Mockito.eq
 import org.mockito.Mockito.startsWith
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -48,6 +54,9 @@ class TestLabBuildServiceTest {
     @Mock(answer = Answers.RETURNS_MOCKS)
     lateinit var mockBuildServiceRegistry: BuildServiceRegistry
 
+    @Mock
+    lateinit var mockProviderFactory: ProviderFactory
+
     @Test
     fun registerIfAbsent() {
         val credentialFile = temporaryFolderRule.newFile("testCredentialFile").apply {
@@ -61,9 +70,17 @@ class TestLabBuildServiceTest {
                     }
                 """.trimIndent())
         }
-        TestLabBuildService.RegistrationAction{
+        val findCredentialFileFunc = {
             credentialFile
-        }.registerIfAbsent(mockBuildServiceRegistry)
+        }
+        val credentialFileProvider = mock<Provider<File>>()
+        `when`(mockProviderFactory.provider<File>(any()))
+            .thenReturn(credentialFileProvider)
+        val credentialFileRegularFile = mock<RegularFile>()
+        `when`(credentialFileRegularFile.asFile).thenReturn(credentialFile)
+
+        TestLabBuildService.RegistrationAction(mockProviderFactory, findCredentialFileFunc)
+            .registerIfAbsent(mockBuildServiceRegistry)
 
         lateinit var configAction: Action<in BuildServiceSpec<TestLabBuildService.Parameters>>
         verify(mockBuildServiceRegistry).registerIfAbsent(
@@ -79,10 +96,19 @@ class TestLabBuildServiceTest {
         val mockParams = mock<TestLabBuildService.Parameters>(
             withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
         `when`(mockSpec.parameters).thenReturn(mockParams)
+        `when`(mockParams.credentialFile.map<String>(any())).then {
+            val file = it.getArgument<Transformer<String, RegularFile>>(0)
+                .transform(credentialFileRegularFile)
+            mock<Provider<String>>().apply {
+                `when`(get()).thenReturn(file)
+            }
+        }
 
         configAction.execute(mockSpec)
 
-        verify(mockParams.credentialFile).set(eq(credentialFile))
-        verify(mockParams.quotaProjectName).set(eq("test_quota_project_id"))
+        verify(mockParams.credentialFile).fileProvider(eq(credentialFileProvider))
+        verify(mockParams.quotaProjectName).set(argThat<Provider<String>> {
+            it.get() == "test_quota_project_id"
+        })
     }
 }
