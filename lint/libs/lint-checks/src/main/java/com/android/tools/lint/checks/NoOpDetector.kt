@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.android.tools.lint.checks.studio
+package com.android.tools.lint.checks
 
-import com.android.tools.lint.checks.CheckResultDetector
 import com.android.tools.lint.checks.CheckResultDetector.Companion.isExpressionValueUnused
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.UElementHandler
@@ -105,7 +104,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
         val ASSUME_PURE_GETTERS = BooleanOption(
             "pure-getters",
             "Whether to assume methods with getter-names have no side effects",
-            true,
+            false,
             """
                 Getter methods (where names start with `get` or `is`, and have non-void \
                 return types, and no arguments) should not have side effects. With this \
@@ -126,8 +125,8 @@ class NoOpDetector : Detector(), SourceCodeScanner {
                 """,
             category = CORRECTNESS,
             severity = Severity.WARNING,
-            platforms = STUDIO_PLATFORMS,
-            implementation = IMPLEMENTATION
+            implementation = IMPLEMENTATION,
+            enabledByDefault = false
         ).setAliases(listOf("ResultOfMethodCallIgnored")).setOptions(listOf(ASSUME_PURE_GETTERS))
 
         /**
@@ -492,6 +491,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
                         method.parameterList.parameters.none { it.type is PsiArrayType }
                     )
             }
+            // Use CommonClassNames.JAVA_NET_URI and JAVA_NET_URL once we update to latest prebuilts
             "java.net.URI" -> return true
             "java.net.URL" -> {
                 // getContent despite name is shorthand for openConnection().getContent()

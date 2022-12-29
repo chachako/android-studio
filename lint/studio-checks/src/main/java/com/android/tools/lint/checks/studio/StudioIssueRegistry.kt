@@ -23,6 +23,7 @@ import com.android.tools.lint.checks.DateFormatDetector
 import com.android.tools.lint.checks.DefaultEncodingDetector
 import com.android.tools.lint.checks.InteroperabilityDetector
 import com.android.tools.lint.checks.LintDetectorDetector
+import com.android.tools.lint.checks.NoOpDetector
 import com.android.tools.lint.checks.SamDetector
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient.Companion.isStudio
@@ -49,6 +50,8 @@ class StudioIssueRegistry : IssueRegistry() {
         CommentDetector.EASTER_EGG.setEnabledByDefault(true)
         CommentDetector.STOP_SHIP.setEnabledByDefault(true)
         DateFormatDetector.WEEK_YEAR.setEnabledByDefault(true)
+        NoOpDetector.ASSUME_PURE_GETTERS.defaultValue = true
+        NoOpDetector.ISSUE.setEnabledByDefault(true)
         if (isStudio) { // not enforced in PSQ but give guidance in the IDE
             AssertDetector.EXPENSIVE.setEnabledByDefault(true)
             InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS.setEnabledByDefault(true)
@@ -86,7 +89,6 @@ class StudioIssueRegistry : IssueRegistry() {
         LintDetectorDetector.UNEXPECTED_DOMAIN,
         LintDetectorDetector.USE_KOTLIN,
         LintDetectorDetector.USE_UAST,
-        NoOpDetector.ISSUE,
         PathAsIterableDetector.ISSUE,
         RegexpPathDetector.ISSUE,
         ShortNameCacheDetector.ISSUE,

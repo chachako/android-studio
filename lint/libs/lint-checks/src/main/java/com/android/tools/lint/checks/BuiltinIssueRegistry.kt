@@ -309,6 +309,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 NfcTechListDetector.ISSUE,
                 NonConstantResourceIdDetector.NON_CONSTANT_RESOURCE_ID,
                 NonInternationalizedSmsDetector.ISSUE,
+                NoOpDetector.ISSUE,
                 NotificationPermissionDetector.ISSUE,
                 NotificationTrampolineDetector.ACTIVITY,
                 NotificationTrampolineDetector.TRAMPOLINE,

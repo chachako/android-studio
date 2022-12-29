@@ -16,17 +16,17 @@
 
 @file:Suppress("SpellCheckingInspection")
 
-package com.android.tools.lint.checks.studio
-
-import com.android.tools.lint.checks.infrastructure.TestFiles.java
-import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+package com.android.tools.lint.checks
 import com.android.tools.lint.checks.infrastructure.TestMode
-import org.junit.Test
+import com.android.tools.lint.detector.api.Detector
 
-class NoOpDetectorTest {
-    @Test
+class NoOpDetectorTest : AbstractCheckTest() {
+    override fun getDetector(): Detector {
+        return NoOpDetector()
+    }
+
     fun testDocumentationExample() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Test {
@@ -39,7 +39,6 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .run().expect(
                 """
                 src/Test.kt:3: Warning: This reference is unused: s === o [NoOp]
@@ -57,9 +56,8 @@ class NoOpDetectorTest {
     }
 
     @Suppress("RemoveRedundantCallsOfConversionMethods", "DefaultAnnotationParam")
-    @Test
     fun testProblems() {
-        studioLint()
+        lint()
             .files(
                 kotlin(
                     """
@@ -212,7 +210,6 @@ class NoOpDetectorTest {
                     """
                 ).indented()
             )
-            .issues(NoOpDetector.ISSUE)
             .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, true)
             .run()
             .expect(
@@ -262,9 +259,8 @@ class NoOpDetectorTest {
     }
 
     @Suppress("StringOperationCanBeSimplified", "ResultOfMethodCallIgnored")
-    @Test
     fun testStringMethods() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Test {
@@ -299,7 +295,6 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .run().expect(
                 """
                 src/Test.kt:3: Warning: This call result is unused: toString [NoOp]
@@ -332,9 +327,8 @@ class NoOpDetectorTest {
     }
 
     @Suppress("RemoveRedundantCallsOfConversionMethods")
-    @Test
     fun testBuiltinImmutables() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Test {
@@ -361,7 +355,6 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .run().expect(
                 """
                 src/Test.kt:3: Warning: This call result is unused: valueOf [NoOp]
@@ -381,9 +374,8 @@ class NoOpDetectorTest {
             )
     }
 
-    @Test
     fun testLiterals() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Test {
@@ -396,7 +388,6 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .skipTestModes(TestMode.UI_INJECTION_HOST)
             .run().expect(
                 """
@@ -415,9 +406,8 @@ class NoOpDetectorTest {
     }
 
     @Suppress("SimplifyBooleanWithConstants")
-    @Test
     fun testBinaryOperators() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Test {
@@ -435,7 +425,6 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .run().expect(
                 """
                 src/Test.kt:3: Warning: This reference is unused: s === o [NoOp]
@@ -452,10 +441,9 @@ class NoOpDetectorTest {
             )
     }
 
-    @Test
     fun testDeliberateThrow1() {
         // Based on the no-op scenario `OtherOperationType.valueOf` call in com.android.manifmerger.XmlElement
-        studioLint().files(
+        lint().files(
             java(
                 """
                 import java.util.Locale;
@@ -476,13 +464,12 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testDeliberateThrow2() {
         // Based on the no-op scenario `OtherOperationType.valueOf` call in com.android.manifmerger.XmlElement
-        studioLint().files(
+        lint().files(
             java(
                 """
                 package org.junit;
@@ -511,12 +498,11 @@ class NoOpDetectorTest {
                 }
                 """
             )
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testQualifiedReferences() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Node {
@@ -534,7 +520,6 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, true)
             .run().expect(
                 """
@@ -555,9 +540,8 @@ class NoOpDetectorTest {
             )
     }
 
-    @Test
     fun testNoGettersWithOptionOff() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 class Node {
@@ -569,14 +553,12 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, false)
             .run().expectClean()
     }
 
-    @Test
     fun testPropertyAccessOfJavaMethod() {
-        studioLint().files(
+        lint().files(
             java(
                 """
                 public abstract class Parent {
@@ -596,18 +578,16 @@ class NoOpDetectorTest {
                 """
             ).indented()
         )
-            .issues(NoOpDetector.ISSUE)
             .run().expectClean()
     }
 
     @Suppress("RedundantUnitExpression")
-    @Test
     fun testRedundantUnit() {
         // In many cases there are explicit "Unit" expressions at the end of a lambda etc;
         // these are often redundant (and IntelliJ already flags them as such), so we'll
         // consider these deliberate choices to be explicit about the return value rather
         // than redundant constructs.
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 package com.example.myapplication
@@ -625,16 +605,14 @@ class NoOpDetectorTest {
                 """
             )
         )
-            .issues(NoOpDetector.ISSUE)
             .run().expectClean()
     }
 
     @Suppress("CatchMayIgnoreException")
-    @Test
     fun testCanonicalize() {
         // First, should skip because try/catch.
         // Second, should skip because method throws exceptions!
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 import java.io.File
@@ -648,12 +626,11 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testThrowsException() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 import java.io.File
@@ -663,13 +640,12 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testUnresolvedLambda() {
         // Regression test for b/254674801
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 fun test() {
@@ -677,12 +653,11 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testAtomicIntegers() {
-        studioLint().files(
+        lint().files(
             java(
                 """
                 import java.util.concurrent.atomic.AtomicInteger;
@@ -696,13 +671,12 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testStaticFieldInitialization() {
         // Regression test for b/232719934
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 open class UastBinaryExpressionWithTypeKind(val name: String) {
@@ -728,12 +702,11 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testObjectInitialization() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 fun connectUiAutomation(init: Boolean) {
@@ -745,13 +718,12 @@ class NoOpDetectorTest {
                 private object ShellImpl
                 """
             ).indented(),
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
     @Suppress("CatchMayIgnoreException")
-    @Test
     fun testTryParse() {
-        studioLint().files(
+        lint().files(
             java(
                 """
                 class TryParse {
@@ -798,12 +770,11 @@ class NoOpDetectorTest {
                 }
                 """
             )
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testMutableStateOf() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 package androidx.compose.runtime
@@ -825,13 +796,12 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
     @Suppress("IntroduceWhenSubject")
-    @Test
     fun testElseReturn() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 fun test(s: String, b: Boolean): Int {
@@ -843,13 +813,12 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testSuper() {
         // Deliberately ignoring explicit super calls
-        studioLint().files(
+        lint().files(
             java(
                 """
                 package test.pkg;
@@ -872,12 +841,11 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 
-    @Test
     fun testLazyInitialization() {
-        studioLint().files(
+        lint().files(
             kotlin(
                 """
                 import java.util.logging.Level
@@ -895,6 +863,6 @@ class NoOpDetectorTest {
                 }
                 """
             ).indented()
-        ).issues(NoOpDetector.ISSUE).run().expectClean()
+        ).run().expectClean()
     }
 }
