@@ -18,55 +18,71 @@ package com.android.jdwptracer;
 import com.android.annotations.NonNull;
 import java.util.HashMap;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 
 class CmdSetDdm extends CmdSet {
 
-    private static Map<Integer, String> ddmTypes = new HashMap<>();
+    private static Map<Integer, DDMChunkHandler> ddmHandlers = new HashMap<>();
 
     private static final String ART_TIMING_CHUNK = "ARTT";
+    private static final String HELO_CHUNK = "HELO";
+
+    private static final DDMChunkHandler defaultDDMHandler = new DDMChunkHandler();
 
     static {
-        addType("APNM");
-        addType("EXIT");
-        addType("HELO");
-        addType("FEAT");
-        addType("TEST");
-        addType("WAIT");
+        ddmHandlers.put(typeFromName("APNM"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("EXIT"), defaultDDMHandler);
+        ddmHandlers.put(
+                typeFromName("HELO"),
+                new DDMChunkHandler(CmdSetDdm::parseHELOCmd, CmdSetDdm::parseHELOReply));
+        ddmHandlers.put(typeFromName("FEAT"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("TEST"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("WAIT"), defaultDDMHandler);
 
         // Profiling
-        addType("MPRS");
-        addType("MPSS");
-        addType("MPSE");
-        addType("MPRQ");
-        addType("MPRQ");
-        addType("SPSS");
-        addType("SPSE");
+        ddmHandlers.put(typeFromName("MPRS"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("MPSS"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("MPSE"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("MPRQ"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("SPSS"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("SPSE"), defaultDDMHandler);
 
         // Heap Status
-        addType("HPIF");
-        addType("HPST");
-        addType("HPEN");
-        addType("HPSG");
-        addType("HPGC");
-        addType("HPDU");
-        addType("HPDS");
-        addType("REAE");
-        addType("REAQ");
-        addType("REAL");
+        ddmHandlers.put(typeFromName("HPIF"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("HPST"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("HPEN"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("HPSG"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("HPGC"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("HPDU"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("HPDS"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("REAE"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("REAQ"), defaultDDMHandler);
+        ddmHandlers.put(typeFromName("REAL"), defaultDDMHandler);
 
-        addType(ART_TIMING_CHUNK);
+        ddmHandlers.put(
+                typeFromName("ARTT"),
+                new DDMChunkHandler(
+                        CmdSetDdm::parseArtMetricsCmd, CmdSetDdm::parseArtMetricsReply));
     }
 
     // Source debugmon.html
     protected CmdSetDdm() {
         super(0xc7, "DDM");
 
-        // Add DDM cmd use the same cmd. The type is part of the payload.
+        // All DDM cmd use the same cmd. The type is part of the payload.
         add(1, "Packet", this::parseDdmCmd, this::parseDdmReply);
     }
 
     private Message parseDdmReply(@NonNull MessageReader reader, @NonNull Session session) {
         Message msg = new Message(reader);
+
+        int type = reader.getInt();
+        int length = reader.getInt();
+
+        if (ddmHandlers.containsKey(type)) {
+            ddmHandlers.get(type).getReplyParser().parse(reader, session, msg);
+        }
+
         return msg;
     }
 
@@ -76,27 +92,10 @@ class CmdSetDdm extends CmdSet {
         int type = reader.getInt();
         int length = reader.getInt();
 
-        if (ddmTypes.containsKey(type)) {
-            msg.setName(ddmTypes.get(type));
-            if (type == typeFromName(ART_TIMING_CHUNK)) {
-                // These are the timing from art processing on-device.
-                int version = reader.getInt(); // Not used for now. Switch parsing upon new version.
+        msg.setName(typeToName(type));
 
-                int numTimings = reader.getInt();
-                msg.addArg("numTimings", numTimings);
-
-                Map<Long, DdmJDWPTiming> timings = new HashMap<>();
-                for (int i = 0; i < numTimings; i++) {
-                    int id = reader.getInt();
-                    int cmdset = reader.getInt();
-                    int cmd = reader.getInt();
-                    long start_ns = reader.getLong();
-                    long duration_ns = reader.getLong();
-                    timings.put(
-                            (long) id, new DdmJDWPTiming(id, cmdset, cmd, start_ns, duration_ns));
-                }
-                session.addTimings(timings);
-            }
+        if (ddmHandlers.containsKey(type)) {
+            ddmHandlers.get(type).getCmdParser().parse(reader, session, msg);
         } else {
             msg.setName("UNKNOWN(" + typeToName(type) + ")");
         }
@@ -104,11 +103,79 @@ class CmdSetDdm extends CmdSet {
         return msg;
     }
 
-    private static void addType(String name) {
-        ddmTypes.put(typeFromName(name), name);
+    @NotNull
+    private static void parseArtMetricsCmd(
+            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {
+        // These are the timing from art processing on-device.
+        int version = reader.getInt(); // Not used for now. Switch parsing upon new version.
+
+        int numTimings = reader.getInt();
+        msg.addArg("numTimings", numTimings);
+
+        Map<Long, DdmJDWPTiming> timings = new HashMap<>();
+        for (int i = 0; i < numTimings; i++) {
+            int id = reader.getInt();
+            int cmdset = reader.getInt();
+            int cmd = reader.getInt();
+            long start_ns = reader.getLong();
+            long duration_ns = reader.getLong();
+            timings.put((long) id, new DdmJDWPTiming(id, cmdset, cmd, start_ns, duration_ns));
+        }
+        session.addTimings(timings);
     }
 
-    private static String typeToName(int type) {
+    @NotNull
+    private static void parseArtMetricsReply(
+            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {}
+
+    @NonNull
+    private static void parseHELOCmd(
+            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {}
+
+    @NonNull
+    private static void parseHELOReply(
+            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {
+        msg.addArg("version", reader.getInt());
+        msg.addArg("pid", reader.getInt());
+
+        int vmIdentLen = reader.getInt();
+        int appNameLen = reader.getInt();
+
+        msg.addArg("vmIdent", reader.getCharString(vmIdentLen));
+        msg.addArg("processName", reader.getCharString(appNameLen));
+
+        if (!reader.hasRemaining()) {
+            return;
+        }
+        msg.addArg("userid", reader.getInt());
+
+        if (!reader.hasRemaining()) {
+            return;
+        }
+        // check if the VM has reported information about the ABI
+        int abiLength = reader.getInt();
+        msg.addArg("abi", reader.getCharString(abiLength));
+
+        if (!reader.hasRemaining()) {
+            return;
+        }
+        int jvmFlagsLength = reader.getInt();
+        msg.addArg("jvmFlags", reader.getCharString(jvmFlagsLength));
+
+        if (!reader.hasRemaining()) {
+            return;
+        }
+        byte nativeDebuggableByte = reader.getByte();
+        msg.addArg("nativeDebuggable", nativeDebuggableByte);
+
+        if (!reader.hasRemaining()) {
+            return;
+        }
+        int packageNameLength = reader.getInt();
+        msg.addArg("packageName", reader.getCharString(packageNameLength));
+    }
+
+    static String typeToName(int type) {
         char[] ascii = new char[4];
 
         ascii[0] = (char) ((type >> 24) & 0xff);

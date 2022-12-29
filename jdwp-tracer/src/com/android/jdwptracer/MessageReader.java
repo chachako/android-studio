@@ -222,4 +222,10 @@ class MessageReader {
     boolean hasRemaining() {
         return buffer.hasRemaining();
     }
+
+    String getCharString(int len) {
+        char[] data = new char[len];
+        for (int i = 0; i < len; i++) data[i] = buffer.getChar();
+        return new String(data);
+    }
 }
