@@ -31,7 +31,7 @@ using profiler::proto::TraceStopStatus;
 namespace profiler {
 
 namespace {
-// "cache/complete" is where the generic bytes rpc fetches contents
+// "cache/complete" is where the generic bytes rpc fetches content
 constexpr char kCacheLocation[] = "cache/complete/";
 
 // Helper function to stop the tracing. This function works in the async
@@ -52,7 +52,7 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
   // Send TRACE_STATUS event right away.
   const auto* ongoing = trace_manager->GetOngoingCapture(app_name);
   Event status_event =
-      PopulateTraceStatusEvent(command_data, Event::CPU_TRACE, ongoing);
+      PopulateTraceStatusEvent(command_data, ProfilerType::CPU, ongoing);
   daemon->buffer()->Add(status_event);
   if (ongoing == nullptr) return;
 
@@ -87,7 +87,7 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
       }
     }
     Event trace_event =
-        PopulateTraceEvent(*capture, command_data, Event::CPU_TRACE, true);
+        PopulateTraceEvent(*capture, command_data, ProfilerType::CPU, true);
     daemon->buffer()->Add(trace_event);
   } else {
     // When execution reaches here, a TRACE_STATUS event has been sent

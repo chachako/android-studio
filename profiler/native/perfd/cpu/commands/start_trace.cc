@@ -23,6 +23,7 @@
 
 using grpc::Status;
 using profiler::proto::Event;
+using profiler::proto::ProfilerType;
 using profiler::proto::TraceStartStatus;
 using std::vector;
 
@@ -30,6 +31,7 @@ namespace profiler {
 
 Status StartTrace::ExecuteOn(Daemon* daemon) {
   auto& start_command = command().start_trace();
+  auto profiler_type = start_command.profiler_type();
 
   int64_t start_timestamp;
   if (start_command.has_api_start_metadata()) {
@@ -38,22 +40,33 @@ Status StartTrace::ExecuteOn(Daemon* daemon) {
     start_timestamp = daemon->clock()->GetCurrentTime();
   }
 
+  CaptureInfo* capture = nullptr;
   TraceStartStatus start_status;
-  auto* capture = trace_manager_->StartCapture(
-      start_timestamp, start_command.configuration(), &start_status);
+  if (profiler_type == ProfilerType::UNSPECIFIED) {
+    start_status.set_status(TraceStartStatus::FAILURE);
+    start_status.set_error_message("no trace type specified");
+  } else {
+    capture = trace_manager_->StartCapture(
+        start_timestamp, start_command.configuration(), &start_status);
+  }
 
   Event status_event;
   status_event.set_pid(command().pid());
   status_event.set_kind(Event::TRACE_STATUS);
   status_event.set_command_id(command().command_id());
+  start_status.set_start_time_ns(start_timestamp);
   status_event.mutable_trace_status()->mutable_trace_start_status()->CopyFrom(
       start_status);
 
   vector<Event> events_to_send;
   if (capture != nullptr) {
-    Event event =
-        PopulateTraceEvent(*capture, command(), Event::CPU_TRACE, false);
-    status_event.set_group_id(capture->trace_id);
+    Event event = PopulateTraceEvent(*capture, command(), profiler_type, false);
+
+    if (profiler_type == ProfilerType::CPU) {
+      status_event.set_group_id(capture->trace_id);
+    } else if (profiler_type == ProfilerType::MEMORY) {
+      status_event.set_group_id(capture->start_timestamp);
+    }
 
     events_to_send.push_back(status_event);
     events_to_send.push_back(event);

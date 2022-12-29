@@ -37,6 +37,7 @@
 using google::protobuf::util::MessageDifferencer;
 using std::string;
 
+using profiler::proto::ProfilerType;
 using profiler::proto::TraceConfiguration;
 
 namespace profiler {
@@ -59,9 +60,9 @@ class TestEventWriter final : public EventWriter {
   std::condition_variable* cv_;
 };
 
-class CpuTraceCommandsTest : public testing::Test {
+class TraceCommandsTest : public testing::Test {
  public:
-  CpuTraceCommandsTest()
+  TraceCommandsTest()
       : clock_(), perfetto_(new FakePerfetto()), event_buffer_(&clock_) {}
 
   void SetUp() override {
@@ -128,11 +129,79 @@ class CpuTraceCommandsTest : public testing::Test {
   std::unique_ptr<TestEventWriter> writer_;
 };
 
-TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
+TEST_F(TraceCommandsTest, StartUnspecifiedTraceCommandsTest) {
   proto::Command command;
   command.set_type(proto::Command::START_TRACE);
   auto* start = command.mutable_start_trace();
   start->mutable_configuration()->CopyFrom(trace_config_);
+  start->set_profiler_type(ProfilerType::UNSPECIFIED);
+  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
+      ->ExecuteOn(daemon_.get());
+
+  std::mutex mutex;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive events before the timeout.
+    // We should expect a begin-session event, followed by the cpu trace
+    // status and info events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 2; }));
+  }
+
+  EXPECT_EQ(2, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") == nullptr);
+  EXPECT_EQ(events_[0].kind(), proto::Event::SESSION);
+  EXPECT_TRUE(events_[0].has_session());
+  EXPECT_TRUE(events_[0].session().has_session_started());
+  EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[1].has_trace_status());
+  EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
+  EXPECT_EQ(events_[1].trace_status().trace_start_status().error_message(),
+            "no trace type specified");
+}
+
+TEST_F(TraceCommandsTest, StartMemoryTraceCommandsTest) {
+  proto::Command command;
+  command.set_type(proto::Command::START_TRACE);
+  auto* start = command.mutable_start_trace();
+  start->mutable_configuration()->CopyFrom(trace_config_);
+  start->set_profiler_type(ProfilerType::MEMORY);
+  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
+      ->ExecuteOn(daemon_.get());
+
+  std::mutex mutex;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive events before the timeout.
+    // We should expect a begin-session event, followed by the cpu trace
+    // status and info events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 3; }));
+  }
+
+  EXPECT_EQ(3, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") != nullptr);
+  EXPECT_EQ(events_[0].kind(), proto::Event::SESSION);
+  EXPECT_TRUE(events_[0].has_session());
+  EXPECT_TRUE(events_[0].session().has_session_started());
+  EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[1].has_trace_status());
+  EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
+  EXPECT_EQ(events_[2].kind(), proto::Event::MEMORY_TRACE);
+  EXPECT_FALSE(events_[2].is_ended());
+  EXPECT_TRUE(events_[2].has_trace_data());
+  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
+  EXPECT_TRUE(MessageDifferencer::Equals(
+      trace_config_,
+      events_[2].trace_data().trace_started().trace_info().configuration()));
+}
+
+TEST_F(TraceCommandsTest, CommandsGeneratesEvents) {
+  proto::Command command;
+  command.set_type(proto::Command::START_TRACE);
+  auto* start = command.mutable_start_trace();
+  start->mutable_configuration()->CopyFrom(trace_config_);
+  start->set_profiler_type(ProfilerType::CPU);
   StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
       ->ExecuteOn(daemon_.get());
 
@@ -188,11 +257,12 @@ TEST_F(CpuTraceCommandsTest, CommandsGeneratesEvents) {
       events_[4].trace_data().trace_ended().trace_info().configuration()));
 }
 
-TEST_F(CpuTraceCommandsTest, FailToStartCapture) {
+TEST_F(TraceCommandsTest, FailToStartCapture) {
   proto::Command command;
   command.set_type(proto::Command::START_TRACE);
   auto* start = command.mutable_start_trace();
   start->mutable_configuration()->CopyFrom(trace_config_);
+  start->set_profiler_type(ProfilerType::CPU);
   // Start trace will fail due to perfetto already running.
   perfetto_->SetPerfettoState(true);
   StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())

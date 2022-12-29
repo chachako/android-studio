@@ -17,25 +17,26 @@
 
 using profiler::proto::Command;
 using profiler::proto::Event;
+using profiler::proto::ProfilerType;
 using profiler::proto::TraceStopStatus;
 
 namespace profiler {
 
 Event PopulateTraceEvent(const CaptureInfo& capture,
                          const profiler::proto::Command& command_data,
-                         proto::Event_Kind event_kind, bool is_end) {
+                         const ProfilerType profiler_type, bool is_end) {
+  // If not a valid ProfilerType, there will not be a mapping to a valid Event
+  // Kind. This is a doubly-protective measure as we already check and return
+  // early from this methods caller if the ProfilerType == UNSPECIFIED.
+  assert(profiler_type_to_event.find(profiler_type) !=
+         profiler_type_to_event.end());
+  auto event_kind = profiler_type_to_event.find(profiler_type)->second;
+
   Event event;
   event.set_pid(command_data.pid());
   event.set_kind(event_kind);
   event.set_is_ended(is_end);
   event.set_command_id(command_data.command_id());
-  if (is_end) {
-    event.set_timestamp(capture.end_timestamp);
-  } else {
-    event.set_timestamp(capture.start_timestamp);
-  }
-
-  assert(event_kind == Event::CPU_TRACE || event_kind == Event::MEMORY_TRACE);
 
   auto* trace_info = is_end ? event.mutable_trace_data()
                                   ->mutable_trace_ended()
@@ -43,21 +44,23 @@ Event PopulateTraceEvent(const CaptureInfo& capture,
                             : event.mutable_trace_data()
                                   ->mutable_trace_started()
                                   ->mutable_trace_info();
-
+  if (is_end) {
+    event.set_timestamp(capture.end_timestamp);
+    trace_info->mutable_stop_status()->CopyFrom(capture.stop_status);
+  } else {
+    event.set_timestamp(capture.start_timestamp);
+  }
   trace_info->set_trace_id(capture.trace_id);
   trace_info->set_from_timestamp(capture.start_timestamp);
   trace_info->set_to_timestamp(capture.end_timestamp);
   trace_info->mutable_configuration()->CopyFrom(capture.configuration);
   trace_info->mutable_start_status()->CopyFrom(capture.start_status);
-  if (is_end) {
-    trace_info->mutable_stop_status()->CopyFrom(capture.stop_status);
-  }
 
-  if (event_kind == Event::CPU_TRACE) {
+  if (profiler_type == ProfilerType::CPU) {
     // CPU trace uses capture's trace id as the group id.
     event.set_group_id(capture.trace_id);
   } else {
-    // event_kind is MEMORY_TRACE
+    // profiler_type is MEMORY
     // Memory trace uses start timestamp of trace as group id.
     event.set_group_id(capture.start_timestamp);
     if (!is_end) {
@@ -70,7 +73,7 @@ Event PopulateTraceEvent(const CaptureInfo& capture,
 }
 
 Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
-                               const proto::Event_Kind event_kind,
+                               const ProfilerType profiler_type,
                                const CaptureInfo* capture) {
   Event status_event;
   status_event.set_pid(command_data.pid());
@@ -83,17 +86,22 @@ Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
   if (capture == nullptr) {
     stop_status->set_error_message("No ongoing capture exists");
     stop_status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
-  } else {
-    if (event_kind == Event::CPU_TRACE) {
-      status_event.set_group_id(capture->trace_id);
-    } else {
-      // Event is for memory tracing, event_kind == MEMORY_TRACE
-      status_event.set_group_id(capture->start_timestamp);
-    }
-    // This event is to acknowledgethe stop command. It doesn't have the full
-    // result. Since UNSPECIFIED is the default value, it is actually an no-op.
-    stop_status->set_status(TraceStopStatus::UNSPECIFIED);
+    return status_event;
   }
+
+  if (profiler_type == ProfilerType::CPU) {
+    status_event.set_group_id(capture->trace_id);
+  } else if (profiler_type == ProfilerType::MEMORY) {
+    status_event.set_group_id(capture->start_timestamp);
+  } else {
+    // profiler_type == ProfilerType::UNSPECIFIED
+    stop_status->set_error_message("No ongoing capture exists");
+    stop_status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
+    return status_event;
+  }
+  // This event is to acknowledgethe stop command. It doesn't have the full
+  // result. Since UNSPECIFIED is the default value, it is actually an no-op.
+  stop_status->set_status(TraceStopStatus::UNSPECIFIED);
   return status_event;
 }
 

@@ -37,13 +37,13 @@ message Command {
     BEGIN_SESSION = 101;
     END_SESSION = 102;
     DISCOVER_PROFILEABLE = 103;
+    START_TRACE = 104;
+    STOP_TRACE = 105;
 
     // Network Profiler Prefix = 200
 
     // Cpu Profiler Prefix = 300
-    START_TRACE = 301;
-    STOP_TRACE = 302;
-    GET_CPU_CORE_CONFIG = 303;
+    GET_CPU_CORE_CONFIG = 301;
 
     // Memory Profiler Prefix = 400
     GC = 401; // No payload

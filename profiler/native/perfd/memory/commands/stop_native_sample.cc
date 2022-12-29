@@ -22,6 +22,7 @@
 using grpc::Status;
 using profiler::proto::Event;
 using profiler::proto::MemoryHeapDumpData;
+using profiler::proto::ProfilerType;
 using profiler::proto::TraceStopStatus;
 using std::string;
 
@@ -44,7 +45,7 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
 
   const auto* ongoing = trace_manager_->GetOngoingCapture(app_name);
   Event status_event =
-      PopulateTraceStatusEvent(command(), Event::MEMORY_TRACE, ongoing);
+      PopulateTraceStatusEvent(command(), ProfilerType::MEMORY, ongoing);
   auto* stop_status =
       status_event.mutable_trace_status()->mutable_trace_stop_status();
 
@@ -89,7 +90,7 @@ Status StopNativeSample::ExecuteOn(Daemon* daemon) {
       }
     }
     Event trace_event =
-        PopulateTraceEvent(*capture, command(), Event::MEMORY_TRACE, true);
+        PopulateTraceEvent(*capture, command(), ProfilerType::MEMORY, true);
     daemon->buffer()->Add(trace_event);
   } else {
     // When execution reaches here, a TRACE_STATUS event has been sent

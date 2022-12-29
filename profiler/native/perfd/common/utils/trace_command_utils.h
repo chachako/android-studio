@@ -16,20 +16,28 @@
 #ifndef PERFD_CPU_COMMANDS_TRACE_COMMAND_UTILS_H_
 #define PERFD_CPU_COMMANDS_TRACE_COMMAND_UTILS_H_
 
+#include <unordered_map>
+
 #include "perfd/common/capture_info.h"
 #include "proto/commands.pb.h"
 #include "proto/common.pb.h"
+
+using profiler::proto::Event;
+using profiler::proto::ProfilerType;
 
 namespace profiler {
 
 profiler::proto::Event PopulateTraceEvent(
     const CaptureInfo& capture, const profiler::proto::Command& command_data,
-    proto::Event_Kind event_kind, bool is_end);
+    const ProfilerType profiler_type, bool is_end);
 
 profiler::proto::Event PopulateTraceStatusEvent(
     const profiler::proto::Command& command_data,
-    const proto::Event_Kind event_kind, const CaptureInfo* capture);
+    const ProfilerType profiler_type, const CaptureInfo* capture);
 
+const std::unordered_map<ProfilerType, proto::Event_Kind>
+    profiler_type_to_event = {{ProfilerType::CPU, Event::CPU_TRACE},
+                              {ProfilerType::MEMORY, Event::MEMORY_TRACE}};
 }  // namespace profiler
 
 #endif  // PERFD_CPU_COMMANDS_TRACE_COMMAND_UTILS_H_
