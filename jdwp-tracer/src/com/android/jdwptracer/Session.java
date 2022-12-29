@@ -35,10 +35,12 @@ class Session {
 
     private Map<Long, DdmJDWPTiming> timings = new HashMap<>();
 
+    private String name = "unknown";
+
     Session() {}
 
     // private
-    boolean addPacket(@NonNull ByteBuffer packet) {
+    void addPacket(@NonNull ByteBuffer packet) {
         long now_ns = System.nanoTime();
 
         int length = packet.getInt();
@@ -46,13 +48,13 @@ class Session {
         byte flag = packet.get();
 
         if (Packet.isReply(flag)) {
-            return processReplyPacket(now_ns, length, id, packet);
+            processReplyPacket(now_ns, length, id, packet);
         } else {
-            return processCmdPacket(now_ns, length, id, packet);
+            processCmdPacket(now_ns, length, id, packet);
         }
     }
 
-    private boolean processCmdPacket(long time_ns, int length, int id, @NonNull ByteBuffer packet) {
+    private void processCmdPacket(long time_ns, int length, int id, @NonNull ByteBuffer packet) {
         int cmdSetID = packet.get() & 0xFF; // Convert from unsigned byte to signed int.
         int cmdID = packet.get() & 0xFF; // Convert from unsigned byte to signed int.
 
@@ -66,18 +68,15 @@ class Session {
         Transmission t = new Transmission(command, id, events.size());
         idToTransmission.put(id, t);
         events.add(t);
-
-        return false;
     }
 
-    private boolean processReplyPacket(
-            long time_ns, int length, int id, @NonNull ByteBuffer packet) {
+    private void processReplyPacket(long time_ns, int length, int id, @NonNull ByteBuffer packet) {
         short error = packet.getShort();
 
         if (!idToTransmission.containsKey(id)) {
             String msg = String.format(Locale.US, "Found reply id=%d packet without a cmd", id);
             System.out.println("Warning: " + msg);
-            return false;
+            return;
         }
         Transmission t = idToTransmission.get(id);
 
@@ -92,9 +91,6 @@ class Session {
         Message message = cmdSet.getCmd(cmdID).getReplyParser().parse(messageReader, this);
         Reply reply = new Reply(id, length, error, time_ns, message);
         t.addReply(reply);
-
-        // Was it the last packet in the session (Reply to Command VM (1), Exit (10).
-        return cmdSetID == CmdSetVM.ID && cmdID == CmdSetVM.Cmd.EXIT.ID;
     }
 
     void addEvent(@NonNull String name) {
@@ -114,5 +110,14 @@ class Session {
 
     void addTimings(@NonNull Map<Long, DdmJDWPTiming> timings) {
         this.timings.putAll(timings);
+    }
+
+    void setName(@NonNull String name) {
+        this.name = name;
+    }
+
+    @NonNull
+    String name() {
+        return name;
     }
 }

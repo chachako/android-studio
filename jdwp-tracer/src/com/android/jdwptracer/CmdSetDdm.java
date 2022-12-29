@@ -142,7 +142,10 @@ class CmdSetDdm extends CmdSet {
         int appNameLen = reader.getInt();
 
         msg.addArg("vmIdent", reader.getCharString(vmIdentLen));
-        msg.addArg("processName", reader.getCharString(appNameLen));
+
+        String processName = reader.getCharString(appNameLen);
+        msg.addArg("processName", processName);
+        session.setName(processName);
 
         if (!reader.hasRemaining()) {
             return;
@@ -172,7 +175,12 @@ class CmdSetDdm extends CmdSet {
             return;
         }
         int packageNameLength = reader.getInt();
-        msg.addArg("packageName", reader.getCharString(packageNameLength));
+        String packageName = reader.getCharString(packageNameLength);
+        msg.addArg("packageName", packageName);
+        // We overwrite the session name because, if present, this name is better (not subject to
+        // process renaming from AndroidManifest.xml). If we don't reach this point, `processName`
+        // , read earlier, is used as a fallback.
+        session.setName(packageName);
     }
 
     static String typeToName(int type) {

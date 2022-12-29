@@ -57,19 +57,18 @@ public class JDWPTracer {
         buffer = buffer.duplicate();
         buffer.order(ByteOrder.BIG_ENDIAN);
 
-        // VM_EXIT reply should be the latest packet in a session.
-        // When we see it, it is time to write the trace to storage.
         try {
-            boolean exitDetected = session.addPacket(buffer);
-            if (exitDetected) {
-                Path outputPath = outputFolder.resolve("perfetto-trace.json");
-                SystraceOutput.genOutput(session, outputPath);
-                System.out.println("JDWTrace written to '" + outputPath.toAbsolutePath() + "'");
-                session = new Session();
-            }
+            session.addPacket(buffer);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public synchronized void close() {
+        Path outputPath = outputFolder.resolve("perfetto-trace-" + session.name() + ".json");
+        SystraceOutput.genOutput(session, outputPath);
+        System.out.println("JDWTrace written to '" + outputPath.toAbsolutePath() + "'");
+        session = new Session();
     }
 
     /**
