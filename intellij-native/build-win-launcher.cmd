@@ -11,12 +11,12 @@ set BUILDNUMBER=%3
 set SCRIPT_DIR=%~dp0
 for %%F in ("%SCRIPTDIR%..\..") do set TOP=%%~dpF
 set CMAKE="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake"
-set JDK_11_x64=%TOP%prebuilts\studio\jdk\jdk11\win\
+set JDK_11_0_x64=%TOP%prebuilts\studio\jdk\jdk11\win\
 
 cd %OUTDIR%
 mkdir WinLauncher
 cd WinLauncher
-set PATH=%JDK_11_x64%include;%PATH%
+set PATH=%JDK_11_0_x64%include;%PATH%
 %CMAKE% %TOP%tools\idea\native\WinLauncher
 %CMAKE% --build . --config Release -A x64
 xcopy /i /e Release\WinLauncher.exe %DISTDIR%
