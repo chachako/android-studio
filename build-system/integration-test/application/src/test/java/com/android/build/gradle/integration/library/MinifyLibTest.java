@@ -25,7 +25,6 @@ import static com.android.testutils.truth.PathSubject.assertThat;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.truth.ModelContainerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
@@ -34,8 +33,6 @@ import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -93,11 +90,19 @@ public class MinifyLibTest {
     public void shrinkingTheLibrary() throws Exception {
         enableLibShrinking();
 
+        File mappingFile = project.getSubproject(":lib").file("mapping.txt");
+        TestFileUtils.appendToFile(
+                mappingFile, "com.android.tests.basic.StringProvider -> c.a.t.b.SP:\n");
+        File libKeepRules = project.getSubproject(":lib").file("config.pro");
+        TestFileUtils.appendToFile(libKeepRules, "-applymapping " + mappingFile.getAbsolutePath());
+
         GradleBuildResult result = project.executor().run(":app:assembleDebug");
 
         assertThat(result.getTask(":app:minifyDebugWithR8")).didWork();
 
         Apk apk = project.getSubproject(":app").getApk(DEBUG);
+        // This is currently a bug, see http://b/263197720.
+        assertThat(apk).doesNotContainClass("Lc/a/t/b/SP;");
         assertThat(apk).containsClass("Lcom/android/tests/basic/StringProvider;");
         assertThat(apk).doesNotContainClass("Lcom/android/tests/basic/UnusedClass;");
     }
