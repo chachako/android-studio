@@ -43,6 +43,12 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
+import org.jetbrains.kotlin.analysis.api.KtStarProjectionTypeArgument
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
+import org.jetbrains.kotlin.analysis.api.types.KtType
+import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
+import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtProperty
@@ -281,21 +287,42 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
                     else -> return
                 }
                 val service = declaration.project.getService(KotlinUastResolveProviderService::class.java)
-                val bindingContext = service.getBindingContext(declaration)
-                val type = bindingContext.getType(expression) ?: return
-                if (type.isDynamic()) return
+                val bindingContext = service?.getBindingContext(declaration)
+                if (bindingContext != null) { // FE1.0
+                    val type = bindingContext.getType(expression) ?: return
+                    if (type.isDynamic()) return
 
-                // We're considering flexible types as platform types since Kotlin doesn't support union types yet.
-                // In the future this may need to be refined.
-                if (!type.isFlexibleRecursive()) return
-                val typeString = if (type.isFlexible()) null else type.toString().replace("..", " or ")
-                reportMissingExplicitType(node, typeString)
+                    // We're considering flexible types as platform types since Kotlin doesn't support union types yet.
+                    // In the future this may need to be refined.
+                    if (!type.isFlexibleRecursive()) return
+                    val typeString = if (type.isFlexible()) null else type.toString().replace("..", " or ")
+                    reportMissingExplicitType(node, typeString)
+                } else { // Analysis API
+                    analyze(expression) {
+                        val ktType = expression.getKtType() ?: return
+                        if (ktType is KtDynamicType) return
+
+                        if (!ktType.isFlexibleRecursive())  return
+                        val typeString = if (ktType is KtFlexibleType) null else ktType.toString().replace("..", " or ")
+                        reportMissingExplicitType(node, typeString)
+                    }
+                }
             }
         }
 
+        // FE1.0
         private fun KotlinType.isFlexibleRecursive(): Boolean {
             if (isFlexible()) return true
             return arguments.any { !it.isStarProjection && it.type.isFlexibleRecursive() }
+        }
+
+        // Analysis API
+        private fun KtType.isFlexibleRecursive(): Boolean {
+            if (this is KtFlexibleType) return true
+            val arguments = (this as? KtNonErrorClassType)?.typeArguments ?: return false
+            return arguments.any {
+                it !is KtStarProjectionTypeArgument && it.type?.isFlexibleRecursive() == true
+            }
         }
 
         override fun visitField(node: UField) {
