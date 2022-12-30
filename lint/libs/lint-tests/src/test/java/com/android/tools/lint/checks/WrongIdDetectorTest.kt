@@ -463,6 +463,21 @@ class WrongIdDetectorTest : AbstractCheckTest() {
         )
     }
 
+    fun testAndroidFramework() {
+        lint().files(
+            xml(
+                "res/layout/test.xml",
+                """
+                <RelativeLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@*android:id/parentPanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
     fun testConstraintLayoutCycle() {
         lint().files(
             xml(

@@ -564,6 +564,10 @@ public class WrongIdDetector extends LayoutDetector {
         }
         assert attribute.getName().equals(ATTR_ID) || attribute.getLocalName().equals(ATTR_ID);
         String id = attribute.getValue();
+        if (id.startsWith("@*android:") && !LintClient.isGradle()) {
+            // Avoid complaining about private resources when analyzing the Android framework
+            id = "@" + id.substring(2);
+        }
         mFileIds.add(id);
         mGlobalIds.add(id);
 
