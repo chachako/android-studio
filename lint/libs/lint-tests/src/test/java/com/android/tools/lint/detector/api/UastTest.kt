@@ -25,6 +25,7 @@ import com.android.tools.lint.helpers.DefaultJavaEvaluator
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiRecursiveElementVisitor
@@ -36,6 +37,7 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
@@ -43,6 +45,7 @@ import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
 import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
@@ -1728,6 +1731,55 @@ class UastTest : TestCase() {
                     assertNotSame(sourceModifierList.text, javaPsiModifierList.text)
                     assertEquals("@MyComposable", sourceModifierList.text)
                     return super.visitMethod(node)
+                }
+            })
+        }
+    }
+
+    fun testConstructorReferences() {
+        val source = kotlin(
+            """
+            class Foo(val p : Int)
+            class Boo
+            data class Bar(val isEnabled: Boolean = true)
+
+            fun test() {
+              val x = ::Foo
+              x(42)
+              val y = ::Boo
+              y()
+              val z = ::Bar
+              z(false)
+            }
+            """
+        ).indented()
+
+        check(
+            source
+        ) { file ->
+            file.accept(object : AbstractUastVisitor() {
+                override fun visitMethod(node: UMethod): Boolean {
+                    if (!node.isConstructor) return super.visitMethod(node)
+
+                    assertTrue(
+                        node.sourcePsi is KtConstructor<*> ||
+                                (node.sourcePsi is KtClassOrObject && node.name == "Boo")
+                    )
+                    return super.visitMethod(node)
+                }
+
+                override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
+                    val resolved = node.resolve()
+                    assertNotNull(resolved)
+
+                    // If a class doesn't have its own primary constructor,
+                    // the reference will be resolved to the class itself.
+                    assertTrue(
+                        (resolved as? PsiMethod)?.isConstructor == true ||
+                                (resolved as? PsiClass)?.constructors?.single()?.isPhysical == false
+                    )
+
+                    return super.visitCallableReferenceExpression(node)
                 }
             })
         }
