@@ -356,7 +356,11 @@ class LeakDetector : Detector(), SourceCodeScanner {
         private const val CLASS_LIFECYCLE_OLD = "android.arch.lifecycle.Lifecycle"
 
         private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
-            if (field.getAnnotation("dagger.hilt.android.qualifiers.ApplicationContext") != null) {
+            //noinspection ExternalAnnotations
+            if (field.annotations.any { it.qualifiedName?.endsWith("ApplicationContext") == true }) {
+                // dagger.hilt.android.qualifiers.ApplicationContext
+                // and various other ones like com.google.android.apps.common.inject.annotation.ApplicationContext;
+                // see b/159130139
                 return true
             } else if (field is KtLightFieldForSourceDeclarationSupport) {
                 val origin = field.kotlinOrigin

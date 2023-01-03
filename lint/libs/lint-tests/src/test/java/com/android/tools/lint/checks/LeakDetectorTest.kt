@@ -618,4 +618,44 @@ class LeakDetectorTest : AbstractCheckTest() {
             ).indented()
         ).skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS).run().expectClean()
     }
+
+    fun testCustomAnnotationContextAnnotation() {
+        // Regression test for
+        // 159130139: Context leak checker isn't @ApplicationContext-aware
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+
+                import android.content.Context
+                import my.custom.annotation.ApplicationContext
+
+                class Model constructor(
+                    @ApplicationContext private val context: Context // OK
+                ) {
+                    companion object {
+                        var model: Model? = null
+                    }
+                }
+
+                class Model2 constructor(context: Context) {
+                    @ApplicationContext private val context: Context = context // OK
+                    companion object {
+                        var model: Model2? = null
+                    }
+                }
+                """
+            ).indented(),
+            java(
+                // Stub
+                """
+                package my.custom.annotation;
+                import java.lang.annotation.ElementType;
+                import java.lang.annotation.Target;
+                @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+                public @interface ApplicationContext {}
+                """
+            ).indented()
+        ).skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS).run().expectClean()
+    }
 }
