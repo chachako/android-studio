@@ -361,6 +361,19 @@ class ImportAliasTestModeTest {
     }
 
     @Test
+    fun testVarArgs() {
+        @Language("kotlin")
+        val kotlin = """
+            import android.animation.Animator.AnimatorPauseListener
+
+            fun addListeners(vararg listeners: AnimatorPauseListener) {}
+        """.trimIndent()
+
+        val aliased = alias(kotlin)
+        assertEquals(kotlin, aliased)
+    }
+
+    @Test
     fun testTransformMessage() {
         val mode = ImportAliasTestMode()
         assertTrue(

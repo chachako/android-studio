@@ -9064,6 +9064,126 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "1 errors, 1 warnings");
     }
 
+    public void testCastWithKotlinReceiver() {
+        // Regression test for b/227212731
+        lint().files(
+                        kotlin(
+                                ""
+                                        + "import android.app.NotificationChannel\n"
+                                        + "import android.service.notification.StatusBarNotification\n"
+                                        + " \n"
+                                        + "fun StatusBarNotification.shouldVibrate(channel: NotificationChannel?,): Boolean = false\n"
+                                        + " \n"
+                                        + "fun shouldFilterNotification(sbn: StatusBarNotification, channel: NotificationChannel?): Boolean {\n"
+                                        + "  return !sbn.shouldVibrate(duhh = channel)\n"
+                                        + "}"))
+                .run()
+                .expectClean();
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    public void testCastInVarargs() {
+        lint().files(
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.animation.Animator.AnimatorPauseListener;\n"
+                                        + "import android.animation.AnimatorListenerAdapter;\n"
+                                        + "\n"
+                                        + "import java.util.Deque;\n"
+                                        + "import java.util.LinkedList;\n"
+                                        + "\n"
+                                        + "@SuppressWarnings({\"unused\", \"UnnecessaryLocalVariable\"})\n"
+                                        + "public class CastTestJava {\n"
+                                        + "    public void testVarargs(AnimatorListenerAdapter listener1,\n"
+                                        + "                            AnimatorListenerAdapter listener2,\n"
+                                        + "                            AnimatorPauseListener listener3) {\n"
+                                        + "        addListeners(0, listener1);  // ERROR 1\n"
+                                        + "        addListeners(1,\n"
+                                        + "                listener1,           // ERROR 2\n"
+                                        + "                listener2,           // ERROR 3\n"
+                                        + "                listener3);          // OK\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    public void addListeners(int args, AnimatorPauseListener... listeners) { }\n"
+                                        + "\n"
+                                        + "    public void testWildcards(LinkedList<String> list, LinkedList<? super Number> list2) {\n"
+                                        + "        Deque<String> deque = list;           // ERROR 4\n"
+                                        + "        Deque<? super Number> deque2 = list2; // ERROR 5\n"
+                                        + "    }\n"
+                                        + "}"),
+                        kotlin(
+                                ""
+                                        + "@file:Suppress(\"UNUSED_PARAMETER\", \"unused\", \"SameParameterValue\", \"UnusedReceiverParameter\")\n"
+                                        + "\n"
+                                        + "package test.pkg\n"
+                                        + "\n"
+                                        + "import android.animation.Animator.AnimatorPauseListener\n"
+                                        + "import android.animation.AnimatorListenerAdapter\n"
+                                        + "import android.app.Activity\n"
+                                        + "\n"
+                                        + "class CastTestKotlin {\n"
+                                        + "    fun test(\n"
+                                        + "        activity: Activity,\n"
+                                        + "        listener1: AnimatorListenerAdapter,\n"
+                                        + "        listener2: AnimatorListenerAdapter,\n"
+                                        + "        listener3: AnimatorPauseListener\n"
+                                        + "    ) {\n"
+                                        + "        addListeners(\n"
+                                        + "            0, listener1,                    // ERROR 6\n"
+                                        + "            listener2)                       // ERROR 7\n"
+                                        + "        activity.addListeners(1, listener1)  // ERROR 8\n"
+                                        + "        activity.addListeners(\n"
+                                        + "            2, listener1,                    // ERROR 9\n"
+                                        + "            listener2,                       // ERROR 10\n"
+                                        + "            listener3)                       // OK\n"
+                                        + "        addCollectionOfListeners(3,\n"
+                                        + "            listOf(listener1),               // OK\n"
+                                        + "            listOf(listener3))               // OK\n"
+                                        + "    }\n"
+                                        + "\n"
+                                        + "    private fun addListeners(args: Int, vararg listeners: AnimatorPauseListener) {}\n"
+                                        + "    private fun addCollectionOfListeners(args: Int, vararg listenerCollection: List<AnimatorPauseListener>) {}\n"
+                                        + "\n"
+                                        + "    private fun Activity.addListeners(args: Int, vararg listeners: AnimatorPauseListener) {}\n"
+                                        + "}"))
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/CastTestJava.java:14: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "        addListeners(0, listener1);  // ERROR 1\n"
+                                + "                        ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestJava.java:16: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "                listener1,           // ERROR 2\n"
+                                + "                ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestJava.java:17: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "                listener2,           // ERROR 3\n"
+                                + "                ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestJava.java:24: Error: Cast from LinkedList to Deque requires API level 9 (current min is 1) [NewApi]\n"
+                                + "        Deque<String> deque = list;           // ERROR 4\n"
+                                + "                              ~~~~\n"
+                                + "src/test/pkg/CastTestJava.java:25: Error: Cast from LinkedList to Deque requires API level 9 (current min is 1) [NewApi]\n"
+                                + "        Deque<? super Number> deque2 = list2; // ERROR 5\n"
+                                + "                                       ~~~~~\n"
+                                + "src/test/pkg/CastTestKotlin.kt:17: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "            0, listener1,                    // ERROR 6\n"
+                                + "               ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestKotlin.kt:18: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "            listener2)                       // ERROR 7\n"
+                                + "            ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestKotlin.kt:19: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "        activity.addListeners(1, listener1)  // ERROR 8\n"
+                                + "                                 ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestKotlin.kt:21: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "            2, listener1,                    // ERROR 9\n"
+                                + "               ~~~~~~~~~\n"
+                                + "src/test/pkg/CastTestKotlin.kt:22: Error: Cast from AnimatorListenerAdapter to AnimatorPauseListener requires API level 19 (current min is 1) [NewApi]\n"
+                                + "            listener2,                       // ERROR 10\n"
+                                + "            ~~~~~~~~~\n"
+                                + "10 errors, 0 warnings");
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();

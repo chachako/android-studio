@@ -23,6 +23,7 @@ import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
+import com.intellij.psi.PsiEllipsisType
 import com.intellij.psi.PsiType
 import org.jetbrains.kotlin.psi.KtImportDirective
 import org.jetbrains.uast.UElement
@@ -119,7 +120,7 @@ class ImportAliasTestMode : UastSourceTransformationTestMode(
                     return
                 }
                 val range = node.sourcePsi?.textRange ?: return
-                if (type is PsiArrayType && cls != null) {
+                if (type is PsiArrayType && type !is PsiEllipsisType && cls != null) {
                     getImportAlias(cls.qualifiedName)?.let { aliasName ->
                         editMap[offset] = replace(range.startOffset, range.endOffset, "Array<$aliasName>")
                     }
