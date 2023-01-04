@@ -107,12 +107,7 @@ public abstract class ShaderCompile extends NonIncrementalTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     @SkipWhenEmpty
     public FileTree getSourceFiles() {
-        File sourceDirFile = getSourceDir().get().getAsFile();
-        FileTree src = null;
-        if (sourceDirFile.isDirectory()) {
-            src = getProject().files(sourceDirFile).getAsFileTree().matching(PATTERN_SET);
-        }
-        return src == null ? getProject().files().getAsFileTree() : src;
+        return getSourceDir().getAsFileTree().matching(PATTERN_SET);
     }
 
     /**
