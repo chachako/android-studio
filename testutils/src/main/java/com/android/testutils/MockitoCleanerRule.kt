@@ -20,10 +20,6 @@ import org.junit.rules.ExternalResource
 class MockitoCleanerRule : ExternalResource() {
     private val mockitoCleaner = MockitoThreadLocalsCleaner()
 
-    override fun before() {
-        mockitoCleaner.setup()
-    }
-
     override fun after() {
         mockitoCleaner.cleanupAndTearDown()
     }

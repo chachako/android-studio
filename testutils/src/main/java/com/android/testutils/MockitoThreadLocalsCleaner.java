@@ -4,38 +4,17 @@ package com.android.testutils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import org.mockito.Mockito;
 import org.mockito.internal.progress.ThreadSafeMockingProgress;
-import org.mockito.listeners.MockCreationListener;
 
 public class MockitoThreadLocalsCleaner {
-    protected List<Object> mockitoMocks = new ArrayList<>();
-    private MockCreationListener mockCreationListener;
 
     public void setup() {
-        if (mockCreationListener == null) {
-            mockCreationListener = (mock, settings) -> mockitoMocks.add(mock);
-            Mockito.framework().addListener(mockCreationListener);
-        }
+        // Not needed currently.
     }
 
     public void cleanupAndTearDown() throws Exception {
-        if (mockCreationListener != null) {
-            Mockito.framework().removeListener(mockCreationListener);
-            mockCreationListener = null;
-        }
-        resetMocks();
         resetWellKnownThreadLocals();
-    }
-
-    private void resetMocks() {
-        for (Object o : mockitoMocks) {
-            Mockito.reset(o);
-        }
-        mockitoMocks.clear();
     }
 
     protected void resetWellKnownThreadLocals()
