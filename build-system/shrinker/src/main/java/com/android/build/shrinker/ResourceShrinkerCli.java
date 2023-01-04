@@ -159,6 +159,12 @@ public class ResourceShrinkerCli {
         for (String rawResource : options.getRawResources()) {
             resourceUsageRecorders.add(new ToolsAttributeUsageRecorder(Paths.get(rawResource)));
         }
+        // If the apk contains a raw folder, find keep rules in there
+        if (new ZipFile(options.getInput())
+                .stream().anyMatch(zipEntry -> zipEntry.getName().startsWith("res/raw"))) {
+            Path rawPath = fileSystemProto.getPath("res", "raw");
+            resourceUsageRecorders.add(new ToolsAttributeUsageRecorder(rawPath));
+        }
         ResourcesGatherer gatherer =
                 new ProtoResourceTableGatherer(fileSystemProto.getPath(RESOURCES_PB));
         ProtoResourcesGraphBuilder res =
