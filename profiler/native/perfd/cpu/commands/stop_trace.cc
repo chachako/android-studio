@@ -39,6 +39,7 @@ constexpr char kCacheLocation[] = "cache/complete/";
 void Stop(Daemon* daemon, const profiler::proto::Command command_data,
           TraceManager* trace_manager) {
   auto& stop_command = command_data.stop_trace();
+  auto profiler_type = stop_command.profiler_type();
   const std::string& app_name = stop_command.configuration().app_name();
 
   int64_t stop_timestamp;
@@ -49,18 +50,29 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
     stop_timestamp = daemon->clock()->GetCurrentTime();
   }
 
-  // Send TRACE_STATUS event right away.
   const auto* ongoing = trace_manager->GetOngoingCapture(app_name);
   Event status_event =
-      PopulateTraceStatusEvent(command_data, ProfilerType::CPU, ongoing);
-  daemon->buffer()->Add(status_event);
-  if (ongoing == nullptr) return;
+      PopulateTraceStatusEvent(command_data, profiler_type, ongoing);
 
-  // Send CPU_TRACE event after the stopping has returned, successfully or not.
-  int64_t trace_id = ongoing->trace_id;
+  if (ongoing == nullptr || profiler_type == ProfilerType::UNSPECIFIED) {
+    // PopulateTraceStatusEvent will create a failure-based status event and
+    // send it right back if either the ongoing capture is null or profiler_type
+    // is UNSPECIFIED. After this early exit, we need to also exit early from
+    // this method after sending the TRACE_STATUS event to prevent calling
+    // StopCapture with erroneous preconditions.
+    daemon->buffer()->Add(status_event);
+    return;
+  }
+
+  CaptureInfo* capture = nullptr;
   TraceStopStatus status;
-  auto* capture = trace_manager->StopCapture(
+  capture = trace_manager->StopCapture(
       stop_timestamp, app_name, stop_command.need_trace_response(), &status);
+  auto* stop_status =
+      status_event.mutable_trace_status()->mutable_trace_stop_status();
+  stop_status->CopyFrom(status);
+
+  daemon->buffer()->Add(status_event);
   if (capture != nullptr) {
     if (status.status() == TraceStopStatus::SUCCESS) {
       std::string from_file_name;
@@ -76,7 +88,16 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
         from_file_name = capture->configuration.temp_path();
       }
       std::ostringstream oss;
-      oss << CurrentProcess::dir() << kCacheLocation << capture->trace_id;
+
+      int64_t file_id;
+      if (profiler_type == ProfilerType::CPU) {
+        file_id = capture->trace_id;
+      } else {
+        // profiler_type == ProfilerType::MEMORY
+        file_id = capture->start_timestamp;
+      }
+      oss << CurrentProcess::dir() << kCacheLocation << file_id;
+
       std::string to_file_name = oss.str();
       DiskFileSystem fs;
       bool move_success = fs.MoveFile(from_file_name, to_file_name);
@@ -87,7 +108,7 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
       }
     }
     Event trace_event =
-        PopulateTraceEvent(*capture, command_data, ProfilerType::CPU, true);
+        PopulateTraceEvent(*capture, command_data, profiler_type, true);
     daemon->buffer()->Add(trace_event);
   } else {
     // When execution reaches here, a TRACE_STATUS event has been sent
@@ -97,12 +118,13 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
     status.set_error_message("No ongoing capture exists");
     status.set_status(TraceStopStatus::NO_ONGOING_PROFILING);
 
-    Event trace_event;
-    trace_event.set_pid(command_data.pid());
-    trace_event.set_kind(Event::CPU_TRACE);
-    trace_event.set_group_id(trace_id);
-    trace_event.set_is_ended(true);
-    trace_event.set_command_id(command_data.command_id());
+    Event trace_event =
+        PopulateTraceEvent(*ongoing, command_data, profiler_type, true);
+    // The PopulateTraceEvent method will utilize the passed in capture object's
+    // status to set the stop_status. Whether or not a stop_status exists in the
+    // ongoing capture, we should override it by setting it to the status
+    // retrieved from the StopCapture call done above. This gives us the most
+    // accurate stoppage status.
     trace_event.mutable_trace_data()
         ->mutable_trace_ended()
         ->mutable_trace_info()

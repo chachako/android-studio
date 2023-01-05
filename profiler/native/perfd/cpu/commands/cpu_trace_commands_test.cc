@@ -160,43 +160,7 @@ TEST_F(TraceCommandsTest, StartUnspecifiedTraceCommandsTest) {
             "no trace type specified");
 }
 
-TEST_F(TraceCommandsTest, StartMemoryTraceCommandsTest) {
-  proto::Command command;
-  command.set_type(proto::Command::START_TRACE);
-  auto* start = command.mutable_start_trace();
-  start->mutable_configuration()->CopyFrom(trace_config_);
-  start->set_profiler_type(ProfilerType::MEMORY);
-  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
-      ->ExecuteOn(daemon_.get());
-
-  std::mutex mutex;
-  {
-    std::unique_lock<std::mutex> lock(mutex);
-    // Expect that we receive events before the timeout.
-    // We should expect a begin-session event, followed by the cpu trace
-    // status and info events.
-    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
-                             [this] { return events_.size() == 3; }));
-  }
-
-  EXPECT_EQ(3, events_.size());
-  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") != nullptr);
-  EXPECT_EQ(events_[0].kind(), proto::Event::SESSION);
-  EXPECT_TRUE(events_[0].has_session());
-  EXPECT_TRUE(events_[0].session().has_session_started());
-  EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
-  EXPECT_TRUE(events_[1].has_trace_status());
-  EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
-  EXPECT_EQ(events_[2].kind(), proto::Event::MEMORY_TRACE);
-  EXPECT_FALSE(events_[2].is_ended());
-  EXPECT_TRUE(events_[2].has_trace_data());
-  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
-  EXPECT_TRUE(MessageDifferencer::Equals(
-      trace_config_,
-      events_[2].trace_data().trace_started().trace_info().configuration()));
-}
-
-TEST_F(TraceCommandsTest, CommandsGeneratesEvents) {
+TEST_F(TraceCommandsTest, StopUnspecifiedTraceCommandsTest) {
   proto::Command command;
   command.set_type(proto::Command::START_TRACE);
   auto* start = command.mutable_start_trace();
@@ -235,6 +199,64 @@ TEST_F(TraceCommandsTest, CommandsGeneratesEvents) {
   command.set_type(proto::Command::STOP_TRACE);
   auto* stop = command.mutable_stop_trace();
   stop->mutable_configuration()->CopyFrom(trace_config_);
+  stop->set_profiler_type(ProfilerType::UNSPECIFIED);
+  StopTrace::Create(command, trace_manager_.get())->ExecuteOn(daemon_.get());
+
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive the end status event.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 4; }));
+  }
+  EXPECT_EQ(4, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") != nullptr);
+  EXPECT_EQ(events_[3].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[3].has_trace_status());
+  EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
+  EXPECT_EQ(events_[3].trace_status().trace_stop_status().error_message(),
+            "No trace type specified");
+}
+
+TEST_F(TraceCommandsTest, CpuCommandsGeneratesEvents) {
+  proto::Command command;
+  command.set_type(proto::Command::START_TRACE);
+  auto* start = command.mutable_start_trace();
+  start->mutable_configuration()->CopyFrom(trace_config_);
+  start->set_profiler_type(ProfilerType::CPU);
+  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
+      ->ExecuteOn(daemon_.get());
+
+  std::mutex mutex;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive events before the timeout.
+    // We should expect a begin-session event, followed by the cpu trace
+    // status and info events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 3; }));
+  }
+
+  EXPECT_EQ(3, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") != nullptr);
+  EXPECT_EQ(events_[0].kind(), proto::Event::SESSION);
+  EXPECT_TRUE(events_[0].has_session());
+  EXPECT_TRUE(events_[0].session().has_session_started());
+  EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[1].has_trace_status());
+  EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
+  EXPECT_EQ(events_[2].kind(), proto::Event::CPU_TRACE);
+  EXPECT_FALSE(events_[2].is_ended());
+  EXPECT_TRUE(events_[2].has_trace_data());
+  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
+  EXPECT_TRUE(MessageDifferencer::Equals(
+      trace_config_,
+      events_[2].trace_data().trace_started().trace_info().configuration()));
+
+  // Execute the end command
+  command.set_type(proto::Command::STOP_TRACE);
+  auto* stop = command.mutable_stop_trace();
+  stop->set_profiler_type(ProfilerType::CPU);
+  stop->mutable_configuration()->CopyFrom(trace_config_);
   StopTrace::Create(command, trace_manager_.get())->ExecuteOn(daemon_.get());
 
   {
@@ -249,6 +271,68 @@ TEST_F(TraceCommandsTest, CommandsGeneratesEvents) {
   EXPECT_TRUE(events_[3].has_trace_status());
   EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
   EXPECT_EQ(events_[4].kind(), proto::Event::CPU_TRACE);
+  EXPECT_TRUE(events_[4].is_ended());
+  EXPECT_TRUE(events_[4].has_trace_data());
+  EXPECT_TRUE(events_[4].trace_data().has_trace_ended());
+  EXPECT_TRUE(MessageDifferencer::Equals(
+      trace_config_,
+      events_[4].trace_data().trace_ended().trace_info().configuration()));
+}
+
+TEST_F(TraceCommandsTest, MemoryCommandsGeneratesEvents) {
+  proto::Command command;
+  command.set_type(proto::Command::START_TRACE);
+  auto* start = command.mutable_start_trace();
+  start->mutable_configuration()->CopyFrom(trace_config_);
+  start->set_profiler_type(ProfilerType::MEMORY);
+  StartTrace::Create(command, trace_manager_.get(), SessionsManager::Instance())
+      ->ExecuteOn(daemon_.get());
+
+  std::mutex mutex;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive events before the timeout.
+    // We should expect a begin-session event, followed by the cpu trace
+    // status and info events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 3; }));
+  }
+
+  EXPECT_EQ(3, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") != nullptr);
+  EXPECT_EQ(events_[0].kind(), proto::Event::SESSION);
+  EXPECT_TRUE(events_[0].has_session());
+  EXPECT_TRUE(events_[0].session().has_session_started());
+  EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[1].has_trace_status());
+  EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
+  EXPECT_EQ(events_[2].kind(), proto::Event::MEMORY_TRACE);
+  EXPECT_FALSE(events_[2].is_ended());
+  EXPECT_TRUE(events_[2].has_trace_data());
+  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
+  EXPECT_TRUE(MessageDifferencer::Equals(
+      trace_config_,
+      events_[2].trace_data().trace_started().trace_info().configuration()));
+
+  // Execute the end command
+  command.set_type(proto::Command::STOP_TRACE);
+  auto* stop = command.mutable_stop_trace();
+  stop->set_profiler_type(ProfilerType::MEMORY);
+  stop->mutable_configuration()->CopyFrom(trace_config_);
+  StopTrace::Create(command, trace_manager_.get())->ExecuteOn(daemon_.get());
+
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive the end status and trace events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 5; }));
+  }
+  EXPECT_EQ(5, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") == nullptr);
+  EXPECT_EQ(events_[3].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[3].has_trace_status());
+  EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
+  EXPECT_EQ(events_[4].kind(), proto::Event::MEMORY_TRACE);
   EXPECT_TRUE(events_[4].is_ended());
   EXPECT_TRUE(events_[4].has_trace_data());
   EXPECT_TRUE(events_[4].trace_data().has_trace_ended());

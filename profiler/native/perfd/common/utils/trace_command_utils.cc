@@ -89,15 +89,17 @@ Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
     return status_event;
   }
 
+  if (profiler_type == ProfilerType::UNSPECIFIED) {
+    stop_status->set_status(TraceStopStatus::STOP_COMMAND_FAILED);
+    stop_status->set_error_message("No trace type specified");
+    return status_event;
+  }
+
   if (profiler_type == ProfilerType::CPU) {
     status_event.set_group_id(capture->trace_id);
-  } else if (profiler_type == ProfilerType::MEMORY) {
-    status_event.set_group_id(capture->start_timestamp);
   } else {
-    // profiler_type == ProfilerType::UNSPECIFIED
-    stop_status->set_error_message("No ongoing capture exists");
-    stop_status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
-    return status_event;
+    // profiler_type == ProfilerType::MEMORY
+    status_event.set_group_id(capture->start_timestamp);
   }
   // This event is to acknowledgethe stop command. It doesn't have the full
   // result. Since UNSPECIFIED is the default value, it is actually an no-op.
