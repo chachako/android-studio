@@ -17,7 +17,6 @@
 package com.android.build.gradle.internal.profile
 
 import com.android.build.gradle.internal.LoggerWrapper
-import com.android.build.gradle.internal.isConfigurationCache
 import com.android.build.gradle.internal.isProjectIsolation
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.VariantAwareTask
@@ -314,10 +313,7 @@ class AnalyticsResourceManager constructor(
             .setMaxMemory(Runtime.getRuntime().maxMemory())
             .setGradleVersion(project.gradle.gradleVersion)
 
-        val configCachingEnabled = project.gradle.startParameter.isConfigurationCache
-        if (configCachingEnabled != null) {
-            profileBuilder.configurationCachingEnabled = configCachingEnabled
-        }
+        profileBuilder.configurationCachingEnabled = project.gradle.startParameter.isConfigurationCacheRequested
         profileBuilder.parallelTaskExecution = project.gradle.startParameter.isParallelProjectExecutionEnabled
 
         // Use 'platform independent' path to match AS behaviour.
