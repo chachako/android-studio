@@ -15,12 +15,12 @@
  */
 package com.android.tools.debuggertests
 
-import com.intellij.util.io.exists
 import com.intellij.util.io.isFile
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.exists
 import kotlin.io.path.pathString
 import kotlin.io.path.reader
 import kotlin.io.path.writer
