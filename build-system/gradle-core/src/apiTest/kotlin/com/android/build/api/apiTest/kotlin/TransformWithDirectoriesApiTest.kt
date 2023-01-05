@@ -63,12 +63,19 @@ class TransformWithDirectoriesApiTest: VariantApiBaseTest(TestType.Script) {
                 println("inputDir = " + inputDir.get().asFile)
                 println("outputDir = " + outputDir.get().asFile)
 
+                // load all the artifacts produced by the APK generating task
                 val artifacts = builtArtifactsLoader.get().load(inputDir.get())
-                 artifacts?.elements?.forEach {
+                // for each of them, make a new version with the same file name and some content.
+                artifacts?.elements?.forEach {
                      val inputFile = File(it.outputFile)
                         println("Input file: ${'$'}inputFile")
                         File(outputDir.get().asFile, inputFile.name).writeText("fileSize = " + inputFile.length())
                 }
+                // finally, save the metadata json file that contains the list of APK. Since we used the same
+                // file names and write out the same number of files, we can just reuse the ones we loaded.
+                // if you change the file name, or any of the properties of the BuiltArtifact, you must create a new
+                // version of the BuiltArtifacts.
+                artifacts?.save(outputDir.get())
             }
         }
 

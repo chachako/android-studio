@@ -40,6 +40,9 @@ class ConfigurationsTest : VariantApiBaseTest(TestType.Script, ScriptingLanguage
                             ${testingElements.addCommonAndroidBuildLogic("com.android.build.example.lib1")}
                         }
                         """.trimIndent()
+                this.addSource("src/main/java/SomeLib1Source.kt", """
+                    class SomeLib1Source {}
+                """.trimIndent())
             }
             addModule(":lib1Sub") {
                 buildFile =
@@ -54,6 +57,9 @@ class ConfigurationsTest : VariantApiBaseTest(TestType.Script, ScriptingLanguage
                             ${testingElements.addCommonAndroidBuildLogic("com.android.build.example.lib1Sub")}
                         }
                         """.trimIndent()
+                this.addSource("src/main/java/SomeLib1SubSource.kt", """
+                    class SomeLib1SubSource {}
+                """.trimIndent())
             }
             addModule(":testLib") {
                 buildFile =
@@ -68,6 +74,9 @@ class ConfigurationsTest : VariantApiBaseTest(TestType.Script, ScriptingLanguage
                             ${testingElements.addCommonAndroidBuildLogic("com.android.build.example.testLib")}
                         }
                         """.trimIndent()
+                this.addSource("src/main/java/SomeTestLibSource.kt", """
+                    class SomeTestLibSource {}
+                """.trimIndent())
             }
             addModule(":testLibSub") {
                 buildFile =
@@ -82,6 +91,9 @@ class ConfigurationsTest : VariantApiBaseTest(TestType.Script, ScriptingLanguage
                             ${testingElements.addCommonAndroidBuildLogic("com.android.build.example.testLibSub")}
                         }
                         """.trimIndent()
+                this.addSource("src/main/java/SomeTestLibSubSource.kt", """
+                    class SomeTestLibSubSource {}
+                """.trimIndent())
             }
             addModule(":lib2") {
                 buildFile =
@@ -96,6 +108,9 @@ class ConfigurationsTest : VariantApiBaseTest(TestType.Script, ScriptingLanguage
                             ${testingElements.addCommonAndroidBuildLogic("com.android.build.example.lib2")}
                         }
                         """.trimIndent()
+                this.addSource("src/main/java/SomeLib2Source.kt", """
+                    class SomeLib2Source {}
+                """.trimIndent())
             }
             addModule(":lib2Sub") {
                 buildFile =
@@ -110,6 +125,9 @@ class ConfigurationsTest : VariantApiBaseTest(TestType.Script, ScriptingLanguage
                             ${testingElements.addCommonAndroidBuildLogic("com.android.build.example.lib2Sub")}
                         }
                         """.trimIndent()
+                this.addSource("src/main/java/SomeLib2SubSource.kt", """
+                    class SomeLib2SubSource {}
+                """.trimIndent())
             }
             addModule(":app") {
                 buildFile =
