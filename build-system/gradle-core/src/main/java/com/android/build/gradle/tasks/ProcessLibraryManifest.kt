@@ -294,8 +294,8 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
             }
             task.mainManifest.fileProvider(creationConfig.sources.manifestFile)
             task.mainManifest.disallowChanges()
-            creationConfig.sources.manifestOverlays.forEach(task.manifestOverlays::add)
-            task.manifestOverlays.disallowChanges()
+            task.manifestOverlays.setDisallowChanges(
+                creationConfig.sources.manifestOverlayFiles.map { it.filter(File::isFile) })
             task.namespace.setDisallowChanges(creationConfig.namespace)
             task.tmpDir.setDisallowChanges(creationConfig.paths.intermediatesDir(
                     "tmp",

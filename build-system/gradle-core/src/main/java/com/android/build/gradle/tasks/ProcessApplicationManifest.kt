@@ -495,8 +495,8 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             )
             task.manifestPlaceholders.disallowChanges()
             task.mainManifest.setDisallowChanges(creationConfig.sources.manifestFile)
-            creationConfig.sources.manifestOverlays.forEach(task.manifestOverlays::add)
-            task.manifestOverlays.disallowChanges()
+            task.manifestOverlays.setDisallowChanges(
+                creationConfig.sources.manifestOverlayFiles.map { it.filter(File::isFile) })
             task.isFeatureSplitVariantType = creationConfig.componentType.isDynamicFeature
             task.buildTypeName = creationConfig.buildType
             task.projectBuildFile.set(task.project.buildFile)

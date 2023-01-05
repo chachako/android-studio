@@ -467,8 +467,8 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             task.testManifestFile
                 .fileProvider(creationConfig.sources.manifestFile)
             task.testManifestFile.disallowChanges()
-            creationConfig.sources.manifestOverlays.forEach(task.manifestOverlays::add)
-            task.manifestOverlays.disallowChanges()
+            task.manifestOverlays.setDisallowChanges(
+                creationConfig.sources.manifestOverlayFiles.map { it.filter(File::isFile) })
             task.componentType.setDisallowChanges(creationConfig.componentType.toString())
             task.tmpDir.setDisallowChanges(
                 creationConfig.paths.intermediatesDir(

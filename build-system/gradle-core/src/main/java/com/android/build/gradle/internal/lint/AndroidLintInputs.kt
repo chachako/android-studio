@@ -1272,9 +1272,7 @@ abstract class SourceProviderInput {
         instrumentationTestOnly: Boolean = false
     ): SourceProviderInput {
         this.manifestFiles.add(sources.manifestFile)
-        sources.manifestOverlays.forEach { manifest ->
-            this.manifestFiles.add(manifest)
-        }
+        this.manifestFiles.addAll(sources.manifestOverlayFiles.map { it.filter(File::isFile) })
         this.manifestFiles.disallowChanges()
 
         fun FlatSourceDirectoriesImpl.getFilteredSourceProviders(into: ConfigurableFileCollection) {

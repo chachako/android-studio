@@ -600,7 +600,12 @@ public class ModelBuilder<Extension extends BaseExtension>
 
         VariantSources variantSources = modelLegacySupport.getVariantSources();
 
-        List<File> manifests = new ArrayList<>(variantSources.getManifestOverlays());
+        List<File> manifests = new ArrayList<>();
+        for (File manifest : variantSources.getManifestOverlayFiles()) {
+            if (manifest.isFile()) {
+                manifests.add(manifest);
+            }
+        }
         File mainManifest = variantSources.getMainManifestIfExists();
         if (mainManifest != null) {
             manifests.add(mainManifest);

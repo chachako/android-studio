@@ -881,7 +881,7 @@ class ModelBuilder<
 
         // get the manifest in descending order of priority. First one to return
         val manifests = mutableListOf<File>()
-        manifests.addAll(component.sources.manifestOverlays.map { it.get() })
+        manifests.addAll(component.sources.manifestOverlayFiles.get().filter { it.isFile })
         val mainManifest = component.sources.manifestFile.get()
         if (mainManifest.isFile) {
             manifests.add(mainManifest)

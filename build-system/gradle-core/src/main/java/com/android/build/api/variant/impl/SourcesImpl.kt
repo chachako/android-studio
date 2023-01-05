@@ -242,10 +242,8 @@ class SourcesImpl(
         defaultSourceProvider.mainManifestFile
     }
 
-    override val manifestOverlays = defaultSourceProvider.manifestOverlays.map { manifest ->
-        variantServices.provider {
-            manifest
-        }
+    override val manifestOverlayFiles = variantServices.provider {
+        defaultSourceProvider.manifestOverlayFiles
     }
 
     override val sourceProviderNames: List<String>
