@@ -447,6 +447,8 @@ com.android.build.gradle.internal.dsl.DataBindingOptions.setEnable: void (boolea
 com.android.build.gradle.internal.dsl.DataBindingOptions.setEnabled: void (boolean)
 com.android.build.gradle.internal.dsl.DataBindingOptions.setEnabledForTests: void (boolean)
 com.android.build.gradle.internal.dsl.DensitySplitOptions.compatibleScreens: void (java.lang.String[])
+com.android.build.gradle.internal.dsl.DensitySplitOptions.isEnable: boolean ()
+com.android.build.gradle.internal.dsl.DensitySplitOptions.setEnable: void (boolean)
 com.android.build.gradle.internal.dsl.DeviceGroup.getName: java.lang.String ()
 com.android.build.gradle.internal.dsl.DeviceGroup.getTargetDevices: org.gradle.api.DomainObjectSet<com.android.build.api.dsl.Device> ()
 com.android.build.gradle.internal.dsl.DynamicFeatureBuildFeaturesImpl.getDataBinding: java.lang.Boolean ()

@@ -927,11 +927,11 @@ package com.android.build.api.dsl {
   public interface DefaultConfig extends com.android.build.api.dsl.BaseFlavor {
   }
 
-  public interface DensitySplit extends com.android.build.api.dsl.Split {
-    method public void compatibleScreens(java.lang.String... sizes);
-    method public java.util.Set<java.lang.String> getCompatibleScreens();
-    method public boolean isStrict();
-    method public void setStrict(boolean isStrict);
+  @Deprecated public interface DensitySplit extends com.android.build.api.dsl.Split {
+    method @Deprecated public void compatibleScreens(java.lang.String... sizes);
+    method @Deprecated public java.util.Set<java.lang.String> getCompatibleScreens();
+    method @Deprecated public boolean isStrict();
+    method @Deprecated public void setStrict(boolean isStrict);
     property public abstract java.util.Set<java.lang.String> compatibleScreens;
     property public abstract boolean isStrict;
   }

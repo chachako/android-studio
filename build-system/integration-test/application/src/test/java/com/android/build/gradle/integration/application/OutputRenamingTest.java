@@ -16,6 +16,13 @@
 
 package com.android.build.gradle.integration.application;
 
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+import static com.android.builder.core.BuilderConstants.DEBUG;
+import static com.android.builder.core.BuilderConstants.RELEASE;
+import static com.android.testutils.truth.PathSubject.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import com.android.build.api.variant.BuiltArtifact;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
@@ -25,24 +32,16 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.builder.model.v2.ide.Variant;
 import com.android.builder.model.v2.models.AndroidProject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.builder.core.BuilderConstants.DEBUG;
-import static com.android.builder.core.BuilderConstants.RELEASE;
-import static com.android.testutils.truth.PathSubject.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 /** Assemble tests for class densitySplitInL */
 public class OutputRenamingTest {
@@ -83,7 +82,9 @@ public class OutputRenamingTest {
                         .getProject(null, ":")
                         .getIssues()
                         .getSyncIssues();
-        assertThat(syncIssues).hasSize(0);
+        assertThat(syncIssues).hasSize(1);
+        assertThat(syncIssues.iterator().next().getMessage())
+                .contains("Density-based apk split feature is deprecated");
     }
 
     @AfterClass

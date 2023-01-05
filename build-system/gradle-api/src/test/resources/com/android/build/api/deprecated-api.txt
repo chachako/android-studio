@@ -271,6 +271,12 @@ Deprecated from AGP 7.3.0
   * com.android.build.api.variant.VariantFilter.getIgnore: boolean ()
   * com.android.build.api.variant.VariantFilter.getName: java.lang.String ()
   * com.android.build.api.variant.VariantFilter.setIgnore: void (boolean)
+Deprecated from AGP 8.1.0
+  * com.android.build.api.dsl.DensitySplit implements com.android.build.api.dsl.Split
+  * com.android.build.api.dsl.DensitySplit.compatibleScreens: void (java.lang.String[])
+  * com.android.build.api.dsl.DensitySplit.getCompatibleScreens: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.DensitySplit.isStrict: boolean ()
+  * com.android.build.api.dsl.DensitySplit.setStrict: void (boolean)
 Deprecated from AGP 7.4.0
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()

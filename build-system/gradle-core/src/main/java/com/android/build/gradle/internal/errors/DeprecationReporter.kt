@@ -90,6 +90,13 @@ interface DeprecationReporter {
             """
                 The Transform API support has been removed in AGP 8.0.
             """.trimIndent()
+        ),
+
+        DENSITY_SPLIT_API(
+            Version.VERSION_9_0,
+            "Density-based apk split feature is deprecated and will be removed in AGP 9.0. " +
+                    "Use Android App Bundle (https://developer.android.com/guide/app-bundle) " +
+                    "to generate optimized APKs."
         )
         ;
 

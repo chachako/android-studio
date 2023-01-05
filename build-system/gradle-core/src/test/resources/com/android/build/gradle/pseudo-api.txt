@@ -1239,10 +1239,13 @@ com.android.build.gradle.internal.dsl.DataBindingOptions.setEnabledForTests: voi
 com.android.build.gradle.internal.dsl.DefaultConfig extends com.android.build.gradle.internal.dsl.BaseFlavor implements com.android.build.api.dsl.ApplicationDefaultConfig, com.android.build.api.dsl.DynamicFeatureDefaultConfig, com.android.build.api.dsl.LibraryDefaultConfig, com.android.build.api.dsl.TestDefaultConfig
 com.android.build.gradle.internal.dsl.DefaultConfig.<init>: com.android.build.gradle.internal.dsl.DefaultConfig (java.lang.String, com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.DensitySplitOptions extends com.android.build.gradle.internal.dsl.SplitOptions implements com.android.build.api.dsl.DensitySplit
-com.android.build.gradle.internal.dsl.DensitySplitOptions.<init>: com.android.build.gradle.internal.dsl.DensitySplitOptions ()
+com.android.build.gradle.internal.dsl.DensitySplitOptions.<init>: com.android.build.gradle.internal.dsl.DensitySplitOptions (com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.DensitySplitOptions.compatibleScreens: void (java.lang.String[])
+com.android.build.gradle.internal.dsl.DensitySplitOptions.getDslServices: com.android.build.gradle.internal.services.DslServices ()
+com.android.build.gradle.internal.dsl.DensitySplitOptions.isEnable: boolean ()
 com.android.build.gradle.internal.dsl.DensitySplitOptions.setAuto: void (boolean)
 com.android.build.gradle.internal.dsl.DensitySplitOptions.setCompatibleScreens: void (java.util.List<java.lang.String>)
+com.android.build.gradle.internal.dsl.DensitySplitOptions.setEnable: void (boolean)
 com.android.build.gradle.internal.dsl.DeviceGroup implements com.android.build.api.dsl.DeviceGroup
 com.android.build.gradle.internal.dsl.DeviceGroup.<init>: com.android.build.gradle.internal.dsl.DeviceGroup (com.android.build.gradle.internal.services.DslServices, java.lang.String)
 com.android.build.gradle.internal.dsl.DeviceGroup.getName: java.lang.String ()
