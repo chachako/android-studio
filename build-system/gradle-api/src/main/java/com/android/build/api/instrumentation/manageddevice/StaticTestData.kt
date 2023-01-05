@@ -27,6 +27,9 @@ import org.gradle.api.Incubating
  *
  * This is supplied to the [DeviceTestRunTaskAction] as
  * a part of the [DeviceTestRunParameters.testRunData]
+ *
+ * @suppress Do not use from production code. All properties in this interface are exposed for
+ * prototype.
  */
 @Incubating
 interface StaticTestData {
@@ -42,6 +45,8 @@ interface StaticTestData {
      *
      * This can be null if there is no such APK. For example, android-test in library
      * module does not have a tested-application.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val testedApplicationId: String?
@@ -51,42 +56,56 @@ interface StaticTestData {
      *
      * If this is a self instrumenting test, then this value will be the same a [applicationId].
      * Otherwise, the instrumentation target will be the same as [testedApplicationId].
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val instrumentationTargetPackageId: String
 
     /**
      * The APK containing the tests.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val testApk: File
 
     /**
      * The class name for the Test Instrumentation Runner.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val instrumentationRunner: String
 
     /**
      * The arguments that should be passed to the [InstrumentationRunner].
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val instrumentationRunnerArguments: Map<String, String>
 
     /**
      * The minimum SDK version required to test the given [testApk].
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val minSdkVersion: AndroidVersion
 
     /**
      * The description of the APK under test.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val testedDescription: String
 
     /**
      * List of the directories of all test sources in the [testApk].
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val testDirectories: List<File?>
@@ -96,6 +115,8 @@ interface StaticTestData {
      * screen density).
      *
      * If no such APK can be found, an empty list is returned.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @get: Incubating
     val testedApkFinder: (DeviceConfigProvider) -> List<File>

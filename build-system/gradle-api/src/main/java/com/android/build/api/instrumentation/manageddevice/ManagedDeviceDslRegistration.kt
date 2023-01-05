@@ -26,6 +26,9 @@ import org.gradle.api.Incubating
  * @param deviceApi The api interface for the Custom Managed Device, which should be visible to
  *     developers using the DSL.
  * @param deviceImpl the actual implementation of the [deviceApi] class.
+ *
+ * @suppress Do not use from production code. All properties in this interface are exposed for
+ * prototype.
  */
 @Incubating
 class ManagedDeviceDslRegistration <DeviceT : Device> @Incubating constructor(

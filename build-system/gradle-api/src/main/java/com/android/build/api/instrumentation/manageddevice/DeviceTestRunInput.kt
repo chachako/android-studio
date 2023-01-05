@@ -50,6 +50,9 @@ import org.gradle.api.tasks.Nested
  *     abstract val timeoutSeconds: Property<Int>
  * }
  * ```
+ *
+ * @suppress Do not use from production code. All properties in this interface are exposed for
+ * prototype.
  */
 @Incubating
 interface DeviceTestRunInput: Serializable

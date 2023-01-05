@@ -73,6 +73,9 @@ import org.gradle.api.Project
  * @param DeviceT: The interface of the Custom Managed Device this configure action corresponds to.
  * @param InputT: The specialized [DeviceTestRunInput] this configuration action generates for the
  * instrumentation test task.
+ *
+ * @suppress Do not use from production code. All properties in this interface are exposed for
+ * prototype.
  */
 @Incubating
 interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunInput> {
@@ -85,7 +88,9 @@ interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunI
      * @param project The Project that this test task is being created for.
      *
      * @return The cacheable inputs for the test task. This will be consumed as part of the
-     * [test run action][DeviceTestRunTaskAction].
+     * [test run action][DeviceTestRunTaskAction]. As specified by the [ManagedDeviceTestRunFactory]
+     *
+     * @suppress Do not use from production code.This API exposed for prototype.
      */
     @Incubating
     fun configureTaskInput(deviceDSL: DeviceT, project: Project): InputT

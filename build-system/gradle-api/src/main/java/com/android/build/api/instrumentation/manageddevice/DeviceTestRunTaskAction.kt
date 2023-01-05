@@ -34,6 +34,9 @@ import org.gradle.api.Incubating
  * @param InputT The Custom Managed Device specific input to be passed
  *     in as part of the [DeviceTestRunParameters] when the tests
  *     are run.
+ *
+ * @suppress Do not use from production code. All properties in this interface are exposed for
+ * prototype.
  */
 @Incubating
 interface DeviceTestRunTaskAction<InputT: DeviceTestRunInput> {
@@ -44,6 +47,8 @@ interface DeviceTestRunTaskAction<InputT: DeviceTestRunInput> {
      * @param params All parameters required to run this test.
      * @return returns true if and only if all tests passed. Determines if the
      *   task succeeds or fails.
+     *
+     * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @Incubating
     fun runTests(params: DeviceTestRunParameters<InputT>): Boolean
