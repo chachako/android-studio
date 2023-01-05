@@ -21,6 +21,7 @@ import com.android.aapt.Resources.Attribute.FormatFlags
 import com.android.aapt.Resources.Entry
 import com.android.aapt.Resources.FileReference
 import com.android.aapt.Resources.Item
+import com.android.aapt.Resources.OverlayableItem
 
 internal fun Resources.Package.Builder.buildResourceTable() =
     Resources.ResourceTable.newBuilder().addPackage(this).build()
@@ -121,9 +122,10 @@ internal fun stringEntry(
     name: String,
     value: String? = null,
     refId: Long? = null,
-    refName: String? = null
-): Entry =
-    Entry.newBuilder()
+    refName: String? = null,
+    overlayable: Boolean = false
+): Entry {
+    var entryBuilder = Entry.newBuilder()
         .setEntryId(Resources.EntryId.newBuilder().setId(id))
         .setName(name)
         .addConfigValue(
@@ -132,7 +134,11 @@ internal fun stringEntry(
                     Resources.Value.newBuilder().setItem(createItem(value, refId?.toInt(), refName))
                 )
         )
-        .build()
+    if (overlayable) {
+        entryBuilder.setOverlayableItem(OverlayableItem.newBuilder().setOverlayableIdx(0))
+    }
+    return entryBuilder.build()
+}
 
 private fun createItem(value: String? = null, refId: Int? = null, refName: String? = null): Item =
     when {

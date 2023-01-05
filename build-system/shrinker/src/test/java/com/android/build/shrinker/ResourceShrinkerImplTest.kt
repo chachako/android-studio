@@ -46,13 +46,6 @@ import com.android.build.shrinker.util.xmlFile
 import com.android.ide.common.resources.usage.ResourceUsageModel
 import com.google.common.io.ByteStreams
 import com.google.common.io.Resources
-import org.junit.Assert.assertArrayEquals
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.ClassRule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
@@ -61,6 +54,13 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import kotlin.streams.toList
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.ClassRule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 class ResourceShrinkerImplTest {
     companion object {
@@ -170,6 +170,7 @@ class ResourceShrinkerImplTest {
                     @string/app_name
                 @string/app_name : reachable=true
                 @string/hello_world : reachable=true
+                @string/overlayable_string : reachable=false
                 @style/AppTheme : reachable=false
                 @style/MyStyle : reachable=true
                 @style/MyStyle_Child : reachable=true
@@ -236,6 +237,7 @@ class ResourceShrinkerImplTest {
                 string/alias#remove
                 string/app_name#
                 string/hello_world#
+                string/overlayable_string#remove
                 style/AppTheme#remove
                 style/MyStyle#
                 style/MyStyle_Child#
@@ -312,6 +314,7 @@ class ResourceShrinkerImplTest {
                     @string/app_name
                 @string/app_name : reachable=true
                 @string/hello_world : reachable=true
+                @string/overlayable_string : reachable=false
                 @style/AppTheme : reachable=false
                 @style/MyStyle : reachable=true
                 @style/MyStyle_Child : reachable=true
@@ -418,6 +421,9 @@ class ResourceShrinkerImplTest {
             val resourceTableAfter =
                 ResourceTable.parseFrom(getZipContents(compressedFile, "resources.pb"))
 
+            assertFalse(resourceTableBefore.entriesSequence().none { it.entry.hasOverlayableItem() })
+            assertTrue(resourceTableAfter.entriesSequence().none { it.entry.hasOverlayableItem() })
+
             for (beforeFile in beforeOnly) {
                 assertFalse(resourceTableAfter.containsString(beforeFile))
                 assertTrue(resourceTableBefore.containsString(beforeFile))
@@ -497,7 +503,8 @@ class ResourceShrinkerImplTest {
                 stringEntry(1, "alias", refId = 0x7f050002, refName = "string/app_name"),
                 stringEntry(2, "app_name", "ShrinkUnitTest"),
                 stringEntry(3, "hello_world", "Hello world!"),
-                stringEntry(4, "action_settings2", "Settings2")
+                stringEntry(4, "action_settings2", "Settings2"),
+                stringEntry(5, "overlayable_string", "overlayable string", overlayable = true)
             )
             .addType(
                 6,
