@@ -131,7 +131,7 @@ interface ManifestSystemProperty : AutoAddingProperty {
                 createOrGetElement(
                     actionRecorder,
                     document,
-                    applicationElement.get().xml,
+                    applicationElement.get(),
                     NodeTypes.PROFILEABLE,
                     "profileable injection requested"
                 )
@@ -173,10 +173,10 @@ private fun addToElement(
     value: String,
     to: XmlElement
 ) {
-    to.xml.setAttribute(elementAttribute.toCamelCase(), value)
+    to.setAttribute(elementAttribute.toCamelCase(), value)
     val xmlAttribute = XmlAttribute(
         to,
-        to.xml.getAttributeNode(elementAttribute.toCamelCase()), null
+        to.getAttributeNode(elementAttribute.toCamelCase()), null
     )
     recordElementInjectionAction(actionRecorder, to, xmlAttribute)
 }
@@ -189,19 +189,18 @@ private fun addToElementInAndroidNS(
     value: String,
     to: XmlElement
 ) {
-    val toolsPrefix = XmlUtils.lookupNamespacePrefix(
-        to.xml, SdkConstants.ANDROID_URI, SdkConstants.ANDROID_NS_NAME, true
-    )
-    to.xml.setAttributeNS(
+    val toolsPrefix = to.lookupNamespacePrefix(
+        SdkConstants.ANDROID_URI, SdkConstants.ANDROID_NS_NAME, true)
+    to.setAttributeNS(
         SdkConstants.ANDROID_URI,
         toolsPrefix + XmlUtils.NS_SEPARATOR + elementAttribute.toCamelCase(),
         value
     )
-    val attr = to.xml.getAttributeNodeNS(
+    val attr = to.getAttributeNodeNS(
         SdkConstants.ANDROID_URI,
         elementAttribute.toCamelCase()
     )
-    val xmlAttribute = XmlAttribute(to, attr, null)
+    val xmlAttribute = XmlAttribute(to, attr!!, null)
     recordElementInjectionAction(actionRecorder, to, xmlAttribute)
 }
 
@@ -228,27 +227,21 @@ private fun createOrGetElementInManifest(
     nodeType: NodeTypes,
     message: String
 ): XmlElement {
-    val manifest = document.xml.documentElement
+    val manifest = document.rootNode
     return createOrGetElement(actionRecorder, document, manifest, nodeType, message)
 }
 
 private fun createOrGetElement(
     actionRecorder: ActionRecorder,
     document: XmlDocument,
-    parentElement: Element,
+    parentElement: XmlElement,
     nodeType: NodeTypes,
     message: String
 ): XmlElement {
-    val elementName = document.model.toXmlName(nodeType)
-    var nodes = parentElement.getElementsByTagName(elementName)
-    if (nodes.length == 0) {
-        nodes = parentElement.getElementsByTagNameNS(SdkConstants.ANDROID_URI, elementName)
-    }
-    return if (nodes.length == 0) {
-        // create it first.
-        val node = parentElement.ownerDocument.createElement(elementName)
-        parentElement.appendChild(node)
-        val xmlElement = XmlElement(node, document)
+    return parentElement.createOrGetElementOfType(
+        document,
+        nodeType,
+        SdkConstants.ANDROID_URI) { xmlElement ->
         val nodeRecord = NodeRecord(
             Actions.ActionType.INJECTED,
             SourceFilePosition(
@@ -260,8 +253,5 @@ private fun createOrGetElement(
             NodeOperationType.STRICT
         )
         actionRecorder.recordNodeAction(xmlElement, nodeRecord)
-        xmlElement
-    } else {
-        XmlElement((nodes.item(0) as Element), document)
     }
 }

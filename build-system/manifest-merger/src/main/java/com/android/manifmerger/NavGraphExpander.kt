@@ -65,7 +65,7 @@ object NavGraphExpander {
             loadedNavigationMap: Map<String, NavigationXmlDocument>,
             mergingReportBuilder: MergingReport.Builder): XmlDocument {
         expandNavGraphs(xmlDocument.rootNode, loadedNavigationMap, mergingReportBuilder)
-        return xmlDocument.reparse()
+        return xmlDocument
     }
 
     /**
@@ -81,7 +81,7 @@ object NavGraphExpander {
         for (childElement in xmlElement.mergeableElements) {
             expandNavGraphs(childElement, loadedNavigationMap, mergingReportBuilder)
         }
-        if (xmlElement.xml.tagName != SdkConstants.TAG_ACTIVITY) {
+        if (xmlElement.tagName != SdkConstants.TAG_ACTIVITY) {
             return
         }
         val navGraphs = xmlElement.getAllNodesByType(ManifestModel.NodeTypes.NAV_GRAPH)
@@ -90,18 +90,15 @@ object NavGraphExpander {
         }
         // expand each navGraph
         for (navGraph in navGraphs) {
-            val namedNodeMap: NamedNodeMap? = navGraph.xml.attributes
             val graphValue: String? =
-                    namedNodeMap
-                            ?.getNamedItemNS(ANDROID_URI, SdkConstants.ATTR_VALUE)
-                            ?.nodeValue
+                navGraph.getAttributeValue(ANDROID_URI, SdkConstants.ATTR_VALUE)
             val navigationXmlId =
                     if (graphValue?.startsWith(SdkConstants.NAVIGATION_PREFIX) == true)
                         graphValue.substring(SdkConstants.NAVIGATION_PREFIX.length)
                     else null
             if (navigationXmlId == null) {
                 val nsUriPrefix =
-                        XmlUtils.lookupNamespacePrefix(navGraph.xml, ANDROID_URI, false)
+                    navGraph.lookupNamespacePrefix(ANDROID_URI, false)
                 val graphName = nsUriPrefix + XmlUtils.NS_SEPARATOR + SdkConstants.ATTR_VALUE
                 mergingReportBuilder.addMessage(
                         SourceFilePosition(xmlElement.document.sourceFile, xmlElement.position),
@@ -116,7 +113,7 @@ object NavGraphExpander {
         }
         // then remove each navGraph
         for (navGraph in navGraphs) {
-            xmlElement.xml.removeChild(navGraph.xml)
+            xmlElement.removeChild(navGraph)
             mergingReportBuilder.actionRecorder.recordNodeAction(
                     navGraph, Actions.ActionType.CONVERTED)
         }
@@ -154,10 +151,10 @@ object NavGraphExpander {
         for (deepLinkGroup in deepLinkGroups.values) {
             val deepLink = deepLinkGroup.first()
             // first create <intent-filter> element
-            val intentFilterElement =
-                    addChildElement(SdkConstants.TAG_INTENT_FILTER, xmlElement.xml)
+            val intentFilterXmlElement =
+                xmlElement.addChildElement(SdkConstants.TAG_INTENT_FILTER)
             if (deepLink.isAutoVerify) {
-                addAttribute(ANDROID_URI, ATTR_AUTO_VERIFY, "true", intentFilterElement)
+                intentFilterXmlElement.addAttribute(ANDROID_URI, ATTR_AUTO_VERIFY, "true")
             }
             val childElementDataList = mutableListOf<ChildElementData>()
             // then add children elements to <intent-filter> element
@@ -193,11 +190,10 @@ object NavGraphExpander {
                 childElementDataList.add(ChildElementData(TAG_DATA, ATTR_MIMETYPE, deepLink.mimeType))
             }
             childElementDataList.forEach {
-                addChildElementWithSingleAttribute(
-                        it.tagName, intentFilterElement, ANDROID_URI, it.attrName, it.attrValue)
+                intentFilterXmlElement.addChildElementWithSingleAttribute(
+                        it.tagName, ANDROID_URI, it.attrName, it.attrValue)
             }
             // finally record all added elements and attributes
-            val intentFilterXmlElement = XmlElement(intentFilterElement, xmlElement.document)
             for (dl in deepLinkGroup) {
                 recordXmlElementAddition(
                     intentFilterXmlElement, dl.sourceFilePosition, actionRecorder)
@@ -339,32 +335,6 @@ object NavGraphExpander {
             builder.add("$scheme:$body")
         }
         return builder.build()
-    }
-
-    /** Add a new Element with a single specified Attribute to parentElement */
-    private fun addChildElementWithSingleAttribute(
-            childTagName: String,
-            parentElement: Element,
-            nsUri: String,
-            attrName: String,
-            attrValue: String) {
-        val childElement = addChildElement(childTagName, parentElement)
-        addAttribute(nsUri, attrName, attrValue, childElement)
-    }
-
-    /** Add a new Element with no Attributes to parentElement */
-    private fun addChildElement(childTagName: String, parentElement: Element): Element {
-        val document = parentElement.ownerDocument
-        val childElement = document.createElement(childTagName)
-        return parentElement.appendChild(childElement) as? Element ?:
-                throw RuntimeException(
-                        "Unable to add $childTagName element to ${parentElement.tagName} element.")
-    }
-
-    /** Add a new Attribute to the element */
-    private fun addAttribute(nsUri: String, attrName: String, attrValue: String, element: Element) {
-        val prefix = XmlUtils.lookupNamespacePrefix(element, nsUri, true)
-        element.setAttributeNS(nsUri, prefix + XmlUtils.NS_SEPARATOR + attrName, attrValue)
     }
 
     /** Record addition of xmlElement and all of its descendants (attributes and elements) */

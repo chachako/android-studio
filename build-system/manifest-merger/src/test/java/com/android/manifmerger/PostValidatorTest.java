@@ -746,7 +746,7 @@ public class PostValidatorTest extends TestCase {
         xmlDocument.getRootNode().getXml().removeAttribute(toolsNamespaceAttributeName);
         assertFalse(xmlDocument.getRootNode().getXml().hasAttribute(toolsNamespaceAttributeName));
 
-        PostValidator.enforceToolsNamespaceDeclaration(xmlDocument.reparse());
+        PostValidator.enforceToolsNamespaceDeclaration(xmlDocument);
         String attribute =
                 xmlDocument.getRootNode().getXml().getAttribute(toolsNamespaceAttributeName);
         assertEquals(SdkConstants.TOOLS_URI, attribute);
@@ -772,12 +772,8 @@ public class PostValidatorTest extends TestCase {
                 loadXmlDoc(TestUtils.sourceFile(getClass(), "testElementUsesNamespace"), input);
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(mILogger);
-        assertTrue(
-                PostValidator.elementUsesNamespacePrefix(
-                        xmlDocument.getRootNode().getXml(), "android"));
-        assertFalse(
-                PostValidator.elementUsesNamespacePrefix(
-                        xmlDocument.getRootNode().getXml(), "tools"));
+        assertTrue(xmlDocument.getRootNode().elementUsesNamespacePrefix("android"));
+        assertFalse(xmlDocument.getRootNode().elementUsesNamespacePrefix("tools"));
     }
 
     public void testWithIgnoreWarningAttribute()

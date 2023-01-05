@@ -28,14 +28,10 @@ import com.android.xml.AndroidManifest;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.w3c.dom.Attr;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 /**
  * Validates a loaded {@link XmlDocument} and check for potential inconsistencies in the model due
@@ -134,16 +130,13 @@ public class PreValidator {
     private static void validateRemoveAllOperation(@NonNull MergingReport.Builder mergingReport,
             @NonNull XmlElement element) {
 
-        NamedNodeMap attributes = element.getXml().getAttributes();
-        if (attributes.getLength() > 1) {
-            List<String> extraAttributeNames = new ArrayList<String>();
-            for (int i = 0; i < attributes.getLength(); i++) {
-                Node item = attributes.item(i);
-                if (!(SdkConstants.TOOLS_URI.equals(item.getNamespaceURI()) &&
-                        NodeOperationType.NODE_LOCAL_NAME.equals(item.getLocalName()))) {
-                    extraAttributeNames.add(item.getNodeName());
-                }
-            }
+        if (element.getAttributeCount() > 1) {
+            var extraAttributeNames =
+                    element.getAttributeNames(
+                            item ->
+                                    !(SdkConstants.TOOLS_URI.equals(item.getNamespaceURI())
+                                            && NodeOperationType.NODE_LOCAL_NAME.equals(
+                                                    item.getLocalName())));
             String message = String.format(
                     "Element %1$s at %2$s annotated with 'tools:node=\"removeAll\"' cannot "
                             + "have other attributes : %3$s",
@@ -159,7 +152,7 @@ public class PreValidator {
             @NonNull XmlElement element) {
 
         Attr selectorAttribute =
-                element.getXml().getAttributeNodeNS(SdkConstants.TOOLS_URI, Selector.SELECTOR_LOCAL_NAME);
+                element.getAttributeNodeNS(SdkConstants.TOOLS_URI, Selector.SELECTOR_LOCAL_NAME);
         if (selectorAttribute!=null && !element.supportsSelector()) {
             String message = String.format(
                     "Unsupported tools:selector=\"%1$s\" found on node %2$s at %3$s",
@@ -172,7 +165,7 @@ public class PreValidator {
 
     private static void validateManifestAttribute(
             @NonNull MergingReport.Builder mergingReport, @NonNull XmlElement manifest, XmlDocument.Type fileType) {
-        Attr attributeNode = manifest.getXml().getAttributeNode(AndroidManifest.ATTRIBUTE_PACKAGE);
+        Attr attributeNode = manifest.getAttributeNode(AndroidManifest.ATTRIBUTE_PACKAGE);
         // it's ok for other manifest types to have no package name, but it's an error for
         // library manifest types.
         if ((attributeNode == null || attributeNode.getValue().isEmpty())

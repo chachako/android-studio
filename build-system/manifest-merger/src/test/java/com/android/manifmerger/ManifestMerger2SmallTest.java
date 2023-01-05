@@ -2447,7 +2447,7 @@ public class ManifestMerger2SmallTest {
                         + "    </application>\n"
                         + "</manifest>";
         Pair<Document, Boolean> output =
-                ManifestMerger2.cloneAndTransform(
+                DomMergeUtils.cloneAndTransform(
                         parse(appInput),
                         nodeToTransform -> {
                             if (nodeToTransform.getNodeName().equals("service")) {
@@ -2478,7 +2478,7 @@ public class ManifestMerger2SmallTest {
                         + "\n"
                         + "</manifest>";
         Pair<Document, Boolean> output =
-                ManifestMerger2.cloneAndTransform(
+                DomMergeUtils.cloneAndTransform(
                         parse(appInput), nodeToTransform -> false, nodeToRemove -> false);
         assertFalse(output.getSecond()); // document unchanged
         String docString =

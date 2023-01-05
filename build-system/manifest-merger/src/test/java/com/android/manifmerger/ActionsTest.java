@@ -205,7 +205,7 @@ public class ActionsTest extends TestCase {
         ILogger logger = new MockLog();
         Optional<Document> cleanedDocument =
                 ToolsInstructionsCleaner.cleanToolsReferences(
-                        ManifestMerger2.MergeType.APPLICATION, result.get().getXml(), logger);
+                        ManifestMerger2.MergeType.APPLICATION, result.get(), logger);
         assertTrue(cleanedDocument.isPresent());
 
         Actions actions = mergingReportBuilder.getActionRecorder().build();
@@ -236,7 +236,7 @@ public class ActionsTest extends TestCase {
                 + "16    </permission>\n"
                 + "17\n"
                 + "18</manifest>\n";
-        assertEquals(expectedMappings, actions.blame(result.get().reparse()));
+        assertEquals(expectedMappings, actions.blame(result.get()));
 
         // persist the records
         String persistedMappings = actions.persist();
