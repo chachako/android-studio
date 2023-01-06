@@ -52,7 +52,7 @@ cc_library(
 cc_test(
     name = "perfd_cpu_tests",
     srcs = [
-        "commands/cpu_trace_commands_test.cc",
+        "commands/trace_commands_test.cc",
         "cpu_config_test.cc",
         "cpu_usage_sampler_test.cc",
         "thread_parser_test.cc",
