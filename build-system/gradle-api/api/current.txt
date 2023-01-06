@@ -2808,6 +2808,10 @@ package com.android.build.gradle {
   public final class LibraryPluginKt {
   }
 
+  public abstract class LintPlugin extends com.android.build.gradle.BasePlugin {
+    ctor public LintPlugin();
+  }
+
   public final class TestPlugin extends com.android.build.gradle.BasePlugin {
     ctor public TestPlugin();
   }
