@@ -157,7 +157,7 @@ TEST_F(TraceCommandsTest, StartUnspecifiedTraceCommandsTest) {
   EXPECT_TRUE(events_[1].has_trace_status());
   EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
   EXPECT_EQ(events_[1].trace_status().trace_start_status().error_message(),
-            "no trace type specified");
+            "No trace type specified");
 }
 
 TEST_F(TraceCommandsTest, StopUnspecifiedTraceCommandsTest) {

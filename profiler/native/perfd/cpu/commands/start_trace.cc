@@ -44,7 +44,7 @@ Status StartTrace::ExecuteOn(Daemon* daemon) {
   TraceStartStatus start_status;
   if (profiler_type == ProfilerType::UNSPECIFIED) {
     start_status.set_status(TraceStartStatus::FAILURE);
-    start_status.set_error_message("no trace type specified");
+    start_status.set_error_message("No trace type specified");
   } else {
     capture = trace_manager_->StartCapture(
         start_timestamp, start_command.configuration(), &start_status);
