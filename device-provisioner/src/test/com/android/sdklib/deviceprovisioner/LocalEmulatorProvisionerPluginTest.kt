@@ -166,7 +166,7 @@ class LocalEmulatorProvisionerPluginTest {
     val handle = provisioner.devices.value[0]
     handle.activationAction?.activate()
 
-    yieldUntil { handle.state.connectedDevice != null }
+    assertThat(handle.state.connectedDevice).isNotNull()
 
     assertThat(provisioner.devices.value.map { it.state.properties.title })
       .containsExactly("Fake Device 1")
@@ -176,7 +176,7 @@ class LocalEmulatorProvisionerPluginTest {
 
     handle.deactivationAction?.deactivate()
 
-    yieldUntil { handle.state.connectedDevice == null }
+    assertThat(handle.state.connectedDevice).isNull()
 
     assertThat(handle.state).isInstanceOf(Disconnected::class.java)
     assertThat(provisioner.devices.value.map { it.state.properties.title })

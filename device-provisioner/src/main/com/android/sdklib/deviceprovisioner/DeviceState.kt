@@ -19,14 +19,10 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceInfo
 import com.google.common.base.Stopwatch
 import java.time.Duration
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
 /** Identifies the ADB connection state of a provisionable device and its characteristics. */
@@ -111,34 +107,32 @@ class TimeoutTracker(private val duration: Duration) {
  * This uses atomic compareAndSet operations to ensure that we do not clobber concurrent state
  * updates from elsewhere.
  *
- * @return true if we advanced to the intermediate state
+ * @return true if we advanced to the final state, false if we failed to update to the intermediate
+ * state
+ * @throws TimeoutCancellationException if we timed out before advancing past the intermediate state
  */
-fun <T> MutableStateFlow<T>.advanceStateWithTimeout(
-  scope: CoroutineScope,
+suspend fun <T> MutableStateFlow<T>.advanceStateWithTimeout(
   updateState: (T) -> T?,
   timeout: Duration,
-  advanceAction: suspend () -> Unit,
-  onAbort: suspend () -> Unit = {}
+  advanceAction: suspend () -> Unit
 ): Boolean {
   while (true) {
     val originalState = value
     val intermediateState = updateState(originalState) ?: return false
     if (compareAndSet(originalState, intermediateState)) {
-      scope.launch {
-        val advanceJob = currentCoroutineContext().job
-        launch {
-          try {
-            withTimeout(timeout.toMillis()) { takeWhile { it == intermediateState }.collect() }
-          } catch (e: TimeoutCancellationException) {
-            if (compareAndSet(intermediateState, originalState)) {
-              onAbort()
-            }
-            advanceJob.cancel()
-          }
+      try {
+        withTimeout(timeout.toMillis()) {
+          advanceAction()
+          takeWhile { it == intermediateState }.collect()
         }
-        advanceAction()
+        return true
+      } catch (e: TimeoutCancellationException) {
+        if (!compareAndSet(intermediateState, originalState)) {
+          // This is unlikely, but it means we advanced to the final state right after cancellation.
+          return true
+        }
+        throw e
       }
-      return true
     }
   }
 }

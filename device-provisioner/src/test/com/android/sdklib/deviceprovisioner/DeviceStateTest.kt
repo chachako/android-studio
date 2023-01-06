@@ -18,12 +18,14 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.ConnectedDevice
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.time.delay
+import org.junit.Assert.fail
 import org.junit.Test
 import org.mockito.Mockito.mock
 
@@ -36,19 +38,18 @@ class DeviceStateTest {
   class Activating(override val properties: DeviceProperties) : Disconnected(properties)
 
   @Test
-  fun advanceStateWithTimeoutAdvances() = runBlockingTest {
+  fun advanceStateWithTimeoutAdvances() = runTest {
     val state = MutableStateFlow<DeviceState>(Disconnected(properties))
-    val aborted = AtomicBoolean()
-    state.advanceStateWithTimeout(
-      scope = this,
-      timeout = Duration.ofMinutes(5),
-      updateState = { Activating(properties) },
-      advanceAction = {
-        delay(Duration.ofMinutes(2))
-        state.value = Connected(properties, connectedDevice)
-      },
-      onAbort = { aborted.set(true) }
-    )
+    val result = async {
+      state.advanceStateWithTimeout(
+        timeout = Duration.ofMinutes(5),
+        updateState = { Activating(properties) },
+        advanceAction = {
+          delay(Duration.ofMinutes(2))
+          state.value = Connected(properties, connectedDevice)
+        }
+      )
+    }
 
     advanceTimeBy(Duration.ofMinutes(1).toMillis())
     assertThat(state.value).isInstanceOf(Activating::class.java)
@@ -57,38 +58,41 @@ class DeviceStateTest {
     assertThat(state.value).isInstanceOf(Connected::class.java)
 
     advanceTimeBy(Duration.ofMinutes(3).toMillis())
-    assertThat(aborted.get()).isFalse()
+    assertThat(result.await()).isTrue()
   }
 
   @Test
-  fun advanceStateWithTimeoutAborts() = runBlockingTest {
+  fun advanceStateWithTimeoutAborts() = runTest {
     val originalState = Disconnected(properties)
     val state = MutableStateFlow<DeviceState>(originalState)
-    val aborted = AtomicBoolean()
     val minuteCounter = AtomicInteger()
-    state.advanceStateWithTimeout(
-      scope = this,
-      timeout = Duration.ofSeconds(301),
-      updateState = { Activating(properties) },
-      advanceAction = {
-        // Don't loop forever, a test failure will not terminate this job
-        repeat(10) {
-          delay(Duration.ofMinutes(1))
-          minuteCounter.incrementAndGet()
+    val result = async {
+      state.advanceStateWithTimeout(
+        timeout = Duration.ofSeconds(301),
+        updateState = { Activating(properties) },
+        advanceAction = {
+          // Don't loop forever, a test failure will not terminate this job
+          repeat(10) {
+            delay(Duration.ofMinutes(1))
+            minuteCounter.incrementAndGet()
+          }
         }
-      },
-      onAbort = { aborted.set(true) }
-    )
+      )
+    }
 
     advanceTimeBy(Duration.ofMinutes(1).toMillis())
     assertThat(state.value).isInstanceOf(Activating::class.java)
 
     advanceTimeBy(Duration.ofMinutes(5).toMillis())
     assertThat(state.value).isEqualTo(originalState)
-    assertThat(aborted.get()).isTrue()
 
-    // The job should have been canceled
-    advanceTimeBy(Duration.ofMinutes(10).toMillis())
-    assertThat(minuteCounter.get()).isEqualTo(5)
+    try {
+      result.await()
+      fail("Expected TimeoutCancellationException")
+    } catch (expected: TimeoutCancellationException) {
+      // The job should have been canceled
+      advanceTimeBy(Duration.ofMinutes(10).toMillis())
+      assertThat(minuteCounter.get()).isEqualTo(5)
+    }
   }
 }
