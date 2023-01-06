@@ -441,4 +441,14 @@ class CmakeFileApiV1Test {
             .runtimeFiles!!.size)
             .isEqualTo(1)
     }
+
+    @Test
+    fun `bug 257976107 sysroot not matching on Windows`() {
+        val replyFolder = prepareReplyFolder("b257976107")
+        val result = readCmakeFileApiReply(replyFolder, ::createNinjaCommand) { }
+        assertThat(result
+            .libraries!!.getValue("myapplication::@6890427a1f51a3e7e1df")
+            .runtimeFiles!!.size)
+            .isEqualTo(0)
+    }
 }
