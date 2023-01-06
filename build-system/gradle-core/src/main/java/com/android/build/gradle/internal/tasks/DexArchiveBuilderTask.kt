@@ -21,7 +21,6 @@ import com.android.build.api.variant.impl.getFeatureLevel
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.dependency.BaseDexingTransform
 import com.android.build.gradle.internal.dependency.computeGlobalSyntheticsDirName
-import com.android.build.gradle.internal.dependency.computeKeepRulesFileName
 import com.android.build.gradle.internal.dexing.DexParameters
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.scope.InternalArtifactType

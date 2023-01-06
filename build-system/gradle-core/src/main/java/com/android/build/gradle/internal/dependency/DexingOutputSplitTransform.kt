@@ -94,7 +94,6 @@ private fun registerTransformWithOutputType(
 }
 
 private const val DEX_DIR_NAME = SdkConstants.FD_DEX
-private const val KEEP_RULES_FILE_NAME = "keep_rules"
 private const val GLOBAL_SYNTHETICS_DIR_NAME = "global-synthetics"
 
 // Gradle identifies ResolvedArtifactResult by ComponentIdentifier and the file name of output file
@@ -103,5 +102,4 @@ private const val GLOBAL_SYNTHETICS_DIR_NAME = "global-synthetics"
 // (e.g. prefix dexOutput name) to avoid collision of identification. We should consider moving away
 // from this approach when https://github.com/gradle/gradle/issues/18458 is addressed.
 fun computeDexDirName(dexOutput: File): String = dexOutput.name + "_" + DEX_DIR_NAME
-fun computeKeepRulesFileName(dexOutput: File): String = dexOutput.name + "_" + KEEP_RULES_FILE_NAME
 fun computeGlobalSyntheticsDirName(dexOutput: File): String = dexOutput.name + "_" + GLOBAL_SYNTHETICS_DIR_NAME
