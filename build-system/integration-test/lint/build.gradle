@@ -49,5 +49,5 @@ configurations {
 apply from: '../integration-tests.gradle'
 
 test {
-    dependsOn ':publishLocal'
+    dependsOn ':publishAndroidGradleLocal'
 }
