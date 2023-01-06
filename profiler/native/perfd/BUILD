@@ -80,6 +80,7 @@ cc_library(
     tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
+        "//tools/base/profiler/native/perfd/common:trace_commands",
         "//tools/base/profiler/native/perfd/cpu:profiler_cpu",
         "//tools/base/profiler/native/perfd/energy:profiler_energy",
         "//tools/base/profiler/native/perfd/event:profiler_event",

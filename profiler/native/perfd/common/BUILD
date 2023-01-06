@@ -1,6 +1,28 @@
 load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "select_android")
 
 cc_library(
+    name = "trace_commands",
+    srcs = [
+        "commands/start_trace.cc",
+        "commands/stop_trace.cc",
+    ],
+    hdrs = [
+        "commands/start_trace.h",
+        "commands/stop_trace.h",
+    ],
+    copts = ANDROID_COPTS + [
+        "-Itools/base/profiler/native",
+    ],
+    tags = ["no_windows"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tools/base/profiler/native/perfd:perfd_internal_headers",
+        "//tools/base/profiler/native/perfd/common:trace_manager",
+        "//tools/base/transport/native/daemon",
+    ],
+)
+
+cc_library(
     name = "trace_utils",
     srcs = [
         "utils/trace_command_utils.cc",
@@ -115,6 +137,27 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":trace_utils",
+    ],
+)
+
+cc_test(
+    name = "perfd_trace_commands_test",
+    srcs = [
+        "commands/trace_commands_test.cc",
+    ],
+    copts = [
+        "-Itools/base/profiler/native",
+    ],
+    linkopts = [
+        "-ldl",  # Needed for dladdr referenced in TerminationService
+    ],
+    linkstatic = 1,
+    tags = ["no_windows"],
+    deps = [
+        ":trace_commands",
+        "//tools/base/profiler/native/perfd",
+        "//tools/base/transport/native/daemon",
+        "@googletest//:gtest_main",
     ],
 )
 

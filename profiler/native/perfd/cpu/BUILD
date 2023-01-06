@@ -3,8 +3,6 @@ load("//tools/base/bazel:android.bzl", "ANDROID_COPTS")
 cc_library(
     name = "profiler_cpu",
     srcs = [
-        "commands/start_trace.cc",
-        "commands/stop_trace.cc",
         "cpu_cache.cc",
         "cpu_collector.cc",
         "cpu_config.cc",
@@ -15,8 +13,6 @@ cc_library(
         "thread_parser.cc",
     ],
     hdrs = [
-        "commands/start_trace.h",
-        "commands/stop_trace.h",
         "cpu_cache.h",
         "cpu_collector.h",
         "cpu_config.h",
@@ -52,7 +48,6 @@ cc_library(
 cc_test(
     name = "perfd_cpu_tests",
     srcs = [
-        "commands/trace_commands_test.cc",
         "cpu_config_test.cc",
         "cpu_usage_sampler_test.cc",
         "thread_parser_test.cc",
