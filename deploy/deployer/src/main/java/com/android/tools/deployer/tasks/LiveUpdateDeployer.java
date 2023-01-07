@@ -71,7 +71,7 @@ public class LiveUpdateDeployer {
     public static class UpdateLiveEditsParam {
         public final String className;
         public final boolean isComposable;
-        public final int groupId;
+        public final List<Integer> groupIds;
         public final byte[] classData;
         public final Map<String, byte[]> supportClasses;
         final boolean debugModeEnabled;
@@ -79,13 +79,13 @@ public class LiveUpdateDeployer {
         public UpdateLiveEditsParam(
                 String className,
                 boolean isComposable,
-                int groupId,
+                List<Integer> groupIds,
                 byte[] classData,
                 Map<String, byte[]> supportClasses,
                 boolean debugModeEnabled) {
             this.className = className;
             this.isComposable = isComposable;
-            this.groupId = groupId;
+            this.groupIds = groupIds;
             this.classData = classData;
             this.supportClasses = supportClasses;
             this.debugModeEnabled = debugModeEnabled;
@@ -321,7 +321,7 @@ public class LiveUpdateDeployer {
         requestBuilder.setArch(arch);
         requestBuilder.setPackageName(packageName);
         requestBuilder.setComposable(param.isComposable);
-        requestBuilder.setGroupId(param.groupId);
+        requestBuilder.addAllGroupIds(param.groupIds);
         requestBuilder.addTargetClasses(
                 Deploy.LiveEditClass.newBuilder()
                         .setClassName(param.className)

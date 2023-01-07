@@ -54,7 +54,8 @@ public class HotReloader {
         }
 
         public boolean invalidateGroupsWithKey(int key) {
-            System.out.println("invalidateGroupsWithKey(" + key + ")");
+            System.out.println(
+                    "invalidateGroupsWithKey(0x" + Integer.toHexString(key).toUpperCase() + ")");
 
             try {
                 // The Compose runtime will know exactly which composable function(s) needs

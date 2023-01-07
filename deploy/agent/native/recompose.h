@@ -47,7 +47,8 @@ class Recompose {
   // Invalidates a specific Compose group and trigger a recomposition.
   // Reference to the error string is changed to the error message or
   // empty string should there be no error messages.
-  bool InvalidateGroupsWithKey(jobject reloader, jint groupId,
+  bool InvalidateGroupsWithKey(jobject reloader,
+                               const std::vector<jint>& group_ids,
                                std::string& error) const;
 
   bool getCurrentErrors(jobject reloader, std::vector<bool>* recoverable,

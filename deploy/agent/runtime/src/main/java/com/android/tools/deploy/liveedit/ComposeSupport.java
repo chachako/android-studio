@@ -28,7 +28,7 @@ public class ComposeSupport {
     public static final String KEY_META_NAME = "androidx.compose.runtime.internal.FunctionKeyMeta";
 
     // Return empty string if success. Otherwise, an error message is returned.
-    public static String recomposeFunction(Object reloader, int groupId) {
+    public static String recomposeFunction(Object reloader, int[] groupIds) {
         Method invalidateGroupsWithKey = null;
         try {
             invalidateGroupsWithKey =
@@ -46,7 +46,9 @@ public class ComposeSupport {
         }
 
         try {
-            invalidateGroupsWithKey.invoke(reloader, groupId);
+            for (int groupId : groupIds) {
+                invalidateGroupsWithKey.invoke(reloader, groupId);
+            }
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             return e.getMessage(); // Very unlikely.

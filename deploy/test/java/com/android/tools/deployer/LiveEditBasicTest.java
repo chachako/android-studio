@@ -36,7 +36,7 @@ public class LiveEditBasicTest extends LiveEditTestBase {
     }
 
     @Test
-    public void testVersionChecksPass() throws IOException {
+    public void testLiveEditSimple() throws IOException {
         android.loadDex(DEX_LOCATION);
         android.launchActivity(ACTIVITY_CLASS);
 
@@ -58,6 +58,11 @@ public class LiveEditBasicTest extends LiveEditTestBase {
                 Deploy.LiveEditRequest.newBuilder()
                         .addTargetClasses(clazz)
                         .setPackageName(PACKAGE)
+                        .setComposable(true)
+                        .addGroupIds(0xDEADBEEF)
+                        .addGroupIds(0xDEADBEEE)
+                        .addGroupIds(0xDEADBEED)
+                        .addGroupIds(0xDEADBEEC)
                         .build();
 
         Deploy.AgentLiveEditResponse response = sendUpdateRequest(request);
@@ -65,5 +70,16 @@ public class LiveEditBasicTest extends LiveEditTestBase {
 
         android.triggerMethod(ACTIVITY_CLASS, "invokeLiveEditSimple");
         Assert.assertTrue(android.waitForInput("pk.LiveEditSimple.changed", RETURN_VALUE_TIMEOUT));
+
+        response = sendUpdateRequest(request);
+        Assert.assertEquals(Deploy.AgentLiveEditResponse.Status.OK, response.getStatus());
+        Assert.assertTrue(
+                android.waitForInput("invalidateGroupsWithKey(0xDEADBEEF)", RETURN_VALUE_TIMEOUT));
+        Assert.assertTrue(
+                android.waitForInput("invalidateGroupsWithKey(0xDEADBEEE)", RETURN_VALUE_TIMEOUT));
+        Assert.assertTrue(
+                android.waitForInput("invalidateGroupsWithKey(0xDEADBEED)", RETURN_VALUE_TIMEOUT));
+        Assert.assertTrue(
+                android.waitForInput("invalidateGroupsWithKey(0xDEADBEEC)", RETURN_VALUE_TIMEOUT));
     }
 }

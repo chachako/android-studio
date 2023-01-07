@@ -17,6 +17,7 @@
 
 #include "tools/base/deploy/agent/native/live_edit.h"
 
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -231,9 +232,19 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
     } else {  // No newlyPrimedClasses
       if (usePartialRecomposition) {
         std::string error = "";
+        std::vector<jint> group_ids(req.group_ids().begin(),
+                                    req.group_ids().end());
+
         bool result =
-            recompose.InvalidateGroupsWithKey(reloader, req.group_id(), error);
-        Log::V("InvalidateGroupsWithKey 0x%x", req.group_id());
+            recompose.InvalidateGroupsWithKey(reloader, group_ids, error);
+
+        std::ostringstream out;
+
+        for (const int id : group_ids) {
+          out << " 0x" << std::hex << id;
+        }
+
+        Log::V("InvalidateGroupsWithKey %s", out.str().c_str());
       } else {
         // Perform a full reset.
         jobject state = recompose.SaveStateAndDispose(reloader);
