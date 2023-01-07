@@ -377,18 +377,6 @@ message AllocationEvent {
   }
 }
 
-// Returns the capture information for |START_NATIVE_HEAP_SAMPLE|.
-// This even gets generated on the |STOP_NATIVE_HEAP_SAMPLE|. The
-// |start_time| is the trace_id that can be used with getBytes to
-// load the trace.
-message MemoryNativeSampleData {
-  // Device time in ms the trace was started.
-  // Also the trace id used to retrieve the recording.
-  int64 start_time = 1;
-  // Device time in ms the trace was stopped.
-  int64 end_time = 2;
-}
-
 message MemoryTraceInfo {
   int64 trace_id = 1;
   int64 from_timestamp = 2;  // inclusive
