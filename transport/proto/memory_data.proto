@@ -376,12 +376,3 @@ message AllocationEvent {
     Deallocation free_data = 5;
   }
 }
-
-message MemoryTraceInfo {
-  int64 trace_id = 1;
-  int64 from_timestamp = 2;  // inclusive
-  int64 to_timestamp = 3;    // inclusive
-  TraceConfiguration configuration = 4;
-  TraceStartStatus start_status = 5;
-  TraceStopStatus stop_status = 6;
-}
