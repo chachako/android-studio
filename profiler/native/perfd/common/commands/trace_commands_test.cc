@@ -23,6 +23,7 @@
 #include "perfd/common/perfetto/fake_perfetto.h"
 #include "perfd/common/simpleperf/fake_simpleperf.h"
 #include "perfd/common/trace_manager.h"
+#include "perfd/common/utils/trace_command_utils.h"
 #include "perfd/sessions/sessions_manager.h"
 #include "utils/device_info_helper.h"
 #include "utils/fake_clock.h"
@@ -338,6 +339,71 @@ TEST_F(TraceCommandsTest, MemoryCommandsGeneratesEvents) {
   EXPECT_TRUE(events_[4].trace_data().has_trace_ended());
   EXPECT_TRUE(MessageDifferencer::Equals(
       trace_config_,
+      events_[4].trace_data().trace_ended().trace_info().configuration()));
+}
+
+TEST_F(TraceCommandsTest, ApiInitiatedCpuCommandsGeneratesEvents) {
+  proto::Command start_command;
+  BuildApiStartTraceCommand(0, 0, "fake_app", &start_command);
+  StartTrace::Create(start_command, trace_manager_.get(),
+                     SessionsManager::Instance())
+      ->ExecuteOn(daemon_.get());
+
+  std::mutex mutex;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive events before the timeout.
+    // We should expect a begin-session event, followed by the cpu trace
+    // status and info events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 3; }));
+  }
+
+  EXPECT_EQ(3, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") != nullptr);
+
+  EXPECT_EQ(events_[0].kind(), proto::Event::SESSION);
+  EXPECT_TRUE(events_[0].has_session());
+  EXPECT_TRUE(events_[0].session().has_session_started());
+
+  EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[1].has_trace_status());
+  EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
+
+  EXPECT_EQ(events_[2].kind(), proto::Event::CPU_TRACE);
+  EXPECT_FALSE(events_[2].is_ended());
+  EXPECT_TRUE(events_[2].has_trace_data());
+  EXPECT_TRUE(events_[2].trace_data().has_trace_started());
+  EXPECT_TRUE(MessageDifferencer::Equals(
+      start_command.start_trace().configuration(),
+      events_[2].trace_data().trace_started().trace_info().configuration()));
+
+  // Execute the end command
+  proto::Command stop_command;
+  BuildApiStopTraceCommand(0, 0, "fake_app", "foo", &stop_command);
+  StopTrace::Create(stop_command, trace_manager_.get())
+      ->ExecuteOn(daemon_.get());
+
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Expect that we receive the end status and trace events.
+    EXPECT_TRUE(cv_.wait_for(lock, std::chrono::milliseconds(1000),
+                             [this] { return events_.size() == 5; }));
+  }
+
+  EXPECT_EQ(5, events_.size());
+  EXPECT_TRUE(trace_manager_->GetOngoingCapture("fake_app") == nullptr);
+
+  EXPECT_EQ(events_[3].kind(), proto::Event::TRACE_STATUS);
+  EXPECT_TRUE(events_[3].has_trace_status());
+  EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
+
+  EXPECT_EQ(events_[4].kind(), proto::Event::CPU_TRACE);
+  EXPECT_TRUE(events_[4].is_ended());
+  EXPECT_TRUE(events_[4].has_trace_data());
+  EXPECT_TRUE(events_[4].trace_data().has_trace_ended());
+  EXPECT_TRUE(MessageDifferencer::Equals(
+      stop_command.stop_trace().configuration(),
       events_[4].trace_data().trace_ended().trace_info().configuration()));
 }
 

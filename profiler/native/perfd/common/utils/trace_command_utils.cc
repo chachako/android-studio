@@ -119,6 +119,7 @@ void BuildApiStartTraceCommand(int32_t pid, int64_t timestamp,
   command->set_pid(pid);
 
   auto* start_trace_command = command->mutable_start_trace();
+  start_trace_command->set_profiler_type(ProfilerType::CPU);
   auto* metadata = start_trace_command->mutable_api_start_metadata();
   metadata->set_start_timestamp(timestamp);
 
@@ -142,6 +143,7 @@ void BuildApiStopTraceCommand(int32_t pid, int64_t timestamp,
   command->set_pid(pid);
 
   auto* stop_trace_command = command->mutable_stop_trace();
+  stop_trace_command->set_profiler_type(ProfilerType::CPU);
   auto* metadata = stop_trace_command->mutable_api_stop_metadata();
   metadata->set_stop_timestamp(timestamp);
   metadata->set_trace_name(payload_name);
