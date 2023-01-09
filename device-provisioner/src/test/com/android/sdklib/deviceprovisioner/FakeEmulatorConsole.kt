@@ -22,7 +22,7 @@ import java.io.PrintWriter
 import java.net.Socket
 import java.nio.channels.ServerSocketChannel
 
-class FakeEmulatorConsole(val avdName: String, val avdPath: String) {
+class FakeEmulatorConsole(val avdName: String, val avdPath: String, val onKill: () -> Unit) {
   val server = ServerSocketChannel.open().bind(null)
   val port = server.socket().localPort
   var socket: Socket? = null
@@ -48,6 +48,7 @@ class FakeEmulatorConsole(val avdName: String, val avdPath: String) {
             output.write("OK\r\n")
             output.flush()
             close()
+            onKill()
             return
           }
           else -> output.write("KO: unsupported command: $line\r\n")

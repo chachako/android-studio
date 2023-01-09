@@ -86,7 +86,8 @@ class LocalEmulatorProvisionerPluginTest {
       }
 
     override suspend fun startAvd(avdInfo: AvdInfo) {
-      val device = FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString())
+      val device =
+        FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString()) { doStopAvd(avdInfo) }
       session.deviceServices.configureDeviceProperties(
         DeviceSelector.fromSerialNumber("emulator-${device.port}"),
         mapOf(
@@ -104,6 +105,10 @@ class LocalEmulatorProvisionerPluginTest {
     }
 
     override suspend fun stopAvd(avdInfo: AvdInfo) {
+      doStopAvd(avdInfo)
+    }
+
+    private fun doStopAvd(avdInfo: AvdInfo) {
       runningDevices.removeIf { it.avdPath == avdInfo.dataFolderPath.toString() }
       updateDevices()
     }
@@ -170,9 +175,6 @@ class LocalEmulatorProvisionerPluginTest {
     assertThat(properties.androidRelease).isEqualTo("11")
 
     handle.deactivationAction?.deactivate()
-    // Simulate the remove since EmulatorConsole.kill doesn't do it
-    avdManager.runningDevices.clear()
-    updateDevices()
 
     yieldUntil { handle.state.connectedDevice == null }
 
