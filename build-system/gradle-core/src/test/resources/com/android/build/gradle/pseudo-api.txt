@@ -1522,6 +1522,7 @@ com.android.build.gradle.internal.dsl.InternalLibraryExtension.publishing: void 
 com.android.build.gradle.internal.dsl.InternalLibraryExtension.setAidlPackagedList: void (java.util.Collection<java.lang.String>)
 com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension implements com.android.build.api.dsl.PrivacySandboxSdkExtension
 com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.bundle: void (org.gradle.api.Action<com.android.build.api.dsl.PrivacySandboxSdkBundle>)
+com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.signingConfig: void (org.gradle.api.Action<com.android.build.api.dsl.SigningConfig>)
 com.android.build.gradle.internal.dsl.InternalSigningConfig implements com.android.build.api.dsl.SigningConfig, com.android.build.api.dsl.ApkSigningConfig, org.gradle.api.Named, com.android.builder.model.SigningConfig
 com.android.build.gradle.internal.dsl.InternalTestExtension implements com.android.build.api.dsl.TestExtension, com.android.build.gradle.internal.dsl.InternalCommonExtension
 com.android.build.gradle.internal.dsl.InternalTestedExtension implements com.android.build.api.dsl.TestedExtension, com.android.build.gradle.internal.dsl.InternalCommonExtension
@@ -1763,6 +1764,8 @@ com.android.build.gradle.internal.dsl.SigningConfigFactory implements org.gradle
 com.android.build.gradle.internal.dsl.SigningConfigFactory.<init>: com.android.build.gradle.internal.dsl.SigningConfigFactory (com.android.build.gradle.internal.services.DslServices, java.io.File)
 com.android.build.gradle.internal.dsl.SigningConfigFactory.create: com.android.build.gradle.internal.dsl.SigningConfig (java.lang.String)
 com.android.build.gradle.internal.dsl.SigningConfigFactory.create: java.lang.Object (java.lang.String)
+com.android.build.gradle.internal.dsl.SigningConfigImplKt
+com.android.build.gradle.internal.dsl.SigningConfigImplKt.isPresent: boolean (com.android.build.api.dsl.SigningConfig)
 com.android.build.gradle.internal.dsl.SplitOptions implements com.android.build.api.dsl.Split
 com.android.build.gradle.internal.dsl.SplitOptions.<init>: com.android.build.gradle.internal.dsl.SplitOptions ()
 com.android.build.gradle.internal.dsl.SplitOptions.exclude: void (java.lang.String[])

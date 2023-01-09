@@ -1548,6 +1548,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public Integer? getMinSdk();
     method @org.gradle.api.Incubating public String? getMinSdkPreview();
     method @Deprecated @org.gradle.api.Incubating public String? getNamespace();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.SigningConfig getSigningConfig();
     method @org.gradle.api.Incubating public void setBuildToolsVersion(String buildToolsVersion);
     method @org.gradle.api.Incubating public void setCompileSdk(Integer? compileSdk);
     method @org.gradle.api.Incubating public void setCompileSdkExtension(Integer? compileSdkExtension);
@@ -1555,6 +1556,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void setMinSdk(Integer? minSdk);
     method @org.gradle.api.Incubating public void setMinSdkPreview(String? minSdkPreview);
     method @Deprecated @org.gradle.api.Incubating public void setNamespace(String? namespace);
+    method @org.gradle.api.Incubating public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
     property @org.gradle.api.Incubating public abstract String buildToolsVersion;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PrivacySandboxSdkBundle bundle;
     property @org.gradle.api.Incubating public abstract Integer? compileSdk;
@@ -1563,6 +1565,7 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract Integer? minSdk;
     property @org.gradle.api.Incubating public abstract String? minSdkPreview;
     property @Deprecated @org.gradle.api.Incubating public abstract String? namespace;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.SigningConfig signingConfig;
   }
 
   public interface ProductFlavor extends org.gradle.api.Named com.android.build.api.dsl.BaseFlavor org.gradle.api.plugins.ExtensionAware {

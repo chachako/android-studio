@@ -38,6 +38,7 @@ import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.TaskCreationServicesImpl
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.tasks.AppMetadataTask
+import com.android.build.gradle.internal.tasks.SignAsbTask
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.internal.tasks.PerModuleBundleTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
@@ -99,6 +100,7 @@ class PrivacySandboxSdkPlugin @Inject constructor(
             PrivacySandboxSdkVariantScopeImpl(
                     project,
                     TaskCreationServicesImpl(projectServices),
+                    dslServices,
                     { extension },
             ) {
                 BootClasspathConfigImpl(
@@ -323,6 +325,7 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                 PrivacySandboxSdkInternalArtifactType.ASAR,
                 listOf(
                         AppMetadataTask.PrivacySandboxSdkCreationAction(variantScope),
+                        SignAsbTask.CreationActionPrivacySandboxSdk(variantScope),
                         FusedLibraryMergeClasses.PrivacySandboxSdkCreationAction(variantScope),
                         GeneratePrivacySandboxAsar.CreationAction(variantScope),
                         MergeJavaResourceTask.PrivacySandboxSdkCreationAction(variantScope),
