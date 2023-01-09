@@ -28,6 +28,7 @@ cc_library(
         "support/user_counter_passthrough.cc",
     ],
     copts = ANDROID_COPTS + [
+        "-Itools/base/profiler/native",
         "-Itools/base/profiler/native/agent",
     ],
     linkstatic = 1,
@@ -35,6 +36,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
+        "//tools/base/profiler/native/perfd/common:trace_utils",
         "//tools/base/transport/native/agent",
         "//tools/base/transport/native/agent:jni_wrappers",
         "//tools/base/transport/native/utils",

@@ -18,6 +18,8 @@
 using profiler::proto::Command;
 using profiler::proto::Event;
 using profiler::proto::ProfilerType;
+using profiler::proto::TraceInitiationType;
+using profiler::proto::TraceMode;
 using profiler::proto::TraceStopStatus;
 
 namespace profiler {
@@ -105,6 +107,51 @@ Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
   // result. Since UNSPECIFIED is the default value, it is actually an no-op.
   stop_status->set_status(TraceStopStatus::UNSPECIFIED);
   return status_event;
+}
+
+// Constructs a start trace command for api initiated tracing
+// by modifying a passed in Command pointer.
+// This is used to construct the command issued by the agent when
+// starting the api initiated tracing.
+void BuildApiStartTraceCommand(int32_t pid, int64_t timestamp,
+                               const std::string& app_name, Command* command) {
+  command->set_type(Command::START_TRACE);
+  command->set_pid(pid);
+
+  auto* start_trace_command = command->mutable_start_trace();
+  auto* metadata = start_trace_command->mutable_api_start_metadata();
+  metadata->set_start_timestamp(timestamp);
+
+  auto* config = start_trace_command->mutable_configuration();
+  config->set_app_name(app_name);
+  config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
+
+  auto* art_options = config->mutable_art_options();
+  art_options->set_trace_mode(TraceMode::INSTRUMENTED);
+}
+
+// Constructs a stop trace command for api initiated tracing
+// by modifying a passed in Command pointer.
+// This is used to construct the command issued by the agent when
+// ending the api initiated tracing.
+void BuildApiStopTraceCommand(int32_t pid, int64_t timestamp,
+                              const std::string& app_name,
+                              const std::string& payload_name,
+                              Command* command) {
+  command->set_type(Command::STOP_TRACE);
+  command->set_pid(pid);
+
+  auto* stop_trace_command = command->mutable_stop_trace();
+  auto* metadata = stop_trace_command->mutable_api_stop_metadata();
+  metadata->set_stop_timestamp(timestamp);
+  metadata->set_trace_name(payload_name);
+
+  auto* config = stop_trace_command->mutable_configuration();
+  config->set_app_name(app_name);
+  config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
+
+  auto* art_options = config->mutable_art_options();
+  art_options->set_trace_mode(TraceMode::INSTRUMENTED);
 }
 
 }  // namespace profiler

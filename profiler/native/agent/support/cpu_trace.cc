@@ -21,6 +21,7 @@
 
 #include "agent/agent.h"
 #include "agent/jni_wrappers.h"
+#include "perfd/common/utils/trace_command_utils.h"
 #include "proto/internal_cpu.grpc.pb.h"
 #include "utils/agent_task.h"
 #include "utils/file_reader.h"
@@ -158,20 +159,8 @@ void TraceMonitor::SubmitStartEvent(int32_t tid, const string& fixed_path) {
         {[this, timestamp](AgentService::Stub& stub, ClientContext& ctx) {
           SendCommandRequest request;
           auto* command = request.mutable_command();
-          command->set_type(Command::START_TRACE);
-          command->set_pid(getpid());
-
-          auto* start = command->mutable_start_trace();
-          auto* metadata = start->mutable_api_start_metadata();
-          metadata->set_start_timestamp(timestamp);
-
-          auto* config = start->mutable_configuration();
-          config->set_app_name(app_name_);
-          config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
-
-          auto* art_options = config->mutable_art_options();
-          art_options->set_trace_mode(TraceMode::INSTRUMENTED);
-
+          profiler::BuildApiStartTraceCommand(getpid(), timestamp, app_name_,
+                                              command);
           EmptyResponse response;
           return stub.SendCommand(&ctx, request, &response);
         }});
@@ -241,20 +230,8 @@ void TraceMonitor::SubmitStopEvent(int tid) {
                                               ClientContext& ctx) mutable {
           SendCommandRequest request;
           auto* command = request.mutable_command();
-          command->set_type(Command::STOP_TRACE);
-          command->set_pid(pid);
-          auto* stop = command->mutable_stop_trace();
-          auto* metadata = stop->mutable_api_stop_metadata();
-          metadata->set_stop_timestamp(timestamp);
-          metadata->set_trace_name(payload_name);
-
-          auto* config = stop->mutable_configuration();
-          config->set_app_name(app_name_);
-          config->set_initiation_type(TraceInitiationType::INITIATED_BY_API);
-
-          auto* art_options = config->mutable_art_options();
-          art_options->set_trace_mode(TraceMode::INSTRUMENTED);
-
+          profiler::BuildApiStopTraceCommand(pid, timestamp, app_name_,
+                                             payload_name, command);
           EmptyResponse response;
           return stub.SendCommand(&ctx, request, &response);
         }});

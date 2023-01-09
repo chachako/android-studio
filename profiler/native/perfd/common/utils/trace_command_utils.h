@@ -22,6 +22,7 @@
 #include "proto/commands.pb.h"
 #include "proto/common.pb.h"
 
+using profiler::proto::Command;
 using profiler::proto::Event;
 using profiler::proto::ProfilerType;
 
@@ -34,6 +35,15 @@ profiler::proto::Event PopulateTraceEvent(
 profiler::proto::Event PopulateTraceStatusEvent(
     const profiler::proto::Command& command_data,
     const ProfilerType profiler_type, const CaptureInfo* capture);
+
+void BuildApiStartTraceCommand(int32_t pid, int64_t timestamp,
+                               const std::string& app_name,
+                               profiler::proto::Command* command);
+
+void BuildApiStopTraceCommand(int32_t pid, int64_t timestamp,
+                              const std::string& app_name,
+                              const std::string& payload_name,
+                              profiler::proto::Command* command);
 
 const std::unordered_map<ProfilerType, proto::Event_Kind>
     profiler_type_to_event = {{ProfilerType::CPU, Event::CPU_TRACE},
