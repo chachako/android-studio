@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,16 @@
  */
 package com.android.jdwptracer;
 
-import com.android.annotations.NonNull;
-import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.Location;
+import com.google.gson.JsonObject;
 
-interface PacketParser {
-    @NonNull
-    Message parse(@NonNull MessageReader reader, @NonNull Session session);
+class JsonLocation {
+    static JsonObject get(Location location) {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("type", location.getTypeTag());
+        obj.addProperty("classID", location.getClassID());
+        obj.addProperty("methodID", location.getMethodID());
+        obj.addProperty("index", location.getIndex());
+        return obj;
+    }
 }

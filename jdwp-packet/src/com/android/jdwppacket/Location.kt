@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwptracer;
+package com.android.jdwppacket
 
-import com.android.annotations.NonNull;
-import com.android.jdwppacket.MessageReader;
+class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
 
-interface PacketParser {
-    @NonNull
-    Message parse(@NonNull MessageReader reader, @NonNull Session session);
+  companion object {
+
+    @JvmStatic
+    fun parse(reader: MessageReader): Location {
+      return Location(
+        reader.getTypeTag(),
+        reader.getClassID(),
+        reader.getMethodID(),
+        reader.getLong()
+      )
+    }
+  }
 }

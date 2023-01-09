@@ -16,6 +16,9 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.stackframe.GetValuesCmd;
+import com.android.jdwppacket.stackframe.GetValuesReply;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -38,25 +41,17 @@ public class CmdSetStackFrame extends CmdSet {
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        long threadID = reader.getThreadID();
-        long frameID = reader.getFrameID();
+        GetValuesCmd reply = GetValuesCmd.parse(reader);
+        message.addArg("threadID", reply.getThreadID());
+        message.addArg("frameID", reply.getFrameID());
 
-        message.addArg("threadID", threadID);
-        message.addArg("frameID", frameID);
-
-        int numSlots = reader.getInt();
         JsonArray slots = new JsonArray();
-        for (int i = 0; i < numSlots; i++) {
-            int slot = reader.getInt();
-            byte sigbyte = reader.getByte();
-
+        for (GetValuesCmd.Slot slot : reply.getSlots()) {
             JsonObject slotEntry = new JsonObject();
-            slotEntry.addProperty("slot", slot);
-            slotEntry.addProperty("sigbyte", sigbyte);
-
+            slotEntry.addProperty("slot", slot.getSlot());
+            slotEntry.addProperty("sigbyte", slot.getSibByte());
             slots.add(slotEntry);
         }
-
         message.addArg("slots", slots);
 
         return message;
@@ -66,8 +61,8 @@ public class CmdSetStackFrame extends CmdSet {
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        int values = reader.getInt();
-        message.addArg("values", values);
+        GetValuesReply reply = GetValuesReply.parse(reader);
+        message.addArg("values", reply.getNumValues());
 
         return message;
     }

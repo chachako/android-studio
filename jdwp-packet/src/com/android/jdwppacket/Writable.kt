@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwptracer;
+package com.android.jdwppacket
 
-import com.android.annotations.NonNull;
-import com.android.jdwppacket.MessageReader;
+import java.nio.ByteBuffer
 
-interface PacketParser {
-    @NonNull
-    Message parse(@NonNull MessageReader reader, @NonNull Session session);
+abstract class Writable {
+
+  abstract fun serializedSize(writer: MessageWriter): Int
+  abstract fun writeTo(writer: MessageWriter)
+
+  fun toByteBuffer(writer: MessageWriter): ByteBuffer {
+    writer.start(serializedSize(writer))
+    writeTo(writer)
+    val buffer = writer.finish()
+    buffer.clear()
+    return buffer
+  }
 }

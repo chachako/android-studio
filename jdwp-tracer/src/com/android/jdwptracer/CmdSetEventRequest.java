@@ -16,6 +16,10 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.ModKind;
+import com.android.jdwppacket.eventrequest.SetCmd;
+import com.android.jdwppacket.eventrequest.SetReply;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -32,95 +36,113 @@ class CmdSetEventRequest extends CmdSet {
     @NonNull
     private static Message parseReply(@NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-        message.addArg("requestID", reader.getInt());
+        SetReply reply = SetReply.parse(reader);
+        message.addArg("requestID", reply.getRequestID());
         return message;
     }
 
+    // TODO: If/When we convert this lib to kotlin, we should rewrite the switch as follows:
+    // when(mod) {
+    //  is SetCmd.ModifierCount -> {
+    //    modJson.addProperty("count", mod.getCount()) // No cast needed
+    //  ...
+    //  }
+    // }
     @NonNull
     private static Message parseCmd(@NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        byte eventKind = reader.getByte();
-        String eventName = EventKind.fromID(eventKind).name();
-        message.addArg("eventKind", eventName);
-        message.setName(eventName);
-
-        byte suspendPolicy = reader.getByte();
-        message.addArg("suspendPolicy", SuspendPolicy.fromID(suspendPolicy).name());
-
-        int numModifiers = reader.getInt();
-        message.addArg("numModifiers", Integer.toString(numModifiers));
+        SetCmd cmd = SetCmd.parse(reader);
+        message.addArg("eventKind", cmd.getKind().name());
+        message.addArg("suspendPolicy", SuspendPolicy.fromID(cmd.getSuspendPolicy()).name());
+        message.addArg("numModifiers", cmd.getModifiers().size());
 
         JsonArray modifiers = new JsonArray();
         message.addArg("modifiers", modifiers);
 
-        for (int n = 0; n < numModifiers; n++) {
-            ModKind kind = ModKind.fromID(reader.getByte());
-            JsonObject modifier = new JsonObject();
-            modifiers.add(modifier);
+        for (SetCmd.Modifier modifier : cmd.getModifiers()) {
+            ModKind kind = modifier.getKind();
+            JsonObject modJson = new JsonObject();
+            modifiers.add(modJson);
 
-            modifier.addProperty("modKind", kind.name());
+            modJson.addProperty("modKind", kind.name());
             switch (kind) {
                 case COUNT:
                     {
-                        int count = reader.getInt();
-                        modifier.addProperty("count", count);
+                        SetCmd.ModifierCount mod = (SetCmd.ModifierCount) modifier;
+                        modJson.addProperty("count", mod.getCount());
                     }
                     break;
                 case CONDITIONAL:
                     {
-                        modifier.addProperty("exprID", reader.getInt());
+                        SetCmd.ModifierConditional mod = (SetCmd.ModifierConditional) modifier;
+                        modJson.addProperty("exprID", mod.getExprID());
                     }
                     break;
                 case THREAD_ONLY:
                     {
-                        modifier.addProperty("threadID", reader.getThreadID());
+                        SetCmd.ModifierThreadOnly mod = (SetCmd.ModifierThreadOnly) modifier;
+                        modJson.addProperty("threadID", mod.getThreadID());
                     }
                     break;
                 case CLASS_ONLY:
                     {
-                        modifier.addProperty("clazz", reader.getReferenceTypeID());
+                        SetCmd.ModifierClassOnly mod = (SetCmd.ModifierClassOnly) modifier;
+                        modJson.addProperty("clazz", mod.getReferenceTypeID());
                     }
                     break;
                 case CLASS_MATCH:
+                    {
+                        SetCmd.ModifierClassMatch mod = (SetCmd.ModifierClassMatch) modifier;
+                        modJson.addProperty("classMatch", mod.getPattern());
+                    }
+                    break;
                 case CLASS_EXCLUDE:
                     {
-                        modifier.addProperty("classPattern", reader.getString());
+                        SetCmd.ModifierClassExclude mod = (SetCmd.ModifierClassExclude) modifier;
+                        modJson.addProperty("classExclude", mod.getPattern());
                     }
                     break;
                 case LOCATION_ONLY:
                     {
-                        modifier.add("loc", reader.getLocation());
+                        SetCmd.ModifierLocationOnly mod = (SetCmd.ModifierLocationOnly) modifier;
+                        modJson.add("loc", JsonLocation.get(mod.getLocation()));
                     }
                     break;
                 case EXCEPTION_ONLY:
                     {
-                        modifier.addProperty("exceptionOrNull", reader.getReferenceTypeID());
-                        modifier.addProperty("caught", reader.getBoolean());
-                        modifier.addProperty("uncaught", reader.getBoolean());
+                        SetCmd.ModifierExceptionOnly mod = (SetCmd.ModifierExceptionOnly) modifier;
+                        modJson.addProperty("exceptionOrNull", mod.getExceptionOrNull());
+                        modJson.addProperty("caught", mod.getCaught());
+                        modJson.addProperty("uncaught", mod.getUncaught());
                     }
                     break;
                 case FIELD_ONLY:
                     {
-                        modifier.addProperty("declaring", reader.getReferenceTypeID());
-                        modifier.addProperty("fieldID", reader.getFieldID());
+                        SetCmd.ModifierFieldOnly mod = (SetCmd.ModifierFieldOnly) modifier;
+                        modJson.addProperty("declaring", mod.getDeclaring());
+                        modJson.addProperty("fieldID", mod.getFieldID());
                     }
                     break;
                 case STEP:
                     {
-                        modifier.addProperty("thread", reader.getThreadID());
-                        modifier.addProperty("size", reader.getInt());
-                        modifier.addProperty("depth", reader.getInt());
+                        SetCmd.ModifierStep mod = (SetCmd.ModifierStep) modifier;
+                        modJson.addProperty("thread", mod.getThreadID());
+                        modJson.addProperty("size", mod.getSize());
+                        modJson.addProperty("depth", mod.getDepth());
                     }
                     break;
                 case INSTANCE_ONLY:
                     {
-                        modifier.addProperty("instance", reader.getObjectID());
+                        SetCmd.ModifierInstanceOnly mod = (SetCmd.ModifierInstanceOnly) modifier;
+                        modJson.addProperty("instance", mod.getInstance());
                     }
                     break;
                 case SOURCE_NAME_MATCH:
                     {
-                        modifier.addProperty("sourceNamePattern", reader.getString());
+                        SetCmd.ModifierSourceNameMatch mod =
+                                (SetCmd.ModifierSourceNameMatch) modifier;
+                        modJson.addProperty("sourceNamePattern", mod.getSourceNameMatch());
                     }
                     break;
             }

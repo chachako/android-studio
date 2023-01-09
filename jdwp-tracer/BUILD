@@ -12,17 +12,7 @@ iml_module(
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
-    ],
-)
-
-java_library(
-    name = "jdwp-trace",
-    srcs = glob([
-        "src/**/*.java",
-    ]),
-    deps = [
-        "//tools/base/annotations",
-        "@maven//:com.google.code.gson.gson",
+        "//tools/base/jdwp-packet:studio.android.sdktools.jdwppacket[module]",
     ],
 )
 
@@ -34,7 +24,8 @@ java_test(
     jvm_flags = ["-Dtest.suite.jar=jdwp-trace.tests.jar"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
-        ":jdwp-trace",
+        ":studio.android.sdktools.jdwptracer",
+        "//tools/base/jdwp-packet",
         "//tools/base/annotations",
         # For "JarTestSuite"
         "//tools/base/testutils:tools.testutils",

@@ -16,6 +16,10 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.vm.AllClassesWithGenericsReply;
+import com.android.jdwppacket.vm.ClassesBySignatureReply;
+import com.android.jdwppacket.vm.IDSizesReply;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -100,25 +104,21 @@ class CmdSetVM extends CmdSet {
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        int fieldIDSize = reader.getInt();
-        reader.setFieldIDSize(fieldIDSize);
-        message.addArg("FieldIDSize", Integer.toString(fieldIDSize));
+        IDSizesReply reply = IDSizesReply.parse(reader);
+        reader.setFieldIDSize(reply.getFieldIDSize());
+        message.addArg("FieldIDSize", Integer.toString(reply.getFieldIDSize()));
 
-        int methodIDSize = reader.getInt();
-        reader.setMethodIDSize(methodIDSize);
-        message.addArg("methodIDSize", Integer.toString(methodIDSize));
+        reader.setMethodIDSize(reply.getMethodIDSize());
+        message.addArg("methodIDSize", Integer.toString(reply.getMethodIDSize()));
 
-        int objectIDSize = reader.getInt();
-        reader.setObjectIDSize(objectIDSize);
-        message.addArg("objectIDSize", Integer.toString(objectIDSize));
+        reader.setObjectIDSize(reply.getObjectIDSize());
+        message.addArg("objectIDSize", Integer.toString(reply.getObjectIDSize()));
 
-        int referenceTypeIDSize = reader.getInt();
-        reader.setReferenceTypeIDSize(referenceTypeIDSize);
-        message.addArg("referenceTypeID", Integer.toString(referenceTypeIDSize));
+        reader.setReferenceTypeIDSize(reply.getReferenceTypeIDSize());
+        message.addArg("referenceTypeID", Integer.toString(reply.getReferenceTypeIDSize()));
 
-        int frameIDSize = reader.getInt();
-        reader.setFrameIDSize(frameIDSize);
-        message.addArg("frameIDSize", Integer.toString(frameIDSize));
+        reader.setFrameIDSize(reply.getFrameIDSize());
+        message.addArg("frameIDSize", Integer.toString(reply.getFrameIDSize()));
 
         return message;
     }
@@ -142,17 +142,15 @@ class CmdSetVM extends CmdSet {
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        int classes = reader.getInt();
-
-        message.addArg("classes", classes);
+        ClassesBySignatureReply reply = ClassesBySignatureReply.parse(reader);
+        message.addArg("classes", reply.getClasses().size());
 
         JsonArray classList = new JsonArray();
-        for (int i = 0; i < classes; i++) {
+        for (ClassesBySignatureReply.Class clazz : reply.getClasses()) {
             JsonObject classEntry = new JsonObject();
-            classEntry.addProperty("refTypeTag", reader.getByte());
-            classEntry.addProperty("typeID", reader.getReferenceTypeID());
-            classEntry.addProperty("status", reader.getInt());
-
+            classEntry.addProperty("refTypeTag", clazz.getRefTypeTag());
+            classEntry.addProperty("typeID", clazz.getRefTypeTag());
+            classEntry.addProperty("status", clazz.getStatus());
             classList.add(classEntry);
         }
 
@@ -170,18 +168,17 @@ class CmdSetVM extends CmdSet {
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        int classes = reader.getInt();
-        message.addArg("classes", Integer.toString(classes));
+        AllClassesWithGenericsReply reply = AllClassesWithGenericsReply.parse(reader);
+        message.addArg("classes", reply.getClasses().size());
 
         JsonArray classList = new JsonArray();
-        for (int i = 0; i < classes; i++) {
+        for (AllClassesWithGenericsReply.Class clazz : reply.getClasses()) {
             JsonObject classEntry = new JsonObject();
-            classEntry.addProperty("refTypeTag", reader.getByte());
-            classEntry.addProperty("typeID", reader.getReferenceTypeID());
-            classEntry.addProperty("signature", reader.getString());
-            classEntry.addProperty("genericSignature", reader.getString());
-            classEntry.addProperty("status", reader.getInt());
-
+            classEntry.addProperty("refTypeTag", clazz.getRefTypeTag());
+            classEntry.addProperty("typeID", clazz.getReferenceTypeID());
+            classEntry.addProperty("signature", clazz.getSignature());
+            classEntry.addProperty("genericSignature", clazz.getGenericSignature());
+            classEntry.addProperty("status", clazz.getStatus());
             classList.add(classEntry);
         }
 

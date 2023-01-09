@@ -15,6 +15,7 @@
  */
 package com.android.jdwptracer;
 
+import com.android.jdwppacket.MessageReader;
 import java.nio.ByteBuffer;
 import org.junit.Test;
 

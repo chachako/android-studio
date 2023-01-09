@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwptracer;
+package com.android.jdwppacket
 
-import com.android.annotations.NonNull;
-import com.android.jdwppacket.MessageReader;
+enum class ModKind(val id: Int) {
+  COUNT(1),
+  CONDITIONAL(2),
+  THREAD_ONLY(3),
+  CLASS_ONLY(4),
+  CLASS_MATCH(5),
+  CLASS_EXCLUDE(6),
+  LOCATION_ONLY(7),
+  EXCEPTION_ONLY(8),
+  FIELD_ONLY(9),
+  STEP(10),
+  INSTANCE_ONLY(11),
+  SOURCE_NAME_MATCH(12);
 
-interface PacketParser {
-    @NonNull
-    Message parse(@NonNull MessageReader reader, @NonNull Session session);
+  companion object {
+
+    private val map = ModKind.values().associateBy(ModKind::id)
+
+    @JvmStatic
+    fun fromID(value: Int) = map[value] ?: throw IllegalStateException("No ModKind for $value")
+  }
 }

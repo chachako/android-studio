@@ -16,6 +16,8 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.threadreference.FramesReply;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -62,18 +64,14 @@ class CmdSetThreadReference extends CmdSet {
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
 
-        int frames = reader.getInt();
+        FramesReply frames = FramesReply.parse(reader);
 
         JsonArray framesArray = new JsonArray();
-        for (int i = 0; i < frames; i++) {
-            long frameID = reader.getFrameID();
-            JsonObject location = reader.getLocation();
-
-            JsonObject frame = new JsonObject();
-            frame.addProperty("frameID", frameID);
-            frame.add("location", location);
-
-            framesArray.add(frame);
+        for (FramesReply.Frame frame : frames.getFrames()) {
+            JsonObject jsonFrame = new JsonObject();
+            jsonFrame.addProperty("frameID", frame.getId());
+            jsonFrame.add("location", JsonLocation.get(frame.getLocation()));
+            framesArray.add(jsonFrame);
         }
 
         message.addArg("frames", framesArray);

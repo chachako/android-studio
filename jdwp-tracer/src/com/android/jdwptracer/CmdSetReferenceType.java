@@ -16,6 +16,17 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.referencetype.MethodsCmd;
+import com.android.jdwppacket.referencetype.MethodsReply;
+import com.android.jdwppacket.referencetype.MethodsWithGenericsCmd;
+import com.android.jdwppacket.referencetype.MethodsWithGenericsReply;
+import com.android.jdwppacket.referencetype.SignatureCmd;
+import com.android.jdwppacket.referencetype.SignatureReply;
+import com.android.jdwppacket.referencetype.SignatureWithGenericCmd;
+import com.android.jdwppacket.referencetype.SignatureWithGenericReply;
+import com.android.jdwppacket.referencetype.SourceDebugExtensionCmd;
+import com.android.jdwppacket.referencetype.SourceDebugExtensionReply;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -67,91 +78,76 @@ class CmdSetReferenceType extends CmdSet {
     private static Message parseSignatureCmd(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("refType", reader.getReferenceTypeID());
-
+        SignatureCmd cmd = SignatureCmd.parse(reader);
+        message.addArg("refType", cmd.getRefType());
         return message;
     }
 
     private static Message parseSignatureReply(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("signature", reader.getString());
-
+        SignatureReply reply = SignatureReply.parse(reader);
+        message.addArg("signature", reply.getSignature());
         return message;
     }
 
     private static Message parseSourceDebugExtensionCmd(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("refType", reader.getReferenceTypeID());
-
+        SourceDebugExtensionCmd cmd = SourceDebugExtensionCmd.parse(reader);
+        message.addArg("refType", cmd.getRefType());
         return message;
     }
 
     private static Message parseSourceDebugExtensionReply(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        // See
-        // https://docs.oracle.com/javase/8/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ReferenceType_SourceDebugExtension.
-        // There is supposed to be an extension string argument; but at times I've found that the
-        // message just ends. So we need to test for any remaining bytes before trying to read the
-        // extension argument.
-        if (reader.hasRemaining()) {
-            message.addArg("extension", reader.getString());
-        }
-
+        SourceDebugExtensionReply reply = SourceDebugExtensionReply.parse(reader);
+        message.addArg("extension", reply.getExtension());
         return message;
     }
 
     private static Message parseSignatureWithGenericCmd(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("refType", reader.getReferenceTypeID());
-
+        SignatureWithGenericCmd cmd = SignatureWithGenericCmd.parse(reader);
+        message.addArg("refType", cmd.getRefType());
         return message;
     }
 
     private static Message parseSignatureWithGenericReply(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("signature", reader.getString());
-        message.addArg("genericSignature", reader.getString());
-
+        SignatureWithGenericReply reply = SignatureWithGenericReply.parse(reader);
+        message.addArg("signature", reply.getSignature());
+        message.addArg("genericSignature", reply.getGenericSignature());
         return message;
     }
 
     private static Message parseMethodsCmd(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("refType", reader.getReferenceTypeID());
-
+        MethodsCmd cmd = MethodsCmd.parse(reader);
+        message.addArg("refType", cmd.getRefType());
         return message;
     }
 
     private static Message parseMethodsReply(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
+        MethodsReply reply = MethodsReply.parse(reader);
 
-        int declared = reader.getInt();
+        message.addArg("declared", reply.getMethods().size());
+
         JsonArray methods = new JsonArray();
-        for (int i = 0; i < declared; i++) {
-            JsonObject method = new JsonObject();
-            method.addProperty("methodID", reader.getMethodID());
-            method.addProperty("name", reader.getString());
-            method.addProperty("signature", reader.getString());
-            method.addProperty("modBits", reader.getInt());
-
-            methods.add(method);
+        for (MethodsReply.Method method : reply.getMethods()) {
+            JsonObject methodJson = new JsonObject();
+            methodJson.addProperty("methodID", method.getMethodID());
+            methodJson.addProperty("name", method.getName());
+            methodJson.addProperty("signature", method.getSignature());
+            methodJson.addProperty("modBits", method.getModBits());
+            methods.add(methodJson);
         }
-
-        message.addArg("declared", declared);
         message.addArg("methods", methods);
 
         return message;
@@ -160,30 +156,28 @@ class CmdSetReferenceType extends CmdSet {
     private static Message parseMethodsWithGenericsCmd(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
-
-        message.addArg("refType", reader.getReferenceTypeID());
-
+        MethodsWithGenericsCmd cmd = MethodsWithGenericsCmd.parse(reader);
+        message.addArg("refType", cmd.getRefType());
         return message;
     }
 
     private static Message parseMethodsWithGenericsReply(
             @NonNull MessageReader reader, @NonNull Session session) {
         Message message = new Message(reader);
+        MethodsWithGenericsReply reply = MethodsWithGenericsReply.parse(reader);
 
-        int declared = reader.getInt();
+        message.addArg("declared", reply.getMethods().size());
+
         JsonArray methods = new JsonArray();
-        for (int i = 0; i < declared; i++) {
-            JsonObject method = new JsonObject();
-            method.addProperty("methodID", reader.getMethodID());
-            method.addProperty("name", reader.getString());
-            method.addProperty("signature", reader.getString());
-            method.addProperty("genericSignature", reader.getString());
-            method.addProperty("modBits", reader.getInt());
-
-            methods.add(method);
+        for (MethodsWithGenericsReply.Method method : reply.getMethods()) {
+            JsonObject methodJson = new JsonObject();
+            methodJson.addProperty("methodID", method.getMethodID());
+            methodJson.addProperty("name", method.getName());
+            methodJson.addProperty("signature", method.getSignature());
+            methodJson.addProperty("genericSignature", method.getGenericSignature());
+            methodJson.addProperty("modBits", method.getModBits());
+            methods.add(methodJson);
         }
-
-        message.addArg("declared", declared);
         message.addArg("methods", methods);
 
         return message;
