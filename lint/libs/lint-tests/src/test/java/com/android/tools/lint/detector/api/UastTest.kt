@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtLambdaArgument
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
@@ -48,6 +49,7 @@ import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
@@ -55,6 +57,7 @@ import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UastCallKind
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
@@ -1780,6 +1783,52 @@ class UastTest : TestCase() {
                     )
 
                     return super.visitCallableReferenceExpression(node)
+                }
+            })
+        }
+    }
+
+    fun test263887242() {
+        val source = kotlin(
+            """
+            inline fun <T> remember(calc: () -> T): T = calc()
+
+            fun test() {
+                val x = remember { UnknownClass() }
+                val y = remember { 42 }
+                val z = remember {
+                    val local = UnknownClass()
+                    42
+                }
+            }
+            """
+        ).indented()
+
+        check(
+            source
+        ) { file ->
+            file.accept(object : AbstractUastVisitor() {
+                override fun visitCallExpression(node: UCallExpression): Boolean {
+                    if (node.methodName != "remember")
+                        return super.visitCallExpression(node)
+
+                    // Due to coercion-to-Unit (in FE1.0), a type error is hidden, and Unit is returned.
+                    val callExpressionType = node.getExpressionType()
+                    assertTrue(callExpressionType?.canonicalText in listOf("kotlin.Unit", "int"))
+
+                    // We can go deeper into the last expression of the lambda argument.
+                    val sourcePsi = node.sourcePsi
+                    if (sourcePsi is KtCallExpression) {
+                        val tailLambda = sourcePsi.valueArguments.lastOrNull() as? KtLambdaArgument
+                        val lambda = tailLambda?.getLambdaExpression()
+                        val lastExp = lambda?.bodyExpression?.statements?.lastOrNull()
+                        val lastExpType = lastExp?.let { it.toUElementOfType<UExpression>()?.getExpressionType() }
+                        // Since unresolved, the expression type will be actually `null`.
+                        val isReallyUnit = callExpressionType?.canonicalText == "kotlin.Unit" && callExpressionType == lastExpType
+                        assertFalse(isReallyUnit)
+                    }
+
+                    return super.visitCallExpression(node)
                 }
             })
         }
