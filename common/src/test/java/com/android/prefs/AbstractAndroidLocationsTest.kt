@@ -98,10 +98,10 @@ class AbstractAndroidLocationsTest {
     }
 
     @Test
-    fun `XGD_CONFIG_HOME usage`() {
+    fun `XDG_CONFIG_HOME usage`() {
         val testLocation = folder.newFolder()
         val provider = FakeProvider(
-            sysProp = mapOf("XGD_CONFIG_HOME" to testLocation.absolutePath),
+            sysProp = mapOf("XDG_CONFIG_HOME" to testLocation.absolutePath),
             envVar = mapOf()
         )
         val logger = RecordingLogger()
@@ -421,12 +421,12 @@ class AbstractAndroidLocationsTest {
     }
 
     @Test
-    fun `userHomeLocation via XGD_CONFIG_HOME`() {
+    fun `userHomeLocation via XDG_CONFIG_HOME`() {
         val testLocation = folder.newFolder()
         val provider = FakeProvider(
             sysProp = mapOf(),
             envVar = mapOf(
-                "XGD_CONFIG_HOME" to testLocation.absolutePath
+                "XDG_CONFIG_HOME" to testLocation.absolutePath
             )
         )
         val logger = RecordingLogger()
