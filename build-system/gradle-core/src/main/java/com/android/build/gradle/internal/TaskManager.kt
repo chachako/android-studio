@@ -729,7 +729,8 @@ abstract class TaskManager(
                     )
 
                 if (!creationConfig.debuggable &&
-                        !creationConfig.componentType.isForTesting) {
+                        !creationConfig.componentType.isForTesting &&
+                         projectOptions[BooleanOption.ENABLE_RESOURCE_OPTIMIZATIONS]) {
                     check(creationConfig is ApkCreationConfig) {
                         "Expected a component that produces an apk, instead found " +
                                 "${creationConfig.name} of type ${creationConfig::class.java}."

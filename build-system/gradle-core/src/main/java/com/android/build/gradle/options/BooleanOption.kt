@@ -216,6 +216,7 @@ enum class BooleanOption(
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */
+    ENABLE_RESOURCE_OPTIMIZATIONS("android.enableResourceOptimizations", true, FeatureStage.SoftlyEnforced(VERSION_9_0)),
 
     ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
 
@@ -512,12 +513,6 @@ enum class BooleanOption(
 
     USE_RELATIVE_PATH_IN_TEST_CONFIG(
         "android.testConfig.useRelativePath",
-        true,
-        FeatureStage.Enforced(Version.VERSION_8_0)
-    ),
-
-    ENABLE_RESOURCE_OPTIMIZATIONS(
-        "android.enableResourceOptimizations",
         true,
         FeatureStage.Enforced(Version.VERSION_8_0)
     ),

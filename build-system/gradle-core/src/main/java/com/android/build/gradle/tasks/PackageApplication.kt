@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.APK_IDE_MODEL
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
+import com.android.build.gradle.options.BooleanOption
 import com.android.buildanalyzer.common.TaskCategory
 import com.google.wireless.android.sdk.stats.GradleBuildProjectMetrics
 import org.gradle.api.file.Directory
@@ -74,7 +75,8 @@ abstract class PackageApplication : PackageAndroidArtifact() {
             super.handleProvider(taskProvider)
             creationConfig.taskContainer.packageAndroidTask = taskProvider
             val useOptimizedResources = !creationConfig.debuggable &&
-                    !creationConfig.componentType.isForTesting
+                    !creationConfig.componentType.isForTesting &&
+                    creationConfig.services.projectOptions[BooleanOption.ENABLE_RESOURCE_OPTIMIZATIONS]
             val useResourcesShrinker = creationConfig
                 .androidResourcesCreationConfig
                 ?.useResourceShrinker == true
