@@ -23,10 +23,12 @@ import com.intellij.psi.JavaTokenType
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiAssignmentExpression
 import com.intellij.psi.PsiBlockStatement
+import com.intellij.psi.PsiCall
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiConditionalExpression
 import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiEnumConstant
 import com.intellij.psi.PsiExpression
 import com.intellij.psi.PsiExpressionStatement
 import com.intellij.psi.PsiField
@@ -35,10 +37,12 @@ import com.intellij.psi.PsiLiteral
 import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiNewExpression
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiParenthesizedExpression
 import com.intellij.psi.PsiPolyadicExpression
 import com.intellij.psi.PsiPrefixExpression
 import com.intellij.psi.PsiPrimitiveType
+import com.intellij.psi.PsiQualifiedReference
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiStatement
@@ -53,6 +57,7 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
+import org.jetbrains.kotlin.psi.psiUtil.parameterIndex
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBinaryExpressionWithType
@@ -60,6 +65,7 @@ import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UDeclarationsExpression
 import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UEnumConstant
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULiteralExpression
@@ -78,6 +84,7 @@ import org.jetbrains.uast.UastFacade.convertElement
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.isUastChildOf
+import org.jetbrains.uast.resolveToUElement
 import org.jetbrains.uast.util.isConstructorCall
 import org.jetbrains.uast.util.isNewArrayWithDimensions
 import org.jetbrains.uast.util.isNewArrayWithInitializer
@@ -150,6 +157,12 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
             when {
                 resolved is PsiVariable -> {
                     when {
+                        // References to enum constants are resolved to constructor calls, and accesses to their properties are resolved to
+                        // parameters in these calls, and so to handle this case we evaluate the argument corresponding to the parameter
+                        resolved is PsiParameter && node is UQualifiedReferenceExpression ->
+                            ((node.receiver as? UResolvable)?.resolveToUElement() as? UEnumConstant)
+                                ?.getArgumentForParameter(resolved.parameterIndex())
+                                ?.let(::evaluate)
                         // Handle fields specially: we can't look for last assignment
                         // on fields since the modifications are often in different methods
                         // Only take the field constant or initializer value if it's final,

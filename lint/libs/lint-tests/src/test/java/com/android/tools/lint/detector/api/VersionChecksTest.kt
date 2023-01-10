@@ -3735,7 +3735,9 @@ class VersionChecksTest : AbstractCheckTest() {
     }
 
     fun testChecksSdkIntAtLeast() {
-        // Regression test for https://issuetracker.google.com/120255046
+        // Regression test for
+        //  -- https://issuetracker.google.com/120255046
+        //  -- https://issuetracker.google.com/239767506
         // The @ChecksSdkIntAtLeast annotation allows annotating methods and
         // fields as version check methods without relying on (a) accessing
         // the method body to see if it's an SDK_INT check, which doesn't work
@@ -3749,31 +3751,38 @@ class VersionChecksTest : AbstractCheckTest() {
 
                 import androidx.annotation.RequiresApi
 
+                enum class Feature(val apiVersion: Int) {
+                    Old(9), New(10)
+                }
+
                 fun test() {
-                    if (versionCheck1) {
+                    if(isFeatureAvailable(Feature.New.apiVersion)) {
                         bar() // OK 1
                     }
-                    if (Constants.getVersionCheck2()) {
+                    if (versionCheck1) {
                         bar() // OK 2
                     }
-                    if (Constants.SUPPORTS_LETTER_SPACING) {
+                    if (Constants.getVersionCheck2()) {
                         bar() // OK 3
                     }
-                    sdk(28) { bar() } ?: fallback() // OK 4
+                    if (Constants.SUPPORTS_LETTER_SPACING) {
+                        bar() // OK 4
+                    }
+                    sdk(28) { bar() } ?: fallback() // OK 5
                     if (Constants.getVersionCheck3("", false, 21)) {
-                        bar(); // OK 5A
+                        bar() // OK 6A
                     }
                     when {
                         Constants.getVersionCheck3("", false, 21) -> {
-                            bar(); // OK 5B
+                            bar() // OK 6B
                         }
                     }
-                    "test".applyForOreoOrAbove { bar() } // OK 6
-                    fromApi(10) { bar() } // OK 7
+                    "test".applyForOreoOrAbove { bar() } // OK 7
+                    fromApi(10) { bar() } // OK 8
                     bar() // ERROR
-                    sdk(28, { bar() }) ?: fallback() // OK 8
-                    sdk(level = 28, func = { bar() }) ?: fallback() // OK 9
-                    sdk( func = { bar() }, level = 28) ?: fallback() // OK 10
+                    sdk(28, { bar() }) ?: fallback() // OK 9
+                    sdk(level = 28, func = { bar() }) ?: fallback() // OK 10
+                    sdk( func = { bar() }, level = 28) ?: fallback() // OK 11
                 }
 
                 @RequiresApi(10)
@@ -3792,6 +3801,11 @@ class VersionChecksTest : AbstractCheckTest() {
                 package test.pkg
                 import android.os.Build
                 import androidx.annotation.ChecksSdkIntAtLeast
+
+                @ChecksSdkIntAtLeast(parameter = 0)
+                fun isFeatureAvailable(api: Int): Boolean {
+                    return Build.VERSION.SDK_INT >= api
+                }
 
                 @ChecksSdkIntAtLeast(parameter = 0, lambda = 1)
                 inline fun fromApi(value: Int, action: () -> Unit) {
@@ -3847,7 +3861,7 @@ class VersionChecksTest : AbstractCheckTest() {
             .run()
             .expect(
                 """
-                src/main/java/test/pkg/test.kt:26: Error: Call requires API level 10 (current min is 1): bar [NewApi]
+                src/main/java/test/pkg/test.kt:33: Error: Call requires API level 10 (current min is 1): bar [NewApi]
                     bar() // ERROR
                     ~~~
                 1 errors, 0 warnings

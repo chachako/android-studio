@@ -390,6 +390,25 @@ public class ConstantEvaluatorTest extends TestCase {
         UastEnvironment.disposeApplicationEnvironment();
     }
 
+    public void testEnumClassVal() {
+        // Regression test for
+        // https://issuetracker.google.com/239767506
+        @Language("Kt")
+        String source =
+                ""
+                        + "package test.pkg\n"
+                        + "enum class E(val x: Int) {\n"
+                        + " A(1), B(2)\n"
+                        + "}\n"
+                        + "class Test {\n"
+                        + "    fun f() {\n"
+                        + "        val a = E.A.x\n"
+                        + "        val b = E.B.x\n"
+                        + "    }\n"
+                        + "}";
+        checkKotlinUast(1, source, "a");
+    }
+
     public void testBooleans() {
         checkExpression(true, "true");
         checkExpression(false, "false");
