@@ -61,14 +61,34 @@ void handle_cmd(android_app *pApp, int32_t cmd) {
 }
 
 /*!
+ * Enable the motion events you want to handle; not handled events are
+ * passed back to OS for further processing. For this example case,
+ * only pointer and joystick devices are enabled.
+ *
+ * @param motionEvent the newly arrived GameActivityMotionEvent.
+ * @return true if the event is from a pointer or joystick device,
+ *         false for all other input devices.
+ */
+bool motion_event_filter_func(const GameActivityMotionEvent *motionEvent) {
+    auto sourceClass = motionEvent->source & AINPUT_SOURCE_CLASS_MASK;
+    return (sourceClass == AINPUT_SOURCE_CLASS_POINTER ||
+            sourceClass == AINPUT_SOURCE_CLASS_JOYSTICK);
+}
+
+/*!
  * This the main entry point for a native activity
  */
 void android_main(struct android_app *pApp) {
     // Can be removed, useful to ensure your code is running
     aout << "Welcome to android_main" << std::endl;
 
-    // register an event handler for Android events
+    // Register an event handler for Android events
     pApp->onAppCmd = handle_cmd;
+
+    // Set input event filters (set it to NULL if the app wants to process all inputs).
+    // Note that for key inputs, this example uses the default default_key_filter()
+    // implemented in android_native_app_glue.c.
+    android_app_set_motion_event_filter(pApp, motion_event_filter_func);
 
     // This sets up a typical game/event loop. It will run until the app is destroyed.
     int events;

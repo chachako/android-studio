@@ -49,11 +49,11 @@ fun RecipeExecutor.generateCppGameActivity(
     val (projectData, srcOut) = moduleData
     val ktOrJavaExt = projectData.language.extension
 
-    addDependency("com.google.android.material:material:1.4.+", minRev = "1.4.0")
+    addDependency("com.google.android.material:material:1.7.+", minRev = "1.7.0")
 
     // things needed for game-activity
     setBuildFeature("prefab", true)
-    addDependency("androidx.games:games-activity:1.0.+", minRev = "1.0.0")
+    addDependency("androidx.games:games-activity:1.2.2+", minRev = "1.2.2")
 
     setCppOptions(
         cppFlags = cppFlags,
