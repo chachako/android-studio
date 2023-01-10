@@ -329,7 +329,6 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
-        "//tools/base/lint/cli:studio.android.sdktools.lint.cli[module]",
         "//tools/base/lint:studio.android.sdktools.lint-api[module]",
         "//tools/base/lint:studio.android.sdktools.lint-checks[module]",
         "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-Kotlin",
@@ -342,7 +341,9 @@ iml_module(
     name = "studio.android.sdktools.lint.studio-checks.tests",
     iml_files = ["studio-checks/android.sdktools.lint.studio-checks.tests.iml"],
     test_srcs = ["studio-checks/src/test/java"],
-    test_tags = ["no_windows"],
+    # The canonical test target for this is :studio-checks-tests (//tools/base/lint:studio-checks-tests)
+    # as that runs with the correct dependencies. This iml_module is only defined for development.
+    test_tags = ["manual"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
