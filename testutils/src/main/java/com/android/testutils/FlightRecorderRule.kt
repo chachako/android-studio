@@ -26,27 +26,37 @@ import org.junit.runners.model.Statement
  * Intended for troubleshooting flaky tests. Use as the outermost rule in a chain.
  * When debugging hanging tests use in combination with the [org.junit.rules.Timeout] rule.
  */
-class FlightRecorderRule(private val sizeLimit: Int = 1000) : ExternalResource() {
+class FlightRecorderRule(
+    private val sizeLimit: Int = 1000,
+    private val printOnSuccess: Boolean = false
+) : ExternalResource() {
 
     override fun apply(base: Statement, description: Description): Statement {
         return object : Statement() {
             override fun evaluate() {
                 FlightRecorder.initialize(sizeLimit)
                 FlightRecorder.log(
-                    "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName}")
+                    "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName}"
+                )
                 before()
                 try {
                     base.evaluate()
+                    if (printOnSuccess) {
+                        FlightRecorder.log(
+                            "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} passed")
+                        FlightRecorder.print()
+                    }
                 } catch (e: Throwable) {
                     FlightRecorder.log(
-                        "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed: ${TraceUtils.getStackTrace(e)}")
+                        "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed: " +
+                                TraceUtils.getStackTrace(e)
+                    )
                     FlightRecorder.print()
                     throw e
                 } finally {
                     try {
                         after()
-                    }
-                    finally {
+                    } finally {
                         FlightRecorder.initialize(0)
                     }
                 }
