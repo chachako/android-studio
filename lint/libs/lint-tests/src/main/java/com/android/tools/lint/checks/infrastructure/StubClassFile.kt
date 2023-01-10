@@ -61,6 +61,8 @@ import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.UThrowExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.isNullLiteral
+import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 import org.junit.rules.TemporaryFolder
 import org.objectweb.asm.AnnotationVisitor
@@ -462,7 +464,7 @@ internal open class StubClassFile(
         parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)?
     ) {
         val internalName = annotation.internalName() ?: return
-        val annotationType = annotation.resolveAnnotationType()
+        val annotationType = annotation.toUElement()?.tryResolve() as? PsiClass
         if (annotationType.hasSourceRetention()) {
             return
         }
