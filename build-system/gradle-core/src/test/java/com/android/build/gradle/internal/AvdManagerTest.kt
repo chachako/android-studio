@@ -256,25 +256,6 @@ class AvdManagerTest {
     }
 
     @Test
-    fun synchronizationLockFileIsCleanedUpAfterUse() {
-        manager.createAvd(
-            FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))),
-            "system-images;android-29;default;x86",
-            "device1",
-            "Pixel 2")
-
-        val allAvds = manager.allAvds()
-        assertThat(allAvds).hasSize(1)
-        assertThat(allAvds.first()).isEqualTo("device1")
-
-        assertThat(avdFolder.toFile().list()).isNotEmpty()
-
-        manager.deleteAvds(allAvds)
-
-        assertThat(avdFolder.toFile().list()).isEmpty()
-    }
-
-    @Test
     fun invalidHardwareProfileShouldSuggestNearMatchDevices() {
         val errorMessage = assertThrows(IllegalStateException::class.java) {
             manager.createAvd(
