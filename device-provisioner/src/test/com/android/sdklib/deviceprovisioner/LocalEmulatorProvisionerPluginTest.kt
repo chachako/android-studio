@@ -30,6 +30,7 @@ import com.android.sdklib.internal.avd.AvdManager
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Test
 
@@ -155,6 +156,20 @@ class LocalEmulatorProvisionerPluginTest {
     val displayNames = provisioner.devices.value.map { it.state.properties.title }
     assertThat(displayNames).doesNotContain(avds[0].displayName)
     assertThat(displayNames).contains(avds[1].displayName)
+  }
+
+  @Test
+  fun removedOfflineDeviceScopeIsCancelled(): Unit = runBlockingWithTimeout {
+    avdManager.createAvd()
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    val job = handle.scope.launch { handle.stateFlow.collect {} }
+
+    avdManager.deleteAvd(avdManager.avds[0])
+
+    yieldUntil { provisioner.devices.value.isEmpty() }
+    job.join()
   }
 
   @Test

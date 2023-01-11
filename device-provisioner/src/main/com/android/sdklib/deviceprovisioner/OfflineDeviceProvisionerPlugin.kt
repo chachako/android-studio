@@ -21,6 +21,8 @@ import com.android.adblib.DeviceState.ONLINE
 import com.android.adblib.deviceInfo
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
+import com.android.adblib.utils.createChildScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
@@ -44,7 +46,12 @@ class OfflineDeviceProvisionerPlugin : DeviceProvisionerPlugin {
     when (deviceInfo.deviceState) {
       ONLINE -> return null
       else -> {
-        val handle = OfflineDeviceHandle(OfflineConnectedDevice(device, deviceInfo))
+        val handle =
+          OfflineDeviceHandle(
+            // OfflineDeviceHandle scope is always smaller than ConnectedDevice scope
+            device.scope.createChildScope(isSupervisor = true),
+            OfflineConnectedDevice(device, deviceInfo)
+          )
         devices.update { it + handle }
 
         // When the device goes online, remove this handle; it should be claimed by another plugin.
@@ -77,7 +84,10 @@ internal class OfflineConnectedDevice(delegate: ConnectedDevice, initialDeviceIn
       .stateIn(delegate.scope, SharingStarted.Eagerly, initialDeviceInfo)
 }
 
-private class OfflineDeviceHandle(device: OfflineConnectedDevice) : DeviceHandle {
+private class OfflineDeviceHandle(
+  override val scope: CoroutineScope,
+  device: OfflineConnectedDevice
+) : DeviceHandle {
   override val stateFlow: MutableStateFlow<DeviceState> =
     MutableStateFlow(Connected(OfflineDeviceProperties(device.serialNumber), device))
 }

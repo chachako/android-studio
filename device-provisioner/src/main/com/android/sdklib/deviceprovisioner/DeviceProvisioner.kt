@@ -26,6 +26,7 @@ import com.android.sdklib.deviceprovisioner.SetChange.Add
 import java.time.Duration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -115,7 +116,7 @@ private constructor(
     }
 
   init {
-    adbSession.scope.launch {
+    scope.launch {
       adbSession
         .connectedDevicesTracker
         .connectedDevices
@@ -126,6 +127,16 @@ private constructor(
             offerWhileConnected(it.value)
           }
         }
+    }
+
+    // Cancel the scope of any DeviceHandle that is removed. Plugins should never republish the
+    // same DeviceHandle instance after it is removed.
+    scope.launch {
+      devices.map { it.toSet() }.trackSetChanges().collect {
+        if (it is SetChange.Remove) {
+          it.value.scope.cancel()
+        }
+      }
     }
   }
 

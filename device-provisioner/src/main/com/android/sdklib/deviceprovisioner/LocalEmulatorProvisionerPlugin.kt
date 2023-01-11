@@ -23,6 +23,7 @@ import com.android.adblib.thisLogger
 import com.android.adblib.tools.EmulatorConsole
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
+import com.android.adblib.utils.createChildScope
 import com.android.annotations.concurrency.GuardedBy
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.sdklib.SdkVersionInfo
@@ -39,6 +40,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -114,7 +116,11 @@ class LocalEmulatorProvisionerPlugin(
           when (val handle = deviceHandles[path]) {
             null ->
               deviceHandles[path] =
-                LocalEmulatorDeviceHandle(Disconnected(toDeviceProperties(avdInfo)), avdInfo)
+                LocalEmulatorDeviceHandle(
+                  scope.createChildScope(isSupervisor = true),
+                  Disconnected(toDeviceProperties(avdInfo)),
+                  avdInfo
+                )
             else ->
               // Update the avdInfo if we're not currently running. If we are running, the old
               // values are probably still in effect, but we will update on the next scan after
@@ -241,6 +247,7 @@ class LocalEmulatorProvisionerPlugin(
    * an AVD off the disk; only devices that have already been read from disk will be claimed.
    */
   private inner class LocalEmulatorDeviceHandle(
+    override val scope: CoroutineScope,
     initialState: DeviceState,
     initialAvdInfo: AvdInfo
   ) : DeviceHandle {

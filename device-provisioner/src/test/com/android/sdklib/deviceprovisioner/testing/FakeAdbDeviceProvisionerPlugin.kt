@@ -18,6 +18,7 @@ package com.android.sdklib.deviceprovisioner.testing
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.utils.createChildScope
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.deviceprovisioner.ActivationAction
 import com.android.sdklib.deviceprovisioner.ActivationParams
@@ -29,6 +30,7 @@ import com.android.sdklib.deviceprovisioner.DeviceProvisionerPlugin
 import com.android.sdklib.deviceprovisioner.DeviceState
 import com.android.sdklib.deviceprovisioner.Disconnected
 import com.android.sdklib.deviceprovisioner.invokeOnDisconnection
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.update
  * deactivated.
  */
 class FakeAdbDeviceProvisionerPlugin(
+  val scope: CoroutineScope,
   private val fakeAdb: FakeAdbServerProvider,
   override val priority: Int = 1
 ) : DeviceProvisionerPlugin {
@@ -65,7 +68,7 @@ class FakeAdbDeviceProvisionerPlugin(
     serialNumber: String = nextSerial(),
     properties: DeviceProperties = DEFAULT_PROPERTIES
   ): FakeDeviceHandle {
-    return FakeDeviceHandle(Disconnected(properties), serialNumber)
+    return FakeDeviceHandle(scope.createChildScope(true), Disconnected(properties), serialNumber)
   }
 
   /** Creates a FakeDeviceHandle in the Disconnected state that is already known to the plugin. */
@@ -98,6 +101,7 @@ class FakeAdbDeviceProvisionerPlugin(
   }
 
   inner class FakeDeviceHandle(
+    override val scope: CoroutineScope,
     initialState: DeviceState,
     val serialNumber: String,
   ) : DeviceHandle {

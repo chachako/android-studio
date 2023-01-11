@@ -28,12 +28,12 @@ import java.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.junit.Test
 
@@ -244,6 +244,7 @@ class DeviceProvisionerTest {
       channel.receiveUntilPassing { handles ->
         assertThat(handles).isEmpty()
         assertThat(originalHandle.state).isInstanceOf(Disconnected::class.java)
+        assertThat(originalHandle.scope.coroutineContext.job.isCancelled).isTrue()
       }
 
       setDevices(SerialNumbers.emulator)

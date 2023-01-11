@@ -17,6 +17,9 @@ package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceProperties
+import com.android.adblib.scope
+import com.android.adblib.utils.createChildScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +39,12 @@ class DefaultProvisionerPlugin : DeviceProvisionerPlugin {
   override suspend fun claim(device: ConnectedDevice): DeviceHandle {
     val properties = device.deviceProperties().allReadonly()
     val deviceProperties = DeviceProperties.build { readCommonProperties(properties) }
-    val handle = DefaultDeviceHandle(Connected(deviceProperties, device))
+    val handle =
+      DefaultDeviceHandle(
+        // Lifecycle is the same as the ConnectedDevice
+        device.scope.createChildScope(isSupervisor = true),
+        Connected(deviceProperties, device)
+      )
 
     _devices.update { it + handle }
 
@@ -48,7 +56,8 @@ class DefaultProvisionerPlugin : DeviceProvisionerPlugin {
     return handle
   }
 
-  private class DefaultDeviceHandle(state: Connected) : DeviceHandle {
+  private class DefaultDeviceHandle(override val scope: CoroutineScope, state: Connected) :
+    DeviceHandle {
     override val stateFlow = MutableStateFlow<DeviceState>(state)
   }
 }

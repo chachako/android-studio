@@ -18,6 +18,7 @@ package com.android.sdklib.deviceprovisioner
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceProperties
 import com.android.adblib.serialNumber
+import com.android.adblib.utils.createChildScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,7 +59,13 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
       checkNotNull(
         devicesBySerial.compute(serialNumber) { _, handle ->
           when (handle) {
-            null -> PhysicalDeviceHandle(MutableStateFlow(newState))
+            null ->
+              // Physical devices normally live as long as the plugin, since we remember offline
+              // devices, however they can be explicitly deleted by the user.
+              PhysicalDeviceHandle(
+                scope.createChildScope(isSupervisor = true),
+                MutableStateFlow(newState)
+              )
             else -> handle.also { it.stateFlow.value = newState }
           }
         }
@@ -76,8 +83,10 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
   }
 }
 
-private class PhysicalDeviceHandle(override val stateFlow: MutableStateFlow<DeviceState>) :
-  DeviceHandle
+private class PhysicalDeviceHandle(
+  override val scope: CoroutineScope,
+  override val stateFlow: MutableStateFlow<DeviceState>
+) : DeviceHandle
 
 class PhysicalDeviceProperties(base: DeviceProperties, val connectionType: ConnectionType) :
   DeviceProperties by base {

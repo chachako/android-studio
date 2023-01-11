@@ -15,6 +15,7 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -24,6 +25,15 @@ import kotlinx.coroutines.flow.StateFlow
  * disconnected, and reconnected, this DeviceHandle should remain linked to it.
  */
 interface DeviceHandle {
+  /**
+   * A [CoroutineScope] tied to the lifecycle of this [DeviceHandle]: when this [DeviceHandle] goes
+   * away, the scope will be cancelled by DeviceProvisioner. (Note that DeviceHandles may or may not
+   * continue to exist while disconnected: this scope may be same as the ConnectedDevice's scope, or
+   * may outlive it. However, if a plugin removes a [DeviceHandle] from its devices, it should never
+   * add the same object back later, since its scope will have been cancelled already.)
+   */
+  val scope: CoroutineScope
+
   val state: DeviceState
     get() = stateFlow.value
 
