@@ -52,6 +52,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 ActionsXmlDetector.ISSUE,
                 AddJavascriptInterfaceDetector.ISSUE,
                 AlarmDetector.EXACT_ALARM,
+                AlarmDetector.SCHEDULE_EXACT_ALARM,
                 AlarmDetector.SHORT_ALARM,
                 AllCapsDetector.ISSUE,
                 AllowAllHostnameVerifierDetector.ISSUE,

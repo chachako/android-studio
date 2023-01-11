@@ -16,6 +16,9 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestFile
+import com.android.tools.lint.checks.infrastructure.TestFiles
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class AlarmDetectorTest : AbstractCheckTest() {
@@ -103,4 +106,122 @@ class AlarmDetectorTest : AbstractCheckTest() {
             ).indented()
         ).run().expectClean()
     }
+
+    fun testScheduleExactAlarmBasic() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="33" />
+                </manifest>
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg;
+
+                import android.app.AlarmManager;
+                @SuppressWarnings("ClassNameDiffersFromFileName")
+                class AlarmTest {
+                    fun test(alarmManager: AlarmManager) {
+                      alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+
+                      try {
+                        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+                      } catch (e: SecurityException) {}
+                    }
+                }
+                """
+            ).indented()
+        ).run().expect(
+            """
+            src/test/pkg/AlarmTest.kt:7: Error: When scheduling exact alarms, apps should explicitly call AlarmManager#canScheduleExactAlarms or handle `SecurityException`s [ScheduleExactAlarm]
+                  alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            1 errors, 0 warnings
+            """
+        )
+    }
+
+    fun testScheduleExactAlarmPermissionCheck() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="33" />
+                </manifest>
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg;
+
+                import android.app.AlarmManager;
+                @SuppressWarnings("ClassNameDiffersFromFileName")
+                class AlarmTest {
+                    fun test(alarmManager: AlarmManager) {
+                      if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+                      }
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
+    fun testScheduleExactAlarmWrongManifest() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="33" />
+                </manifest>
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg;
+
+                import android.app.AlarmManager;
+                @SuppressWarnings("ClassNameDiffersFromFileName")
+                class AlarmTest {
+                    fun test(alarmManager: AlarmManager) {
+                        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
+    fun testScheduleExactAlarmWrongVersion() {
+        lint().files(
+            manifest(
+                """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+                    <uses-sdk android:targetSdkVersion="30" />
+                </manifest>
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg;
+
+                import android.app.AlarmManager;
+                @SuppressWarnings("ClassNameDiffersFromFileName")
+                class AlarmTest {
+                    fun test(alarmManager: AlarmManager) {
+                        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 5000, null)
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
 }
+
