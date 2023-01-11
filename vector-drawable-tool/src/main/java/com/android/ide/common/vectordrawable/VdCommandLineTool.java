@@ -223,7 +223,7 @@ public class VdCommandLineTool {
             try {
                 ByteArrayOutputStream byteArrayOutStream = new ByteArrayOutputStream();
 
-                String error = Svg2Vector.parseSvgToXml(inputSVGFile, byteArrayOutStream);
+                String error = Svg2Vector.parseSvgToXml(inputSVGFile.toPath(), byteArrayOutStream);
 
                 if (!error.isEmpty()) {
                     errorSvgFileCounter++;
