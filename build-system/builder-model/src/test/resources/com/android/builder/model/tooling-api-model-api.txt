@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-96b6b30675cc5f0a16cbe82e1d7e44bbb2610a05e1750bc5c45f3b0628f739ec
+4eb1cd2430dbd55ef27047768f4e89011466207c49290cd83f242bd70ef1095c
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -817,7 +817,9 @@ com.android.builder.model.v2.models.BasicAndroidProject.getVariants: java.util.C
 com.android.builder.model.v2.models.BuildMap implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.BuildMap.getBuildIdMap: java.util.Map<java.lang.String, java.io.File> ()
 com.android.builder.model.v2.models.ModelBuilderParameter
+com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getVariantName: java.lang.String ()
+com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setVariantName: void (java.lang.String)
 com.android.builder.model.v2.models.ProjectSyncIssues implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.models.ProjectSyncIssues.getSyncIssues: java.util.Collection<com.android.builder.model.v2.ide.SyncIssue> ()

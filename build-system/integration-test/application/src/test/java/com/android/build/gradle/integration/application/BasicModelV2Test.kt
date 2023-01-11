@@ -39,4 +39,16 @@ class BasicModelV2Test: ModelComparator() {
         with(result).compareAndroidDsl(goldenFile = "AndroidDsl")
         with(result).compareVariantDependencies(goldenFile = "testDep")
     }
+
+    @Test
+    fun `test models no runtime classpath`() {
+        val result = project.modelV2()
+            .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+            .fetchModels(variantName = "debug", dontBuildRuntimeClasspath = true)
+
+        with(result).compareBasicAndroidProject(goldenFile = "basicAndroidProject")
+        with(result).compareAndroidProject(goldenFile = "testProject")
+        with(result).compareAndroidDsl(goldenFile = "AndroidDsl")
+        with(result).compareVariantDependencies(goldenFile = "testDepNoRuntime")
+    }
 }

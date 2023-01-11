@@ -40,14 +40,15 @@ class FullDependencyGraphBuilder(
     private val inputs: ArtifactCollectionsInputs,
     private val resolutionResultProvider: ResolutionResultProvider,
     private val libraryService: LibraryService,
-    private val addAdditionalArtifactsInModel: Boolean
+    private val addAdditionalArtifactsInModel: Boolean,
+    private val dontBuildRuntimeClasspath: Boolean
 ) {
 
     private val unresolvedDependencies = mutableMapOf<String, UnresolvedDependency>()
 
     fun build(): ArtifactDependencies = ArtifactDependenciesImpl(
         buildGraph(AndroidArtifacts.ConsumedConfigType.COMPILE_CLASSPATH),
-        buildGraph(AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH),
+        if (dontBuildRuntimeClasspath) null else buildGraph(AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH),
         unresolvedDependencies.values.toList()
     )
 

@@ -539,17 +539,21 @@ class ModelBuilder<
             globalLibraryBuildService.localJarCache
         )
 
+        val dontBuildRuntimeClasspath = parameter.dontBuildRuntimeClasspath
         return VariantDependenciesImpl(
             name = variantName,
-            mainArtifact = createDependencies(variant, buildMapping, libraryService),
+                mainArtifact = createDependencies(variant,
+                        buildMapping,
+                        libraryService,
+                        dontBuildRuntimeClasspath),
             androidTestArtifact = (variant as? HasAndroidTest)?.androidTest?.let {
-                createDependencies(it, buildMapping, libraryService)
+                createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
             },
             unitTestArtifact = (variant as? HasUnitTest)?.unitTest?.let {
-                createDependencies(it, buildMapping, libraryService)
+                createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
             },
             testFixturesArtifact = (variant as? HasTestFixtures)?.testFixtures?.let {
-                createDependencies(it, buildMapping, libraryService)
+                createDependencies(it, buildMapping, libraryService, dontBuildRuntimeClasspath)
             },
             libraryService.getAllLibraries().associateBy { it.key }
         )
@@ -807,6 +811,7 @@ class ModelBuilder<
         component: ComponentCreationConfig,
         buildMapping: BuildMapping,
         libraryService: LibraryService,
+        dontBuildRuntimeClasspath: Boolean
     ): ArtifactDependencies {
 
         val inputs = ArtifactCollectionsInputsImpl(
@@ -821,7 +826,8 @@ class ModelBuilder<
             inputs,
             component.variantDependencies,
             libraryService,
-            component.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL)
+            component.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL),
+            dontBuildRuntimeClasspath
         ).build()
     }
 

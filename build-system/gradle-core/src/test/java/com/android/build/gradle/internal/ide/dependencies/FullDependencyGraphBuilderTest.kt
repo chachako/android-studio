@@ -213,11 +213,38 @@ internal class FullDependencyGraphBuilderTest {
             .assertThat(graphs.compileDependencies.single().dependencies.map { it.key })
             .containsExactly("foo|bar-parent|1.0||")
     }
+
+    /**
+     * Ensure model builder for variant dependencies respects the parameter to disable the resolving
+     * of the runtime classpath.
+     */
+    @Test
+    fun testBuildCompileClasspathOnly() {
+        val (graphs, libraries) = buildModelGraph(true) {
+            module("foo", "bar", "1.0") {
+                file = File("path/to/bar-1.0.jar")
+                setupDefaultCapability()
+                attribute(
+                    BuildTypeAttr.ATTRIBUTE,
+                    objectFactory.named(BuildTypeAttr::class.java, "debug")
+                )
+            }
+        }
+
+        Truth
+            .assertThat(graphs.runtimeDependencies).isNull()
+        Truth
+            .assertThat(graphs.compileDependencies.map { it.key })
+            .containsExactly("foo|bar|1.0|debug||foo:bar:1.0")
+    }
 }
 
 // -------------
 
-private fun buildModelGraph(action: DependencyBuilder.() -> Unit): Pair<ArtifactDependencies, Map<String, Library>> {
+private fun buildModelGraph(
+    dontBuildRuntimeClasspath: Boolean = false,
+    action: DependencyBuilder.() -> Unit
+): Pair<ArtifactDependencies, Map<String, Library>> {
     val stringCache = StringCacheImpl()
     val localJarCache = LocalJarCacheImpl()
     val libraryService = LibraryServiceImpl(stringCache, localJarCache)
@@ -228,7 +255,8 @@ private fun buildModelGraph(action: DependencyBuilder.() -> Unit): Pair<Artifact
         getInputs(resolvedArtifacts),
         getResolutionResultProvider(dependencyResults),
         libraryService,
-        true
+        true,
+        dontBuildRuntimeClasspath
     )
 
     return builder.build() to libraryService.getAllLibraries().associateBy { it.key }

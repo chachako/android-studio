@@ -113,6 +113,7 @@ class ModelBuilderV2 internal constructor(
      */
     fun fetchModels(
         variantName: String? = null,
+        dontBuildRuntimeClasspath: Boolean = false,
         nativeParams: NativeModuleParams? = null
     ): FetchResult<ModelContainerV2> {
         val container =
@@ -120,6 +121,7 @@ class ModelBuilderV2 internal constructor(
                     buildModelV2(
                         GetAndroidModelV2Action(
                             variantName,
+                            dontBuildRuntimeClasspath,
                             nativeParams
                         )
                     )
@@ -132,7 +134,13 @@ class ModelBuilderV2 internal constructor(
     }
 
     /** Java interop friendly signature, as default parameters are not respected. */
-    fun fetchModels() = fetchModels(null, null)
+    fun fetchModels() = fetchModels(null, false, null)
+
+    /** Java interop friendly signature, as default parameters are not respected. */
+    fun fetchModels(
+        variantName: String?,
+        nativeParams: NativeModuleParams?
+    ) = fetchModels(variantName, false, nativeParams)
 
     /**
      * Fetches the [AndroidProject], [VariantDependencies] and [ProjectSyncIssues] for each project

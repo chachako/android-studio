@@ -41,6 +41,7 @@ import java.io.File
  */
 class GetAndroidModelV2Action(
     private val variantName: String? = null,
+    private val dontBuildRuntimeClasspath: Boolean = false,
     private val nativeParams: ModelBuilderV2.NativeModuleParams? = null
 ) : BuildAction<ModelContainerV2> {
 
@@ -129,7 +130,10 @@ class GetAndroidModelV2Action(
                         project,
                         VariantDependencies::class.java,
                         ModelBuilderParameter::class.java
-                    ) { it.variantName = variantName }
+                    ) {
+                        it.variantName = variantName
+                        it.dontBuildRuntimeClasspath = dontBuildRuntimeClasspath
+                    }
                 } else null
 
                 val nativeModule = if (nativeParams != null) {

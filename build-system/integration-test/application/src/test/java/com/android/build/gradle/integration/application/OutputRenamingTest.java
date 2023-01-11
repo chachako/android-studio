@@ -70,14 +70,14 @@ public class OutputRenamingTest {
         model =
                 project.modelV2()
                         .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-                        .fetchModels(null, null)
+                        .fetchModels()
                         .getContainer()
                         .getProject(null, ":")
                         .getAndroidProject();
         Collection<SyncIssue> syncIssues =
                 project.modelV2()
                         .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-                        .fetchModels(null, null)
+                        .fetchModels()
                         .getContainer()
                         .getProject(null, ":")
                         .getIssues()
