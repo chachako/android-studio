@@ -60,6 +60,7 @@ import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AnchorTaskNames
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
+import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.toImmutableSet
 import com.android.build.gradle.internal.variant.VariantModel
@@ -369,6 +370,10 @@ class ModelBuilder<
         } else {
             listOf()
         }
+        val desugarLibConfig = if (extension.compileOptions.isCoreLibraryDesugaringEnabled)
+            getDesugarLibConfigFile(project)
+        else
+            listOf()
 
         return AndroidProjectImpl(
             namespace = namespace ?: "",
@@ -384,6 +389,7 @@ class ModelBuilder<
             flags = getFlags(),
             lintChecksJars = getLocalCustomLintChecksForModel(project, variantModel.syncIssueReporter),
             modelSyncFiles = modelSyncFiles,
+            desugarLibConfig = desugarLibConfig,
         )
     }
     /**

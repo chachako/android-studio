@@ -349,6 +349,19 @@ class CoreLibraryDesugarTest {
     }
 
     @Test
+    fun testModelFetchingForDesugarLibConfig() {
+        var model = app.modelV2().fetchModels().container.getProject(":app").androidProject
+        Truth.assertThat(model!!.desugarLibConfig!!.first().name).contains("desugar_jdk_libs_configuration")
+
+        app.buildFile.appendText("""
+
+            android.compileOptions.coreLibraryDesugaringEnabled = false
+        """.trimIndent())
+        model = app.modelV2().fetchModels().container.getProject(":app").androidProject
+        Truth.assertThat(model!!.desugarLibConfig).isEmpty()
+    }
+
+    @Test
     fun testKeepRulesGenerationForNonMinifiedRelease() {
         addFileDependencies(app)
         executor().run("app:assembleRelease")

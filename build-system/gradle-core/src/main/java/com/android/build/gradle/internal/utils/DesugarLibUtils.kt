@@ -28,7 +28,9 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.builder.dexing.D8DesugaredMethodsGenerator
 import com.android.sdklib.AndroidTargetHash
 import com.google.common.io.ByteStreams
+import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.CacheableTransform
 import org.gradle.api.artifacts.transform.InputArtifact
 import org.gradle.api.artifacts.transform.TransformAction
@@ -39,7 +41,6 @@ import org.gradle.api.attributes.Attribute
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemLocation
-import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -129,11 +130,20 @@ abstract class DesugarConfigJson : ValueSource<String, DesugarConfigJson.Paramet
 fun getDesugarLibConfig(services: TaskCreationServices): Provider<String> {
     val configuration = services.configurations.findByName(CONFIG_NAME_CORE_LIBRARY_DESUGARING)!!
 
-    registerDesugarLibConfigTransform(services)
+    registerDesugarLibConfigTransform(services.dependencies)
 
     return services.providerOf(DesugarConfigJson::class.java) {
         it.parameters.desugarJson.setFrom(getDesugarLibConfigFromTransform(configuration))
     }
+}
+
+/**
+ * Returns a desugar.json file extracted from desugar lib configuration jar.
+ */
+fun getDesugarLibConfigFile(project: Project): List<File> {
+    val configuration = project.configurations.findByName(CONFIG_NAME_CORE_LIBRARY_DESUGARING)!!
+
+    return getDesugarLibConfigFromTransform(configuration).files.toList()
 }
 
 /**
@@ -219,8 +229,8 @@ private fun getArtifactCollection(configuration: Configuration): FileCollection 
         }
     }.artifacts.artifactFiles
 
-private fun registerDesugarLibConfigTransform(services: TaskCreationServices) {
-    services.dependencies.registerTransform(DesugarLibConfigExtractor::class.java) { spec ->
+private fun registerDesugarLibConfigTransform(dependencies: DependencyHandler) {
+    dependencies.registerTransform(DesugarLibConfigExtractor::class.java) { spec ->
         spec.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
         spec.to.attribute(ArtifactAttributes.ARTIFACT_FORMAT, DESUGAR_LIB_CONFIG)
     }
