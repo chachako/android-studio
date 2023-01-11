@@ -1167,6 +1167,180 @@ abstract class ViewLayoutInspectorTestBase {
     }
 
     @Test
+    fun bitmapNotCapturedWhenDisabled() = createViewInspector { viewInspector ->
+        val eventQueue = ArrayBlockingQueue<ByteArray>(5)
+        inspectorRule.connection.eventListeners.add { bytes ->
+            eventQueue.add(bytes)
+        }
+
+        val packageName = "view.inspector.test"
+        val resources = createResources(packageName)
+        val context = Context(packageName, resources)
+        val mainScreen = ViewGroup(context).apply {
+            setAttachInfo(View.AttachInfo())
+            width = 400
+            height = 800
+        }
+        val floatingDialog = ViewGroup(context).apply {
+            setAttachInfo(View.AttachInfo())
+            width = 300
+            height = 200
+        }
+        val fakeBitmapHeader = byteArrayOf(1, 2, 3) // trailed by 0s
+        val floatingFakeBitmapHeader = byteArrayOf(3, 2, 1) // trailed by 0s
+
+        WindowManagerGlobal.getInstance().rootViews.addAll(listOf(mainScreen, floatingDialog))
+
+        val disableBitmapCapturingCommand = Command.newBuilder().apply {
+            disableBitmapScreenshotCommandBuilder.apply {
+                disable = true
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            disableBitmapCapturingCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+
+        val startFetchCommand = Command.newBuilder().apply {
+            startFetchCommandBuilder.apply {
+                continuous = true
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            startFetchCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+
+        ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
+
+        mainScreen.viewRootImpl = ViewRootImpl()
+        mainScreen.viewRootImpl.mSurface = Surface()
+        mainScreen.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
+
+        checkNonProgressEvent(eventQueue) { event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
+        }
+        val check = { event: Event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
+            // verify there is no screenshot in the event
+            assertThat(event.layoutEvent.hasScreenshot()).isFalse()
+        }
+        checkNonProgressEvent(eventQueue, check)
+        // There will be a second one to capture the end of any animation.
+        checkNonProgressEvent(eventQueue, check)
+
+        // re-enable capturing bitmaps
+        val enableBitmapCapturingCommand = Command.newBuilder().apply {
+            disableBitmapScreenshotCommandBuilder.apply {
+                disable = false
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            enableBitmapCapturingCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+
+        floatingDialog.viewRootImpl = ViewRootImpl()
+        floatingDialog.viewRootImpl.mSurface = Surface()
+        floatingDialog.viewRootImpl.mSurface.bitmapBytes = floatingFakeBitmapHeader
+        floatingDialog.forcePictureCapture(Picture(byteArrayOf(2)))
+
+        checkNonProgressEvent(eventQueue) { event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
+
+            event.layoutEvent.screenshot.let { screenshot ->
+                assertThat(screenshot.type).isEqualTo(Screenshot.Type.BITMAP)
+                val decompressedBytes = screenshot.bytes.toByteArray().decompress()
+
+                // The full screenshot byte array is width * height
+                assertThat(decompressedBytes.size).isEqualTo(
+                    BITMAP_HEADER_SIZE + floatingDialog.width * floatingDialog.height)
+                // Check the bitmap header
+                assertThat(decompressedBytes.take(BITMAP_HEADER_SIZE)).isEqualTo(
+                    ((floatingDialog.width).toBytes() + (floatingDialog.height).toBytes() +
+                            BitmapType.ABGR_8888.byteVal).asList()
+                )
+                // Check the first few bytes to make sure they match our header,
+                // that's enough to know that all the data went through correctly.
+                assertThat(
+                    decompressedBytes
+                        .drop(BITMAP_HEADER_SIZE)
+                        .take(floatingFakeBitmapHeader.size)
+                ).isEqualTo(
+                    floatingFakeBitmapHeader.asList()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun disablingBitmapCapturingDoesNotAffectSkp() = createViewInspector { viewInspector ->
+        val responseQueue = ArrayBlockingQueue<ByteArray>(1)
+        inspectorRule.commandCallback.replyListeners.add { bytes ->
+            responseQueue.add(bytes)
+        }
+
+        val eventQueue = ArrayBlockingQueue<ByteArray>(5)
+        inspectorRule.connection.eventListeners.add { bytes ->
+            eventQueue.add(bytes)
+        }
+
+        val fakePicture1 = Picture(byteArrayOf(2, 1))
+
+        val packageName = "view.inspector.test"
+        val resources = createResources(packageName)
+        val context = Context(packageName, resources)
+        val root = ViewGroup(context).apply {
+            width = 100
+            height = 200
+            setAttachInfo(View.AttachInfo())
+        }
+        WindowManagerGlobal.getInstance().rootViews.addAll(listOf(root))
+
+        run {
+            // disable capturing bitmap screenshots
+            val disableBitmapCapturingCommand = Command.newBuilder().apply {
+                disableBitmapScreenshotCommandBuilder.apply {
+                    disable = true
+                }
+            }.build()
+            viewInspector.onReceiveCommand(
+                disableBitmapCapturingCommand.toByteArray(),
+                inspectorRule.commandCallback
+            )
+            responseQueue.take()
+
+            // reconnect in non-live mode
+            val startFetchCommand = Command.newBuilder().apply {
+                startFetchCommandBuilder.apply {
+                    continuous = false
+                }
+            }.build()
+            viewInspector.onReceiveCommand(
+                startFetchCommand.toByteArray(),
+                inspectorRule.commandCallback
+            )
+            responseQueue.take().let { bytes ->
+                val response = Response.parseFrom(bytes)
+                assertThat(response.specializedCase).isEqualTo(Response.SpecializedCase.START_FETCH_RESPONSE)
+                assertThat(response.startFetchResponse.error).isEmpty()
+            }
+            ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
+
+            // the screenshot should be an skp
+            root.forcePictureCapture(fakePicture1)
+            checkNonProgressEvent(eventQueue) { event ->
+                assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
+            }
+            checkNonProgressEvent(eventQueue) { event ->
+                assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
+                assertThat(event.layoutEvent.screenshot.type).isEqualTo(Screenshot.Type.SKP)
+            }
+        }
+    }
+
+    @Test
     fun canFetchPropertiesForView() = createViewInspector { viewInspector ->
         val responseQueue = ArrayBlockingQueue<ByteArray>(1)
         inspectorRule.commandCallback.replyListeners.add { bytes ->

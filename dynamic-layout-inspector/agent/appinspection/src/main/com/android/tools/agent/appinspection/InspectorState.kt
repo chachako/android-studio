@@ -57,6 +57,14 @@ class InspectorState {
      * sent back as a normal Event.
      */
     var snapshotRequests: MutableMap<Long, SnapshotRequest> = ConcurrentHashMap()
+
+    /**
+     * When true, if [ScreenshotSettings.type] is [Screenshot.Type.BITMAP],
+     * the screenshot is not captured and [LayoutEvent#screenshot] is not sent.
+     *
+     * This setting does nothing when [ScreenshotSettings.type] is [Screenshot.Type.SKP].
+     */
+    var disableBitmapScreenshot: Boolean = false
 }
 
 /**

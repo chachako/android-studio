@@ -289,6 +289,12 @@ message CaptureSnapshotResponse {
     WindowRootsEvent window_roots = 2;
 }
 
+message DisableBitmapScreenshotCommand {
+    bool disable = 1;
+}
+message DisableBitmapScreenshotResponse {
+}
+
 // An event sent for metrics logging purposes when the inspector passes certain
 // checkpoints during initial connect.
 // These should be a subset of the events in studio_stats.proto, and in the
@@ -324,7 +330,7 @@ message LayoutEvent {
     // The offset of the root view from the origin of the surface. Will always be 0,0 for
     // the main window, but can be positive for floating windows (e.g. dialogs).
     Point root_offset = 5;
-    Screenshot screenshot = 6;
+    optional Screenshot screenshot = 6;
 }
 
 // An event fired whenever a new root is added or an old root is removed.
@@ -358,6 +364,7 @@ message Command {
         GetPropertiesCommand get_properties_command = 3;
         UpdateScreenshotTypeCommand update_screenshot_type_command = 4;
         CaptureSnapshotCommand capture_snapshot_command = 5;
+        DisableBitmapScreenshotCommand disable_bitmap_screenshot_command = 6;
     }
 }
 
@@ -368,6 +375,7 @@ message Response {
         GetPropertiesResponse get_properties_response = 3;
         UpdateScreenshotTypeResponse update_screenshot_type_response = 4;
         CaptureSnapshotResponse capture_snapshot_response = 5;
+        DisableBitmapScreenshotResponse disable_bitmap_screenshot_response = 6;
     }
 }
 

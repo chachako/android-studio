@@ -46,6 +46,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Command
+import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.DisableBitmapScreenshotCommand
+import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.DisableBitmapScreenshotResponse
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Event
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesCommand
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesResponse
@@ -143,6 +145,10 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
             )
             Command.SpecializedCase.CAPTURE_SNAPSHOT_COMMAND -> handleCaptureSnapshotCommand(
                 command.captureSnapshotCommand,
+                callback
+            )
+            Command.SpecializedCase.DISABLE_BITMAP_SCREENSHOT_COMMAND -> handleDisableBitmapScreenshotCommand(
+                command.disableBitmapScreenshotCommand,
                 callback
             )
             else -> error("Unexpected view inspector command case: ${command.specializedCase}")
@@ -365,15 +371,13 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         val doCapture = {
             if (!stop) {
                 captureExecutor.execute {
-                    // If this is the lowest z-index window (the normal case) we can be more
-                    // efficient because we don't need alpha information.
-                    val bitmapType =
-                        if (rootView.uniqueDrawingId == rootsDetector.lastRootIds.firstOrNull())
-                            BitmapType.RGB_565 else BitmapType.ABGR_8888
-                    rootView.takeScreenshot(state.screenshotSettings.scale, bitmapType)
-                        ?.toByteArray()
-                        ?.compress()
-                        ?.let { captureOutputStream.write(it) }
+                    // even if the screenshot is not taken, CaptureExecutor#execute runs some
+                    // critical code, necessary for the inspector to function.
+                    // TODO in the future we might want to refactor this, to be able to execute
+                    //  a number of indipendent actions when registerFrameCommitCallback is called.
+                    if (!state.disableBitmapScreenshot) {
+                        captureBitmapScreenshot(rootView, captureOutputStream)
+                    }
                 }
             }
         }
@@ -403,6 +407,21 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
             stop = true
         }
 
+    }
+
+    private fun captureBitmapScreenshot(rootView: View, captureOutputStream: OutputStream) {
+        // If this is the lowest z-index window (the normal case) we can be more
+        // efficient because we don't need alpha information.
+        val bitmapType = if (rootView.uniqueDrawingId == rootsDetector.lastRootIds.firstOrNull()) {
+            BitmapType.RGB_565
+        }
+        else {
+            BitmapType.ABGR_8888
+        }
+        rootView.takeScreenshot(state.screenshotSettings.scale, bitmapType)
+            ?.toByteArray()
+            ?.compress()
+            ?.let { captureOutputStream.write(it) }
     }
 
     private fun sendEmptyLayoutEvent() {
@@ -499,6 +518,18 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
                     rootView.invalidate()
                 }
             }
+        }
+    }
+
+    private fun handleDisableBitmapScreenshotCommand(
+        disableBitmapScreenshotCommand: DisableBitmapScreenshotCommand,
+        callback: CommandCallback
+    ) {
+        synchronized(state.lock) {
+            state.disableBitmapScreenshot = disableBitmapScreenshotCommand.disable
+        }
+        callback.reply {
+            disableBitmapScreenshotResponse = DisableBitmapScreenshotResponse.getDefaultInstance()
         }
     }
 
