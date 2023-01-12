@@ -18,14 +18,14 @@ package com.android.build.api.instrumentation.manageddevice
 
 import com.android.build.api.dsl.Device
 import org.gradle.api.Incubating
-import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 
 /**
  * Action for configuring the device specific [inputs][DeviceTestRunInput] for the
  * Managed Device Test Task.
  *
- * This class is used to take the [managed device DSL][Device] and other [Project] settings to
- * create a group of [cachable inputs][DeviceTestRunInput]
+ * This class is used to take the [managed device DSL][Device] to create a group of
+ * [cachable inputs][DeviceTestRunInput]
  *
  * This should be implemented for use with a Custom Managed Device Registration.
  *
@@ -60,8 +60,8 @@ import org.gradle.api.Project
  * CustomConfigureAction(): DeviceTestRunConfigureAction<CustomDevice, CustomInput> {
  *
  *     override fun configureTaskInput(
- *             deviceDSL: CustomDevice, project: Project): CustomInput =
- *         project.objects.newInstance(CustomInput::class.java).apply {
+ *             deviceDSL: CustomDevice, objects: ObjectFactory): CustomInput =
+ *         objects.newInstance(CustomInput::class.java).apply {
  *             deviceName.set(deviceDSL.getName())
  *             deviceId.set(deviceDSL.id)
  *             timeoutSectonds.set(deviceDSL.timeoutSeconds)
@@ -85,7 +85,7 @@ interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunI
      * test run action.
      *
      * @param deviceDSL The DSL for the individual device for the test task.
-     * @param project The Project that this test task is being created for.
+     * @param objects Object factory available for convenience to instantiate the TestRunInput.
      *
      * @return The cacheable inputs for the test task. This will be consumed as part of the
      * [test run action][DeviceTestRunTaskAction]. As specified by the [ManagedDeviceTestRunFactory]
@@ -93,5 +93,5 @@ interface DeviceTestRunConfigureAction <DeviceT : Device, InputT: DeviceTestRunI
      * @suppress Do not use from production code.This API exposed for prototype.
      */
     @Incubating
-    fun configureTaskInput(deviceDSL: DeviceT, project: Project): InputT
+    fun configureTaskInput(deviceDSL: DeviceT, objects: ObjectFactory): InputT
 }
