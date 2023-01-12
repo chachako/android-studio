@@ -123,11 +123,14 @@ TEST(CountersRequestHandlerTest, PopulateCounters) {
   EXPECT_EQ(counter_map[player_activity].max_value, 1.0);
 }
 
-TEST(CountersRequestHandlerTest, PopulatePowerCounterTracks) {
+TEST(CountersRequestHandlerTest, PopulatePowerCounterTracksMinMaxView) {
   auto tp = LoadTrace(POWER_TESTDATA_PATH);
   auto handler = CountersRequestHandler(tp.get());
 
   proto::QueryParameters::PowerCounterTracksParameters params_proto;
+  // Display Mode of MINMAX_POWER_PROFILER_DISPLAY_MODE represents the min-max
+  // view for power rails and zero-based view for battery counters.
+  params_proto.set_display_mode(MINMAX_POWER_PROFILER_DISPLAY_MODE);
   proto::PowerCounterTracksResult result;
   handler.PopulatePowerCounterTracks(params_proto, &result);
 

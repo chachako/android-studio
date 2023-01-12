@@ -145,12 +145,24 @@ void CountersRequestHandler::PopulatePowerCounterTracks(
     return;
   }
 
-  std::string query_string =
-      "SELECT t.name, c.ts, c.value "
-      "FROM counter c INNER JOIN counter_track t "
-      "     ON c.track_id = t.id "
-      "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
-      "ORDER BY c.track_id ASC, c.ts ASC;";
+  // Mapping of display mode to meaning:
+  // Value of HIDE_POWER_PROFILER_DISPLAY_MODE -> Hide both power + battery
+  // tracks. Value of MINMAX_POWER_PROFILER_DISPLAY_MODE -> Show power rails is
+  // min-max view and battery counters in zero-based view.
+
+  // It is worth noting that although we use value
+  // HIDE_POWER_PROFILER_DISPLAY_MODE to hide the tracks on studio-side, we
+  // still want to query for the data so it is in a newly recorded trace.
+  std::string query_string = "";
+  if (params.display_mode() == HIDE_POWER_PROFILER_DISPLAY_MODE ||
+      params.display_mode() == MINMAX_POWER_PROFILER_DISPLAY_MODE) {
+    query_string =
+        "SELECT t.name, c.ts, c.value "
+        "FROM counter c INNER JOIN counter_track t "
+        "     ON c.track_id = t.id "
+        "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
+        "ORDER BY c.track_id ASC, c.ts ASC;";
+  }
 
   std::unordered_map<std::string, Counter*> counters_map;
 
