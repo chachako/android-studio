@@ -22,6 +22,7 @@ dependencies {
     testImplementation project(':base:testing-infrastructure:device-pool:device-provider')
     testImplementation libs.com.android.tools.testutils
     testImplementation project(':base:gradle-api')
+    testImplementation project(':base:perf-logger')
     testCompileOnly(project(':base:profile'))
 
     testImplementation libs.kotlin_stdlib
