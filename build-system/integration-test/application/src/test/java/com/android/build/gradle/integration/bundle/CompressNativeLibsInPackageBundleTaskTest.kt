@@ -21,7 +21,6 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.integration.common.utils.getOutputByName
-import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.AppBundleProjectBuildOutput
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.build.bundletool.model.AppBundle
@@ -34,13 +33,13 @@ import java.util.zip.ZipFile
 
 @RunWith(FilterableParameterized::class)
 class CompressNativeLibsInPackageBundleTaskTest(
-    private val jniLibsUseLegacyPackaging: Boolean?,
-    private val enableUncompressedNativeLibs: Boolean?
+    private val useLegacyPackaging: Boolean?,
+    private val useLegacyPackagingFromBundle: Boolean?
 ) {
 
     companion object {
         @Parameterized.Parameters(
-            name = "jniLibsUseLegacyPackaging_{0}_enableUncompressedNativeLibs_{1}"
+            name = "useLegacyPackaging_{0}_useLegacyPackagingFromBundle_{1}"
         )
         @JvmStatic
         fun params() =
@@ -52,7 +51,8 @@ class CompressNativeLibsInPackageBundleTaskTest(
                 arrayOf(false, false),
                 arrayOf(false, null),
                 arrayOf(null, true),
-                arrayOf(null, false)
+                arrayOf(null, false),
+                arrayOf<Boolean?>(null, null)
             )
     }
 
@@ -66,10 +66,22 @@ class CompressNativeLibsInPackageBundleTaskTest(
 
     @Test()
     fun testNativeLibsCompression() {
-        jniLibsUseLegacyPackaging?.also {
+        useLegacyPackaging?.also {
             project.getSubproject(":app")
                 .buildFile.appendText(
                     "\nandroid.packagingOptions.jniLibs.useLegacyPackaging = $it\n"
+                )
+        }
+        useLegacyPackagingFromBundle?.also {
+            project.getSubproject(":app")
+                .buildFile.appendText(
+                    """
+                        androidComponents {
+                            onVariants(selector().all(), {
+                                packaging.jniLibs.useLegacyPackagingFromBundle.set($it)
+                            })
+                        }
+                    """.trimIndent()
                 )
         }
 
@@ -86,7 +98,9 @@ class CompressNativeLibsInPackageBundleTaskTest(
             val appBundle = AppBundle.buildFromZip(zip)
             val expectedUncompressNativeLibsEnabledValue =
                 when {
-                    jniLibsUseLegacyPackaging == true -> false
+                    useLegacyPackagingFromBundle == true -> false
+                    useLegacyPackagingFromBundle == false -> true
+                    useLegacyPackaging == true -> false
                     else -> true
                 }
             assertThat(appBundle.bundleConfig.optimizations.uncompressNativeLibraries.enabled)

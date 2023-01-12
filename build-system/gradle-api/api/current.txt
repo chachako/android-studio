@@ -2473,10 +2473,10 @@ package com.android.build.api.variant {
   }
 
   public interface JniLibsApkPackaging extends com.android.build.api.variant.JniLibsPackaging {
-    method public org.gradle.api.provider.Provider<java.lang.Boolean> getUseLegacyPackaging();
-    method public org.gradle.api.provider.Provider<java.lang.Boolean> getUseLegacyPackagingFromBundle();
-    property public abstract org.gradle.api.provider.Provider<java.lang.Boolean> useLegacyPackaging;
-    property public abstract org.gradle.api.provider.Provider<java.lang.Boolean> useLegacyPackagingFromBundle;
+    method public org.gradle.api.provider.Property<java.lang.Boolean> getUseLegacyPackaging();
+    method public org.gradle.api.provider.Property<java.lang.Boolean> getUseLegacyPackagingFromBundle();
+    property public abstract org.gradle.api.provider.Property<java.lang.Boolean> useLegacyPackaging;
+    property public abstract org.gradle.api.provider.Property<java.lang.Boolean> useLegacyPackagingFromBundle;
   }
 
   public interface JniLibsPackaging {

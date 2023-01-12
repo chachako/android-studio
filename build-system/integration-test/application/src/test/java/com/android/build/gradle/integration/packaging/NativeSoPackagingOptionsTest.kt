@@ -49,7 +49,7 @@ class NativeSoPackagingOptionsTest {
                                 excludes += 'lib/*/dslExclude2.so'
                                 excludes += '/lib/*/dslExclude3.so'
                                 pickFirsts += '**/dslPickFirst.so'
-                                useLegacyPackaging = false
+                                useLegacyPackaging = true
                             }
                         }
                     }
@@ -59,6 +59,7 @@ class NativeSoPackagingOptionsTest {
                         })
                         onVariants(selector().withName('release'), {
                             packaging.jniLibs.excludes.add('**/releaseExclude.so')
+                            packaging.jniLibs.useLegacyPackaging.set(false)
                         })
                         onVariants(selector().all(), {
                             packaging.jniLibs.pickFirsts.add('**/variantPickFirst.so')
@@ -150,13 +151,11 @@ class NativeSoPackagingOptionsTest {
         ZipFile(debugApkFile).use {
             val nativeLibEntry = it.getEntry("lib/x86/appKeep.so")
             assertThat(nativeLibEntry).isNotNull()
-            assertThat(nativeLibEntry.method).isEqualTo(ZipEntry.STORED)
+            assertThat(nativeLibEntry.method).isEqualTo(ZipEntry.DEFLATED)
         }
         assertThat(
-                ApkSubject.getManifestContent(debugApkFile.toPath()).any {
-                    // check strings separately because there are extra characters between them
-                    // in this manifest.
-                    it.contains("android:extractNativeLibs") && it.contains("=false")
+                ApkSubject.getManifestContent(debugApkFile.toPath()).none {
+                    it.contains("android:extractNativeLibs")
                 }
         ).isTrue()
 
