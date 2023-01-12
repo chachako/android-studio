@@ -182,6 +182,9 @@ the `tools/base/bazel/maven/artifacts.bzl` file.
 2. Use the following script to download the artifacts and update the
    `BUILD.maven` file.
 
+> Note that it's worth checking that your prebuilts/tools/common/m2/repository
+> is clean before you start. You can clean it with `git clean -fdx`
+
 ```
 tools/base/bazel/maven/maven_fetch.sh
 ```
