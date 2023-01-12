@@ -156,7 +156,6 @@ build:ants --build_metadata=parallel_test_results=true
 ## Base config for using the remote cache.
 ## This avoids building things which were already built by CI.
 build:_rcache --config=_remote_base
-build:_rcache --config=release
 build:_rcache --noremote_upload_local_results
 # remote_local_fallback allows bazel to continue if there are
 # network connectivity failures (e.g., offline)
@@ -192,7 +191,6 @@ build:remote-exec --jobs=350
 ## Remote combines all the configs used for remote execution.
 build:remote --config=_remote_base
 build:remote --config=remote-exec
-build:remote --config=release
 build:remote --config=sponge
 
 ## Config used for continous integration testing scripts.
