@@ -113,7 +113,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         get() = dslInfo.applicationId
     override val namespace: Provider<String>
         get() = dslInfo.namespace
-    override val minSdkVersion: AndroidVersion
+    override val minSdk: AndroidVersion
         get() = dslInfo.minSdkVersion
 
     override val sources = KmpSourcesImpl(internalServices, manifestFile)

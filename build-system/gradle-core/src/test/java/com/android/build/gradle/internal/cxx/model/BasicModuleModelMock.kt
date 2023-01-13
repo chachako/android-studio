@@ -323,6 +323,7 @@ open class BasicModuleModelMock {
         )
         doReturn(variantDependencies).`when`(this.variantImpl).variantDependencies
         doReturn(minSdkVersion).`when`(this.variantImpl).minSdkVersion
+        doReturn(minSdkVersion).`when`(this.variantImpl).minSdk
         doReturn(prefabFileCollection).`when`(prefabArtifactCollection).artifactFiles
         doReturn(emptyList<File>().iterator()).`when`(prefabFileCollection).iterator()
 

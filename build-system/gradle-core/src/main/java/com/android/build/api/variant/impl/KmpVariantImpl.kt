@@ -112,7 +112,7 @@ open class KmpVariantImpl @Inject constructor(
             dslInfo.experimentalProperties
         )
 
-    override val maxSdkVersion: Int?
+    override val maxSdk: Int?
         get() = dslInfo.maxSdkVersion
 
     override val packaging: Packaging by lazy(LazyThreadSafetyMode.NONE) {

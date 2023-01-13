@@ -26,8 +26,8 @@ import com.android.build.gradle.internal.component.features.DexingCreationConfig
  * Interface for properties common to all variant generating APKs
  */
 interface ApkCreationConfig: ConsumableCreationConfig {
-    val targetSdkVersion: AndroidVersion
-    val targetSdkVersionOverride: AndroidVersion?
+    val targetSdk: AndroidVersion
+    val targetSdkOverride: AndroidVersion?
 
     val embedsMicroApp: Boolean
 

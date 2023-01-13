@@ -21,7 +21,7 @@ import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.provider.MapProperty
 
 interface VariantCreationConfig: ConsumableCreationConfig {
-    val maxSdkVersion: Int?
+    val maxSdk: Int?
 
     val experimentalProperties: MapProperty<String, Any>
 

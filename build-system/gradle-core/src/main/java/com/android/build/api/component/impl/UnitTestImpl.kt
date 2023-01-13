@@ -81,8 +81,8 @@ open class UnitTestImpl @Inject constructor(
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
 
-    override val minSdkVersion: AndroidVersion
-        get() = mainVariant.minSdkVersion
+    override val minSdk: AndroidVersion
+        get() = mainVariant.minSdk
 
     override val applicationId: Provider<String> =
         internalServices.providerOf(String::class.java, dslInfo.applicationId)

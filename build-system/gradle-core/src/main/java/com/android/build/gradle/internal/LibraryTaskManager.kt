@@ -129,8 +129,8 @@ class LibraryTaskManager(
         taskFactory.register(
             ProcessLibraryManifest.CreationAction(
                 libraryVariant,
-                libraryVariant.targetSdkVersion,
-                libraryVariant.maxSdkVersion
+                libraryVariant.targetSdk,
+                libraryVariant.maxSdk
             )
         )
         createRenderscriptTask(libraryVariant)

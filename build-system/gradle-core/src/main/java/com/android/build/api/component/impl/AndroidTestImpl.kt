@@ -104,15 +104,19 @@ open class AndroidTestImpl @Inject constructor(
     override val debuggable: Boolean
         get() = dslInfo.isDebuggable
 
-    override val minSdkVersion: AndroidVersion
-        get() = mainVariant.minSdkVersion
+    override val minSdk: AndroidVersion
+        get() = mainVariant.minSdk
+
+    override val targetSdk: AndroidVersion
+        get() = getMainTargetSdkVersion()
 
     override val targetSdkVersion: AndroidVersion
-        get() = getMainTargetSdkVersion()
-    override val targetSdkVersionOverride: AndroidVersion?
+        get() = targetSdk
+
+    override val targetSdkOverride: AndroidVersion?
         get() = when (mainVariant) {
-            is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersionOverride
-            is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkVersionOverride
+            is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkOverride
+            is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkOverride
             else -> null
         }
 
@@ -133,7 +137,7 @@ open class AndroidTestImpl @Inject constructor(
         ApkPackagingImpl(
             dslInfo.mainVariantDslInfo.packaging,
             variantServices,
-            minSdkVersion.apiLevel
+            minSdk.apiLevel
         )
     }
 
@@ -174,7 +178,7 @@ open class AndroidTestImpl @Inject constructor(
             SigningConfigImpl(
                 it,
                 variantServices,
-                minSdkVersion.apiLevel,
+                minSdk.apiLevel,
                 services.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
             )
         }

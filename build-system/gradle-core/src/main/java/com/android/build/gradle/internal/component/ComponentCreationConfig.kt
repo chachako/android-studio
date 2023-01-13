@@ -70,7 +70,7 @@ interface ComponentCreationConfig : ComponentIdentity {
     val applicationId: Provider<String>
     val namespace: Provider<String>
     val debuggable: Boolean
-    val minSdkVersion: AndroidVersion
+    val minSdk: AndroidVersion
 
     // ---------------------------------------------------------------------------------------------
     // OPTIONAL FEATURES

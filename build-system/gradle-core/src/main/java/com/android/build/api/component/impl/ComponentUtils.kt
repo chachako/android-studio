@@ -73,8 +73,8 @@ internal fun ApkCreationConfig.isTestApk(): Boolean {
             !Strings.isNullOrEmpty(projectOptions.get(StringOption.IDE_BUILD_TARGET_ABI))
             || projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API) != null
             || AndroidTargetHash.getVersionFromHash(global.compileSdkHashString)?.isPreview == true
-            || minSdkVersion.codename != null
-            || targetSdkVersion.codename != null)
+            || minSdk.codename != null
+            || targetSdk.codename != null)
 }
 
 internal fun<T> ComponentCreationConfig.warnAboutAccessingVariantApiValueForDisabledFeature(
@@ -92,9 +92,9 @@ internal fun<T> ComponentCreationConfig.warnAboutAccessingVariantApiValueForDisa
 
 internal fun NestedComponentCreationConfig.getMainTargetSdkVersion(): AndroidVersion =
     when (mainVariant) {
-        is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdkVersion
-        is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdkVersion
-        else -> minSdkVersion
+        is ApkCreationConfig -> (mainVariant as ApkCreationConfig).targetSdk
+        is LibraryCreationConfig -> (mainVariant as LibraryCreationConfig).targetSdk
+        else -> minSdk
     }
 
 internal fun getJavaClasspath(

@@ -282,7 +282,7 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
             task: ProcessLibraryManifest
         ) {
             super.configure(task)
-            task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
+            task.minSdkVersion.setDisallowChanges(creationConfig.minSdk.getApiString())
             task.targetSdkVersion
                 .setDisallowChanges(
                     if (targetSdkVersion == null || targetSdkVersion.apiLevel < 1) null

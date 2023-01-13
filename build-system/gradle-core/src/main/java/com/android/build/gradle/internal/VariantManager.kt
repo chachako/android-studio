@@ -784,10 +784,10 @@ class VariantManager<
                 addVariant(variantInfo)
                 val variant = variantInfo.variant
                 val variantBuilder = variantInfo.variantBuilder
-                val minSdkVersion = variant.minSdkVersion
+                val minSdkVersion = variant.minSdk
                 val targetSdkVersion = when (variant) {
-                    is ApkCreationConfig -> variant.targetSdkVersion
-                    is LibraryCreationConfig -> variant.targetSdkVersion
+                    is ApkCreationConfig -> variant.targetSdk
+                    is LibraryCreationConfig -> variant.targetSdk
                     else -> minSdkVersion
                 }
                 if (minSdkVersion.apiLevel > targetSdkVersion.apiLevel) {
@@ -892,7 +892,7 @@ class VariantManager<
                 variantAnalytics?.let {
                     it
                         .setIsDebug(buildType.isDebuggable)
-                        .setMinSdkVersion(AnalyticsUtil.toProto(variant.minSdkVersion))
+                        .setMinSdkVersion(AnalyticsUtil.toProto(variant.minSdk))
                         .setMinifyEnabled(variant.optimizationCreationConfig.minifiedEnabled)
                         .setVariantType(variant.componentType.analyticsVariantType)
                         .setDexBuilder(GradleBuildVariant.DexBuilderTool.D8_DEXER)
@@ -914,13 +914,13 @@ class VariantManager<
                             variantAnalytics.java8LangSupport = AnalyticsUtil.toProto(supportType)
                         }
                         variantAnalytics.targetSdkVersion = AnalyticsUtil.toProto(
-                            variant.targetSdkVersion
+                            variant.targetSdk
                         )
                     } else if (variant is LibraryCreationConfig) {
                         // Report the targetSdkVersion in libraries so that we can track the usage
                         // of the deprecated API.
                         variantAnalytics.targetSdkVersion = AnalyticsUtil.toProto(
-                            variant.targetSdkVersion
+                            variant.targetSdk
                         )
                     }
 
@@ -928,7 +928,7 @@ class VariantManager<
                         // If code shrinker is used, it can only be R8
                         variantAnalytics.codeShrinker = GradleBuildVariant.CodeShrinkerTool.R8
                     }
-                    variant.maxSdkVersion?.let { version ->
+                    variant.maxSdk?.let { version ->
                         variantAnalytics.setMaxSdkVersion(
                             ApiVersion.newBuilder().setApiLevel(version.toLong()))
                     }

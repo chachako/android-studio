@@ -2338,12 +2338,14 @@ package com.android.build.api.variant {
     method public org.gradle.api.provider.Provider<java.lang.String> getApplicationId();
     method public com.android.build.api.variant.ApkPackaging getPackaging();
     method public com.android.build.api.variant.Renderscript? getRenderscript();
-    method public com.android.build.api.variant.AndroidVersion getTargetSdkVersion();
+    method public com.android.build.api.variant.AndroidVersion getTargetSdk();
+    method @Deprecated public com.android.build.api.variant.AndroidVersion getTargetSdkVersion();
     property public abstract com.android.build.api.variant.AndroidResources androidResources;
     property public abstract org.gradle.api.provider.Provider<java.lang.String> applicationId;
     property public abstract com.android.build.api.variant.ApkPackaging packaging;
     property public abstract com.android.build.api.variant.Renderscript? renderscript;
-    property public abstract com.android.build.api.variant.AndroidVersion targetSdkVersion;
+    property public abstract com.android.build.api.variant.AndroidVersion targetSdk;
+    property @Deprecated public abstract com.android.build.api.variant.AndroidVersion targetSdkVersion;
   }
 
   public interface GeneratesApkBuilder {
@@ -2583,8 +2585,10 @@ package com.android.build.api.variant {
     method public <T> T? getExtension(Class<T> type);
     method public com.android.build.api.variant.ExternalNativeBuild? getExternalNativeBuild();
     method public org.gradle.api.provider.MapProperty<java.lang.String,java.lang.String> getManifestPlaceholders();
-    method public Integer? getMaxSdkVersion();
-    method public com.android.build.api.variant.AndroidVersion getMinSdkVersion();
+    method public Integer? getMaxSdk();
+    method @Deprecated public Integer? getMaxSdkVersion();
+    method public com.android.build.api.variant.AndroidVersion getMinSdk();
+    method @Deprecated public com.android.build.api.variant.AndroidVersion getMinSdkVersion();
     method @org.gradle.api.Incubating public java.util.List<com.android.build.api.variant.Component> getNestedComponents();
     method public com.android.build.api.variant.Packaging getPackaging();
     method public org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile> getProguardFiles();
@@ -2595,8 +2599,10 @@ package com.android.build.api.variant {
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.MapProperty<java.lang.String,java.lang.Object> experimentalProperties;
     property public abstract com.android.build.api.variant.ExternalNativeBuild? externalNativeBuild;
     property public abstract org.gradle.api.provider.MapProperty<java.lang.String,java.lang.String> manifestPlaceholders;
-    property public abstract Integer? maxSdkVersion;
-    property public abstract com.android.build.api.variant.AndroidVersion minSdkVersion;
+    property public abstract Integer? maxSdk;
+    property @Deprecated public abstract Integer? maxSdkVersion;
+    property public abstract com.android.build.api.variant.AndroidVersion minSdk;
+    property @Deprecated public abstract com.android.build.api.variant.AndroidVersion minSdkVersion;
     property @org.gradle.api.Incubating public abstract java.util.List<com.android.build.api.variant.Component> nestedComponents;
     property public abstract com.android.build.api.variant.Packaging packaging;
     property public abstract org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile> proguardFiles;

@@ -622,7 +622,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
 
             task.bundleNeedsFusedStandaloneConfig.set(
                 task.project.providers.provider {
-                    creationConfig.minSdkVersion.getFeatureLevel() < MIN_SDK_FOR_SPLITS
+                    creationConfig.minSdk.getFeatureLevel() < MIN_SDK_FOR_SPLITS
                             && creationConfig.artifacts.get(InternalArtifactType.ASSET_PACK_BUNDLE).isPresent
                 }
             )

@@ -361,7 +361,7 @@ abstract class R8Task @Inject constructor(
                     creationConfig.dexingCreationConfig.minSdkVersionForDexing.apiLevel
                 )
             } else {
-                task.minSdkVersion.set(creationConfig.minSdkVersion.apiLevel)
+                task.minSdkVersion.set(creationConfig.minSdk.apiLevel)
             }
             task.minSdkVersion.disallowChanges()
 

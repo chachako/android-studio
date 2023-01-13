@@ -612,7 +612,7 @@ class ModelBuilder<
             desugaredMethods = getDesugaredMethods(
                 variant.services,
                 variant.isCoreLibraryDesugaringEnabledLintCheck,
-                variant.minSdkVersion,
+                variant.minSdk,
                 variant.global
             ).files.toList(),
         )
@@ -680,14 +680,14 @@ class ModelBuilder<
             component.signingConfigImpl else null
 
         val minSdkVersion =
-                ApiVersionImpl(component.minSdkVersion.apiLevel, component.minSdkVersion.codename)
+                ApiVersionImpl(component.minSdk.apiLevel, component.minSdk.codename)
         val targetSdkVersionOverride = when (component) {
-            is ApkCreationConfig -> component.targetSdkVersionOverride
-            is LibraryCreationConfig -> component.targetSdkVersionOverride
+            is ApkCreationConfig -> component.targetSdkOverride
+            is LibraryCreationConfig -> component.targetSdkOverride
             else -> null
         }?.let { ApiVersionImpl(it.apiLevel, it.codename) }
         val maxSdkVersion =
-                if (component is VariantCreationConfig) component.maxSdkVersion else null
+                if (component is VariantCreationConfig) component.maxSdk else null
 
         val modelSyncFiles = if (component is ApplicationCreationConfig || component is LibraryCreationConfig || component is TestVariantCreationConfig || component is DynamicFeatureCreationConfig) {
             listOf(
@@ -742,7 +742,7 @@ class ModelBuilder<
             desugaredMethodsFiles = getDesugaredMethods(
                 component.services,
                 coreLibDesugaring,
-                component.minSdkVersion,
+                component.minSdk,
                 component.global
             ).files.toList()
         )

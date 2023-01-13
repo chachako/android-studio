@@ -76,11 +76,14 @@ open class LibraryVariantImpl @Inject constructor(
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
 
-    override val targetSdkVersion: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
+    override val targetSdk: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
         variantBuilder.targetSdkVersion
     }
 
-    override val targetSdkVersionOverride: AndroidVersion?
+    override val targetSdkVersion: AndroidVersion
+        get() = targetSdk
+
+    override val targetSdkOverride: AndroidVersion?
         get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     override val applicationId: Provider<String> =

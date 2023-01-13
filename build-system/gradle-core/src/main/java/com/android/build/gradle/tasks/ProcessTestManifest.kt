@@ -477,7 +477,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                     creationConfig.dirName
                 )
             )
-            task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
+            task.minSdkVersion.setDisallowChanges(creationConfig.minSdk.getApiString())
             task.targetSdkVersion.setDisallowChanges(creationConfig.targetSdkVersion.getApiString())
 
             task.testApplicationId.setDisallowChanges(creationConfig.applicationId)

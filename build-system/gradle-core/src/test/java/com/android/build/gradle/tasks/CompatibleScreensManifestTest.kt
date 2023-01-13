@@ -96,7 +96,7 @@ class CompatibleScreensManifestTest {
         `when`(appVariant.taskContainer).thenReturn(taskContainer)
         `when`(appVariant.componentType).thenReturn(ComponentTypeImpl.BASE_APK)
         `when`(appVariant.services).thenReturn(services)
-        `when`(appVariant.minSdkVersion).thenReturn(AndroidVersionImpl(21))
+        `when`(appVariant.minSdk).thenReturn(AndroidVersionImpl(21))
 
 
         `when`(taskContainer.preBuildTask).thenReturn(project.tasks.register("preBuildTask"))

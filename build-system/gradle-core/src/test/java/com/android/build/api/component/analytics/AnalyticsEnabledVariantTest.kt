@@ -55,6 +55,33 @@ class AnalyticsEnabledVariantTest {
     }
 
     @Test
+    fun getMinSdk() {
+        val androidVersion = Mockito.mock(AndroidVersion::class.java)
+        Mockito.`when`(delegate.minSdk).thenReturn(androidVersion)
+        Truth.assertThat(proxy.minSdk).isEqualTo(androidVersion)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+                stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.MIN_SDK_VERSION_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+                .minSdk
+    }
+
+    @Test
+    fun getMaxSdk() {
+        Mockito.`when`(delegate.maxSdk).thenReturn(23)
+        Truth.assertThat(proxy.maxSdk).isEqualTo(23)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+                stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.MAX_SDK_VERSION_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+                .maxSdk
+    }
+
+    @Test
     fun getMinSdkVersion() {
         val androidVersion = Mockito.mock(AndroidVersion::class.java)
         Mockito.`when`(delegate.minSdkVersion).thenReturn(androidVersion)

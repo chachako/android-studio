@@ -116,7 +116,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         ApkPackagingImpl(
             dslInfo.packaging,
             internalServices,
-            minSdkVersion.apiLevel
+            minSdk.apiLevel
         )
     }
 
@@ -139,12 +139,14 @@ open class DynamicFeatureVariantImpl @Inject constructor(
             internalServices
         )
     }
-
-    override val targetSdkVersion: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
+    override val targetSdk: AndroidVersion  by lazy(LazyThreadSafetyMode.NONE) {
         variantBuilder.targetSdkVersion
     }
 
-    override val targetSdkVersionOverride: AndroidVersion?
+    override val targetSdkVersion: AndroidVersion
+        get() = targetSdk
+
+    override val targetSdkOverride: AndroidVersion?
         get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     // always false for this type

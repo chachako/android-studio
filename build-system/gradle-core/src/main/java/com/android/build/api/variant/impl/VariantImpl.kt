@@ -106,9 +106,15 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
 
-    override val minSdkVersion: AndroidVersion by lazy {
+    override val minSdk: AndroidVersion by lazy {
         variantBuilder.minSdkVersion
     }
+
+    override val minSdkVersion: AndroidVersion
+        get() = minSdk
+
+    override val maxSdk: Int?
+        get() = variantBuilder.maxSdk
 
     override val maxSdkVersion: Int?
         get() = variantBuilder.maxSdk

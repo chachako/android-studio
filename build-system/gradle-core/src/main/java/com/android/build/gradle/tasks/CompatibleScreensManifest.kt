@@ -183,7 +183,7 @@ abstract class CompatibleScreensManifest : NonIncrementalTask() {
             )
 
             task.minSdkVersion.setDisallowChanges(
-                task.project.provider { creationConfig.minSdkVersion.getApiString() }
+                task.project.provider { creationConfig.minSdk.getApiString() }
             )
         }
     }

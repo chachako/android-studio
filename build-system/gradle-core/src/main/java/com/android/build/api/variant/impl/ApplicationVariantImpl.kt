@@ -107,7 +107,7 @@ open class ApplicationVariantImpl @Inject constructor(
         SigningConfigImpl(
             dslInfo.signingConfig,
             internalServices,
-            minSdkVersion.apiLevel,
+            minSdk.apiLevel,
             internalServices.projectOptions.get(IntegerOption.IDE_TARGET_DEVICE_API)
         )
     }
@@ -116,7 +116,7 @@ open class ApplicationVariantImpl @Inject constructor(
         ApkPackagingImpl(
             dslInfo.packaging,
             internalServices,
-            minSdkVersion.apiLevel
+            minSdk.apiLevel
         )
     }
 
@@ -130,6 +130,9 @@ open class ApplicationVariantImpl @Inject constructor(
     override val renderscript: Renderscript? by lazy {
         renderscriptCreationConfig?.renderscript
     }
+    override val targetSdk: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
+        variantBuilder.targetSdkVersion
+    }
 
     override val isMinifyEnabled: Boolean
         get() = variantBuilder.isMinifyEnabled
@@ -137,11 +140,11 @@ open class ApplicationVariantImpl @Inject constructor(
     override val shrinkResources: Boolean
         get() = variantBuilder.shrinkResources
 
-    override val targetSdkVersion: AndroidVersion by lazy(LazyThreadSafetyMode.NONE) {
-        variantBuilder.targetSdkVersion
-    }
 
-    override val targetSdkVersionOverride: AndroidVersion?
+    override val targetSdkVersion: AndroidVersion
+        get() = targetSdk
+
+    override val targetSdkOverride: AndroidVersion?
         get() = variantBuilder.mutableTargetSdk?.sanitize()
 
     // ---------------------------------------------------------------------------------------------

@@ -947,12 +947,12 @@ abstract class VariantInputs {
         manifestMergeReport.disallowChanges()
         namespace.setDisallowChanges(creationConfig.namespace)
 
-        minSdkVersion.initialize(creationConfig.minSdkVersion)
+        minSdkVersion.initialize(creationConfig.minSdk)
 
         if (creationConfig is ApkCreationConfig) {
-            targetSdkVersion.initialize(creationConfig.targetSdkVersion)
+            targetSdkVersion.initialize(creationConfig.targetSdk)
         } else if (creationConfig is LibraryCreationConfig) {
-            targetSdkVersion.initialize(creationConfig.targetSdkVersion)
+            targetSdkVersion.initialize(creationConfig.targetSdk)
         }
 
         resValues.setDisallowChanges(
@@ -1539,7 +1539,7 @@ abstract class AndroidArtifactInput : ArtifactInput() {
                 getDesugaredMethods(
                         creationConfig.services,
                         coreLibDesugaring,
-                        creationConfig.minSdkVersion,
+                        creationConfig.minSdk,
                         creationConfig.global
                 )
         ).disallowChanges()

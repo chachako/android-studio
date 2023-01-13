@@ -229,7 +229,7 @@ class DataBindingCompilerArguments constructor(
             return DataBindingCompilerArguments(
                 artifactType = getModuleType(creationConfig),
                 packageName = creationConfig.namespace,
-                minApi = creationConfig.minSdkVersion.apiLevel,
+                minApi = creationConfig.minSdk.apiLevel,
                 apiVersionsFile = creationConfig.global.versionedSdkLoader.flatMap { it.apiVersionsFile },
                 dependencyArtifactsDir = artifacts.get(DATA_BINDING_DEPENDENCY_ARTIFACTS),
                 layoutInfoDir = artifacts.get(getLayoutInfoArtifactType(creationConfig)),

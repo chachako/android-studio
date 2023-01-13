@@ -1147,8 +1147,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                     .set(
                             packageAndroidArtifact
                                     .getProject()
-                                    .provider(
-                                            () -> creationConfig.getMinSdkVersion().getApiLevel()));
+                                    .provider(() -> creationConfig.getMinSdk().getApiLevel()));
             packageAndroidArtifact.getMinSdkVersion().disallowChanges();
             packageAndroidArtifact.getApplicationId().set(creationConfig.getApplicationId());
             packageAndroidArtifact.getApplicationId().disallowChanges();

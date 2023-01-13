@@ -443,15 +443,15 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
                         null
                     }
             )
-            task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
+            task.minSdkVersion.setDisallowChanges(creationConfig.minSdk.getApiString())
             task.targetSdkVersion
                 .setDisallowChanges(
-                        if (creationConfig.targetSdkVersion.apiLevel < 1)
+                        if (creationConfig.targetSdk.apiLevel < 1)
                             null
-                        else creationConfig.targetSdkVersion.getApiString()
+                        else creationConfig.targetSdk.getApiString()
                 )
             task.maxSdkVersion.setDisallowChanges(
-                (creationConfig as VariantCreationConfig).maxSdkVersion
+                (creationConfig as VariantCreationConfig).maxSdk
             )
             task.optionalFeatures.setDisallowChanges(creationConfig.services.provider {
                 getOptionalFeatures(

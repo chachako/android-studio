@@ -144,11 +144,25 @@ abstract class AnalyticsEnabledVariant (
             return delegate.proguardFiles
         }
 
+    override val minSdk: AndroidVersion
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                    VariantPropertiesMethodType.MIN_SDK_VERSION_VALUE
+            return delegate.minSdk
+        }
+
     override val minSdkVersion: AndroidVersion
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.MIN_SDK_VERSION_VALUE
             return delegate.minSdkVersion
+        }
+
+    override val maxSdk: Int?
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                    VariantPropertiesMethodType.MAX_SDK_VERSION_VALUE
+            return delegate.maxSdk
         }
 
     override val maxSdkVersion: Int?

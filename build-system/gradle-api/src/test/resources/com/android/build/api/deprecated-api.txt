@@ -277,6 +277,9 @@ Deprecated from AGP 8.1.0
   * com.android.build.api.dsl.DensitySplit.getCompatibleScreens: java.util.Set<java.lang.String> ()
   * com.android.build.api.dsl.DensitySplit.isStrict: boolean ()
   * com.android.build.api.dsl.DensitySplit.setStrict: void (boolean)
+  * com.android.build.api.variant.GeneratesApk.getTargetSdkVersion: com.android.build.api.variant.AndroidVersion ()
+  * com.android.build.api.variant.Variant.getMaxSdkVersion: java.lang.Integer ()
+  * com.android.build.api.variant.Variant.getMinSdkVersion: com.android.build.api.variant.AndroidVersion ()
 Deprecated from AGP 7.4.0
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()

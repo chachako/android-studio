@@ -101,8 +101,8 @@ open class TestFixturesImpl @Inject constructor(
         internalServices.providerOf(String::class.java, variantDslInfo.namespace)
     override val debuggable: Boolean
         get() = mainVariant.debuggable
-    override val minSdkVersion: AndroidVersion
-        get() = mainVariant.minSdkVersion
+    override val minSdk: AndroidVersion
+        get() = mainVariant.minSdk
     override val publishInfo: VariantPublishingInfo?
         get() = (mainVariant as? PublishableCreationConfig)?.publishInfo
 

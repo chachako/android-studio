@@ -92,7 +92,7 @@ abstract class AbstractTestDataImpl(
     override val testCoverageEnabled =
         creationConfig.services.provider { creationConfig.isAndroidTestCoverageEnabled }
 
-    override val minSdkVersion = creationConfig.services.provider { creationConfig.minSdkVersion }
+    override val minSdkVersion = creationConfig.services.provider { creationConfig.minSdk }
 
     override val flavorName = creationConfig.services.provider { creationConfig.flavorName ?: "" }
 
