@@ -173,7 +173,7 @@ interface ProductFlavor : Named, BaseFlavor, ExtensionAware {
      * not. That's because the plugin simply never requests that flavor from the dependency.
      *
      * If instead you are trying to resolve an issue in which **a library dependency includes a
-     * flavor dimension that your app does not**, use [missingDimensionStrategy].
+     * flavor dimension that your app does not**, use [BaseFlavor.missingDimensionStrategy].
      */
     val matchingFallbacks: MutableList<String>
 
