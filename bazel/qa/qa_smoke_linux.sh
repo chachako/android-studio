@@ -25,12 +25,12 @@ if [[ $lsb_release == "crostini" ]]; then
 
   current_time=$(date +"%s")
 
-  #This prevents builds from ocurring if the last one was started less than three hours ago
+  #This prevents builds from occurring if the last one was started less than five hours ago
   #so the chromebox doesn't become too bogged down
   if [[ -f "${crostini_timestamp_file}" ]]; then
     last_run_time=$(cat $crostini_timestamp_file)
-    #if the last build occurred less than three hours ago it exits
-    if [[ $(($current_time-$last_run_time)) -lt 12600 ]]; then
+    #if the last build occurred less than five hours ago it exits
+    if [[ $(($current_time-$last_run_time)) -lt 18000 ]]; then
       exit 0
     fi
   fi
@@ -66,7 +66,7 @@ if [[ $lsb_release == "crostini" ]]; then
     --build_event_binary_file="${dist_dir:-/tmp}/bazel-${build_number}.bes" \
     --build_tag_filters=${target_filters} \
     --build_metadata=ab_build_id="${build_number}" \
-    --build_metadata=ab_target="qa-smoke" \
+    --build_metadata=ab_target="qa-chromeos_smoke" \
     --test_tag_filters=${target_filters} \
     --tool_tag=${script_name} \
     --strategy=Javac=local \
@@ -78,7 +78,7 @@ if [[ $lsb_release == "crostini" ]]; then
   readonly bazel_status_no_emu=$?
 
   if [[ -d "${dist_dir}" ]]; then
-    echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://source.cloud.google.com/results/invocations/${test_invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
+    echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
   fi
 
   # Generate the perfgate zip from the test bes
@@ -92,7 +92,7 @@ if [[ $lsb_release == "crostini" ]]; then
     -perfzip "${dist_dir}/perfgate_data.zip"
 
   if [[ -d "${dist_dir}" ]]; then
-    readonly testlogs_dir="$("${script_dir}/../bazel" info bazel-testlogs)"
+    readonly testlogs_dir="$("${script_dir}/../bazel" info --config=release bazel-testlogs)"
     readonly bazel_status=$?
     if [[ ! -z "$testlogs_dir" ]]; then
       mkdir "${dist_dir}"/testlogs
