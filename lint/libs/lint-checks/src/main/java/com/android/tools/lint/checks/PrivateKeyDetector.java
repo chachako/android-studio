@@ -45,6 +45,7 @@ public class PrivateKeyDetector extends Detector implements OtherFileScanner {
                             8,
                             Severity.FATAL,
                             new Implementation(PrivateKeyDetector.class, Scope.OTHER_SCOPE))
+                    .addMoreInfo("https://goo.gle/PackagedPrivateKey")
                     .setAndroidSpecific(true);
 
     /** Constructs a new {@link PrivateKeyDetector} check */
