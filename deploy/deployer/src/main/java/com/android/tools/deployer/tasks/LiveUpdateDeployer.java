@@ -69,25 +69,26 @@ public class LiveUpdateDeployer {
 
     /** Inputs for Live Edit updates. */
     public static class UpdateLiveEditsParam {
-        public final String className;
         public final boolean isComposable;
         public final List<Integer> groupIds;
-        public final byte[] classData;
+        public final Map<String, byte[]> classes;
         public final Map<String, byte[]> supportClasses;
         final boolean debugModeEnabled;
 
+        /**
+         * @param classes Map from classname to binary
+         * @param supportClasses Map from classname to binary
+         */
         public UpdateLiveEditsParam(
-                String className,
-                boolean isComposable,
-                List<Integer> groupIds,
-                byte[] classData,
+                Map<String, byte[]> classes,
                 Map<String, byte[]> supportClasses,
+                List<Integer> groupIds,
+                boolean isComposable,
                 boolean debugModeEnabled) {
-            this.className = className;
-            this.isComposable = isComposable;
-            this.groupIds = groupIds;
-            this.classData = classData;
+            this.classes = classes;
             this.supportClasses = supportClasses;
+            this.groupIds = groupIds;
+            this.isComposable = isComposable;
             this.debugModeEnabled = debugModeEnabled;
         }
     }
@@ -301,7 +302,7 @@ public class LiveUpdateDeployer {
 
         // Sometimes we get a PSI event for a top-level file when no top-level class exists. In this
         // case, just treat it as a no-op success.
-        if (param.classData.length == 0) {
+        if (param.classes.isEmpty()) {
             return new UpdateLiveEditResult();
         }
 
@@ -322,10 +323,25 @@ public class LiveUpdateDeployer {
         requestBuilder.setPackageName(packageName);
         requestBuilder.setComposable(param.isComposable);
         requestBuilder.addAllGroupIds(param.groupIds);
-        requestBuilder.addTargetClasses(
-                Deploy.LiveEditClass.newBuilder()
-                        .setClassName(param.className)
-                        .setClassData(ByteString.copyFrom(param.classData)));
+
+        for (String name : param.classes.keySet()) {
+            ByteString data = ByteString.copyFrom(param.classes.get(name));
+            requestBuilder.addTargetClasses(
+                    Deploy.LiveEditClass.newBuilder().setClassName(name).setClassData(data));
+        }
+
+        for (String name : param.classes.keySet()) {
+            ByteString data = ByteString.copyFrom(param.classes.get(name));
+            requestBuilder.addTargetClasses(
+                    Deploy.LiveEditClass.newBuilder().setClassName(name).setClassData(data));
+        }
+        requestBuilder.addAllGroupIds(param.groupIds);
+
+        for (String name : param.classes.keySet()) {
+            ByteString data = ByteString.copyFrom(param.classes.get(name));
+            requestBuilder.addTargetClasses(
+                    Deploy.LiveEditClass.newBuilder().setClassName(name).setClassData(data));
+        }
 
         for (String name : param.supportClasses.keySet()) {
             ByteString data = ByteString.copyFrom(param.supportClasses.get(name));
