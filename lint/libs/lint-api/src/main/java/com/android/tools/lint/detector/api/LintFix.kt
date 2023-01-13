@@ -262,10 +262,10 @@ open class LintFix protected constructor(
          * is primarily intended for fixes that are clearly separate,
          * such as setting multiple attributes.
          */
-        fun composite(vararg fixes: LintFix): LintFix {
+        fun composite(vararg fixes: LintFix?): LintFix {
             return GroupBuilder(displayName, familyName)
                 .type(GroupType.COMPOSITE)
-                .join(*fixes)
+                .join(*fixes.filterNotNull().toTypedArray())
                 .build()
         }
 
@@ -276,8 +276,8 @@ open class LintFix protected constructor(
          * @param fixes fixes to combine
          * @return a fix representing the list
          */
-        fun group(vararg fixes: LintFix): LintFix {
-            return GroupBuilder(displayName, familyName).join(*fixes).build()
+        fun group(vararg fixes: LintFix?): LintFix {
+            return GroupBuilder(displayName, familyName).join(*(fixes.filterNotNull().toTypedArray())).build()
         }
 
         /**
@@ -289,8 +289,15 @@ open class LintFix protected constructor(
          * @param fixes fixes to combine
          * @return a fix representing the list
          */
-        fun alternatives(vararg fixes: LintFix): LintFix {
-            return group(*fixes)
+        fun alternatives(vararg fixes: LintFix?): LintFix {
+            val availableFixes = fixes.filterNotNull()
+            return if (availableFixes.isEmpty()) {
+                map().build()
+            } else if (availableFixes.size == 1) {
+                availableFixes[0]
+            } else {
+                group(*availableFixes.toTypedArray())
+            }
         }
 
         /**

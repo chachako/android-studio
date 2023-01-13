@@ -447,8 +447,6 @@ public final class SdkConstants {
     public static final String FD_BUNDLE = "bundle";
     /** Machine learning models folder. */
     public static final String FD_ML_MODELS = "ml";
-    /** Default folder for version catalogs */
-    public static final String FD_GRADLE_CATALOGS = FD_GRADLE + File.separator;
     /** rs Libs output folder for support mode */
     public static final String FD_RS_LIBS = "rsLibs";
     /** rs Libs output folder for support mode */
@@ -2100,6 +2098,7 @@ public final class SdkConstants {
     public static final String DOT_OTF = ".otf";
     public static final String DOT_EXEC = ".exec";
     public static final String DOT_AVIF = ".avif";
+    public static final String DOT_TOML = ".toml";
     public static final String DOT_VERSIONS_DOT_TOML = ".versions.toml";
 
     /** Extension of the Application package Files, i.e. "apk". */

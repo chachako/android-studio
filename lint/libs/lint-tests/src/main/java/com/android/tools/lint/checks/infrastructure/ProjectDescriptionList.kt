@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks.infrastructure
 
+import com.android.SdkConstants.DOT_VERSIONS_DOT_TOML
 import com.google.common.collect.Lists
 import org.junit.Assert
 import java.util.ArrayList
@@ -107,7 +108,11 @@ internal class ProjectDescriptionList(
             val filtered: MutableList<TestFile> = ArrayList()
             for (file in files) {
                 val path = file.targetRelativePath
-                if (path.startsWith("../") && path.indexOf('/', 3) != -1) {
+                if (path.startsWith("../") && path.indexOf('/', 3) != -1 &&
+                    // The gradle toml file should be in the root project, not inside one of the
+                    // project folder, so there ../gradle/ here is not shorthand for writing a project called gradle
+                    !(path.startsWith("../gradle/") && path.endsWith(DOT_VERSIONS_DOT_TOML))
+                ) {
                     val name = path.substring(3, path.indexOf('/', 3))
                     var newProject = nameMap[name]
                     if (newProject == null) {

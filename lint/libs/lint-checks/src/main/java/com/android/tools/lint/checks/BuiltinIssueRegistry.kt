@@ -186,6 +186,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 GradleDetector.REMOTE_VERSION,
                 GradleDetector.RISKY_LIBRARY,
                 GradleDetector.STRING_INTEGER,
+                GradleDetector.SWITCH_TO_TOML,
                 GridLayoutDetector.ISSUE,
                 HandlerDetector.ISSUE,
                 HardcodedDebugModeDetector.ISSUE,

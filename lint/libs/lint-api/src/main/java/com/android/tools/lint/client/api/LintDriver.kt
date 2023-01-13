@@ -26,7 +26,10 @@ import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
+import com.android.SdkConstants.DOT_TOML
 import com.android.SdkConstants.DOT_VERSIONS_DOT_TOML
+import com.android.SdkConstants.FD_GRADLE
+import com.android.SdkConstants.FN_VERSION_CATALOG
 import com.android.SdkConstants.FQCN_SUPPRESS_LINT
 import com.android.SdkConstants.KOTLIN_SUPPRESS
 import com.android.SdkConstants.RES_FOLDER
@@ -945,6 +948,13 @@ class LintDriver(
                 }
             }
 
+            val tomlDetectors = scopeDetectors[Scope.TOML_FILE]
+            if (tomlDetectors != null) {
+                for (detector in tomlDetectors) {
+                    assert(detector is TomlScanner) { detector }
+                }
+            }
+
             val gradleDetectors = scopeDetectors[Scope.GRADLE_FILE]
             if (gradleDetectors != null) {
                 for (detector in gradleDetectors) {
@@ -1431,12 +1441,14 @@ class LintDriver(
         }
 
         // Java & Kotlin
-        val uastScanners = union(
-            scopeDetectors[Scope.JAVA_FILE],
-            scopeDetectors[Scope.ALL_JAVA_FILES]
-        )
-        if (!uastScanners.isNullOrEmpty()) {
-            visitUast(project, main, uastSourceList, uastScanners)
+        if (scope.contains(Scope.JAVA_FILE)) {
+            val uastScanners = union(
+                scopeDetectors[Scope.JAVA_FILE],
+                scopeDetectors[Scope.ALL_JAVA_FILES]
+            )
+            if (!uastScanners.isNullOrEmpty()) {
+                visitUast(project, main, uastSourceList, uastScanners)
+            }
         }
 
         if (scope.contains(Scope.CLASS_FILE) ||
@@ -1446,8 +1458,13 @@ class LintDriver(
             checkClasses(project, main)
         }
 
+        var gradleToml: LintTomlDocument? = null
+        if (scope.contains(Scope.TOML_FILE)) {
+            gradleToml = checkTomlFiles(project, main)
+        }
+
         if (scope.contains(Scope.GRADLE_FILE)) {
-            checkBuildScripts(project, main, uastSourceList)
+            checkBuildScripts(project, main, uastSourceList, gradleToml)
         }
 
         if (scope.contains(Scope.OTHER)) {
@@ -1469,10 +1486,70 @@ class LintDriver(
         }
     }
 
+    private fun checkTomlFiles(
+        project: Project,
+        main: Project?
+    ): LintTomlDocument? {
+        val detectors = scopeDetectors[Scope.TOML_FILE]
+        if (detectors != null) {
+            val files = project.subset?.filter { it.path.endsWith(DOT_TOML) }
+                ?: project.tomlFiles
+
+            if (files.isEmpty()) {
+                return null
+            }
+
+            val tomlScanners = ArrayList<TomlScanner>(detectors.size)
+            for (detector in detectors) {
+                if (detector is TomlScanner) {
+                    tomlScanners.add(detector)
+                }
+            }
+            if (tomlScanners.isEmpty()) {
+                return null
+            }
+            var gradleToml: LintTomlDocument? = null
+            val parser = client.getTomlParser()
+            for (file in files) {
+                client.runReadAction {
+                    val contents = client.readFile(file)
+                    if (contents.isBlank()) {
+                        return@runReadAction
+                    }
+                    val tomlDocument = parser.parse(file, contents)
+                    if (file.path.endsWith(DOT_VERSIONS_DOT_TOML) && file.parentFile?.name == FD_GRADLE &&
+                        (gradleToml == null || file.name == FN_VERSION_CATALOG)
+                    ) {
+                        // Keep result around for Gradle resolving:
+                        // See https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
+                        gradleToml = tomlDocument
+                    }
+                    val context = TomlContext(this, project, main, file, contents, tomlDocument)
+                    fireEvent(EventType.SCANNING_FILE, context)
+                    for (detector in detectors) {
+                        detector.beforeCheckFile(context)
+                    }
+                    for (detector in tomlScanners) {
+                        tomlDocument.accept(context, detector)
+                    }
+                    for (detector in detectors) {
+                        detector.afterCheckFile(context)
+                    }
+                    fileCount++
+                }
+            }
+
+            return gradleToml
+        }
+
+        return null
+    }
+
     private fun checkBuildScripts(
         project: Project,
         main: Project?,
-        uastSourceList: UastSourceList?
+        uastSourceList: UastSourceList?,
+        gradleToml: LintTomlDocument?
     ) {
         val detectors = scopeDetectors[Scope.GRADLE_FILE]
         if (detectors != null) {
@@ -1480,6 +1557,22 @@ class LintDriver(
             if (files.isEmpty()) {
                 return
             }
+
+            // Gradle version catalogs in TOML Files resolution.
+            val tomlDocument = gradleToml
+                // The TOML file sits *outside* of the individual Gradle projects, and
+                // we're making sure we only process these files once as part of one
+                // of the projects, but we do need the values for resolution from all
+                // the projects.
+                ?: client.getRootDir()?.let { root ->
+                    val tomlFile = File(root, "$FD_GRADLE/$FN_VERSION_CATALOG")
+                    if (tomlFile.exists()) {
+                        client.getTomlParser().parse(tomlFile, client.readFile(tomlFile))
+                    } else {
+                        null
+                    }
+                }
+
             val gradleScanners = ArrayList<GradleScanner>(detectors.size)
             val customVisitedGradleScanners = ArrayList<GradleScanner>(detectors.size)
             for (detector in detectors) {
@@ -1505,8 +1598,7 @@ class LintDriver(
                         fireEvent(EventType.SCANNING_FILE, context)
 
                         val uastVisitor = UastGradleVisitor(context)
-                        val gradleContext =
-                            GradleContext(uastVisitor, this, project, main, context.file)
+                        val gradleContext = createGradleContext(uastVisitor, project, main, context.file, tomlDocument)
                         fireEvent(EventType.SCANNING_FILE, context)
                         for (detector in detectors) {
                             detector.beforeCheckFile(gradleContext)
@@ -1535,7 +1627,7 @@ class LintDriver(
                         } catch (e: NoClassDefFoundError) {
                             return@runReadAction (false)
                         }
-                        val context = GradleContext(gradleVisitor, this, project, main, file)
+                        val context = createGradleContext(gradleVisitor, project, main, file, tomlDocument)
                         fireEvent(EventType.SCANNING_FILE, context)
                         for (detector in detectors) {
                             detector.beforeCheckFile(context)
@@ -1554,31 +1646,6 @@ class LintDriver(
                         reportAnalysisFailed("build.gradle", project, main, file)
                         break // Only report once.
                     }
-                } else if (file.path.endsWith(DOT_VERSIONS_DOT_TOML)) {
-                    val fileAnalyzed = client.runReadAction<Boolean> {
-                        val tomlVisitor = try {
-                            project.client.getGradleTomlVisitor()
-                        } catch (e: NoClassDefFoundError) {
-                            return@runReadAction (false)
-                        }
-                        val context = GradleContext(tomlVisitor, this, project, main, file)
-                        for (detector in detectors) {
-                            detector.beforeCheckFile(context)
-                        }
-                        tomlVisitor.visitBuildScript(context, gradleScanners)
-                        for (scanner in customVisitedGradleScanners) {
-                            scanner.visitBuildScript(context)
-                        }
-                        for (detector in detectors) {
-                            detector.afterCheckFile(context)
-                        }
-                        fileCount++
-                        return@runReadAction (true)
-                    }
-                    if (!fileAnalyzed) {
-                        reportAnalysisFailed("*.versions.toml", project, main, file)
-                        break // Only report once.
-                    }
                 }
             }
         }
@@ -1586,11 +1653,30 @@ class LintDriver(
 
     private fun reportAnalysisFailed(fileType: String, project: Project, main: Project?, file: File) {
         val message = "Lint CLI cannot analyze $fileType files\n" +
-                "To analyze a Gradle project, please use Gradle to run the project's 'lint' task.\n" +
-                "See https://developer.android.com/studio/write/lint#commandline for more details.\n" +
-                "If you are using lint in a custom context, such as in tests, add org.codehaus.groovy:groovy to the runtime classpath."
+            "To analyze a Gradle project, please use Gradle to run the project's 'lint' task.\n" +
+            "See https://developer.android.com/studio/write/lint#commandline for more details.\n" +
+            "If you are using lint in a custom context, such as in tests, add org.codehaus.groovy:groovy to the runtime classpath."
         val context = Context(this, project, main, file)
         context.report(Incident(IssueRegistry.LINT_WARNING, Location.create(context.file), message))
+    }
+
+    private fun createGradleContext(
+        gradleVisitor: GradleVisitor,
+        project: Project,
+        main: Project?,
+        file: File,
+        tomlDocument: LintTomlDocument?
+    ): GradleContext {
+        val driver = this
+        return object : GradleContext(gradleVisitor, driver, project, main, file) {
+            override fun getTomlValue(key: String, source: Boolean): LintTomlValue? {
+                return tomlDocument?.getValue(key)
+            }
+
+            override fun getTomlValue(key: List<String>, source: Boolean): LintTomlValue? {
+                return tomlDocument?.getValue(key)
+            }
+        }
     }
 
     private fun checkProGuard(project: Project, main: Project) {
@@ -2626,6 +2712,7 @@ class LintDriver(
                 if (driver.isSuppressed(issue, scope)) {
                     return true
                 }
+                return false
             }
 
             // Scope has type Any, to allow passing in things like UAST, PSI, DOM, etc.
@@ -2998,8 +3085,6 @@ class LintDriver(
             delegate.closeConnection(connection)
 
         override fun getGradleVisitor(): GradleVisitor = delegate.getGradleVisitor()
-
-        override fun getGradleTomlVisitor(): GradleVisitor = delegate.getGradleTomlVisitor()
 
         override fun getGeneratedResourceFolders(project: Project): List<File> {
             return delegate.getGeneratedResourceFolders(project)

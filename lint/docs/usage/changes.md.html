@@ -6,6 +6,10 @@ lint check authors, see the API Guide.
 
 **8.1**
 
+* Lint now supports and includes checks for Gradle version catalog
+  files. The built in checks around dependencies in Gradle files
+  also apply to these TOML version catalog files.
+
 * New built-in lint-checks:
 
   Issue ID                          | Summary
@@ -14,8 +18,10 @@ lint check authors, see the API Guide.
   `UnspecifiedRegisterReceiverFlag` | Missing `registerReceiver()` exported flag
   `UnsafeImplicitIntentLaunch`      | Implicit intent matches an internal non-exported component
   `ShortcutUsageDetector`           | Shortcut usage should be reported
+  `UseTomlInstead`                  | Mixing and matching Gradle build file and TOML dependencies
 
-  (The `NoOp` lint check is currently disabled by default.)
+  (The `NoOp` and `UnsafeImplicitIntentLaunch` lint checks are
+  currently disabled by default.)
 
 **8.0**
 

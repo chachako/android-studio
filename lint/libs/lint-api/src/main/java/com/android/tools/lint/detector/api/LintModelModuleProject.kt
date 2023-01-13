@@ -83,6 +83,10 @@ open class LintModelModuleProject(
         return getName()
     }
 
+    override fun isGradleProject(): Boolean {
+        return model.agpVersion != null || super.isGradleProject()
+    }
+
     fun setExternalLibrary(external: Boolean) {
         externalLibrary = external
     }

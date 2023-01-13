@@ -535,6 +535,7 @@ class LintIssueDocGenerator constructor(
                 Scope.JAVA_FILE -> "Kotlin and Java files"
                 Scope.ALL_CLASS_FILES,
                 Scope.CLASS_FILE -> "class files"
+                Scope.TOML_FILE -> "TOML files"
                 Scope.MANIFEST -> "manifest files"
                 Scope.PROGUARD_FILE -> "shrinking configuration files"
                 Scope.JAVA_LIBRARIES -> "library bytecode"

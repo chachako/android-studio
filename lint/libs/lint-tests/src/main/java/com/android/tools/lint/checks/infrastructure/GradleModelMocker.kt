@@ -844,7 +844,7 @@ class GradleModelMocker @JvmOverloads constructor(
             sb.append(value, lastIndex, index)
             var end = value.indexOf(' ', index)
             if (end == -1) end = value.length
-            val name = value.substring(index + 1, end)
+            val name = value.substring(index + 1, end).removeSurrounding("{", "}")
             if (ext.containsKey(name)) {
                 sb.append(ext[name])
             } else {

@@ -59,10 +59,11 @@ import com.android.tools.lint.checks.GradleDetector.Companion.PREVIOUS_MINIMUM_T
 import com.android.tools.lint.checks.GradleDetector.Companion.REMOTE_VERSION
 import com.android.tools.lint.checks.GradleDetector.Companion.RISKY_LIBRARY
 import com.android.tools.lint.checks.GradleDetector.Companion.STRING_INTEGER
+import com.android.tools.lint.checks.GradleDetector.Companion.SWITCH_TO_TOML
 import com.android.tools.lint.checks.GradleDetector.Companion.getNamedDependency
+import com.android.tools.lint.checks.infrastructure.TestFiles.gradleToml
 import com.android.tools.lint.checks.infrastructure.TestIssueRegistry
 import com.android.tools.lint.checks.infrastructure.TestLintTask
-import com.android.tools.lint.checks.infrastructure.TestResultTransformer
 import com.android.tools.lint.checks.infrastructure.platformPath
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.Detector
@@ -121,22 +122,6 @@ class GradleDetectorTest : AbstractCheckTest() {
             "    androidTestCompile 'com.android.support.test:runner:0.3'\n" +
             "}\n"
     )
-    private val minimalGradle = gradle(
-        """
-                buildscript {
-                  repositories {
-                    google()
-                    mavenCentral()
-                  }
-                }
-
-                allprojects {
-                  repositories {
-                    mavenCentral()
-                  }
-                }
-                """
-    ).indented()
 
     override fun tearDown() {
         super.tearDown()
@@ -220,6 +205,707 @@ class GradleDetectorTest : AbstractCheckTest() {
                     "-     androidTestCompile 'com.android.support.test:runner:0.3'\n" +
                     "+     androidTestCompile 'com.android.support.test:runner:0.5'\n" +
                     "Data for build.gradle line 23:   coordinate : com.android.support:appcompat-v7:+"
+            )
+    }
+
+    fun testTomlVersionCatalogFile() {
+        // Tests that when using version catalogs, dependencies from maven.google.com works,
+        // pinpoints problems in the .toml files and quickfixes work.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                guavaVersion = "11.0.2"
+                appCompatVersion="13.0.0"
+                wearableVersion=" 1.2.0 "
+                # Test comment suppression:
+                #noinspection GradleDependency
+                multi-dex="1.0.0"
+                gradlePlugins-agp = "8.0.0"
+                gradlePlugins-crashlytics = "2.9.2"
+
+                [libraries]
+                com-google-guava = { module = "com.google.guava:guava", version.ref = "guavaVersion"}
+                appcompat = { module = "com.android.support:appcompat-v7", version.ref = "appCompatVersion" }
+                wearable-support = { group = " com.google.android.support ", name =" wearable ", version.ref = " wearableVersion " }
+                multidex-lib = { module = "com.android.support:multidex", version.ref = "multi-dex" }
+
+                [bundles]
+                misc = [
+                    "com-google-guava",
+                    "appcompat",
+                ]
+
+                [plugins]
+                android-application = { id = "com.android.application", version.ref = "gradlePlugins-agp" }
+                crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "gradlePlugins-crashlytics" }
+                """
+            ).indented(),
+            gradle(""),
+            // Make sure that if we have multiple modules, we don't report issues from
+            // the shared ../gradle project multiple times, once for each "including" project.
+            gradle("../lib/build.gradle", ""),
+        )
+            .issues(DEPENDENCY)
+            .sdkHome(mockSupportLibraryInstallation)
+            .run()
+            .expect(
+                """
+                ../gradle/libs.versions.toml:2: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]
+                guavaVersion = "11.0.2"
+                               ~~~~~~~~
+                ../gradle/libs.versions.toml:3: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]
+                appCompatVersion="13.0.0"
+                                 ~~~~~~~~
+                ../gradle/libs.versions.toml:4: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]
+                wearableVersion=" 1.2.0 "
+                                ~~~~~~~~~
+                0 errors, 3 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for gradle/libs.versions.toml line 2: Change to 21.0:
+                @@ -2 +2
+                - guavaVersion = "11.0.2"
+                + guavaVersion = "21.0"
+                Fix for gradle/libs.versions.toml line 3: Change to 25.3.1:
+                @@ -3 +3
+                - appCompatVersion="13.0.0"
+                + appCompatVersion="25.3.1"
+                Fix for gradle/libs.versions.toml line 4: Change to 1.3.0:
+                @@ -4 +4
+                - wearableVersion=" 1.2.0 "
+                + wearableVersion=" 1.3.0 "
+                """
+            )
+    }
+
+    fun testRemoteVersionsWithTomlVersionCatalogs() {
+        // Tests that when using version catalogs, remote dependencies (found via lookup to search.maven.org,
+        // a different code path than the maven.google.com lookup) also reports warnings.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                jodaVersion = "2.1"
+                dagger="1.2.0"
+
+                [libraries]
+                joda_library = { module = "joda-time:joda-time", version.ref = "jodaVersion"}
+                dagger-lib = { group = "com.squareup.dagger", name ="dagger", version.ref = "dagger" }
+                """
+            ).indented()
+        )
+            .networkData(
+                "http://search.maven.org/solrsearch/select?q=g:%22joda-time%22+AND+a:%22joda-time%22&core=gav&wt=json",
+                "" +
+                    "{\"responseHeader\":" +
+                    "{\"status\":0,\"QTime\":0,\"params\":" +
+                    "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"joda-time\\\" AND a:\\\"joda-time\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+                    "\"response\":" +
+                    "{\"numFound\":34,\"start\":0,\"docs\":[" +
+                    "{\"id\":\"joda-time:joda-time:2.9.9\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.9\",\"p\":\"jar\",\"timestamp\":1490275993000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-no-tzdb.jar\",\"-sources.jar\",\"-no-tzdb-javadoc.jar\",\"-javadoc.jar\",\"-no-tzdb-sources.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.8\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.8\",\"p\":\"jar\",\"timestamp\":1490220931000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-no-tzdb.jar\",\"-sources.jar\",\"-no-tzdb-javadoc.jar\",\"-javadoc.jar\",\"-no-tzdb-sources.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.7\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.7\",\"p\":\"jar\",\"timestamp\":1482188123000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-no-tzdb-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\"-no-tzdb-sources.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.6\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.6\",\"p\":\"jar\",\"timestamp\":1478812169000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-no-tzdb-javadoc.jar\",\"-no-tzdb.jar\",\"-sources.jar\",\"-javadoc.jar\",\"-no-tzdb-sources.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.5\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.5\",\"p\":\"jar\",\"timestamp\":1478191007000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-no-tzdb-javadoc.jar\",\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\"-no-tzdb-sources.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.4\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.4\",\"p\":\"jar\",\"timestamp\":1464341135000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-no-tzdb.jar\",\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.3\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.3\",\"p\":\"jar\",\"timestamp\":1459107331000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.2\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.2\",\"p\":\"jar\",\"timestamp\":1453988648000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9.1\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.1\",\"p\":\"jar\",\"timestamp\":1447329806000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"joda-time:joda-time:2.9\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9\",\"p\":\"jar\",\"timestamp\":1445680109000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-sources.jar\",\"-no-tzdb.jar\",\"-javadoc.jar\",\".jar\",\".pom\"]}]}}"
+            )
+            .networkData(
+                "http://search.maven.org/solrsearch/select?q=g:%22com.squareup.dagger%22+AND+a:%22dagger%22&core=gav&wt=json",
+                "" +
+                    "{\"responseHeader\":" +
+                    "{\"status\":0,\"QTime\":0,\"params\":" +
+                    "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.squareup.dagger\\\" AND a:\\\"dagger\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+                    "\"response\":" +
+                    "{\"numFound\":9,\"start\":0,\"docs\":[" +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.2.5\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.5\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.2.4\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.4\",\"p\":\"jar\",\"timestamp\":1462291775000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.2.3\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.3\",\"p\":\"jar\",\"timestamp\":1462238813000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.2.2\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.2\",\"p\":\"jar\",\"timestamp\":1405987370000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.2.1\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.1\",\"p\":\"jar\",\"timestamp\":1392614597000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.2.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.0\",\"p\":\"jar\",\"timestamp\":1386979272000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.1.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.1.0\",\"p\":\"jar\",\"timestamp\":1375745812000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.0.1\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.1\",\"p\":\"jar\",\"timestamp\":1370304793000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}," +
+                    "{\"id\":\"com.squareup.dagger:dagger:1.0.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1367941344000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}]}}"
+            ).issues(REMOTE_VERSION).run().expect(
+                """
+                ../gradle/libs.versions.toml:2: Warning: A newer version of joda-time:joda-time than 2.1 is available: 2.9.9 [NewerVersionAvailable]
+                jodaVersion = "2.1"
+                              ~~~~~
+                ../gradle/libs.versions.toml:3: Warning: A newer version of com.squareup.dagger:dagger than 1.2.0 is available: 1.2.5 [NewerVersionAvailable]
+                dagger="1.2.0"
+                       ~~~~~~~
+                0 errors, 2 warnings
+                """
+            ).expectFixDiffs(
+                """
+                Fix for gradle/libs.versions.toml line 2: Change to 2.9.9:
+                @@ -2 +2
+                - jodaVersion = "2.1"
+                + jodaVersion = "2.9.9"
+                Fix for gradle/libs.versions.toml line 3: Change to 1.2.5:
+                @@ -3 +3
+                - dagger="1.2.0"
+                + dagger="1.2.5"
+                """
+            )
+    }
+
+    fun testSwitchToExistingTomlLibrary() {
+        // Tests that if a build.gradle file a contains a group:artifact:version dependency
+        // already available in the version catalog, we flag this and offer to replace it with
+        // the dependency from the catalog.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                appCompat = "1.5.1"
+                androidxTest = "1.5.0"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            ).indented(),
+            gradle(
+                """
+                dependencies {
+                    implementation(libs.androidx.appCompat) // OK
+                    implementation 'androidx.appcompat:appcompat:1.5.1'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle:3: Warning: Use the existing version catalog reference (libs.androidx.appCompat) instead [UseTomlInstead]
+                    implementation 'androidx.appcompat:appcompat:1.5.1'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Fix for build.gradle line 3: Replace with existing version catalog reference `androidx-appCompat`:
+                @@ -3 +3
+                      implementation(libs.androidx.appCompat) // OK
+                -     implementation 'androidx.appcompat:appcompat:1.5.1'
+                +     implementation libs.androidx.appCompat
+                  }
+                """
+            )
+    }
+
+    fun testAddNewTomlDependency() {
+        // Checks that in a project using version catalogs, if a gradle file directly
+        // declares a group:artifact:version dependency, we flag this, and the quickfix
+        // correctly registers it into the TOML file.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                appCompat = "1.5.1"
+                androidxTest = "1.5.0"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            ).indented(),
+            gradle(
+                """
+                dependencies {
+                    implementation 'androidx.fragment:fragment:1.5.1'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle:2: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation 'androidx.fragment:fragment:1.5.1'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 2: Replace with new library catalog declaration for androidx-fragment:
+                @@ -2 +2
+                  dependencies {
+                -     implementation 'androidx.fragment:fragment:1.5.1'
+                +     implementation libs.androidx.fragment
+                  }
+                gradle/libs.versions.toml:
+                @@ -4 +4
+                  androidxTest = "1.5.0"
+                + fragment = "1.5.1"
+
+                @@ -7 +8
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+                  androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            )
+    }
+
+    fun testAddNewTomlDependencyKts() {
+        // Like testAddNewTomlDependency, but with three changes:
+        // (11) Add something after the libraries such that the last library isn't at the end of the file.
+        // the quickfix logic is slightly different for these offsets.
+        // (2) We also do not put spaces around the ='s in the keys to test that we follow that convention, and
+        // we name the keys with suffix "Version"; make sure we follow that convention too.
+        // (3) We also test using a KTS file instead of a Groovy build file.
+
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                appCompatVersion="1.5.1"
+                androidxTestVersion="1.5.0"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompatVersion" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestVersion" }
+                [bundles]
+                """
+            ).indented(),
+            kts(
+                """
+                dependencies {
+                    implementation("androidx.fragment:fragment:1.5.1")
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle.kts:2: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation("androidx.fragment:fragment:1.5.1")
+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle.kts line 2: Replace with new library catalog declaration for androidx-fragment:
+                @@ -2 +2
+                  dependencies {
+                -     implementation("androidx.fragment:fragment:1.5.1")
+                +     implementation("libs.androidx.fragment")
+                  }
+                gradle/libs.versions.toml:
+                @@ -4 +4
+                  androidxTestVersion="1.5.0"
+                + fragmentVersion="1.5.1"
+
+                @@ -7 +8
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompatVersion" }
+                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragmentVersion" }
+                  androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestVersion" }
+                  """
+            )
+    }
+
+    fun testAddNewTomlDependencyAlphabeticalOrder() {
+        // Checks that when inserting a new dependency in a toml file that is alphabetical, we insert
+        // the new dependency in the right alphabetical places
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                androidxTest = "1.5.0"
+                appCompat = "1.5.1"
+                electric_eel="4" # out of order alphabetically, but we tolerate small discrepancies
+                dolphin="3"
+                flamingo="5"
+                giraffe="6"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            ).indented(),
+            gradle(
+                """
+                dependencies {
+                    implementation 'androidx.fragment:fragment:1.5.1'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle:2: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation 'androidx.fragment:fragment:1.5.1'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 2: Replace with new library catalog declaration for androidx-fragment:
+                @@ -2 +2
+                  dependencies {
+                -     implementation 'androidx.fragment:fragment:1.5.1'
+                +     implementation libs.androidx.fragment
+                  }
+                gradle/libs.versions.toml:
+                @@ -7 +7
+                  flamingo="5"
+                + fragment = "1.5.1"
+                  giraffe="6"
+                @@ -11 +12
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+                  androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            )
+    }
+
+    fun testTomlAddVersionVariable() {
+        // Checks adding a dependency from build.gradle which is referencing a variable
+        // as the version.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                androidxTest = "1.5.0"
+                appCompat = "1.5.1"
+                dolphin="3"
+                electric_eel="4"
+                flamingo="5"
+                giraffe="6"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            ).indented(),
+            gradle(
+                """
+                ext {
+                    fragmentVersion = "1.5.1"
+                    firebaseVersion = "11.0.0"
+                }
+                dependencies {
+                    implementation "androidx.fragment:fragment:＄{fragmentVersion}"
+                }
+                """
+            ).indented()
+        )
+            .sdkHome(mockSupportLibraryInstallation)
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle:6: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation "androidx.fragment:fragment:＄{fragmentVersion}"
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 6: Replace with new library catalog declaration for androidx-fragment:
+                @@ -6 +6
+                  dependencies {
+                -     implementation "androidx.fragment:fragment:＄{fragmentVersion}"
+                +     implementation libs.androidx.fragment
+                  }
+                gradle/libs.versions.toml:
+                @@ -7 +7
+                  flamingo="5"
+                + fragment = "1.5.1"
+                  giraffe="6"
+                @@ -11 +12
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+                  androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            )
+    }
+
+    fun testTomlSwitchToTomlFromNamedDependency() {
+        // Checks using the group:, name:, version: syntax and that the quickfixes
+        // replace the correct parts.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                [libraries]
+                [bundles]
+                """
+            ).indented(),
+            gradle(
+                """
+                apply plugin: 'com.android.application'
+                dependencies {
+                    implementation group: 'com.android.support', name: 'support-v4', version: '19.0'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle:3: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation group: 'com.android.support', name: 'support-v4', version: '19.0'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Fix for build.gradle line 3: Replace with new library catalog declaration for support-v4:
+                @@ -3 +3
+                  dependencies {
+                -     implementation group: 'com.android.support', name: 'support-v4', version: '19.0'
+                +     implementation libs.support.v4
+                  }
+                gradle/libs.versions.toml:
+                @@ -2 +2
+                  [versions]
+                + support-v4 = "19.0"
+                  [libraries]
+                @@ -3 +4
+                  [libraries]
+                + support-v4 = { module = "com.android.support:support-v4", version.ref = "support-v4" }
+                  [bundles]
+                """
+            )
+    }
+
+    fun testAddNewTomlDependencyToEmptyCatalogs() {
+        // Tests that we can add a new dependency into a TOML file which doesn't contain
+        // any existing libraries (where we usually anchor dependencies on the last previous
+        // version and library).
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+
+                [libraries]
+
+                [bundles]
+                """
+            ).indented(),
+            gradle(
+                """
+                dependencies {
+                    implementation 'androidx.fragment:fragment:1.5.1'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle:2: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation 'androidx.fragment:fragment:1.5.1'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 2: Replace with new library catalog declaration for androidx-fragment:
+                @@ -2 +2
+                  dependencies {
+                -     implementation 'androidx.fragment:fragment:1.5.1'
+                +     implementation libs.androidx.fragment
+                  }
+                gradle/libs.versions.toml:
+                @@ -2 +2
+                  [versions]
+                + fragment = "1.5.1"
+
+                @@ -4 +5
+                  [libraries]
+                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+                """
+            )
+    }
+
+    fun testSwitchToTomlHigherVersion() {
+        // Tests that in a project using version catalogs, if you have a Gradle dependency of a group:artifact:version
+        // where the artifact is already available in the version catalog, but with a different version, we offer
+        // several fix alternatives -- one to just use the existing catalog version, second to just update the version
+        // to this dependency version (assuming it's higher), and finally to add a new catalog entry for this library.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                appCompat = "1.5.1"
+                appCompat149 = "1.4.9"
+                androidxTest = "1.5.0"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-appCompat149 = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-appCompat153 = { module = "androidx.appcompat:appcompat", version.ref = "appCompat153" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+
+                [plugins]
+                """
+            ).indented(),
+
+            gradle(
+                """
+                dependencies {
+                    // higher version: fix should replace with version catalog *and* update version variable
+                    implementation 'androidx.appcompat:appcompat:1.5.2'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .sdkHome(mockSupportLibraryInstallation)
+            .run()
+            .expect(
+                """
+                build.gradle:3: Warning: Use version catalog instead (androidx.appcompat:appcompat is already available as androidx-appCompat, but using version 1.5.1 instead) [UseTomlInstead]
+                    implementation 'androidx.appcompat:appcompat:1.5.2'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 3: Replace with new library catalog declaration for androidx-appcompat-1_5_2:
+                @@ -3 +3
+                      // higher version: fix should replace with version catalog *and* update version variable
+                -     implementation 'androidx.appcompat:appcompat:1.5.2'
+                +     implementation libs.androidx.appcompat.1_5_2
+                  }
+                gradle/libs.versions.toml:
+                @@ -5 +5
+                  androidxTest = "1.5.0"
+                + appcompatVersion = "1.5.2"
+
+                @@ -8 +9
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                + androidx-appcompat-1_5_2 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
+                  androidx-appCompat149 = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                Fix for build.gradle line 3: Change appCompat to 1.5.2:
+                gradle/libs.versions.toml:
+                @@ -2 +2
+                  [versions]
+                - appCompat = "1.5.1"
+                + appCompat = "1.5.2"
+                  appCompat149 = "1.4.9"
+                Fix for build.gradle line 3: Replace with existing version catalog reference `androidx-appCompat`:
+                @@ -3 +3
+                      // higher version: fix should replace with version catalog *and* update version variable
+                -     implementation 'androidx.appcompat:appcompat:1.5.2'
+                +     implementation libs.androidx.appCompat
+                  }
+                """
+            )
+    }
+
+    fun testSwitchToTomlMissingVersions() {
+        lint().files(
+            gradleToml(
+                """
+                # Only libraries here
+                [libraries]
+                """
+            ).indented(),
+            gradle(
+                """
+                dependencies {
+                    implementation 'androidx.appcompat:appcompat:1.5.1'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .sdkHome(mockSupportLibraryInstallation)
+            .run()
+            .expect(
+                """
+                build.gradle:2: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation 'androidx.appcompat:appcompat:1.5.1'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 2: Replace with new library catalog declaration for androidx-appcompat:
+                @@ -2 +2
+                  dependencies {
+                -     implementation 'androidx.appcompat:appcompat:1.5.1'
+                +     implementation libs.androidx.appcompat
+                  }
+                gradle/libs.versions.toml:
+                @@ -3 +3
+                + androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.5.1" }
+                """
+            )
+    }
+
+    fun testSwitchToTomlEmptyVersions() {
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+
+                [libraries]
+                """
+            ).indented(),
+            gradle(
+                """
+                dependencies {
+                    implementation 'androidx.appcompat:appcompat:1.5.1'
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .sdkHome(mockSupportLibraryInstallation)
+            .run()
+            .expect(
+                """
+                build.gradle:2: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation 'androidx.appcompat:appcompat:1.5.1'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle line 2: Replace with new library catalog declaration for androidx-appcompat:
+                @@ -2 +2
+                  dependencies {
+                -     implementation 'androidx.appcompat:appcompat:1.5.1'
+                +     implementation libs.androidx.appcompat
+                  }
+                gradle/libs.versions.toml:
+                @@ -2 +2
+                  [versions]
+                + appcompat = "1.5.1"
+
+                @@ -4 +5
+                + androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+                """
             )
     }
 
@@ -969,31 +1655,38 @@ class GradleDetectorTest : AbstractCheckTest() {
     }
 
     fun testTooRecentVersionInVersionCatalog() {
-        val expected = "" +
-                "gradle/libs.versions.toml:2: Warning: A newer version of com.android.tools.build:gradle than 3.3.0-alpha04 is available: 3.3.2 [AndroidGradlePluginVersion]\n" +
-                "gradle = \"com.android.tools.build:gradle:3.3.0-alpha04\"\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "0 errors, 1 warnings"
+        val expected = """
+            ../gradle/libs.versions.toml:2: Warning: A newer version of com.android.tools.build:gradle than 3.3.0-alpha04 is available: 3.3.2 [AndroidGradlePluginVersion]
+            gradle = "  com.android.tools.build:gradle:3.3.0-alpha04  "
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            0 errors, 1 warnings
+            """
 
         lint().files(
-            minimalGradle,
-            versionCatalog(
+            gradleToml(
                 """
                 [libraries]
-                gradle = "com.android.tools.build:gradle:3.3.0-alpha04"
+                gradle = "  com.android.tools.build:gradle:3.3.0-alpha04  "
                 """
             ).indented()
         ).issues(AGP_DEPENDENCY)
-            .clientFactory({
+            .clientFactory {
                 object :
                     com.android.tools.lint.checks.infrastructure.TestLintClient(CLIENT_STUDIO) {
                     // Studio 3.3.0
                     override fun getClientRevision(): String = "3.3.0.0"
                 }
-            })
-            .run().expect(expected)
+            }
+            .run().expect(expected).expectFixDiffs(
+                """
+                Autofix for gradle/libs.versions.toml line 2: Change to 3.3.2:
+                @@ -2 +2
+                - gradle = "  com.android.tools.build:gradle:3.3.0-alpha04  "
+                @@ -3 +2
+                + gradle = "  com.android.tools.build:gradle:3.3.2  "
+                """
+            )
     }
-
 
     fun testTooRecentVersion2() {
         // Regression test for https://issuetracker.google.com/119210741
@@ -1021,13 +1714,13 @@ class GradleDetectorTest : AbstractCheckTest() {
                 """
             ).indented()
         ).issues(AGP_DEPENDENCY)
-            .clientFactory({
+            .clientFactory {
                 object :
                     com.android.tools.lint.checks.infrastructure.TestLintClient(CLIENT_STUDIO) {
                     // Studio 3.4.0
                     override fun getClientRevision(): String = "3.4.0"
                 }
-            })
+            }
             .run().expect(
                 "" +
                     "build.gradle:7: Warning: A newer version of com.android.tools.build:gradle than 3.3.0-alpha01 is available: 3.4.1 [AndroidGradlePluginVersion]\n" +
@@ -1062,13 +1755,13 @@ class GradleDetectorTest : AbstractCheckTest() {
                 """
             ).indented()
         ).issues(AGP_DEPENDENCY)
-            .clientFactory({
+            .clientFactory {
                 object :
                     com.android.tools.lint.checks.infrastructure.TestLintClient(CLIENT_STUDIO) {
                     // Studio 3.0.0
                     override fun getClientRevision(): String = "2.3.0.0"
                 }
-            })
+            }
             .run().expect(
                 """
                 build.gradle:7: Warning: A newer version of com.android.tools.build:gradle than 3.3.0-alpha04 is available: 3.3.2 [AndroidGradlePluginVersion]
@@ -1079,6 +1772,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             )
     }
 
+    @Suppress("GrMethodMayBeStatic", "GroovyAssignabilityCheck")
     fun testSetter() {
         val expected = "" +
             "build.gradle:18: Error: Bad method name: pick a unique method name which does not conflict with the implicit getters for the defaultConfig properties. For example, try using the prefix compute- instead of get-. [GradleGetter]\n" +
@@ -1140,38 +1834,83 @@ class GradleDetectorTest : AbstractCheckTest() {
     }
 
     fun testVersionCatalogDependencies() {
-        val mCatalogDependencies = "[versions]\n" +
-                    "multidexVersion = \"1.0.0\" \n" +
-                    "guavaVersion = { prefer = \"11.0.2\" }\n"+
-                    "testRunnerVersion = { strictly = \"0.3\" }\n"+
-                    "[libraries]\n" +
-                    "appcompat1 = 'com.android.support:appcompat-v7:+'\n" +
-                    "guava = { module = \"com.google.guava:guava\", version.ref=\"guavaVersion\" }\n" +
-                    "appcompat2 = \"com.android.support:appcompat-v7:13.0.0\"\n" +
-                    "wearable = { module = \"com.google.android.support:wearable\", version=\"1.2.0\" }\n" +
-                    "multidex = { group = \"com.android.support\", name =\"multidex\", version.ref=\"multidexVersion\" } \n" +
-                    "testRunner = { module= \"com.android.support.test:runner\", version= { prefer = \"0.1\" } } \n" +
-                    "testRunner2 = { module = \"com.android.support.test:runner\", version =  { strictly =\"0.3\" } }\n" +
-                    "testRunner3 = { module = \"com.android.support.test:runner\", version.ref =\"testRunnerVersion\" }"
-        val toml = "gradle/libs.versions.toml"
-        val expected = "$toml:2: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]\n" +
-                "multidexVersion = \"1.0.0\" \n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "$toml:4: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]\n" +
-                "testRunnerVersion = { strictly = \"0.3\" }\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "$toml:8: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]\n" +
-                "appcompat2 = \"com.android.support:appcompat-v7:13.0.0\"\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "$toml:9: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]\n" +
-                "wearable = { module = \"com.google.android.support:wearable\", version=\"1.2.0\" }\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "$toml:12: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]\n" +
-                "testRunner2 = { module = \"com.android.support.test:runner\", version =  { strictly =\"0.3\" } }\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "0 errors, 5 warnings"
-
-        lint().files(minimalGradle ,versionCatalog(mCatalogDependencies)).issues(DEPENDENCY).run().expect(expected)
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                multidexVersion = "1.0.0"
+                guavaVersion = { prefer = "11.0.2" }
+                testRunnerVersion = { strictly = "0.3" }
+                [libraries]
+                appcompat1 = 'com.android.support:appcompat-v7:+'
+                guava = { module = "com.google.guava:guava", version.ref="guavaVersion" }
+                appcompat2 = "com.android.support:appcompat-v7:13.0.0"
+                wearable = { module = "com.google.android.support:wearable", version="1.2.0" }
+                multidex = { group = "com.android.support", name ="multidex", version.ref="multidexVersion" }
+                testRunner = { module= "com.android.support.test:runner", version= { prefer = "0.1" } }
+                testRunner2 = { module = "com.android.support.test:runner", version = { strictly ="0.3" } }
+                testRunner3 = { module = "com.android.support.test:runner", version.ref ="testRunnerVersion" }
+                # TODO: Support more complex version constraints ([] syntax)
+                testRunner4 = { module = "com.android.support.test:runner", version = { strictly = "[0.3, 0.4[", prefer="0.35" } }
+                """
+            ).indented()
+        ).issues(DEPENDENCY).run().expect(
+            """
+            ../gradle/libs.versions.toml:2: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+            multidexVersion = "1.0.0"
+                              ~~~~~~~
+            ../gradle/libs.versions.toml:3: Warning: A newer version of com.google.guava:guava than 11.0.2 is available: 21.0 [GradleDependency]
+            guavaVersion = { prefer = "11.0.2" }
+                                      ~~~~~~~~
+            ../gradle/libs.versions.toml:4: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]
+            testRunnerVersion = { strictly = "0.3" }
+                                             ~~~~~
+            ../gradle/libs.versions.toml:8: Warning: A newer version of com.android.support:appcompat-v7 than 13.0.0 is available: 25.3.1 [GradleDependency]
+            appcompat2 = "com.android.support:appcompat-v7:13.0.0"
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            ../gradle/libs.versions.toml:9: Warning: A newer version of com.google.android.support:wearable than 1.2.0 is available: 1.3.0 [GradleDependency]
+            wearable = { module = "com.google.android.support:wearable", version="1.2.0" }
+                                                                                 ~~~~~~~
+            ../gradle/libs.versions.toml:11: Warning: A newer version of com.android.support.test:runner than 0.1 is available: 0.5 [GradleDependency]
+            testRunner = { module= "com.android.support.test:runner", version= { prefer = "0.1" } }
+                                                                                          ~~~~~
+            ../gradle/libs.versions.toml:12: Warning: A newer version of com.android.support.test:runner than 0.3 is available: 0.5 [GradleDependency]
+            testRunner2 = { module = "com.android.support.test:runner", version = { strictly ="0.3" } }
+                                                                                              ~~~~~
+            0 errors, 7 warnings
+            """
+        ).expectFixDiffs(
+            """
+            Fix for gradle/libs.versions.toml line 2: Change to 1.0.1:
+            @@ -2 +2
+            - multidexVersion = "1.0.0"
+            + multidexVersion = "1.0.1"
+            Fix for gradle/libs.versions.toml line 3: Change to 21.0:
+            @@ -3 +3
+            - guavaVersion = { prefer = "11.0.2" }
+            + guavaVersion = { prefer = "21.0" }
+            Fix for gradle/libs.versions.toml line 4: Change to 0.5:
+            @@ -4 +4
+            - testRunnerVersion = { strictly = "0.3" }
+            + testRunnerVersion = { strictly = "0.5" }
+            Fix for gradle/libs.versions.toml line 8: Change to 25.3.1:
+            @@ -8 +8
+            - appcompat2 = "com.android.support:appcompat-v7:13.0.0"
+            + appcompat2 = "com.android.support:appcompat-v7:25.3.1"
+            Fix for gradle/libs.versions.toml line 9: Change to 1.3.0:
+            @@ -9 +9
+            - wearable = { module = "com.google.android.support:wearable", version="1.2.0" }
+            + wearable = { module = "com.google.android.support:wearable", version="1.3.0" }
+            Fix for gradle/libs.versions.toml line 11: Change to 0.5:
+            @@ -11 +11
+            - testRunner = { module= "com.android.support.test:runner", version= { prefer = "0.1" } }
+            + testRunner = { module= "com.android.support.test:runner", version= { prefer = "0.5" } }
+            Fix for gradle/libs.versions.toml line 12: Change to 0.5:
+            @@ -12 +12
+            - testRunner2 = { module = "com.android.support.test:runner", version = { strictly ="0.3" } }
+            + testRunner2 = { module = "com.android.support.test:runner", version = { strictly ="0.5" } }
+            """
+        )
     }
 
     fun testLongHandDependencies() {
@@ -3417,6 +4156,39 @@ class GradleDetectorTest : AbstractCheckTest() {
             ).expectFixDiffs(expectedFixes)
     }
 
+    fun testSdkIndexLibraryWithToml() {
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                blockingVersion = "1.2.13" # ERROR 1
+                outdated = "1.2.12"        # ERROR 2
+                #noinspection RiskyLibrary
+                suppressed = "1.2.13"      # OK 1
+                ok = "1.2.17"              # OK 2
+
+                [libraries]
+                blocking_log4j = { module = "log4j:log4j", version.ref = "blockingVersion"}
+                suppressed_log4j = { module = "log4j:log4j", version.ref = "suppressed"}
+                outdated_log4j = { module = "log4j:log4j", version.ref = "outdated"}
+                ok_log4j = { module = "log4j:log4j", version.ref = "ok"}
+                """
+            )
+        ).issues(RISKY_LIBRARY, DEPRECATED_LIBRARY, DEPENDENCY, PLAY_SDK_INDEX_NON_COMPLIANT)
+            .sdkHome(mockSupportLibraryInstallation)
+            .run().expect(
+                """
+                ../gradle/libs.versions.toml:3: Error: log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
+                                blockingVersion = "1.2.13" # ERROR 1
+                                                  ~~~~~~~~
+                ../gradle/libs.versions.toml:4: Error: log4j:log4j version 1.2.12 has been marked as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
+                                outdated = "1.2.12"        # ERROR 2
+                                           ~~~~~~~~
+                2 errors, 0 warnings
+                """
+            )
+    }
+
     fun testAndroidxMixedDependencies() {
         val expected =
             """
@@ -3456,7 +4228,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             .run()
             .expect(
                 expected,
-                transformer = TestResultTransformer {
+                transformer = {
                     it.replace(
                         Regex("found .* and .* incompatible"),
                         "found TEST_VERSION1 and TEST_VERSION2 incompatible"
@@ -5024,7 +5796,15 @@ class GradleDetectorTest : AbstractCheckTest() {
             LintClient.clientName = LintClient.CLIENT_UNIT_TESTS
             for (issue in TestIssueRegistry().issues) {
                 if (issue.implementation.detectorClass == GradleDetector::class.java) {
-                    issue.implementation = IMPLEMENTATION
+                    if (issue.implementation.scope.size > 1) {
+                        issue.implementation = Implementation(
+                            GroovyGradleDetector::class.java,
+                            issue.implementation.scope,
+                            *issue.implementation.analysisScopes
+                        )
+                    } else {
+                        issue.implementation = IMPLEMENTATION
+                    }
                 }
             }
         }

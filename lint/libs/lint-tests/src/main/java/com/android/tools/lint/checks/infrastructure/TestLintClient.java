@@ -27,6 +27,7 @@ import static com.android.SdkConstants.NEW_ID_PREFIX;
 import static com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO;
 import static com.android.tools.lint.checks.infrastructure.KotlinClasspathKt.findKotlinStdlibPath;
 import static com.android.tools.lint.checks.infrastructure.LintTestUtils.checkTransitiveComparator;
+import static com.android.tools.lint.detector.api.Lint.getCommonParent;
 import static java.io.File.separatorChar;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -716,6 +717,24 @@ public class TestLintClient extends LintCliClient {
     @Override
     protected LintRequest createLintRequest(@NonNull List<? extends File> files) {
         TestLintRequest request = new TestLintRequest(this, files);
+
+        File root = null;
+        if (files.size() == 1) {
+            File dir = files.get(0);
+            File parent = dir.getParentFile();
+            // Make sure the project root contains the gradle/libs.versions.toml file
+            if (parent != null && new File(parent, "gradle").isDirectory()) {
+                root = parent;
+            } else {
+                root = dir;
+            }
+        } else {
+            for (File project : files) {
+                root = root == null ? project : getCommonParent(root, project);
+            }
+        }
+        request.setSrcRoot(root);
+
         configureLintRequest(request);
         return request;
     }

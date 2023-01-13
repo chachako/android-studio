@@ -25,6 +25,7 @@ import com.android.SdkConstants.DOT_SRCJAR
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FD_ASSETS
 import com.android.SdkConstants.FD_DATA
+import com.android.SdkConstants.FD_GRADLE
 import com.android.SdkConstants.FN_ANNOTATIONS_ZIP
 import com.android.SdkConstants.GEN_FOLDER
 import com.android.SdkConstants.LIBS_FOLDER
@@ -373,9 +374,8 @@ abstract class LintClient {
     /** Returns a visitor to use to analyze Gradle build scripts. */
     abstract fun getGradleVisitor(): GradleVisitor
 
-
-    /** Returns a visitor to use to analyze *.versions.toml dependency files. */
-    abstract fun getGradleTomlVisitor(): GradleVisitor
+    /** Returns a lint TOML parser */
+    fun getTomlParser(): LintTomlParser = LintTomlParser()
 
     /**
      * Reads the given text file and returns the content as a string
@@ -754,6 +754,10 @@ abstract class LintClient {
             ) {
                 return true
             }
+        }
+
+        if (parent != null && File(parent, FD_GRADLE).exists()) {
+            return true
         }
 
         return false

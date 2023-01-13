@@ -84,6 +84,9 @@ public class GroovyGradleVisitor extends GradleVisitor {
         }
 
         final String source = sequence.toString();
+        if (source.isBlank()) {
+            return;
+        }
         List<ASTNode> astNodes = new AstBuilder().buildFromString(source);
         GroovyCodeVisitor visitor =
                 new CodeVisitorSupport() {

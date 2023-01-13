@@ -23,12 +23,10 @@ import com.intellij.psi.JavaTokenType
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiAssignmentExpression
 import com.intellij.psi.PsiBlockStatement
-import com.intellij.psi.PsiCall
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiConditionalExpression
 import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiEnumConstant
 import com.intellij.psi.PsiExpression
 import com.intellij.psi.PsiExpressionStatement
 import com.intellij.psi.PsiField
@@ -42,7 +40,6 @@ import com.intellij.psi.PsiParenthesizedExpression
 import com.intellij.psi.PsiPolyadicExpression
 import com.intellij.psi.PsiPrefixExpression
 import com.intellij.psi.PsiPrimitiveType
-import com.intellij.psi.PsiQualifiedReference
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiStatement

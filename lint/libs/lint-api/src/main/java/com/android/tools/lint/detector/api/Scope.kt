@@ -124,6 +124,9 @@ enum class Scope {
     /** The analysis considers Java property files. */
     PROPERTY_FILE,
 
+    /** The analysis considers TOML files. */
+    TOML_FILE,
+
     /** The analysis considers test sources as well. */
     TEST_SOURCES,
 
@@ -292,6 +295,20 @@ enum class Scope {
          */
         @JvmField
         val GRADLE_SCOPE: EnumSet<Scope> = EnumSet.of(GRADLE_FILE)
+
+        /**
+         * Scope-set used for detectors which are affected by a single
+         * TOML file
+         */
+        @JvmField
+        val TOML_SCOPE: EnumSet<Scope> = EnumSet.of(TOML_FILE)
+
+        /**
+         * Scope-set used for detectors which are affected by Gradle and
+         * TOML files.
+         */
+        @JvmField
+        val GRADLE_AND_TOML_SCOPE: EnumSet<Scope> = EnumSet.of(GRADLE_FILE, TOML_FILE)
 
         /**
          * Scope-set used for detectors which are affected by the

@@ -16,6 +16,12 @@ Guide.
   using test modes) is helpful. More information about this is
   available in [](unit-testing.md.html).
 
+* Lint now supports analyzing TOML files. There is a new
+  Scope.TOML_FILE detectors can register an interest in, a new
+  TomlScanner interface to implement for visitTomlDocument callbacks,
+  etc. From a GradleScanner, you can directly resolve version catalog
+  libraries via lookup methods on the GradleContext.
+
 **8.0**
 
 * A new testmode which makes sure lint checks are all suppressible.

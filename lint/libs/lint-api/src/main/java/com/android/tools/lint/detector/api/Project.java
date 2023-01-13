@@ -26,7 +26,7 @@ import static com.android.SdkConstants.ATTR_MIN_SDK_VERSION;
 import static com.android.SdkConstants.ATTR_PACKAGE;
 import static com.android.SdkConstants.ATTR_TARGET_SDK_VERSION;
 import static com.android.SdkConstants.DOT_VERSIONS_DOT_TOML;
-import static com.android.SdkConstants.FD_GRADLE_CATALOGS;
+import static com.android.SdkConstants.FD_GRADLE;
 import static com.android.SdkConstants.FD_GRADLE_WRAPPER;
 import static com.android.SdkConstants.FN_BUILD_GRADLE;
 import static com.android.SdkConstants.FN_BUILD_GRADLE_KTS;
@@ -83,6 +83,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -132,6 +133,7 @@ public class Project {
 
     protected List<File> proguardFiles;
     protected List<File> gradleFiles;
+    protected List<File> tomlFiles;
     protected List<File> manifestFiles;
     protected List<File> javaSourceFolders;
     protected List<File> generatedSourceFolders;
@@ -1266,20 +1268,69 @@ public class Project {
                 if (settings.exists()) {
                     gradleFiles.add(settings);
                 }
-                File tomlFolder = new File(dir, FD_GRADLE_CATALOGS);
-                if (tomlFolder.exists()) {
-                    for (File file : tomlFolder.listFiles()) {
-                        if (file.getName().endsWith(DOT_VERSIONS_DOT_TOML)) {
-                            gradleFiles.add(file);
-                        }
-                    }
-                }
             } else {
                 gradleFiles = Collections.emptyList();
             }
         }
 
         return gradleFiles;
+    }
+
+    @NonNull
+    public List<File> getTomlFiles() {
+        if (tomlFiles == null) {
+            if (isGradleProject()) {
+                // Gradle version catalogs? These files don't belong to any one module (in fact
+                // they sit outside the individual modules), and we don't want to just go
+                // and include ../gradle from the projects since that means we'd repeat the
+                // same TOML warnings for each project. Instead, we process them here, but just
+                // once.
+                tomlFiles = new ArrayList<>(3);
+                File rootDir = client.getRootDir();
+                if (rootDir != null && isDesignatedTomlModule(rootDir)) {
+                    File gradle = new File(rootDir, FD_GRADLE);
+                    if (gradle.isDirectory()) {
+                        File[] catalogs = gradle.listFiles();
+                        if (catalogs != null) {
+                            for (File catalog : catalogs) {
+                                if (catalog.getPath().endsWith(DOT_VERSIONS_DOT_TOML)) {
+                                    tomlFiles.add(catalog);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                tomlFiles = Collections.emptyList();
+            }
+        }
+
+        return tomlFiles;
+    }
+
+    /**
+     * TOML files aren't actually part of this project; we went looking outside (from the root
+     * project). This means that we'd potentially end up repeating analysis (and reporting) on the
+     * same files over and over, from each project. We should only do this once. For now, we're
+     * assigning the responsibility to the first module alphabetically in the root directory.
+     *
+     * <p>(**This is a workaround until the catalog files are provided from the lint model
+     * instead.**)
+     */
+    private boolean isDesignatedTomlModule(File root) {
+        File[] moduleDirs = root.listFiles();
+        if (moduleDirs != null) {
+            Arrays.sort(moduleDirs);
+            for (File moduleDir : moduleDirs) {
+                if (new File(moduleDir, FN_BUILD_GRADLE).exists()
+                        || new File(moduleDir, FN_BUILD_GRADLE_KTS).exists()) {
+                    return dir.getPath().equalsIgnoreCase(moduleDir.getPath());
+                }
+            }
+        }
+        // No directories match, just fall back to assigning the responsibility to the app module;
+        // there's usually exactly one.
+        return getType() == LintModelModuleType.APP;
     }
 
     /**

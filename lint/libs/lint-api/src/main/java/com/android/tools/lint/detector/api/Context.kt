@@ -28,6 +28,7 @@ import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintDriver.Companion.STUDIO_ID_PREFIX
 import com.android.tools.lint.client.api.LintDriver.DriverMode
+import com.android.tools.lint.client.api.LintTomlValue
 import com.android.tools.lint.client.api.SdkInfo
 import com.android.utils.CharSequences
 import com.android.utils.CharSequences.indexOf
@@ -275,6 +276,14 @@ open class Context(
                             context.getLocation(node)
                     LocationType.CALL_WITH_ARGUMENTS,
                     LocationType.CALL_WITH_RECEIVER -> error("$type not supported for ${node.javaClass}")
+                }
+            }
+            is LintTomlValue -> {
+                return when (type) {
+                    LocationType.ALL -> node.getFullLocation()
+                    LocationType.NAME -> node.getKeyLocation() ?: node.getLocation()
+                    LocationType.DEFAULT -> node.getLocation()
+                    else -> node.getLocation()
                 }
             }
             is ClassNode -> {

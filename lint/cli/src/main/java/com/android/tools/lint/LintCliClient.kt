@@ -51,7 +51,6 @@ import com.android.tools.lint.client.api.LintListener
 import com.android.tools.lint.client.api.LintRequest
 import com.android.tools.lint.client.api.LintXmlConfiguration
 import com.android.tools.lint.client.api.ResourceRepositoryScope
-import com.android.tools.lint.TomlGradleVisitor
 import com.android.tools.lint.client.api.UastParser
 import com.android.tools.lint.client.api.XmlParser
 import com.android.tools.lint.detector.api.Constraint
@@ -981,9 +980,6 @@ open class LintCliClient : LintClient {
     override fun getGradleVisitor(): GradleVisitor {
         return GroovyGradleVisitor()
     }
-
-    override fun getGradleTomlVisitor(): GradleVisitor = TomlGradleVisitor()
-
 
     override fun report(
         context: Context,

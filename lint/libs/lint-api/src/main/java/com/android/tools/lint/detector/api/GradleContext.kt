@@ -18,11 +18,12 @@ package com.android.tools.lint.detector.api
 
 import com.android.tools.lint.client.api.GradleVisitor
 import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.client.api.LintTomlValue
 import java.io.File
 import java.util.regex.Pattern
 
 /** Context for analyzing a particular file. */
-class GradleContext(
+open class GradleContext constructor(
     /** Visitor to use to analyze the file. */
     val gradleVisitor: GradleVisitor,
 
@@ -59,6 +60,22 @@ class GradleContext(
     fun getPropertyPairCookie(cookie: Any): Any = cookie
 
     /**
+     * Looks up the associated TOML value known to Gradle. This is
+     * typically used with gradle/libs.versions.toml from the root
+     * directory to specify collections of libraries.
+     *
+     * The [key] is the (potentially dotted) path of keys into tables.
+     * This will return a pair of value and [Location] for that
+     * key-value pair, or null if not found. If [source] is false,
+     * the value returned will be the actual value of the key (which
+     * for example will resolve references, and will return for
+     * example a Boolean if the value is true); if not (which is the
+     * default), it will return the source text of the TOML value.
+     */
+    open fun getTomlValue(key: String, source: Boolean = true): LintTomlValue? = null
+    open fun getTomlValue(key: List<String>, source: Boolean = true): LintTomlValue? = null
+
+    /**
      * Reports an issue applicable to a given source location. The
      * source location is used as the scope to check for suppress lint
      * annotations.
@@ -66,8 +83,8 @@ class GradleContext(
      * @param issue the issue to report
      * @param cookie the node scope the error applies to. The lint
      *     infrastructure will check whether there are suppress
-     *     annotations on this node (or its enclosing nodes) and if
-     *     so suppress the warning without involving the client.
+     *     annotations on this node (or its enclosing nodes) and if so
+     *     suppress the warning without involving the client.
      * @param location the location of the issue, or null if not known
      * @param message the message for this warning
      * @param fix optional data to pass to the IDE for use by a

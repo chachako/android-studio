@@ -26,7 +26,6 @@ import static com.android.SdkConstants.DOT_KOTLIN_MODULE;
 import static com.android.SdkConstants.DOT_KT;
 import static com.android.SdkConstants.DOT_KTS;
 import static com.android.SdkConstants.DOT_PNG;
-import static com.android.SdkConstants.DOT_VERSIONS_DOT_TOML;
 import static com.android.SdkConstants.DOT_XML;
 import static com.android.SdkConstants.FN_ANDROID_MANIFEST_XML;
 import static com.android.tools.lint.checks.infrastructure.BaseLintDetectorTest.makeTestFile;
@@ -742,24 +741,6 @@ public class TestFile {
 
         @Override
         public GradleTestFile indented() {
-            super.indented();
-            return this;
-        }
-    }
-
-    public static class VersionCatalogTestFile extends TestFile {
-
-        public VersionCatalogTestFile(
-                @NonNull String to, @NonNull @Language("Toml") String source) {
-            to(to).withSource(source);
-            if (!to.endsWith(DOT_VERSIONS_DOT_TOML)) {
-                throw new IllegalArgumentException(
-                        "Expected .versions.toml suffix for version catalog test file");
-            }
-        }
-
-        @Override
-        public VersionCatalogTestFile indented() {
             super.indented();
             return this;
         }

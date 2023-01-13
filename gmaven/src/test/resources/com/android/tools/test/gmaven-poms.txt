@@ -618,10 +618,8 @@ com.android.tools.lint:lint
     com.android.tools:sdklib (runtime)
     com.google.guava:guava (runtime)
     net.sf.kxml:kxml2 (runtime)
-    org.antlr:antlr4-runtime (runtime)
     org.jetbrains.kotlin:kotlin-reflect (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
-    org.tomlj:tomlj (runtime)
 
 com.android.tools.lint:lint-api
   pomName=com.android.tools.lint.lint-api
