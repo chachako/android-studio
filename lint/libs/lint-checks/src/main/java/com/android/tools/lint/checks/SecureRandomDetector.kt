@@ -112,7 +112,7 @@ class SecureRandomDetector : Detector(), SourceCodeScanner {
                 sequence of numbers. This may be useful for testing but it is not appropriate \
                 for secure use.
                 """,
-            moreInfo = "https://developer.android.com/reference/java/security/SecureRandom.html",
+            moreInfo = "https://goo.gle/SecureRandom",
             category = Category.SECURITY,
             priority = 9,
             severity = Severity.WARNING,
@@ -121,6 +121,7 @@ class SecureRandomDetector : Detector(), SourceCodeScanner {
                 Scope.JAVA_FILE_SCOPE
             )
         )
+            .addMoreInfo("https://developer.android.com/reference/java/security/SecureRandom.html")
 
         const val JAVA_SECURITY_SECURE_RANDOM = "java.security.SecureRandom"
         const val JAVA_UTIL_RANDOM = "java.util.Random"

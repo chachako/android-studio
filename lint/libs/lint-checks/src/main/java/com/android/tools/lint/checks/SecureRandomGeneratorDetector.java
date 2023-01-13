@@ -74,6 +74,7 @@ public class SecureRandomGeneratorDetector extends Detector implements ClassScan
                             Severity.WARNING,
                             new Implementation(
                                     SecureRandomGeneratorDetector.class, Scope.CLASS_FILE_SCOPE))
+                    .addMoreInfo("https://goo.gle/TrulyRandom")
                     .addMoreInfo(BLOG_URL);
 
     private static final String WRAP = "wrap";
