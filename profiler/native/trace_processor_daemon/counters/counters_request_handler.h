@@ -22,6 +22,7 @@
 
 const int HIDE_POWER_PROFILER_DISPLAY_MODE = 0;
 const int MINMAX_POWER_PROFILER_DISPLAY_MODE = 1;
+const int DELTA_POWER_PROFILER_DISPLAY_MODE = 2;
 
 namespace profiler {
 namespace perfetto {

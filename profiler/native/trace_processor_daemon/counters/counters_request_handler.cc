@@ -139,30 +139,54 @@ void CountersRequestHandler::PopulateCpuCoreCounters(
   }
 }
 
+std::string GetPowerCounterQueryStringFor(int display_mode) {
+  // Mapping of display mode to meaning:
+  // Value of HIDE_POWER_PROFILER_DISPLAY_MODE -> Hide both power + battery
+  // tracks. Value of MINMAX_POWER_PROFILER_DISPLAY_MODE -> Show power rails is
+  // min-max view and battery counters in zero-based view.
+  // Value of DELTA_POWER_PROFILER_DISPLAY_MODE -> Show power rails in delta
+  // view and battery counters in zero-based view.
+
+  // It is worth noting that although we use value
+  // HIDE_POWER_PROFILER_DISPLAY_MODE to hide the tracks on studio-side, we
+  // still want to query for the data so it is in a newly recorded trace.
+  std::string query_string = "";
+  switch (display_mode) {
+    case HIDE_POWER_PROFILER_DISPLAY_MODE:
+    case MINMAX_POWER_PROFILER_DISPLAY_MODE:
+      return "SELECT t.name, c.ts, c.value "
+             "FROM counter c INNER JOIN counter_track t "
+             "     ON c.track_id = t.id "
+             "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
+             "ORDER BY c.track_id ASC, c.ts ASC;";
+
+    case DELTA_POWER_PROFILER_DISPLAY_MODE:
+      return "SELECT t.name, c.ts, c.value - LAG(c.value) "
+             "OVER (partition by t.id ORDER BY t.name) AS delta "
+             "FROM counter c INNER JOIN counter_track t "
+             "       ON c.track_id = t.id "
+             "WHERE t.name LIKE \"power.%\" "
+             "UNION ALL "
+             "SELECT t.name, c.ts, c.value "
+             "FROM counter c INNER JOIN counter_track t "
+             "       ON c.track_id = t.id "
+             "WHERE t.name LIKE \"batt.%\" "
+             "ORDER BY t.name ASC, c.ts ASC;";
+
+    default:
+      std::cerr << "Power profiler display mode not supported." << std::endl;
+      return "";
+  }
+}
+
 void CountersRequestHandler::PopulatePowerCounterTracks(
     PowerCounterTracksParameters params, PowerCounterTracksResult* result) {
   if (result == nullptr) {
     return;
   }
 
-  // Mapping of display mode to meaning:
-  // Value of HIDE_POWER_PROFILER_DISPLAY_MODE -> Hide both power + battery
-  // tracks. Value of MINMAX_POWER_PROFILER_DISPLAY_MODE -> Show power rails is
-  // min-max view and battery counters in zero-based view.
-
-  // It is worth noting that although we use value
-  // HIDE_POWER_PROFILER_DISPLAY_MODE to hide the tracks on studio-side, we
-  // still want to query for the data so it is in a newly recorded trace.
-  std::string query_string = "";
-  if (params.display_mode() == HIDE_POWER_PROFILER_DISPLAY_MODE ||
-      params.display_mode() == MINMAX_POWER_PROFILER_DISPLAY_MODE) {
-    query_string =
-        "SELECT t.name, c.ts, c.value "
-        "FROM counter c INNER JOIN counter_track t "
-        "     ON c.track_id = t.id "
-        "WHERE t.name LIKE \"batt.%\" OR t.name LIKE \"power.%\""
-        "ORDER BY c.track_id ASC, c.ts ASC;";
-  }
+  std::string query_string =
+      GetPowerCounterQueryStringFor(params.display_mode());
 
   std::unordered_map<std::string, Counter*> counters_map;
 
@@ -174,7 +198,11 @@ void CountersRequestHandler::PopulatePowerCounterTracks(
   // | batt.1 |  3 | 20000.00 |
   while (it_power_count.Next()) {
     auto counter_track_name_sql_value = it_power_count.Get(0);
-    if (counter_track_name_sql_value.is_null()) {
+    auto counter_track_ts_sql_value = it_power_count.Get(1);
+    auto counter_track_value_sql_value = it_power_count.Get(2);
+    if (counter_track_name_sql_value.is_null() ||
+        counter_track_ts_sql_value.is_null() ||
+        counter_track_value_sql_value.is_null()) {
       continue;
     }
 
@@ -188,10 +216,10 @@ void CountersRequestHandler::PopulatePowerCounterTracks(
     auto counter_track_value_proto =
         counters_map[counter_track_name]->add_value();
 
-    auto ts_nanos = it_power_count.Get(1).long_value;
+    auto ts_nanos = counter_track_ts_sql_value.long_value;
     counter_track_value_proto->set_timestamp_nanoseconds(ts_nanos);
 
-    auto value = it_power_count.Get(2).double_value;
+    auto value = counter_track_value_sql_value.double_value;
     counter_track_value_proto->set_value(value);
   }
 }
