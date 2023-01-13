@@ -169,6 +169,10 @@ package com.android.build.api.artifact {
     field public static final com.android.build.api.artifact.SingleArtifact.MERGED_MANIFEST INSTANCE;
   }
 
+  @org.gradle.api.Incubating public static final class SingleArtifact.MERGED_NATIVE_LIBS extends com.android.build.api.artifact.SingleArtifact<org.gradle.api.file.Directory> {
+    field public static final com.android.build.api.artifact.SingleArtifact.MERGED_NATIVE_LIBS INSTANCE;
+  }
+
   @org.gradle.api.Incubating public static final class SingleArtifact.METADATA_LIBRARY_DEPENDENCIES_REPORT extends com.android.build.api.artifact.SingleArtifact<org.gradle.api.file.RegularFile> implements com.android.build.api.artifact.Artifact.Replaceable com.android.build.api.artifact.Artifact.Transformable {
     field public static final com.android.build.api.artifact.SingleArtifact.METADATA_LIBRARY_DEPENDENCIES_REPORT INSTANCE;
   }
