@@ -1265,9 +1265,11 @@ public class ManifestMerger2 {
                             String repeatedNamespaceMessage =
                                     "Namespace '"
                                             + e.getKey()
-                                            + "' used in: "
+                                            + "' is used in multiple modules and/or libraries: "
                                             + Joiner.on(", ").join(offendingTargets)
-                                            + ".";
+                                            + ". Please ensure that all modules and libraries have a "
+                                            + "unique namespace."
+                                            + " For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace";
                             // We know that there is at least one because of the
                             // filter check.
                             LoadedManifestInfo info = e.getValue().stream().findFirst().get();

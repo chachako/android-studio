@@ -61,4 +61,4 @@
 @result-same-as-main
 @errors
 
-ERROR:Namespace 'com.example.test' used in: ManifestMerger2Test0_main.xml, ManifestMerger2Test1_lib1.xml.
+ERROR:Namespace 'com.example.test' is used in multiple modules and/or libraries: ManifestMerger2Test0_main.xml, ManifestMerger2Test1_lib1.xml. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
