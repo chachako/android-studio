@@ -39,7 +39,9 @@ public class JDWPTracer {
     public JDWPTracer(boolean enabled, @NonNull Path folder) {
         this.enabled = enabled;
         this.outputFolder = folder;
-        session = new Session();
+        if (enabled) {
+            session = new Session();
+        }
     }
 
     /**
@@ -65,6 +67,10 @@ public class JDWPTracer {
     }
 
     public synchronized void close() {
+        if (!enabled) {
+            return;
+        }
+
         Path outputPath = outputFolder.resolve("perfetto-trace-" + session.name() + ".json");
         SystraceOutput.genOutput(session, outputPath);
         System.out.println("JDWTrace written to '" + outputPath.toAbsolutePath() + "'");
