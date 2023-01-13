@@ -25,9 +25,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
+import org.mockito.Mockito.`when`
 import java.io.File
 
 class VersionCheckPluginTest {
@@ -51,13 +51,8 @@ class VersionCheckPluginTest {
         val spyProject = spy(project)
         `when`(spyProject.gradle).thenReturn(mockGradle)
 
-        // Because the class could have been loaded by other tests in the same JVM, the
-        // flag may have been set to true already, so we reset it.
-        // This is potentially fragile if other tests are running concurrently in the same JVM.
-        VersionCheckPlugin.isCheckDone.set(false)
-
         try {
-            plugin.apply(spyProject)
+            plugin.doApply(spyProject)
             fail("A RuntimeException was expected but not generated")
         }
         catch (generatedException: RuntimeException) {

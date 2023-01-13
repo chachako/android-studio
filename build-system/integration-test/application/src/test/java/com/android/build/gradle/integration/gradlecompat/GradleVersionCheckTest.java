@@ -19,15 +19,13 @@ package com.android.build.gradle.integration.gradlecompat;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.SdkConstants;
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.google.common.base.Throwables;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /** Tests whether the Gradle version check takes effect. */
 public class GradleVersionCheckTest {
@@ -55,18 +53,18 @@ public class GradleVersionCheckTest {
                 "enableFeaturePreview('VERSION_CATALOGS')"
         );
 
-        try {
-            project.executor()
-                    .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.NONE)
-                    .withFailOnWarning(false)
-                    .run("help");
-        } catch (Exception e) {
-            assertThat(Throwables.getRootCause(e).getMessage())
-                    .contains(
-                            String.format(
-                                    "Minimum supported Gradle version is %s."
-                                            + " Current version is %s.",
-                                    SdkConstants.GRADLE_LATEST_VERSION, OLD_GRADLE_VERSION));
+        // Run the build twice, it should fail with the same message
+        // (regression test for bug 265296706)
+        for (int i = 1; i <= 2; i++) {
+            try {
+                project.executor().run("help");
+            } catch (Exception e) {
+                assertThat(Throwables.getRootCause(e).getMessage())
+                        .contains(
+                                String.format(
+                                        "Minimum supported Gradle version is %s. Current version is %s.",
+                                        SdkConstants.GRADLE_LATEST_VERSION, OLD_GRADLE_VERSION));
+            }
         }
     }
 }
