@@ -267,6 +267,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner, XmlScanner {
             priority = 9,
             severity = Severity.ERROR,
             androidSpecific = true,
+            enabledByDefault = false,
             implementation = IMPLEMENTATION
         )
     }
