@@ -81,6 +81,8 @@ public class BenchmarkTest {
     private String yourKitSettingsPath = null;
     private boolean useJdk11 = false;
 
+    private Integer injectedApiLevel = null;
+
     @Before
     public void setUp() throws Exception {
         // See http://cs/android/prebuilts/studio/buildbenchmarks/scenarios.bzl for meaning of
@@ -146,6 +148,10 @@ public class BenchmarkTest {
         value = System.getProperty("from-studio");
         if (value != null && !value.isEmpty()) {
             fromStudio = Boolean.parseBoolean(value);
+        }
+        value = System.getProperty("inject-api-level");
+        if (value != null && !value.isEmpty()) {
+            injectedApiLevel = Integer.parseInt(value);
         }
         testProjectGradleRootFromSourceRoot = System.getProperty("gradle-root");
         value = System.getProperty("pre_mutate_assertion");
@@ -334,6 +340,7 @@ public class BenchmarkTest {
                         "-Pandroid.injected.attribution.file.location="
                                 + new File(out, "attribution_out").getAbsolutePath());
             }
+
             if (failOnWarning) {
                 gradle.addArgument("--warning-mode=fail");
             }
@@ -345,6 +352,12 @@ public class BenchmarkTest {
             listeners.forEach(it -> it.configure(home, gradle, benchmarkRun));
 
             gradle.run(startups);
+
+            // This has to be set after running start up tasks
+            // where we don't want to inject api level property
+            if (injectedApiLevel != null) {
+                gradle.addArgument("-Pandroid.injected.build.api=" + injectedApiLevel);
+            }
 
             listeners.forEach(it -> it.benchmarkStarting(benchmark));
 
