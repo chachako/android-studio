@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,15 @@
 
 @file:JvmName("R8ResourceShrinker")
 
-package com.android.builder.dexing
+package com.android.build.shrinker.usages
 
 import com.android.tools.r8.ProgramResource
 import com.android.tools.r8.ProgramResourceProvider
 import com.android.tools.r8.ResourceShrinker
 import com.android.tools.r8.origin.PathOrigin
 import com.android.tools.r8.references.MethodReference
-import java.io.File
 import java.nio.file.Path
 
-fun runResourceShrinkerAnalysis(bytes: ByteArray, file: File, callback: AnalysisCallback) {
-    runResourceShrinkerAnalysis(bytes, file.toPath(), callback)
-}
 
 fun runResourceShrinkerAnalysis(bytes: ByteArray, file: Path, callback: AnalysisCallback) {
     val resource =
