@@ -59,15 +59,6 @@ public class HandleAarDescriptorReaderDelegate extends ArtifactDescriptorReaderD
                     new DifferentExtensionArtifact(
                             getArtifactExtension(model), result.getArtifact()));
         }
-
-        // Workaround for https://youtrack.jetbrains.com/issue/KT-53670, which is present in
-        // 1.7.20-Beta but will be fixed in 1.7.20-RC+.
-        // TODO(b/243915981): Remove this workaround when we're no longer using 1.7.20-Beta.
-        if (result.getArtifact()
-                .toString()
-                .contains("org.jetbrains.kotlin:kotlin-gradle-plugin-idea-proto:jar:1.7.20-Beta")) {
-            result.setDependencies(new java.util.ArrayList());
-        }
     }
 
     private static class DifferentExtensionArtifact extends DelegatingArtifact {
