@@ -22,7 +22,6 @@ import com.android.testutils.TestUtils
 import com.google.common.base.Splitter
 import com.google.common.collect.ImmutableList
 import java.io.File
-import java.net.URLClassLoader
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -53,7 +52,8 @@ internal enum class BuildSystem {
     fun getCommonBuildScriptContent(
         withAndroidGradlePlugin: Boolean,
         withKotlinGradlePlugin: Boolean,
-        withDeviceProvider: Boolean
+        withDeviceProvider: Boolean,
+        withExtraPluginClasspath: String?,
     ): String {
         val script = StringBuilder()
         script.append("def commonScriptFolder = buildscript.sourceFile.parent\n")
@@ -82,6 +82,11 @@ internal enum class BuildSystem {
         if (withDeviceProvider) {
             script.append(
                 "        classpath 'com.android.tools.internal.build.test:devicepool:0.1'\n"
+            )
+        }
+        if (!withExtraPluginClasspath.isNullOrBlank()) {
+            script.append(
+                "        classpath '$withExtraPluginClasspath'\n"
             )
         }
         script.append("    }\n")

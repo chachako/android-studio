@@ -76,6 +76,8 @@ public final class GradleTestProjectBuilder {
 
     private boolean withSdk = true;
     private boolean withAndroidGradlePlugin = true;
+    @Nullable
+    private String withExtraPluginClasspath;
     private boolean withKotlinGradlePlugin = false;
     private boolean withPluginManagementBlock = false;
     // list of included builds, relative to the main projectDir
@@ -154,6 +156,7 @@ public final class GradleTestProjectBuilder {
                 withSdk,
                 withAndroidGradlePlugin,
                 withKotlinGradlePlugin,
+                withExtraPluginClasspath,
                 withPluginManagementBlock,
                 withIncludedBuilds,
                 null,
@@ -281,6 +284,11 @@ public final class GradleTestProjectBuilder {
 
     public GradleTestProjectBuilder withAndroidGradlePlugin(boolean withAndroidGradlePlugin) {
         this.withAndroidGradlePlugin = withAndroidGradlePlugin;
+        return this;
+    }
+
+    public GradleTestProjectBuilder withExtraPluginClasspath(String classpath) {
+        this.withExtraPluginClasspath = classpath;
         return this;
     }
 

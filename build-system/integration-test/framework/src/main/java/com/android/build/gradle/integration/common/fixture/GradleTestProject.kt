@@ -108,6 +108,7 @@ class GradleTestProject @JvmOverloads internal constructor(
     private val withSdk: Boolean,
     private val withAndroidGradlePlugin: Boolean,
     private val withKotlinGradlePlugin: Boolean,
+    private val withExtraPluginClasspath: String?,
     private val withPluginManagementBlock: Boolean,
     private val withIncludedBuilds: List<String>,
     private var mutableProjectLocation: ProjectLocation? = null,
@@ -436,6 +437,7 @@ class GradleTestProject @JvmOverloads internal constructor(
             withSdk = rootProject.withSdk,
             withAndroidGradlePlugin = rootProject.withAndroidGradlePlugin,
             withKotlinGradlePlugin = rootProject.withKotlinGradlePlugin,
+            withExtraPluginClasspath = rootProject.withExtraPluginClasspath,
             withPluginManagementBlock = rootProject.withPluginManagementBlock,
             withIncludedBuilds = ImmutableList.of(),
             mutableProjectLocation = rootProject.location.createSubProjectLocation(subProject),
@@ -676,7 +678,7 @@ allprojects { proj ->
     fun generateCommonBuildScript(): String {
         return BuildSystem.get()
             .getCommonBuildScriptContent(
-                withAndroidGradlePlugin, withKotlinGradlePlugin, withDeviceProvider
+                withAndroidGradlePlugin, withKotlinGradlePlugin, withDeviceProvider, withExtraPluginClasspath
             )
     }
 
