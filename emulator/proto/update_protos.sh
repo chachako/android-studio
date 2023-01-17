@@ -21,7 +21,7 @@ pushd "$dir"
 
 repo start emulator_$build
 echo Fetching Emulator build $build
-/google/data/ro/projects/android/fetch_artifact --bid $build --target sdk_tools_linux "$linux_zip"
+/google/data/ro/projects/android/fetch_artifact --bid $build --target emulator-linux_x64 "$linux_zip"
 rm -f *.proto
 unzip -j "$linux_zip" emulator/lib/*.proto
 rm -f "$linux_zip"
