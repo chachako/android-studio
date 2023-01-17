@@ -37,6 +37,7 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 abstract class AnalysisApiServicesTestBase {
@@ -209,10 +210,11 @@ abstract class AnalysisApiServicesTestBase {
                         val ktFunctionSymbol = ktElement.resolveCall()?.singleFunctionCallOrNull()?.symbol
                             ?: return super.visitCallExpression(node)
                         val ktParamSymbol = ktFunctionSymbol.valueParameters.single()
-                        assertEquals(
-                            ktFunctionSymbol.callableIdIfNonLocal?.callableName?.identifier == "myLet",
-                            ktParamSymbol.isNoinline
-                        )
+                        if (ktFunctionSymbol.callableIdIfNonLocal?.callableName?.identifier == "myLet") {
+                            assertTrue(ktParamSymbol.isNoinline)
+                        } else { // built-in `let`
+                            assertFalse(ktParamSymbol.isNoinline)
+                        }
                     }
 
                     return super.visitCallExpression(node)
