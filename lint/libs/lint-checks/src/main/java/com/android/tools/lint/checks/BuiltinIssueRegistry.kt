@@ -398,6 +398,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 SetJavaScriptEnabledDetector.ISSUE,
                 SetTextDetector.SET_TEXT_I18N,
                 SharedPrefsDetector.ISSUE,
+                ShortcutUsageDetector.ISSUE,
                 SignatureOrSystemDetector.ISSUE,
                 SliceDetector.ISSUE,
                 SplashScreenDetector.ISSUE,
