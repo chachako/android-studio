@@ -1074,6 +1074,18 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public String getClientName(int pid) {
+        if (mDeviceClientManagerProvider != null) {
+            String name = null;
+            Client[] clients = getClients();
+            for (Client c : clients) {
+                if (pid == c.getClientData().getPid()) {
+                    name = c.getClientData().getClientDescription();
+                    break;
+                }
+            }
+            return (name == null) ? UNKNOWN_PACKAGE : name;
+        }
+
         return mClientInfo.getOrDefault(pid, UNKNOWN_PACKAGE);
     }
 
