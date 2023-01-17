@@ -119,6 +119,10 @@ public class TestUtils {
      * simply return the runfiles directory (which should be a mirror of the WORKSPACE root except
      * only populated with explicitly declared dependencies).
      *
+     * <p>If the WORKSPACE_LOCATION is defined, it will use that. This is only useful for projects
+     * located outside oif the Android Studio codebase that wants to use classes that requires
+     * access to the Android Studio codebase like tests.
+     *
      * <p>Instead of calling this directly, prefer calling {@link #resolveWorkspacePath(String)} as
      * it is more resilient to cross-platform testing.
      *
@@ -132,6 +136,12 @@ public class TestUtils {
         // The logic below depends on the current working directory, so we save the results and hope
         // the first call is early enough for the user.dir property to be unchanged.
         if (workspaceRoot == null) {
+            // If it is provided by environment variables, use it.
+            if (System.getenv("WORKSPACE_LOCATION") != null) {
+                workspaceRoot = Paths.get(System.getenv("WORKSPACE_LOCATION"));
+                return workspaceRoot;
+            }
+
             // If we are using Bazel (which defines the following env vars), simply use
             // the sandboxed root they provide us.
             String workspace = System.getenv("TEST_WORKSPACE");
