@@ -23,6 +23,7 @@
       <module fileurl="file://$PROJECT_DIR$/gmaven/android.sdktools.base.gmaven.iml" filepath="$PROJECT_DIR$/gmaven-test/android.sdktools.base.gmaven-test.iml" />
       <module fileurl="file://$PROJECT_DIR$/jaxb-inheritance-plugin/android.sdktools.base.jaxb-inheritance-plugin.iml" filepath="$PROJECT_DIR$/jaxb-inheritance-plugin/android.sdktools.base.jaxb-inheritance-plugin.iml" />
       <module fileurl="file://$PROJECT_DIR$/layoutlib-api/android.sdktools.base.layoutlib-api-base.iml" filepath="$PROJECT_DIR$/layoutlib-api/android.sdktools.base.layoutlib-api-base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../adt/idea/layoutlib-loader/android.sdktools.base.layoutlib-loader.iml" filepath="$PROJECT_DIR$/../adt/idea/layoutlib-loader/android.sdktools.base.layoutlib-loader.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-checks/android.sdktools.base.lint.checks-base.iml" filepath="$PROJECT_DIR$/lint/libs/lint-checks/android.sdktools.base.lint.checks-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/cli/android.sdktools.base.lint.cli.iml" filepath="$PROJECT_DIR$/lint/cli/android.sdktools.base.lint.cli.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-gradle/android.sdktools.base.lint.gradle.iml" filepath="$PROJECT_DIR$/lint/libs/lint-gradle/android.sdktools.base.lint.gradle.iml" />
