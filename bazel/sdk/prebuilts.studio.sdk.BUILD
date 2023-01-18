@@ -255,6 +255,7 @@ platform_filegroup(
     name = "platforms/android-29",
     visibility = [
         "//prebuilts/studio/buildbenchmarks:__pkg__",
+        "//tools/base/build-system/integration-test:__subpackages__",
     ],
 )
 

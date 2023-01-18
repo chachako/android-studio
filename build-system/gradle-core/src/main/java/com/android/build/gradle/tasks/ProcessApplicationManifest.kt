@@ -38,6 +38,7 @@ import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.manifest.ManifestProviderImpl
 import com.android.build.gradle.internal.tasks.manifest.mergeManifests
+import com.android.build.gradle.internal.utils.parseTargetHash
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
@@ -198,7 +199,8 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             ),
             dependencyFeatureNames,
             reportFile.get().asFile,
-            LoggerWrapper.getLogger(ProcessApplicationManifest::class.java)
+            LoggerWrapper.getLogger(ProcessApplicationManifest::class.java),
+            compileSdk = compileSdk.orNull
         )
         outputMergeBlameContents(mergingReport, mergeBlameFile.get().asFile)
 
@@ -283,6 +285,10 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
 
     @get:Input
     abstract val applicationId: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val compileSdk: Property<Int>
 
     @get:Optional
     @get:Input
@@ -418,6 +424,16 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
 
             task.applicationId.set(creationConfig.applicationId)
             task.applicationId.disallowChanges()
+            val compileSdkHashString =
+                    (creationConfig as? ApplicationCreationConfig)?.global?.compileSdkHashString
+
+            task.compileSdk.setDisallowChanges(
+                    if (compileSdkHashString != null) {
+                        parseTargetHash(compileSdkHashString).apiLevel
+                    } else {
+                        null
+                    }
+            )
             task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.getApiString())
             task.targetSdkVersion
                 .setDisallowChanges(

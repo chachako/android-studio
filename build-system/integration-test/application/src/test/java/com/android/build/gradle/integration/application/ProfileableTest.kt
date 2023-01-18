@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.apksig.ApkVerifier
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -81,6 +80,32 @@ class ProfileableTest {
     }
 
     @Test
+    fun `test dsl setting the release build type to be profileable on Api 29`() {
+        val app = project.getSubproject(":app")
+        app.buildFile.apply {
+            appendText("android.buildTypes.release.profileable true\n")
+            appendText("android.compileSdk 29")
+        }
+
+        project.executor()
+                .with(BooleanOption.ENABLE_DEFAULT_DEBUG_SIGNING_CONFIG, true)
+                .run("assembleRelease")
+        val apkSigned =
+                project.getSubproject("app").getApk(GradleTestProject.ApkType.RELEASE_SIGNED)
+        val manifest = ApkSubject.getManifestContent(apkSigned.file.toAbsolutePath())
+        assertThat(manifest).containsAtLeastElementsIn(
+                arrayListOf(
+                        "        E: application (line=11)",
+                        "            E: profileable (line=12)",
+                        "              A: http://schemas.android.com/apk/res/android:shell(0x01010594)=true"
+                )
+        )
+        assertThat(manifest).doesNotContain(
+                "              A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true"
+        )
+    }
+
+    @Test
     fun `test dsl when profileable and debuggable enabled`() {
         val app = project.getSubproject(":app")
         app.buildFile.appendText("android.buildTypes.debug.debuggable true\n")
@@ -132,12 +157,12 @@ class ProfileableTest {
     }
 
     @Test
-    fun `build with minSdk less than 30 fails`() {
+    fun `build with compileSdk less than 29 fails`() {
         val app = project.getSubproject(":app")
         TestFileUtils.searchAndReplace(
             app.buildFile.absoluteFile,
             "android.compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION",
-            "android.compileSdkVersion 29",
+            "android.compileSdkVersion 28",
         )
         val result = project.executor()
             .with(StringOption.PROFILING_MODE, "profileable")
@@ -146,7 +171,7 @@ class ProfileableTest {
 
         result.stderr.use { out ->
             ScannerSubject.assertThat(out).contains(
-                "'profileable' is enabled with compile SDK <30."
+                "'profileable' is enabled with compile SDK less than API 29."
             )
         }
     }

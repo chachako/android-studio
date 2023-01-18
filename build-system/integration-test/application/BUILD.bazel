@@ -49,6 +49,7 @@ OLD_SDKS = [
     "//prebuilts/studio/sdk:platforms/android-21_build_only",
     "//prebuilts/studio/sdk:platforms/android-23_build_only",
     "//prebuilts/studio/sdk:platforms/android-24_build_only",
+    "//prebuilts/studio/sdk:platforms/android-29_build_only",
 ]
 
 PREVIEW_SDKS = [

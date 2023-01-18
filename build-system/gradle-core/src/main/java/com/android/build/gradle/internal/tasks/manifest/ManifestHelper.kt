@@ -62,7 +62,8 @@ fun mergeManifests(
     dependencyFeatureNames: Collection<String>,
     reportFile: File?,
     logger: ILogger,
-    checkIfPackageInMainManifest: Boolean = true
+    checkIfPackageInMainManifest: Boolean = true,
+    compileSdk: Int? = null
 ): MergingReport {
 
     try {
@@ -99,7 +100,7 @@ fun mergeManifests(
             manifestMergerInvoker,
             packageOverride, versionCode, versionName,
             minSdkVersion, targetSdkVersion, maxSdkVersion,
-            injectProfileable, testOnly
+            injectProfileable, testOnly, compileSdk
         )
 
         val mergingReport = manifestMergerInvoker.merge()
@@ -198,7 +199,8 @@ private fun setInjectableValues(
     targetSdkVersion: String?,
     maxSdkVersion: Int?,
     profileable: Boolean,
-    testOnly: Boolean
+    testOnly: Boolean,
+    compileSdk: Int?
 ) {
 
     if (packageOverride != null && packageOverride.isNotEmpty()) {
@@ -225,7 +227,10 @@ private fun setInjectableValues(
     }
     if (profileable) {
         invoker.setOverride(ManifestSystemProperty.Profileable.SHELL, "true")
-        invoker.setOverride(ManifestSystemProperty.Profileable.ENABLED, "true")
+        // API 29 doesn't support 'android:enabled' for the profileable tag.
+        if (compileSdk != null && compileSdk >= 30) {
+            invoker.setOverride(ManifestSystemProperty.Profileable.ENABLED, "true")
+        }
     }
     if (testOnly) {
         invoker.setOverride(ManifestSystemProperty.Application.TEST_ONLY, "true")
