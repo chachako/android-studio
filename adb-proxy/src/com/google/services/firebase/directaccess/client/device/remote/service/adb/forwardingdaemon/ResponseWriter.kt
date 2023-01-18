@@ -16,26 +16,26 @@
 
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
-import java.io.OutputStream
+import com.android.adblib.AdbOutputChannel
 
 /**
  * A helper that writes responses to the adbd socket, behaving as a service running on the device.
  */
-internal class ResponseWriter(private val outputStream: OutputStream) {
-  fun writeOkayResponse(streamId: Int, output: String = "") {
+internal class ResponseWriter(private val adbOutputChannel: AdbOutputChannel) {
+  suspend fun writeOkayResponse(streamId: Int, output: String = "") {
     writeResponse(streamId, "OKAY", output)
   }
 
-  fun writeFailResponse(streamId: Int, failureReason: String) {
+  suspend fun writeFailResponse(streamId: Int, failureReason: String) {
     writeResponse(streamId, "FAIL", failureReason)
   }
 
-  private fun writeResponse(streamId: Int, responseType: String, output: String) {
+  private suspend fun writeResponse(streamId: Int, responseType: String, output: String) {
     val outputString =
       responseType + if (output.isEmpty()) "" else toHexString(output.length) + output
-    OkayCommand(streamId, streamId).writeTo(outputStream)
-    WriteCommand(streamId, streamId, outputString.toByteArray()).writeTo(outputStream)
-    CloseCommand(streamId, streamId).writeTo(outputStream)
+    OkayCommand(streamId, streamId).writeTo(adbOutputChannel)
+    WriteCommand(streamId, streamId, outputString.toByteArray()).writeTo(adbOutputChannel)
+    CloseCommand(streamId, streamId).writeTo(adbOutputChannel)
   }
 
   private fun toHexString(int: Int): String = String.format("%04X", int)

@@ -16,7 +16,7 @@
 
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
-import java.io.OutputStream
+import com.android.adblib.AdbOutputChannel
 
 /**
  * Interface for handling stream creation requests.
@@ -37,5 +37,5 @@ interface StreamOpener {
    * Open a new service stream on the remote device. The returned stream will be managed by the
    * [ForwardingDaemon].
    */
-  fun open(service: String, streamId: Int, adbdOutputStream: OutputStream): Stream
+  fun open(service: String, streamId: Int, adbOutputChannel: AdbOutputChannel): Stream
 }

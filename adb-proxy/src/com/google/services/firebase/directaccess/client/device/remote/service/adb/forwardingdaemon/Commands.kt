@@ -16,8 +16,8 @@
 
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
-import java.io.InputStream
-import java.io.OutputStream
+import com.android.adblib.AdbInputChannel
+import com.android.adblib.AdbOutputChannel
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.zip.CRC32
@@ -58,54 +58,50 @@ sealed class Command(
   private val secondArg: Int,
   private val payload: ByteArray = ByteArray(0),
 ) {
-  /** Write this command to the provided OutputStream. */
-  fun writeTo(outputStream: OutputStream) {
+  /** Write this command to the provided AdbOutputChannel. */
+  suspend fun writeTo(adbOutputChannel: AdbOutputChannel) {
     val crc = CRC32()
     crc.update(payload, 0, payload.size)
 
-    val buf = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN)
-
-    buf
-      .putInt(type)
-      .putInt(firstArg)
-      .putInt(secondArg)
-      .putInt(payload.size)
-      .putInt(crc.value.toInt()) // TODO: Determine if we still use CRC32.
-      .putInt(type xor 0xFFFFFFFF.toInt()) // "magic"
-
-    buf.flip()
-
-    val byteArray = ByteArray(buf.remaining() + payload.size)
-    buf.get(byteArray, 0, 24)
-    System.arraycopy(payload, 0, byteArray, 24, payload.size)
-    outputStream.write(byteArray)
+    val buf =
+      ByteBuffer.allocate(24 + payload.size)
+        .order(ByteOrder.LITTLE_ENDIAN)
+        .putInt(type)
+        .putInt(firstArg)
+        .putInt(secondArg)
+        .putInt(payload.size)
+        .putInt(crc.value.toInt()) // TODO: Determine if we still use CRC32.
+        .putInt(type xor 0xFFFFFFFF.toInt()) // "magic"
+        .put(payload)
+        .flip()
+    adbOutputChannel.write(buf)
   }
 
   companion object {
-    private val readLock = Any()
-
     /** Read the next Command from the provided InputStream. */
-    fun readFrom(inputStream: InputStream): Command {
+    suspend fun readFrom(adbInputChannel: AdbInputChannel): Command {
       val byteBuffer = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN)
-      synchronized(readLock) {
-        inputStream.readNBytes(byteBuffer.array(), 0, 24)
 
-        val commandId = byteBuffer.getInt(0)
-        val firstArg = byteBuffer.getInt(4)
-        val secondArg = byteBuffer.getInt(8)
-        val payloadSize = byteBuffer.getInt(12)
+      adbInputChannel.readExactly(byteBuffer)
 
-        val payload = ByteArray(payloadSize)
-        inputStream.readNBytes(payload, 0, payloadSize)
+      val commandId = byteBuffer.getInt(0)
+      val firstArg = byteBuffer.getInt(4)
+      val secondArg = byteBuffer.getInt(8)
+      val payloadSize = byteBuffer.getInt(12)
 
-        return when (commandId) {
-          CNXN -> ConnectCommand(firstArg, secondArg, String(payload))
-          OPEN -> OpenCommand(firstArg, String(payload))
-          OKAY -> OkayCommand(firstArg, secondArg)
-          CLSE -> CloseCommand(firstArg, secondArg)
-          WRTE -> WriteCommand(firstArg, secondArg, payload)
-          else -> throw UnknownCommandTypeException(commandId)
-        }
+      val payloadBuffer = ByteBuffer.allocate(payloadSize).order(ByteOrder.LITTLE_ENDIAN)
+      adbInputChannel.readExactly(payloadBuffer)
+      payloadBuffer.flip()
+      val payload = ByteArray(payloadSize)
+      payloadBuffer.get(payload, 0, payloadSize)
+
+      return when (commandId) {
+        CNXN -> ConnectCommand(firstArg, secondArg, String(payload))
+        OPEN -> OpenCommand(firstArg, String(payload))
+        OKAY -> OkayCommand(firstArg, secondArg)
+        CLSE -> CloseCommand(firstArg, secondArg)
+        WRTE -> WriteCommand(firstArg, secondArg, payload)
+        else -> throw UnknownCommandTypeException(commandId)
       }
     }
   }

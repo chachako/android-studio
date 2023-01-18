@@ -16,8 +16,8 @@
 
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
+import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
-import java.io.OutputStream
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -41,12 +41,12 @@ import kotlinx.coroutines.sync.withLock
 internal class ReverseService(
   private val deviceId: String,
   private val scope: CoroutineScope,
-  outputStream: OutputStream,
+  outputChannel: AdbOutputChannel,
   private val adbSession: AdbSession
 ) {
   private val openReverses = ConcurrentHashMap<String, ReverseForwardStream>()
   private val openReversesLock = Mutex()
-  private val responseWriter = ResponseWriter(outputStream)
+  private val responseWriter = ResponseWriter(outputChannel)
 
   /** Handle a command to the "reverse:" service. */
   suspend fun handleReverse(command: String, streamId: Int) {

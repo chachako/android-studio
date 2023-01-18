@@ -65,7 +65,7 @@ interface ForwardingDaemon : AutoCloseable {
    * Upon receipt of a remote command from the ADB server, the ForwardingDaemon should handle it by
    * routing it to the appropriate Stream.
    */
-  fun receiveRemoteCommand(command: StreamCommand)
+  suspend fun receiveRemoteCommand(command: StreamCommand)
 }
 
 fun ForwardingDaemon(

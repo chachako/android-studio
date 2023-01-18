@@ -156,7 +156,7 @@ internal class ReverseForwardStream(
     logger.warning("Unexpected close")
   }
 
-  override fun receiveCommand(command: StreamCommand) {
+  override suspend fun receiveCommand(command: StreamCommand) {
     // We shouldn't receive anything from the device, because we're not sending anything to the
     // device.
     logger.warning("Unexpected command: $command")

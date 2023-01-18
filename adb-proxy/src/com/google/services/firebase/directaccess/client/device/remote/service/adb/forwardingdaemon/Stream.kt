@@ -32,5 +32,5 @@ interface Stream {
    * alternative requests to the remote device. The responses to those requests should be handled
    * here.
    */
-  fun receiveCommand(command: StreamCommand)
+  suspend fun receiveCommand(command: StreamCommand)
 }

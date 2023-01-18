@@ -16,10 +16,8 @@
 
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
+import com.android.adblib.AdbChannel
 import com.android.adblib.AdbSession
-import java.net.InetAddress
-import java.net.ServerSocket
-import java.net.Socket
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -37,6 +35,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
 /**
  * An implementation of the ADB server to device protocol that forwards all commands to a remote
@@ -58,7 +58,7 @@ internal class ForwardingDaemonImpl(
 
   // The socket the local ADB server sends ADB commands to. Bytes, in this case ADB commands,
   // coming to this socket are forwarded to the remote device.
-  private lateinit var adbdSocket: Socket
+  private lateinit var localAdbChannel: AdbChannel
   private lateinit var deviceState: DeviceState
   private lateinit var adbCommandHandler: Job
 
@@ -66,28 +66,31 @@ internal class ForwardingDaemonImpl(
     streamOpener.connect(this)
 
     withContext(Dispatchers.IO) {
-      // TODO(b/247398366): use adblib sockets
-      ServerSocket(0, 1, InetAddress.getLoopbackAddress()).use { serverSocket ->
-        devicePort = serverSocket.localPort
+      adbSession.channelFactory.createServerSocket().use { serverSocket ->
+        devicePort = serverSocket.bind().port
         startedLatch.unlock()
         while (true) {
           try {
             logger.info("Waiting for remote device to come online.")
             deviceStateLatch.waitForOnline()
             logger.info("Device is online at port: $devicePort!")
-            adbdSocket = serverSocket.accept()
-            adbdSocket.tcpNoDelay = true
+            // A mutex is added to the wrapped AdbChannel for concurrent write calling.
+            localAdbChannel = serverSocket.accept().let { adbChannel ->
+                object : AdbChannel by adbChannel {
+                    val writeMutex = Mutex()
+                    override suspend fun write(
+                        buffer: ByteBuffer,
+                        timeout: Long,
+                        unit: TimeUnit
+                    ): Int  = writeMutex.withLock { adbChannel.write(buffer, timeout, unit) }
+                }
+            }
             reverseService =
-              ReverseService(
-                "localhost:$devicePort",
-                scope,
-                adbdSocket.getOutputStream(),
-                adbSession
-              )
+              ReverseService("localhost:$devicePort", scope, localAdbChannel, adbSession)
 
             while (true) {
               ensureActive()
-              val command = Command.readFrom(adbdSocket.getInputStream())
+              val command = Command.readFrom(localAdbChannel)
 
               logger.fine("Local Server -> Device: $command")
 
@@ -140,31 +143,30 @@ internal class ForwardingDaemonImpl(
     if (features != null) this.features = features
     deviceState = newState
     deviceStateLatch.onState(newState)
-    if (this::adbdSocket.isInitialized) adbdSocket.close()
+    if (this::localAdbChannel.isInitialized) localAdbChannel.close()
   }
 
-  private fun handleConnect() {
+  private suspend fun handleConnect() {
     // We ignore the information in the connect request coming from the local ADB server and
     // respond with device information we gathered when waiting for the device to come online.
     val response = ConnectCommand(banner = "${deviceState.adbState}::features=$features")
-    response.writeTo(adbdSocket.getOutputStream())
+    response.writeTo(localAdbChannel)
   }
 
   private suspend fun handleOpen(header: OpenCommand) {
     if (header.service.startsWith("reverse:")) {
       reverseService!!.handleReverse(header.service, header.localId)
     } else {
-      streams[header.localId] =
-        streamOpener.open(header.service, header.localId, adbdSocket.getOutputStream())
+      streams[header.localId] = streamOpener.open(header.service, header.localId, localAdbChannel)
 
-      OkayCommand(header.localId, header.localId).writeTo(adbdSocket.getOutputStream())
+      OkayCommand(header.localId, header.localId).writeTo(localAdbChannel)
     }
   }
 
-  private fun handleWrite(command: WriteCommand) {
+  private suspend fun handleWrite(command: WriteCommand) {
     streams[command.remoteId]?.sendWrite(command)
 
-    OkayCommand(command.remoteId, command.remoteId).writeTo(adbdSocket.getOutputStream())
+    OkayCommand(command.remoteId, command.remoteId).writeTo(localAdbChannel)
   }
 
   private fun handleOkay() {
@@ -178,7 +180,7 @@ internal class ForwardingDaemonImpl(
   }
 
   /** Receive a command from the remote ADB server. */
-  override fun receiveRemoteCommand(command: StreamCommand) {
+  override suspend fun receiveRemoteCommand(command: StreamCommand) {
     streams[command.remoteId]?.receiveCommand(command)
   }
 
