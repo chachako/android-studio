@@ -24,9 +24,11 @@ class CmdSetDdm extends CmdSet {
     private static Map<Integer, DDMChunkHandler> ddmHandlers = new HashMap<>();
 
     private static final String ART_TIMING_CHUNK = "ARTT";
-    private static final String HELO_CHUNK = "HELO";
+    static final String HELO_CHUNK = "HELO";
 
     private static final DDMChunkHandler defaultDDMHandler = new DDMChunkHandler();
+
+    static final String WARNING_ON_EMPTY = "Cannot trace empty DDM packet";
 
     static {
         ddmHandlers.put(typeFromName("APNM"), defaultDDMHandler);
@@ -69,11 +71,18 @@ class CmdSetDdm extends CmdSet {
         add(1, "Packet", this::parseDdmCmd, this::parseDdmReply);
     }
 
-    private Message parseDdmReply(@NonNull MessageReader reader, @NonNull Session session) {
+    @NonNull
+    Message parseDdmReply(@NonNull MessageReader reader, @NonNull Session session) {
         Message msg = new Message(reader);
 
         int type = reader.getInt();
         int length = reader.getInt();
+
+        if (reader.remaining() == 0) {
+            // DDM packet can be empty to signal "Command executed successfully".
+            // We just ignore them.
+            return msg;
+        }
 
         if (ddmHandlers.containsKey(type)) {
             ddmHandlers.get(type).getReplyParser().parse(reader, session, msg);
@@ -82,7 +91,7 @@ class CmdSetDdm extends CmdSet {
         return msg;
     }
 
-    private Message parseDdmCmd(@NonNull MessageReader reader, @NonNull Session session) {
+    Message parseDdmCmd(@NonNull MessageReader reader, @NonNull Session session) {
         Message msg = new Message(reader);
 
         int type = reader.getInt();
@@ -190,7 +199,7 @@ class CmdSetDdm extends CmdSet {
         return new String(ascii);
     }
 
-    private static int typeFromName(String name) {
+    static int typeFromName(String name) {
         if (name.length() != 4) {
             throw new RuntimeException("DDM Type name must be 4 letter long");
         }

@@ -32,16 +32,27 @@ public class JDWPTracer {
     private final boolean enabled;
     private final Path outputFolder;
 
+    private final Log log;
+
     public JDWPTracer(boolean enabled) {
         this(enabled, Paths.get(System.getProperty("java.io.tmpdir")));
     }
 
     public JDWPTracer(boolean enabled, @NonNull Path folder) {
+        this(enabled, folder, new Log());
+    }
+
+    public JDWPTracer(boolean enabled, @NonNull Log log) {
+        this(enabled, Paths.get(System.getProperty("java.io.tmpdir")), log);
+    }
+
+    JDWPTracer(boolean enabled, @NonNull Path folder, @NonNull Log log) {
         this.enabled = enabled;
         this.outputFolder = folder;
         if (enabled) {
             session = new Session();
         }
+        this.log = log;
     }
 
     /**
@@ -56,13 +67,15 @@ public class JDWPTracer {
             return;
         }
 
-        buffer = buffer.duplicate();
-        buffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer packet = buffer.duplicate();
+        packet.order(ByteOrder.BIG_ENDIAN);
 
         try {
-            session.addPacket(buffer);
+            session.addPacket(packet);
         } catch (Exception e) {
-            e.printStackTrace();
+            // We don't log the exception to avoid being misleading in idea.log. Add
+            // a log.warn(..., e) if it turns out this is not enough data to debug.
+            log.warn("Unable to trace packet: " + session.details(buffer.duplicate()), e);
         }
     }
 

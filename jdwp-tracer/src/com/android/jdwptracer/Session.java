@@ -120,4 +120,65 @@ class Session {
     String name() {
         return name;
     }
+
+    @NonNull
+    String details(@NonNull ByteBuffer buffer) {
+        String details = "";
+        if (buffer.remaining() < Integer.BYTES) {
+            details += "Empty";
+            return details;
+        }
+        details += "Length=" + buffer.getInt();
+
+        if (buffer.remaining() < Integer.BYTES) {
+            details += ", no ID";
+            return details;
+        }
+        details += ", ID=" + buffer.getInt();
+
+        if (buffer.remaining() < Byte.BYTES) {
+            details += ", no FLAGS";
+            return details;
+        }
+        byte flag = buffer.get();
+        details += "flags=" + flag;
+
+        if (Packet.isReply(flag)) {
+            details += detailsReply(buffer);
+
+        } else {
+            details += detailsCmd(buffer);
+        }
+
+        return details;
+    }
+
+    private String detailsCmd(ByteBuffer buffer) {
+        String details = "";
+
+        if (buffer.remaining() < Byte.BYTES) {
+            details += ", no cmdset";
+            return details;
+        }
+        details += ",cmdset=" + buffer.get();
+
+        if (buffer.remaining() < Byte.BYTES) {
+            details += ", no cmd";
+            return details;
+        }
+        details += ",cmd=" + buffer.get();
+
+        return details;
+    }
+
+    private String detailsReply(ByteBuffer buffer) {
+        String details = "";
+        if (buffer.remaining() < Short.BYTES) {
+            details += ", no errorCode";
+            return details;
+        }
+        details += ",errorCode=" + buffer.getShort();
+
+        return details;
+    }
 }
