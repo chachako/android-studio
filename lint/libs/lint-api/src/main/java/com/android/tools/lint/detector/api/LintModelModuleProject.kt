@@ -41,7 +41,7 @@ import java.io.IOException
 
 /**
  * Lint project for a project backed by a [LintModelModule] (which could
- * be an app, a library, dynamic feature, etc.
+ * be an app, a library, dynamic feature, etc.)
  */
 open class LintModelModuleProject(
     client: LintClient,

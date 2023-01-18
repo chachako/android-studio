@@ -109,7 +109,7 @@ class GradleModelMocker @JvmOverloads constructor(
         mainSourceProvider = createSourceProvider(projectDir, "main"),
         unitTestSourceProvider = createSourceProvider(projectDir, "test", isUnitTest = true),
         instrumentationTestSourceProvider = createSourceProvider(projectDir, "androidTest", isInstrumentationTest = true),
-        testFixturesSourceProvider = createSourceProvider(projectDir, "testFixtures"),
+        testFixturesSourceProvider = createSourceProvider(projectDir, "testFixtures", isTestFixture = true),
     )
     private var flavorDimensions: List<String> = emptyList()
     private var buildTypes: List<TestBuildType> = emptyList()
@@ -1497,7 +1497,8 @@ class GradleModelMocker @JvmOverloads constructor(
                     ),
                     testFixturesSourceProvider = createSourceProvider(
                         projectDir,
-                        "testFixtures".appendCapitalized(name)
+                        "testFixtures".appendCapitalized(name),
+                        isTestFixture = true
                     ),
                 )
             )
@@ -1977,13 +1978,15 @@ class GradleModelMocker @JvmOverloads constructor(
             name: String,
             isUnitTest: Boolean = false,
             isInstrumentationTest: Boolean = false,
-            isDebugOnly: Boolean = false
+            isDebugOnly: Boolean = false,
+            isTestFixture: Boolean = false
         ): TestLintModelSourceProvider {
             return TestLintModelSourceProvider(
                 name = name,
                 _isUnitTest = isUnitTest,
                 _isInstrumentationTest = isInstrumentationTest,
                 _isDebugOnly = isDebugOnly,
+                _isTestFixture = isTestFixture,
                 manifestFiles = listOf(
                     File(root, "src/" + name + "/" + SdkConstants.ANDROID_MANIFEST_XML)
                 ),
@@ -2370,9 +2373,10 @@ private data class TestLintModelResourceField(
 
 private data class TestLintModelSourceProvider(
     val name: String,
-    val _isUnitTest: Boolean,
-    val _isInstrumentationTest: Boolean,
-    val _isDebugOnly: Boolean,
+    private val _isUnitTest: Boolean,
+    private val _isInstrumentationTest: Boolean,
+    private val _isDebugOnly: Boolean,
+    private val _isTestFixture: Boolean,
     override val manifestFiles: Collection<File>,
     override val javaDirectories: Collection<File>,
     override val resDirectories: Collection<File>,
@@ -2383,6 +2387,8 @@ private data class TestLintModelSourceProvider(
     override fun isInstrumentationTest(): Boolean = _isInstrumentationTest
 
     override fun isDebugOnly(): Boolean = _isDebugOnly
+
+    override fun isTestFixture(): Boolean = _isTestFixture
 }
 
 private data class TestLintModelAndroidLibrary(

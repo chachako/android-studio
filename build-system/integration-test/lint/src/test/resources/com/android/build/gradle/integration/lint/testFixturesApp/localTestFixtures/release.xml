@@ -33,7 +33,8 @@
     <sourceProvider
         manifests="src/testFixtures/AndroidManifest.xml"
         javaDirectories="src/testFixtures/java:src/testFixturesRelease/java:src/testFixtures/kotlin:src/testFixturesRelease/kotlin"
-        assetsDirectories="src/testFixtures/assets:src/testFixturesRelease/assets"/>
+        assetsDirectories="src/testFixtures/assets:src/testFixturesRelease/assets"
+        testFixture="true"/>
   </testFixturesSourceProviders>
   <mainArtifact
       classOutputs="build/intermediates/javac/release/classes:build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/release/R.jar"

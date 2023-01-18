@@ -608,6 +608,9 @@ private open class LintModelWriter(
         if (sourceProvider.isDebugOnly()) {
             printer.printAttribute("debugOnly", VALUE_TRUE, indent)
         }
+        if (sourceProvider.isTestFixture()) {
+            printer.printAttribute("testFixture", VALUE_TRUE, indent)
+        }
         printer.println("/>")
     }
 }
@@ -1272,6 +1275,7 @@ private abstract class LintModelReader(
         val androidTestOnly = getOptionalBoolean("androidTest", false)
         val unitTestOnly = getOptionalBoolean("unitTest", false)
         val debugOnly = getOptionalBoolean("debugOnly", false)
+        val testFixture = getOptionalBoolean("testFixture", false)
         finishTag(tag)
 
         return DefaultLintModelSourceProvider(
@@ -1281,7 +1285,8 @@ private abstract class LintModelReader(
             assetsDirectories = assetsDirectories,
             debugOnly = debugOnly,
             instrumentationTestOnly = androidTestOnly,
-            unitTestOnly = unitTestOnly
+            unitTestOnly = unitTestOnly,
+            testFixture = testFixture
         )
     }
 

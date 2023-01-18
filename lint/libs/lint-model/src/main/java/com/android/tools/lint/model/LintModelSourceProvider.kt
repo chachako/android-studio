@@ -46,6 +46,12 @@ interface LintModelSourceProvider {
      * source set?
      */
     fun isDebugOnly(): Boolean
+
+    /**
+     * Are the sources from this source provider specific to test
+     * fixtures?
+     */
+    fun isTestFixture(): Boolean
 }
 
 class DefaultLintModelSourceProvider(
@@ -55,11 +61,13 @@ class DefaultLintModelSourceProvider(
     override val assetsDirectories: Collection<File>,
     private val debugOnly: Boolean,
     private val unitTestOnly: Boolean,
-    private val instrumentationTestOnly: Boolean
+    private val instrumentationTestOnly: Boolean,
+    private val testFixture: Boolean
 ) : LintModelSourceProvider {
     override fun isUnitTest(): Boolean = unitTestOnly
     override fun isInstrumentationTest(): Boolean = instrumentationTestOnly
     override fun isDebugOnly(): Boolean = debugOnly
+    override fun isTestFixture(): Boolean = testFixture
 
     override fun toString(): String {
         return manifestFiles.first().parentFile?.path ?: "?"

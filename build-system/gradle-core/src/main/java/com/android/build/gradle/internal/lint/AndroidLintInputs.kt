@@ -1028,7 +1028,8 @@ abstract class VariantInputs {
                     .initialize(
                         testFixturesCreationConfig.sources,
                         lintMode,
-                        projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory }
+                        projectDir = creationConfig.services.provider { creationConfig.services.projectInfo.projectDirectory },
+                        testFixtureOnly = true
                     )
             )
         }
@@ -1264,12 +1265,16 @@ abstract class SourceProviderInput {
     @get:Input
     abstract val instrumentationTestOnly: Property<Boolean>
 
+    @get:Input
+    abstract val testFixtureOnly: Property<Boolean>
+
     internal fun initialize(
         sources: InternalSources,
         lintMode: LintMode,
         projectDir: Provider<Directory>,
         unitTestOnly: Boolean = false,
-        instrumentationTestOnly: Boolean = false
+        instrumentationTestOnly: Boolean = false,
+        testFixtureOnly: Boolean = false
     ): SourceProviderInput {
         this.manifestFiles.add(sources.manifestFile)
         this.manifestFiles.addAll(sources.manifestOverlayFiles.map { it.filter(File::isFile) })
@@ -1341,6 +1346,7 @@ abstract class SourceProviderInput {
         this.debugOnly.setDisallowChanges(false) //TODO
         this.unitTestOnly.setDisallowChanges(unitTestOnly)
         this.instrumentationTestOnly.setDisallowChanges(instrumentationTestOnly)
+        this.testFixtureOnly.setDisallowChanges(testFixtureOnly)
         return this
     }
 
@@ -1366,6 +1372,7 @@ abstract class SourceProviderInput {
         this.debugOnly.setDisallowChanges(false)
         this.unitTestOnly.setDisallowChanges(unitTestOnly)
         this.instrumentationTestOnly.setDisallowChanges(false)
+        this.testFixtureOnly.setDisallowChanges(false)
         return this
     }
 
@@ -1379,6 +1386,7 @@ abstract class SourceProviderInput {
                 debugOnly = debugOnly.get(),
                 unitTestOnly = unitTestOnly.get(),
                 instrumentationTestOnly = instrumentationTestOnly.get(),
+                testFixture = testFixtureOnly.get()
             )
         )
     }
