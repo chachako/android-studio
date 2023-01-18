@@ -50,7 +50,7 @@ public class JDWPTracer {
         this.enabled = enabled;
         this.outputFolder = folder;
         if (enabled) {
-            session = new Session();
+            session = new Session(log);
         }
         this.log = log;
     }
@@ -86,8 +86,8 @@ public class JDWPTracer {
 
         Path outputPath = outputFolder.resolve("perfetto-trace-" + session.name() + ".json");
         SystraceOutput.genOutput(session, outputPath);
-        System.out.println("JDWTrace written to '" + outputPath.toAbsolutePath() + "'");
-        session = new Session();
+        log.info("JDWTrace written to '" + outputPath.toAbsolutePath() + "'");
+        session = new Session(log);
     }
 
     /**

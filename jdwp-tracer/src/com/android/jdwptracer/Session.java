@@ -37,7 +37,11 @@ class Session {
 
     private String name = "unknown";
 
-    Session() {}
+    private final Log log;
+
+    Session(Log log) {
+        this.log = log;
+    }
 
     // private
     void addPacket(@NonNull ByteBuffer packet) {
@@ -75,7 +79,7 @@ class Session {
 
         if (!idToTransmission.containsKey(id)) {
             String msg = String.format(Locale.US, "Found reply id=%d packet without a cmd", id);
-            System.out.println("Warning: " + msg);
+            log.warn(msg);
             return;
         }
         Transmission t = idToTransmission.get(id);

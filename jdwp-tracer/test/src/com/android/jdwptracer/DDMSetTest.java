@@ -32,7 +32,7 @@ public class DDMSetTest {
         fakeDDMPacket.rewind();
         messageReader.setBuffer(fakeDDMPacket);
 
-        ddm.parseDdmReply(messageReader, new Session());
+        ddm.parseDdmReply(messageReader, new Session(new Log()));
         // We don't assert anything. Reaching the end of the test without BufferUnderflowException
         // is enough to validate we detect an empty DDM packet.
     }

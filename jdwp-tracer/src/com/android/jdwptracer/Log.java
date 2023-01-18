@@ -17,6 +17,10 @@ package com.android.jdwptracer;
 
 class Log {
 
+    void info(String message) {
+        System.out.println("JDWP-Info:" + message);
+    }
+
     void warn(String message) {
         System.out.println("JDWP-Warning:" + message);
     }
