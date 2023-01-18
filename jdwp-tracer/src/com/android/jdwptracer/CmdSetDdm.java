@@ -18,7 +18,6 @@ package com.android.jdwptracer;
 import com.android.annotations.NonNull;
 import java.util.HashMap;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
 
 class CmdSetDdm extends CmdSet {
 
@@ -103,7 +102,7 @@ class CmdSetDdm extends CmdSet {
         return msg;
     }
 
-    @NotNull
+    @NonNull
     private static void parseArtMetricsCmd(
             @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {
         // These are the timing from art processing on-device.
@@ -124,7 +123,7 @@ class CmdSetDdm extends CmdSet {
         session.addTimings(timings);
     }
 
-    @NotNull
+    @NonNull
     private static void parseArtMetricsReply(
             @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {}
 
