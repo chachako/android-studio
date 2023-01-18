@@ -31,8 +31,7 @@ class CmdSetDdm extends CmdSet {
     static {
         ddmHandlers.put(typeFromName("APNM"), defaultDDMHandler);
         ddmHandlers.put(typeFromName("EXIT"), defaultDDMHandler);
-        ddmHandlers.put(
-                typeFromName("HELO"),
+        ddmHandlers.put(typeFromName(HELO_CHUNK),
                 new DDMChunkHandler(CmdSetDdm::parseHELOCmd, CmdSetDdm::parseHELOReply));
         ddmHandlers.put(typeFromName("FEAT"), defaultDDMHandler);
         ddmHandlers.put(typeFromName("TEST"), defaultDDMHandler);
@@ -58,10 +57,8 @@ class CmdSetDdm extends CmdSet {
         ddmHandlers.put(typeFromName("REAQ"), defaultDDMHandler);
         ddmHandlers.put(typeFromName("REAL"), defaultDDMHandler);
 
-        ddmHandlers.put(
-                typeFromName("ARTT"),
-                new DDMChunkHandler(
-                        CmdSetDdm::parseArtMetricsCmd, CmdSetDdm::parseArtMetricsReply));
+        ddmHandlers.put( typeFromName(ART_TIMING_CHUNK),
+                new DDMChunkHandler( CmdSetDdm::parseArtMetricsCmd, CmdSetDdm::parseArtMetricsReply));
     }
 
     // Source debugmon.html
