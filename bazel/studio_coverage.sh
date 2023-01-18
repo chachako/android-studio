@@ -109,26 +109,11 @@ fi
 readonly lcov_path="./bazel-bin/external/cov/comps/lcov"
 readonly comp_list_path="./bazel-bin/external/cov/comps/list"
 
-# Generate the HTML report
-#genhtml -o "./out/html" ${lcov_path} -p $(pwd) --no-function-coverage || exit $?
-
 if [[ -d "${dist_dir}" ]]; then
   # Copy the report to ab/ outputs
   mkdir "${dist_dir}/coverage" || exit $?
   cp -pv ${lcov_path} "${dist_dir}/coverage" || exit $?
   cp -pv ${comp_list_path} "${dist_dir}/coverage" || exit $?
-  # HTML report needs to be zipped for fast uploads
-  #pushd "./out" || exit $?
-  #zip -r "html.zip" "./html" || exit $?
-  #popd || exit $?
-  #mv -v "./out/html.zip" "${dist_dir}/coverage" || exit $?
-
-  # Upload the LCOV data to GCS if running on BYOB but only for postsubmit builds
-  if [[ "$build_number" && "$postsubmit" ]]; then
-    # TODO(b/171261837) remove hardcoded gsutil path
-    /snap/bin/gsutil cp ${lcov_path} "gs://android-devtools-archives/ab-studio-coverage/${build_number}/" || exit $?
-    /snap/bin/gsutil cp ${comp_list_path} "gs://android-devtools-archives/ab-studio-coverage/${build_number}/" || exit $?
-  fi
 fi
 
 collect_and_exit 0
