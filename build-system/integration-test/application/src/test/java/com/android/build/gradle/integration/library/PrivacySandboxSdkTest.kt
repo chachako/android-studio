@@ -58,7 +58,7 @@ class PrivacySandboxSdkTest {
 
     @get:Rule
     val project = createGradleProjectBuilder {
-
+        val androidxPrivacySandboxSdkVersion = "1.0.0-alpha02"
         val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
                 .replace("""\""", """\\""")
         subProject(":android-lib1") {
@@ -74,11 +74,11 @@ class PrivacySandboxSdkTest {
             }
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-                implementation("androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT")
+                implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxSdkVersion")
                 implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
                 implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
-
-                ksp("androidx.privacysandbox.tools:tools-apicompiler:1.0.0-SNAPSHOT")
+                implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxSdkVersion")
+                ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxSdkVersion")
             }
             appendToBuildFile {
                 "def aidlCompilerPath = '$aidlPath'\n" +
@@ -199,10 +199,6 @@ class PrivacySandboxSdkTest {
             .withAdditionalMavenRepo(mavenRepo)
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
             .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
-            .addGradleProperties(
-                    "${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName}=" +
-                            "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT," +
-                            "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT")
             .create()
 
     private fun executor() = project.executor()

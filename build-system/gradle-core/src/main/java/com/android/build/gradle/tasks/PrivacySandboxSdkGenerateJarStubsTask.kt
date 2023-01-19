@@ -163,7 +163,7 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
         /** Name of jar file containing api description that is packaged in an ASAR file. */
         const val privacySandboxSdkStubJarFilename: String = "sdk-interface-descriptors.jar"
 
-        private const val PLAY_SDK_API_PACKAGER_ARTIFACT = "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT"
+        private const val PLAY_SDK_API_PACKAGER_ARTIFACT = "androidx.privacysandbox.tools:tools-apipackager:1.0.0-alpha02"
     }
 }
 

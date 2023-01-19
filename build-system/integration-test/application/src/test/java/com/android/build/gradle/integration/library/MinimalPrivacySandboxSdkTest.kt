@@ -40,7 +40,7 @@ class MinimalPrivacySandboxSdkTest {
     val project = createGradleProjectBuilder {
         val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
                 .replace("""\""", """\\""")
-        val androidxPrivacySandboxSdkVersion = "1.0.0-SNAPSHOT"
+        val androidxPrivacySandboxSdkVersion = "1.0.0-alpha02"
         subProject(":androidlib3") {
             useNewPluginsDsl = true
             plugins.add(PluginType.ANDROID_LIB)
@@ -117,10 +117,6 @@ class MinimalPrivacySandboxSdkTest {
     }.withKotlinGradlePlugin(true)
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
             .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
-            .addGradleProperties(
-                    "${StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName}=" +
-                            "androidx.privacysandbox.tools:tools:1.0.0-SNAPSHOT," +
-                            "androidx.privacysandbox.tools:tools-apipackager:1.0.0-SNAPSHOT")
             .create()
 
     // Test disabled due to https://github.com/google/ksp/issues/1050

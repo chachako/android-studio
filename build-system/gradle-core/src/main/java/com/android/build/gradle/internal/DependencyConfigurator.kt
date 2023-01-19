@@ -494,7 +494,7 @@ class DependencyConfigurator(
                 val apigeneratorArtifact =
                         projectServices.projectOptions
                                 .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
-                                ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-SNAPSHOT"
+                                ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
 
                 val params = reg.parameters
                 params.apiGenerator.setFrom(
