@@ -17,9 +17,9 @@
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
 import com.android.adblib.AdbSession
-import kotlinx.coroutines.CoroutineScope
 import java.time.Duration
 import java.util.concurrent.TimeoutException
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * A ForwardingDaemon behaves as an ADB daemon, connecting to a remote Android device.
@@ -68,5 +68,8 @@ interface ForwardingDaemon : AutoCloseable {
   fun receiveRemoteCommand(command: StreamCommand)
 }
 
-fun ForwardingDaemon(streamOpener: StreamOpener, scope: CoroutineScope, adbSession: AdbSession): ForwardingDaemon =
-  ForwardingDaemonImpl(streamOpener, scope, adbSession)
+fun ForwardingDaemon(
+  streamOpener: StreamOpener,
+  scope: CoroutineScope,
+  adbSession: AdbSession
+): ForwardingDaemon = ForwardingDaemonImpl(streamOpener, scope, adbSession)

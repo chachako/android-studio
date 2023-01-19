@@ -37,6 +37,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +45,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.logging.Level
 
 /**
  * The ReverseForwardStream streams data to and from the ReverseDaemon on the device.
@@ -219,8 +219,7 @@ internal class ReverseForwardStream(
 
     private suspend fun handleOpen(header: StreamDataHeader) {
       if (openSockets.containsKey(header.streamId)) return
-      logger
-        .info("Opening new port (stream ${header.streamId}) at localhost:$localPort")
+      logger.info("Opening new port (stream ${header.streamId}) at localhost:$localPort")
       val newSocket =
         withContext(Dispatchers.IO) {
           Socket(

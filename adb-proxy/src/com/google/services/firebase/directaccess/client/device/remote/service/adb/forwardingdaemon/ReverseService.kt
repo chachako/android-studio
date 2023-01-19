@@ -17,13 +17,13 @@
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
 import com.android.adblib.AdbSession
+import java.io.OutputStream
+import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.io.OutputStream
-import java.util.concurrent.ConcurrentHashMap
-import java.util.logging.Logger
 
 /**
  * A local implementation of the "reverse:" service on an Android device.
@@ -126,11 +126,7 @@ internal class ReverseService(
    * device will be closed, so no new connections will be made.
    */
   suspend fun killAll() {
-    openReversesLock.withLock {
-      openReverses.forEach { (key, _) ->
-        killForwardUnsafe(key)
-      }
-    }
+    openReversesLock.withLock { openReverses.forEach { (key, _) -> killForwardUnsafe(key) } }
   }
 
   private suspend fun killForward(key: String) {
@@ -139,14 +135,14 @@ internal class ReverseService(
   }
 
   /**
-   * This function is unsafe to call directly. Instead, call to this function should be wrapped
-   * with a lock on [openReversesLock].
+   * This function is unsafe to call directly. Instead, call to this function should be wrapped with
+   * a lock on [openReversesLock].
    *
    * For example, see [killForward], [killAll]
    */
   private suspend fun killForwardUnsafe(key: String) {
-      assert(openReversesLock.isLocked)
-      openReverses.remove(key)?.kill()
+    assert(openReversesLock.isLocked)
+    openReverses.remove(key)?.kill()
   }
 
   companion object {

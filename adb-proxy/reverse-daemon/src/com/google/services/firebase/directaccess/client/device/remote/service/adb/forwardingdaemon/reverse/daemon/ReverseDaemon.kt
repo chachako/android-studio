@@ -147,10 +147,10 @@ object ReverseDaemon {
     private val buffer = ByteArray(1024 * 1024)
 
     fun init() {
-        synchronized(writeLock) {
-            Log.d(TAG, "write open socket $streamId")
-            output.write(StreamDataHeader(MessageType.OPEN, streamId, 0).toByteArray())
-        }
+      synchronized(writeLock) {
+        Log.d(TAG, "write open socket $streamId")
+        output.write(StreamDataHeader(MessageType.OPEN, streamId, 0).toByteArray())
+      }
     }
 
     override fun run() {
