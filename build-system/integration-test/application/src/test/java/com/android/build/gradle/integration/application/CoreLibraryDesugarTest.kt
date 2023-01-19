@@ -397,6 +397,25 @@ class CoreLibraryDesugarTest {
     }
 
     @Test
+    fun testKeepRulesConsumptionWithoutArtifactTransform() {
+        addFileDependencies(app)
+
+        executor()
+            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
+            .run("app:assembleRelease")
+
+        val apk = app.getApk(GradleTestProject.ApkType.RELEASE)
+        // check consuming keep rules generated from project/subproject/externalLibs
+        val desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)
+            ?: fail("Failed to find the dex with class name $usedDesugarClass")
+        DexSubject.assertThat(desugarLibDex).containsClass(usedDesugarClass2)
+        // FIXME(266954677): `desugarLibDex` does not contain `usedDesugarClass3`
+        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(usedDesugarClass3)
+        // check unused API classes are removed from the from desugar lib dex.
+        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(unusedDesugarClass)
+    }
+
+    @Test
     fun testKeepRulesConsumptionWithTwoConsecutiveBuilds() {
         executor().run("app:assembleRelease")
         var apk = app.getApk(GradleTestProject.ApkType.RELEASE)
@@ -416,6 +435,41 @@ class CoreLibraryDesugarTest {
         val desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)
             ?: fail("Failed to find the dex with class name $usedDesugarClass")
         DexSubject.assertThat(desugarLibDex).containsClass(usedDesugarClass3)
+    }
+
+    @Test
+    fun testExternalLibsKeepRulesGenerationWithoutArtifactTransform() {
+        addExternalDependency(app)
+
+        executor()
+            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
+            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS, false)
+            .run("clean", "app:assembleRelease")
+
+        val out =
+            InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
+        val expectedKeepRules = "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
+                "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
+                "}$lineSeparator"
+        assertThat(collectKeepRulesUnderDirectory(out)).contains(expectedKeepRules)
+    }
+
+    @Test
+    fun testExternalLibsKeepRulesGenerationWithTransformsForExtLibsOnly() {
+        addExternalDependency(app)
+
+        executor()
+            .withArgument("--build-cache")
+            .with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
+            .run("clean", "app:assembleRelease")
+
+        val out =
+            InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
+        val expectedKeepRules = "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
+                "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
+                "}$lineSeparator"
+        // FIXME(266954677): expectedKeepRules is not found
+        assertThat(collectKeepRulesUnderDirectory(out)).doesNotContain(expectedKeepRules)
     }
 
     @Test

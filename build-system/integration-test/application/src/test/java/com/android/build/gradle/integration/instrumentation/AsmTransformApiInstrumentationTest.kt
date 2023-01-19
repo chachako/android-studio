@@ -337,6 +337,17 @@ class AsmTransformApiInstrumentationTest {
     }
 
     @Test
+    fun testClassesAreInstrumentedWithDexingArtifactTransformDisabled() {
+        configureExtensionForAnnotationAddingVisitor(project)
+        configureExtensionForInterfaceAddingVisitor(project)
+
+        project.executor().with(BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM, false)
+                .run(":app:assembleDebug")
+
+        assertClassesAreInstrumentedInDebugVariant()
+    }
+
+    @Test
     fun instrumentedLibClassesShouldBeConsumedByTheApp() {
         configureExtensionForAnnotationAddingVisitor(
                 project = project,

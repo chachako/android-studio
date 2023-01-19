@@ -33,16 +33,19 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.desugar.resources.TestClass;
 import com.android.build.gradle.internal.scope.Java8LangSupport;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.ide.common.process.ProcessException;
 import com.android.testutils.TestInputsGenerator;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -58,7 +61,13 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class DesugarAppTest {
 
+    private enum ArtifactTransform {
+        WITH_DESUGARING,
+        NO_DESUGARING,
+    }
+
     @NonNull private final Java8LangSupport java8LangSupport;
+    @NonNull private final ArtifactTransform artifactTransforms;
 
     @Rule
     public GradleTestProject project =
@@ -66,13 +75,22 @@ public class DesugarAppTest {
                     .fromTestApp(HelloWorldApp.forPlugin("com.android.application"))
                     .create();
 
-    @Parameterized.Parameters(name = "tool={0}")
-    public static List<Object> getParameters() {
-        return ImmutableList.of(D8, R8);
+    @Parameterized.Parameters(name = "tool={0}, artifactTransform = {1}")
+    public static Collection<Object[]> getParameters() {
+
+        ImmutableSet.Builder<Object[]> builder = new ImmutableSet.Builder<>();
+        builder.add(new Object[]{D8, ArtifactTransform.NO_DESUGARING})
+                .add(new Object[]{D8, ArtifactTransform.WITH_DESUGARING})
+                .add(new Object[]{R8, ArtifactTransform.NO_DESUGARING});
+
+        return builder.build();
     }
 
-    public DesugarAppTest(@NonNull Java8LangSupport java8LangSupport) {
+    public DesugarAppTest(
+            @NonNull Java8LangSupport java8LangSupport,
+            @NonNull ArtifactTransform artifactTransforms) {
         this.java8LangSupport = java8LangSupport;
+        this.artifactTransforms = artifactTransforms;
     }
 
     @Before
@@ -284,6 +302,11 @@ public class DesugarAppTest {
     }
 
     private GradleTaskExecutor getProjectExecutor() {
-        return project.executor();
+        GradleTaskExecutor executor =
+                project.executor()
+                        .with(
+                                BooleanOption.ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM,
+                                artifactTransforms == ArtifactTransform.WITH_DESUGARING);
+        return executor;
     }
 }

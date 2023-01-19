@@ -124,13 +124,15 @@ class ClassesClasspathUtils(
                         AndroidArtifacts.PublishedConfigType.RUNTIME_ELEMENTS
                     )!!.outputType
                 creationConfig.services.fileCollection(
-                    it.artifacts.get(artifactType), testedExternalLibs, externalLibraryClasses
+                    it.artifacts.get(artifactType)
                 )
             } ?: creationConfig.services.fileCollection()
 
-            getArtifactFiles(desugaringClasspathScopes, ScopedArtifact.CLASSES)
-                .minus(testedProject)
-
+            creationConfig.services.fileCollection(
+                getArtifactFiles(desugaringClasspathScopes, ScopedArtifact.CLASSES),
+                testedExternalLibs,
+                externalLibraryClasses
+            ).minus(testedProject)
         } else {
             creationConfig.services.fileCollection()
         }
