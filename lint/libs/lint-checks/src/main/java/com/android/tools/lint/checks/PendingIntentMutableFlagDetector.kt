@@ -103,6 +103,7 @@ class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
             androidSpecific = true,
             moreInfo = "https://developer.android.com/about/versions/12/behavior-changes-12#pending-intent-mutability"
         )
+            .addMoreInfo("https://goo.gle/UnspecifiedImmutableFlag")
 
         const val FLAG_IMMUTABLE_STR = "android.app.PendingIntent.FLAG_IMMUTABLE"
         const val FLAG_MUTABLE_STR = "android.app.PendingIntent.FLAG_MUTABLE"
