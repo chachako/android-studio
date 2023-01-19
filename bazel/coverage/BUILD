@@ -803,6 +803,17 @@ coverage_report(
     ],
 )
 
+# Coverage report for Espresso Test Recorder
+coverage_report(
+    name = "test-recorder",
+    srcpath_include = [
+        "tools/studio/google/cloud/testing/test-recorder/src/com/google/gct/testrecorder",
+    ],
+    tests = [
+        "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
+    ],
+)
+
 # Coverage report for "Logcat V2" tool window
 coverage_report(
     name = "logcat",
@@ -899,6 +910,7 @@ combine_report_definitions(
         "systrace-jank-ui",
         "systracev2",
         "templates",
+        "test-recorder",
         "tsdkv",
         "upgrade-assistant",
         "utp",
@@ -1106,6 +1118,7 @@ coverage_report(
         "//tools/data-binding:studio.compilerCommon_tests",
         "//tools/data-binding:studio.compiler_tests",
         "//tools/data-binding:tools.compilerCommon_tests.test",
+        "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
         "//tools/vendor/google/android-apk:android-apk.tests_tests",
         "//tools/vendor/google/android-ndk:android-ndk.tests_tests",
         "//tools/vendor/google/firebase:firebase_tests",
