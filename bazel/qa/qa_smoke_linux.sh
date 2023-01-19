@@ -78,7 +78,7 @@ if [[ $lsb_release == "crostini" ]]; then
   readonly bazel_status_no_emu=$?
 
   if [[ -d "${dist_dir}" ]]; then
-    echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
+    echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${test_invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
   fi
 
   # Generate the perfgate zip from the test bes
