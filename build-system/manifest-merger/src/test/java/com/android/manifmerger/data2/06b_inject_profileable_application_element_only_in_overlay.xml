@@ -1,0 +1,41 @@
+#
+# Test:
+# - Inject attributes in a main manifest.
+#
+
+@inject
+shell=true
+enabled=false
+
+@overlay1
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.example.app1">
+    <application
+            android:name="com.example.TheApp"
+            android:label="appLabel"/>
+</manifest>
+
+@main
+<manifest
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.app1">
+</manifest>
+
+@result
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app1" >
+
+    <application
+        android:name="com.example.TheApp"
+        android:label="appLabel" >
+        <profileable
+            android:enabled="false"
+            android:shell="true" />
+    </application>
+
+</manifest>
+
+@errors

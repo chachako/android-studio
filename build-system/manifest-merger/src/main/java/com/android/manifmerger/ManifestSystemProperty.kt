@@ -124,18 +124,20 @@ interface ManifestSystemProperty : AutoAddingProperty {
         SHELL;
 
         override fun addTo(actionRecorder: ActionRecorder, document: XmlDocument, value: String) {
-            // Assume there is always an application element.
-            val applicationElement = document.getByTypeAndKey(NodeTypes.APPLICATION, null)
-            addToElementInAndroidNS(
-                this, actionRecorder, value,
-                createOrGetElement(
-                    actionRecorder,
-                    document,
-                    applicationElement.get(),
-                    NodeTypes.PROFILEABLE,
-                    "profileable injection requested"
+            val maybeApplicationElement = document.getByTypeAndKey(NodeTypes.APPLICATION, null)
+            // If no application element, nothing to add.
+            maybeApplicationElement.ifPresent { applicationElement ->
+                addToElementInAndroidNS(
+                    this, actionRecorder, value,
+                    createOrGetElement(
+                        actionRecorder,
+                        document,
+                        applicationElement,
+                        NodeTypes.PROFILEABLE,
+                        "profileable injection requested"
+                    )
                 )
-            )
+            }
         }
     }
     /**
