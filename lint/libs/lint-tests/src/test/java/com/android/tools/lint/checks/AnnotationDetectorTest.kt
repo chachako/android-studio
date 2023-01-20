@@ -342,7 +342,6 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 Autofix for src/test/pkg/DividerFlags.kt line 12: Replace with 1 shl 1:
                 @@ -12 +12
                 - const val DIVIDER_BOTTOM: Int = 2
-                @@ -13 +12
                 + const val DIVIDER_BOTTOM: Int = 1 shl 1
                 """
             )

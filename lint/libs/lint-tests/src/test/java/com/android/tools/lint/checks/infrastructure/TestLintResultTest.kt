@@ -17,7 +17,8 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.tools.lint.checks.infrastructure.TestLintResult.Companion.getDiff
-import junit.framework.TestCase.assertEquals
+import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TestLintResultTest {
@@ -29,7 +30,6 @@ class TestLintResultTest {
             """
             @@ -1 +1
             - aaa
-            @@ -2 +1
             + bbb
             """.trimIndent(),
             getDiff("aaa", "bbb")
@@ -97,11 +97,6 @@ class TestLintResultTest {
               line3
             - line4
             - line5
-              line6
-              line7
-              line8
-            @@ -8 +6
-              line5
               line6
               line7
             - line8
@@ -307,6 +302,156 @@ class TestLintResultTest {
                       android:text="@string/hello_world" />
             """.trimIndent(),
             getDiff(a, b, 3)
+        )
+    }
+
+    @Test
+    fun testNoTrailingSpaces() {
+        val a = "" +
+                "\n" +
+                "foo\n" +
+                "\n"
+        val b = "" +
+                "\n" +
+                "bar\n" +
+                "\n"
+        assertThat(getDiff(a, b, 3)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "\n" +
+                "- foo\n" +
+                "+ bar"
+        )
+    }
+
+    @Test
+    fun testDiffAtEnd() {
+        val a = "" +
+                "[versions]\n" +
+                "\n" +
+                "[libraries]"
+        val b = "" +
+                "[versions]\n" +
+                "appcompat = \"1.5.1\"\n" +
+                "\n" +
+                "[libraries]\n" +
+                "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        assertThat(getDiff(a, b, 1)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "  [versions]\n" +
+                "+ appcompat = \"1.5.1\"\n" +
+                "\n" +
+                "  [libraries]\n" +
+                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        )
+        assertThat(getDiff(a, b, 2)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "  [versions]\n" +
+                "+ appcompat = \"1.5.1\"\n" +
+                "\n" +
+                "  [libraries]\n" +
+                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        )
+        assertThat(getDiff(a, b, 3)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "  [versions]\n" +
+                "+ appcompat = \"1.5.1\"\n" +
+                "\n" +
+                "  [libraries]\n" +
+                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        )
+    }
+
+    @Test
+    fun testOverlaps() {
+        val a = "" +
+                "[versions]\n" +
+                "version=1\n" +
+                "[libraries]\n" +
+                "different1\n" +
+                "[bundles]"
+        val b = "" +
+                "[versions]\n" +
+                "appcompat = \"1.5.1\"\n" +
+                "version=1\n" +
+                "[libraries]\n" +
+                "different2\n" +
+                "[bundles]\n" +
+                "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        assertThat(getDiff(a, b, 1)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "  [versions]\n" +
+                "+ appcompat = \"1.5.1\"\n" +
+                "  version=1\n" +
+                "  [libraries]\n" +
+                "- different1\n" +
+                "+ different2\n" +
+                "  [bundles]\n" +
+                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        )
+        assertThat(getDiff(a, b, 2)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "  [versions]\n" +
+                "+ appcompat = \"1.5.1\"\n" +
+                "  version=1\n" +
+                "  [libraries]\n" +
+                "- different1\n" +
+                "+ different2\n" +
+                "  [bundles]\n" +
+                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        )
+        assertThat(getDiff(a, b, 3)).isEqualTo("" +
+                "@@ -2 +2\n" +
+                "  [versions]\n" +
+                "+ appcompat = \"1.5.1\"\n" +
+                "  version=1\n" +
+                "  [libraries]\n" +
+                "- different1\n" +
+                "+ different2\n" +
+                "  [bundles]\n" +
+                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        )
+    }
+
+    @Test
+    fun testOverlap2() {
+        val before = """
+            import android.graphics.drawable.VectorDrawable
+
+            class VectorDrawableProvider {
+                fun getVectorDrawable(): VectorDrawable {
+                    with(this) {
+                        return VectorDrawable()
+                    }
+                }
+            }
+            """.trimIndent()
+
+        val after = """
+            import android.graphics.drawable.VectorDrawable
+            import android.os.Build
+            import android.support.annotation.RequiresApi
+
+            class VectorDrawableProvider {
+                @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+                fun getVectorDrawable(): VectorDrawable {
+                    with(this) {
+                        return VectorDrawable()
+                    }
+                }
+            }
+            """.trimIndent()
+
+        assertThat(getDiff(before, after, 1)).isEqualTo(
+            """
+            @@ -2 +2
+              import android.graphics.drawable.VectorDrawable
+            + import android.os.Build
+            + import android.support.annotation.RequiresApi
+
+              class VectorDrawableProvider {
+            +     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+                  fun getVectorDrawable(): VectorDrawable {
+            """.trimIndent()
         )
     }
 }

@@ -370,8 +370,7 @@ public class CommentDetectorTest extends AbstractCheckTest {
                                 + "Fix for build.gradle.kts line 5: Remove STOPSHIP:\n"
                                 + "@@ -5 +5\n"
                                 + "- } // STOPSHIP\n"
-                                + "@@ -6 +5\n"
-                                + "+ } // ");
+                                + "+ } //");
     }
 
     public void testProperties() {

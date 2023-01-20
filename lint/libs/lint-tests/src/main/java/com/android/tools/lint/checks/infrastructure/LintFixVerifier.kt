@@ -97,7 +97,15 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
      * @return this
      */
     fun checkFix(fix: String?, after: TestFile): LintFixVerifier {
-        checkFixes(fix, after, null)
+        try {
+            checkFixes(fix, after, null, compatMode = false)
+        } catch (throwable: Throwable) {
+            try {
+                checkFixes(fix, after, null, compatMode = true)
+            } catch (ignore: Throwable) {
+                throw throwable // pass the original exception (with compatMode=false) output
+            }
+        }
         return this
     }
 
@@ -110,9 +118,28 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
      * @return this
      */
     fun expectFixDiffs(expected: String): LintFixVerifier {
+        try {
+            // Diff output format has changed; if we fail to verify, retry with
+            // the older format (but if that doesn't fail, use the original
+            // failure exceptions such that we present the new format.
+           expectFixDiffs(expected, compatMode = false)
+        } catch (throwable: Throwable) {
+            if (expected.isBlank()) {
+                throw throwable
+            }
+            try {
+                expectFixDiffs(expected, compatMode = true)
+            } catch (ignore: Throwable) {
+                throw throwable
+            }
+        }
+        return this
+    }
+
+    private fun expectFixDiffs(expected: String, compatMode: Boolean): LintFixVerifier {
         var expected = expected
         val diff = StringBuilder(100)
-        checkFixes(null, null, diff)
+        checkFixes(null, null, diff, compatMode)
         var actual = diff.toString().replace("\r\n", "\n").trimIndent().replace('$', '＄')
         val originalActual = actual
         expected = expected.trimIndent().replace('$', '＄')
@@ -175,7 +202,8 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
     private fun checkFixes(
         fixName: String?,
         expectedFile: TestFile?,
-        diffs: StringBuilder?
+        diffs: StringBuilder?,
+        compatMode: Boolean
     ) {
         assertTrue(expectedFile != null || diffs != null)
         val names: MutableList<String?> = Lists.newArrayList()
@@ -250,7 +278,7 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
                             }
                         }
                     }
-                    appendDiff(incident, lintFix.getDisplayName(), lintFix.robot, initial, edited, diffs)
+                    appendDiff(incident, lintFix.getDisplayName(), lintFix.robot, initial, edited, diffs, compatMode)
                 }
                 val name = lintFix.getDisplayName()
                 if (fixName != null && fixName != name) {
@@ -311,7 +339,8 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
         autoFixable: Boolean,
         initial: MutableMap<String, String>,
         edited: MutableMap<String, String>,
-        diffs: StringBuilder
+        diffs: StringBuilder,
+        compatMode: Boolean
     ) {
         var first = true
 
@@ -334,7 +363,7 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
         for (file in sortedFiles) {
             val after = edited[file]!!
             val before = initial[file]!!
-            val diff = getDiff(before, after, diffWindow)
+            val diff = getDiff(before, after, diffWindow, compatMode)
             if (diff.isNotEmpty()) {
                 val targetPath = file.replace(File.separatorChar, '/')
                 if (first) {

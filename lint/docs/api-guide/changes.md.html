@@ -22,6 +22,12 @@ Guide.
   etc. From a GradleScanner, you can directly resolve version catalog
   libraries via lookup methods on the GradleContext.
 
+* Lint's “diff” output for unit test verification has been improved;
+  it's now smarter about combining nearby chunks. (This should not
+  break existing tests; the test infrastructure will try the older
+  format as a fallback if the diffs aren't matching for the new
+  format.)
+
 **8.0**
 
 * A new testmode which makes sure lint checks are all suppressible.

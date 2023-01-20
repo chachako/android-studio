@@ -975,19 +975,20 @@ class TestLintResult internal constructor(
         private val MATCH_OLD_ERROR_MESSAGE = Regex("$OLD_ERROR_MESSAGE[^>]")
 
         /** Returns a test-suitable diff of the two strings. */
-        fun getDiff(before: String, after: String): String {
-            return getDiff(before, after, 0)
+        fun getDiff(before: String, after: String, diffCompatMode: Boolean = false): String {
+            return getDiff(before, after, 0, diffCompatMode)
         }
 
         /**
          * Returns a test-suitable diff of the two strings, including
          * [windowSize] lines around.
          */
-        fun getDiff(before: String, after: String, windowSize: Int): String {
+        fun getDiff(before: String, after: String, windowSize: Int, diffCompatMode: Boolean = false): String {
             return getDiff(
                 if (before.isEmpty()) emptyArray() else before.split("\n").toTypedArray(),
                 if (after.isEmpty()) emptyArray() else after.split("\n").toTypedArray(),
-                windowSize
+                windowSize,
+                diffCompatMode
             )
         }
 
@@ -998,12 +999,25 @@ class TestLintResult internal constructor(
         fun getDiff(
             before: Array<String>,
             after: Array<String>,
-            windowSize: Int = 0
+            windowSize: Int = 0,
+            diffCompatMode: Boolean = false
         ): String {
             // Based on the LCS section in http://introcs.cs.princeton.edu/java/96optimization/
-            val sb = java.lang.StringBuilder()
+            val sb = StringBuilder()
             val n = before.size
             val m = after.size
+
+            fun appendContext(intRange: IntRange) {
+                if (windowSize > 0) {
+                    for (context in intRange) {
+                        val line = before[context].trimEnd()
+                        if (diffCompatMode || line.isNotEmpty()) {
+                            sb.append("  ").append(line)
+                        }
+                        sb.append("\n")
+                    }
+                }
+            }
 
             // Compute longest common subsequence of x[i..m] and y[j..n] bottom up
             val lcs = Array(n + 1) {
@@ -1020,6 +1034,7 @@ class TestLintResult internal constructor(
                     }
                 }
             }
+            var lastLine = Integer.MIN_VALUE
             var i = 0
             var j = 0
             while (i < n && j < m) {
@@ -1027,18 +1042,14 @@ class TestLintResult internal constructor(
                     i++
                     j++
                 } else {
-                    sb.append("@@ -")
-                    sb.append((i + 1).toString())
-                    sb.append(" +")
-                    sb.append((j + 1).toString())
-                    sb.append('\n')
-                    if (windowSize > 0) {
-                        for (context in max(0, i - windowSize) until i) {
-                            sb.append("  ")
-                            sb.append(before[context].trimEnd())
-                            sb.append("\n")
-                        }
+                    if (lastLine < i - 1) {
+                        sb.append("@@ -")
+                        sb.append((i + 1).toString())
+                        sb.append(" +")
+                        sb.append((j + 1).toString())
+                        sb.append('\n')
                     }
+                    appendContext(max(lastLine, max(0, i - windowSize)) until i)
                     while (i < n && j < m && before[i] != after[j]) {
                         if (lcs[i + 1][j] >= lcs[i][j + 1]) {
                             sb.append('-')
@@ -1058,22 +1069,35 @@ class TestLintResult internal constructor(
                             j++
                         }
                     }
-                    if (windowSize > 0) {
-                        for (context in i until min(n, i + windowSize)) {
-                            sb.append("  ")
-                            sb.append(before[context].trimEnd())
-                            sb.append("\n")
+
+                    if (diffCompatMode) {
+                        appendContext(i until min(n, i + windowSize))
+                    } else {
+                        lastLine = i
+                        for (window in 0 until windowSize) {
+                            val xi = i + window
+                            val xj = j + window
+                            if (xi == n || xj == m || before[xi] != after[xj]) {
+                                break
+                            }
+                            lastLine++
                         }
+                        appendContext(i until lastLine)
                     }
                 }
             }
             if (i < n || j < m) {
                 assert(i == n || j == m)
-                sb.append("@@ -")
-                sb.append((i + 1).toString())
-                sb.append(" +")
-                sb.append((j + 1).toString())
-                sb.append('\n')
+                if (lastLine < i - 1) {
+                    sb.append("@@ -")
+                    sb.append((i + 1).toString())
+                    sb.append(" +")
+                    sb.append((j + 1).toString())
+                    sb.append('\n')
+                }
+                if (!diffCompatMode) {
+                    appendContext(max(lastLine, max(0, i - windowSize)) until i)
+                }
                 while (i < n) {
                     sb.append('-')
                     if (before[i].trim().isNotEmpty()) {

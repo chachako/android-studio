@@ -73,6 +73,15 @@ class LintFixVerifierTest {
                 Fix for src/test.kt line 1: Replace with org.assertj.core.api.Java6Assertions:
                 @@ -1 +1
                 - import org.assertj.core.api.Assertions
+                + import org.assertj.core.api.Java6Assertions
+                """
+            )
+            // Make sure we also accept the older diff format for compatibility
+            .expectFixDiffs(
+                """
+                Fix for src/test.kt line 1: Replace with org.assertj.core.api.Java6Assertions:
+                @@ -1 +1
+                - import org.assertj.core.api.Assertions
                 @@ -2 +1
                 + import org.assertj.core.api.Java6Assertions
                 """
@@ -103,6 +112,15 @@ class LintFixVerifierTest {
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                   0 errors, 1 warnings"""
             )
+            .expectFixDiffs(
+                """
+                Fix for src/foo/package-info.java line 3: Replace with org.assertj.core.api.Java6Assertions:
+                @@ -3 +3
+                - import org.assertj.core.api.Assertions;
+                + import org.assertj.core.api.Java6Assertions;
+                """
+            )
+            // Make sure we also accept the older diff format for compatibility
             .expectFixDiffs(
                 """
                   Fix for src/foo/package-info.java line 3: Replace with org.assertj.core.api.Java6Assertions:
@@ -216,7 +234,6 @@ class LintFixVerifierTest {
                 build.gradle:
                 @@ -2 +2
                 - apply plugin: 'java'
-                @@ -3 +2
                 + apply plugin: 'kotlin'
                 new.txt:
                 @@ -1 +1

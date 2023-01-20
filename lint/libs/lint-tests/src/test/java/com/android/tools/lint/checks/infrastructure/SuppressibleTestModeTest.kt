@@ -51,7 +51,7 @@ class SuppressibleTestModeTest {
             val expected = file.contents
             val actual = target.readText()
             sb.append(file.targetRelativePath).append(":\n")
-            val diff = TestLintResult.getDiff(expected, actual, windowSize = 1).trimTrailingSpaces()
+            val diff = TestLintResult.getDiff(expected, actual, windowSize = 1)
             sb.append(diff).append("\n")
 
             // To debug, uncomment the following to see before/after instead of
@@ -160,7 +160,6 @@ class SuppressibleTestModeTest {
             - <resources>
             + <resources xmlns:tools="http://schemas.android.com/tools">
                   <string name="app_name">App Name</string>
-            @@ -4 +4
                   <string name="hello_world">Hello world!</string>
             -     <string name="app_name">App Name 1</string>
             +     <string tools:ignore="DuplicateDefinition" name="app_name">App Name 1</string>
@@ -516,8 +515,6 @@ class SuppressibleTestModeTest {
             + @file:Suppress("TestId1") package test.pkg
             + //noinspection TestId2
               import java.io.File
-            @@ -3 +4
-              import java.io.File
             - class KotlinSuppressTest(val var1: String, file: File) {
             -     var property1 = 5
             -     var property2: String get() = ""
@@ -527,14 +524,10 @@ class SuppressibleTestModeTest {
             +     @Suppress("TestId7") var property2: String @Suppress("TestId8") get() = ""
             +         @Suppress("TestId9") set(value) {}
               }
-            @@ -8 +9
-              }
             - fun methodTest(pair: Pair<String,String>) {
             -     var test = 5
             + @Suppress("TestId23", "TestId22", "TestId15", "TestId14", "TestId10") fun methodTest(@Suppress("TestId12", "TestId11") pair: Pair<String,String>) {
             +     @Suppress("TestId13") var test = 5
-                  methodTest(pair)
-            @@ -11 +12
                   methodTest(pair)
             -     val (x,y) = pair
             -     val c = object : Runnable {
@@ -607,11 +600,8 @@ class SuppressibleTestModeTest {
             - //noinspection test1
             + //noinspection TestId,test1
               import java.io.File
-            @@ -4 +4
-              import java.io.File
             + //noinspection TestId
               import java.util.Base64
-            @@ -6 +7
               class KotlinSuppressTest2() {
             -     fun test1() {}
             -     fun test1b() {}
@@ -676,16 +666,12 @@ class SuppressibleTestModeTest {
               public class Hidden1 {
             +     //noinspection StopShip
                   // STOPSHIP
-            @@ -4 +5
-                  // STOPSHIP
             +     //noinspection StopShip
                   /* We must STOPSHIP! */
             test/pkg/Hidden2.kt:
             @@ -3 +3
               class Hidden2 {
             +     //noinspection StopShip
-                  // STOPSHIP
-            @@ -4 +5
                   // STOPSHIP
             +     //noinspection StopShip
                   /* We must STOPSHIP! */

@@ -394,7 +394,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             )
             .verifyFixes().window(1).expectFixDiffs(
                 """
-                Fix for build.gradle line 3: Replace with existing version catalog reference `androidx-appCompat`:
+                Autofix for build.gradle line 3: Replace with existing version catalog reference `androidx-appCompat`:
                 @@ -3 +3
                       implementation(libs.androidx.appCompat) // OK
                 -     implementation 'androidx.appcompat:appcompat:1.5.1'
@@ -672,7 +672,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             )
             .verifyFixes().window(1).expectFixDiffs(
                 """
-                Fix for build.gradle line 3: Replace with new library catalog declaration for support-v4:
+                Autofix for build.gradle line 3: Replace with new library catalog declaration for support-v4:
                 @@ -3 +3
                   dependencies {
                 -     implementation group: 'com.android.support', name: 'support-v4', version: '19.0'
@@ -682,8 +682,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                 @@ -2 +2
                   [versions]
                 + support-v4 = "19.0"
-                  [libraries]
-                @@ -3 +4
                   [libraries]
                 + support-v4 = { module = "com.android.support:support-v4", version.ref = "support-v4" }
                   [bundles]
@@ -736,7 +734,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                   [versions]
                 + fragment = "1.5.1"
 
-                @@ -4 +5
                   [libraries]
                 + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
                 """
@@ -857,6 +854,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   }
                 gradle/libs.versions.toml:
                 @@ -3 +3
+                  [libraries]
                 + androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.5.1" }
                 """
             )
@@ -903,7 +901,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   [versions]
                 + appcompat = "1.5.1"
 
-                @@ -4 +5
+                  [libraries]
                 + androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
                 """
             )
@@ -1682,7 +1680,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                 Autofix for gradle/libs.versions.toml line 2: Change to 3.3.2:
                 @@ -2 +2
                 - gradle = "  com.android.tools.build:gradle:3.3.0-alpha04  "
-                @@ -3 +2
                 + gradle = "  com.android.tools.build:gradle:3.3.2  "
                 """
             )

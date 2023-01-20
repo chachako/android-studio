@@ -76,9 +76,8 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
             Fix for src/test/pkg/test.kt line 15: Delete `@NonNull`:
             @@ -15 +15
             - fun testError(@NonNull number: Number?) { }
-            @@ -16 +15
             + fun testError(number: Number?) { }
-            Fix for src/test/pkg/test.kt line 7: Delete `@NonNull`:
+            Autofix for src/test/pkg/test.kt line 7: Delete `@NonNull`:
             @@ -7 +7
             - fun testWarning(@NonNull string: String) { }
             + fun testWarning(string: String) { }
@@ -273,10 +272,9 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
             """
         ).expectFixDiffs(
             """
-            Fix for src/test/pkg/test.kt line 3: Delete `@NonNull`:
+            Autofix for src/test/pkg/test.kt line 3: Delete `@NonNull`:
             @@ -3 +3
             - fun testWarning(@androidx.annotation.NonNull a: String) { } // ERROR
-            @@ -4 +3
             + fun testWarning(a: String) { } // ERROR
             """
         )
