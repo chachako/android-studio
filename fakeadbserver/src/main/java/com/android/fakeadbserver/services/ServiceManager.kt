@@ -28,6 +28,11 @@ class ServiceManager {
     private var activityManager: Service? = null
     private val log = Collections.synchronizedList(mutableListOf<List<String>>())
 
+    private val services: MutableMap<String, Service?> = mutableMapOf(
+        ACTIVITY_MANAGER_SERVICE_NAME to activityManager,
+        PackageManager.SERVICE_NAME to packageManager
+    )
+
     // Returns a list of all service request received.
     // Each entry is a list of all parameters for that request.
     fun getLogs(): List<ServiceRequest> {
@@ -39,7 +44,7 @@ class ServiceManager {
         log.add(Collections.unmodifiableList(args))
 
         val serviceName = args[0]
-        val service = getService(serviceName)
+        val service = findService(serviceName)
 
         if (service == null) {
             output.writeStderr("Error: Service '$serviceName' is not supported")
@@ -52,13 +57,14 @@ class ServiceManager {
 
     fun setActivityManager(newActivityManager: Service) {
         activityManager = newActivityManager
+        services[ACTIVITY_MANAGER_SERVICE_NAME] = newActivityManager
     }
 
-    private fun getService(name: String): Service? = when (name) {
-        PackageManager.SERVICE_NAME -> packageManager
-        ACTIVITY_MANAGER_SERVICE_NAME -> activityManager
-        else -> null
+    fun services(): Map<String, Service?> {
+        return services.toMap()
     }
+
+    private fun findService(name: String): Service? = services[name]
 }
 
 typealias ServiceRequest = List<String>

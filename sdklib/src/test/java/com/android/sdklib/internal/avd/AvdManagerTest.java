@@ -16,6 +16,7 @@
 
 package com.android.sdklib.internal.avd;
 
+import static com.android.testutils.truth.PathSubject.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,6 +29,7 @@ import com.android.io.CancellableFileIo;
 import com.android.prefs.AbstractAndroidLocations;
 import com.android.prefs.AndroidLocationsException;
 import com.android.repository.testframework.FakeProgressIndicator;
+import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.PathFileWrapper;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
@@ -95,6 +97,7 @@ public final class AvdManagerTest {
         recordWearSysImgChina(root);
         recordChromeOsSysImg(root);
         recordPlayStoreSysImg33ext4(root);
+        record33ext4(root);
         Path prefsRoot = root.resolve(ANDROID_PREFS_ROOT);
         mAndroidSdkHandler = new AndroidSdkHandler(root.resolve("sdk"), prefsRoot);
         mAvdManager =
@@ -870,6 +873,7 @@ public final class AvdManagerTest {
         AvdInfo avdInfo = mAvdManager.parseAvdInfo(avdIniFile);
         assertThat(avdInfo.getStatus()).isEqualTo(AvdInfo.AvdStatus.OK);
         PathSubject.assertThat(avdInfo.getDataFolderPath()).isEqualTo(mAvdFolder);
+        assertThat(avdInfo.getAndroidVersion()).isEqualTo(new AndroidVersion(23));
 
         // Check a bad AVD .ini file.
         // Append garbage to make the file invalid.
@@ -1050,6 +1054,52 @@ public final class AvdManagerTest {
                         + "<display-name>Google APIs with Playstore Intel x86 Atom System Image</display-name>"
                         + "<uses-license ref=\"license-9A5C00D5\"/></localPackage>"
                         + "</ns3:sdk-sys-img>\n");
+    }
+
+    private static void record33ext4(Path root) throws IOException {
+        InMemoryFileSystems.recordExistingFile(
+                root.resolve(
+                        "sdk/system-images/android-33-ext4/google_apis_playstore/x86_64/system.img"));
+        Files.createDirectories(
+                root.resolve(
+                        "sdk/system-images/android-33-ext4/google_apis_playstore/x86_64/data"));
+        InMemoryFileSystems.recordExistingFile(
+                root.resolve(
+                        "sdk/system-images/android-33-ext4/google_apis_playstore/x86_64/package.xml"),
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<ns2:repository xmlns:ns2=\"http://schemas.android.com/repository/android/common/02\""
+                        + " xmlns:ns3=\"http://schemas.android.com/repository/android/common/01\""
+                        + " xmlns:ns4=\"http://schemas.android.com/repository/android/generic/01\""
+                        + " xmlns:ns5=\"http://schemas.android.com/repository/android/generic/02\""
+                        + " xmlns:ns6=\"http://schemas.android.com/sdk/android/repo/addon2/01\""
+                        + " xmlns:ns7=\"http://schemas.android.com/sdk/android/repo/addon2/02\""
+                        + " xmlns:ns8=\"http://schemas.android.com/sdk/android/repo/addon2/03\""
+                        + " xmlns:ns9=\"http://schemas.android.com/sdk/android/repo/repository2/01\""
+                        + " xmlns:ns10=\"http://schemas.android.com/sdk/android/repo/repository2/02\""
+                        + " xmlns:ns11=\"http://schemas.android.com/sdk/android/repo/repository2/03\""
+                        + " xmlns:ns12=\"http://schemas.android.com/sdk/android/repo/sys-img2/03\""
+                        + " xmlns:ns13=\"http://schemas.android.com/sdk/android/repo/sys-img2/02\""
+                        + " xmlns:ns14=\"http://schemas.android.com/sdk/android/repo/sys-img2/01\">"
+                        + "<license id=\"android-sdk-preview-license\" type=\"text\">\n"
+                        + "</license>"
+                        + "<localPackage path=\"system-images;android-33-ext4;google_apis_playstore;x86_64\" obsolete=\"false\">"
+                        + "<type-details xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"ns12:sysImgDetailsType\">"
+                        + "<api-level>33x</api-level>"
+                        + "<extension-level>4</extension-level>"
+                        + "<base-extension>false</base-extension>"
+                        + "<tag><id>google_apis_playstore</id><display>Google Play</display></tag>"
+                        + "<vendor><id>google</id><display>Google Inc.</display></vendor>"
+                        + "<abi>x86_64</abi>"
+                        + "</type-details>"
+                        + "<revision><major>1</major></revision>"
+                        + "<display-name>Google Play Intel x86 Atom_64 System Image</display-name>"
+                        + "<uses-license ref=\"android-sdk-preview-license\"/>"
+                        + "<dependencies>"
+                        + "<dependency path=\"patcher;v4\"/>"
+                        + "<dependency path=\"emulator\"><min-revision><major>30</major><minor>7</minor><micro>3</micro></min-revision></dependency>"
+                        + "</dependencies>"
+                        + "</localPackage>"
+                        + "</ns2:repository>\n");
     }
 
     private static void recordWearSysImg24(Path root) {

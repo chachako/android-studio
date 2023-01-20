@@ -23,6 +23,7 @@ import com.android.ddmlib.InstallReceiver
 import com.android.ddmlib.RawImage
 import com.android.ddmlib.ScreenRecorderOptions
 import com.android.ddmlib.SyncService
+import com.android.ddmlib.ServiceInfo
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
@@ -117,6 +118,10 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
     }
 
     override fun supportsFeature(feature: IDevice.HardwareFeature): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun services(): MutableMap<String, ServiceInfo>? {
         TODO("Not yet implemented")
     }
 

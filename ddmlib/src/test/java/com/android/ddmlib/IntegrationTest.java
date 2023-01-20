@@ -110,11 +110,7 @@ public class IntegrationTest {
             AndroidDebugBridge bridge = AndroidDebugBridge.createBridge();
             assertNotNull("Debug bridge", bridge);
 
-            long startTime = System.currentTimeMillis();
-            while (!bridge.isConnected()
-                   && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
-                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-            }
+            waitForAdbToConnect(bridge);
 
             IDevice[] devices = bridge.getDevices();
             IDevice device = null;
@@ -172,11 +168,7 @@ public class IntegrationTest {
             AndroidDebugBridge bridge = AndroidDebugBridge.createBridge();
             assertNotNull("Debug bridge", bridge);
 
-            long startTime = System.currentTimeMillis();
-            while (!bridge.isConnected()
-                    && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
-                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-            }
+            waitForAdbToConnect(bridge);
 
             assertThat(bridge.isConnected()).isTrue();
 
@@ -218,11 +210,7 @@ public class IntegrationTest {
                     AndroidDebugBridge.createBridge(getPathToAdb().toString(), false);
             assertNotNull("Debug bridge", bridge);
 
-            long startTime = System.currentTimeMillis();
-            while (!bridge.isConnected()
-                    && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
-                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-            }
+            waitForAdbToConnect(bridge);
 
             assertThat(bridge.isConnected()).isTrue();
 
@@ -234,6 +222,50 @@ public class IntegrationTest {
             assertThat(devices[0].getName()).isEqualTo(SERIAL);
 
             assertThat(devices[0].supportsFeature(IDevice.Feature.ABB_EXEC)).isTrue();
+        } finally {
+            AndroidDebugBridge.terminate();
+        }
+    }
+
+    @Test
+    public void testIsDeviceRunningService() throws Exception {
+        // Build the server and configure it to use the default ADB command handlers.
+        FakeAdbServer.Builder builder = new FakeAdbServer.Builder();
+        builder.installDefaultCommandHandlers();
+
+        try (FakeAdbServer server = builder.build()) {
+            // Connect a test device to simulate device connection before server bring-up.
+            server.connectDevice(
+                            SERIAL,
+                            MANUFACTURER,
+                            MODEL,
+                            RELEASE,
+                            SDK,
+                            DeviceState.HostConnectionType.USB)
+                    .get();
+
+            // Start server execution.
+            server.start();
+
+            // Test that we obtain 1 device via the ddmlib APIs
+            AndroidDebugBridge.enableFakeAdbServerMode(server.getPort());
+            AndroidDebugBridge.initIfNeeded(false);
+            AndroidDebugBridge bridge =
+                    AndroidDebugBridge.createBridge(getPathToAdb().toString(), false);
+            assertNotNull("Debug bridge", bridge);
+
+            waitForAdbToConnect(bridge);
+
+            assertThat(bridge.isConnected()).isTrue();
+
+            // should we rather be waiting for the initial device list to become available?
+            assume().that(bridge.hasInitialDeviceList()).isTrue();
+
+            IDevice[] devices = bridge.getDevices();
+            assertThat(devices.length).isEqualTo(1);
+            assertThat(devices[0].getName()).isEqualTo(SERIAL);
+            assertThat(devices[0].services().containsKey("activity")).isTrue();
+            assertThat(devices[0].services().containsKey("package")).isTrue();
         } finally {
             AndroidDebugBridge.terminate();
         }
@@ -264,11 +296,7 @@ public class IntegrationTest {
             AndroidDebugBridge bridge = AndroidDebugBridge.createBridge();
             assertNotNull("Debug bridge", bridge);
 
-            long startTime = System.currentTimeMillis();
-            while (!bridge.isConnected()
-                    && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
-                Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
-            }
+            waitForAdbToConnect(bridge);
 
             assertThat(bridge.isConnected()).isTrue();
 
@@ -463,6 +491,14 @@ public class IntegrationTest {
             }
         } finally {
             AndroidDebugBridge.terminate();
+        }
+    }
+
+    private static void waitForAdbToConnect(AndroidDebugBridge bridge) {
+        long startTime = System.currentTimeMillis();
+        while (!bridge.isConnected()
+                && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
+            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
         }
     }
 

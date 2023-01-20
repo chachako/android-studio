@@ -53,6 +53,7 @@ import com.android.fakeadbserver.shellcommandhandlers.LogcatCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.PackageManagerCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.PingCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.RmCommandHandler
+import com.android.fakeadbserver.shellcommandhandlers.ServiceCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.SetPropCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.ShellProtocolEchoCommandHandler
 import com.android.fakeadbserver.shellcommandhandlers.StatCommandHandler
@@ -522,6 +523,8 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
             addDeviceHandler(ActivityManagerCommandHandler(ShellProtocolType.SHELL_V2))
             addDeviceHandler(JdwpCommandHandler())
             addDeviceHandler(StatCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(ServiceCommandHandler(ShellProtocolType.SHELL))
+            addDeviceHandler(ServiceCommandHandler(ShellProtocolType.SHELL_V2))
             return this
         }
 
