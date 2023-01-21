@@ -113,7 +113,7 @@ enum class ArtProfileSerializer(
             profileData: Map<DexFile, DexFileData>,
             apkName: String,
         ) {
-            writeProfileSections(os, profileData, apkName)
+            writeProfileSections(os, profileData.entries.sortedBy { it.key.name }, apkName)
         }
 
         override fun read(src: InputStream): Map<DexFile, DexFileData> {
@@ -240,7 +240,7 @@ enum class ArtProfileSerializer(
 
         private fun writeProfileSections(
             os: OutputStream,
-            profileData: Map<DexFile, DexFileData>,
+            profileData: List<Map.Entry<DexFile, DexFileData>>,
             apkName: String,
         ) {
             os.use {
@@ -289,7 +289,7 @@ enum class ArtProfileSerializer(
         }
 
         private fun writeDexFileSection(
-            profileData: Map<DexFile, DexFileData>,
+            profileData: List<Map.Entry<DexFile, DexFileData>>,
             apkName: String,
         ): WritableFileSection {
             val out = ByteArrayOutputStream()
@@ -357,7 +357,7 @@ enum class ArtProfileSerializer(
         }
 
         private fun createCompressibleClassSection(
-            profileData: Map<DexFile, DexFileData>,
+            profileData: List<Map.Entry<DexFile, DexFileData>>,
         ): WritableFileSection {
             // Compute expected size of the header
             var expectedSize = 0
@@ -419,7 +419,7 @@ enum class ArtProfileSerializer(
         }
 
         private fun createCompressibleMethodsSection(
-            profileData: Map<DexFile, DexFileData>,
+            profileData: List<Map.Entry<DexFile, DexFileData>>,
         ): WritableFileSection {
             var expectedSize = 0
             val out = ByteArrayOutputStream()
@@ -676,13 +676,13 @@ enum class ArtProfileSerializer(
             os.use {
                 // Number of Dex Files
                 os.writeUInt16(profileData.size)
-                writeMetadataSection(os, profileData, apkName)
+                writeMetadataSection(os, profileData.entries.sortedBy { it.key.name }, apkName)
             }
         }
 
         private fun writeMetadataSection(
             os: OutputStream,
-            profileData: Map<DexFile, DexFileData>,
+            profileData: List<Map.Entry<DexFile, DexFileData>>,
             apkName: String,
         ) {
             val out = ByteArrayOutputStream()
