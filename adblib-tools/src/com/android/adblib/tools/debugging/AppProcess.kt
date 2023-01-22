@@ -18,6 +18,10 @@ package com.android.adblib.tools.debugging
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.property
+import com.android.adblib.tools.AdbLibToolsProperties
+import com.android.adblib.tools.AdbLibToolsProperties.APP_PROCESS_RETRIEVE_PROCESS_NAME_RETRY_COUNT
+import com.android.adblib.tools.AdbLibToolsProperties.APP_PROCESS_RETRIEVE_PROCESS_NAME_RETRY_DELAY
 import com.android.adblib.tools.debugging.impl.AppProcessNameRetriever
 import kotlinx.coroutines.CoroutineScope
 import java.time.Duration
@@ -84,8 +88,8 @@ val AppProcess.scope: CoroutineScope
  * * For an [AppProcess.profileable], execute a `cat /proc/pid/cmdline` shell command.
  */
 suspend fun AppProcess.retrieveProcessName(
-    retryCount: Int = 5,
-    retryDelay: Duration = Duration.ofMillis(200)
+    retryCount: Int = device.session.property(APP_PROCESS_RETRIEVE_PROCESS_NAME_RETRY_COUNT),
+    retryDelay: Duration = device.session.property(APP_PROCESS_RETRIEVE_PROCESS_NAME_RETRY_DELAY)
 ): String {
     return AppProcessNameRetriever(this).retrieve(retryCount, retryDelay)
 }

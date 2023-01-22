@@ -16,6 +16,8 @@
 package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.AdbSession
+import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties.RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT
+import com.android.adblib.property
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.JdwpCommandProgress
@@ -505,7 +507,7 @@ internal class AdblibClientWrapper(
      * @throws TimeoutException if [block] take more than [timeout] to execute
      */
     private fun <R> runBlockingLegacy(
-        timeout: Duration = RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT,
+        timeout: Duration = session.property(RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT),
         block: suspend CoroutineScope.() -> R
     ): R {
         return runBlocking {
@@ -521,7 +523,7 @@ internal class AdblibClientWrapper(
      */
     private fun runHalfBlockingLegacy(
         operation: String,
-        timeout: Duration = RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT,
+        timeout: Duration = session.property(RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT),
         block: suspend (JdwpCommandProgress) -> Unit
     ) {
         val deferred = CompletableDeferred<Unit>(jdwpProcess.scope.coroutineContext.job)
@@ -586,10 +588,5 @@ internal class AdblibClientWrapper(
 
     private fun getProfileBufferSize(): Int {
         return DdmPreferences.getProfilerBufferSizeMb() * 1024 * 1024
-    }
-
-    companion object {
-
-        private val RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT: Duration = Duration.ofMillis(5_000)
     }
 }

@@ -33,10 +33,7 @@ internal class AppProcessNameRetriever(private val process: AppProcess) {
 
     val logger = thisLogger(process.device.session)
 
-    suspend fun retrieve(
-        retryCount: Int = 5,
-        retryDelay: Duration = Duration.ofMillis(200)
-    ): String {
+    suspend fun retrieve(retryCount: Int, retryDelay: Duration): String {
         return process.jdwpProcess?.let {
             retrieveProcessNameFromJdwpProcess(it)
         } ?: run {
@@ -62,10 +59,7 @@ internal class AppProcessNameRetriever(private val process: AppProcess) {
         }
     }
 
-    private suspend fun retrieveProcessNameFromProc(
-        retryCount: Int = 5,
-        retryDelay: Duration = Duration.ofMillis(200)
-    ): String {
+    private suspend fun retrieveProcessNameFromProc(retryCount: Int, retryDelay: Duration): String {
         return withContext(process.scope.coroutineContext) {
             val cmd = "cat /proc/${process.pid}/cmdline"
             logger.debug { "Looking for process name of $process using '$cmd'" }

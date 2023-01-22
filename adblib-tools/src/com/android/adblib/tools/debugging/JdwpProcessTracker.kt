@@ -18,14 +18,15 @@ package com.android.adblib.tools.debugging
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.DeviceState
-import com.android.adblib.scope
-import com.android.adblib.tools.debugging.impl.JdwpProcessTrackerImpl
 import com.android.adblib.flowWhenOnline
+import com.android.adblib.property
+import com.android.adblib.scope
+import com.android.adblib.tools.AdbLibToolsProperties.JDWP_PROCESS_TRACKER_RETRY_DELAY
+import com.android.adblib.tools.debugging.impl.JdwpProcessTrackerImpl
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import java.time.Duration
 
 /**
  * Tracks the list of active [JdwpProcess] processes on a given [ConnectedDevice].
@@ -97,9 +98,6 @@ val ConnectedDevice.jdwpProcessTracker: JdwpProcessTracker
         }
     }
 
-@Suppress("PrivatePropertyName")
-private val JDWP_PROCESS_TRACKER_RETRY_DELAY = Duration.ofSeconds(2)
-
 /**
  * The [Flow] of [processes][JdwpProcess] currently active on the device.
  *
@@ -107,6 +105,6 @@ private val JDWP_PROCESS_TRACKER_RETRY_DELAY = Duration.ofSeconds(2)
  * when the device is disconnected [DeviceState.DISCONNECTED].
  */
 val ConnectedDevice.jdwpProcessFlow : Flow<List<JdwpProcess>>
-    get() = flowWhenOnline(JDWP_PROCESS_TRACKER_RETRY_DELAY) {
+    get() = flowWhenOnline(session.property(JDWP_PROCESS_TRACKER_RETRY_DELAY)) {
         it.jdwpProcessTracker.processesFlow
     }

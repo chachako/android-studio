@@ -16,12 +16,16 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbDeviceServices
+import com.android.adblib.AdbSessionHost
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.DeviceState
 import com.android.adblib.scope
 import com.android.adblib.tools.debugging.impl.AppProcessTrackerImpl
 import com.android.adblib.flowWhenOnline
+import com.android.adblib.property
+import com.android.adblib.tools.AdbLibToolsProperties
+import com.android.adblib.tools.AdbLibToolsProperties.APP_PROCESS_TRACKER_RETRY_DELAY
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,9 +98,6 @@ val ConnectedDevice.appProcessTracker: AppProcessTracker
         AppProcessTracker.create(this)
     }
 
-@Suppress("PrivatePropertyName")
-private val APP_PROCESS_TRACKER_RETRY_DELAY = Duration.ofSeconds(2)
-
 /**
  * The [Flow] of [processes][AppProcess] currently active on the device.
  *
@@ -104,6 +105,6 @@ private val APP_PROCESS_TRACKER_RETRY_DELAY = Duration.ofSeconds(2)
  * when the device scope is disconnected.
  */
 val ConnectedDevice.appProcessFlow: Flow<List<AppProcess>>
-    get() = flowWhenOnline(APP_PROCESS_TRACKER_RETRY_DELAY) {
+    get() = flowWhenOnline(session.property(APP_PROCESS_TRACKER_RETRY_DELAY)) {
         it.appProcessTracker.appProcessFlow
     }

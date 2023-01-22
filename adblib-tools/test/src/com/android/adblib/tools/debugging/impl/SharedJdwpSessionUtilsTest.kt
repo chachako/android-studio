@@ -16,9 +16,10 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
+import com.android.adblib.property
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.tools.debugging.DDMS_NO_REPLY_WAIT_TIMEOUT
+import com.android.adblib.tools.AdbLibToolsProperties.DDMS_REPLY_WAIT_TIMEOUT
 import com.android.adblib.tools.debugging.DdmsProtocolKind
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -147,7 +148,7 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
             val jdwpCommandProgress = FakeJdwpCommandProgress()
             val result =
                 jdwpSession.handleDdmsCommandAndReplyProtocol(jdwpCommandProgress) { signal: Signal<Long> ->
-                    signalAndWait(DDMS_NO_REPLY_WAIT_TIMEOUT.toMillis() + 100, signal) { 101L }
+                    signalAndWait(session.property(DDMS_REPLY_WAIT_TIMEOUT).toMillis() + 100, signal) { 101L }
                 }
 
             assertEquals(

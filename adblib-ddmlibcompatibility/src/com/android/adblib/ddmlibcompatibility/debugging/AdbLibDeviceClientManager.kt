@@ -20,13 +20,14 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties.DEVICE_TRACKER_WAIT_TIMEOUT
 import com.android.adblib.ddmlibcompatibility.debugging.ProcessTrackerHost.ClientUpdateKind
 import com.android.adblib.deviceProperties
+import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
-import com.android.adblib.trackDevices
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
@@ -45,14 +46,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
-
-/**
- * Maximum amount of time to wait for a device to show up in [AdbSession.trackDevices]
- * after an [AdbLibDeviceClientManager] instance is created.
- */
-private val DEVICE_TRACKER_WAIT_TIMEOUT = Duration.ofSeconds(2)
 
 internal class AdbLibDeviceClientManager(
     private val clientManager: AdbLibClientManager,
@@ -97,7 +91,7 @@ internal class AdbLibDeviceClientManager(
 
         session.scope.launch {
             // Wait for the device to show in the list of tracked devices
-            val connectedDevice = withTimeoutOrNull(DEVICE_TRACKER_WAIT_TIMEOUT.toMillis()) {
+            val connectedDevice = withTimeoutOrNull(session.property(DEVICE_TRACKER_WAIT_TIMEOUT).toMillis()) {
                 waitForConnectedDevice(iDevice.serialNumber)
             } ?: run {
                 val msg = "Could not find device ${iDevice.serialNumber} in list of tracked devices"
@@ -251,5 +245,4 @@ internal class AdbLibDeviceClientManager(
             }
         }
     }
-
 }

@@ -15,12 +15,13 @@
  */
 package com.android.adblib.tools.debugging.impl
 
-import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AppProcessEntry
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.TRACK_APP_RETRY_DELAY
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.AppProcessTracker
 import com.android.adblib.tools.debugging.rethrowCancellation
@@ -33,7 +34,6 @@ import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.EOFException
-import java.time.Duration
 
 internal class AppProcessTrackerImpl(
     override val device: ConnectedDevice
@@ -83,7 +83,7 @@ internal class AppProcessTrackerImpl(
                         }
                         // When disconnected, assume we have no processes
                         emit(emptyList())
-                        delay(TRACK_APP_RETRY_DELAY.toMillis())
+                        delay(session.property(TRACK_APP_RETRY_DELAY).toMillis())
                         true // Retry
                     }
                 }.collect { appEntryList ->
@@ -113,14 +113,5 @@ internal class AppProcessTrackerImpl(
                 it.startMonitoring()
             }
         })
-    }
-
-    companion object {
-
-        /**
-         * If the [AdbDeviceServices.trackApp] call fails with an error while the device is
-         * still connected, we want to retry. This defines the [Duration] to wait before retrying.
-         */
-        private val TRACK_APP_RETRY_DELAY = Duration.ofSeconds(2)
     }
 }

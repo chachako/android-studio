@@ -18,8 +18,12 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.JDWP_SESSION_FIRST_PACKET_ID
+import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT
+import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_RETRY_DURATION
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
@@ -36,28 +40,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.io.EOFException
-import java.time.Duration
-
-/**
- * Maximum amount of time a JDWP connection is open while waiting for the JDWP "handshake"
- * and various DDMS packets related to the process state.
- *
- * Note: The current value (15 seconds) matches the time Android Studio waits for a process
- * to show up as "waiting for debugger" after deploying and starting an application on a
- * device.
- */
-private val PROCESS_PROPERTIES_READ_TIMEOUT = Duration.ofSeconds(15)
-
-/**
- * Amount of time to wait before retrying a JDWP session to retrieve process properties
- */
-private val PROCESS_PROPERTIES_RETRY_DURATION = Duration.ofSeconds(2)
 
 /**
  * Implementation of [JdwpProcess]
  */
 internal class JdwpProcessImpl(
-  session: AdbSession,
+  private val session: AdbSession,
   override val device: ConnectedDevice,
   override val pid: Int
 ) : JdwpProcess, AutoCloseable {
@@ -90,13 +78,7 @@ internal class JdwpProcessImpl(
      * lasts until the debugging session ends.
      */
     private val jdwpSessionRef = ReferenceCountedResource(session, session.host.ioDispatcher) {
-        /**
-         * This value is from DDMLIB, using it should help avoid potential backward compatibility
-         * issues if someone depends on this somehow.
-         */
-        val JDWP_SESSION_FIRST_PACKET_ID = 0x40000000
-
-        JdwpSession.openJdwpSession(device, pid, JDWP_SESSION_FIRST_PACKET_ID)
+        JdwpSession.openJdwpSession(device, pid, session.property(JDWP_SESSION_FIRST_PACKET_ID))
             .closeOnException { jdwpSession ->
                 SharedJdwpSession.create(jdwpSession, pid)
             }
@@ -127,7 +109,7 @@ internal class JdwpProcessImpl(
             // can for a short period of time, then close the session and try again
             // later if needed.
             try {
-                withTimeout(PROCESS_PROPERTIES_READ_TIMEOUT.toMillis()) {
+                withTimeout(session.property(PROCESS_PROPERTIES_READ_TIMEOUT).toMillis()) {
                     collector.collect(stateFlow)
                 }
                 // If we have what we want, reset the exception to `null` (this could
@@ -163,7 +145,7 @@ internal class JdwpProcessImpl(
             }
 
             logger.info(properties.exception) { "Error retrieving (at least some of) JDWP process properties ($properties), retrying later" }
-            delay(PROCESS_PROPERTIES_RETRY_DURATION.toMillis())
+            delay(session.property(PROCESS_PROPERTIES_RETRY_DURATION).toMillis())
         }
     }
 

@@ -16,7 +16,9 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbInputChannel
+import com.android.adblib.property
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.DDMS_REPLY_WAIT_TIMEOUT
 import com.android.adblib.tools.debugging.packets.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
@@ -47,8 +49,6 @@ import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
-
-internal val DDMS_NO_REPLY_WAIT_TIMEOUT = Duration.ofSeconds(2)
 
 /**
  * Progress reporting when executing a JDWP/DDMS command.
@@ -547,7 +547,7 @@ private suspend fun JdwpPacketView.getDdmsFail(): DdmsChunkView? {
  *
  * * For [DdmsProtocolKind.EmptyRepliesAllowed], [block] is invoked "as-is"
  * * For [DdmsProtocolKind.EmptyRepliesDiscarded], [block] is invoked with a timeout
- * of [DDMS_NO_REPLY_WAIT_TIMEOUT], so that [DdmsChunkTypes.FAIL] replies can be detected
+ * of [DDMS_REPLY_WAIT_TIMEOUT], so that [DdmsChunkTypes.FAIL] replies can be detected
  * even in the absence of "ACK" reply (i.e. empty JDWP packet).
  *
  * See [DdmsProtocolKind] for a more detailed description of this behavior.
@@ -569,7 +569,7 @@ internal suspend fun <R> SharedJdwpSession.handleDdmsCommandAndReplyProtocol(
             // with a "reasonable" timeout
             var blockSignal: Signal<R>? = null
             try {
-                withTimeoutAfterSignal<R>(DDMS_NO_REPLY_WAIT_TIMEOUT) { signal ->
+                withTimeoutAfterSignal<R>(device.session.property(DDMS_REPLY_WAIT_TIMEOUT)) { signal ->
                     blockSignal = signal
                     block(signal)
                 }

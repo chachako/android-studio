@@ -15,13 +15,14 @@
  */
 package com.android.adblib.tools.debugging.impl
 
-import com.android.adblib.AdbDeviceServices
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.ProcessIdList
 import com.android.adblib.emptyProcessIdList
+import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.TRACK_JDWP_RETRY_DELAY
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessTracker
 import com.android.adblib.tools.debugging.rethrowCancellation
@@ -34,7 +35,6 @@ import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.EOFException
-import java.time.Duration
 
 internal class JdwpProcessTrackerImpl(
   override val device: ConnectedDevice
@@ -84,7 +84,7 @@ internal class JdwpProcessTrackerImpl(
                         }
                         // When disconnected, assume we have no processes
                         emit(emptyProcessIdList())
-                        delay(TRACK_JDWP_RETRY_DELAY.toMillis())
+                        delay(session.property(TRACK_JDWP_RETRY_DELAY).toMillis())
                         true // Retry
                     }
                 }.collect { processIdList ->
@@ -113,14 +113,5 @@ internal class JdwpProcessTrackerImpl(
                 it.startMonitoring()
             }
         })
-    }
-
-    companion object {
-
-        /**
-         * If the [AdbDeviceServices.trackJdwp] call fails with an error while the device is
-         * still connected, we want to retry. This defines the [Duration] to wait before retrying.
-         */
-        private val TRACK_JDWP_RETRY_DELAY = Duration.ofSeconds(2)
     }
 }
