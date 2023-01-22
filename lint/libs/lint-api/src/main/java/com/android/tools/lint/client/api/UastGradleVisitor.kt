@@ -22,6 +22,8 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.acceptSourceFile
 import com.android.tools.lint.detector.api.getMethodName
+import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
@@ -62,7 +64,7 @@ class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() 
             val hierarchyWithParents = hierarchy + getParent(node) + getParentN(node, 2)
             val parentName = hierarchyWithParents[1] ?: ""
             val parentParentName = hierarchyWithParents[2]
-            val value = node.rightOperand.asSourceString()
+            val value = node.rightOperand.getSource()
             for (scanner in detectors) {
                 scanner.checkDslPropertyAssignment(
                     context,
@@ -109,7 +111,7 @@ class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() 
                         // the name is the parent
                         val parentName = getParent(node) ?: ""
                         val parentParentName = getParentN(node, 2)
-                        val value = arg.asSourceString()
+                        val value = arg.getSource()
                         for (scanner in detectors) {
                             // How do I represent this: we're passing
                             // in *two* values:
@@ -147,7 +149,7 @@ class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() 
         } else {
             val parentName = getParent(node)
             val parentParentName = getParentN(node, 2)
-            val unnamedArguments = valueArguments.map { it.asSourceString() }
+            val unnamedArguments = valueArguments.map { it.getSource() }
             for (scanner in detectors) {
                 scanner.checkMethodCall(
                     context,
@@ -180,19 +182,50 @@ class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() 
         }
     }
 
+    /**
+     * Returns the source string for this [UExpression].
+     *
+     * This is used because [UExpression.asSourceString] doesn't do what it
+     * might sound like it does: return the actual source; instead, it runs
+     * something like a source printer on the UAST elements; this means for
+     * example that the whitespace will be standard instead of what is actually
+     * in the source code, and for some constructs, there's a big change (for
+     * example, properties will look like Java getters and setters). Instead,
+     * we can get the real source code from the [UElement.sourcePsi] property,
+     * and from there the true source code via [PsiElement.getText]. We only
+     * fall back to [UExpression.asSourceString] for elements missing a source
+     * element (e.g. virtual elements).
+     */
+    private fun UExpression.getSource(): String {
+        val sourcePsi = sourcePsi
+
+        if (sourcePsi != null) {
+            // Note also that for strings, the GradleVisitor contract expects
+            // to get the string literals *with* surrounding quotes; this isn't
+            // included in the bounds for string literals in the AST (it *is*
+            // from [asSourceString()], so correct for that here.
+            if (sourcePsi is KtLiteralStringTemplateEntry) {
+                return sourcePsi.parent?.text ?: sourcePsi.text
+            }
+            return sourcePsi.text
+        }
+
+        return asSourceString()
+    }
+
     private fun getPropertyHierarchy(expression: UExpression): List<String> {
         return when (expression) {
             is UQualifiedReferenceExpression -> {
-                val result = mutableListOf(expression.selector.asSourceString())
+                val result = mutableListOf(expression.selector.getSource())
                 var receiver = expression.receiver
                 while (receiver is UQualifiedReferenceExpression) {
-                    result.add(receiver.selector.asSourceString())
+                    result.add(receiver.selector.getSource())
                     receiver = receiver.receiver
                 }
-                result.add(receiver.asSourceString())
+                result.add(receiver.getSource())
                 result
             }
-            else -> listOf(expression.asSourceString())
+            else -> listOf(expression.getSource())
         }
     }
 
@@ -200,7 +233,7 @@ class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() 
         var parent = node.uastParent
         if (parent is UReturnExpression) {
             // parent may be a UReturnExpression child of UBlockExpression
-            parent = parent?.uastParent
+            parent = parent.uastParent
         }
         if (parent is UBlockExpression) {
             val parentParent = parent.uastParent

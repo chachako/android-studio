@@ -5357,6 +5357,90 @@ class GradleDetectorTest : AbstractCheckTest() {
             .expectClean()
     }
 
+    fun testCoordinateQualifiers() {
+        // Regression test for 264799024
+        lint().files(
+            kts(
+                """
+                dependencies {
+                   val androidx = "com.android.support"
+                   val artifact = "multidex"
+                   val multiDexVersion = "1.0.0"
+                   val unknownVersion = getUnknownVersion() // Can't infer from build file, but we'll find it in model
+
+                   implementation("com.android.support:multidex:1.0.0")
+                   implementation("com.android.support:multidex:1.0.0@aar")
+                   implementation("com.android.support:multidex:＄multiDexVersion")
+                   implementation("com.android.support:multidex:" + multiDexVersion)
+                   implementation("com.android.support:multidex:" + multiDexVersion + "@aar")
+                   implementation("com.android.support:multidex:＄multiDexVersion@aar")
+                   implementation("com.android.support:multidex:＄{multiDexVersion}@aar")
+                   implementation(""${'"'}com.android.support:multidex:＄multiDexVersion""${'"'})
+                   implementation(""${'"'}com.android.support:multidex:＄multiDexVersion@aar""${'"'})
+                   implementation(androidx + ":" + artifact + ":" + multiDexVersion)
+                   implementation((androidx + ":" + artifact) + ":" + multiDexVersion)
+
+                   implementation("com.android.support:multidex:＄unknownVersion@aar")
+                   implementation("com.android.support:multidex:＄{unknownVersion}@aar")
+                   implementation("com.android.support:multidex:" + unknownVersion + "@aar")
+                   implementation((androidx + ":" + artifact) + ":" + unknownVersion)
+                }
+                """
+            ).indented()
+        )
+            .issues(DEPENDENCY, PLUS)
+            .run()
+            .expect(
+                """
+                build.gradle.kts:7: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:1.0.0")
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:8: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:1.0.0@aar")
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:9: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:＄multiDexVersion")
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:10: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:" + multiDexVersion)
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:11: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:" + multiDexVersion + "@aar")
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:12: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:＄multiDexVersion@aar")
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:13: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation("com.android.support:multidex:＄{multiDexVersion}@aar")
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:14: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation(""${'"'}com.android.support:multidex:＄multiDexVersion""${'"'})
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:15: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation(""${'"'}com.android.support:multidex:＄multiDexVersion@aar""${'"'})
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:16: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation(androidx + ":" + artifact + ":" + multiDexVersion)
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle.kts:17: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
+                   implementation((androidx + ":" + artifact) + ":" + multiDexVersion)
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 11 warnings
+                """
+            ).expectFixDiffs(
+                """
+                Fix for build.gradle.kts line 7: Change to 1.0.1:
+                @@ -7 +7
+                -    implementation("com.android.support:multidex:1.0.0")
+                +    implementation("com.android.support:multidex:1.0.1")
+                Fix for build.gradle.kts line 8: Change to 1.0.1:
+                @@ -8 +8
+                -    implementation("com.android.support:multidex:1.0.0@aar")
+                +    implementation("com.android.support:multidex:1.0.1@aar")
+                """
+            )
+    }
+
     // -------------------------------------------------------------------------------------------
     // Test infrastructure below here
     // -------------------------------------------------------------------------------------------

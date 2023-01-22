@@ -200,6 +200,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         value: String,
         cookie: Any
     ) {
+        // (This will never be the case in KTS; if you try to insert "010" as an integer in Kotlin, you
+        // get a compiler error, "Unsupported [literal prefixes and suffixes]".)
         if (value.length >= 2 &&
             value[0] == '0' &&
             (value.length > 2 || value[1] >= '8' && isNonNegativeInteger(value)) &&
@@ -234,7 +236,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     ) {
         if (parent == "defaultConfig") {
             if (property == "targetSdkVersion" || property == "targetSdk") {
-                val version = getSdkVersion(value)
+                val version = getSdkVersion(value, valueCookie)
                 if (version > 0 && version < context.client.highestKnownApiLevel) {
                     var warned = false
                     if (version < MINIMUM_TARGET_SDK_VERSION) {
@@ -317,15 +319,15 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                     targetSdkVersion = version
                     checkTargetCompatibility(context)
                 } else {
-                    checkIntegerAsString(context, value, statementCookie)
+                    checkIntegerAsString(context, value, statementCookie, valueCookie)
                 }
             } else if (property == "minSdkVersion" || property == "minSdk") {
-                val version = getSdkVersion(value)
+                val version = getSdkVersion(value, valueCookie)
                 if (version > 0) {
                     minSdkVersion = version
                     checkMinSdkVersion(context, version, statementCookie)
                 } else {
-                    checkIntegerAsString(context, value, statementCookie)
+                    checkIntegerAsString(context, value, statementCookie, valueCookie)
                 }
             }
 
@@ -368,7 +370,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             var version = -1
             if (isStringLiteral(value)) {
                 // Try to resolve values like "android-O"
-                val hash = getStringLiteralValue(value)
+                val hash = getStringLiteralValue(value, valueCookie)
                 if (hash != null && !isNumberString(hash)) {
                     if (property == "compileSdk") {
                         val message = "`compileSdk` does not support strings; did you mean `compileSdkPreview` ?"
@@ -389,10 +391,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 compileSdkVersionCookie = statementCookie
                 checkTargetCompatibility(context)
             } else {
-                checkIntegerAsString(context, value, statementCookie)
+                checkIntegerAsString(context, value, statementCookie, valueCookie)
             }
         } else if (property == "buildToolsVersion" && parent == "android") {
-            val versionString = getStringLiteralValue(value)
+            val versionString = getStringLiteralValue(value, valueCookie)
             if (versionString != null) {
                 val version = GradleVersion.tryParse(versionString)
                 if (version != null) {
@@ -423,7 +425,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         } else if (parent == "plugins") {
             // KTS declaration for plugins
             if (property == "id") {
-                val plugin = getStringLiteralValue(value)
+                val plugin = getStringLiteralValue(value, valueCookie)
                 val isOldAppPlugin = OLD_APP_PLUGIN_ID == plugin
                 if (isOldAppPlugin || OLD_LIB_PLUGIN_ID == plugin) {
                     val replaceWith = if (isOldAppPlugin) APP_PLUGIN_ID else LIB_PLUGIN_ID
@@ -464,7 +466,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                     report(context, valueCookie, PATH, message)
                 }
             } else {
-                var dependency = getStringLiteralValue(value)
+                var dependency = getStringLiteralValue(value, valueCookie)
                 if (dependency == null) {
                     dependency = getNamedDependency(value)
                 }
@@ -495,6 +497,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                         }
 
                         gc = resolveCoordinate(context, property, gc)
+                        isResolved = true
+                    } else if (gc != null && !value.contains(gc.revision)) {
                         isResolved = true
                     }
                     if (gc != null) {
@@ -548,7 +552,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 .replace().text("packageNameSuffix").with("applicationIdSuffix").autoFix().build()
             report(context, propertyCookie, DEPRECATED, message, fix)
         } else if (property == "applicationIdSuffix") {
-            val suffix = getStringLiteralValue(value)
+            val suffix = getStringLiteralValue(value, valueCookie)
             if (suffix != null && !suffix.startsWith(".")) {
                 val message = "Application ID suffix should probably start with a \".\""
                 report(context, statementCookie, PATH, message)
@@ -780,14 +784,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
     }
 
-    private fun checkIntegerAsString(context: GradleContext, value: String, cookie: Any) {
+    private fun checkIntegerAsString(context: GradleContext, value: String, cookie: Any, valueCookie: Any) {
         // When done developing with a preview platform you might be tempted to switch from
         //     compileSdkVersion 'android-G'
         // to
         //     compileSdkVersion '19'
         // but that won't work; it needs to be
         //     compileSdkVersion 19
-        val string = getStringLiteralValue(value)
+        val string = getStringLiteralValue(value, valueCookie)
         if (isNumberString(string)) {
             val message =
                 "Use an integer rather than a string here (replace $value with just $string)"
@@ -1994,10 +1998,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
     }
 
-    private fun getSdkVersion(value: String): Int {
+    private fun getSdkVersion(value: String, valueCookie: Any): Int {
         var version = 0
         if (isStringLiteral(value)) {
-            val codeName = getStringLiteralValue(value)
+            val codeName = getStringLiteralValue(value, valueCookie)
             if (codeName != null) {
                 if (isNumberString(codeName)) {
                     // Don't access numbered strings; should be literal numbers (lint will warn)
