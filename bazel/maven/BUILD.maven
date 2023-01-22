@@ -7562,10 +7562,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.gradle.gradle-tooling-api_8.0-rc-1",
-    pom = "repository/org/gradle/gradle-tooling-api/8.0-rc-1/gradle-tooling-api-8.0-rc-1.pom",
+    name = "org.gradle.gradle-tooling-api_8.0-rc-2",
+    pom = "repository/org/gradle/gradle-tooling-api/8.0-rc-2/gradle-tooling-api-8.0-rc-2.pom",
     repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-tooling-api/8.0-rc-1",
+    repo_path = "org/gradle/gradle-tooling-api/8.0-rc-2",
     deps = [
         "org.slf4j.slf4j-api_1.7.30",
     ],
@@ -7576,7 +7576,7 @@ maven_import(
     name = "org.gradle.gradle-tooling-api",
     classifiers = [],
     jars = [
-        "repository/org/gradle/gradle-tooling-api/8.0-rc-1/gradle-tooling-api-8.0-rc-1.jar"
+        "repository/org/gradle/gradle-tooling-api/8.0-rc-2/gradle-tooling-api-8.0-rc-2.jar"
     ],
     exports = [
         "org.slf4j.slf4j-api",
@@ -7584,9 +7584,9 @@ maven_import(
     original_deps = [
         "org.slf4j.slf4j-api_1.7.30",
     ],
-    pom = "repository/org/gradle/gradle-tooling-api/8.0-rc-1/gradle-tooling-api-8.0-rc-1.pom",
+    pom = "repository/org/gradle/gradle-tooling-api/8.0-rc-2/gradle-tooling-api-8.0-rc-2.pom",
     repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-tooling-api/8.0-rc-1",
+    repo_path = "org/gradle/gradle-tooling-api/8.0-rc-2",
     visibility = ["//visibility:public"],
 )
 
@@ -36601,23 +36601,23 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-reflect_1.8.0",
+    pom = "repository/org/jetbrains/kotlin/kotlin-reflect/1.8.0/kotlin-reflect-1.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-reflect/1.8.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-reflect_1.8.0-Beta",
     pom = "repository/org/jetbrains/kotlin/kotlin-reflect/1.8.0-Beta/kotlin-reflect-1.8.0-Beta.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-reflect/1.8.0-Beta",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-Beta",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-reflect_1.8.0-RC2",
-    pom = "repository/org/jetbrains/kotlin/kotlin-reflect/1.8.0-RC2/kotlin-reflect-1.8.0-RC2.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-reflect/1.8.0-RC2",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -37411,18 +37411,18 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0-Beta",
-    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0-Beta/kotlin-stdlib-common-1.8.0-Beta.pom",
+    name = "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0/kotlin-stdlib-common-1.8.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0-Beta",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0-RC2",
-    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0-RC2/kotlin-stdlib-common-1.8.0-RC2.pom",
+    name = "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0-Beta",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0-Beta/kotlin-stdlib-common-1.8.0-Beta.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0-RC2",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0-Beta",
     visibility = ["//visibility:public"],
 )
 
@@ -37636,23 +37636,23 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.8.0",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.0/kotlin-stdlib-jdk7-1.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.8.0-Beta",
     pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.0-Beta/kotlin-stdlib-jdk7-1.8.0-Beta.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.0-Beta",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-Beta",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.8.0-RC2",
-    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.0-RC2/kotlin-stdlib-jdk7-1.8.0-RC2.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.0-RC2",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -37886,6 +37886,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.0/kotlin-stdlib-jdk8-1.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0-Beta",
     pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.0-Beta/kotlin-stdlib-jdk8-1.8.0-Beta.pom",
     repo_root_path = "repository",
@@ -37893,18 +37905,6 @@ maven_artifact(
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-Beta",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.8.0-Beta",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0-RC2",
-    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.0-RC2/kotlin-stdlib-jdk8-1.8.0-RC2.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.0-RC2",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-RC2",
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -38381,24 +38381,24 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-Beta",
-    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.8.0-Beta/kotlin-stdlib-1.8.0-Beta.pom",
+    name = "org.jetbrains.kotlin.kotlin-stdlib_1.8.0",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.8.0/kotlin-stdlib-1.8.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.8.0-Beta",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.8.0",
     deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0-Beta",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0",
         "org.jetbrains.annotations_13.0",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-RC2",
-    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.8.0-RC2/kotlin-stdlib-1.8.0-RC2.pom",
+    name = "org.jetbrains.kotlin.kotlin-stdlib_1.8.0-Beta",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.8.0-Beta/kotlin-stdlib-1.8.0-Beta.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.8.0-RC2",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.8.0-Beta",
     deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0-RC2",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.0-Beta",
         "org.jetbrains.annotations_13.0",
     ],
     visibility = ["//visibility:public"],
