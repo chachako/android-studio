@@ -604,8 +604,7 @@ class UastTest : TestCase() {
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
                             UAnnotation (fqName = kotlin.jvm.JvmField) [@kotlin.jvm.JvmField]
                             ULiteralExpression (value = 42) [42] : PsiType:int
-                        UMethod (name = sayHello) [@kotlin.jvm.JvmStatic...}] : PsiType:void
-                            UAnnotation (fqName = kotlin.jvm.JvmStatic) [@kotlin.jvm.JvmStatic]
+                        UMethod (name = sayHello) [public static default fun sayHello() : void {...}] : PsiType:void
                             UBlockExpression [{...}] : PsiType:void
                                 UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("Hello, world!")] : PsiType:Unit
                                     UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
@@ -1235,7 +1234,7 @@ class UastTest : TestCase() {
                             UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [<init>(Runnable({ ...}))] : PsiType:Thread
                               UIdentifier (Identifier (Thread)) [UIdentifier (Identifier (Thread))]
                               USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Thread) [<init>] : PsiType:Thread
-                              UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [Runnable({ ...})] : PsiType:Runnable
+                              UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [Runnable({ ...})] : PsiType:Runnable
                                 UIdentifier (Identifier (Runnable)) [UIdentifier (Identifier (Runnable))]
                                 USimpleNameReferenceExpression (identifier = Runnable, resolvesTo = PsiClass: Runnable) [Runnable] : PsiType:Runnable
                                 ULambdaExpression [{ ...}] : PsiType:Function0<? extends Unit>
@@ -1611,8 +1610,7 @@ class UastTest : TestCase() {
             file.accept(object : AbstractUastVisitor() {
                 override fun visitCallExpression(node: UCallExpression): Boolean {
                     assertEquals("Runnable", node.methodName)
-                    // TODO(b/237078186): should be CONSTRUCTOR_CALL; will fail when an upstream fix is bundled
-                    assertEquals(UastCallKind.METHOD_CALL, node.kind)
+                    assertEquals(UastCallKind.CONSTRUCTOR_CALL, node.kind)
 
                     return super.visitCallExpression(node)
                 }
@@ -1645,9 +1643,7 @@ class UastTest : TestCase() {
             })
             assertTrue(commentMap.keys.isNotEmpty())
             commentMap.forEach { (_, uElementSet) ->
-                // TODO(b/235184438): comments should be bound to one single UElement, in this case, just data class
-                //   Currently it appears on data class and its synthetic members; will fail when an upstream fix is bundled
-                assertEquals(5, uElementSet.size)
+                assertEquals(1, uElementSet.size)
             }
         }
     }

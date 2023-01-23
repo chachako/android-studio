@@ -3051,7 +3051,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "                      ~~~~~~~~~~\n"
                                 + "src/test/usage/KotlinUsage.kt:8: Error: Call requires API level 29 (current min is 1): InnerApi [NewApi]\n"
                                 + "        val o2: Any = object : InnerApi() {}\n"
-                                + "                      ~~~~~~~~~~~~~~~~~~~\n"
+                                + "                               ~~~~~~~~~~\n"
                                 + "src/test/usage/KotlinUsage.kt:8: Error: Extending InnerApi requires API level 29 (current min is 1): InnerApi [NewApi]\n"
                                 + "        val o2: Any = object : InnerApi() {}\n"
                                 + "                               ~~~~~~~~\n"

@@ -26,6 +26,10 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.openapi.vfs.CompactVirtualFileSet
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileSet
+import com.intellij.openapi.vfs.VirtualFileSetFactory
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
@@ -133,6 +137,17 @@ internal fun configureApplicationEnvironment(
             appConfigured = false
         }
     )
+}
+
+// KT-56277: [CompactVirtualFileSetFactory] is package-private, so we introduce our own default-ish implementation.
+internal object LintVirtualFileSetFactory : VirtualFileSetFactory {
+    override fun createCompactVirtualFileSet(): VirtualFileSet {
+        return CompactVirtualFileSet()
+    }
+
+    override fun createCompactVirtualFileSet(files: MutableCollection<out VirtualFile>): VirtualFileSet {
+        return CompactVirtualFileSet().apply { addAll(files) }
+    }
 }
 
 // Most Logger.error() calls exist to trigger bug reports but are

@@ -19,6 +19,7 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFileSetFactory
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.analyze
@@ -104,6 +105,13 @@ private fun createAnalysisSession(
         projectDisposable = parentDisposable,
         withPsiDeclarationFromBinaryModuleProvider = true
     ) {
+        // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
+        //  which led to duplicate app-level service registration.
+        if (application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
+            // Note that this app-level service should be initialized before any other entities attempt to instantiate [FilesScope]
+            // For FIR UAST, the first attempt will be made while building the module structure below.
+            registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+        }
         buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig)
     }
     appLock.withLock { configureFirApplicationEnvironment(analysisSession.coreApplicationEnvironment) }

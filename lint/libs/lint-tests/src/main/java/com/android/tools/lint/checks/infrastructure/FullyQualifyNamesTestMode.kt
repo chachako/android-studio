@@ -20,6 +20,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.acceptSourceFile
 import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiCompiledFile
 import com.intellij.psi.PsiDisjunctionType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiType
@@ -132,6 +133,13 @@ class FullyQualifyNamesTestMode : UastSourceTransformationTestMode(
             // The type may contain things like wildcards, arrays, etc; we just want the
             // name prefix.
             val psi = node.sourcePsi ?: return
+            // KTIJ-24465: JavaUTypeReferenceExpression.sourcePsi == javaPsi ?!
+            if (psi.containingFile is PsiCompiledFile) {
+                // `psi.textRange` will trigger:
+                //   com.intellij.psi.impl.compiled.ClsElementImpl.getTextRange -> getMirror
+                // which will fail with an assertion error that complains Document, the mirrored text, is `null`.
+                return
+            }
             if (psi is KtSuperTypeCallEntry || psi is KtThisExpression || psi is KtConstructorDelegationCall) {
                 return
             }
@@ -142,7 +150,7 @@ class FullyQualifyNamesTestMode : UastSourceTransformationTestMode(
                 return
             }
 
-            val start = node.sourcePsi?.textRange?.startOffset ?: return
+            val start = psi.textRange?.startOffset ?: return
             if (type != null) {
                 checkTypeReference(node, cls, start, type)
             }

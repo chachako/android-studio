@@ -56,6 +56,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.asCall
 import com.android.tools.lint.detector.api.hasImplicitDefaultConstructor
+import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.resolveOperator
 import com.android.tools.lint.detector.api.resolveOperatorWorkaround
 import com.google.common.collect.Multimap
@@ -731,6 +732,10 @@ internal class AnnotationHandler(private val driver: LintDriver, private val sca
         // this case using the class's annotations. So thus, check a null if it represents
         // a constructor call.
         if (method == null) {
+            // KotlinUObjectLiteralExpression is resolved to its super type, which is revisited as a call of KtSuperTypeCallEntry
+            // To avoid duplicate issues---one on `object : SuperType(...) { }` and the other on `SuperType(...)`, skip here
+            // because the latter (an issue on the super type call) is much narrower scope to report an issue.
+            if (call is UObjectLiteralExpression && isKotlin(call.sourcePsi)) return
             checkCallUnresolved(context, call)
         } else {
             checkCall(context, method, call)

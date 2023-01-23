@@ -17,6 +17,7 @@ package com.android.tools.lint.checks.infrastructure
 
 import com.android.tools.lint.FIR_UAST_KEY
 import com.android.tools.lint.UastEnvironment
+import org.jetbrains.uast.UastFacade
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
@@ -25,11 +26,28 @@ class AnalysisApiFirServicesTest : AnalysisApiServicesTestBase() {
     companion object {
         private var lastKey: String? = null
 
+        // TODO: KTIJ-24467: plugin leak through UastFacade.cachedLastPlugin
+        private fun resetCacheInsideUastFacade() {
+            val klass = UastFacade::class.java
+            val cachedLastPlugin =
+                try {
+                    klass.getDeclaredField("cachedLastPlugin")
+                        .also { it.isAccessible = true }
+                } catch (e: NoSuchFieldException) {
+                    return
+                } catch (e: SecurityException) {
+                    return
+                }
+            // reset the last cached plugin to itself
+            cachedLastPlugin?.set(UastFacade, UastFacade)
+        }
+
         @BeforeClass
         @JvmStatic
         fun setup() {
             lastKey = System.getProperty(FIR_UAST_KEY, "false")
             System.setProperty(FIR_UAST_KEY, "true")
+            resetCacheInsideUastFacade()
         }
 
         @AfterClass
@@ -40,6 +58,7 @@ class AnalysisApiFirServicesTest : AnalysisApiServicesTestBase() {
             }
             lastKey = null
             UastEnvironment.disposeApplicationEnvironment()
+            resetCacheInsideUastFacade()
         }
     }
 

@@ -559,7 +559,7 @@ class AnnotationHandlerTest {
                 ~~~~~~~~~~
             src/test/usage/test.kt:5: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
                 object : InnerApi() { } // ERROR4
-                ~~~~~~~~~~~~~~~~~~~~~~~
+                         ~~~~~~~~~~
             4 errors, 0 warnings
             """
         )
