@@ -81,6 +81,7 @@ class AppAndLibTestFixturesModelTest: ModelComparator() {
             }
         }
         subProject(":lib") {
+            version = "1.2.3"
             plugins.add(PluginType.ANDROID_LIB)
             android {
                 setUpHelloWorld()
@@ -121,6 +122,7 @@ class AppAndJavaLibTestFixturesModelTest: ModelComparator() {
             }
         }
         subProject(":lib") {
+            version = "1.2.3"
             plugins.add(PluginType.JAVA_LIBRARY)
             plugins.add(PluginType.JAVA_TEST_FIXTURES)
         }
