@@ -179,7 +179,8 @@ class AdbLibDeviceClientManagerTest {
         Assert.assertTrue(client.isValid)
         Assert.assertTrue(client.debuggerListenPort > 0)
         Assert.assertFalse(client.isDebuggerAttached)
-        assertThrows { client.executeGarbageCollector() }
+        //TODO(b/266699981): Add unit test
+        //assertThrows { client.executeGarbageCollector() }
         assertThrows { client.startMethodTracer() }
         assertThrows { client.stopMethodTracer() }
         assertThrows { client.startSamplingProfiler(10, TimeUnit.SECONDS) }

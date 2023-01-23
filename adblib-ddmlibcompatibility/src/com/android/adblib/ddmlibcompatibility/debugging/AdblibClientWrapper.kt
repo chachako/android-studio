@@ -16,11 +16,14 @@
 package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.debugging.DdmsCommandProgress
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.executeGarbageCollector
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsDumpViewHierarchy
 import com.android.adblib.tools.debugging.handleDdmsListViewRoots
+import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.toByteBuffer
@@ -30,6 +33,7 @@ import com.android.ddmlib.Client
 import com.android.ddmlib.ClientData
 import com.android.ddmlib.DebugViewDumpHandler
 import com.android.ddmlib.IDevice
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
@@ -117,7 +121,7 @@ internal class AdblibClientWrapper(
     }
 
     /**
-     * Returns `true' if there is an "external" debugger (i.e. IntelliJ or Android Studio)
+     * Returns `true` if there is an "external" debugger (i.e. IntelliJ or Android Studio)
      * currently attached to the process via a JDWP session.
      */
     override fun isDebuggerAttached(): Boolean {
@@ -125,7 +129,15 @@ internal class AdblibClientWrapper(
     }
 
     override fun executeGarbageCollector() {
-        legacyNotImplemented("executeGarbageCollector")
+        // Note: To maintain strict ddmlib behavior, we block this method until the
+        // DDMS command is sent to the AndroidVM, but we don't wait for the reply.
+        runHalfBlockingLegacy("executeGarbageCollector") { deferred ->
+            jdwpProcess.executeGarbageCollector(object : DdmsCommandProgress {
+                override suspend fun afterSend(packet: JdwpPacketView) {
+                    deferred.complete(Unit)
+                }
+            })
+        }
     }
 
     override fun startMethodTracer() {
@@ -246,18 +258,33 @@ internal class AdblibClientWrapper(
         }
     }
 
-    private fun launchLegacyWithJdwpSession(
+    /**
+     * A mix of [launchLegacy] and [runBlockingLegacy]: The [block] invoked by [launchLegacy]
+     * completes a [CompletableDeferred] to unblock a wait inside [runBlockingLegacy].
+     */
+    private fun runHalfBlockingLegacy(
         operation: String,
-        block: suspend SharedJdwpSession.() -> Unit
+        timeout: Duration = RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT,
+        block: suspend (job: CompletableDeferred<Unit>) -> Unit
+    ) {
+        val deferred = CompletableDeferred<Unit>()
+        launchLegacy(operation) {
+            block(deferred)
+        }
+        return runBlockingLegacy(timeout = timeout) {
+            deferred.await()
+        }
+    }
+
+    private fun launchLegacy(
+        operation: String,
+        block: suspend CoroutineScope.() -> Unit
     ) {
         // Note: We use `async` here to make sure exceptions are not propagated to
         // the parent context.
         val deferred = jdwpProcess.scope.async {
-            jdwpProcess.withJdwpSession {
-                block()
-            }
+            block()
         }
-
         // We log errors here because legacy ddmlib APIs wrapped by this method don't
         // have a way to report errors to their callers.
         deferred.invokeOnCompletion { cause: Throwable? ->
@@ -268,6 +295,17 @@ internal class AdblibClientWrapper(
                         "A legacy ddmlib operation ('$operation') failed with an error ${cause.message}"
                     )
                 }
+            }
+        }
+    }
+
+    private fun launchLegacyWithJdwpSession(
+        operation: String,
+        block: suspend SharedJdwpSession.() -> Unit
+    ) {
+        launchLegacy(operation) {
+            jdwpProcess.withJdwpSession {
+                block()
             }
         }
     }

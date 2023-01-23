@@ -15,8 +15,8 @@
  */
 package com.android.adblib.tools.debugging
 
+import com.android.adblib.AdbInputChannel
 import com.android.adblib.thisLogger
-import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
@@ -26,10 +26,12 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.JdwpPacketFactory
+import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
+import com.android.adblib.tools.debugging.packets.ddms.throwFailException
+import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -38,15 +40,109 @@ import kotlinx.coroutines.flow.map
 import java.nio.ByteBuffer
 
 /**
+ * Progress reporting when executing a DDMS command.
+ */
+interface DdmsCommandProgress {
+
+    suspend fun beforeSend(packet: JdwpPacketView) {}
+    suspend fun afterSend(packet: JdwpPacketView) {}
+    suspend fun onReply(packet: JdwpPacketView) {}
+}
+
+/**
  * Sends a [DDMS EXIT][DdmsChunkTypes.EXIT] [packet][DdmsChunkView] to
  * the JDWP process corresponding to this [JDWP session][SharedJdwpSession].
  */
 suspend fun SharedJdwpSession.sendDdmsExit(status: Int) {
-    val buffer = ByteBuffer.allocate(4) // [pos = 0, limit =4]
+    val buffer = allocateDdmsPayload(4) // [pos = 0, limit =4]
     buffer.putInt(status) // [pos = 4, limit =4]
     buffer.flip()  // [pos = 0, limit =4]
-    val packet = JdwpPacketFactory.createDdmsPacket(nextPacketId(), DdmsChunkTypes.EXIT, buffer)
+    val packet = createDdmsPacket(DdmsChunkTypes.EXIT, buffer)
     sendPacket(packet)
+}
+
+/**
+ * Sends a [DDMS HPGC][DdmsChunkTypes.HPGC] [packet][DdmsChunkView] to
+ * the JDWP process corresponding to this [JDWP session][SharedJdwpSession].
+ */
+suspend fun SharedJdwpSession.handleDdmsHPGC(progress: DdmsCommandProgress? = null) {
+    val logger = thisLogger(session)
+
+    //   Debugger        |  AndroidVM
+    //   ----------------+-----------------------------------------
+    //   HPGC command => |
+    //                   | (Invokes GC
+    //                   )
+    //                   | <=  Success: JDWP reply (empty payload)
+    //                   | OR
+    //                   | <=  Error: JDWP reply with FAIL chunk
+    logger.debug { "Invoking HPGC (garbage collect) on process $pid" }
+
+    val requestPacket = createDdmsPacket(DdmsChunkTypes.HPGC, emptyByteBuffer)
+    newPacketReceiver()
+        .withName("handleDdmsHPGC")
+        .onActivation {
+            progress?.beforeSend(requestPacket)
+            sendPacket(requestPacket)
+            progress?.afterSend(requestPacket)
+        }
+        .flow()
+        .first { packet ->
+            logger.verbose { "Receiving packet: $packet" }
+
+            // Stop when we receive the reply to our MPSS command
+            val isReply = (packet.isReply && packet.id == requestPacket.id)
+            if (isReply) {
+                logger.debug { "Received reply to HPGC (garbage collect) for process $pid" }
+                progress?.onReply(packet)
+                handleDdmsReplyPacket(packet, DdmsChunkTypes.HPGC)
+            }
+            isReply
+        }
+}
+
+/**
+ * Handles a reply from DDMS command.
+ * Either we received an empty JDWP reply (for success), or we receive
+ * JDWP reply containing a [DdmsChunkTypes.FAIL] [DdmsChunkView] in case of error.
+ *
+ * See [VMDebug.java](https://cs.android.com/android/platform/superproject/+/c26d2480913a2afda0e87cf978a10beb3109980a:libcore/dalvik/src/main/java/dalvik/system/VMDebug.java;l=313)
+ * for an example of error, and see [DdmHandleProfiling.java](https://cs.android.com/android/platform/superproject/+/c26d2480913a2afda0e87cf978a10beb3109980a:frameworks/base/core/java/android/ddm/DdmHandleProfiling.java;l=119)
+ * for an example on how this error is returned as a FAIL chunk.
+ */
+suspend fun SharedJdwpSession.handleDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
+    val logger = thisLogger(session)
+
+    // Error: FAIL packet
+    packet.getDdmsFail()?.also { failChunk ->
+        // An example of failure:
+        // The 'MPSS' command can fail with "buffer size < 1024: xxx"
+        // See https://cs.android.com/android/platform/superproject/+/4794e479f4b485be2680e83993e3cf93f0f42d03:libcore/dalvik/src/main/java/dalvik/system/VMDebug.java;l=318
+        logger.info { "DDMS command '${chunkTypeToString(chunkType)} ' failed ($failChunk)" }
+        failChunk.throwFailException()
+    }
+
+    // Success: Most (all?) DDMS commands send an empty reply when successful
+    if (packet.isEmptyDdmsPacket) {
+        // Nothing to do
+        logger.debug { "DDMS command '${chunkTypeToString(chunkType)}' succeeded ($packet)" }
+    } else {
+        // Unexpected reply format
+        logger.debug { "Format of reply to DDMS command '${chunkTypeToString(chunkType)}' is not supported ($packet)" }
+        throw DdmsCommandException("Format of reply to DDMS command '${chunkTypeToString(chunkType)}' is not supported")
+    }
+}
+
+private val JdwpPacketView.isEmptyDdmsPacket
+    get() = (payloadLength == 0)
+
+private suspend fun JdwpPacketView.getDdmsFail(): DdmsChunkView? {
+    return ddmsChunks()
+        .filter {
+            it.type == DdmsChunkTypes.FAIL
+        }.map {
+            it.clone()
+        }.firstOrNull()
 }
 
 /**
@@ -177,8 +273,7 @@ private fun SharedJdwpSession.handleMultiDdmsCommand(
     val logger = thisLogger(session).withPrefix("pid=$pid: handleMultiDdmsCommand - ")
 
     return flow {
-        val packet = JdwpPacketFactory.createDdmsPacket(nextPacketId(), chunkType, payload)
-        logger.verbose { "Sending DDMS command '${chunkTypeToString(chunkType)}' in JDWP packet $packet" }
+        val packet = createDdmsPacket(chunkType, payload)
         handleJdwpCommand(packet) { replyPacket ->
             logger.verbose { "Received reply packet: $replyPacket" }
             replyPacket.ddmsChunks().collect { replyChunk ->
@@ -201,29 +296,48 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
     commandPacket: JdwpPacketView,
     replyHandler: suspend (JdwpPacketView) -> R
 ): R {
+    val logger = thisLogger(this.session)
+
     if (!commandPacket.isCommand) {
         throw IllegalArgumentException("JDWP packet is not a command packet")
     }
 
     return newPacketReceiver()
         .withName("JDWP Command: $commandPacket")
-        .onActivation { sendPacket(commandPacket) }
+        .onActivation {
+            logger.debug { "Sending command packet and waiting for reply: $commandPacket" }
+            sendPacket(commandPacket)
+        }
         .flow()
-        .filter { it.isReply && it.id == commandPacket.id }
-        .map {
+        .filter { replyPacket ->
+            logger.verbose { "Filtering packet from session: $replyPacket" }
+            val isReply = replyPacket.isReply && replyPacket.id == commandPacket.id
+            if (isReply) {
+                logger.debug { "Received reply '$replyPacket' for command packet '$commandPacket'" }
+            }
+            isReply
+        }
+        .map { replyPacket ->
             // Note: The packet "payload" is still connected to the underlying
             // socket at this point. We don't clone it in memory so that the
             // caller can decide how to handle potentially large data sets.
-            replyHandler(it)
-        }
-        .first() // There is only one reply packet
+            replyHandler(replyPacket)
+        }.first() // There is only one reply packet
 }
 
-suspend fun AdbBufferedInputChannel.toByteBuffer(size: Int): ByteBuffer {
+suspend fun AdbInputChannel.toByteBuffer(size: Int): ByteBuffer {
     val result = ByteBuffer.allocate(size) // [0, size]
     readExactly(result) // [size, size]
     result.flip() // [0, size]
     return result
+}
+
+fun SharedJdwpSession.createDdmsPacket(chunkType: Int, chunkPayload: ByteBuffer): JdwpPacketView {
+    return JdwpPacketFactory.createDdmsPacket(nextPacketId(), chunkType, chunkPayload)
+        .also { packet ->
+            val logger = thisLogger(session)
+            logger.verbose { "Sending DDMS command '${chunkTypeToString(chunkType)}' in JDWP packet $packet" }
+        }
 }
 
 private fun allocateDdmsPayload(length: Int): ByteBuffer {

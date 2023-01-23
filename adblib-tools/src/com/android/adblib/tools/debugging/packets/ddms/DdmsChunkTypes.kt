@@ -18,6 +18,8 @@ package com.android.adblib.tools.debugging.packets.ddms
 class DdmsChunkTypes {
     @Suppress("SpellCheckingInspection")
     companion object {
+        val FAIL: Int = chunkTypeFromString("FAIL")
+
         val HELO: Int = chunkTypeFromString("HELO")
 
         val FEAT: Int = chunkTypeFromString("FEAT")
@@ -55,6 +57,11 @@ class DdmsChunkTypes {
          * below.
          */
         val VUOP: Int = chunkTypeFromString("VUOP")
+
+        /**
+         * Requests a Gabage Collection of a process (`HeaP Gabage Collect`)
+         */
+        val HPGC: Int = chunkTypeFromString("HPGC")
 
         enum class VUOPOpCode(val value: Int) {
 

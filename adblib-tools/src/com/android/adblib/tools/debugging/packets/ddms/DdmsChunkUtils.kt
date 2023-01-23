@@ -27,6 +27,7 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CHUNK_HEADER_LENGTH
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD_SET
+import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -140,6 +141,9 @@ internal fun JdwpPacketView.ddmsChunks(
     }
 }
 
+val JdwpPacketView.isDdmsCommand: Boolean
+    get() = isCommand(DDMS_CMD_SET, DDMS_CMD)
+
 private fun DdmsChunkView.checkChunkLength(byteCount: Int) {
     val expectedByteCount = length
     if (byteCount != expectedByteCount) {
@@ -148,4 +152,39 @@ private fun DdmsChunkView.checkChunkLength(byteCount: Int) {
                     "bytes but contains $byteCount bytes instead"
         )
     }
+}
+
+internal suspend fun DdmsChunkView.createFailException(): DdmsFailException {
+    try {
+        // See https://cs.android.com/android/platform/superproject/+/android13-release:libcore/dalvik/src/main/java/org/apache/harmony/dalvik/ddmc/ChunkHandler.java;l=102
+        // 0-3: error code
+        // 4-7: error message: UTF-16 character count
+        // 8-n: error message: UTF-16 characters
+        val buffer = payload.toByteBuffer(length).order(DDMS_CHUNK_BYTE_ORDER)
+        val errorCode = buffer.getInt()
+        val charCount = buffer.getInt()
+        val data = CharArray(charCount)
+        for (i in 0 until charCount) {
+            data[i] = buffer.getChar()
+        }
+        val message = String(data)
+        return DdmsFailException(errorCode, message)
+    } catch (t: Throwable) {
+        // In case the FAIL packet format is invalid, return a generic error, since this method is
+        // called in the context of handling an error.
+        return DdmsFailException(-1, "Unknown error due to invalid FAIL packet format").also {
+            it.addSuppressed(t)
+        }
+    }
+}
+
+internal suspend fun DdmsChunkView.throwFailException(): Nothing {
+    throw createFailException()
+}
+
+
+class DdmsFailException(val errorCode: Int, val failMessage: String): Exception() {
+
+    override val message: String?
+        get() = "DDMS Failure on AndroidVM: errorCode=$errorCode, message=$failMessage"
 }
