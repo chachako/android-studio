@@ -1307,8 +1307,7 @@ class LintDetectorDetector : Detector(), UastScanner {
 
         private val TEST_IMPLEMENTATION = Implementation(
             LintDetectorDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
-            Scope.JAVA_FILE_SCOPE
+            EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
         )
 
         /** Expected lint id format. */

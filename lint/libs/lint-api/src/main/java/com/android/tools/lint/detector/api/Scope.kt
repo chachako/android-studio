@@ -174,6 +174,7 @@ enum class Scope {
                         scopes.contains(CLASS_FILE) ||
                         scopes.contains(PROGUARD_FILE) ||
                         scopes.contains(PROPERTY_FILE) ||
+                        scopes.contains(TOML_FILE) ||
                         scopes.contains(MANIFEST)
                     )
         }

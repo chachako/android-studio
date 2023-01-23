@@ -66,8 +66,7 @@ class IgnoreWithoutReasonDetector : Detector(), Detector.UastScanner {
             severity = Severity.WARNING,
             implementation = Implementation(
                 IgnoreWithoutReasonDetector::class.java,
-                EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
-                Scope.JAVA_FILE_SCOPE
+                EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
             )
         ).setOptions(listOf(ALLOW_COMMENT))
     }
