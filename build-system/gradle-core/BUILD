@@ -102,6 +102,7 @@ kotlin_library(
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
         "@maven//:org.jetbrains.dokka.dokka-core",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+        "@maven//:org.jetbrains.markdown",
         "@maven//:org.ow2.asm.asm",
         "@maven//:org.ow2.asm.asm-analysis",
         "@maven//:org.ow2.asm.asm-commons",

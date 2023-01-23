@@ -2319,6 +2319,38 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.squareup.okio.okio-jvm_3.0.0",
+    pom = "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/okio/okio-jvm/3.0.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.5.31",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.5.31",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.squareup.okio.okio-jvm",
+    classifiers = [],
+    jars = [
+        "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.jar"
+    ],
+    exports = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+        "org.jetbrains.kotlin.kotlin-stdlib-common",
+    ],
+    original_deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.5.31",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.5.31",
+    ],
+    pom = "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/okio/okio-jvm/3.0.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.squareup.okio.okio_1.17.5",
     pom = "repository/com/squareup/okio/okio/1.17.5/okio-1.17.5.pom",
     repo_root_path = "repository",
@@ -9011,6 +9043,26 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.jetbrains.markdown_0.2.1",
+    pom = "repository/org/jetbrains/markdown/0.2.1/markdown-0.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/markdown/0.2.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.jetbrains.markdown",
+    classifiers = [],
+    jars = [
+    ],
+    original_deps = [],
+    pom = "repository/org/jetbrains/markdown/0.2.1/markdown-0.2.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/markdown/0.2.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jsoup.jsoup_1.13.1",
     pom = "repository/org/jsoup/jsoup/1.13.1/jsoup-1.13.1.pom",
     repo_root_path = "repository",
@@ -10685,6 +10737,14 @@ maven_artifact(
     pom = "repository/androidx/annotation/annotation/1.2.0/annotation-1.2.0.pom",
     repo_root_path = "repository",
     repo_path = "androidx/annotation/annotation/1.2.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.annotation.annotation_1.2.0-beta01",
+    pom = "repository/androidx/annotation/annotation/1.2.0-beta01/annotation-1.2.0-beta01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/annotation/annotation/1.2.0-beta01",
     visibility = ["//visibility:public"],
 )
 

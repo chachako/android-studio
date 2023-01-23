@@ -18,6 +18,7 @@ package com.android.tools.maven;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -114,7 +115,6 @@ public class MavenRepository {
                                 new CollectRequest()
                                         .setDependencies(deps)
                                         .setRepositories(repositories));
-
         DependencyResult result = system.resolveDependencies(session, request);
 
         addImportDependencies(result, resolveConflicts);
@@ -134,6 +134,7 @@ public class MavenRepository {
     private ModelBuildingResult getModelBuildingResult(Artifact artifact) {
         try {
             File pomFile = getPomFile(artifact);
+            pullModuleFile(artifact, pomFile);
             ModelBuildingRequest buildingRequest = new DefaultModelBuildingRequest();
             // Java version is determined from system properties.
             buildingRequest.setSystemProperties(System.getProperties());
@@ -173,6 +174,27 @@ public class MavenRepository {
         ArtifactRequest request = new ArtifactRequest(pomArtifact, repositories, null);
         pomArtifact = system.resolveArtifact(session, request).getArtifact();
         return pomArtifact.getFile();
+    }
+
+    public void pullModuleFile(Artifact artifact, File pomFile) {
+
+        // Not all dependencies will have a module file
+        try {
+            String content = Files.readString(pomFile.toPath());
+            if (!content.contains("published-with-gradle-metadata")) {
+                return;
+            }
+            Artifact moduleArtifact =
+                    new DefaultArtifact(
+                            artifact.getGroupId(),
+                            artifact.getArtifactId(),
+                            "module",
+                            artifact.getVersion());
+
+            ArtifactRequest request = new ArtifactRequest(moduleArtifact, repositories, null);
+            system.resolveArtifact(session, request);
+        } catch (Exception e) {
+        }
     }
 
     /** Creates and returns a new DefaultModelResolver instance. */
