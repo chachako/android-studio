@@ -157,7 +157,10 @@ class AdbLibDeviceClientManagerTest {
             // and process properties to be initialized.
             deviceClientManager.clients.size == 2 &&
                     deviceClientManager.clients.all {
-                        it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null }
+                        it.debuggerListenPort > 0 &&
+                                it.clientData.vmIdentifier != null &&
+                                it.clientData.hasFeature("method-trace-profiling-streaming")
+                    }
         }
 
         // Assert
@@ -171,6 +174,7 @@ class AdbLibDeviceClientManagerTest {
         Assert.assertSame(device, client.device)
         Assert.assertNotNull(client.clientData)
         Assert.assertEquals(10, client.clientData.pid)
+        Assert.assertTrue(client.clientData.hasFeature("view-hierarchy"))
         Assert.assertTrue(client.isDdmAware)
         Assert.assertTrue(client.isValid)
         Assert.assertTrue(client.debuggerListenPort > 0)

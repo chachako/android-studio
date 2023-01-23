@@ -245,6 +245,9 @@ internal class AdbLibDeviceClientManager(
         clientWrapper.clientData.abi = newProperties.abi
         clientWrapper.clientData.jvmFlags = newProperties.jvmFlags
         clientWrapper.clientData.isNativeDebuggable = newProperties.isNativeDebuggable
+        if (newProperties.features.isNotEmpty()) {
+            clientWrapper.addFeatures(newProperties.features)
+        }
 
         // "DebuggerStatus" is trickier: order is important
         clientWrapper.clientData.debuggerConnectionStatus = when {

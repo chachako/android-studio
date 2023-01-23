@@ -53,6 +53,23 @@ internal class AdblibClientWrapper(
 
     private val clientDataWrapper = ClientData(this, jdwpProcess.pid)
 
+    private var featuresAdded = false
+
+    fun addFeatures(features: List<String>) {
+        // Add features only once to avoid duplicates (and we can assume they don't
+        // change during the lifetime of a process).
+        if (!featuresAdded) {
+            synchronized(this) {
+                if (!featuresAdded) {
+                    features.forEach {
+                        clientData.addFeature(it)
+                    }
+                    featuresAdded = true
+                }
+            }
+        }
+    }
+
     override fun getDevice(): IDevice {
         return iDevice
     }

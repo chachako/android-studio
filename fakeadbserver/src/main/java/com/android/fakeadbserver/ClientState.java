@@ -19,6 +19,9 @@ package com.android.fakeadbserver;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ClientState {
 
@@ -36,6 +39,37 @@ public class ClientState {
 
     private final ClientViewsState mViewsState = new ClientViewsState();
 
+    /**
+     * Set of DDMS features for this process.
+     *
+     * <p>See <a
+     * href="https://cs.android.com/android/platform/superproject/+/android13-release:frameworks/base/core/java/android/ddm/DdmHandleHello.java;l=107">HandleFEAT
+     * source code</a>
+     */
+    private final Set<String> mFeatures = new HashSet<>();
+
+    /**
+     * See <a
+     * href="https://cs.android.com/android/platform/superproject/+/android13-release:art/runtime/native/dalvik_system_VMDebug.cc;l=56">List
+     * of VM features</a>
+     */
+    private static final String[] mBuiltinVMFeatures = {
+        "method-trace-profiling",
+        "method-trace-profiling-streaming",
+        "method-sample-profiling",
+        "hprof-heap-dump",
+        "hprof-heap-dump-streaming"
+    };
+
+    /**
+     * See <a
+     * href="https://cs.android.com/android/platform/superproject/+/android13-release:frameworks/base/core/java/android/ddm/DdmHandleHello.java;drc=4794e479f4b485be2680e83993e3cf93f0f42d03;l=44">Framework
+     * features</a>
+     */
+    private static final String[] mBuiltinFrameworkFeatures = {
+        "opengl-tracing", "view-hierarchy",
+    };
+
     @Nullable private Socket jdwpSocket;
 
     ClientState(
@@ -49,6 +83,8 @@ public class ClientState {
         mProcessName = processName;
         mPackageName = packageName;
         mWaiting = isWaiting;
+        mFeatures.addAll(Arrays.asList(mBuiltinVMFeatures));
+        mFeatures.addAll(Arrays.asList(mBuiltinFrameworkFeatures));
     }
 
     public int getPid() {
@@ -97,5 +133,22 @@ public class ClientState {
             }
         }
         this.jdwpSocket = null;
+    }
+
+    public synchronized void clearFeatures() {
+        mFeatures.clear();
+    }
+
+    public synchronized void addFeature(@NonNull String value) {
+        mFeatures.add(value);
+    }
+
+    public synchronized void removeFeature(@NonNull String value) {
+        mFeatures.remove(value);
+    }
+
+    @NonNull
+    public synchronized Set<String> getFeatures() {
+        return new HashSet<>(mFeatures);
     }
 }

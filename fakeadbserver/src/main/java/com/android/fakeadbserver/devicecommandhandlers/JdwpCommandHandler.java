@@ -26,6 +26,7 @@ import com.android.fakeadbserver.FakeAdbServer;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DDMPacketHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.DdmPacket;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ExitHandler;
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.FEATHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.HeloHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpCommandId;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpPacket;
@@ -56,6 +57,7 @@ public class JdwpCommandHandler extends DeviceCommandHandler {
         super("jdwp");
         addDdmPacketHandler(HeloHandler.CHUNK_TYPE, new HeloHandler());
         addDdmPacketHandler(ExitHandler.CHUNK_TYPE, new ExitHandler());
+        addDdmPacketHandler(FEATHandler.CHUNK_TYPE, new FEATHandler());
         addDdmPacketHandler(VULWHandler.CHUNK_TYPE, new VULWHandler());
         addDdmPacketHandler(VUOPHandler.CHUNK_TYPE, new VUOPHandler());
         addDdmPacketHandler(VURTHandler.CHUNK_TYPE, new VURTHandler());
