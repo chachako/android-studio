@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.common.fixture.testprojects
 
 import com.android.Version
 import com.android.build.gradle.integration.common.fixture.TestProject
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator
 import com.android.utils.FileUtils
 import java.io.File
@@ -49,6 +50,7 @@ internal open class TestProjectBuilderImpl(override val name: String, override v
         get() = _includedBuilds
 
     private val settingsBuilder = SettingsBuilderImpl()
+    private val gradlePropertiesBuilder = GradlePropertiesBuilderImpl()
     internal val rootProject = SubProjectBuilderImpl(":")
     internal val subprojects = mutableMapOf<String, SubProjectBuilderImpl>()
 
@@ -78,6 +80,10 @@ internal open class TestProjectBuilderImpl(override val name: String, override v
         val build = TestProjectBuilderImpl(name)
         action(build)
         _includedBuilds.add(build)
+    }
+
+    override fun gradleProperties(action: GradlePropertiesBuilder.() -> Unit) {
+        action(gradlePropertiesBuilder)
     }
 
     // --- TestProject ---
@@ -141,6 +147,18 @@ internal open class TestProjectBuilderImpl(override val name: String, override v
         for (build in includedBuilds) {
             build.write(File(projectDir, build.name), buildScriptContent, projectRepoScript)
         }
+
+        if (gradlePropertiesBuilder.isNotEmpty()) {
+            val gradleProperties = gradlePropertiesBuilder.overrides.entries
+                    .joinToString(
+                            separator = "\n",
+                            prefix = "\n\n# Values from TestProjectBuilder\n",
+                            postfix = "\n\n"
+                    ) {
+                        "${it.key.propertyName}=${it.value}"
+                    }
+            File(projectDir, "gradle.properties").appendText(gradleProperties)
+        }
     }
 
     override fun containsFullBuildScript(): Boolean {
@@ -157,10 +175,20 @@ internal class SettingsBuilderImpl: SettingsBuilder {
     }
 }
 
-internal class AndroidSettingsBuilderImpl: AndroidSettingsBuilder {
+internal class AndroidSettingsBuilderImpl : AndroidSettingsBuilder {
     override var compileSdk: Int? = null
     override var minSdk: Int? = null
     override var buildToolsVersion: String? = null
     override var ndkVersion: String? = null
     override var ndkPath: String? = null
+}
+
+internal class GradlePropertiesBuilderImpl : GradlePropertiesBuilder {
+    internal val overrides = mutableMapOf<BooleanOption, Boolean>()
+
+    override fun set(booleanOption: BooleanOption, value: Boolean) {
+        overrides[booleanOption] = value
+    }
+
+    internal fun isNotEmpty(): Boolean = overrides.isNotEmpty()
 }

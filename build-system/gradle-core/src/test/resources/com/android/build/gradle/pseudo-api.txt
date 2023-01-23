@@ -1643,11 +1643,6 @@ com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setApiPreview: void (
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setDevice: void (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setRequire64Bit: void (boolean)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setSystemImageSource: void (java.lang.String)
-com.android.build.gradle.internal.dsl.ModulePropertyKeys extends java.lang.Enum
-com.android.build.gradle.internal.dsl.ModulePropertyKeys.getValue: java.lang.Object (java.util.Map<java.lang.String, ?>)
-com.android.build.gradle.internal.dsl.ModulePropertyKeys.getValueAsBoolean: boolean (java.util.Map<java.lang.String, ?>)
-com.android.build.gradle.internal.dsl.ModulePropertyKeys.valueOf: com.android.build.gradle.internal.dsl.ModulePropertyKeys (java.lang.String)
-com.android.build.gradle.internal.dsl.ModulePropertyKeys.values: com.android.build.gradle.internal.dsl.ModulePropertyKeys[] ()
 com.android.build.gradle.internal.dsl.NdkBuildOptions implements com.android.build.gradle.internal.model.CoreNdkBuildOptions, com.android.build.api.dsl.NdkBuild
 com.android.build.gradle.internal.dsl.NdkBuildOptions.<init>: com.android.build.gradle.internal.dsl.NdkBuildOptions (com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.NdkBuildOptions.buildStagingDirectory: void (java.lang.Object)

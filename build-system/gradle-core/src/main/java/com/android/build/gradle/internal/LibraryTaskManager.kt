@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
 import com.android.build.gradle.internal.dependency.ConfigurationVariantMapping
+import com.android.build.gradle.internal.dsl.ModulePropertyKeys
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType
 import com.android.build.gradle.internal.publishing.ComponentPublishingInfo
 import com.android.build.gradle.internal.publishing.PublishedConfigSpec
@@ -259,6 +260,15 @@ class LibraryTaskManager(
 
         // Add a task to write the local lint AAR file
         taskFactory.register(LibraryLocalLintCreationAction(libraryVariant))
+
+        val experimentalProperties = libraryVariant.experimentalProperties
+        experimentalProperties.finalizeValue()
+        if (!libraryVariant.debuggable &&
+                (ModulePropertyKeys.VERIFY_AAR_CLASSES.getValueAsOptionalBoolean(
+                        experimentalProperties.get()) ?:
+                globalConfig.services.projectOptions[BooleanOption.VERIFY_AAR_CLASSES])) {
+            createVerifyLibraryClassesTask(libraryVariant)
+        }
 
         taskFactory.register(ExtractSupportedLocalesTask.CreationAction(libraryVariant))
 

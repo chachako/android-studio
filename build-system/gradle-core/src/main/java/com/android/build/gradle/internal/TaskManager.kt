@@ -109,6 +109,7 @@ import com.android.build.gradle.internal.tasks.RecalculateStackFramesTask
 import com.android.build.gradle.internal.tasks.SourceSetsTask
 import com.android.build.gradle.internal.tasks.UninstallTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
+import com.android.build.gradle.internal.tasks.VerifyLibraryClassesTask
 import com.android.build.gradle.internal.tasks.databinding.DataBindingCompilerArguments.Companion.createArguments
 import com.android.build.gradle.internal.tasks.databinding.DataBindingGenBaseClassesTask
 import com.android.build.gradle.internal.tasks.databinding.DataBindingMergeDependencyArtifactsTask
@@ -207,6 +208,15 @@ abstract class TaskManager(
                     )
                 )
             }
+    }
+
+    protected fun createVerifyLibraryClassesTask(component: VariantCreationConfig) {
+        taskFactory.register(VerifyLibraryClassesTask.CreationAction(component))
+        component.taskContainer.assembleTask.configure { task: Task ->
+            task.dependsOn(
+                    component.artifacts.get(InternalArtifactType.VERIFIED_LIBRARY_CLASSES)
+            )
+        }
     }
 
     protected fun registerLibraryRClassTransformStream(component: ComponentCreationConfig) {

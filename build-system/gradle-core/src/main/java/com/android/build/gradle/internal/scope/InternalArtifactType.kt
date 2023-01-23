@@ -550,6 +550,9 @@ InternalArtifactType<T : FileSystemLocation>(
     // result of VerifyLibraryResourcesTask, only used to verify correctness but never consumed.
     object VERIFIED_LIBRARY_RESOURCES: InternalArtifactType<Directory>(DIRECTORY)
 
+    object VERIFIED_LIBRARY_CLASSES: InternalArtifactType<Directory>(DIRECTORY)
+
+
     // File containing app metadata to be included in the APK and .aab files for analytics.
     object APP_METADATA: InternalArtifactType<RegularFile>(FILE), Replaceable
 

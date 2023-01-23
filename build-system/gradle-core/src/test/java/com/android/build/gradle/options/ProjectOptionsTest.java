@@ -34,7 +34,7 @@ import org.junit.Test;
 public class ProjectOptionsTest {
 
     private static boolean parseBoolean(Object input) {
-        return OptionParsers.parseBoolean("myproperty", input);
+        return OptionParsers.parseBoolean("myproperty", input, "project");
     }
 
     private static void assertFailsToParseBoolean(Object input) {

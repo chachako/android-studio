@@ -43,6 +43,7 @@ public class PseudoApiChangesTest {
                     "DefaultApiVersion",
                     "LibraryRequest",
                     "ManifestAttributeSupplier",
+                    "ModulePropertyKeys",
                     "StandardOutErrMessageReceiver",
                     "ToolsRevisionUtils",
                     "ComponentType",

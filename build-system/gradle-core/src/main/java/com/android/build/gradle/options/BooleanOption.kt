@@ -213,6 +213,8 @@ enum class BooleanOption(
             "android.experimental.privacysandboxsdk.requireServices", true, FeatureStage.Experimental),
 
     PRINT_LINT_STACK_TRACE("android.lint.printStackTrace", false, FeatureStage.Experimental),
+
+    VERIFY_AAR_CLASSES("android.experimental.verifyLibraryClasses", false, FeatureStage.Experimental),
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

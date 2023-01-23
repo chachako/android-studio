@@ -235,7 +235,8 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
             internalServices.mapPropertyOf(
                 String::class.java,
                 Any::class.java,
-                dslInfo.experimentalProperties
+                dslInfo.experimentalProperties,
+                disallowUnsafeRead = false
             )
 
     override val nestedComponents: List<ComponentImpl<*>>

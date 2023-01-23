@@ -16,6 +16,9 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.parseBoolean
+
 enum class ModulePropertyKeys(private val keyValue: String, private val defaultValue: Any) {
 
     /**
@@ -28,16 +31,21 @@ enum class ModulePropertyKeys(private val keyValue: String, private val defaultV
      * If false -  R8 will not be provided with the merged art-profile
      * If true - R8 will rewrite the art-profile
      */
-    ART_PROFILE_R8_REWRITING("android.experimental.art-profile-r8-rewriting", false);
+    ART_PROFILE_R8_REWRITING("android.experimental.art-profile-r8-rewriting", false),
+
+    VERIFY_AAR_CLASSES(BooleanOption.VERIFY_AAR_CLASSES.propertyName, false)
+
+    ;
 
     fun getValue(properties: Map<String, Any>): Any {
         return properties[keyValue] ?: return defaultValue
     }
 
     fun getValueAsBoolean(properties: Map<String, Any>): Boolean {
-        val value = properties[keyValue]
-        if (value is Boolean) return value
-        return if (value is String) value.toBoolean()
-        else defaultValue as Boolean
+        return parseBoolean(keyValue, getValue(properties), propertyKind = "android experimental")
+    }
+
+    fun getValueAsOptionalBoolean(properties: Map<String, Any>): Boolean? {
+        return if (properties[keyValue] == null) null else getValueAsBoolean(properties)
     }
 }

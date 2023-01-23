@@ -21,6 +21,7 @@ import com.android.build.api.dsl.CompileOptions
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.fixture.TestProject
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator
 
 /**
@@ -78,6 +79,8 @@ interface TestProjectBuilder {
     fun subProject(path: String, action: SubProjectBuilder.() -> Unit)
 
     fun includedBuild(name: String, action: TestProjectBuilder.() -> Unit)
+
+    fun gradleProperties(action: GradlePropertiesBuilder.() -> Unit)
 
     val includedBuilds: List<TestProjectBuilder>
 }
@@ -277,6 +280,9 @@ interface DependenciesBuilder {
     fun api(dependency: Any)
 
     /** Adds a dependency to the runtimeOnly configuration. See [implementation] for details. */
+    fun compileOnly(dependency: Any)
+
+    /** Adds a dependency to the runtimeOnly configuration. See [implementation] for details. */
     fun runtimeOnly(dependency: Any)
 
     /**
@@ -391,4 +397,8 @@ interface SourceSetsBuilder {
     var javaSrcDirs: List<String>
     var resSrcDirs: List<String>
     var resourcesSrcDirs: List<String>
+}
+
+interface GradlePropertiesBuilder {
+    fun set(booleanOption: BooleanOption, value: Boolean)
 }
