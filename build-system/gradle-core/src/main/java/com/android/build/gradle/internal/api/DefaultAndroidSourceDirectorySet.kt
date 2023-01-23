@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.api
 
-import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.ProviderBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.SourceDirectoriesImpl
 import com.android.build.gradle.api.AndroidSourceDirectorySet
@@ -35,6 +34,7 @@ import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import java.io.File
+import java.nio.file.Path
 import java.util.ArrayList
 import java.util.concurrent.Callable
 
@@ -65,7 +65,7 @@ class DefaultAndroidSourceDirectorySet(
     fun getSourceSetName() = name
 
     override fun srcDir(srcDir: Any): AndroidSourceDirectorySet {
-        if (srcDir is Iterable<*>) {
+        if (srcDir is Iterable<*> && srcDir !is Path) {
             srcDir.forEach { src ->
                 src?.let { srcDir(it) }
             }
