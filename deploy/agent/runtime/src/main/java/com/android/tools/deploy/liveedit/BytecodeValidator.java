@@ -248,10 +248,11 @@ public class BytecodeValidator {
             REMOVED_INTERFACE,
         }
 
-        public String type;
-        public String className;
-        public String targetName;
-        public String fileName;
-        public int lineNumber;
+        private static final String UNSET = "UNSET";
+        public String type = UNSET;
+        public String className = UNSET;
+        public String targetName = UNSET;
+        public String fileName = UNSET;
+        public int lineNumber = -1;
     }
 }
