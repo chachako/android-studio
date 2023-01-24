@@ -3148,6 +3148,10 @@ class LintDriver(
         override fun isEdited(file: File, returnIfUnknown: Boolean, savedSinceMsAgo: Long): Boolean {
             return delegate.isEdited(file, returnIfUnknown, savedSinceMsAgo)
         }
+
+        override fun fileExists(file: File, requireFile: Boolean, requireDirectory: Boolean): Boolean {
+            return delegate.fileExists(file, requireFile, requireDirectory)
+        }
     }
 
     private val runLaterOutsideReadActionList = mutableListOf<Runnable>()

@@ -386,6 +386,16 @@ abstract class LintClient {
      */
     abstract fun readFile(file: File): CharSequence
 
+    /** Returns whether the given file exists */
+    open fun fileExists(file: File): Boolean = file.isFile()
+    open fun fileExists(file: File, requireFile: Boolean = false, requireDirectory: Boolean = false): Boolean {
+        return when {
+            requireFile -> file.isFile
+            requireDirectory -> file.isDirectory
+            else -> file.exists()
+        }
+    }
+
     /**
      * Reads the given binary file and returns the content as a byte
      * array. By default this method will read the bytes from the
@@ -409,8 +419,10 @@ abstract class LintClient {
      * @throws IOException in case of an I/O error
      */
     @Throws(IOException::class)
-    open fun readBytes(resourcePath: PathString): ByteArray =
-        resourcePath.toFile()?.readBytes() ?: throw FileNotFoundException(resourcePath.toString())
+    open fun readBytes(resourcePath: PathString): ByteArray {
+        val file = resourcePath.toFile() ?: throw FileNotFoundException(resourcePath.toString())
+        return readBytes(file)
+    }
 
     /**
      * Returns whether the given [file] has been edited since the last

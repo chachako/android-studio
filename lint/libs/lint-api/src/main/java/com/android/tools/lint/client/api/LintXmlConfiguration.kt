@@ -36,10 +36,12 @@ import com.android.tools.lint.detector.api.Option
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.StringOption
+import com.android.utils.CharSequenceReader
 import com.android.utils.SdkUtils
 import com.android.utils.iterator
 import com.google.common.base.Splitter
 import com.intellij.openapi.util.io.FileUtil
+import org.kxml2.io.KXmlParser
 import org.w3c.dom.Element
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -807,13 +809,21 @@ open class LintXmlConfiguration protected constructor(
     }
 
     private fun readConfig() {
-        val issueMap: MutableMap<String, IssueData> = HashMap()
-        this.issueMap = issueMap
-        if (!configFile.isFile) {
-            issueMaps = listOf(issueMap)
+        if (!client.fileExists(configFile, requireFile = true)) {
+            val issueMap = mutableMapOf<String, IssueData>()
+            this.issueMap = issueMap
+            this.issueMaps = listOf(issueMap)
             return
         }
 
+        val resourcePath = PathString(configFile)
+        val parser = client.createXmlPullParser(resourcePath) ?: return
+        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+        readConfig(parser)
+    }
+
+    private fun readConfig(parser: XmlPullParser) {
+        val issueMap: MutableMap<String, IssueData> = HashMap<String, IssueData>().also { this.issueMap = it }
         try {
             fun String.asBoolean(): Boolean? {
                 return when {
@@ -822,10 +832,6 @@ open class LintXmlConfiguration protected constructor(
                     else -> null
                 }
             }
-
-            val resourcePath = PathString(configFile)
-            val parser = client.createXmlPullParser(resourcePath) ?: return
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
 
             val splitter = Splitter.on(',').trimResults().omitEmptyStrings()
             var idString = ""
@@ -1713,6 +1719,33 @@ open class LintXmlConfiguration protected constructor(
             lintFile: File
         ): LintXmlConfiguration {
             return LintXmlConfiguration(configurations, lintFile)
+        }
+
+        /**
+         * Creates a new [LintXmlConfiguration] for the given lint
+         * config file contents (and associated file handle), not
+         * affiliated with a project. This is used for global
+         * configurations.
+         *
+         * @param configurations the configuration manager
+         * @param lintFile the lint file containing the configuration
+         *     (which will not be read, but any parsing errors etc will
+         *     be attributed to this path)
+         * @param contents the actual contents of the lint file handle
+         * @return a new configuration
+         */
+        @JvmStatic
+        fun create(
+            configurations: ConfigurationHierarchy,
+            lintFile: File,
+            contents: CharSequence
+        ): LintXmlConfiguration {
+            val config = LintXmlConfiguration(configurations, lintFile)
+            val parser = KXmlParser()
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
+            parser.setInput(CharSequenceReader(contents))
+            config.readConfig(parser)
+            return config
         }
     }
 }

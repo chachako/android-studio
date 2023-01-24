@@ -45,14 +45,15 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.File.separator
-import java.util.Arrays
 import java.util.Locale
 
+@Suppress("DEPRECATION")
 class LintXmlConfigurationTest : AbstractCheckTest() {
     @get:Rule
     var temporaryFolder = TemporaryFolder()
 
     // Sample included via @sample in the KDoc for LintXmlConfiguration
+    @Suppress("unused")
     fun sampleFile() =
         // Not indented plus .trimIndent() because the IDE support for
         // showing docs does not handle that very well
@@ -182,7 +183,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             file!!.canonicalFile,
             File(
                 configuration.configFile.parentFile,
-                "api" + File.separator + "list.xml"
+                "api" + separator + "list.xml"
             ).canonicalFile
         )
 
@@ -615,13 +616,13 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             java(
                 "src/main/java/com/domain/android/lever/RepositoryShould.java",
                 "" +
-                    "package com.domain.android.lever" +
+                    "package com.domain.android.lever;\n" +
                     "class RepositoryShould() { }"
             ),
             java(
                 "src/androidTest/java/com/domain/android/lever2/RepositoryShould2.java",
                 "" +
-                    "package com.domain.android.lever2" +
+                    "package com.domain.android.lever2;\n" +
                     "class RepositoryShould2() { }"
             )
         )
@@ -943,7 +944,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         val projectDir = getProjectDir(mOnclick4, mOnclick5, mOnclick6, mOnclick7)
         val client: LintClient = object : TestLintClient() {
             override fun getResourceFolders(project: Project): List<File> {
-                return Arrays.asList(
+                return listOf(
                     File(
                         project.dir,
                         "src" + separator + "main" + separator + "res"
@@ -1018,6 +1019,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     fun testErrorHandling() {
         // Checks that lint.xml can be applied in different folders in a hierarchical way
         val invalidXml =
+            //language=TEXT since this is broken source
             """
             <?xml version="1.0" encoding="UTF-8"?>
             <lint
@@ -1260,6 +1262,62 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         )
     }
 
+    fun testVirtualConfigFile1() {
+        // Construct lint XML configuration for a virtual file directly
+        @Language("XML")
+        val contents: CharSequence = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <lint>
+                <issue id="IconDuplicates" severity="ignore"/>
+                <issue id="NewApi" severity="fatal" />
+            </lint>
+        """.trimIndent()
+        val file = File("/tmp/nonexistent")
+        val client = TestLintClient()
+
+        val configuration = LintXmlConfiguration.create(client.configurations, file, contents)
+        assertEquals(Severity.FATAL, configuration.getSeverity(ApiDetector.UNSUPPORTED))
+        assertEquals(Severity.IGNORE, configuration.getSeverity(IconDetector.DUPLICATES_NAMES))
+    }
+
+    fun testVirtualConfigFile2() {
+        // Construct lint XML configuration via a custom lint client which overrides the known
+        // path handle. This checks that the configuration machinery uses the LintClient
+        // I/O abstractions; this is useful for configurations inserted into the middle
+        // of the hierarchy, not just global configurations.
+        // See issue 266017093: Allow for LintXmlConfiguration creation without a real File
+        @Language("XML")
+        val contents = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <lint>
+                <issue id="IconDuplicates" severity="ignore"/>
+                <issue id="NewApi" severity="fatal" />
+            </lint>
+        """.trimIndent()
+
+        val configFile = File("/tmp/nonexistent")
+        fun isConfigFile(file: File): Boolean = file.path.equals(configFile.path, ignoreCase = true)
+        val client = object : TestLintClient() {
+            override fun fileExists(file: File, requireFile: Boolean, requireDirectory: Boolean): Boolean {
+                if (isConfigFile(file)) {
+                    return true
+                }
+                return super.fileExists(file)
+            }
+
+            override fun readBytes(file: File): ByteArray {
+                if (isConfigFile(file)) {
+                    return contents.toByteArray(Charsets.UTF_8)
+                }
+                return super.readBytes(file)
+            }
+        }
+
+        val configuration = LintXmlConfiguration.create(client.configurations, configFile)
+        assertEquals(Severity.FATAL, configuration.getSeverity(ApiDetector.UNSUPPORTED))
+        assertEquals(Severity.IGNORE, configuration.getSeverity(IconDetector.DUPLICATES_NAMES))
+    }
+
     /**
      * Test support for reading and writing configurations; this builds
      * on top of a normal lint run in order to make it easy to set up
@@ -1278,14 +1336,13 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             kotlin(
                 """
                 package test.pkg1.subpkg1
-                class PlaceholderFile {
-                }
+                class PlaceholderFile
                 """
             ).indented(),
             // Trigger src/main/java source sets
             gradle("")
         )
-            .clientFactory({
+            .clientFactory {
                 object : com.android.tools.lint.checks.infrastructure.TestLintClient() {
                     override fun getConfiguration(
                         project: Project,
@@ -1296,7 +1353,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
                         return configurations.getConfigurationForProject(project)
                     }
                 }
-            })
+            }
             .checkProjects(object : TestLintTask.ProjectInspector {
                 override fun inspect(driver: LintDriver, knownProjects: List<Project>) {
                     val project = knownProjects.find {
