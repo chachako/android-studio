@@ -144,16 +144,18 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
         usageInfo: AnnotationUsageInfo
     ) {
         val requirement = PermissionRequirement.create(annotationInfo.annotation)
-        if (requirement.contains(SCHEDULE_EXACT_ALARM_PERMISSION)
-            && !handlesException(element, null, allowSuperClass = false, SECURITY_EXCEPTION)
-            && !context.driver.isSuppressed(context, SCHEDULE_EXACT_ALARM, element)
+        if (requirement.contains(SCHEDULE_EXACT_ALARM_PERMISSION) &&
+            !handlesException(element, null, allowSuperClass = false, SECURITY_EXCEPTION) &&
+            !context.driver.isSuppressed(context, SCHEDULE_EXACT_ALARM, element)
         )
             context.getPartialResults(SCHEDULE_EXACT_ALARM).map()
                 .put(numScheduleCalls++.toString(), context.getLocation(element))
     }
 
     override fun visitMethodCall(
-        context: JavaContext, node: UCallExpression, method: PsiMethod
+        context: JavaContext,
+        node: UCallExpression,
+        method: PsiMethod
     ) {
         if (context.isEnabled(SHORT_ALARM) || context.isEnabled(SCHEDULE_EXACT_ALARM)) {
             val evaluator = context.evaluator
@@ -173,7 +175,10 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
     }
 
     private fun ensureAtLeast(
-        context: JavaContext, node: UCallExpression, parameter: Int, min: Long
+        context: JavaContext,
+        node: UCallExpression,
+        parameter: Int,
+        min: Long
     ) {
         val argument = node.valueArguments[parameter]
         val value = getLongValue(context, argument)
@@ -184,7 +189,8 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
     }
 
     private fun getLongValue(
-        context: JavaContext, argument: UExpression
+        context: JavaContext,
+        argument: UExpression
     ): Long {
         val value = ConstantEvaluator.evaluate(context, argument)
         if (value is Number) {
@@ -254,7 +260,7 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
                     Incident(
                         SCHEDULE_EXACT_ALARM,
                         "When scheduling exact alarms, apps should explicitly call `AlarmManager#canScheduleExactAlarms`" +
-                                " or handle `SecurityException`s",
+                            " or handle `SecurityException`s",
                         location
                     )
                 )

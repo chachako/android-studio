@@ -122,7 +122,8 @@ open class GradleContext constructor(
                     }
                 }
                 if (valueCookie is UPolyadicExpression && valueCookie.operator == UastBinaryOperator.PLUS &&
-                    valueCookie.getExpressionType()?.canonicalText == CommonClassNames.JAVA_LANG_STRING) {
+                    valueCookie.getExpressionType()?.canonicalText == CommonClassNames.JAVA_LANG_STRING
+                ) {
                     return getKotlinStringLiteralValue(valueCookie)
                 }
             }

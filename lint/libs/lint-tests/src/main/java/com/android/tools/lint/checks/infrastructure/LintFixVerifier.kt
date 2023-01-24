@@ -122,7 +122,7 @@ class LintFixVerifier(private val task: TestLintTask, private val mode: TestMode
             // Diff output format has changed; if we fail to verify, retry with
             // the older format (but if that doesn't fail, use the original
             // failure exceptions such that we present the new format.
-           expectFixDiffs(expected, compatMode = false)
+            expectFixDiffs(expected, compatMode = false)
         } catch (throwable: Throwable) {
             if (expected.isBlank()) {
                 throw throwable

@@ -308,14 +308,15 @@ class TestLintResultTest {
     @Test
     fun testNoTrailingSpaces() {
         val a = "" +
-                "\n" +
-                "foo\n" +
-                "\n"
+            "\n" +
+            "foo\n" +
+            "\n"
         val b = "" +
-                "\n" +
-                "bar\n" +
-                "\n"
-        assertThat(getDiff(a, b, 3)).isEqualTo("" +
+            "\n" +
+            "bar\n" +
+            "\n"
+        assertThat(getDiff(a, b, 3)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "\n" +
                 "- foo\n" +
@@ -326,16 +327,17 @@ class TestLintResultTest {
     @Test
     fun testDiffAtEnd() {
         val a = "" +
-                "[versions]\n" +
-                "\n" +
-                "[libraries]"
+            "[versions]\n" +
+            "\n" +
+            "[libraries]"
         val b = "" +
-                "[versions]\n" +
-                "appcompat = \"1.5.1\"\n" +
-                "\n" +
-                "[libraries]\n" +
-                "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        assertThat(getDiff(a, b, 1)).isEqualTo("" +
+            "[versions]\n" +
+            "appcompat = \"1.5.1\"\n" +
+            "\n" +
+            "[libraries]\n" +
+            "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        assertThat(getDiff(a, b, 1)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "  [versions]\n" +
                 "+ appcompat = \"1.5.1\"\n" +
@@ -343,7 +345,8 @@ class TestLintResultTest {
                 "  [libraries]\n" +
                 "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
         )
-        assertThat(getDiff(a, b, 2)).isEqualTo("" +
+        assertThat(getDiff(a, b, 2)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "  [versions]\n" +
                 "+ appcompat = \"1.5.1\"\n" +
@@ -351,7 +354,8 @@ class TestLintResultTest {
                 "  [libraries]\n" +
                 "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
         )
-        assertThat(getDiff(a, b, 3)).isEqualTo("" +
+        assertThat(getDiff(a, b, 3)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "  [versions]\n" +
                 "+ appcompat = \"1.5.1\"\n" +
@@ -364,20 +368,21 @@ class TestLintResultTest {
     @Test
     fun testOverlaps() {
         val a = "" +
-                "[versions]\n" +
-                "version=1\n" +
-                "[libraries]\n" +
-                "different1\n" +
-                "[bundles]"
+            "[versions]\n" +
+            "version=1\n" +
+            "[libraries]\n" +
+            "different1\n" +
+            "[bundles]"
         val b = "" +
-                "[versions]\n" +
-                "appcompat = \"1.5.1\"\n" +
-                "version=1\n" +
-                "[libraries]\n" +
-                "different2\n" +
-                "[bundles]\n" +
-                "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        assertThat(getDiff(a, b, 1)).isEqualTo("" +
+            "[versions]\n" +
+            "appcompat = \"1.5.1\"\n" +
+            "version=1\n" +
+            "[libraries]\n" +
+            "different2\n" +
+            "[bundles]\n" +
+            "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        assertThat(getDiff(a, b, 1)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "  [versions]\n" +
                 "+ appcompat = \"1.5.1\"\n" +
@@ -388,7 +393,8 @@ class TestLintResultTest {
                 "  [bundles]\n" +
                 "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
         )
-        assertThat(getDiff(a, b, 2)).isEqualTo("" +
+        assertThat(getDiff(a, b, 2)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "  [versions]\n" +
                 "+ appcompat = \"1.5.1\"\n" +
@@ -399,7 +405,8 @@ class TestLintResultTest {
                 "  [bundles]\n" +
                 "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
         )
-        assertThat(getDiff(a, b, 3)).isEqualTo("" +
+        assertThat(getDiff(a, b, 3)).isEqualTo(
+            "" +
                 "@@ -2 +2\n" +
                 "  [versions]\n" +
                 "+ appcompat = \"1.5.1\"\n" +
@@ -424,7 +431,7 @@ class TestLintResultTest {
                     }
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
 
         val after = """
             import android.graphics.drawable.VectorDrawable
@@ -439,7 +446,7 @@ class TestLintResultTest {
                     }
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
 
         assertThat(getDiff(before, after, 1)).isEqualTo(
             """

@@ -16,9 +16,6 @@
 
 package com.android.tools.lint.checks
 
-import com.android.tools.lint.checks.infrastructure.TestFile
-import com.android.tools.lint.checks.infrastructure.TestFiles
-import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class AlarmDetectorTest : AbstractCheckTest() {
@@ -224,4 +221,3 @@ class AlarmDetectorTest : AbstractCheckTest() {
         ).run().expectClean()
     }
 }
-

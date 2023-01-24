@@ -59,20 +59,20 @@ class ShortcutUsageDetector : Detector(), SourceCodeScanner {
         if (evaluator.isMemberInClass(method, SHORTCUT_MANAGER_CLASS) ||
             evaluator.isMemberInClass(method, SHORTCUT_MANAGER_COMPAT_CLASS)
         ) {
-           val map = context.getPartialResults(ISSUE).map()
-           when (method.name) {
-               ADD_DYNAMIC_SHORTCUTS, SET_DYNAMIC_SHORTCUTS -> {
-                   if (!context.driver.isSuppressed(context, ISSUE, node)) {
-                       map.put(numSetOrAddDynamicShortcutsCalls++.toString(), context.getLocation(node))
-                   }
-               }
-               PUSH_DYNAMIC_SHORTCUT-> {
-                   map.put(HAS_PUSH_DYNAMIC_SHORTCUT, true)
-               }
-               REPORT_SHORTCUT_USED-> {
-                   map.put(HAS_REPORT_SHORTCUT_USED, true)
-               }
-           }
+            val map = context.getPartialResults(ISSUE).map()
+            when (method.name) {
+                ADD_DYNAMIC_SHORTCUTS, SET_DYNAMIC_SHORTCUTS -> {
+                    if (!context.driver.isSuppressed(context, ISSUE, node)) {
+                        map.put(numSetOrAddDynamicShortcutsCalls++.toString(), context.getLocation(node))
+                    }
+                }
+                PUSH_DYNAMIC_SHORTCUT -> {
+                    map.put(HAS_PUSH_DYNAMIC_SHORTCUT, true)
+                }
+                REPORT_SHORTCUT_USED -> {
+                    map.put(HAS_REPORT_SHORTCUT_USED, true)
+                }
+            }
         }
     }
 
@@ -95,12 +95,14 @@ class ShortcutUsageDetector : Detector(), SourceCodeScanner {
                     Incident(context)
                         .issue(ISSUE)
                         .location(perModuleLintMap.getLocation(key)!!)
-                        .message("Calling this method indicates use of dynamic shortcuts, but " +
+                        .message(
+                            "Calling this method indicates use of dynamic shortcuts, but " +
                                 "there are no calls to methods that track shortcut usage, such " +
                                 "as `pushDynamicShortcut` or `reportShortcutUsed`. Calling these " +
                                 "methods is recommended, as they track shortcut usage and allow " +
                                 "launchers to adjust which shortcuts appear based on activation " +
-                                "history. Please see $url")
+                                "history. Please see $url"
+                        )
                         .fix(fix().url(url).build())
                 )
             }
@@ -122,11 +124,11 @@ class ShortcutUsageDetector : Detector(), SourceCodeScanner {
 
         const val SET_DYNAMIC_SHORTCUTS = "setDynamicShortcuts"
         const val ADD_DYNAMIC_SHORTCUTS = "addDynamicShortcuts"
-        const val PUSH_DYNAMIC_SHORTCUT= "pushDynamicShortcut"
+        const val PUSH_DYNAMIC_SHORTCUT = "pushDynamicShortcut"
         const val REPORT_SHORTCUT_USED = "reportShortcutUsed"
 
-        const val HAS_PUSH_DYNAMIC_SHORTCUT = "hasPushDynamicShortcut";
-        const val HAS_REPORT_SHORTCUT_USED = "hasReportShortcutUsed";
+        const val HAS_PUSH_DYNAMIC_SHORTCUT = "hasPushDynamicShortcut"
+        const val HAS_REPORT_SHORTCUT_USED = "hasReportShortcutUsed"
 
         @JvmField
         val ISSUE = Issue.create(
