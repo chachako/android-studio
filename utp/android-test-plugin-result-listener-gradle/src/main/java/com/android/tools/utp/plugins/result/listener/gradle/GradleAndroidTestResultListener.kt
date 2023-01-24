@@ -37,7 +37,6 @@ import io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.NettyChannelBuilder
 import io.grpc.stub.StreamObserver
 import java.io.File
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 /**
@@ -66,7 +65,6 @@ class GradleAndroidTestResultListener(
     private lateinit var channel: ManagedChannel
     private lateinit var grpcServiceStub: GradleAndroidTestResultListenerServiceStub
     private lateinit var requestObserver: StreamObserver<TestResultEvent>
-    private val finishLatch: CountDownLatch = CountDownLatch(1)
 
     override fun configure(context: Context) {
         val config = context[Context.CONFIG_KEY] as ProtoConfig
@@ -83,12 +81,10 @@ class GradleAndroidTestResultListener(
 
             override fun onError(error: Throwable) {
                 logger.severe {"recordTestResultEvent failed with an error: $error" }
-                finishLatch.countDown()
                 throw error
             }
 
             override fun onCompleted() {
-                finishLatch.countDown()
             }
         }
 
@@ -139,9 +135,8 @@ class GradleAndroidTestResultListener(
         requestObserver.onNext(event)
 
         requestObserver.onCompleted()
-        finishLatch.await()
 
-        channel.shutdownNow().awaitTermination(1, TimeUnit.MINUTES)
+        channel.shutdown().awaitTermination(1, TimeUnit.MINUTES)
     }
 
     private fun createTestResultEvent(): TestResultEvent.Builder {
