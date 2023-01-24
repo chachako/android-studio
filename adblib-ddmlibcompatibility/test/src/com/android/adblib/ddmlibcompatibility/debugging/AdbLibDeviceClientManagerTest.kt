@@ -45,7 +45,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import java.nio.ByteBuffer
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 class AdbLibDeviceClientManagerTest {
@@ -179,8 +178,6 @@ class AdbLibDeviceClientManagerTest {
         Assert.assertTrue(client.isValid)
         Assert.assertTrue(client.debuggerListenPort > 0)
         Assert.assertFalse(client.isDebuggerAttached)
-        //TODO(b/266699981): Add unit test
-        //assertThrows { client.executeGarbageCollector() }
         //TODO(b/266699981): Add unit test
         //assertThrows { client.startMethodTracer() }
         //assertThrows { client.stopMethodTracer() }

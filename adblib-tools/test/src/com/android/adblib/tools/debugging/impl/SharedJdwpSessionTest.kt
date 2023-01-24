@@ -29,6 +29,7 @@ import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitorFactory
 import com.android.adblib.tools.debugging.addSharedJdwpSessionMonitorFactory
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
+import com.android.adblib.tools.debugging.handleDdmsHPGC
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
@@ -493,6 +494,21 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
         // Assert: Wait until client process is gone
         yieldUntil { fakeDevice.getClient(10) == null }
+    }
+
+    @Test
+    fun sendDdmsHpgcPacketWorks() = runBlockingWithTimeout {
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+        val session = createSession(fakeAdb)
+        val client = fakeDevice.startClient(10, 0, "a.b.c", false)
+
+        // Act
+        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        jdwpSession.handleDdmsHPGC()
+
+        assertEquals(client.hgpcRequestsCount, 1)
     }
 
     @Test

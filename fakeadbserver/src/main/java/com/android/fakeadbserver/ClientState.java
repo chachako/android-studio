@@ -22,6 +22,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClientState {
 
@@ -71,6 +72,8 @@ public class ClientState {
     };
 
     @Nullable private Socket jdwpSocket;
+
+    private final AtomicInteger hgpcRequestsCount = new AtomicInteger();
 
     ClientState(
             int pid,
@@ -150,5 +153,13 @@ public class ClientState {
     @NonNull
     public synchronized Set<String> getFeatures() {
         return new HashSet<>(mFeatures);
+    }
+
+    public void requestHgpc() {
+        hgpcRequestsCount.incrementAndGet();
+    }
+
+    public int getHgpcRequestsCount() {
+        return hgpcRequestsCount.get();
     }
 }

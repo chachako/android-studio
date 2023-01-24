@@ -56,9 +56,9 @@ class DdmPacket private constructor(
 
     companion object {
 
-        val DDMS_CMD_SET = 0xc7
+        const val DDMS_CMD_SET = 0xc7
 
-        val DDMS_CMD = 0x01
+        const val DDMS_CMD = 0x01
 
         @JvmStatic
         fun fromJdwpPacket(packet: JdwpPacket): DdmPacket {

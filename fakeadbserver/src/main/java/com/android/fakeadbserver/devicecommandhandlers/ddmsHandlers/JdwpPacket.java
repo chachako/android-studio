@@ -122,6 +122,12 @@ public class JdwpPacket {
         return new JdwpPacket(id, true, (short) 0, payload, cmdSet, cmd);
     }
 
+    // Create a response packet with an empty payload
+    public static JdwpPacket createEmptyDdmsResponse(int id) {
+        return JdwpPacket.createResponse(
+                id, new byte[0], DdmPacket.DDMS_CMD_SET, DdmPacket.DDMS_CMD);
+    }
+
     // create a non-response packet
     public static JdwpPacket create(byte[] payload, int cmdSet, int cmd) {
         return new JdwpPacket(1234, false, (short) 0, payload, cmdSet, cmd);
