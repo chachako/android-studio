@@ -53,4 +53,14 @@ public interface DeviceClientManagerListener {
             @NonNull AndroidDebugBridge bridge,
             @NonNull DeviceClientManager deviceClientManager,
             @NonNull Client client);
+
+
+    /**
+     * Invoked when {@link Client#requestAllocationDetails()} of the given {@link Client} has
+     * successfully retrieved allocation data into {@link ClientData#getAllocationsData()}.
+     */
+    void processHeapAllocationsUpdated(
+            @NonNull AndroidDebugBridge bridge,
+            @NonNull DeviceClientManager deviceClientManager,
+            @NonNull Client client);
 }

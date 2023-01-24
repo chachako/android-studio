@@ -25,9 +25,19 @@ class DdmsChunkTypes {
         val FEAT: Int = chunkTypeFromString("FEAT")
 
         /**
+         * "REAE: REcent Allocation Enable"
+         */
+        val REAE: Int = chunkTypeFromString("REAE")
+
+        /**
          * "REAQ: REcent Allocation Query"
          */
         val REAQ: Int = chunkTypeFromString("REAQ")
+
+        /**
+         * "REAL: REcent Allocation List"
+         */
+        val REAL: Int = chunkTypeFromString("REAL")
 
         val APNM: Int = chunkTypeFromString("APNM")
 

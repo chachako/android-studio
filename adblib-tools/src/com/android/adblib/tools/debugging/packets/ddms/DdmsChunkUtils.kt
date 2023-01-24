@@ -182,7 +182,6 @@ internal suspend fun DdmsChunkView.throwFailException(): Nothing {
     throw createFailException()
 }
 
-
 class DdmsFailException(val errorCode: Int, val failMessage: String): Exception() {
 
     override val message: String?

@@ -15,10 +15,12 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.ddmlibcompatibility.debugging.AdbLibDeviceClientManager.ClientUpdateKind.*
 import com.android.adblib.thisLogger
-import com.android.adblib.tools.debugging.DdmsCommandProgress
+import com.android.adblib.tools.debugging.JdwpCommandProgress
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.allocationTracker
 import com.android.adblib.tools.debugging.executeGarbageCollector
 import com.android.adblib.tools.debugging.handleDdmsCaptureView
 import com.android.adblib.tools.debugging.handleDdmsDumpViewHierarchy
@@ -26,9 +28,11 @@ import com.android.adblib.tools.debugging.handleDdmsListViewRoots
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.sendDdmsExit
+import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.withErrorTimeout
 import com.android.adblib.withPrefix
+import com.android.ddmlib.AndroidDebugBridge.IClientChangeListener
 import com.android.ddmlib.Client
 import com.android.ddmlib.ClientData
 import com.android.ddmlib.DebugViewDumpHandler
@@ -37,6 +41,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import java.time.Duration
 import java.util.concurrent.CancellationException
@@ -132,7 +137,7 @@ internal class AdblibClientWrapper(
         // Note: To maintain strict ddmlib behavior, we block this method until the
         // DDMS command is sent to the AndroidVM, but we don't wait for the reply.
         runHalfBlockingLegacy("executeGarbageCollector") { deferred ->
-            jdwpProcess.executeGarbageCollector(object : DdmsCommandProgress {
+            jdwpProcess.executeGarbageCollector(object : JdwpCommandProgress {
                 override suspend fun afterSend(packet: JdwpPacketView) {
                     deferred.complete(Unit)
                 }
@@ -156,12 +161,84 @@ internal class AdblibClientWrapper(
         legacyNotImplemented("stopSamplingProfiler")
     }
 
+    /**
+     * Requests allocation details (asynchronously) and invokes the
+     * [IClientChangeListener.clientChanged] callback, with [Client.CHANGE_HEAP_ALLOCATIONS] as
+     * flags. The allocation data (an array of bytes) is available in
+     * [ClientData.getAllocationsData] during the callback invocation.
+     *
+     * Note that allocation tracking should be enabled (see [enableAllocationTracker])
+     * for this method to collect meaningful data.
+     */
     override fun requestAllocationDetails() {
-        legacyNotImplemented("requestAllocationDetails")
+        // Note: Implementation is subtle here: We have to be asynchronous, but we also
+        // don't want to return before we have sent the DDMS "REAL" query, because the caller
+        // of this `Client` interface may call `enableAllocationTracker(false)` just after
+        // calling this method.
+        //
+        // Consumers typically do this:
+        //    client.enableAllocationTracker(true)
+        //    (wait some time, maybe very short)
+        //    client.requestAllocationDetails()
+        //    client.enableAllocationTracker(false)
+        //    (ddmlib callback from requestAllocationDetails is invoked some time later)
+        runHalfBlockingLegacy("requestAllocationDetails") { deferred ->
+            val allocationData =
+                jdwpProcess.allocationTracker.fetchAllocationDetails(object : JdwpCommandProgress {
+                    override suspend fun afterSend(packet: JdwpPacketView) {
+                        // By completing the deferred *after* sending the DDMS command, we ensure
+                        // the timing requirements mentioned above are fulfilled.
+                        deferred.complete(Unit)
+                    }
+                }) { data, length ->
+                    // Note: At this point, the ddms chunk payload points directly
+                    // to the socket of the underlying JDWP session.
+                    // We clone it into an in-memory ByteBuffer (which is wasteful)
+                    // only because the ddmlib API requires it.
+                    data.toByteArray(length)
+                }
+
+            // Work with legacy global handler.
+            @Suppress("DEPRECATION")
+            val handler = ClientData.getAllocationTrackingHandler()
+            if (handler != null) {
+                logger.debug { "requestAllocationDetails: Allocation data is ${allocationData.size} bytes" }
+                handler.onSuccess(allocationData, this@AdblibClientWrapper)
+            }
+
+            //
+            // Set allocation data, call listeners, then clear allocation data
+            //
+            clientData.allocationsData = allocationData
+
+            // Notify listeners *and* wait until even has been dispatched to listeners
+            deviceClientManager.postClientUpdateEvent(this, HeapAllocations).await()
+
+            // Clean up after everything has been notified (synchronously).
+            clientData.allocationsData = null
+        }
     }
 
     override fun enableAllocationTracker(enabled: Boolean) {
-        legacyNotImplemented("enableAllocationTracker")
+        // Note: This implementation is tricky: we must block until the DDMS packet
+        // is sent to the JDWP session to ensure a call to `requestAllocationDetails` does
+        // not come too early.
+        //
+        // Consumers typically do this:
+        //    client.enableAllocationTracker(true)
+        //    (wait some time, maybe very short)
+        //    client.requestAllocationDetails()
+        //    client.enableAllocationTracker(false)
+        //    (ddmlib callback from requestAllocationDetails is invoked some time later)
+        runHalfBlockingLegacy("enableAllocationTracker") { deferred ->
+            jdwpProcess.allocationTracker.enable(enabled, object: JdwpCommandProgress {
+                override suspend fun afterSend(packet: JdwpPacketView) {
+                    // By completing the deferred *after* sending the DDMS command, we ensure
+                    // the timing requirements mentioned above are fulfilled.
+                    deferred.complete(Unit)
+                }
+            })
+        }
     }
 
     /**
@@ -267,7 +344,7 @@ internal class AdblibClientWrapper(
         timeout: Duration = RUN_BLOCKING_LEGACY_DEFAULT_TIMEOUT,
         block: suspend (job: CompletableDeferred<Unit>) -> Unit
     ) {
-        val deferred = CompletableDeferred<Unit>()
+        val deferred = CompletableDeferred<Unit>(jdwpProcess.scope.coroutineContext.job)
         launchLegacy(operation) {
             block(deferred)
         }

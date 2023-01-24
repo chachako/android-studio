@@ -185,8 +185,9 @@ class AdbLibDeviceClientManagerTest {
         assertThrows { client.stopMethodTracer() }
         assertThrows { client.startSamplingProfiler(10, TimeUnit.SECONDS) }
         assertThrows { client.stopSamplingProfiler() }
-        assertThrows { client.requestAllocationDetails() }
-        assertThrows { client.enableAllocationTracker(false) }
+        //TODO(b/266699981): Add unit test
+        //assertThrows { client.requestAllocationDetails() }
+        //assertThrows { client.enableAllocationTracker(false) }
         Assert.assertEquals(Unit, client.notifyVmMirrorExited())
         assertThrows { client.dumpDisplayList("v", "v1") }
     }
@@ -689,6 +690,16 @@ class AdbLibDeviceClientManagerTest {
         ) {
             if (bridge === AndroidDebugBridge.getBridge()) {
                 AndroidDebugBridge.clientChanged(client, Client.CHANGE_DEBUGGER_STATUS)
+            }
+        }
+
+        override fun processHeapAllocationsUpdated(
+            bridge: AndroidDebugBridge,
+            deviceClientManager: DeviceClientManager,
+            client: Client
+        ) {
+            if (bridge === AndroidDebugBridge.getBridge()) {
+                AndroidDebugBridge.clientChanged(client, Client.CHANGE_HEAP_ALLOCATIONS)
             }
         }
     }

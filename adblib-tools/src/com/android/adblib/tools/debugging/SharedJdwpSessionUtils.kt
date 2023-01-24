@@ -24,6 +24,7 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.VURTOpCode
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.chunkTypeToString
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
+import com.android.adblib.tools.debugging.packets.ddms.DdmsFailException
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.JdwpPacketFactory
 import com.android.adblib.tools.debugging.packets.ddms.clone
@@ -31,18 +32,16 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.throwFailException
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.withPrefix
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.nio.ByteBuffer
 
 /**
- * Progress reporting when executing a DDMS command.
+ * Progress reporting when executing a JDWP/DDMS command.
  */
-interface DdmsCommandProgress {
+interface JdwpCommandProgress {
 
     suspend fun beforeSend(packet: JdwpPacketView) {}
     suspend fun afterSend(packet: JdwpPacketView) {}
@@ -65,84 +64,64 @@ suspend fun SharedJdwpSession.sendDdmsExit(status: Int) {
  * Sends a [DDMS HPGC][DdmsChunkTypes.HPGC] [packet][DdmsChunkView] to
  * the JDWP process corresponding to this [JDWP session][SharedJdwpSession].
  */
-suspend fun SharedJdwpSession.handleDdmsHPGC(progress: DdmsCommandProgress? = null) {
-    val logger = thisLogger(session)
-
-    //   Debugger        |  AndroidVM
-    //   ----------------+-----------------------------------------
-    //   HPGC command => |
-    //                   | (Invokes GC
-    //                   )
-    //                   | <=  Success: JDWP reply (empty payload)
-    //                   | OR
-    //                   | <=  Error: JDWP reply with FAIL chunk
-    logger.debug { "Invoking HPGC (garbage collect) on process $pid" }
-
+suspend fun SharedJdwpSession.handleDdmsHPGC(progress: JdwpCommandProgress? = null) {
     val requestPacket = createDdmsPacket(DdmsChunkTypes.HPGC, emptyByteBuffer)
-    newPacketReceiver()
-        .withName("handleDdmsHPGC")
-        .onActivation {
-            progress?.beforeSend(requestPacket)
-            sendPacket(requestPacket)
-            progress?.afterSend(requestPacket)
-        }
-        .flow()
-        .first { packet ->
-            logger.verbose { "Receiving packet: $packet" }
-
-            // Stop when we receive the reply to our MPSS command
-            val isReply = (packet.isReply && packet.id == requestPacket.id)
-            if (isReply) {
-                logger.debug { "Received reply to HPGC (garbage collect) for process $pid" }
-                progress?.onReply(packet)
-                handleDdmsReplyPacket(packet, DdmsChunkTypes.HPGC)
-            }
-            isReply
-        }
+    handleEmptyReplyDdmsCommand(requestPacket, DdmsChunkTypes.HPGC, progress)
 }
 
 /**
- * Handles a reply from DDMS command.
- * Either we received an empty JDWP reply (for success), or we receive
- * JDWP reply containing a [DdmsChunkTypes.FAIL] [DdmsChunkView] in case of error.
+ * ## Allocation tracker
  *
- * See [VMDebug.java](https://cs.android.com/android/platform/superproject/+/c26d2480913a2afda0e87cf978a10beb3109980a:libcore/dalvik/src/main/java/dalvik/system/VMDebug.java;l=313)
- * for an example of error, and see [DdmHandleProfiling.java](https://cs.android.com/android/platform/superproject/+/c26d2480913a2afda0e87cf978a10beb3109980a:frameworks/base/core/java/android/ddm/DdmHandleProfiling.java;l=119)
- * for an example on how this error is returned as a FAIL chunk.
+ * Sends a `REAE` (REcent Allocation Enable) request to the client.
+ *
+ * [Android "N" Source code](https://cs.android.com/android/platform/superproject/+/nougat-cts-release:frameworks/base/core/java/android/ddm/DdmHandleHeap.java;l=230)
+ *
+ * Note: This API has been deprecated and removed in later versions of Android.
  */
-suspend fun SharedJdwpSession.handleDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
-    val logger = thisLogger(session)
+suspend fun SharedJdwpSession.handleDdmsREAE(
+    enabled: Boolean,
+    progress: JdwpCommandProgress? = null
+) {
+    val payload = allocateDdmsPayload(1)  // [pos=0, limit=1]
+    payload.putBooleanByte(enabled)   // [pos=1, limit=1]
+    payload.flip()  // [pos=0, limit=1]
 
-    // Error: FAIL packet
-    packet.getDdmsFail()?.also { failChunk ->
-        // An example of failure:
-        // The 'MPSS' command can fail with "buffer size < 1024: xxx"
-        // See https://cs.android.com/android/platform/superproject/+/4794e479f4b485be2680e83993e3cf93f0f42d03:libcore/dalvik/src/main/java/dalvik/system/VMDebug.java;l=318
-        logger.info { "DDMS command '${chunkTypeToString(chunkType)} ' failed ($failChunk)" }
-        failChunk.throwFailException()
-    }
+    val requestPacket = createDdmsPacket(DdmsChunkTypes.REAE, payload)
+    handleEmptyReplyDdmsCommand(requestPacket, DdmsChunkTypes.REAE, progress)
+}
 
-    // Success: Most (all?) DDMS commands send an empty reply when successful
-    if (packet.isEmptyDdmsPacket) {
-        // Nothing to do
-        logger.debug { "DDMS command '${chunkTypeToString(chunkType)}' succeeded ($packet)" }
-    } else {
-        // Unexpected reply format
-        logger.debug { "Format of reply to DDMS command '${chunkTypeToString(chunkType)}' is not supported ($packet)" }
-        throw DdmsCommandException("Format of reply to DDMS command '${chunkTypeToString(chunkType)}' is not supported")
+/**
+ * ## Allocation tracker
+ *
+ * Sends a REAQ (REcent Allocation Query) request to the client.
+ *
+ * [Android "N" Source code](https://cs.android.com/android/platform/superproject/+/nougat-cts-release:frameworks/base/core/java/android/ddm/DdmHandleHeap.java;l=230)
+ *
+ * Note: This API has been deprecated and removed in later versions of Android.
+ */
+suspend fun SharedJdwpSession.handleDdmsREAQ(progress: JdwpCommandProgress? = null): Boolean {
+    return handleDdmsCommand(DdmsChunkTypes.REAQ, emptyByteBuffer, progress) { chunkReply ->
+        val buffer = chunkReply.payload.toByteBuffer(chunkReply.length)
+        buffer.get() != 0.toByte()
     }
 }
 
-private val JdwpPacketView.isEmptyDdmsPacket
-    get() = (payloadLength == 0)
-
-private suspend fun JdwpPacketView.getDdmsFail(): DdmsChunkView? {
-    return ddmsChunks()
-        .filter {
-            it.type == DdmsChunkTypes.FAIL
-        }.map {
-            it.clone()
-        }.firstOrNull()
+/**
+ * ## Allocation tracker
+ *
+ * Sends a REAL (REcent Allocation List) request to the client.
+ *
+ * [Android "N" Source code](https://cs.android.com/android/platform/superproject/+/nougat-cts-release:frameworks/base/core/java/android/ddm/DdmHandleHeap.java;l=258)
+ *
+ * Note: This API has been deprecated and removed in later versions of Android.
+ */
+suspend fun <R> SharedJdwpSession.handleDdmsREAL(
+    progress: JdwpCommandProgress? = null,
+    replyHandler: suspend (data: AdbInputChannel, length: Int) -> R
+): R {
+    return handleDdmsCommand(DdmsChunkTypes.REAL, emptyByteBuffer, progress) {
+        replyHandler(it.payload, it.length)
+    }
 }
 
 /**
@@ -178,10 +157,10 @@ suspend fun <R> SharedJdwpSession.handleDdmsDumpViewHierarchy(
 ): R {
     val chunkBuf = allocateDdmsPayload(
         4 // opcode
-        + 4 + viewRoot.length * 2 // view root (length + unicode string)
-        + 4 // skip children
-        + 4 // include view properties
-        + 4 // use Version 2
+                + 4 + viewRoot.length * 2 // view root (length + unicode string)
+                + 4 // skip children
+                + 4 // include view properties
+                + 4 // use Version 2
     )
 
     // Op code
@@ -211,8 +190,8 @@ suspend fun <R> SharedJdwpSession.handleDdmsCaptureView(
 ): R {
     val chunkBuf = allocateDdmsPayload(
         4 +  // opcode
-        4 + viewRoot.length * 2 +  // view root strlen + view root
-        4 + view.length * 2 // view strlen + view
+                4 + viewRoot.length * 2 +  // view root strlen + view root
+                4 + view.length * 2 // view strlen + view
     )
 
     // Op code
@@ -231,61 +210,137 @@ suspend fun <R> SharedJdwpSession.handleDdmsCaptureView(
 
 /**
  * Sends a [DdmsChunkView] command packet to this [SharedJdwpSession], using [chunkType] as
- * the ddms command and [payload] as the command payload, and returns a [DdmsChunkView]
- * corresponding to the reply from the Android VM.
+ * the ddms command and [payload] as the command payload, and invokes [replyHandler]
+ * with the [DdmsChunkView] corresponding to the reply from the Android VM.
  *
- * @throws DdmsCommandException if the DDMS command packet came back as a failure from
- * the AndroidVM.
+ * @throws DdmsFailException if the JDWP reply packet contains a [DdmsChunkTypes.FAIL] chunk
+ * @throws DdmsCommandException if there is an unexpected DDMS/JDWP protocol error
  */
 suspend fun <R> SharedJdwpSession.handleDdmsCommand(
     chunkType: Int,
     payload: ByteBuffer,
+    progress: JdwpCommandProgress? = null,
     replyHandler: suspend (DdmsChunkView) -> R
 ): R {
-    return handleMultiDdmsCommand(chunkType, payload)
-        .map { replyChunk ->
-            if (replyChunk.type != chunkType) {
-                throw DdmsCommandException("DDMS reply '${chunkTypeToString(replyChunk.type)}' does not match DDMS command '${chunkTypeToString(chunkType)}'")
-            }
-            // Note: The chunk "payload" is still connected to the underlying
-            // socket at this point. We don't clone it in memory so that the
-            // caller can decide how to handle potentially large data sets.
-            replyHandler(replyChunk)
-        }.firstOrNull()
-        ?: run {
-            // DDMS command failures come back as empty JDWP reply packets
-            throw DdmsCommandException("DDMS command '${chunkTypeToString(chunkType)}' failed on device")
-        }
-}
-
-class DdmsCommandException(message: String, cause: Exception? = null)  : Exception(message, cause)
-
-/**
- * Sends a [DdmsChunkView] command packet to this [SharedJdwpSession], using [chunkType] as
- * the ddms command and [payload] as the command payload, and returns a [Flow] of [DdmsChunkView]
- * corresponding to the reply from the Android VM. Note that typically (if not always) the
- * returned [Flow] contains only one element.
- */
-private fun SharedJdwpSession.handleMultiDdmsCommand(
-    chunkType: Int,
-    payload: ByteBuffer
-): Flow<DdmsChunkView> {
-    val logger = thisLogger(session).withPrefix("pid=$pid: handleMultiDdmsCommand - ")
-
-    return flow {
-        val packet = createDdmsPacket(chunkType, payload)
-        handleJdwpCommand(packet) { replyPacket ->
-            logger.verbose { "Received reply packet: $replyPacket" }
-            replyPacket.ddmsChunks().collect { replyChunk ->
-                logger.verbose { "Received reply chunk: $replyChunk" }
-                // Note: The chunk "payload" is still connected to the underlying
-                // socket at this point. We don't clone it in memory so that the
-                // caller can decide how to handle potentially large data sets.
-                emit(replyChunk)
-            }
+    val commandPacket = createDdmsPacket(chunkType, payload)
+    return handleJdwpCommand(commandPacket, progress) { replyPacket ->
+        handleDdmsReplyPacket(replyPacket, chunkType) {
+            replyHandler(it)
         }
     }
 }
+
+private suspend fun <R> SharedJdwpSession.handleDdmsReplyPacket(
+    packet: JdwpPacketView,
+    chunkType: Int,
+    block: suspend (packet: DdmsChunkView) -> R
+): R {
+    val logger = thisLogger(session)
+    val chunkTypeString = chunkTypeToString(chunkType)
+
+    // Error: FAIL packet
+    packet.getDdmsFail()?.also { failChunk ->
+        // An example of failure:
+        // The 'MPSS' command can fail with "buffer size < 1024: xxx"
+        // See https://cs.android.com/android/platform/superproject/+/4794e479f4b485be2680e83993e3cf93f0f42d03:libcore/dalvik/src/main/java/dalvik/system/VMDebug.java;l=318
+        logger.info { "DDMS command '$chunkTypeString' failed ($failChunk)" }
+        failChunk.throwFailException()
+    }
+
+    return packet.ddmsChunks().map { replyChunk ->
+        if (replyChunk.type != chunkType) {
+            val message = "DDMS reply '${chunkTypeToString(replyChunk.type)}' " +
+                    "does not match DDMS command '$chunkTypeString'"
+            logger.warn(message)
+            throw DdmsCommandException(message)
+        }
+        logger.debug { "Received reply to $chunkTypeString for process $pid (payload length=${replyChunk.length})" }
+        block(replyChunk)
+    }.firstOrNull() ?: run {
+        val message = "Unexpected empty reply to DDMS command '$chunkTypeString'"
+        logger.warn(message)
+        throw DdmsCommandException(message)
+    }
+}
+
+/**
+ * Sends a DDMS command that returns either an empty reply (on success) or a `FAIL` message
+ * (on failure).
+ *
+ * ```
+ *   Debugger        |  AndroidVM
+ *   ----------------+-----------------------------------------
+ *   DDMS command => |
+ *                   | (Executes DDMS commands)
+ *                   | <=  Success: JDWP reply (empty payload)
+ *                   | OR
+ *                   | <=  Error: JDWP reply with FAIL chunk
+ * ```
+ *
+ * @throws DdmsFailException if the JDWP reply packet contains a [DdmsChunkTypes.FAIL] chunk
+ * @throws DdmsCommandException if there is an unexpected DDMS/JDWP protocol error
+ */
+suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
+    requestPacket: JdwpPacketView,
+    chunkType: Int,
+    progress: JdwpCommandProgress?
+) {
+    val logger = thisLogger(session).withPrefix("pid=$pid: ")
+    val chunkTypeString = chunkTypeToString(chunkType)
+
+    logger.debug { "Invoking DDMS command $chunkTypeString" }
+
+    newPacketReceiver()
+        .withName("handleEmptyReplyDdmsCommand($chunkTypeString)")
+        .onActivation {
+            progress?.beforeSend(requestPacket)
+            sendPacket(requestPacket)
+            progress?.afterSend(requestPacket)
+        }
+        .flow()
+        .first { packet ->
+            logger.verbose { "Receiving packet: $packet" }
+
+            // Stop when we receive the reply to our DDMS command
+            val isReply = (packet.isReply && packet.id == requestPacket.id)
+            if (isReply) {
+                progress?.onReply(packet)
+                handleEmptyDdmsReplyPacket(packet, chunkType)
+            }
+            isReply
+        }
+}
+
+private suspend fun SharedJdwpSession.handleEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
+    val logger = thisLogger(session).withPrefix("pid=$pid: ")
+    val chunkTypeString = chunkTypeToString(chunkType)
+
+    // Error: FAIL packet
+    packet.getDdmsFail()?.also { failChunk ->
+        // An example of failure:
+        // The 'MPSS' command can fail with "buffer size < 1024: xxx"
+        // See https://cs.android.com/android/platform/superproject/+/4794e479f4b485be2680e83993e3cf93f0f42d03:libcore/dalvik/src/main/java/dalvik/system/VMDebug.java;l=318
+        logger.info { "DDMS command '$chunkTypeString' failed ($failChunk)" }
+        failChunk.throwFailException()
+    }
+
+    // Success: Many DDMS commands send an empty JDWP reply when successful
+    if (packet.isEmptyDdmsPacket) {
+        logger.debug { "DDMS command '$chunkTypeString' succeeded with an empty payload (as expected)" }
+        // Nothing to do
+    } else {
+        // Unexpected reply format
+        val message = "The reply to the DDMS command '$chunkTypeString' is expected to be empty, but contained ${packet.payloadLength} bytes instead"
+        logger.warn(message)
+        throw DdmsCommandException(message)
+    }
+}
+
+/**
+ * Exception thrown when there is an error in the JDWP/DDMS protocol, i.e.
+ * a packet reply format is invalid or unexpected.
+ */
+class DdmsCommandException(message: String, cause: Exception? = null) : Exception(message, cause)
 
 /**
  * Sends a [JDWP command packet][JdwpPacketView] to the process corresponding to this
@@ -294,6 +349,7 @@ private fun SharedJdwpSession.handleMultiDdmsCommand(
  */
 suspend fun <R> SharedJdwpSession.handleJdwpCommand(
     commandPacket: JdwpPacketView,
+    progress: JdwpCommandProgress?,
     replyHandler: suspend (JdwpPacketView) -> R
 ): R {
     val logger = thisLogger(this.session)
@@ -306,7 +362,9 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
         .withName("JDWP Command: $commandPacket")
         .onActivation {
             logger.debug { "Sending command packet and waiting for reply: $commandPacket" }
+            progress?.beforeSend(commandPacket)
             sendPacket(commandPacket)
+            progress?.afterSend(commandPacket)
         }
         .flow()
         .filter { replyPacket ->
@@ -318,6 +376,7 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
             isReply
         }
         .map { replyPacket ->
+            progress?.onReply(replyPacket)
             // Note: The packet "payload" is still connected to the underlying
             // socket at this point. We don't clone it in memory so that the
             // caller can decide how to handle potentially large data sets.
@@ -329,6 +388,13 @@ suspend fun AdbInputChannel.toByteBuffer(size: Int): ByteBuffer {
     val result = ByteBuffer.allocate(size) // [0, size]
     readExactly(result) // [size, size]
     result.flip() // [0, size]
+    return result
+}
+
+suspend fun AdbInputChannel.toByteArray(size: Int): ByteArray {
+    val result = ByteArray(size)
+    val buffer = ByteBuffer.wrap(result) // [0, size]
+    readExactly(buffer) // [size, size]
     return result
 }
 
@@ -353,4 +419,20 @@ private fun ByteBuffer.putString(value: String) {
 
 private fun ByteBuffer.putBooleanInt(value: Boolean) {
     putInt(if (value) 1 else 0)
+}
+
+private fun ByteBuffer.putBooleanByte(value: Boolean) {
+    put(if (value) 1 else 0)
+}
+
+private val JdwpPacketView.isEmptyDdmsPacket
+    get() = (payloadLength == 0)
+
+private suspend fun JdwpPacketView.getDdmsFail(): DdmsChunkView? {
+    return ddmsChunks()
+        .filter {
+            it.type == DdmsChunkTypes.FAIL
+        }.map {
+            it.clone()
+        }.firstOrNull()
 }

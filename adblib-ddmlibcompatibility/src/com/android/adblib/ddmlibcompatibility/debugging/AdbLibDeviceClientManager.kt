@@ -36,13 +36,15 @@ import com.android.ddmlib.IDevice
 import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Duration
@@ -264,6 +266,23 @@ internal class AdbLibDeviceClientManager(
             // when there is no active jdwp debugger connection
             else -> DebuggerStatus.DEFAULT
         }
+    }
+
+    suspend fun postClientUpdateEvent(client: AdblibClientWrapper, updateKind: ClientUpdateKind): Deferred<Unit> {
+        val processed = CompletableDeferred<Unit>(client.jdwpProcess.scope.coroutineContext.job)
+        ddmlibEventQueue.post(client.jdwpProcess.scope, "client update: $updateKind") {
+            when (updateKind) {
+                ClientUpdateKind.HeapAllocations -> {
+                    listener.processHeapAllocationsUpdated(bridge, this, client)
+                }
+            }
+            processed.complete(Unit)
+        }
+        return processed
+    }
+
+    enum class ClientUpdateKind {
+        HeapAllocations,
     }
 
     class DdmlibEventQueue(logger: AdbLogger, name: String) {

@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.thisLogger
@@ -68,7 +69,7 @@ internal class JdwpProcessImpl(
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))
 
-    override val scope = device.scope.createChildScope(isSupervisor = true)
+    override val cache = CoroutineScopeCache.create(device.scope)
 
     override val propertiesFlow = stateFlow.asStateFlow()
 
