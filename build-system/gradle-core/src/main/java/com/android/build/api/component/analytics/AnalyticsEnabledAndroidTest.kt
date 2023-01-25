@@ -50,13 +50,6 @@ open class AnalyticsEnabledAndroidTest @Inject constructor(
             return delegate.applicationId
         }
 
-    override val namespace: Provider<String>
-        get() {
-            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
-                VariantPropertiesMethodType.NAMESPACE_VALUE
-            return delegate.namespace
-        }
-
     override val instrumentationRunner: Property<String>
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =

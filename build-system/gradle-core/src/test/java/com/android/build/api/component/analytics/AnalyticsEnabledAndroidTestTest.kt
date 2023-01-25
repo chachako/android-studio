@@ -84,19 +84,6 @@ class AnalyticsEnabledAndroidTestTest {
     }
 
     @Test
-    fun getPackageName() {
-        Mockito.`when`(delegate.namespace).thenReturn(FakeGradleProvider("package.name"))
-        Truth.assertThat(proxy.namespace.get()).isEqualTo("package.name")
-
-        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
-        Truth.assertThat(
-            stats.variantApiAccess.variantPropertiesAccessList.first().type
-        ).isEqualTo(VariantPropertiesMethodType.NAMESPACE_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
-            .namespace
-    }
-
-    @Test
     fun instrumentationRunner() {
         Mockito.`when`(delegate.instrumentationRunner).thenReturn(FakeGradleProperty("my_runner"))
         Truth.assertThat(proxy.instrumentationRunner.get()).isEqualTo("my_runner")

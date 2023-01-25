@@ -24,6 +24,7 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import org.gradle.api.Incubating
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Provider
 
 interface Component: ComponentIdentity {
 
@@ -58,6 +59,12 @@ interface Component: ComponentIdentity {
      * Access to the variant's instrumentation options.
      */
     val instrumentation: Instrumentation
+
+    /**
+     * The namespace of the generated R and BuildConfig classes. Also, the namespace used to resolve
+     * any relative class names that are declared in the AndroidManifest.xml.
+     */
+    val namespace: Provider<String>
 
     /**
      * Access to the variant's compile classpath.

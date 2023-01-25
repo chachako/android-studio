@@ -41,13 +41,6 @@ abstract class AnalyticsEnabledVariant (
     objectFactory: ObjectFactory
 ) : AnalyticsEnabledComponent(delegate, stats, objectFactory), Variant {
 
-    override val namespace: Provider<String>
-        get() {
-            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
-                VariantPropertiesMethodType.NAMESPACE_VALUE
-            return delegate.namespace
-        }
-
     override val buildConfigFields: MapProperty<String, BuildConfigField<out Serializable>>
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
