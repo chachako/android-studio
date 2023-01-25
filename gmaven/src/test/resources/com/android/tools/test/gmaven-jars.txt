@@ -3230,6 +3230,7 @@ com/android/tools/testutils
   com/android/testutils/filesystemdiff/
   com/android/testutils/ignore/
   com/android/testutils/internal/
+  com/android/testutils/time/
   com/android/testutils/truth/
 
 com/android/tools/utp/android-device-provider-ddmlib
