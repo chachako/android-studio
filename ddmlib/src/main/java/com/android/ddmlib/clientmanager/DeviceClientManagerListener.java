@@ -63,4 +63,12 @@ public interface DeviceClientManagerListener {
             @NonNull AndroidDebugBridge bridge,
             @NonNull DeviceClientManager deviceClientManager,
             @NonNull Client client);
+
+    /**
+     * Invoked when the profiler state has changed (e.g. {@link Client#startMethodTracer()}).
+     */
+    void processMethodProfilingStatusUpdated(
+            @NonNull AndroidDebugBridge bridge,
+            @NonNull DeviceClientManager deviceClientManager,
+            @NonNull Client client);
 }

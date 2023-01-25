@@ -46,6 +46,41 @@ class DdmsChunkTypes {
         val EXIT: Int = chunkTypeFromString("EXIT")
 
         /**
+         * Requests a `Method Profiling Streaming Start`
+         */
+        val MPSS: Int = chunkTypeFromString("MPSS")
+
+        /**
+         * Requests a `Method Profiling Streaming End`
+         */
+        val MPSE: Int = chunkTypeFromString("MPSE")
+
+        /**
+         * Requests a `Method PRofiling Start`
+         */
+        val MPRS: Int = chunkTypeFromString("MPRS")
+
+        /**
+         * Requests a `Method PRofiling End`
+         */
+        val MPRE: Int = chunkTypeFromString("MPRE")
+
+        /**
+         * Requests a `Method PRofiling Query`
+         */
+        val MPRQ: Int = chunkTypeFromString("MPRQ")
+
+        /**
+         * Requests a `Sampling Profiling Streaming Start`
+         */
+        val SPSS: Int = chunkTypeFromString("SPSS")
+
+        /**
+         * Requests a `Sampling Profiling Streaming End`
+         */
+        val SPSE: Int = chunkTypeFromString("SPSE")
+
+        /**
          * List `ViewRootImpl`'s of this process
          */
         val VULW: Int = chunkTypeFromString("VULW")

@@ -275,6 +275,9 @@ internal class AdbLibDeviceClientManager(
                 ClientUpdateKind.HeapAllocations -> {
                     listener.processHeapAllocationsUpdated(bridge, this, client)
                 }
+                ClientUpdateKind.ProfilingStatus -> {
+                    listener.processMethodProfilingStatusUpdated(bridge, this, client)
+                }
             }
             processed.complete(Unit)
         }
@@ -283,6 +286,7 @@ internal class AdbLibDeviceClientManager(
 
     enum class ClientUpdateKind {
         HeapAllocations,
+        ProfilingStatus,
     }
 
     class DdmlibEventQueue(logger: AdbLogger, name: String) {

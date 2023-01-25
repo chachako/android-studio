@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.tools.debugging.impl.JdwpProcessAllocationTrackerImpl
+import com.android.adblib.tools.debugging.impl.JdwpProcessProfilerImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
@@ -109,4 +110,16 @@ private val jdwpProcessAllocationTrackerKey =
 val JdwpProcess.allocationTracker: JdwpProcessAllocationTracker
     get() = this.cache.getOrPut(jdwpProcessAllocationTrackerKey) {
         JdwpProcessAllocationTrackerImpl(this)
+    }
+
+private val jdwpProcessProfilerKey =
+    CoroutineScopeCache.Key<JdwpProcessProfiler>("JdwpProcessProfiler")
+
+/**
+ * Returns the [JdwpProcessProfiler] for this [JdwpProcess]. This API is deprecated
+ * and should only be used for "legacy" devices (API <= 25 "Android N")
+ */
+val JdwpProcess.profiler: JdwpProcessProfiler
+    get() = this.cache.getOrPut(jdwpProcessProfilerKey) {
+        JdwpProcessProfilerImpl(this)
     }

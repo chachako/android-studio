@@ -37,6 +37,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.nio.ByteBuffer
+import java.util.EnumSet
+import java.util.concurrent.TimeUnit
 
 /**
  * Progress reporting when executing a JDWP/DDMS command.
@@ -46,6 +48,54 @@ interface JdwpCommandProgress {
     suspend fun beforeSend(packet: JdwpPacketView) {}
     suspend fun afterSend(packet: JdwpPacketView) {}
     suspend fun onReply(packet: JdwpPacketView) {}
+}
+
+/**
+ * Flags for [sendDdmsMPSS]. These can be ORed together.
+ */
+enum class MPSSFlags(val flag: Int) {
+
+    /**
+     * TRACE_COUNT_ALLOCS adds the results from startAllocCounting to the
+     * trace key file.
+     */
+    @Deprecated("Accurate counting is a burden on the runtime and may be removed.")
+    TRACE_COUNT_ALLOCS(1)
+}
+
+fun SharedJdwpSession.createDdmsMPSS(
+    bufferSize: Int,
+    flags: EnumSet<MPSSFlags> = EnumSet.noneOf(MPSSFlags::class.java)
+): JdwpPacketView {
+    val payload = allocateDdmsPayload(2 * 4)
+    payload.putInt(bufferSize) // [pos=4, limit=8]
+    payload.putInt(flags.fold(0) { acc, value -> acc + value.flag }) // [pos=8, limit=8]
+    payload.flip()  // [pos=0, limit=8]
+    return createDdmsPacket(DdmsChunkTypes.MPSS, payload)
+}
+
+fun SharedJdwpSession.createDdmsMPSE(): JdwpPacketView {
+    return createDdmsPacket(DdmsChunkTypes.MPSE, emptyByteBuffer)
+}
+
+fun SharedJdwpSession.createDdmsSPSS(
+    bufferSize: Int,
+    samplingInterval: Long,
+    samplingIntervalTimeUnits: TimeUnit
+): JdwpPacketView {
+    val interval = samplingIntervalTimeUnits.toMicros(samplingInterval).toInt()
+
+    val payload = allocateDdmsPayload(4 + 4 + 4) // [pos=0, limit=12]
+    payload.putInt(bufferSize) // [pos=4, limit=12]
+    payload.putInt(0 /*flags*/) // [pos=8, limit=12]
+    payload.putInt(interval) // [pos=12, limit=12]
+    payload.flip() // [pos=0, limit=12]
+
+    return createDdmsPacket(DdmsChunkTypes.SPSS, payload)
+}
+
+fun SharedJdwpSession.createDdmsSPSE(): JdwpPacketView {
+    return createDdmsPacket(DdmsChunkTypes.SPSE, emptyByteBuffer)
 }
 
 /**
@@ -121,6 +171,14 @@ suspend fun <R> SharedJdwpSession.handleDdmsREAL(
 ): R {
     return handleDdmsCommand(DdmsChunkTypes.REAL, emptyByteBuffer, progress) {
         replyHandler(it.payload, it.length)
+    }
+}
+
+suspend fun SharedJdwpSession.handleDdmsMPRQ(progress: JdwpCommandProgress? = null): Int {
+    return handleDdmsCommand(DdmsChunkTypes.MPRQ, emptyByteBuffer, progress) { chunkReply ->
+        val replyPayload = chunkReply.payload.toByteBuffer(chunkReply.length)
+        val result = replyPayload.get()
+        result.toInt()
     }
 }
 
@@ -311,7 +369,7 @@ suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
         }
 }
 
-private suspend fun SharedJdwpSession.handleEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
+suspend fun SharedJdwpSession.handleEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
     val logger = thisLogger(session).withPrefix("pid=$pid: ")
     val chunkTypeString = chunkTypeToString(chunkType)
 

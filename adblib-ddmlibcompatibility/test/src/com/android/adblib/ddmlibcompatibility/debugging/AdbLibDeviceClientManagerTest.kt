@@ -181,10 +181,11 @@ class AdbLibDeviceClientManagerTest {
         Assert.assertFalse(client.isDebuggerAttached)
         //TODO(b/266699981): Add unit test
         //assertThrows { client.executeGarbageCollector() }
-        assertThrows { client.startMethodTracer() }
-        assertThrows { client.stopMethodTracer() }
-        assertThrows { client.startSamplingProfiler(10, TimeUnit.SECONDS) }
-        assertThrows { client.stopSamplingProfiler() }
+        //TODO(b/266699981): Add unit test
+        //assertThrows { client.startMethodTracer() }
+        //assertThrows { client.stopMethodTracer() }
+        //assertThrows { client.startSamplingProfiler(10, TimeUnit.SECONDS) }
+        //assertThrows { client.stopSamplingProfiler() }
         //TODO(b/266699981): Add unit test
         //assertThrows { client.requestAllocationDetails() }
         //assertThrows { client.enableAllocationTracker(false) }
@@ -700,6 +701,16 @@ class AdbLibDeviceClientManagerTest {
         ) {
             if (bridge === AndroidDebugBridge.getBridge()) {
                 AndroidDebugBridge.clientChanged(client, Client.CHANGE_HEAP_ALLOCATIONS)
+            }
+        }
+
+        override fun processMethodProfilingStatusUpdated(
+            bridge: AndroidDebugBridge,
+            deviceClientManager: DeviceClientManager,
+            client: Client
+        ) {
+            if (bridge === AndroidDebugBridge.getBridge()) {
+                AndroidDebugBridge.clientChanged(client, Client.CHANGE_METHOD_PROFILING_STATUS)
             }
         }
     }
