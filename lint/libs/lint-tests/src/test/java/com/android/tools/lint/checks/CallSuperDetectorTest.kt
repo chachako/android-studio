@@ -600,6 +600,74 @@ class CallSuperDetectorTest : AbstractCheckTest() {
         ).run().expectClean()
     }
 
+    fun testAbstractMethods() {
+        // Regression test for b/266700164
+        lint().files(
+            kotlin(
+                """
+                import androidx.annotation.CallSuper
+
+                open abstract class ParentClass {
+                    @CallSuper
+                    open abstract fun someMethod(arg: Int) {
+                        // ...
+                    }
+
+                    @CallSuper
+                    open fun otherMethod(arg: Int) {
+                      //
+                    }
+                }
+
+                abstract class MyClass : ParentClass() {
+                    override fun someMethod(arg: Int) {
+                        // OK because parent is abstract
+                    }
+
+                    abstract override fun otherMethod(arg: Int) // OK because is abstract
+                }
+                """
+            ).indented(),
+            SUPPORT_ANNOTATIONS_JAR
+        ).run().expectClean()
+    }
+
+    fun testSuperCallInNestedObject() {
+        // Regression test for b/266700164
+        lint().files(
+            kotlin(
+                """
+                import androidx.annotation.CallSuper
+
+                open class Parent {
+                  @CallSuper
+                  open fun someMethod(arg: Int) {
+                    //
+                  }
+                }
+
+                class Child: Parent {
+                  override fun someMethod(arg: Int) {
+                    object: Parent() {
+                      override fun someMethod(arg: Int) {
+                        super.someMethod(arg)
+                      }
+                    }
+                  }
+                }
+                """
+            ).indented(),
+            SUPPORT_ANNOTATIONS_JAR
+        ).run().expect(
+            """
+            src/Parent.kt:11: Error: Overriding method should call super.someMethod [MissingSuperCall]
+              override fun someMethod(arg: Int) {
+                           ~~~~~~~~~~
+            1 errors, 0 warnings
+            """
+        )
+    }
+
     fun testIndirectSuperCallCompiled() {
         // Regression test for b/189433125.
         lint().files(

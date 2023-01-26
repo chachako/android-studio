@@ -29,11 +29,13 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.USuperExpression
+import org.jetbrains.uast.getContainingUClass
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
@@ -77,7 +79,11 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
             method: PsiMethod
         ): PsiMethod? {
 
+            if (evaluator.isAbstract(method)) return null
+
             val directSuper = evaluator.getSuperMethod(method) ?: return null
+
+            if (evaluator.isAbstract(directSuper)) return null
 
             val name = method.name
             if (ON_DETACHED_FROM_WINDOW == name) {
@@ -132,7 +138,7 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
             override fun visitMethod(node: UMethod) {
                 val evaluator = context.evaluator
                 val superMethod = getRequiredSuperMethod(evaluator, node) ?: return
-                val visitor = SuperCallVisitor(superMethod)
+                val visitor = SuperCallVisitor(superMethod, node.getContainingUClass()?.sourcePsi)
                 node.accept(visitor)
                 val count = visitor.callsSuperCount
                 if (count == 0) {
@@ -165,21 +171,24 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
      * Visits a method and determines whether the method calls its super
      * method.
      */
-    private class SuperCallVisitor constructor(private val targetMethod: PsiMethod) :
+    private class SuperCallVisitor constructor(private val targetMethod: PsiMethod, private val childClass: PsiElement?) :
         AbstractUastVisitor() {
         val superCalls = mutableListOf<USuperExpression>()
         val callsSuperCount: Int get() = superCalls.size
         var anySuperCallCount: Int = 0
 
         override fun visitSuperExpression(node: USuperExpression): Boolean {
-            anySuperCallCount++
-            val parent = skipParenthesizedExprUp(node.uastParent)
-            if (parent is UReferenceExpression) {
-                val resolved = parent.resolve()
-                if (resolved == null || // Avoid false positives for type resolution problems
-                    targetMethod.isEquivalentTo(resolved)
-                ) {
-                    superCalls.add(node)
+            val containingClass = node.getContainingUClass()?.sourcePsi
+            if(childClass == null || containingClass?.isEquivalentTo(childClass) != false) {
+                anySuperCallCount++
+                val parent = skipParenthesizedExprUp(node.uastParent)
+                if (parent is UReferenceExpression) {
+                    val resolved = parent.resolve()
+                    if (resolved == null || // Avoid false positives for type resolution problems
+                        targetMethod.isEquivalentTo(resolved)
+                    ) {
+                        superCalls.add(node)
+                    }
                 }
             }
 
