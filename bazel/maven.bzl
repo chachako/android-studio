@@ -542,6 +542,7 @@ def maven_library(
         name,
         srcs,
         javacopts = [],
+        kotlinc_opts = [],
         resources = [],
         resource_strip_prefix = None,
         data = [],
@@ -570,6 +571,7 @@ def maven_library(
     Args:
         srcs: The sources of the library.
         javacopts: Additional javac options.
+        kotlinc_opts: Additional Kotlinc options.
         resources: Resources to add to the jar.
         resources_strip_prefix: The prefix to strip from the resources path.
         deps: The dependencies of this library.
@@ -593,6 +595,8 @@ def maven_library(
     kotlin_library(
         name = name + ".lib",
         srcs = srcs,
+        javacopts = javacopts,
+        kotlinc_opts = kotlinc_opts,
         compress_resources = is_release(),
         data = data,
         deps = deps + bundled_deps + neverlink_deps,
