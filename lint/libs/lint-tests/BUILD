@@ -10,6 +10,11 @@ maven_library(
     ]),
     coordinates = "com.android.tools.lint:lint-tests",
     description = "API to build lint check tests",
+    kotlinc_opts = [
+        # Temporary workaround for b/266371431 until AGP targets 17.
+        "-jvm-target",
+        "17",
+    ],
     module_name = "lint-tests",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-tests",
@@ -53,6 +58,11 @@ kotlin_test(
         "-Djdk.attach.allowAttachSelf=true",
         # TODO: Inject the cache directory into tests.
         "-Duser.home=/tmp",
+    ],
+    kotlinc_opts = [
+        # Temporary workaround for b/266371431 until AGP targets 17.
+        "-jvm-target",
+        "17",
     ],
     lint_baseline = "lint_baseline.xml",
     resources = glob(["src/test/resources/**"]),
