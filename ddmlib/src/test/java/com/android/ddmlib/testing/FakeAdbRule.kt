@@ -94,6 +94,7 @@ class FakeAdbRule : ExternalResource() {
    */
   fun closeServerDuringCleanUp(closeServer: Boolean) = apply { closeFakeAdbServerDuringCleanUp = closeServer }
 
+  @JvmOverloads
   fun attachDevice(
       deviceId: String,
       manufacturer: String,
