@@ -71,7 +71,8 @@ public final class FolderConfiguration implements Comparable<FolderConfiguration
     private static final int INDEX_NAVIGATION_METHOD     = 20;
     private static final int INDEX_SCREEN_DIMENSION      = 21;
     private static final int INDEX_VERSION               = 22;
-    private static final int INDEX_COUNT                 = 23;
+    private static final int INDEX_GRAMMATICAL_GENDER = 23;
+    private static final int INDEX_COUNT = 24;
 
     private static final ResourceQualifier[] NULL_QUALIFIERS = new ResourceQualifier[INDEX_COUNT];
 
@@ -607,6 +608,8 @@ public final class FolderConfiguration implements Comparable<FolderConfiguration
             mQualifiers[INDEX_SCREEN_DIMENSION] = qualifier;
         } else if (qualifier instanceof VersionQualifier) {
             mQualifiers[INDEX_VERSION] = qualifier;
+        } else if (qualifier instanceof GrammaticalGenderQualifier) {
+            mQualifiers[INDEX_GRAMMATICAL_GENDER] = qualifier;
         }
         mQualifierString = null;
     }
@@ -912,6 +915,17 @@ public final class FolderConfiguration implements Comparable<FolderConfiguration
     @Nullable
     public VersionQualifier getVersionQualifier() {
         return (VersionQualifier) mQualifiers[INDEX_VERSION];
+    }
+
+    public void setGrammaticalGenderQualifier(@Nullable GrammaticalGenderQualifier qualifier) {
+        mQualifiers[INDEX_GRAMMATICAL_GENDER] =
+                qualifier == null ? NULL_QUALIFIERS[INDEX_GRAMMATICAL_GENDER] : qualifier;
+        mQualifierString = null;
+    }
+
+    @Nullable
+    public GrammaticalGenderQualifier getGrammaticalGenderQualifier() {
+        return (GrammaticalGenderQualifier) mQualifiers[INDEX_GRAMMATICAL_GENDER];
     }
 
     /**
@@ -1403,6 +1417,7 @@ public final class FolderConfiguration implements Comparable<FolderConfiguration
         config.mQualifiers[INDEX_NAVIGATION_METHOD] = new NavigationMethodQualifier();
         config.mQualifiers[INDEX_SCREEN_DIMENSION] = new ScreenDimensionQualifier();
         config.mQualifiers[INDEX_VERSION] = new VersionQualifier();
+        config.mQualifiers[INDEX_GRAMMATICAL_GENDER] = new GrammaticalGenderQualifier();
         return config;
     }
 
