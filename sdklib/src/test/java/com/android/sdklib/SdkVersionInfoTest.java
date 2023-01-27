@@ -26,7 +26,7 @@ import static com.android.sdklib.SdkVersionInfo.getApiByPreviewName;
 import static com.android.sdklib.SdkVersionInfo.getBuildCode;
 import static com.android.sdklib.SdkVersionInfo.getCodeName;
 import static com.android.sdklib.SdkVersionInfo.getVersion;
-import static com.android.sdklib.SdkVersionInfo.getVersionWithCodename;
+import static com.android.sdklib.SdkVersionInfo.getVersionString;
 import static com.android.sdklib.SdkVersionInfo.underlinesToCamelCase;
 
 import com.android.testutils.TestUtils;
@@ -41,34 +41,12 @@ public class SdkVersionInfoTest extends TestCase {
                    HIGHEST_KNOWN_STABLE_API <= HIGHEST_KNOWN_API);
     }
 
-    public void testGetAndroidName() {
-        assertEquals("API 16: Android 4.1 (Jelly Bean)", SdkVersionInfo.getAndroidName(16));
-        assertEquals("API 20: Android 4.4W (KitKat Wear)", SdkVersionInfo.getAndroidName(20));
-        assertEquals("API 25: Android 7.1.1 (Nougat)", SdkVersionInfo.getAndroidName(25));
-        assertEquals("API 27: Android 8.1 (Oreo)", SdkVersionInfo.getAndroidName(27));
-        assertEquals("API 28: Android 9.0 (Pie)", SdkVersionInfo.getAndroidName(28));
-        assertEquals("API 29: Android 10.0 (Q)", SdkVersionInfo.getAndroidName(29));
-        assertEquals("API 30: Android 11.0 (R)", SdkVersionInfo.getAndroidName(30));
-        assertEquals("API 31: Android 12.0 (S)", SdkVersionInfo.getAndroidName(31));
-        assertEquals("API 32: Android 12L (Sv2)", SdkVersionInfo.getAndroidName(32));
-        assertEquals("API 33: Android 13.0 (Tiramisu)", SdkVersionInfo.getAndroidName(33));
-
-        // Future: if we don't have a name, don't include "null" as a name
-        assertEquals("API 500", SdkVersionInfo.getAndroidName(500));
-    }
-
     public void testHighestSupportedVersion() {
         // Make sure we keep HIGHEST_SUPPORTED_API up to date along with the stable
         // SDKs. We should at least supported the latest stable known API; at times,
         // we'll also support the current preview image.
         assertTrue(HIGHEST_SUPPORTED_API >= HIGHEST_KNOWN_STABLE_API);
         assertTrue(HIGHEST_SUPPORTED_API <= HIGHEST_KNOWN_API);
-    }
-
-    public void testGetVersionNameSanitized() {
-        assertEquals("4.1", SdkVersionInfo.getVersionStringSanitized(16));
-        assertEquals("8.0", SdkVersionInfo.getVersionStringSanitized(26));
-        assertEquals("API 99", SdkVersionInfo.getVersionStringSanitized(99));
     }
 
     public void testGetBuildCode() {
@@ -124,6 +102,11 @@ public class SdkVersionInfoTest extends TestCase {
         assertEquals("Oreo", getCodeName(26));
         assertEquals("Oreo", getCodeName(27));
         assertEquals("Pie", getCodeName(28));
+
+        // make sure all known codenames are non-null
+        for (int i = 3; i <= HIGHEST_KNOWN_API; i++) {
+            assertNotNull(getCodeName(i));
+        }
     }
 
     public void testCamelCaseToUnderlines() {
@@ -161,21 +144,14 @@ public class SdkVersionInfoTest extends TestCase {
         assertEquals("BackToTheFuture", getVersion("BackToTheFuture", null).getCodename());
     }
 
-    public void testGetVersionWithCodename() {
-        assertEquals("Android 1.0", getVersionWithCodename(new AndroidVersion(1)));
-        assertEquals("Android 2.3.3 (Gingerbread)", getVersionWithCodename(new AndroidVersion(10)));
-        assertEquals("Android 13.0 (Tiramisu)", getVersionWithCodename(new AndroidVersion(33)));
-        assertEquals("Android API 500", getVersionWithCodename(new AndroidVersion(500)));
-        assertEquals(
-                "Android Codename Preview",
-                getVersionWithCodename(new AndroidVersion(500, "Codename")));
-        assertEquals("Android 11.0 (R)",
-                     getVersionWithCodename(new AndroidVersion(30, null, 1, true)));
-        assertEquals("Android 11.0 (R), Extension Level 2",
-                     getVersionWithCodename(new AndroidVersion(30, null, 2, false)));
-    }
-
     public void testHighestStableApiInTestUtils() throws Exception {
         assertEquals("android-" + HIGHEST_KNOWN_STABLE_API, TestUtils.getLatestAndroidPlatform());
+    }
+
+    public void testGetVersionString() {
+        // make sure all known versions are non-null
+        for (int i = 1; i <= HIGHEST_KNOWN_STABLE_API; i++) {
+            assertNotNull(getVersionString(i));
+        }
     }
 }

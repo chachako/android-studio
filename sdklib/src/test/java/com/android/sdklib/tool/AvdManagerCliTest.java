@@ -330,7 +330,7 @@ public class AvdManagerCliTest {
                         + InMemoryFileSystems.getPlatformSpecificPath("/avd/testGapiAvd.avd")
                         + "\n"
                         + "P   Target: Google APIs (Google)\n"
-                        + "P           Based on: Android 7.1.1 (Nougat)P  Tag/ABI: google_apis/x86\n"
+                        + "P           Based on: Android 7.1.1 (\"Nougat\")P  Tag/ABI: google_apis/x86\n"
                         + "P   Sdcard: 512 MB\n"
                         + "P ---------\n"
                         + "P     Name: testWearApi\n"
@@ -339,7 +339,7 @@ public class AvdManagerCliTest {
                         + InMemoryFileSystems.getPlatformSpecificPath("/avd/testWearApi.avd")
                         + "\n"
                         + "P   Target: Google APIs\n"
-                        + "P           Based on: Android 8.0 (Oreo), Extension Level 5P  Tag/ABI: android-wear/armeabi-v7a\n"
+                        + "P           Based on: Android 8.0 (\"Oreo\")P  Tag/ABI: android-wear/armeabi-v7a\n"
                         + "P   Sdcard: 512 MB\n",
                 Joiner.on("").join(mLogger.getMessages()));
     }

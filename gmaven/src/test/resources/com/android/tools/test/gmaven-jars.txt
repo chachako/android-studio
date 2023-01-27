@@ -3248,6 +3248,7 @@ com/android/tools/sdk-common
 com/android/tools/sdklib
   META-INF/
   META-INF/MANIFEST.MF
+  META-INF/sdklib.kotlin_module
   NOTICE
   com/
   com/android/

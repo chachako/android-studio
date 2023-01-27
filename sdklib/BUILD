@@ -1,5 +1,5 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load(":sdk.bzl", "combine_licenses", "sdk_java_binary", "sdk_package")
 load("//tools/base/repository:xjc.bzl", "xsd_to_java")
@@ -44,14 +44,18 @@ iml_module(
     ],
 )
 
-java_library(
+kotlin_library(
     name = "tools.sdklib.core",
     srcs = glob(
-        ["src/main/java/**/*.java"],
+        [
+            "src/main/java/**/*.java",
+            "src/main/java/**/*.kt",
+        ],
         exclude = [
             "src/main/java/**/tool/**/*.java",
         ],
     ),
+    module_name = "sdklib",
     resource_strip_prefix = "tools/base/sdklib/src/main/resources",
     resources = glob(["src/main/resources/**"]),
     deps = [
