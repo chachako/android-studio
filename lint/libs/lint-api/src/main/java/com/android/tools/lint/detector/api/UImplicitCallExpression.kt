@@ -24,6 +24,7 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
@@ -359,7 +360,15 @@ private class ArrayAccessAsCallExpression(
 
   override val methodIdentifier: UIdentifier?
     get() {
-      var bracket = accessExpression.indices.firstOrNull()?.sourcePsi?.prevSibling
+      val indices = accessExpression.indices.firstOrNull()?.sourcePsi ?: return null
+      var bracket =
+        if (indices is KtLiteralStringTemplateEntry) {
+          // With KotlinConverter.INSTANCE.setForceUInjectionHost enabled,
+          // we have to look at the parent instead to find the left bracket
+          indices.parent.prevSibling
+        } else {
+          indices.prevSibling
+        }
       while (bracket is PsiWhiteSpace || bracket is PsiComment) {
         bracket = bracket.prevSibling
       }

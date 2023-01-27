@@ -1131,7 +1131,7 @@ public class TestLintTask {
      * in an UInjectionHost.
      */
     static void setForceUiInjection(boolean on) {
-        //noinspection KotlinInternalInJava
+        //noinspection UnstableApiUsage
         org.jetbrains.uast.kotlin.KotlinConverter.INSTANCE.setForceUInjectionHost(on);
     }
 

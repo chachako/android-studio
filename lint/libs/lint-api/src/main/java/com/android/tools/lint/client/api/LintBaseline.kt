@@ -356,10 +356,11 @@ class LintBaseline(
       "InlinedApi",
       "UnusedAttribute" -> {
         // Compare character by character, and when they differ, skip the tokens if they are
-        // preceded
-        // by something from the ApiDetector error messages which indicate that they represent an
-        // API level, such as "current min is " or "API level "
-        stringsEquivalent(old, new) { s, i ->
+        // preceded by something from the ApiDetector error messages which indicate that they
+        // represent an API level, such as "current min is " or "API level "
+        val suffix = " (called from "
+        stringsEquivalent(old.substringBeforeLast(suffix), new.substringBeforeLast(suffix)) { s, i
+          ->
           s.tokenPrecededBy("min is ", i) ||
             s.tokenPrecededBy("API level ", i) ||
             s.tokenPrecededBy("version ", i)
@@ -974,6 +975,8 @@ class LintBaseline(
       val n2 = s2.length
 
       while (true) {
+        while (i1 < n1 && (s1[i1].isWhitespace() || s1[i1] == '`')) i1++
+        while (i2 < n2 && (s2[i2].isWhitespace() || s2[i2] == '`')) i2++
         if (i1 >= n1) {
           return i2 >= n2
         } else if (i2 >= n2) {

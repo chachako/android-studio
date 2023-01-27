@@ -2153,17 +2153,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "public class UnitTest {\n"
                                         + "    private GridLayout field1 = new GridLayout(null);\n"
-                                        + "}\n"),
-                        java(
-                                "androidTest/test/pkg/InstrumentationTest.java",
-                                ""
-                                        + "package test.pkg;\n"
-                                        + "\n"
-                                        + "import android.annotation.SuppressLint;\n"
-                                        + "import android.widget.GridLayout;\n"
-                                        + "\n"
-                                        + "public class InstrumentationTest {\n"
-                                        + "    private GridLayout field1 = new GridLayout(null);\n"
                                         + "}\n"))
                 .checkMessage(this::checkReportedError)
                 .run()
@@ -6064,7 +6053,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/TestClass.kt:12: Error: Call requires API level 24 (current min is 14): java.util.Map#getOrDefault [NewApi]\n"
+                                + "src/test/pkg/TestClass.kt:12: Error: Call requires API level 24 (current min is 14): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault) [NewApi]\n"
                                 + "        map.getOrDefault(key1, 0F)\n"
                                 + "            ~~~~~~~~~~~~\n"
                                 + "src/test/pkg/TestClass.kt:13: Error: Call requires API level 24 (current min is 14): java.util.HashMap#getOrDefault [NewApi]\n"
@@ -6098,7 +6087,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "src/test.kt:4: Error: Call requires API level 24 (current min is 1): java.util.Map#remove [NewApi]\n"
                                 + "    map.remove(\"foo\", \"bar\")\n"
                                 + "        ~~~~~~\n"
-                                + "src/test.kt:9: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
+                                + "src/test.kt:9: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault) [NewApi]\n"
                                 + "    map.getOrDefault(\"foo\", null)\n"
                                 + "        ~~~~~~~~~~~~\n"
                                 + "src/test.kt:10: Error: Call requires API level 24 (current min is 1): java.util.Map#remove [NewApi]\n"
@@ -9229,6 +9218,37 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "}\n"))
                 .run()
                 .expectClean();
+    }
+
+    public void testNamedCollectionMatchResult() {
+        // Regression test for
+        // 266116266: No Lint warning about kotlin.text.MatchNamedGroupCollection#get(String)
+        // requiring API 26
+        lint().files(
+                        kotlin(
+                                ""
+                                        + "package test.pkg\n"
+                                        + "\n"
+                                        + "fun testPatterns() {\n"
+                                        + "    val regex = Regex(\"(?<bla>.*)\")\n"
+                                        + "    val groups: MatchGroupCollection? = regex.matchEntire(\"abc\")?.groups\n"
+                                        + "    // This calls RegexExtensionsJDK8Kt.get which does a safe cast\n"
+                                        + "    println(\"*\" + groups?.get(\"bla\")?.value + \"*\")\n"
+                                        + "\n"
+                                        + "    // Direct call to MatchNamedGroupCollection.get\n"
+                                        + "    val namedGroups = groups as? MatchNamedGroupCollection ?: return\n"
+                                        + "    println(namedGroups[\"bla\"]?.value)\n"
+                                        + "}"))
+                .run()
+                .expect(
+                        ""
+                                + "src/test/pkg/test.kt:7: Error: Call requires API level 26 (current min is 1): java.util.regex.Matcher#start (called from kotlin.text.MatchGroupCollection#get(String)) [NewApi]\n"
+                                + "    println(\"*\" + groups?.get(\"bla\")?.value + \"*\")\n"
+                                + "                          ~~~\n"
+                                + "src/test/pkg/test.kt:11: Error: Call requires API level 26 (current min is 1): java.util.regex.Matcher#start (called from kotlin.text.MatchNamedGroupCollection#get) [NewApi]\n"
+                                + "    println(namedGroups[\"bla\"]?.value)\n"
+                                + "                       ~\n"
+                                + "2 errors, 0 warnings");
     }
 
     @Override

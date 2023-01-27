@@ -1018,13 +1018,14 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       owner: String? = null,
       name: String? = null,
       desc: String? = null,
-      desugaring: Desugaring? = null
+      desugaring: Desugaring? = null,
+      original: String? = null
     ) {
       val missing = minSdk.firstMissing(requires) ?: requires
       val apiLevel = getApiLevelString(missing, context)
       val typeString = type.usLocaleCapitalize()
       val sdk = missing.getSdk()
-      val formatString =
+      var formatString =
         if (sdk == ANDROID_SDK_ID)
           "$typeString requires API level $apiLevel (current min is %1\$s): `$sig`"
         else {
@@ -1033,6 +1034,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           "$typeString requires version $apiLevel of ${if (sdkString[0].isDigit()) "SDK $sdkString" else "the $sdkString SDK"} " +
             "(current min is %1\$s): `$sig`"
         }
+      if (original != null) {
+        formatString += " (called from `$original`)"
+      }
       report(
         issue,
         node,
@@ -1635,7 +1639,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       containingClass: PsiClass,
       owner: String,
       name: String,
-      desc: String
+      desc: String,
+      original: String? = null
     ) {
       val apiDatabase = apiDatabase ?: return
       val evaluator = context.evaluator
@@ -1930,7 +1935,8 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         owner,
         name,
         desc,
-        desugaring
+        desugaring,
+        original
       )
     }
 
@@ -1944,34 +1950,94 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     ) {
       // Not a method in the API database, but it could be an extension method
       // decorating one of the SDK methods.
-      if (owner == "kotlin.collections.jdk8.CollectionsJDK8Kt") {
-        val mapClass = evaluator.findClass("java.util.Map") ?: return
-        if (name == "getOrDefault") {
-          // See Collections.kt in the Kotlin stdlib collections.jdk8 package
-          // It's really owner = "java.util.Map"
-          visitCall(
-            method,
-            call,
-            reference,
-            mapClass,
-            "java.util.Map",
-            name,
-            "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
-          )
-        } else if (name == "remove") {
-          // See Collections.kt in the Kotlin stdlib collections.jdk8 package
-          // It's really owner = "java.util.Map"
-          visitCall(
-            method,
-            call,
-            reference,
-            mapClass,
-            "java.util.Map",
-            name,
-            "(Ljava/lang/Object;Ljava/lang/Object;)Z"
-          )
+      when {
+        owner == "kotlin.collections.jdk8.CollectionsJDK8Kt" -> {
+          if (name == "getOrDefault") {
+            // See Collections.kt in the Kotlin stdlib collections.jdk8 package
+            // It's really owner = "java.util.Map"
+            checkKotlinStdlibAlias(
+              call,
+              evaluator,
+              "java.util.Map",
+              name,
+              "(Ljava/lang/Object;Ljava/lang/Object;)",
+              method,
+              reference,
+              "kotlin.collections.Map#getOrDefault"
+            )
+          } else if (name == "remove") {
+            // See Collections.kt in the Kotlin stdlib collections.jdk8 package
+            // It's really owner = "java.util.Map"
+            checkKotlinStdlibAlias(
+              call,
+              evaluator,
+              "java.util.Map",
+              name,
+              "(Ljava/lang/Object;Ljava/lang/Object;)",
+              method,
+              reference,
+              "kotlin.collections.Map#remove"
+            )
+          }
+        }
+        owner == "kotlin.text.jdk8.RegexExtensionsJDK8Kt" && name == "get" -> {
+          val desc =
+            evaluator.getMethodDescription(method, includeName = false, includeReturn = false)
+          // Turns around and calls Matcher.start(String) which requires API 26
+          if (desc == "(Lkotlin.text.MatchGroupCollection;Ljava.lang.String;)") {
+            checkKotlinStdlibAlias(
+              call,
+              evaluator,
+              "java.util.regex.Matcher",
+              "start",
+              "(Ljava/lang/String;)",
+              method,
+              reference,
+              "kotlin.text.MatchGroupCollection#get(String)"
+            )
+          }
+        }
+        owner == "kotlin.text.MatchNamedGroupCollection" && name == "get" -> {
+          val desc =
+            evaluator.getMethodDescription(method, includeName = false, includeReturn = false)
+          // Turns around and calls Matcher.start(String) which requires API 26
+          if (desc == "(Ljava.lang.String;)") {
+            checkKotlinStdlibAlias(
+              call,
+              evaluator,
+              "java.util.regex.Matcher",
+              "start",
+              "(Ljava/lang/String;)",
+              method,
+              reference,
+              "kotlin.text.MatchNamedGroupCollection#get"
+            )
+          }
         }
       }
+    }
+
+    private fun checkKotlinStdlibAlias(
+      call: UCallExpression,
+      evaluator: JavaEvaluator,
+      aliasClassName: String,
+      aliasMethodName: String,
+      aliasDesc: String,
+      method: PsiMethod,
+      reference: UElement,
+      original: String?
+    ) {
+      val matcherClass = evaluator.findClass(aliasClassName) ?: return
+      visitCall(
+        method,
+        call,
+        reference,
+        matcherClass,
+        aliasClassName,
+        aliasMethodName,
+        aliasDesc,
+        original = original
+      )
     }
 
     private fun checkAnimator(context: JavaContext, call: UCallExpression) {
@@ -2577,9 +2643,6 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     private const val ANDROIDX_SDK_SUPPRESS_ANNOTATION = "androidx.test.filters.SdkSuppress"
     private const val ROBO_ELECTRIC_CONFIG_ANNOTATION = "org.robolectric.annotation.Config"
     private const val ATTR_PROPERTY_VALUES_HOLDER = "propertyValuesHolder"
-
-    private const val KOTLIN_CLOSEABLE_EXT = "kotlin.io.CloseableKt"
-    private const val KOTLIN_AUTO_CLOSEABLE_EXT = "kotlin.jdk7.AutoCloseableKt"
 
     /**
      * Whether repeated @RequiresApi/@RequiresExtension annotation means that *all* requirements are

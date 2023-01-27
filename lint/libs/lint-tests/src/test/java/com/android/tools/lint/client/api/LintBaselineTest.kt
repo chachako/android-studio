@@ -278,6 +278,7 @@ class LintBaselineTest {
     assertTrue(stringsEquivalent("foo", ""))
     assertTrue(stringsEquivalent("", "bar"))
     assertTrue(stringsEquivalent("foo", "foo"))
+    assertTrue(stringsEquivalent("   foo ba r", " foo  bar  "))
     assertTrue(stringsEquivalent("foo", "foo."))
     assertTrue(stringsEquivalent("foo.", "foo"))
     assertTrue(stringsEquivalent("foo.", "foo. Bar."))
@@ -314,6 +315,18 @@ class LintBaselineTest {
     assertFalse(stringsEquivalent("abc", "def"))
     assertFalse(stringsEquivalent("abcd", "abce"))
     assertTrue(stringsEquivalent("ab cd ?", "ab   c d?"))
+
+    assertTrue(stringsEquivalent("   foo ba r", " foo  `bar`  ") { _, _ -> false })
+    assertTrue(
+      stringsEquivalent("before 123 after", "before 45 after") { s, i ->
+        s.tokenPrecededBy("before ", i)
+      }
+    )
+    assertFalse(
+      stringsEquivalent("before 123 after", "before 45 different") { s, i ->
+        s.tokenPrecededBy("before ", i)
+      }
+    )
   }
 
   @Test
@@ -464,6 +477,22 @@ class LintBaselineTest {
         ApiDetector.UNSUPPORTED,
         "Call requires API level R (current min is 29): `setZOrderedOnTop`",
         "Call requires API level 30 (current min is 29): `setZOrdered`"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        "Call requires API level 24 (current min is 18): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)",
+        "Call requires API level 24 (current min is 13): java.util.Map#getOrDefault"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        "Call requires API level 24 (current min is 18): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)",
+        "Call requires API level 24 (current min is 13): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)"
       )
     )
   }
