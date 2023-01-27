@@ -335,6 +335,7 @@ DATA = [
     "com.android.tools.build:gradle:7.1.0",
     "com.android.tools.build:gradle:7.2.0",
     "com.android.tools.build:gradle:7.3.0-rc01",
+    "com.android.tools.build:gradle:7.3.1",
     "com.android.tools.build:gradle:7.4.0-alpha09",
     "com.android.tools.build:transform-api:1.5.0",
     "com.android.tools:desugar_jdk_libs:1.0.5",
