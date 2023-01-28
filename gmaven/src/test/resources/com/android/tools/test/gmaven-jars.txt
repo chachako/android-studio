@@ -727,13 +727,20 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/AL2.0
   META-INF/Core.xml
   META-INF/CoreImpl.xml
+  META-INF/INDEX.LIST
   META-INF/JavaPsiPlugin.xml
   META-INF/LGPL2.1
   META-INF/LICENSE
   META-INF/LICENSE.txt
   META-INF/MANIFEST.MF
+  META-INF/NOTICE
   META-INF/NOTICE.txt
   META-INF/ProjectModel.xml
+  META-INF/com.android.tools/
+  META-INF/com.android.tools/proguard/
+  META-INF/com.android.tools/proguard/coroutines.pro
+  META-INF/com.android.tools/r8/
+  META-INF/com.android.tools/r8/coroutines.pro
   META-INF/intellij.platform.concurrency.kotlin_module
   META-INF/intellij.platform.core.impl.kotlin_module
   META-INF/intellij.platform.core.kotlin_module
@@ -743,9 +750,30 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/intellij.platform.util.diff.kotlin_module
   META-INF/intellij.platform.util.kotlin_module
   META-INF/intellij.platform.util.xmlDom.kotlin_module
+  META-INF/intellij.platform.workspaceModel.storage.kotlin_module
   META-INF/kotlinx-coroutines-core.kotlin_module
+  META-INF/kotlinx-coroutines-debug.kotlin_module
   META-INF/kotlinx-coroutines-jdk8.kotlin_module
+  META-INF/kotlinx_coroutines_core.version
+  META-INF/kotlinx_coroutines_debug.version
+  META-INF/kotlinx_coroutines_jdk8.version
+  META-INF/licenses/
+  META-INF/licenses/ASM
   META-INF/maven/
+  META-INF/maven/com.esotericsoftware.kryo/
+  META-INF/maven/com.esotericsoftware.kryo/kryo5/
+  META-INF/maven/com.esotericsoftware.kryo/kryo5/pom.properties
+  META-INF/maven/com.esotericsoftware.kryo/kryo5/pom.xml
+  META-INF/maven/com.esotericsoftware/
+  META-INF/maven/com.esotericsoftware/kryo/
+  META-INF/maven/com.esotericsoftware/kryo/pom.properties
+  META-INF/maven/com.esotericsoftware/kryo/pom.xml
+  META-INF/maven/com.esotericsoftware/minlog/
+  META-INF/maven/com.esotericsoftware/minlog/pom.properties
+  META-INF/maven/com.esotericsoftware/minlog/pom.xml
+  META-INF/maven/com.esotericsoftware/reflectasm/
+  META-INF/maven/com.esotericsoftware/reflectasm/pom.properties
+  META-INF/maven/com.esotericsoftware/reflectasm/pom.xml
   META-INF/maven/com.fasterxml/
   META-INF/maven/com.fasterxml/aalto-xml/
   META-INF/maven/com.fasterxml/aalto-xml/pom.properties
@@ -754,6 +782,16 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/maven/jaxen/jaxen/
   META-INF/maven/jaxen/jaxen/pom.properties
   META-INF/maven/jaxen/jaxen/pom.xml
+  META-INF/maven/net.bytebuddy/
+  META-INF/maven/net.bytebuddy/byte-buddy-agent/
+  META-INF/maven/net.bytebuddy/byte-buddy-agent/pom.properties
+  META-INF/maven/net.bytebuddy/byte-buddy-agent/pom.xml
+  META-INF/maven/net.bytebuddy/byte-buddy-dep/
+  META-INF/maven/net.bytebuddy/byte-buddy-dep/pom.properties
+  META-INF/maven/net.bytebuddy/byte-buddy-dep/pom.xml
+  META-INF/maven/net.bytebuddy/byte-buddy/
+  META-INF/maven/net.bytebuddy/byte-buddy/pom.properties
+  META-INF/maven/net.bytebuddy/byte-buddy/pom.xml
   META-INF/maven/one.util/
   META-INF/maven/one.util/streamex/
   META-INF/maven/one.util/streamex/pom.properties
@@ -791,6 +829,7 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/services/org.jetbrains.jps.model.java.JpsJavaExtensionService
   META-INF/services/org.jetbrains.jps.service.JpsServiceManager
   META-INF/services/org.jetbrains.jps.service.SharedThreadPool
+  META-INF/services/reactor.blockhound.integration.BlockHoundIntegration
   META-INF/versions/
   META-INF/versions/9/
   META-INF/versions/9/one/
@@ -798,6 +837,26 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/versions/9/one/util/streamex/
   NOTICE
   com/
+  com/esotericsoftware/
+  com/esotericsoftware/kryo/
+  com/esotericsoftware/kryo/kryo5/
+  com/esotericsoftware/kryo/kryo5/asm/
+  com/esotericsoftware/kryo/kryo5/io/
+  com/esotericsoftware/kryo/kryo5/minlog/
+  com/esotericsoftware/kryo/kryo5/objenesis/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/android/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/annotations/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/basic/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/gcj/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/perc/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/sun/
+  com/esotericsoftware/kryo/kryo5/objenesis/instantiator/util/
+  com/esotericsoftware/kryo/kryo5/objenesis/strategy/
+  com/esotericsoftware/kryo/kryo5/reflectasm/
+  com/esotericsoftware/kryo/kryo5/serializers/
+  com/esotericsoftware/kryo/kryo5/unsafe/
+  com/esotericsoftware/kryo/kryo5/util/
   com/fasterxml/
   com/fasterxml/aalto/
   com/fasterxml/aalto/async/
@@ -810,6 +869,11 @@ com/android/tools/external/com-intellij/intellij-core
   com/fasterxml/aalto/sax/
   com/fasterxml/aalto/stax/
   com/fasterxml/aalto/util/
+  com/github/
+  com/github/benmanes/
+  com/github/benmanes/caffeine/
+  com/github/benmanes/caffeine/cache/
+  com/github/benmanes/caffeine/cache/stats/
   com/intellij/
   com/intellij/codeInsight/
   com/intellij/codeInsight/completion/
@@ -852,7 +916,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/extapi/psi/
   com/intellij/filename/
   com/intellij/formatting/
-  com/intellij/icons/
   com/intellij/ide/
   com/intellij/ide/fileTemplates/
   com/intellij/ide/highlighter/
@@ -862,6 +925,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/ide/plugins/
   com/intellij/ide/plugins/cl/
   com/intellij/ide/util/
+  com/intellij/idea/
   com/intellij/indentation/
   com/intellij/injected/
   com/intellij/injected/editor/
@@ -897,6 +961,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/openapi/application/
   com/intellij/openapi/application/ex/
   com/intellij/openapi/application/impl/
+  com/intellij/openapi/client/
   com/intellij/openapi/command/
   com/intellij/openapi/command/impl/
   com/intellij/openapi/command/undo/
@@ -939,7 +1004,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/openapi/util/
   com/intellij/openapi/util/io/
   com/intellij/openapi/util/io/package.html
-  com/intellij/openapi/util/io/win32/
   com/intellij/openapi/util/objectTree/
   com/intellij/openapi/util/registry/
   com/intellij/openapi/util/text/
@@ -1056,7 +1120,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/diff/package.html
   com/intellij/util/download/
   com/intellij/util/download/impl/
-  com/intellij/util/enumeration/
   com/intellij/util/execution/
   com/intellij/util/fmap/
   com/intellij/util/graph/
@@ -1075,7 +1138,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/io/zip/
   com/intellij/util/keyFMap/
   com/intellij/util/lang/
-  com/intellij/util/loader/
   com/intellij/util/messages/
   com/intellij/util/messages/impl/
   com/intellij/util/pico/
@@ -1091,6 +1153,23 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/xmlb/
   com/intellij/util/xmlb/annotations/
   com/intellij/util/xmlb/annotations/package.html
+  com/intellij/workspaceModel/
+  com/intellij/workspaceModel/deft/
+  com/intellij/workspaceModel/deft/api/
+  com/intellij/workspaceModel/deft/api/annotations/
+  com/intellij/workspaceModel/ide/
+  com/intellij/workspaceModel/storage/
+  com/intellij/workspaceModel/storage/bridgeEntities/
+  com/intellij/workspaceModel/storage/cpp/
+  com/intellij/workspaceModel/storage/impl/
+  com/intellij/workspaceModel/storage/impl/ReplaceBySourceAsTree.md
+  com/intellij/workspaceModel/storage/impl/containers/
+  com/intellij/workspaceModel/storage/impl/exceptions/
+  com/intellij/workspaceModel/storage/impl/external/
+  com/intellij/workspaceModel/storage/impl/indices/
+  com/intellij/workspaceModel/storage/impl/url/
+  com/intellij/workspaceModel/storage/java/
+  com/intellij/workspaceModel/storage/url/
   com/intellij/xml/
   com/intellij/xml/util/
   com/sun/
@@ -1114,6 +1193,8 @@ com/android/tools/external/com-intellij/intellij-core
   com/sun/jna/linux-arm/libjnidispatch.so
   com/sun/jna/linux-armel/
   com/sun/jna/linux-armel/libjnidispatch.so
+  com/sun/jna/linux-loongarch64/
+  com/sun/jna/linux-loongarch64/libjnidispatch.so
   com/sun/jna/linux-mips64el/
   com/sun/jna/linux-mips64el/libjnidispatch.so
   com/sun/jna/linux-ppc/
@@ -1187,6 +1268,8 @@ com/android/tools/external/com-intellij/intellij-core
   com/sun/jna/win32-x86/
   com/sun/jna/win32-x86/jnidispatch.dll
   com/sun/jna/win32/
+  gnu/
+  gnu/trove/
   it/
   it/unimi/
   it/unimi/dsi/
@@ -1206,16 +1289,57 @@ com/android/tools/external/com-intellij/intellij-core
   kotlinx/coroutines/channels/
   kotlinx/coroutines/debug/
   kotlinx/coroutines/debug/internal/
+  kotlinx/coroutines/debug/junit4/
+  kotlinx/coroutines/debug/junit5/
   kotlinx/coroutines/flow/
   kotlinx/coroutines/flow/internal/
   kotlinx/coroutines/future/
   kotlinx/coroutines/internal/
   kotlinx/coroutines/intrinsics/
+  kotlinx/coroutines/repackaged/
+  kotlinx/coroutines/repackaged/net/
+  kotlinx/coroutines/repackaged/net/bytebuddy/
+  kotlinx/coroutines/repackaged/net/bytebuddy/agent/
+  kotlinx/coroutines/repackaged/net/bytebuddy/agent/builder/
+  kotlinx/coroutines/repackaged/net/bytebuddy/asm/
+  kotlinx/coroutines/repackaged/net/bytebuddy/build/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/annotation/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/enumeration/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/field/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/method/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/modifier/
+  kotlinx/coroutines/repackaged/net/bytebuddy/description/type/
+  kotlinx/coroutines/repackaged/net/bytebuddy/dynamic/
+  kotlinx/coroutines/repackaged/net/bytebuddy/dynamic/loading/
+  kotlinx/coroutines/repackaged/net/bytebuddy/dynamic/scaffold/
+  kotlinx/coroutines/repackaged/net/bytebuddy/dynamic/scaffold/inline/
+  kotlinx/coroutines/repackaged/net/bytebuddy/dynamic/scaffold/subclass/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/attribute/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/auxiliary/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bind/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bind/annotation/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/assign/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/assign/primitive/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/assign/reference/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/collection/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/constant/
+  kotlinx/coroutines/repackaged/net/bytebuddy/implementation/bytecode/member/
+  kotlinx/coroutines/repackaged/net/bytebuddy/jar/
+  kotlinx/coroutines/repackaged/net/bytebuddy/jar/asm/
+  kotlinx/coroutines/repackaged/net/bytebuddy/jar/asm/commons/
+  kotlinx/coroutines/repackaged/net/bytebuddy/jar/asm/signature/
+  kotlinx/coroutines/repackaged/net/bytebuddy/matcher/
+  kotlinx/coroutines/repackaged/net/bytebuddy/pool/
+  kotlinx/coroutines/repackaged/net/bytebuddy/utility/
+  kotlinx/coroutines/repackaged/net/bytebuddy/utility/privilege/
+  kotlinx/coroutines/repackaged/net/bytebuddy/utility/visitor/
   kotlinx/coroutines/scheduling/
   kotlinx/coroutines/selects/
   kotlinx/coroutines/stream/
   kotlinx/coroutines/sync/
-  kotlinx/coroutines/test/
   kotlinx/coroutines/time/
   messages/
   messages/CoreBundle.properties
@@ -1355,6 +1479,8 @@ com/android/tools/external/com-intellij/intellij-core
   org/jetbrains/
   org/jetbrains/annotations/
   org/jetbrains/concurrency/
+  org/jetbrains/deft/
+  org/jetbrains/deft/annotations/
   org/jetbrains/ide/
   org/jetbrains/jps/
   org/jetbrains/jps/model/
@@ -1397,8 +1523,21 @@ com/android/tools/external/com-intellij/intellij-core
   org/jetbrains/org/objectweb/asm/tree/analysis/
   org/jetbrains/org/objectweb/asm/util/
   org/jetbrains/xxh3/
+  org/objenesis/
+  org/objenesis/instantiator/
+  org/objenesis/instantiator/android/
+  org/objenesis/instantiator/annotations/
+  org/objenesis/instantiator/basic/
+  org/objenesis/instantiator/gcj/
+  org/objenesis/instantiator/perc/
+  org/objenesis/instantiator/sun/
+  org/objenesis/instantiator/util/
+  org/objenesis/strategy/
   org/picocontainer/
-  org/picocontainer/defaults/
+  win32-x86-64/
+  win32-x86-64/attach_hotspot_windows.dll
+  win32-x86/
+  win32-x86/attach_hotspot_windows.dll
 
 com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/
@@ -1772,6 +1911,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/common/extensions/
   org/jetbrains/kotlin/backend/common/ir/
   org/jetbrains/kotlin/backend/common/lower/
+  org/jetbrains/kotlin/backend/common/lower/coroutines/
   org/jetbrains/kotlin/backend/common/lower/inline/
   org/jetbrains/kotlin/backend/common/lower/loops/
   org/jetbrains/kotlin/backend/common/lower/loops/handlers/
