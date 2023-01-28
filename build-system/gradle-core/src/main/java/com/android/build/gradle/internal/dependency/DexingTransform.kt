@@ -387,7 +387,8 @@ data class DexingArtifactConfiguration(
         dependencyHandler: DependencyHandler,
         bootClasspath: FileCollection,
         libConfiguration: Provider<String>,
-        errorFormat: SyncOptions.ErrorFormatMode
+        errorFormat: SyncOptions.ErrorFormatMode,
+        disableIncrementalDexing: Boolean
     ) {
         dependencyHandler.registerTransform(getTransformClass()) { spec ->
             spec.parameters { parameters ->
@@ -424,8 +425,9 @@ data class DexingArtifactConfiguration(
             // containing both Java and Kotlin classes.
             //
             // Therefore, to ensure correctness in all cases, we transform CLASSES to DEX only
-            // when dexing does not require a classpath. Otherwise, we transform CLASSES_JAR to
-            // DEX directly so that CLASSES_DIR will not be selected.
+            // when dexing does not require a classpath, and it is not for main and androidTest
+            // components in dynamic feature module(b/246326007). Otherwise, we transform
+            // CLASSES_JAR to DEX directly so that CLASSES_DIR will not be selected.
             //
             // In the case that the JacocoTransform is executed, the Jacoco equivalent artifact is
             // used. These artifacts are the same as CLASSES, CLASSES_JAR and ASM_INSTRUMENTED_JARS,
@@ -435,7 +437,7 @@ data class DexingArtifactConfiguration(
                     when {
                         asmTransformedVariant != null ->
                             AndroidArtifacts.ArtifactType.JACOCO_ASM_INSTRUMENTED_JARS
-                        !needsClasspath ->
+                        !needsClasspath && !disableIncrementalDexing ->
                             AndroidArtifacts.ArtifactType.JACOCO_CLASSES
                         else ->
                             AndroidArtifacts.ArtifactType.JACOCO_CLASSES_JAR
@@ -444,7 +446,7 @@ data class DexingArtifactConfiguration(
                     when {
                         asmTransformedVariant != null ->
                             AndroidArtifacts.ArtifactType.ASM_INSTRUMENTED_JARS
-                        !needsClasspath ->
+                        !needsClasspath && !disableIncrementalDexing ->
                             AndroidArtifacts.ArtifactType.CLASSES
                         else ->
                             AndroidArtifacts.ArtifactType.CLASSES_JAR

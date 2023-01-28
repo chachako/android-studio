@@ -786,6 +786,9 @@ class DependencyConfigurator(
             val bootClasspath = project.files(bootClasspathConfig.bootClasspath)
             val services = allComponents.first().services
             if (projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]) {
+                // Disable incremental dexing for main and androidTest components in dynamic
+                // feature module (b/246326007)
+                val disableIncrementalDexing = allComponents.any { it.componentType.isDynamicFeature }
                 for (artifactConfiguration in getDexingArtifactConfigurations(
                         allComponents
                 )) {
@@ -795,6 +798,7 @@ class DependencyConfigurator(
                         bootClasspath,
                         getDesugarLibConfig(services),
                         SyncOptions.getErrorFormatMode(projectOptions),
+                        disableIncrementalDexing = disableIncrementalDexing
                     )
                 }
             }
