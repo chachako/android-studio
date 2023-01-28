@@ -404,6 +404,53 @@ class GradleDetectorTest : AbstractCheckTest() {
             )
     }
 
+    fun testSwitchToExistingTomlLibraryKts() {
+        // Tests that if a build.gradle file a contains a group:artifact:version dependency
+        // already available in the version catalog, we flag this and offer to replace it with
+        // the dependency from the catalog.
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                appCompat = "1.5.1"
+                androidxTest = "1.5.0"
+
+                [libraries]
+                androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+                """
+            ).indented(),
+            kts(
+                """
+                dependencies {
+                    implementation(libs.androidx.appCompat) // OK
+                    implementation("androidx.appcompat:appcompat:1.5.1")
+                }
+                """
+            ).indented()
+        )
+            .issues(SWITCH_TO_TOML)
+            .run()
+            .expect(
+                """
+                build.gradle.kts:3: Warning: Use the existing version catalog reference (libs.androidx.appCompat) instead [UseTomlInstead]
+                    implementation("androidx.appcompat:appcompat:1.5.1")
+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .verifyFixes().window(1).expectFixDiffs(
+                """
+                Autofix for build.gradle.kts line 3: Replace with existing version catalog reference `androidx-appCompat`:
+                @@ -3 +3
+                      implementation(libs.androidx.appCompat) // OK
+                -     implementation("androidx.appcompat:appcompat:1.5.1")
+                +     implementation(libs.androidx.appCompat)
+                  }
+                """
+            )
+    }
+
     fun testAddNewTomlDependency() {
         // Checks that in a project using version catalogs, if a gradle file directly
         // declares a group:artifact:version dependency, we flag this, and the quickfix
@@ -504,7 +551,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 @@ -2 +2
                   dependencies {
                 -     implementation("androidx.fragment:fragment:1.5.1")
-                +     implementation("libs.androidx.fragment")
+                +     implementation(libs.androidx.fragment)
                   }
                 gradle/libs.versions.toml:
                 @@ -4 +4

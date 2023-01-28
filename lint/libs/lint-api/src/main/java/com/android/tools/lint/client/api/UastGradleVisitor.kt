@@ -260,7 +260,13 @@ class UastGradleVisitor(private val javaContext: JavaContext) : GradleVisitor() 
     private fun getParent(node: UElement) = getParentN(node, 1)
 
     override fun createLocation(context: GradleContext, cookie: Any): Location {
-        return javaContext.getLocation(cookie as UElement)
+        return if (cookie is UElement) {
+            javaContext.getLocation(cookie)
+        } else if (cookie is PsiElement) {
+            javaContext.getLocation(cookie)
+        } else {
+            error("Unexpected location node ${cookie.javaClass}")
+        }
     }
 
     override fun getStartOffset(context: GradleContext, cookie: Any): Int {

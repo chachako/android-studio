@@ -28,6 +28,10 @@ import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Location
 import com.google.common.base.CaseFormat
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtValueArgument
+import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import org.jetbrains.uast.UElement
 import java.util.TreeSet
 
 // Various TOML-related utilities used by GradleDetector, but placed in their own
@@ -275,13 +279,27 @@ private fun createReplaceWithLibraryReferenceFix(
         }
     }
     val replacement = "$catalogName.$gradleKey"
+    val range = getGradleDependencyStringLocation(context, valueCookie)
     return LintFix.create()
         .replace()
-        .range(context.getLocation(valueCookie))
+        .range(range)
         .all()
         .with(replacement)
         .autoFix(safe, safe).apply { if (name != null) name(name) }
         .build() as LintFix.ReplaceString
+}
+
+private fun getGradleDependencyStringLocation(context: GradleContext, valueCookie: Any): Location {
+    val sourcePsi = (valueCookie as? UElement)?.sourcePsi
+    if (sourcePsi is KtLiteralStringTemplateEntry) {
+        // In UAST we end up with the element for the contents within the string, not the whole String element
+        val argument = sourcePsi.getParentOfType<KtValueArgument>(true)
+        if (argument != null) {
+            return context.getLocation(argument)
+        }
+    }
+
+    return context.getLocation(valueCookie)
 }
 
 /**
