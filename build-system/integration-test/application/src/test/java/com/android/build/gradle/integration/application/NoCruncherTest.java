@@ -51,8 +51,8 @@ public class NoCruncherTest {
                 .getIntermediateFile(
                         InternalArtifactType.OPTIMIZED_PROCESSED_RES.INSTANCE.getFolderName())
                 .exists()) {
-            checkResource(ApkType.RELEASE, "drawable/icon.png", "rR.png", false);
-            checkResource(ApkType.RELEASE, "drawable/lib_bg.9.png", "h1.9.png", true);
+            checkResource(ApkType.RELEASE, "drawable/icon.png", "9T.png", false);
+            checkResource(ApkType.RELEASE, "drawable/lib_bg.9.png", "br.9.png", true);
         } else {
             checkResource(ApkType.RELEASE, "drawable/icon.png", false);
             checkResource(ApkType.RELEASE, "drawable/lib_bg.9.png", true);
@@ -73,7 +73,7 @@ public class NoCruncherTest {
                                     InternalArtifactType.OPTIMIZED_PROCESSED_RES.INSTANCE
                                             .getFolderName())
                             .exists()) {
-                        checkResource(ApkType.RELEASE, "drawable/icon.png", "rR.png", true);
+                        checkResource(ApkType.RELEASE, "drawable/icon.png", "9T.png", true);
                     } else {
                         checkResource(ApkType.RELEASE, "drawable/icon.png", true);
                     }

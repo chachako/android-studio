@@ -26,7 +26,6 @@ import static com.android.builder.core.BuilderConstants.ANDROID_WEAR_MICRO_APK;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
@@ -78,7 +77,7 @@ public class WearSimpleTest {
                         .exists();
         String embeddedApkPath =
                 optimizedResEnabled
-                        ? FD_RES + '/' + "sq.apk"
+                        ? FD_RES + '/' + "q-.apk"
                         : FD_RES
                                 + '/'
                                 + FD_RES_RAW

@@ -148,9 +148,9 @@ class ResourceShrinkerTest {
         )
         // Check that replaced files has proper dummy content.
         assertThat(project.getSubproject("webview").getApk(RELEASE).file.toFile()) {
-            it.containsFileWithContent("res/h1.png", TINY_PNG)
-            it.containsFileWithContent("res/5P.html", "")
-            it.containsFileWithContent("res/n9.xml", TINY_PROTO_CONVERTED_TO_BINARY_XML)
+            it.containsFileWithContent("res/0t.png", TINY_PNG)
+            it.containsFileWithContent("res/VT.html", "")
+            it.containsFileWithContent("res/jd.xml", TINY_PROTO_CONVERTED_TO_BINARY_XML)
         }
         // Check that zip entities have proper methods.
         assertThat(getZipPathsWithMethod(
@@ -218,22 +218,22 @@ class ResourceShrinkerTest {
                 "classes.dex",
                 "resources.arsc",
                 "AndroidManifest.xml",
-                "res/w0.html",
-                "res/o1.css",
-                "res/lT.html",
-                "res/cG.xml",
-                "res/h1.png",
-                "res/3O.png",
-                "res/n9.xml",
-                "res/OJ.xml",
-                "res/-D",
-                "res/8G.xml",
-                "res/sH.xml",
+                "res/0g.js",
+                "res/0t.png",
+                "res/1B.png",
+                "res/95.html",
+                "res/Fr.xml",
+                "res/GM",
+                "res/Hv.xml",
+                "res/Ta.css",
+                "res/_M.xml",
+                "res/_S.xml",
+                "res/g0.xml",
+                "res/jL.html",
+                "res/jd.xml",
+                "res/mZ.html",
+                "res/vy.png",
                 "res/VT.html",
-                "res/TF.xml",
-                "res/5P.html",
-                "res/lu.png",
-                "res/6f.js",
                 "META-INF/com/android/build/gradle/app-metadata.properties"
         )
 
@@ -514,7 +514,7 @@ class ResourceShrinkerTest {
        // Regression test for b/22833352 (Check signing cert content is correctly compiled)
         val logger = StdLogger(StdLogger.Level.VERBOSE)
         val result = AaptInvoker(testAapt2.toPath(), logger)
-                .getXmlStrings(shrunkUniversalApk, "res/ul.xml")
+                .getXmlStrings(shrunkUniversalApk, "res/V7.xml")
         assertThat(result.map(String::trim)).containsExactly(
                 "String pool of 5 unique UTF-8 non-sorted strings, 5 entries and 0 styles using 184 bytes:",
                 "String #0 :  Line One",

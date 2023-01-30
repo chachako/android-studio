@@ -141,7 +141,7 @@ public class VariantDependencyTest {
         if (project.getIntermediateFile(
                         InternalArtifactType.OPTIMIZED_PROCESSED_RES.INSTANCE.getFolderName())
                 .exists()) {
-            checkApkForContent("paidIcsRelease", "res/vp.xml");
+            checkApkForContent("paidIcsRelease", "res/y4.xml");
         } else {
             checkApkForContent("paidIcsRelease", fullResPath);
         }

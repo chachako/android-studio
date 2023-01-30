@@ -83,7 +83,7 @@ public class WearVariantTest {
                         .exists();
         String embeddedApkPath =
                 optimizedResEnabled
-                        ? FD_RES + '/' + "sq.apk"
+                        ? FD_RES + '/' + "q-.apk"
                         : FD_RES
                                 + '/'
                                 + FD_RES_RAW
