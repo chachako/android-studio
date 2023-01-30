@@ -71,7 +71,7 @@ class MessageRewriteWithJvmResCompilerTest {
                     "app/src/main/res/layout/main.xml",
                     "</LinearLayout>", ""
             )
-            val result = executor.expectFailure().run("assembleDebug")
+            val result = executor.expectFailure().run(":app:mergeFlavor1DebugResources")
             result.stderr.use { stderr ->
                 assertThat(stderr)
                         .contains(
