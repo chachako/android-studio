@@ -28,7 +28,6 @@ using profiler::proto::Process;
 using std::string;
 using std::unique_ptr;
 using testing::_;
-using testing::DoAll;
 using testing::IsEmpty;
 using testing::IsFalse;
 using testing::IsTrue;
