@@ -46,6 +46,7 @@ import com.android.tools.lint.checks.GradleDetector.Companion.GRADLE_PLUGIN_COMP
 import com.android.tools.lint.checks.GradleDetector.Companion.HIGH_APP_VERSION_CODE
 import com.android.tools.lint.checks.GradleDetector.Companion.JAVA_PLUGIN_LANGUAGE_LEVEL
 import com.android.tools.lint.checks.GradleDetector.Companion.JCENTER_REPOSITORY_OBSOLETE
+import com.android.tools.lint.checks.GradleDetector.Companion.KAPT_USAGE_INSTEAD_OF_KSP
 import com.android.tools.lint.checks.GradleDetector.Companion.KTX_EXTENSION_AVAILABLE
 import com.android.tools.lint.checks.GradleDetector.Companion.LIFECYCLE_ANNOTATION_PROCESSOR_WITH_JAVA8
 import com.android.tools.lint.checks.GradleDetector.Companion.MINIMUM_TARGET_SDK_VERSION
@@ -4880,6 +4881,283 @@ class GradleDetectorTest : AbstractCheckTest() {
             .issues(KTX_EXTENSION_AVAILABLE)
             .run()
             .expectClean()
+    }
+
+    fun testKaptToKspMigration() {
+        lint().files(
+            gradle(
+                """
+                    plugins {
+                        id 'com.android.application'
+                        id 'kotlin-android'
+                        id 'kotlin-kapt'
+                        id 'com.google.devtools.ksp'
+                    }
+                    dependencies {
+                      def room_version = "2.5.0"
+                      kapt 'androidx.room:room-compiler:2.5.0'
+                      kapt "androidx.room:room-compiler:＄room_version"
+
+                      def glide_version = "4.14.2"
+                      kapt 'com.github.bumptech.glide:compiler:4.14.2'
+                      kapt("com.github.bumptech.glide:compiler:glide_version")
+                    }
+                """
+            ).indented()
+        )
+            .issues(KAPT_USAGE_INSTEAD_OF_KSP)
+            .run()
+            .expect(
+                """
+                build.gradle:9: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt 'androidx.room:room-compiler:2.5.0'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:10: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt "androidx.room:room-compiler:＄room_version"
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:13: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt 'com.github.bumptech.glide:compiler:4.14.2'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:14: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt("com.github.bumptech.glide:compiler:glide_version")
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 4 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for build.gradle line 9: Replace usage of kapt with KSP:
+                @@ -9 +9
+                -   kapt 'androidx.room:room-compiler:2.5.0'
+                +   ksp 'androidx.room:room-compiler:2.5.0'
+                Fix for build.gradle line 10: Replace usage of kapt with KSP:
+                @@ -10 +10
+                -   kapt "androidx.room:room-compiler:＄room_version"
+                +   ksp "androidx.room:room-compiler:＄room_version"
+                Fix for build.gradle line 13: Replace usage of kapt with KSP:
+                @@ -13 +13
+                -   kapt 'com.github.bumptech.glide:compiler:4.14.2'
+                +   ksp 'com.github.bumptech.glide:ksp:4.14.2'
+                Fix for build.gradle line 14: Replace usage of kapt with KSP:
+                @@ -14 +14
+                -   kapt("com.github.bumptech.glide:compiler:glide_version")
+                +   ksp("com.github.bumptech.glide:ksp:glide_version")
+                """
+            )
+    }
+
+    fun testKaptToKspMigrationWithVersionCatalog() {
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                room = "2.5.0"
+                [libraries]
+                room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+                glide-simple = "com.github.bumptech.glide:compiler:4.14.2"
+                glide-module = { module = "com.github.bumptech.glide:compiler", version = "4.14.2" }
+                glide-groupname = { group = "com.github.bumptech.glide", name = "compiler", version = "4.14.2" }
+                glide-but_fun-and_exciting = { group = "com.github.bumptech.glide", name = "compiler", version = "4.14.2" }
+                """
+            ).indented(),
+            gradle(
+                """
+                    plugins {
+                        id 'com.android.application'
+                        id 'kotlin-android'
+                        id 'kotlin-kapt'
+                        id 'com.google.devtools.ksp'
+                    }
+                    dependencies {
+                      kapt(libs.room.compiler)
+                      kapt(libs.glide.simple)
+                      kapt(libs.glide.module)
+                      kapt(libs.glide.groupname)
+                      kapt(libs.glide.but.fun.and.exciting)
+                    }
+                """
+            ).indented()
+        )
+            .issues(KAPT_USAGE_INSTEAD_OF_KSP)
+            .run()
+            .expect(
+                """
+                build.gradle:8: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.room.compiler)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:9: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.glide.simple)
+                  ~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:10: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.glide.module)
+                  ~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:11: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.glide.groupname)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:12: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.glide.but.fun.and.exciting)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 5 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for build.gradle line 8: Replace usage of kapt with KSP:
+                @@ -8 +8
+                -   kapt(libs.room.compiler)
+                +   ksp(libs.room.compiler)
+                Fix for build.gradle line 9: Replace usage of kapt with KSP:
+                @@ -9 +9
+                -   kapt(libs.glide.simple)
+                +   ksp(libs.glide.simple)
+                gradle/libs.versions.toml:
+                @@ -5 +5
+                - glide-simple = "com.github.bumptech.glide:compiler:4.14.2"
+                + glide-simple = "com.github.bumptech.glide:ksp:4.14.2"
+                Fix for build.gradle line 10: Replace usage of kapt with KSP:
+                @@ -10 +10
+                -   kapt(libs.glide.module)
+                +   ksp(libs.glide.module)
+                gradle/libs.versions.toml:
+                @@ -6 +6
+                - glide-module = { module = "com.github.bumptech.glide:compiler", version = "4.14.2" }
+                + glide-module = { module = "com.github.bumptech.glide:ksp", version = "4.14.2" }
+                Fix for build.gradle line 11: Replace usage of kapt with KSP:
+                @@ -11 +11
+                -   kapt(libs.glide.groupname)
+                +   ksp(libs.glide.groupname)
+                gradle/libs.versions.toml:
+                @@ -7 +7
+                - glide-groupname = { group = "com.github.bumptech.glide", name = "compiler", version = "4.14.2" }
+                + glide-groupname = { group = "com.github.bumptech.glide", name = "ksp", version = "4.14.2" }
+                Fix for build.gradle line 12: Replace usage of kapt with KSP:
+                @@ -12 +12
+                -   kapt(libs.glide.but.fun.and.exciting)
+                +   ksp(libs.glide.but.fun.and.exciting)
+                gradle/libs.versions.toml:
+                @@ -8 +8
+                - glide-but_fun-and_exciting = { group = "com.github.bumptech.glide", name = "compiler", version = "4.14.2" }
+                + glide-but_fun-and_exciting = { group = "com.github.bumptech.glide", name = "ksp", version = "4.14.2" }
+                """
+            )
+    }
+
+    /*
+     * Tests that plugins like KSP are detected correctly, even when they're included
+     * using a version catalog plugin entry and an alias in a plugin block
+     */
+    fun testKaptToKspMigrationWithEverythingInVersionCatalog() {
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                glide = "4.14.2"
+                kotlin = "1.7.20"
+                [libraries]
+                glide = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+                [plugins]
+                android-application = { id = "com.android.application", version = "7.3.1" }
+                kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+                kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+                ksp = { id = "com.google.devtools.ksp", version = "1.7.20-1.0.8" }
+                """
+            ).indented(),
+            gradle(
+                """
+                plugins {
+                    alias(libs.plugins.android.application)
+                    alias(libs.plugins.kotlin.android)
+                    alias(libs.plugins.kotlin.kapt)
+                    alias(libs.plugins.ksp)
+                }
+                dependencies {
+                    kapt(libs.glide)
+                }
+                """
+            ).indented()
+        )
+            .issues(KAPT_USAGE_INSTEAD_OF_KSP)
+            .run()
+            .expect(
+                """
+                build.gradle:8: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                    kapt(libs.glide)
+                    ~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Fix for build.gradle line 8: Replace usage of kapt with KSP:
+                @@ -8 +8
+                -     kapt(libs.glide)
+                +     ksp(libs.glide)
+                gradle/libs.versions.toml:
+                @@ -5 +5
+                - glide = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+                + glide = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
+                """
+            )
+    }
+
+    fun testKaptToKspMigrationWithKspNotEnabledYet() {
+        lint().files(
+            gradleToml(
+                """
+                [versions]
+                room = "2.5.0"
+                [libraries]
+                room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+                glide = "com.github.bumptech.glide:compiler:4.14.2"
+                """
+            ).indented(),
+            gradle(
+                """
+                    plugins {
+                        id 'com.android.application'
+                        id 'kotlin-android'
+                        id 'kotlin-kapt'
+                    }
+                    dependencies {
+                      kapt 'androidx.room:room-compiler:2.5.0'
+                      kapt 'com.github.bumptech.glide:compiler:4.14.2'
+                      kapt(libs.room.compiler)
+                      kapt(libs.glide)
+                    }
+                """
+            ).indented()
+        )
+            .issues(KAPT_USAGE_INSTEAD_OF_KSP)
+            .run()
+            .expect(
+                """
+                build.gradle:7: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt 'androidx.room:room-compiler:2.5.0'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:8: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt 'com.github.bumptech.glide:compiler:4.14.2'
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:9: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.room.compiler)
+                  ~~~~~~~~~~~~~~~~~~~~~~~~
+                build.gradle:10: Warning: This library supports using KSP instead of kapt, which greatly improves performance. Learn more: https://developer.android.com/studio/build/migrate-to-ksp [KaptUsageInsteadOfKsp]
+                  kapt(libs.glide)
+                  ~~~~~~~~~~~~~~~~
+                0 errors, 4 warnings
+                """
+            )
+            .expectFixDiffs(
+                """
+                Show URL for build.gradle line 7: Enable KSP and use the KSP processor for this dependency instead:
+                https://developer.android.com/studio/build/migrate-to-ksp
+                Show URL for build.gradle line 8: Enable KSP and use the KSP processor for this dependency instead:
+                https://developer.android.com/studio/build/migrate-to-ksp
+                Show URL for build.gradle line 9: Enable KSP and use the KSP processor for this dependency instead:
+                https://developer.android.com/studio/build/migrate-to-ksp
+                Show URL for build.gradle line 10: Enable KSP and use the KSP processor for this dependency instead:
+                https://developer.android.com/studio/build/migrate-to-ksp
+                """
+            )
     }
 
     fun testJavaLanguageLevelClean() {

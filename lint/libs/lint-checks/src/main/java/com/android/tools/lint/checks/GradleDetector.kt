@@ -155,6 +155,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
 
     /**
      * If incrementally editing a single build.gradle file, tracks
+     * whether we've already applied the KSP plugin.
+     */
+    private var mAppliedKspPlugin: Boolean = false
+
+    /**
+     * If incrementally editing a single build.gradle file, tracks
      * whether we have applied a java plugin (e.g. application,
      * java-library)
      */
@@ -423,28 +429,37 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 }
             }
         } else if (parent == "plugins") {
-            // KTS declaration for plugins
-            if (property == "id") {
-                val plugin = getStringLiteralValue(value, valueCookie)
-                val isOldAppPlugin = OLD_APP_PLUGIN_ID == plugin
-                if (isOldAppPlugin || OLD_LIB_PLUGIN_ID == plugin) {
+            val plugin = when (property) {
+                "id" -> getStringLiteralValue(value, valueCookie)
+                "alias" -> getPluginFromVersionCatalog(value, context)?.coordinates?.substringBefore(':')
+                else -> null
+            }
+
+            when (plugin) {
+                null -> {
+                    // Ignore, we couldn't find a plugin ID
+                }
+                "kotlin-android", "org.jetbrains.kotlin.android" -> {
+                    mAppliedKotlinAndroidPlugin = true
+                }
+                "kotlin-kapt", "org.jetbrains.kotlin.kapt" -> {
+                    mAppliedKotlinKaptPlugin = true
+                }
+                "com.google.devtools.ksp" -> {
+                    mAppliedKspPlugin = true
+                }
+                in JAVA_PLUGIN_IDS -> {
+                    mAppliedJavaPlugin = true
+                    mJavaPluginInfo = JavaPluginInfo(statementCookie)
+                }
+                OLD_APP_PLUGIN_ID, OLD_LIB_PLUGIN_ID -> {
+                    val isOldAppPlugin = OLD_APP_PLUGIN_ID == plugin
                     val replaceWith = if (isOldAppPlugin) APP_PLUGIN_ID else LIB_PLUGIN_ID
                     val message = "'$plugin' is deprecated; use '$replaceWith' instead"
                     val fix = fix()
                         .sharedName("Replace plugin")
                         .replace().text(plugin).with(replaceWith).autoFix().build()
                     report(context, valueCookie, DEPRECATED, message, fix)
-                }
-
-                if (plugin == "kotlin-android") {
-                    mAppliedKotlinAndroidPlugin = true
-                }
-                if (plugin == "kotlin-kapt") {
-                    mAppliedKotlinKaptPlugin = true
-                }
-                if (JAVA_PLUGIN_IDS.contains(plugin)) {
-                    mAppliedJavaPlugin = true
-                    mJavaPluginInfo = JavaPluginInfo(statementCookie)
                 }
             }
         } else if (parent == "dependencies") {
@@ -544,6 +559,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                     )
                 }
                 checkDeprecatedConfigurations(property, context, propertyCookie)
+
+                // If we haven't managed to parse the dependency yet, try getting it from version catalog
+                var libTomlValue: LintTomlValue? = null
+                if (dependency == null) {
+                    val dependencyFromVc = getDependencyFromVersionCatalog(value, context)
+                    if (dependencyFromVc != null) {
+                        dependency = dependencyFromVc.coordinates
+                        libTomlValue = dependencyFromVc.tomlValue
+                    }
+                }
+
+                if (dependency != null) {
+                    if (property == "kapt") {
+                        checkKaptUsage(dependency, libTomlValue, context, statementCookie)
+                    }
+                }
             }
         } else if (property == "packageNameSuffix") {
             val message = "Deprecated: Replace 'packageNameSuffix' with 'applicationIdSuffix'"
@@ -827,6 +858,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             }
             if (plugin == "kotlin-kapt") {
                 mAppliedKotlinKaptPlugin = true
+            }
+            if (plugin == "com.google.devtools.ksp") {
+                mAppliedKspPlugin = true
             }
             if (JAVA_PLUGIN_IDS.contains(plugin)) {
                 mAppliedJavaPlugin = true
@@ -1784,6 +1818,70 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
     }
 
+    private fun checkKaptUsage(
+        dependency: String,
+        libTomlValue: LintTomlValue?,
+        context: GradleContext,
+        statementCookie: Any
+    ) {
+        // Drop version, leaving "group:module"
+        val module = dependency.substringBeforeLast(':')
+        // See if we have a KSP replacement
+        val replacement = annotationProcessorsWithKspReplacements[module] ?: return // No replacement to offer
+
+        val fix = if (!mAppliedKspPlugin) {
+            // KSP plugin not applied yet in this module, point to docs on how to enable it
+            fix()
+                .name("Enable KSP and use the KSP processor for this dependency instead")
+                .url("https://developer.android.com/studio/build/migrate-to-ksp")
+                .build()
+        } else {
+            if (libTomlValue != null) { // Dependency is from version catalog
+                val declaredWithGroupAndName = (libTomlValue as? LintTomlMapValue)?.get("group") != null
+                val catalogFix = if (declaredWithGroupAndName) {
+                    val (oldGroup, oldName) = module.split(":")
+                    val (newGroup, newName) = replacement.split(":")
+                    fix()
+                        .replace()
+                        .range(libTomlValue.getLocation())
+                        .pattern("((.*)$oldGroup(.*)$oldName(.*))")
+                        .with("\\k<2>$newGroup\\k<3>$newName\\k<4>")
+                        .build()
+                } else {
+                    fix()
+                        .replace()
+                        .range(libTomlValue.getLocation())
+                        .text(module)
+                        .with(replacement)
+                        .build()
+                }
+                val usageFix = fix().replace().text("kapt").with("ksp").build()
+
+                fix()
+                    .name("Replace usage of kapt with KSP")
+                    .composite(catalogFix, usageFix)
+            } else { // Dependency is declared locally in the build.gradle file
+                // Fix within just build.gradle file for locally declared dependency
+                fix()
+                    .name("Replace usage of kapt with KSP")
+                    .replace()
+                    .pattern("((.*)kapt(.*)$module(.*))")
+                    .with("\\k<2>ksp\\k<3>$replacement\\k<4>")
+                    .build()
+            }
+        }
+
+        report(
+            context = context,
+            cookie = statementCookie,
+            issue = KAPT_USAGE_INSTEAD_OF_KSP,
+            message = "This library supports using KSP instead of kapt," +
+                    " which greatly improves performance. Learn more: " +
+                    "https://developer.android.com/studio/build/migrate-to-ksp",
+            fix = fix
+        )
+    }
+
     /**
      * Checks to see if a KTX extension is available for the given
      * library. If so, we offer a suggestion to switch the dependency to
@@ -2279,6 +2377,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         var calendar: Calendar? = null
 
         const val KEY_COORDINATE = "coordinate"
+
+        private const val VC_LIBRARY_PREFIX = "libs."
+        private const val VC_PLUGIN_PREFIX = "libs.plugins."
 
         private val IMPLEMENTATION = Implementation(GradleDetector::class.java, Scope.GRADLE_SCOPE)
         private val IMPLEMENTATION_WITH_TOML = Implementation(
@@ -2887,6 +2988,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         )
 
         @JvmField
+        val KAPT_USAGE_INSTEAD_OF_KSP = Issue.create(
+            id = "KaptUsageInsteadOfKsp",
+            briefDescription = "Kapt usage should be replaced with KSP",
+            explanation = """
+                KSP is a more efficient replacement for kapt. For libraries that support both, \
+                KSP should be used to improve build times.
+            """,
+            category = Category.PERFORMANCE,
+            priority = 4,
+            severity = Severity.WARNING,
+            androidSpecific = true,
+            implementation = IMPLEMENTATION,
+            moreInfo = "https://developer.android.com/studio/build/migrate-to-ksp"
+        )
+
+        @JvmField
         val JAVA_PLUGIN_LANGUAGE_LEVEL = Issue.create(
             id = "JavaPluginLanguageLevel",
             briefDescription = "No Explicit Java Language Level Given",
@@ -3205,6 +3322,60 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 .maxOrNull()
         }
 
+        private data class VersionCatalogDependency(val coordinates: String, val tomlValue: LintTomlValue)
+
+        /**
+         * For the given library reference [expression] in the "libs.some.library.name" format,
+         * returns the fully resolved coordinates of the library (including the version) and the
+         * corresponding library declaration value in the version catalog.
+         */
+        private fun getDependencyFromVersionCatalog(expression: String, context: GradleContext): VersionCatalogDependency? {
+            if (!expression.startsWith(VC_LIBRARY_PREFIX)) return null
+
+            // Remove the "libs." prefix
+            val libName = expression.substring(VC_LIBRARY_PREFIX.length)
+
+            // Find current library declaration in catalog, accounting for the declaration
+            // possibly using - and _ characters in the name
+            val library = (context.getTomlValue(VC_LIBRARIES) as? LintTomlMapValue)?.getMappedValues()
+                ?.asIterable()
+                ?.find { it.key.replace('-', '.').replace('_', '.') == libName }
+                ?.value
+                ?: return null
+
+            // Find full coordinates of lib, including version
+            val versions = context.getTomlValue(VC_VERSIONS) as? LintTomlMapValue
+            val (coordinate, _) = getLibraryFromTomlEntry(versions, library) ?: return null
+
+            return VersionCatalogDependency(coordinate, library)
+        }
+
+        /**
+         * For the given plugin reference [expression] in the "libs.plugins.some.plugin.name" format,
+         * returns the fully resolved coordinates of the plugin (including the version) and the
+         * corresponding plugin declaration value in the version catalog.
+         */
+        private fun getPluginFromVersionCatalog(expression: String, context: GradleContext): VersionCatalogDependency? {
+            if (!expression.startsWith(VC_PLUGIN_PREFIX)) return null
+
+            // Remove the "libs.plugins." prefix
+            val pluginName = expression.substring(VC_PLUGIN_PREFIX.length)
+
+            // Find current plugin declaration in catalog, accounting for the declaration
+            // possibly using - and _ characters in the name
+            val plugin = (context.getTomlValue(VC_PLUGINS) as? LintTomlMapValue)?.getMappedValues()
+                ?.asIterable()
+                ?.find { it.key.replace('-', '.').replace('_', '.') == pluginName }
+                ?.value
+                ?: return null
+
+            // Find full coordinates of plugin, including version
+            val versions = context.getTomlValue(VC_VERSIONS) as? LintTomlMapValue
+            val (coordinate, _) = getPluginFromTomlEntry(versions, plugin) ?: return null
+
+            return VersionCatalogDependency(coordinate, plugin)
+        }
+
         // Convert a long-hand dependency, like
         //    group: 'com.android.support', name: 'support-v4', version: '21.0.+'
         // into an equivalent short-hand dependency, like
@@ -3432,6 +3603,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             "com.smile.gifshow.annotation:plugin_processor",
             "org.inferred:freebuilder",
             "com.smile.gifshow.annotation:router_processor"
+        )
+
+        // From https://kotlinlang.org/docs/ksp-overview.html#supported-libraries
+        private val annotationProcessorsWithKspReplacements: Map<String, String> = mapOf(
+            // Note: this is the only dependency where coordinates actually have to be updated
+            "com.github.bumptech.glide:compiler" to "com.github.bumptech.glide:ksp",
+
+            "androidx.room:room-compiler" to "androidx.room:room-compiler",
+            "com.squareup.moshi:moshi-kotlin-codegen" to "com.squareup.moshi:moshi-kotlin-codegen",
+            "com.github.liujingxing.rxhttp:rxhttp-compiler" to "com.github.liujingxing.rxhttp:rxhttp-compiler",
+            "se.ansman.kotshi:compiler" to "se.ansman.kotshi:compiler",
+            "com.linecorp.lich:savedstate-compiler" to "com.linecorp.lich:savedstate-compiler",
+            "io.github.amrdeveloper:easyadapter-compiler" to "io.github.amrdeveloper:easyadapter-compiler",
+            "com.airbnb:deeplinkdispatch-processor" to "com.airbnb:deeplinkdispatch-processor",
+            "com.airbnb.android:epoxy-processor" to "com.airbnb.android:epoxy-processor",
+            "com.airbnb.android:paris-processor" to "com.airbnb.android:paris-processor",
         )
 
         private fun libraryHasKtxExtension(mavenName: String): Boolean {

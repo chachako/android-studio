@@ -175,6 +175,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 GradleDetector.IDE_SUPPORT,
                 GradleDetector.JAVA_PLUGIN_LANGUAGE_LEVEL,
                 GradleDetector.JCENTER_REPOSITORY_OBSOLETE,
+                GradleDetector.KAPT_USAGE_INSTEAD_OF_KSP,
                 GradleDetector.KTX_EXTENSION_AVAILABLE,
                 GradleDetector.LIFECYCLE_ANNOTATION_PROCESSOR_WITH_JAVA8,
                 GradleDetector.MIN_SDK_TOO_LOW,
