@@ -899,6 +899,9 @@ public final class DeviceImpl implements IDevice {
 
     @Override
     public ProfileableClient[] getProfileableClients() {
+        if (mDeviceClientManagerProvider != null) {
+            return getClientManager().getProfileableClients().toArray(new ProfileableClient[0]);
+        }
         return getProfileableClientImpls();
     }
 

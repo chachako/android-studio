@@ -33,6 +33,7 @@ import com.android.ddmlib.Client
 import com.android.ddmlib.ClientData
 import com.android.ddmlib.ClientData.DebuggerStatus
 import com.android.ddmlib.IDevice
+import com.android.ddmlib.ProfileableClient
 import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 import kotlinx.coroutines.CancellationException
@@ -70,9 +71,9 @@ internal class AdbLibDeviceClientManager(
     internal val session: AdbSession
         get() = clientManager.session
 
-    private val retryDelay = Duration.ofSeconds(2)
-
     private val clientList = AtomicReference<List<Client>>(emptyList())
+
+    private val profileableClientList = AtomicReference<List<ProfileableClient>>(emptyList())
 
     private val ddmlibEventQueue = DdmlibEventQueue(logger, "ProcessUpdates")
 
@@ -82,6 +83,11 @@ internal class AdbLibDeviceClientManager(
 
     override fun getClients(): MutableList<Client> {
         return clientList.get().toMutableList()
+    }
+
+    override fun getProfileableClients(): MutableList<ProfileableClient> {
+        //TODO: Implement when `track-app` is implemented
+        return profileableClientList.get().toMutableList()
     }
 
     fun startDeviceTracking() {

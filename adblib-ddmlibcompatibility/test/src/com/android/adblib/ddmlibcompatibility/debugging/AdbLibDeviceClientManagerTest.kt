@@ -674,6 +674,17 @@ class AdbLibDeviceClientManagerTest {
             }
         }
 
+        override fun profileableProcessListUpdated(
+            bridge: AndroidDebugBridge,
+            deviceClientManager: DeviceClientManager
+        ) {
+            if (bridge === AndroidDebugBridge.getBridge()) {
+                AndroidDebugBridge.deviceChanged(
+                    deviceClientManager.device, IDevice.CHANGE_PROFILEABLE_CLIENT_LIST
+                )
+            }
+        }
+
         override fun processNameUpdated(
             bridge: AndroidDebugBridge,
             deviceClientManager: DeviceClientManager,

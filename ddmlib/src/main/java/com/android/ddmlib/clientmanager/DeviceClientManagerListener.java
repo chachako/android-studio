@@ -20,6 +20,7 @@ import com.android.annotations.concurrency.WorkerThread;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.ClientData;
+import com.android.ddmlib.ProfileableClientData;
 
 /**
  * Listener for process related changes coming from {@link DeviceClientManager}
@@ -34,6 +35,14 @@ public interface DeviceClientManagerListener {
      * and/or removed processes.
      */
     void processListUpdated(
+            @NonNull AndroidDebugBridge bridge, @NonNull DeviceClientManager deviceClientManager);
+
+    /**
+     * Invoked when the {@link DeviceClientManager#getProfileableClients()} list has been updated
+     * with new and/or removed processes. Also invoked when the
+     * {@link ProfileableClientData#getProcessName()} value of any profileable process is updated.
+     */
+    void profileableProcessListUpdated(
             @NonNull AndroidDebugBridge bridge, @NonNull DeviceClientManager deviceClientManager);
 
     /**

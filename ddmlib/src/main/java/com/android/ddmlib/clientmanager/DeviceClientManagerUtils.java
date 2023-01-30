@@ -55,6 +55,18 @@ public class DeviceClientManagerUtils {
 
                     @Override
                     @WorkerThread
+                    public void profileableProcessListUpdated(
+                            @NotNull AndroidDebugBridge bridge,
+                            @NotNull DeviceClientManager deviceClientManager) {
+                        if (bridge == AndroidDebugBridge.getBridge()) {
+                            AndroidDebugBridge.deviceChanged(
+                                    deviceClientManager.getDevice(),
+                                    IDevice.CHANGE_PROFILEABLE_CLIENT_LIST);
+                        }
+                    }
+
+                    @Override
+                    @WorkerThread
                     public void processNameUpdated(
                             @NotNull AndroidDebugBridge bridge,
                             @NotNull DeviceClientManager deviceClientManager,
@@ -82,7 +94,8 @@ public class DeviceClientManagerUtils {
                             @NotNull DeviceClientManager deviceClientManager,
                             @NotNull Client client) {
                         if (bridge == AndroidDebugBridge.getBridge()) {
-                            AndroidDebugBridge.clientChanged(client, Client.CHANGE_HEAP_ALLOCATIONS);
+                            AndroidDebugBridge.clientChanged(
+                                    client, Client.CHANGE_HEAP_ALLOCATIONS);
                         }
                     }
 
@@ -93,7 +106,8 @@ public class DeviceClientManagerUtils {
                             @NotNull DeviceClientManager deviceClientManager,
                             @NotNull Client client) {
                         if (bridge == AndroidDebugBridge.getBridge()) {
-                            AndroidDebugBridge.clientChanged(client, Client.CHANGE_METHOD_PROFILING_STATUS);
+                            AndroidDebugBridge.clientChanged(
+                                    client, Client.CHANGE_METHOD_PROFILING_STATUS);
                         }
                     }
                 };
