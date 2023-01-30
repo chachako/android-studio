@@ -3,10 +3,10 @@
 LARGE_MACHINE_ALLOWLIST = [
     # Issue b/228456598
     # This target requires a large (min 16 GB) amount of memory to run.
-    "@//tools/adt/idea/sync-perf-tests:intellij.android.sync-perf-tests_tests__ExtraLargeV2",
+    "//tools/adt/idea/sync-perf-tests:intellij.android.sync-perf-tests_tests__ExtraLargeV2",
     # TODO: This can be moved to standard pool once Gradle 8.0 memory regression is solved.
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark500",
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark1000",
+    "//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark500",
+    "//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark1000",
 ]
 
 LARGE_MACHINE_FAILURE_MESSAGE = """'{}' is trying to use large machines.

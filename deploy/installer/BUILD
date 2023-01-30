@@ -282,7 +282,10 @@ android_cc_binary(
         "armeabi-v7a",
         "arm64-v8a",
     ],
-    binary = ":installer.stripped",
+    binary = select({
+        "//tools/base/bazel:windows": ":installer.stripped.exe",
+        "//conditions:default": ":installer.stripped",
+    }),
     filename = "android-installer_raw",
     tags = ["no_windows"],
     visibility = ["//tools/base/deploy:__subpackages__"],
@@ -296,7 +299,10 @@ android_cc_binary(
         "armeabi-v7a",
         "arm64-v8a",
     ],
-    binary = ":installer.stripped",
+    binary = select({
+        "//tools/base/bazel:windows": ":install-server.stripped.exe",
+        "//conditions:default": ":install-server.stripped",
+    }),
     filename = "android-install-server",
     tags = [
         "no_windows",
