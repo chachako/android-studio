@@ -31,7 +31,6 @@ import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.closeOnException
-import com.android.adblib.utils.createChildScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -174,7 +173,7 @@ internal class JdwpProcessImpl(
         val msg = "Closing coroutine scope of JDWP process $pid"
         logger.debug { msg }
         jdwpSessionRef.close()
-        scope.cancel(msg)
+        cache.close()
     }
 
     private fun JdwpProcessProperties.heloResponseReceived(): Boolean {
