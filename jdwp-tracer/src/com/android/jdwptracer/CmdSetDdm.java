@@ -80,12 +80,18 @@ class CmdSetDdm extends CmdSet {
     Message parseDdmReply(@NonNull MessageReader reader, @NonNull Session session) {
         Message msg = new Message(reader);
 
+        if (reader.remaining() == 0) {
+            // DDM packet can be empty to signal "Command executed successfully".
+            // We ignore these.
+            return msg;
+        }
+
         int type = reader.getInt();
         int length = reader.getInt();
 
         if (reader.remaining() == 0) {
-            // DDM packet can be empty to signal "Command executed successfully".
-            // We just ignore them.
+            // DDM packet can also miss the payload to signal "Command executed successfully".
+            // We ignore these.
             return msg;
         }
 
