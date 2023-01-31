@@ -288,7 +288,7 @@ def cc_grpc_proto_library(
         tags = tags,
         hdrs = hdrs,
         copts = select_android(["-std=c++11"], []),
-        strip_include_prefix = "",
+        strip_include_prefix = ".",
         include_prefix = include_prefix,
     )
 

@@ -136,10 +136,7 @@ android_cc_binary(
         "armeabi-v7a",
         "arm64-v8a",
     ],
-    binary = select({
-        "//tools/base/bazel:windows": ":libswap.so.stripped.exe",
-        "//conditions:default": ":libswap.so.stripped",
-    }),
+    binary = ":libswap.so.stripped",
     filename = "android-libswap.so",
     tags = [
         "no_windows",

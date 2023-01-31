@@ -57,11 +57,10 @@ register_toolchains("@windows_toolchains//:python_toolchain")
 
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "83352b6e68fa797184071f35e3b67c7c8815efadcea81bb9cdb6bbbf2e07d389",
-    strip_prefix = "bazel-toolchains-1.1.3",
+    sha256 = "02e4f3744f1ce3f6e711e261fd322916ddd18cccd38026352f7a4c0351dbda19",
+    strip_prefix = "bazel-toolchains-5.1.2",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/1.1.3.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.3.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/refs/tags/v5.1.2.tar.gz",
     ],
 )
 

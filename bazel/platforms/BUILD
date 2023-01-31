@@ -12,8 +12,6 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
         "@bazel_tools//tools/cpp:clang",
-        "@bazel_toolchains//constraints:xenial",
-        "@bazel_toolchains//constraints/sanitizers:support_msan",
     ],
     exec_properties = dicts.add(
         create_rbe_exec_properties_dict(

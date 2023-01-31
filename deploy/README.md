@@ -59,7 +59,7 @@ Make sure debug info don't be stripped in our BUILD files.
 Change the "stripped" dependencies to normal:
 ```
     binary = select({
-        "//tools/base/bazel:windows": ":installer.stripped.exe",
+        "//tools/base/bazel:windows": ":installer.stripped",
         # "//conditions:default": ":installer.stripped",
         "//conditions:default": ":installer",
     }),

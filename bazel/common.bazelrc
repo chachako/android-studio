@@ -125,7 +125,6 @@ build:release --copt=-w
 
 ## Base RBE configuration
 build:_remote_base --bes_timeout=240s
-build:_remote_base --project_id=908081808034
 build:_remote_base --google_default_credentials
 build:_remote_base --remote_cache=remotebuildexecution.googleapis.com
 build:_remote_base --remote_instance_name=projects/google.com:android-studio-alphasource/instances/default_instance
@@ -139,7 +138,6 @@ build:_remote_base --strategy=zipper=local
 # Publish to the private BES backend.
 build:sponge --bes_backend=buildeventservice-pa.googleapis.com
 build:sponge --bes_results_url=https://fusion2.corp.google.com/invocations/
-build:sponge --bes_header=X-Goog-User-Project=google.com:android-studio-alphasource
 build:sponge --workspace_status_command="python3 tools/base/bazel/workspace.py"
 
 # Enable go/antswatcher to process test results.
