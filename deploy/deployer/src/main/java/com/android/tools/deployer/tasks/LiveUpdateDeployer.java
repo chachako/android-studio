@@ -248,7 +248,7 @@ public class LiveUpdateDeployer {
             if (type == Deploy.UnsupportedChange.Type.UNSUPPORTED_COMPOSE_VERSION) {
                 return msg;
             }
-            return msg + APP_RESTART_STR;
+            return msg + (msg.endsWith(".") ? "" : ".") + APP_RESTART_STR;
         }
 
         public Deploy.UnsupportedChange.Type getType() {
