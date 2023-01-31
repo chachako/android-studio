@@ -45,10 +45,10 @@ sealed interface DeviceState {
    * "Connecting", "Connected".
    */
   val status: String
-}
 
-fun DeviceState.isOnline() =
-  connectedDevice?.deviceInfo?.deviceState == com.android.adblib.DeviceState.ONLINE
+  fun isOnline(): Boolean =
+    connectedDevice?.deviceInfo?.deviceState == com.android.adblib.DeviceState.ONLINE
+}
 
 inline fun <R> DeviceState.ifOnline(block: (ConnectedDevice) -> R): R? =
   connectedDevice?.let { connectedDevice ->
