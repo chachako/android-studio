@@ -54,11 +54,16 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.calls.symbol
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.asJava.unwrapped
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
@@ -271,6 +276,8 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       val resolved = lhs.tryResolve()
       return resolved is PsiLocalVariable || resolved is PsiParameter
     }
+
+    private val KOTLIN_PRIMITIVES = StandardClassIds.primitiveTypes.map { it.asFqNameString() }
   }
 
   override fun getApplicableUastTypes(): List<Class<out UElement>> {
@@ -333,7 +340,13 @@ class NoOpDetector : Detector(), SourceCodeScanner {
           }
 
           if (resolved is PsiMethod) {
-            checkCall(null, node, selector.identifier, resolved)
+            checkCall(
+              null,
+              node,
+              selector.identifier,
+              resolved,
+              resolved.containingClass?.qualifiedName
+            )
           } else {
             if (isExpressionValueUnused(selector) && !expectsSideEffect(context, selector)) {
               report(context, selector, selector.identifier)
@@ -353,19 +366,52 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       }
 
       private fun checkCall(call: UCallExpression, node: UQualifiedReferenceExpression) {
-        val method = call.resolve() ?: return // unresolvable
-        val methodName = method.name
-        checkCall(call, node, call.methodIdentifier?.name ?: methodName, method)
+        val method = call.resolve()
+        method?.name?.let { methodName ->
+          checkCall(
+            call,
+            node,
+            call.methodIdentifier?.name ?: methodName,
+            method,
+            method.containingClass?.qualifiedName
+          )
+        }
+        if (method == null) {
+          // Unresolved by UAST, but perhaps due to the lack of way to represent the resolution
+          // result in [PsiMethod] form.
+          val sourcePsi = call.sourcePsi as? KtElement ?: return
+          analyze(sourcePsi) {
+            val callInfo = sourcePsi.resolveCall() ?: return
+            val symbol = callInfo.singleFunctionCallOrNull()?.symbol ?: return
+            val callName = symbol.callableIdIfNonLocal?.callableName?.asString() ?: return
+            checkCall(
+              call,
+              node,
+              callName,
+              null,
+              symbol.callableIdIfNonLocal?.classId?.asFqNameString()
+            )
+          }
+        }
       }
 
       private fun checkCall(
         call: UCallExpression?,
         node: UQualifiedReferenceExpression,
         callName: String,
-        method: PsiMethod
+        method: PsiMethod?,
+        containingClassFqName: String?,
       ) {
         // "Pure" methods are methods without side effects
-        if (!isPureMethod(context, call ?: node, method, method.name)) {
+        if (
+          !isPureMethod(
+            context,
+            call ?: node,
+            method,
+            method?.name ?: callName,
+            containingClassFqName
+          )
+        ) {
           return
         }
 
@@ -434,17 +480,18 @@ class NoOpDetector : Detector(), SourceCodeScanner {
   private fun isPureMethod(
     context: JavaContext,
     node: UExpression,
-    method: PsiMethod,
-    methodName: String
+    method: PsiMethod?,
+    methodName: String,
+    containingClassFqName: String?,
   ): Boolean {
     when (methodName) {
       // Integer.valueOf, etc
       "valueOf",
-      "equals" -> return method.parameterList.parametersCount == 1
+      "equals" -> return method?.parameterList?.parametersCount == 1
       "toString",
       "hashCode",
       "clone",
-      "getText" -> return method.parameterList.parametersCount == 0
+      "getText" -> return method?.parameterList?.parametersCount == 0
 
       // Methods which often have side effects (such as triggering initialization) despite name
       "getClass", // often used in proto files to force class loading
@@ -488,7 +535,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       }
     }
 
-    when (method.containingClass?.qualifiedName) {
+    when (containingClassFqName) {
       JAVA_LANG_STRING,
       JAVA_LANG_CHAR_SEQUENCE,
       "kotlin.text.StringsKt__StringsKt" -> {
@@ -496,12 +543,13 @@ class NoOpDetector : Detector(), SourceCodeScanner {
         // that copy into a destination array (getChars, getBytes)
         if (
           (methodName == "getChars" || methodName == "getBytes") &&
+            method != null &&
             method.parameterList.parameters.any { it.type is PsiArrayType }
         ) {
           return false
         }
 
-        if (method.throwsList.referenceElements.isNotEmpty()) {
+        if (method != null && method.throwsList.referenceElements.isNotEmpty()) {
           // e.g. throws UnsupportedEncodingException, might be a deliberate side effect
           return false
         }
@@ -519,7 +567,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       JAVA_LANG_CHARACTER -> {
         // All methods are immutable except for one which copies into an array
         return (methodName != "toChars" ||
-          method.parameterList.parameters.none { it.type is PsiArrayType })
+          method != null && method.parameterList.parameters.none { it.type is PsiArrayType })
       }
       // Use CommonClassNames.JAVA_NET_URI and JAVA_NET_URL once we update to latest prebuilts
       "java.net.URI" -> return true
@@ -532,6 +580,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       "android.database.sqlite.SQLiteOpenHelper",
       "androidx.sqlite.db.SupportSQLiteOpenHelper" ->
         return false // the "getters" like getWritableDatabase etc have side effects
+      in KOTLIN_PRIMITIVES -> return true
     }
 
     if (
@@ -557,7 +606,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
     return false
   }
 
-  private fun PsiMethod.isIn(containingClass: String, context: JavaContext): Boolean {
+  private fun PsiMethod?.isIn(containingClass: String, context: JavaContext): Boolean {
     return context.evaluator.isMemberInClass(this, containingClass)
   }
 
@@ -585,7 +634,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
     }
   }
 
-  private fun isAnnotatedCheckResult(context: JavaContext, method: PsiMethod): Boolean {
+  private fun isAnnotatedCheckResult(context: JavaContext, method: PsiMethod?): Boolean {
     return context.evaluator.getAnnotations(method).any {
       val name = it.qualifiedName ?: ""
       // See CheckResultDetector#applicableAnnotations
@@ -622,7 +671,8 @@ class NoOpDetector : Detector(), SourceCodeScanner {
     return false
   }
 
-  private fun isGetter(psiMethod: PsiMethod): Boolean {
+  private fun isGetter(psiMethod: PsiMethod?): Boolean {
+    if (psiMethod == null) return false
     if (
       psiMethod.isConstructor || psiMethod.hasParameters() || psiMethod.returnType == PsiType.VOID
     ) {
@@ -682,8 +732,8 @@ class NoOpDetector : Detector(), SourceCodeScanner {
    * Is the given [method] a method from [java.nio.Buffer] ? These use getter-naming but have side
    * effects.
    */
-  private fun isBufferMethod(context: JavaContext, method: PsiMethod) =
-    context.evaluator.isMemberInSubClassOf(method, "java.nio.Buffer")
+  private fun isBufferMethod(context: JavaContext, method: PsiMethod?) =
+    method != null && context.evaluator.isMemberInSubClassOf(method, "java.nio.Buffer")
 
   private fun report(context: JavaContext, expression: UElement, name: String) {
     val message =

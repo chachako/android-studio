@@ -95,8 +95,8 @@ class NoOpDetectorTest : AbstractCheckTest() {
                         bar.getPreferredSize() // OK 9
                         bar.computeRange() // WARN 11
                         bar.computeRange2() //OK 10
-                        bar.getFoo5().not() // OK 11
-                        if (foo.a > foo.b) foo.a else foo.b // WARN 12 a and b
+                        bar.getFoo5().not() // WARN 12
+                        if (foo.a > foo.b) foo.a else foo.b // WARN 13 a and b
                         val max = if (foo.a > foo.b) foo.a else foo.b // OK 12
                         // In the future, consider including this but now used for lots of side effect methods
                         // like future computations etc
@@ -259,13 +259,16 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 src/test/pkg/Foo.kt:29: Warning: This call result is unused: computeRange [NoOp]
                     bar.computeRange() // WARN 11
                     ~~~~~~~~~~~~~~~~~~
+                src/test/pkg/Foo.kt:31: Warning: This call result is unused: not [NoOp]
+                    bar.getFoo5().not() // WARN 12
+                    ~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/Foo.kt:32: Warning: This reference is unused: a [NoOp]
-                    if (foo.a > foo.b) foo.a else foo.b // WARN 12 a and b
+                    if (foo.a > foo.b) foo.a else foo.b // WARN 13 a and b
                                            ~
                 src/test/pkg/Foo.kt:32: Warning: This reference is unused: b [NoOp]
-                    if (foo.a > foo.b) foo.a else foo.b // WARN 12 a and b
+                    if (foo.a > foo.b) foo.a else foo.b // WARN 13 a and b
                                                       ~
-                0 errors, 13 warnings
+                0 errors, 14 warnings
                 """
       )
   }
@@ -355,16 +358,12 @@ class NoOpDetectorTest : AbstractCheckTest() {
                         java.lang.Integer.toHexString(5)           // ERROR 3
                         java.lang.Float.compare(1f, 2f)            // ERROR 4
 
-                        // These are currently not recognized because resolving into the
-                        // primitive wrapper classes isn't working
                         java.lang.Integer.valueOf("5").inc()       // ERROR 5
                         3.toInt()                                  // ERROR 6
                         true.not()                                 // ERROR 7
                         3f.toLong()                                // ERROR 8
                     }
                     fun test(b: Boolean, i: Int) {
-                        // TODO: These are not yet flagged because call.resolve() does
-                        // not locate the methods
                         b.or(b)     // ERROR 9
                         i.and(i)    // ERROR 10
                     }
@@ -388,7 +387,25 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 src/Test.kt:6: Warning: This call result is unused: compare [NoOp]
                         java.lang.Float.compare(1f, 2f)            // ERROR 4
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                0 errors, 4 warnings
+                src/Test.kt:8: Warning: This call result is unused: inc [NoOp]
+                        java.lang.Integer.valueOf("5").inc()       // ERROR 5
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/Test.kt:9: Warning: This call result is unused: toInt [NoOp]
+                        3.toInt()                                  // ERROR 6
+                        ~~~~~~~~~
+                src/Test.kt:10: Warning: This call result is unused: not [NoOp]
+                        true.not()                                 // ERROR 7
+                        ~~~~~~~~~~
+                src/Test.kt:11: Warning: This call result is unused: toLong [NoOp]
+                        3f.toLong()                                // ERROR 8
+                        ~~~~~~~~~~~
+                src/Test.kt:14: Warning: This call result is unused: or [NoOp]
+                        b.or(b)     // ERROR 9
+                        ~~~~~~~
+                src/Test.kt:15: Warning: This call result is unused: and [NoOp]
+                        i.and(i)    // ERROR 10
+                        ~~~~~~~~
+                0 errors, 10 warnings
                 """
       )
   }
