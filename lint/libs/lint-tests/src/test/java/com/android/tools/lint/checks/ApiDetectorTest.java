@@ -2344,36 +2344,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expect(expected);
     }
 
-    public void testOverrideUnknownTarget() {
-        //noinspection all // Sample code
-        lint().files(manifest().minSdk(4), mApiCallTest11)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
-    }
-
-    public void testOverride() {
-        String expected =
-                ""
-                        + "src/test/pkg/ApiCallTest11.java:13: Error: This method is not overriding anything with the current build target, but will in API level 11 (current target is 3): test.pkg.ApiCallTest11#getActionBar [Override]\n"
-                        + "    public ActionBar getActionBar() {\n"
-                        + "                     ~~~~~~~~~~~~\n"
-                        + "src/test/pkg/ApiCallTest11.java:17: Error: This method is not overriding anything with the current build target, but will in API level 17 (current target is 3): test.pkg.ApiCallTest11#isDestroyed [Override]\n"
-                        + "    public boolean isDestroyed() {\n"
-                        + "                   ~~~~~~~~~~~\n"
-                        + "src/test/pkg/ApiCallTest11.java:39: Error: This method is not overriding anything with the current build target, but will in API level 11 (current target is 3): test.pkg.ApiCallTest11.MyLinear#setDividerDrawable [Override]\n"
-                        + "        public void setDividerDrawable(Drawable dividerDrawable) {\n"
-                        + "                    ~~~~~~~~~~~~~~~~~~\n"
-                        + "3 errors, 0 warnings\n";
-        lint().files(manifest().minSdk(4), projectProperties().compileSdk(3), mApiCallTest11)
-                // We need the ApiDetector to observe compileSdkVersion < 11
-                // (it doesn't actually need access to the older android.jar)
-                .requireCompileSdk(false)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
-    }
-
     public void testDateFormat() {
         // See https://issuetracker.google.com/36960097
         String expected =
@@ -2754,10 +2724,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/test/pkg/MyActivityImpl.java:8: Error: Call requires API level 11 (current min is 1): android.app.Activity#isChangingConfigurations [NewApi]\n"
                         + "  boolean isChanging = super.isChangingConfigurations();\n"
                         + "                             ~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "src/test/pkg/MyActivityImpl.java:12: Error: This method is not overriding anything with the current build target, but will in API level 11 (current target is 3): test.pkg.MyActivityImpl#isChangingConfigurations [Override]\n"
-                        + " public boolean isChangingConfigurations() {\n"
-                        + "                ~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "2 errors, 0 warnings\n";
+                        + "1 errors, 0 warnings\n";
         //noinspection all // Sample code
         lint().files(
                         manifest().minSdk(1),
@@ -9275,61 +9242,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                             + "\t\treturn null;\n"
                             + "\t}\n"
                             + "}\n");
-
-    @SuppressWarnings("all") // Sample code
-    private TestFile mApiCallTest11 =
-            java(
-                    ""
-                            + "package test.pkg;\n"
-                            + "\n"
-                            + "import android.annotation.SuppressLint;\n"
-                            + "import android.app.ActionBar;\n"
-                            + "import android.app.Activity;\n"
-                            + "import android.content.Context;\n"
-                            + "import android.graphics.drawable.Drawable;\n"
-                            + "import android.widget.LinearLayout;\n"
-                            + "\n"
-                            + "public class ApiCallTest11 extends Activity {\n"
-                            + "\tMyActivity mActionBarHost;\n"
-                            + "\n"
-                            + "    public ActionBar getActionBar() {\n"
-                            + "        return mActionBarHost.getActionBar();\n"
-                            + "    }\n"
-                            + "\n"
-                            + "    public boolean isDestroyed() {\n"
-                            + "        return true;\n"
-                            + "    }\n"
-                            + "\n"
-                            + "    @SuppressLint(\"Override\")\n"
-                            + "    public void finishAffinity() {\n"
-                            + "    }\n"
-                            + "\n"
-                            + "    private class MyLinear extends LinearLayout {\n"
-                            + "        private Drawable mDividerDrawable;\n"
-                            + "\n"
-                            + "        public MyLinear(Context context) {\n"
-                            + "            super(context);\n"
-                            + "        }\n"
-                            + "\n"
-                            + "       /**\n"
-                            + "         * Javadoc here\n"
-                            + "         *\n"
-                            + "         *\n"
-                            + "         *\n"
-                            + "         *\n"
-                            + "         */\n"
-                            + "        public void setDividerDrawable(Drawable dividerDrawable) {\n"
-                            + "            mDividerDrawable = dividerDrawable;\n"
-                            + "        }\n"
-                            + "    }\n"
-                            + "\n"
-                            + "    private class MyActivity {\n"
-                            + "        public ActionBar getActionBar() {\n"
-                            + "            return null;\n"
-                            + "        }\n"
-                            + "    }\n"
-                            + "}\n"
-                            + "\n");
 
     @SuppressWarnings("all") // Sample code
     private TestFile mApiCallTest12 =

@@ -404,7 +404,6 @@ abstract class Reporter protected constructor(
                     AnnotationDetector.SWITCH_TYPE_DEF,
                     ApiDetector.INLINED,
                     ApiDetector.OBSOLETE_SDK,
-                    ApiDetector.OVERRIDE,
                     ApiDetector.UNSUPPORTED,
                     ApiDetector.UNUSED,
                     AppCompatCallDetector.ISSUE,

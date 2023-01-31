@@ -74,7 +74,6 @@ open class BuiltinIssueRegistry : IssueRegistry() {
                 AnnotationDetector.UNIQUE,
                 ApiDetector.INLINED,
                 ApiDetector.OBSOLETE_SDK,
-                ApiDetector.OVERRIDE,
                 ApiDetector.UNSUPPORTED,
                 ApiDetector.UNUSED,
                 AppBundleLocaleChangesDetector.ISSUE,
@@ -556,6 +555,12 @@ open class BuiltinIssueRegistry : IssueRegistry() {
         // specified in build files rather than the manifest and
         // injected at build time.
         "UsesMinSdkAttributes",
+
+        // This error doesn't get flagged anymore because it was relying
+        // on the API database being newer than the compileSdkVersion,
+        // and for the last few years we've tied these together; you
+        // always use the API database from the platform you're targeting.
+        "Override",
 
         // Obsolete at this point (and the associated learn-more
         // URL is now unavailable, see b/259295923)

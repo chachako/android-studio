@@ -119,13 +119,11 @@ import com.android.tools.lint.detector.api.resolveOperator
 import com.android.tools.lint.detector.api.resolveOperatorWorkaround
 import com.android.utils.XmlUtils
 import com.android.utils.usLocaleCapitalize
-import com.intellij.psi.CommonClassNames
 import com.intellij.psi.CommonClassNames.JAVA_LANG_AUTO_CLOSEABLE
 import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiCompiledElement
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiEllipsisType
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMember
@@ -1329,7 +1327,6 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
 
         override fun visitMethod(node: UMethod) {
-            val apiDatabase = apiDatabase ?: return
             val containingClass = node.containingClass
 
             // API check for default methods
@@ -1366,61 +1363,6 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
                         )
                     }
                 }
-            }
-
-            val buildSdk = ApiConstraint.get(context.project.buildSdk)
-            if (buildSdk == ApiConstraint.UNKNOWN) {
-                return
-            }
-            val name = node.name
-            val evaluator = context.evaluator
-            var superMethod = evaluator.getSuperMethod(node)
-            while (superMethod != null) {
-                val cls = superMethod.containingClass ?: break
-                var fqcn = cls.qualifiedName ?: break
-                if (fqcn.startsWith("android.") ||
-                    fqcn.startsWith("java.") && fqcn != CommonClassNames.JAVA_LANG_OBJECT ||
-                    fqcn.startsWith("javax.")
-                ) {
-                    val desc = evaluator.getMethodDescription(superMethod, false, false)
-                    if (desc != null) {
-                        val owner = evaluator.getQualifiedName(cls) ?: return
-                        val api = apiDatabase.getMethodVersions(owner, name, desc)
-                        if (api != ApiConstraint.UNKNOWN && !buildSdk.isAtLeast(api)) {
-                            if (context.driver.isSuppressed(context, OVERRIDE, node as UElement)) {
-                                return
-                            }
-
-                            // TODO: Don't complain if it's annotated with @Override; that means
-                            // somehow the build target isn't correct.
-                            if (containingClass != null) {
-                                var className = containingClass.name
-                                val fullClassName = containingClass.qualifiedName
-                                if (fullClassName != null) {
-                                    className = fullClassName
-                                }
-                                fqcn = "$className#$name"
-                            } else {
-                                fqcn = name
-                            }
-
-                            val message =
-                                "This method is not overriding anything with the current " +
-                                    "build target, but will in API level ${api.minString()} (current " +
-                                    "target is ${buildSdk.minString()}): `$fqcn`"
-                            var locationNode: PsiElement? = node.nameIdentifier
-                            if (locationNode == null) {
-                                locationNode = node
-                            }
-                            val location = context.getLocation(locationNode)
-                            context.report(Incident(OVERRIDE, node, location, message))
-                        }
-                    }
-                } else {
-                    break
-                }
-
-                superMethod = evaluator.getSuperMethod(superMethod)
             }
         }
 
@@ -2677,36 +2619,6 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             category = Category.CORRECTNESS,
             priority = 6,
             severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = JAVA_IMPLEMENTATION
-        )
-
-        /** Method conflicts with new inherited method. */
-        @JvmField
-        val OVERRIDE = Issue.create(
-            id = "Override",
-            briefDescription = "Method conflicts with new inherited method",
-            explanation = """
-                Suppose you are building against Android API 8, and you've subclassed \
-                Activity. In your subclass you add a new method called `isDestroyed`(). \
-                At some later point, a method of the same name and signature is added to \
-                Android. Your method will now override the Android method, and possibly break \
-                its contract. Your method is not calling `super.isDestroyed()`, since your \
-                compilation target doesn't know about the method.
-
-                The above scenario is what this lint detector looks for. The above example is \
-                real, since `isDestroyed()` was added in API 17, but it will be true for \
-                **any** method you have added to a subclass of an Android class where your \
-                build target is lower than the version the method was introduced in.
-
-                To fix this, either rename your method, or if you are really trying to augment \
-                the builtin method if available, switch to a higher build target where you can \
-                deliberately add `@Override` on your overriding method, and call `super` if \
-                appropriate etc.
-                """,
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.ERROR,
             androidSpecific = true,
             implementation = JAVA_IMPLEMENTATION
         )

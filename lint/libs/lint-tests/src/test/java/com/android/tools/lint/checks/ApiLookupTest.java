@@ -846,7 +846,6 @@ public class ApiLookupTest extends AbstractCheckTest {
                             ApiDetector.UNSUPPORTED,
                             ApiDetector.INLINED,
                             ApiDetector.OBSOLETE_SDK,
-                            ApiDetector.OVERRIDE,
                             ApiDetector.UNUSED)
                     .testModes(TestMode.DEFAULT)
                     .run();
