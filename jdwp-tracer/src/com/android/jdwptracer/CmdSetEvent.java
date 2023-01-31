@@ -20,6 +20,7 @@ import static com.android.jdwppacket.EventKind.CLASS_PREPARE;
 import com.android.annotations.NonNull;
 import com.android.jdwppacket.EventKind;
 import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.SuspendPolicy;
 import com.android.jdwppacket.event.CompositeCmd;
 
 class CmdSetEvent extends CmdSet {
@@ -41,7 +42,7 @@ class CmdSetEvent extends CmdSet {
         Message message = new Message(reader);
 
         CompositeCmd cmd = CompositeCmd.parse(reader);
-        message.addArg("suspendPolicy", Byte.toString(cmd.getSuspendPolicy()));
+        message.addArg("suspendPolicy", SuspendPolicy.fromID(cmd.getSuspendPolicy()).name());
         message.addArg("numEvents", Integer.toString(cmd.getEvents().size()));
 
         int eventCount = 0;

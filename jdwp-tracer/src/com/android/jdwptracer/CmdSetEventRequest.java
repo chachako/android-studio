@@ -18,6 +18,7 @@ package com.android.jdwptracer;
 import com.android.annotations.NonNull;
 import com.android.jdwppacket.MessageReader;
 import com.android.jdwppacket.ModKind;
+import com.android.jdwppacket.SuspendPolicy;
 import com.android.jdwppacket.eventrequest.SetCmd;
 import com.android.jdwppacket.eventrequest.SetReply;
 import com.google.gson.JsonArray;
