@@ -79,6 +79,21 @@ class VersionTest {
     }
 
     @Test
+    fun testVersionOrderLeadingZeroIndifference() {
+        listOf("1.9", "01.9", "1.09", "01.09").let { vss ->
+            vss.forEach { v1s ->
+                val v1 = Version.parse(v1s)
+                vss.forEach { v2s ->
+                    val v2 = Version.parse(v2s)
+                    assertThat(v1).isEquivalentAccordingToCompareTo(v2)
+                    assertThat(v1).isEqualTo(v2)
+                    assertThat(v1.hashCode()).isEqualTo(v2.hashCode())
+                }
+            }
+        }
+    }
+
+    @Test
     fun testBothNumericHigher() {
         assertThat(Version.parse("1.1")).isLessThan(Version.parse("1.2"))
     }
