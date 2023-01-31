@@ -28,6 +28,11 @@ Guide.
   format as a fallback if the diffs aren't matching for the new
   format.)
 
+* Lint contains JVM 17 bytecode. You will now need to use JDK 17+
+  when compiling custom Lint checks. You should also configure
+  the Kotlin compiler to target JVM 17, otherwise you may see errors
+  when calling inline functions declared in Lint, UAST, or PSI.
+
 **8.0**
 
 * A new testmode which makes sure lint checks are all suppressible.
