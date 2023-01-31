@@ -22,6 +22,8 @@ import com.android.jdwppacket.EventKind;
 import com.android.jdwppacket.MessageReader;
 import com.android.jdwppacket.SuspendPolicy;
 import com.android.jdwppacket.event.CompositeCmd;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 class CmdSetEvent extends CmdSet {
 
@@ -45,19 +47,23 @@ class CmdSetEvent extends CmdSet {
         message.addArg("suspendPolicy", SuspendPolicy.fromID(cmd.getSuspendPolicy()).name());
         message.addArg("numEvents", Integer.toString(cmd.getEvents().size()));
 
-        int eventCount = 0;
+        JsonArray eventsJson = new JsonArray();
+        message.addArg("events", eventsJson);
         for (CompositeCmd.Event event : cmd.getEvents()) {
+            JsonObject eventJson = new JsonObject();
+            eventsJson.add(eventJson);
+
             EventKind kind = event.getKind();
-            message.addArg("EventKind[" + eventCount++ + "]", kind.name());
+            eventJson.addProperty("eventKind", kind.name());
             message.setName(kind.name());
 
             if (kind == CLASS_PREPARE) {
                 CompositeCmd.ClassPrepareEvent cp = (CompositeCmd.ClassPrepareEvent) event;
-                message.addArg("thread", cp.getThreadID());
-                message.addArg("refTypeTag", cp.getTypeTag());
-                message.addArg("typeID", cp.getReferenceTypeID());
-                message.addArg("signature", cp.getSignature());
-                message.addArg("status", cp.getStatus());
+                eventJson.addProperty("thread", cp.getThreadID());
+                eventJson.addProperty("refTypeTag", cp.getTypeTag());
+                eventJson.addProperty("typeID", cp.getReferenceTypeID());
+                eventJson.addProperty("signature", cp.getSignature());
+                eventJson.addProperty("status", cp.getStatus());
             }
         }
 
