@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 
 using std::string;
+using testing::DoAll;
 using testing::HasSubstr;
 using testing::Return;
 using testing::SaveArg;
