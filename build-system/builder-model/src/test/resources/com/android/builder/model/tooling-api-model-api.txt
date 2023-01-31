@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-bce40d2efb0c54fed01054c88edc9e4b3dc47ef8109038562d4fd8b3f0bc1067
+96b6b30675cc5f0a16cbe82e1d7e44bbb2610a05e1750bc5c45f3b0628f739ec
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -599,7 +599,9 @@ com.android.builder.model.v2.ide.AndroidArtifact.getTestInfo: com.android.builde
 com.android.builder.model.v2.ide.AndroidArtifact.isSigned: boolean ()
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag extends java.lang.Enum
-com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getValue: boolean (com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags)
+com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getLegacyDefault: boolean ()
+com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getValue$default: boolean (com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag, com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags, java.lang.Boolean, int, java.lang.Object)
+com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getValue: boolean (com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags, java.lang.Boolean)
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.valueOf: com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag (java.lang.String)
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.values: com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag[] ()
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags.getFlagValue: java.lang.Boolean (java.lang.String)

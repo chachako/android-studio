@@ -64,6 +64,7 @@
       * "TEST_R_CLASS_CONSTANT_IDS -> false"
       * "TRANSITIVE_R_CLASS -> false"
       * "UNIFIED_TEST_PLATFORM -> true"
+      * "USE_ANDROID_X -> false"
    - lintChecksJars        = []
    - modelSyncFiles        = []
 < AndroidProject

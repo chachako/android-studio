@@ -848,6 +848,10 @@ class ModelBuilder<
             BooleanFlag.UNIFIED_TEST_PLATFORM,
             projectOptions[BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM]
         )
+        flags.put(
+            BooleanFlag.USE_ANDROID_X,
+            projectOptions[BooleanOption.USE_ANDROID_X]
+        )
 
         return AndroidGradlePluginProjectFlagsImpl(flags.build())
     }
