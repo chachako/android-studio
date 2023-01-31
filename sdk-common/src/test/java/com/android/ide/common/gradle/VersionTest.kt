@@ -41,6 +41,15 @@ class VersionTest {
         // empty parts
         assertThat(Version.parse(".-+_").toString()).isEqualTo(".-+_")
         assertThat(Version.parse("").toString()).isEqualTo("")
+
+        // large (outside Int and Long range representation)
+        assertThat(Version.parse("1.2147483648").toString()).isEqualTo("1.2147483648")
+        assertThat(Version.parse("2.4294967296").toString()).isEqualTo("2.4294967296")
+        assertThat(Version.parse("3.9223372036854775808").toString())
+            .isEqualTo("3.9223372036854775808")
+        assertThat(Version.parse("4.18446744073709551616").toString())
+            .isEqualTo("4.18446744073709551616")
+        assertThat(Version.parse("1.2212222019").toString()).isEqualTo("1.2212222019")
     }
 
     @Test
@@ -257,6 +266,10 @@ class VersionTest {
         assertThat(Version.parse("2.3").major).isEqualTo(2)
         assertThat(Version.parse("4.5.6").major).isEqualTo(4)
         assertThat(Version.parse("7.8.9.10").major).isEqualTo(7)
+        assertThat(Version.parse("2147483648").major).isNull()
+        assertThat(Version.parse("4294967296").major).isNull()
+        assertThat(Version.parse("9223372036854775808").major).isNull()
+        assertThat(Version.parse("18446744073709551616").major).isNull()
     }
 
     @Test
@@ -276,6 +289,10 @@ class VersionTest {
         assertThat(Version.parse("2.3").minor).isEqualTo(3)
         assertThat(Version.parse("4.5.6").minor).isEqualTo(5)
         assertThat(Version.parse("7.8.9.10").minor).isEqualTo(8)
+        assertThat(Version.parse("1.2147483648").minor).isNull()
+        assertThat(Version.parse("1.4294967296").minor).isNull()
+        assertThat(Version.parse("1.9223372036854775808").minor).isNull()
+        assertThat(Version.parse("1.18446744073709551616").minor).isNull()
     }
 
     @Test
@@ -298,6 +315,10 @@ class VersionTest {
         assertThat(Version.parse("2.3").micro).isNull()
         assertThat(Version.parse("4.5.6").micro).isEqualTo(6)
         assertThat(Version.parse("7.8.9.10").micro).isEqualTo(9)
+        assertThat(Version.parse("1.2.2147483648").micro).isNull()
+        assertThat(Version.parse("1.2.4294967296").micro).isNull()
+        assertThat(Version.parse("1.2.9223372036854775808").micro).isNull()
+        assertThat(Version.parse("1.2.18446744073709551616").micro).isNull()
     }
 
     @Test
@@ -314,6 +335,17 @@ class VersionTest {
         assertThat(Version.parse("1.release").nextPrefix()).isEqualTo(Version.prefixInfimum("1.sp"))
         assertThat(Version.parse("1.sp").nextPrefix()).isEqualTo(Version.prefixInfimum("1.0"))
         assertThat(Version.parse("1.0").nextPrefix()).isEqualTo(Version.prefixInfimum("1.1"))
+        assertThat(Version.parse("1.9").nextPrefix()).isEqualTo(Version.prefixInfimum("1.10"))
+        assertThat(Version.parse("1.2147483648").nextPrefix())
+            .isEqualTo(Version.prefixInfimum("1.2147483649"))
+        assertThat(Version.parse("2.4294967296").nextPrefix())
+            .isEqualTo(Version.prefixInfimum("2.4294967297"))
+        assertThat(Version.parse("3.9223372036854775808").nextPrefix())
+            .isEqualTo(Version.prefixInfimum("3.9223372036854775809"))
+        assertThat(Version.parse("4.18446744073709551616").nextPrefix())
+            .isEqualTo(Version.prefixInfimum("4.18446744073709551617"))
+        assertThat(Version.parse("1.2212222019").nextPrefix())
+            .isEqualTo(Version.prefixInfimum("1.2212222020"))
     }
 
     @Test
