@@ -19,18 +19,12 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.DeviceState
 import com.android.adblib.scope
-import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.impl.JdwpProcessTrackerImpl
+import com.android.adblib.flowWhenOnline
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.isActive
 import java.time.Duration
 
 /**
@@ -113,24 +107,6 @@ private val JDWP_PROCESS_TRACKER_RETRY_DELAY = Duration.ofSeconds(2)
  * when the device is disconnected [DeviceState.DISCONNECTED].
  */
 val ConnectedDevice.jdwpProcessFlow : Flow<List<JdwpProcess>>
-    get() {
-        val device = this
-        return this.deviceInfoFlow
-            .filter {
-                // Wait until device is "ONLINE"
-                it.deviceState == DeviceState.ONLINE
-            }.flatMapConcat {
-                device.jdwpProcessTracker.processesFlow
-            }.retryWhen { throwable, _ ->
-                device.thisLogger(session).warn(
-                    throwable,
-                    "Device process tracking failed for device $device " +
-                            "($throwable), retrying in ${JDWP_PROCESS_TRACKER_RETRY_DELAY.seconds} sec"
-                )
-                // We retry as long as the device is valid
-                if (device.scope.isActive) {
-                    delay(JDWP_PROCESS_TRACKER_RETRY_DELAY.toMillis())
-                }
-                device.scope.isActive
-            }.flowOn(session.host.ioDispatcher)
+    get() = flowWhenOnline(JDWP_PROCESS_TRACKER_RETRY_DELAY) {
+        it.jdwpProcessTracker.processesFlow
     }

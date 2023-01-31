@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.adblib.tools.debugging
+package com.android.adblib.tools.debugging.impl
 
 import java.util.SortedMap
 import java.util.TreeMap
@@ -27,7 +27,7 @@ import java.util.TreeMap
  *
  * Note: This collection is **not** thread-safe.
  */
-class ProcessMap<T> where T: AutoCloseable {
+internal class ProcessMap<T> where T: AutoCloseable {
 
     /**
      * Use a [SortedMap] (as opposed to a regular [Map]) merely for convenience,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbDeviceServices
+import com.android.adblib.AppProcessEntry
 import com.android.adblib.ConnectedDevice
-import com.android.adblib.ProcessIdList
-import com.android.adblib.emptyProcessIdList
 import com.android.adblib.scope
 import com.android.adblib.selector
 import com.android.adblib.thisLogger
-import com.android.adblib.tools.debugging.JdwpProcess
-import com.android.adblib.tools.debugging.JdwpProcessTracker
+import com.android.adblib.tools.debugging.AppProcess
+import com.android.adblib.tools.debugging.AppProcessTracker
 import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.utils.createChildScope
 import kotlinx.coroutines.Job
@@ -36,16 +35,16 @@ import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.time.Duration
 
-internal class JdwpProcessTrackerImpl(
-  override val device: ConnectedDevice
-): JdwpProcessTracker {
+internal class AppProcessTrackerImpl(
+    override val device: ConnectedDevice
+) : AppProcessTracker {
 
     private val session
         get() = device.session
 
     private val logger = thisLogger(session)
 
-    private val processesMutableFlow = MutableStateFlow<List<JdwpProcess>>(emptyList())
+    private val processesMutableFlow = MutableStateFlow<List<AppProcess>>(emptyList())
 
     private val trackProcessesJob: Job by lazy {
         scope.launch {
@@ -55,7 +54,7 @@ internal class JdwpProcessTrackerImpl(
 
     override val scope = device.scope.createChildScope(isSupervisor = true)
 
-    override val processesFlow = processesMutableFlow.asStateFlow()
+    override val appProcessFlow = processesMutableFlow.asStateFlow()
         get() {
             // Note: We rely on "lazy" to ensure the tracking coroutine is launched only once
             trackProcessesJob
@@ -63,33 +62,33 @@ internal class JdwpProcessTrackerImpl(
         }
 
     private suspend fun trackProcesses() {
-        val processMap = ProcessMap<JdwpProcessImpl>()
+        val processMap = ProcessMap<AppProcessImpl>()
         var deviceDisconnected = false
         try {
             session.deviceServices
-                .trackJdwp(device.selector)
+                .trackApp(device.selector)
                 .retryWhen { throwable, _ ->
-                    // We want to retry the `trackJdwp` request as long as the device is connected.
+                    // We want to retry the `trackApp` request as long as the device is connected.
                     // But we also want to end the flow when the device has been disconnected.
                     if (!scope.isActive) {
-                        logger.info { "JDWP tracker service ending because device is disconnected" }
+                        logger.info { "Tracker service ending because device is disconnected" }
                         deviceDisconnected = true
                         false // Don't retry, let exception through
                     } else {
                         // Retry after emitting empty list
                         if (throwable is EOFException) {
-                            logger.info { "JDWP tracker services ended with expected EOF exception, retrying" }
+                            logger.info { "Tracker services ended with expected EOF exception, retrying" }
                         } else {
-                            logger.info(throwable) { "JDWP tracker ended unexpectedly ($throwable), retrying" }
+                            logger.info(throwable) { "Tracker ended unexpectedly ($throwable), retrying" }
                         }
                         // When disconnected, assume we have no processes
-                        emit(emptyProcessIdList())
-                        delay(TRACK_JDWP_RETRY_DELAY.toMillis())
+                        emit(emptyList())
+                        delay(TRACK_APP_RETRY_DELAY.toMillis())
                         true // Retry
                     }
-                }.collect { processIdList ->
-                    logger.debug { "Received a new list of processes: $processIdList" }
-                    updateProcessMap(processMap, processIdList)
+                }.collect { appEntryList ->
+                    logger.debug { "Received a new list of processes: $appEntryList" }
+                    updateProcessMap(processMap, appEntryList)
                     processesMutableFlow.emit(processMap.values.toList())
                 }
         } catch (t: Throwable) {
@@ -106,10 +105,11 @@ internal class JdwpProcessTrackerImpl(
         }
     }
 
-    private fun updateProcessMap(map: ProcessMap<JdwpProcessImpl>, list: ProcessIdList) {
-        map.update(list, valueFactory = { pid ->
+    private fun updateProcessMap(map: ProcessMap<AppProcessImpl>, list: List<AppProcessEntry>) {
+        val pids = list.map { it.pid }
+        map.update(pids, valueFactory = { pid ->
             logger.debug { "Adding process $pid to process map" }
-            JdwpProcessImpl(session, device, pid).also {
+            AppProcessImpl(session, device, list.first { it.pid == pid }).also {
                 it.startMonitoring()
             }
         })
@@ -118,9 +118,9 @@ internal class JdwpProcessTrackerImpl(
     companion object {
 
         /**
-         * If the [AdbDeviceServices.trackJdwp] call fails with an error while the device is
+         * If the [AdbDeviceServices.trackApp] call fails with an error while the device is
          * still connected, we want to retry. This defines the [Duration] to wait before retrying.
          */
-        private val TRACK_JDWP_RETRY_DELAY = Duration.ofSeconds(2)
+        private val TRACK_APP_RETRY_DELAY = Duration.ofSeconds(2)
     }
 }
