@@ -20,18 +20,14 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.ddmlibcompatibility.debugging.ProcessTrackerHost.ClientUpdateKind
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
-import com.android.adblib.tools.debugging.JdwpProcess
-import com.android.adblib.tools.debugging.JdwpProcessProperties
-import com.android.adblib.tools.debugging.jdwpProcessFlow
 import com.android.adblib.trackDevices
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
-import com.android.ddmlib.ClientData
-import com.android.ddmlib.ClientData.DebuggerStatus
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.ProfileableClient
 import com.android.ddmlib.clientmanager.DeviceClientManager
@@ -44,7 +40,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -86,7 +81,6 @@ internal class AdbLibDeviceClientManager(
     }
 
     override fun getProfileableClients(): MutableList<ProfileableClient> {
-        //TODO: Implement when `track-app` is implemented
         return profileableClientList.get().toMutableList()
     }
 
@@ -121,178 +115,35 @@ internal class AdbLibDeviceClientManager(
     }
 
     private fun launchProcessTracking(device: ConnectedDevice) {
-        device.scope.launch(session.host.ioDispatcher) {
-            logger.debug { "Starting process tracking for device $iDevice" }
-            val processEntryMap = mutableMapOf<Int, AdblibClientWrapper>()
-            try {
-                // Run the 'jdwp-track' service and collect PIDs
-                device.jdwpProcessFlow
-                    .collect { processList ->
-                        updateProcessList(device.scope, processEntryMap, processList)
-                    }
-            } finally {
-                updateProcessList(device.scope, processEntryMap, emptyList())
-                logger.debug { "Stop process tracking for device $iDevice (scope.isActive=${device.scope.isActive})" }
-            }
-        }
-    }
-
-    /**
-     * Update our list of processes and invoke listeners.
-     */
-    private suspend fun updateProcessList(
-        deviceScope: CoroutineScope,
-        currentProcessEntryMap: MutableMap<Int, AdblibClientWrapper>,
-        newJdwpProcessList: List<JdwpProcess>
-    ) {
-        val knownPids = currentProcessEntryMap.keys.toHashSet()
-        val effectivePids = newJdwpProcessList.map { it.pid }.toHashSet()
-        val addedPids = effectivePids - knownPids
-        val removePids = knownPids - effectivePids
-
-        // Remove old pids
-        removePids.forEach { pid ->
-            logger.debug { "Removing PID $pid from list of Client processes" }
-            currentProcessEntryMap.remove(pid)
-        }
-
-        // Add new pids
-        addedPids.forEach { pid ->
-            logger.debug { "Adding PID $pid to list of Client processes" }
-            val jdwpProcess = newJdwpProcessList.first { it.pid == pid }
-            val clientWrapper = AdblibClientWrapper(this, iDevice, jdwpProcess)
-            currentProcessEntryMap[pid] = clientWrapper
-            launchProcessInfoTracking(clientWrapper)
-        }
-
-        assert(currentProcessEntryMap.keys.size == newJdwpProcessList.size)
-        clientList.set(currentProcessEntryMap.values.toList())
-        ddmlibEventQueue.post(deviceScope, "processListUpdated") {
-            listener.processListUpdated(bridge, this)
-        }
-    }
-
-    private fun launchProcessInfoTracking(clientWrapper: AdblibClientWrapper) {
-        // Track process changes as long as process coroutine scope is active
-        clientWrapper.jdwpProcess.scope.launch {
-            trackProcessInfo(clientWrapper)
-        }
-    }
-
-    private suspend fun trackProcessInfo(clientWrapper: AdblibClientWrapper) {
-        var lastProcessInfo = clientWrapper.jdwpProcess.propertiesFlow.value
-        clientWrapper.jdwpProcess.propertiesFlow.collect { processInfo ->
-            try {
-                updateProcessInfo(clientWrapper, lastProcessInfo, processInfo)
-            } finally {
-                lastProcessInfo = processInfo
-            }
-        }
-    }
-
-    private suspend fun updateProcessInfo(
-        clientWrapper: AdblibClientWrapper,
-        previousProcessInfo: JdwpProcessProperties,
-        newProcessInfo: JdwpProcessProperties
-    ) {
-        fun <T> hasChanged(x: T?, y: T?): Boolean {
-            return x != y
-        }
-
-        // Always update "Client" wrapper data
-        val previousDebuggerStatus = clientWrapper.clientData.debuggerConnectionStatus
-        updateClientWrapper(clientWrapper, newProcessInfo)
-        val newDebuggerStatus = clientWrapper.clientData.debuggerConnectionStatus
-
-        // Check if anything related to process info has changed
-        with(previousProcessInfo) {
-            if (hasChanged(processName, newProcessInfo.processName) ||
-                hasChanged(userId, newProcessInfo.userId) ||
-                hasChanged(packageName, newProcessInfo.packageName) ||
-                hasChanged(vmIdentifier, newProcessInfo.vmIdentifier) ||
-                hasChanged(abi, newProcessInfo.abi) ||
-                hasChanged(jvmFlags, newProcessInfo.jvmFlags) ||
-                hasChanged(isWaitingForDebugger, newProcessInfo.isWaitingForDebugger) ||
-                hasChanged(isNativeDebuggable, newProcessInfo.isNativeDebuggable)
-            ) {
-                ddmlibEventQueue.post(clientWrapper.jdwpProcess.scope, "processNameUpdated") {
-                    // Note that "name" is really "any property"
-                    listener.processNameUpdated(
-                        bridge,
-                        this@AdbLibDeviceClientManager,
-                        clientWrapper
-                    )
-                }
-            }
-        }
-
-        // Debugger status change is handled through its own callback
-        if (hasChanged(previousDebuggerStatus, newDebuggerStatus)) {
-            clientWrapper.clientData.debuggerConnectionStatus = newDebuggerStatus
-            ddmlibEventQueue.post(clientWrapper.jdwpProcess.scope, "processDebuggerStatusUpdated") {
-                listener.processDebuggerStatusUpdated(
-                    bridge,
-                    this@AdbLibDeviceClientManager,
-                    clientWrapper
-                )
-            }
-        }
-    }
-
-    private fun updateClientWrapper(
-        clientWrapper: AdblibClientWrapper,
-        newProperties: JdwpProcessProperties
-    ) {
-        val names = ClientData.Names(
-            newProperties.processName ?: "",
-            newProperties.userId,
-            newProperties.packageName
-        )
-        clientWrapper.clientData.setNames(names)
-        clientWrapper.clientData.vmIdentifier = newProperties.vmIdentifier
-        clientWrapper.clientData.abi = newProperties.abi
-        clientWrapper.clientData.jvmFlags = newProperties.jvmFlags
-        clientWrapper.clientData.isNativeDebuggable = newProperties.isNativeDebuggable
-        if (newProperties.features.isNotEmpty()) {
-            clientWrapper.addFeatures(newProperties.features)
-        }
-
-        // "DebuggerStatus" is trickier: order is important
-        clientWrapper.clientData.debuggerConnectionStatus = when {
-            // This comes from the JDWP connection proxy, when a JDWP connection is started
-            newProperties.jdwpSessionProxyStatus.isExternalDebuggerAttached -> DebuggerStatus.ATTACHED
-
-            // This comes from seeing a DDMS_WAIT packet on the JDWP connection
-            newProperties.isWaitingForDebugger -> DebuggerStatus.WAITING
-
-            // This comes from any error during process properties polling
-            newProperties.exception != null -> DebuggerStatus.ERROR
-
-            // This happens when process properties have been collected and also
-            // when there is no active jdwp debugger connection
-            else -> DebuggerStatus.DEFAULT
-        }
+        val host = ProcessTrackerHostImpl(device)
+        JdwpTracker(host).startTracking()
     }
 
     suspend fun postClientUpdateEvent(client: AdblibClientWrapper, updateKind: ClientUpdateKind): Deferred<Unit> {
+        logger.verbose { "Posting client update event: ${client.clientData.pid}: $updateKind" }
         val processed = CompletableDeferred<Unit>(client.jdwpProcess.scope.coroutineContext.job)
         ddmlibEventQueue.post(client.jdwpProcess.scope, "client update: $updateKind") {
             when (updateKind) {
                 ClientUpdateKind.HeapAllocations -> {
                     listener.processHeapAllocationsUpdated(bridge, this, client)
                 }
+
                 ClientUpdateKind.ProfilingStatus -> {
                     listener.processMethodProfilingStatusUpdated(bridge, this, client)
+                }
+
+                ClientUpdateKind.NameOrProperties -> {
+                    // Note that "name" is really "any property"
+                    listener.processNameUpdated(bridge, this, client)
+                }
+
+                ClientUpdateKind.DebuggerConnectionStatus -> {
+                    listener.processDebuggerStatusUpdated(bridge, this, client)
                 }
             }
             processed.complete(Unit)
         }
         return processed
-    }
-
-    enum class ClientUpdateKind {
-        HeapAllocations,
-        ProfilingStatus,
     }
 
     class DdmlibEventQueue(logger: AdbLogger, name: String) {
@@ -317,7 +168,10 @@ internal class AdbLibDeviceClientManager(
                         event.handler()
                         logger.verbose { "Invoking ddmlib listener '${event.name}' - done" }
                     }.onFailure { throwable ->
-                        logger.warn(throwable, "Invoking ddmlib listener '${event.name}' threw an exception: $throwable")
+                        logger.warn(
+                            throwable,
+                            "Invoking ddmlib listener '${event.name}' threw an exception: $throwable"
+                        )
                     }
                 }.join()
             }
@@ -326,7 +180,30 @@ internal class AdbLibDeviceClientManager(
         private class Event(val scope: CoroutineScope, val name: String, val handler: () -> Unit)
 
         companion object {
+
             const val QUEUE_CAPACITY = 1_000
         }
     }
+
+    inner class ProcessTrackerHostImpl(override val device: ConnectedDevice) : ProcessTrackerHost {
+
+        override val iDevice: IDevice
+            get() = this@AdbLibDeviceClientManager.iDevice
+
+        override suspend fun clientsUpdated(list: List<Client>) {
+            logger.debug { "Updating list of clients: $list" }
+            clientList.set(list.toList())
+            ddmlibEventQueue.post(device.scope, "processListUpdated") {
+                listener.processListUpdated(bridge, this@AdbLibDeviceClientManager)
+            }
+        }
+
+        override suspend fun postClientUpdated(
+            clientWrapper: AdblibClientWrapper,
+            updateKind: ClientUpdateKind
+        ): Deferred<Unit> {
+            return postClientUpdateEvent(clientWrapper, updateKind)
+        }
+    }
+
 }

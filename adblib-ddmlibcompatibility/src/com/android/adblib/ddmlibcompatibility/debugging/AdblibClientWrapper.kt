@@ -15,11 +15,12 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
-import com.android.adblib.ddmlibcompatibility.debugging.AdbLibDeviceClientManager.ClientUpdateKind.*
+import com.android.adblib.AdbSession
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.DdmsCommandException
 import com.android.adblib.tools.debugging.JdwpCommandProgress
 import com.android.adblib.tools.debugging.JdwpProcess
+import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.ProfilerStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.allocationTracker
@@ -47,6 +48,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.Duration
 import java.util.concurrent.CancellationException
@@ -57,19 +59,116 @@ import java.util.concurrent.TimeoutException
  * Implementation of the ddmlib [Client] interface based on a [JdwpProcess] instance.
  */
 internal class AdblibClientWrapper(
-    private val deviceClientManager: AdbLibDeviceClientManager,
-    private val iDevice: IDevice,
+    private val trackerHost: ProcessTrackerHost,
     val jdwpProcess: JdwpProcess
 ) : Client {
+    private val session: AdbSession
+        get() = trackerHost.device.session
 
-    private val logger =
-        thisLogger(deviceClientManager.session).withPrefix("pid: ${jdwpProcess.pid}: ")
+    private val logger = thisLogger(session).withPrefix("pid: ${jdwpProcess.pid}: ")
 
     private val clientDataWrapper = ClientData(this, jdwpProcess.pid)
 
     private var featuresAdded = false
 
-    fun addFeatures(features: List<String>) {
+    fun startTracking() {
+        // Track process changes as long as process coroutine scope is active
+        jdwpProcess.scope.launch {
+            trackJdwpProcessInfo()
+        }
+    }
+
+    private suspend fun trackJdwpProcessInfo() {
+        var lastProcessInfo = jdwpProcess.propertiesFlow.value
+        jdwpProcess.propertiesFlow.collect { processInfo ->
+            try {
+                updateJdwpProcessInfo(lastProcessInfo, processInfo)
+            } finally {
+                lastProcessInfo = processInfo
+            }
+        }
+    }
+
+    private suspend fun updateJdwpProcessInfo(
+        previousProcessInfo: JdwpProcessProperties,
+        newProcessInfo: JdwpProcessProperties
+    ) {
+        fun <T> hasChanged(x: T?, y: T?): Boolean {
+            return x != y
+        }
+
+        // Always update "Client" wrapper data
+        val previousDebuggerStatus = this.clientData.debuggerConnectionStatus
+        updateClientWrapper(this, newProcessInfo)
+        val newDebuggerStatus = this.clientData.debuggerConnectionStatus
+
+        // Check if anything related to process info has changed
+        with(previousProcessInfo) {
+            if (hasChanged(processName, newProcessInfo.processName) ||
+                hasChanged(userId, newProcessInfo.userId) ||
+                hasChanged(packageName, newProcessInfo.packageName) ||
+                hasChanged(vmIdentifier, newProcessInfo.vmIdentifier) ||
+                hasChanged(abi, newProcessInfo.abi) ||
+                hasChanged(jvmFlags, newProcessInfo.jvmFlags) ||
+                hasChanged(isWaitingForDebugger, newProcessInfo.isWaitingForDebugger) ||
+                hasChanged(isNativeDebuggable, newProcessInfo.isNativeDebuggable)
+            ) {
+                @Suppress("DeferredResultUnused")
+                trackerHost.postClientUpdated(
+                    this@AdblibClientWrapper,
+                    ProcessTrackerHost.ClientUpdateKind.NameOrProperties
+                )
+            }
+        }
+
+        // Debugger status change is handled through its own callback
+        if (hasChanged(previousDebuggerStatus, newDebuggerStatus)) {
+            this.clientData.debuggerConnectionStatus = newDebuggerStatus
+            @Suppress("DeferredResultUnused")
+            trackerHost.postClientUpdated(
+                this,
+                ProcessTrackerHost.ClientUpdateKind.DebuggerConnectionStatus
+            )
+        }
+    }
+
+    private fun updateClientWrapper(
+        clientWrapper: AdblibClientWrapper,
+        newProperties: JdwpProcessProperties
+    ) {
+        val names = ClientData.Names(
+            newProperties.processName ?: "",
+            newProperties.userId,
+            newProperties.packageName
+        )
+        clientWrapper.clientData.setNames(names)
+        clientWrapper.clientData.vmIdentifier = newProperties.vmIdentifier
+        clientWrapper.clientData.abi = newProperties.abi
+        clientWrapper.clientData.jvmFlags = newProperties.jvmFlags
+        clientWrapper.clientData.isNativeDebuggable = newProperties.isNativeDebuggable
+        if (newProperties.features.isNotEmpty()) {
+            clientWrapper.addFeatures(newProperties.features)
+        }
+
+        // "DebuggerStatus" is trickier: order is important
+        clientWrapper.clientData.debuggerConnectionStatus = when {
+            // This comes from the JDWP connection proxy, when a JDWP connection is started
+            newProperties.jdwpSessionProxyStatus.isExternalDebuggerAttached -> ClientData.DebuggerStatus.ATTACHED
+
+            // This comes from seeing a DDMS_WAIT packet on the JDWP connection
+            newProperties.isWaitingForDebugger -> ClientData.DebuggerStatus.WAITING
+
+            // This comes from any error during process properties polling
+            newProperties.exception != null -> ClientData.DebuggerStatus.ERROR
+
+            // This happens when process properties have been collected and also
+            // when there is no active jdwp debugger connection
+            else -> ClientData.DebuggerStatus.DEFAULT
+        }
+    }
+
+
+    private fun addFeatures(features: List<String>) {
         // Add features only once to avoid duplicates (and we can assume they don't
         // change during the lifetime of a process).
         if (!featuresAdded) {
@@ -85,7 +184,7 @@ internal class AdblibClientWrapper(
     }
 
     override fun getDevice(): IDevice {
-        return iDevice
+        return trackerHost.iDevice
     }
 
     override fun isDdmAware(): Boolean {
@@ -204,14 +303,14 @@ internal class AdblibClientWrapper(
         }
 
         @Suppress("DeferredResultUnused")
-        deviceClientManager.postClientUpdateEvent(this, ProfilingStatus)
+        trackerHost.postClientUpdated(this, ProcessTrackerHost.ClientUpdateKind.ProfilingStatus)
     }
 
     private suspend fun notifyProfilingOff() {
         // Update status and notify listeners
         clientData.methodProfilingStatus = MethodProfilingStatus.OFF
         @Suppress("DeferredResultUnused")
-        deviceClientManager.postClientUpdateEvent(this, ProfilingStatus)
+        trackerHost.postClientUpdated(this, ProcessTrackerHost.ClientUpdateKind.ProfilingStatus)
     }
 
     override fun startSamplingProfiler(samplingInterval: Int, timeUnit: TimeUnit) {
@@ -294,7 +393,7 @@ internal class AdblibClientWrapper(
             clientData.allocationsData = allocationData
 
             // Notify listeners *and* wait until even has been dispatched to listeners
-            deviceClientManager.postClientUpdateEvent(this, HeapAllocations).await()
+            trackerHost.postClientUpdated(this, ProcessTrackerHost.ClientUpdateKind.HeapAllocations).await()
 
             // Clean up after everything has been notified (synchronously).
             clientData.allocationsData = null
@@ -405,7 +504,7 @@ internal class AdblibClientWrapper(
         block: suspend CoroutineScope.() -> R
     ): R {
         return runBlocking {
-            deviceClientManager.session.withErrorTimeout(timeout) {
+            session.withErrorTimeout(timeout) {
                 block()
             }
         }
@@ -468,7 +567,7 @@ internal class AdblibClientWrapper(
         }
     }
 
-    private fun legacyNotImplemented(operation: String) {
+    private fun legacyNotImplemented(@Suppress("SameParameterValue") operation: String) {
         val message =
             "Operation '$operation' is not implemented because it is deprecated. It should never be called."
         logger.info { message }
