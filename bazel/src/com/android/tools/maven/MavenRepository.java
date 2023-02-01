@@ -16,6 +16,7 @@
 
 package com.android.tools.maven;
 
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
@@ -68,6 +69,9 @@ public class MavenRepository {
     private final DefaultRepositorySystemSession session;
     private final List<RemoteRepository> repositories;
     private final ModelBuilder modelBuilder;
+
+    private static final List<String> DEPS_WITHOUT_GRADLE_MODULE =
+            ImmutableList.of("org.testng:testng:module:7.3.0");
 
     public MavenRepository(String repoPath, List<RemoteRepository> repositories, boolean verbose) {
         serviceLocator = AetherUtils.newServiceLocator(verbose);
@@ -176,25 +180,25 @@ public class MavenRepository {
         return pomArtifact.getFile();
     }
 
-    public void pullModuleFile(Artifact artifact, File pomFile) {
-
-        // Not all dependencies will have a module file
-        try {
-            String content = Files.readString(pomFile.toPath());
-            if (!content.contains("published-with-gradle-metadata")) {
-                return;
-            }
-            Artifact moduleArtifact =
-                    new DefaultArtifact(
-                            artifact.getGroupId(),
-                            artifact.getArtifactId(),
-                            "module",
-                            artifact.getVersion());
-
-            ArtifactRequest request = new ArtifactRequest(moduleArtifact, repositories, null);
-            system.resolveArtifact(session, request);
-        } catch (Exception e) {
+    public void pullModuleFile(Artifact artifact, File pomFile) throws Exception {
+        // published-with-gradle-metadata suggests module was published with a Gradle metadata model
+        String content = Files.readString(pomFile.toPath());
+        if (!content.contains("published-with-gradle-metadata")) {
+            return;
         }
+        Artifact moduleArtifact =
+                new DefaultArtifact(
+                        artifact.getGroupId(),
+                        artifact.getArtifactId(),
+                        "module",
+                        artifact.getVersion());
+
+        if (DEPS_WITHOUT_GRADLE_MODULE.contains(moduleArtifact.toString())) {
+            return;
+        }
+
+        ArtifactRequest request = new ArtifactRequest(moduleArtifact, repositories, null);
+        system.resolveArtifact(session, request);
     }
 
     /** Creates and returns a new DefaultModelResolver instance. */
