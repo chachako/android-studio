@@ -19,6 +19,8 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceProperties
 import com.android.adblib.serialNumber
 import com.android.adblib.utils.createChildScope
+import com.android.sdklib.deviceprovisioner.DeviceState.Connected
+import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

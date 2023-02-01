@@ -16,6 +16,8 @@
 package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.ConnectedDevice
+import com.android.sdklib.deviceprovisioner.DeviceState.Connected
+import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger

@@ -23,6 +23,8 @@ import com.android.adblib.DeviceState
 import com.android.adblib.serialNumber
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.sdklib.deviceprovisioner.DeviceState.Connected
+import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
 import kotlinx.coroutines.Dispatchers

@@ -48,6 +48,30 @@ sealed interface DeviceState {
 
   fun isOnline(): Boolean =
     connectedDevice?.deviceInfo?.deviceState == com.android.adblib.DeviceState.ONLINE
+
+  open class Disconnected(
+    override val properties: DeviceProperties,
+    override val isTransitioning: Boolean,
+    override val status: String
+  ) : DeviceState {
+    constructor(properties: DeviceProperties) : this(properties, false, "Offline")
+  }
+
+  /**
+   * The state of a device that is connected to ADB. The device may not be usable yet; most clients
+   * will want to wait for it to be [online][isOnline].
+   */
+  open class Connected(
+    override val properties: DeviceProperties,
+    override val isTransitioning: Boolean,
+    override val status: String,
+    override val connectedDevice: ConnectedDevice
+  ) : DeviceState {
+    constructor(
+      properties: DeviceProperties,
+      connectedDevice: ConnectedDevice
+    ) : this(properties, false, "Connected", connectedDevice)
+  }
 }
 
 inline fun <R> DeviceState.ifOnline(block: (ConnectedDevice) -> R): R? =
@@ -57,30 +81,6 @@ inline fun <R> DeviceState.ifOnline(block: (ConnectedDevice) -> R): R? =
       else -> null
     }
   }
-
-open class Disconnected(
-  override val properties: DeviceProperties,
-  override val isTransitioning: Boolean,
-  override val status: String
-) : DeviceState {
-  constructor(properties: DeviceProperties) : this(properties, false, "Offline")
-}
-
-/**
- * The state of a device that is connected to ADB. The device may not be usable yet; most clients
- * will want to wait for it to be [online][isOnline].
- */
-open class Connected(
-  override val properties: DeviceProperties,
-  override val isTransitioning: Boolean,
-  override val status: String,
-  override val connectedDevice: ConnectedDevice
-) : DeviceState {
-  constructor(
-    properties: DeviceProperties,
-    connectedDevice: ConnectedDevice
-  ) : this(properties, false, "Connected", connectedDevice)
-}
 
 class TimeoutTracker(private val duration: Duration) {
   private val stopwatch = Stopwatch.createStarted()
