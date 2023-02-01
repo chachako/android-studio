@@ -1081,8 +1081,6 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
             val resolved = node.resolve()
             if (resolved is PsiField) {
                 checkField(node, resolved)
-            } else if (resolved is PsiMethod && node is UCallExpression) {
-                checkMethodReference(node, resolved)
             }
         }
 

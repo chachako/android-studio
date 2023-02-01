@@ -31,14 +31,18 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.isJava
+import com.android.tools.lint.detector.api.isThisOrSuperConstructorCall
 import com.intellij.psi.LambdaUtil
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiReferenceExpression
+import com.intellij.psi.PsiResourceExpression
 import com.intellij.psi.PsiResourceVariable
+import com.intellij.psi.PsiTryStatement
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UDoWhileExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UIfExpression
@@ -47,6 +51,7 @@ import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UReturnExpression
+import org.jetbrains.uast.UTryExpression
 import org.jetbrains.uast.UUnaryExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UWhileExpression
@@ -137,7 +142,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         constructor: PsiMethod
     ) {
         val type = constructor.containingClass?.qualifiedName ?: return
-        if (isSuperConstructorCall(node)) return
+        if (node.isThisOrSuperConstructorCall()) return
         if (type == SURFACE_TEXTURE_CLS || type == SURFACE_CLS) {
             checkRecycled(context, node, type, RELEASE)
         } else {
@@ -256,11 +261,15 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                 }
 
             OF_INT, OF_ARGB, OF_FLOAT, OF_OBJECT, OF_PROPERTY_VALUES_HOLDER -> {
-                // ObjectAnimator, ValueAnimator, AnimatorSet
                 val returnType = method.returnType
                 if (returnType is PsiClassType) {
-                    val type = returnType.canonicalText
-                    checkRecycled(context, node, type, START)
+                    when (val type = returnType.canonicalText) {
+                        "android.animation.AnimatorSet",
+                        "android.animation.ValueAnimator",
+                        "android.animation.ObjectAnimator" -> {
+                            checkRecycled(context, node, type, START)
+                        }
+                    }
                 }
             }
         }
@@ -280,51 +289,67 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         }
 
         val method = node.getParentOfType(UMethod::class.java) ?: return
-        var recycled = false
-        var escapes = false
 
-        fun isCleanup(call: UCallExpression): Boolean {
-            val methodName = getMethodName(call)
-            if ("use" == methodName) {
-                // Kotlin: "use" calls close; see issue 62377185
-                // Ensure that "use" call accepts a single lambda parameter, so that it would
-                // loosely match kotlin.io.use() signature and at the same time allow custom
-                // overloads for types not extending Closeable
-                if (call.valueArgumentCount == 1) {
-                    val argumentType = call.valueArguments.first().getExpressionType()
-                    if (argumentType != null && LambdaUtil.isFunctionalType(argumentType)) {
-                        return true
+        val visitor = object : TargetMethodDataFlowAnalyzer(setOf(node), emptyList()) {
+            override fun isTargetMethodName(name: String): Boolean {
+                return name == "use" || name in recycleNames
+            }
+
+            override fun isTargetMethod(
+                name: String,
+                method: PsiMethod?,
+                call: UCallExpression?,
+                methodRef: UCallableReferenceExpression?
+            ): Boolean {
+                if ("use" == name) {
+                    // Kotlin: "use" calls close; see issue 62377185
+                    // Ensure that "use" call accepts a single lambda parameter, so that it would
+                    // loosely match kotlin.io.use() signature and at the same time allow custom
+                    // overloads for types not extending Closeable
+                    if (call != null && call.valueArgumentCount == 1) {
+                        val argumentType = call.valueArguments.first().getExpressionType()
+                        if (argumentType != null && LambdaUtil.isFunctionalType(argumentType)) {
+                            return true
+                        }
+                    }
+                    if (name !in recycleNames) {
+                        return false
                     }
                 }
-            }
 
-            if (methodName !in recycleNames) {
-                return false
-            }
-            val resolved = call.resolve()
-            if (resolved != null) {
-                val containingClass = resolved.containingClass
-                val targetName = containingClass?.qualifiedName ?: return true
-                if (targetName == recycleType) {
+                if (method != null) {
+                    val containingClass = method.containingClass
+                    val targetName = containingClass?.qualifiedName ?: return true
+                    if (targetName == recycleType) {
+                        return true
+                    }
+                    val recycleClass = context.evaluator.findClass(recycleType) ?: return true
+                    return context.evaluator.extendsClass(recycleClass, targetName, false)
+                } else {
+                    // Unresolved method call -- assume it's okay
                     return true
                 }
-                val recycleClass = context.evaluator.findClass(recycleType) ?: return true
-                return context.evaluator.extendsClass(recycleClass, targetName, false)
-            } else {
-                // Unresolved method call -- assume it's okay
-                return true
             }
-        }
 
-        val visitor = object : DataFlowAnalyzer(setOf(node), emptyList()) {
-            override fun receiver(call: UCallExpression) {
-                if (isCleanup(call)) {
-                    recycled = true
+            override fun visitTryExpression(node: UTryExpression): Boolean {
+                if (node.hasResources && recycleNames.contains(CLOSE)) {
+                    val resourceList = (node.sourcePsi as? PsiTryStatement)?.resourceList
+                    if (resourceList != null) {
+                        for (child in resourceList) {
+                            if (child is PsiResourceExpression) {
+                                // Enhanced try-with-resources statement introduced in JDK 9
+                                val expression = child.expression as? PsiReferenceExpression ?: continue
+                                val resolved = expression.resolve()
+                                if (references.contains(resolved)) {
+                                    targetReached = true
+                                    targetReference = node
+                                    break
+                                }
+                            }
+                        }
+                    }
                 }
-            }
-
-            override fun field(field: UElement) {
-                escapes = true
+                return super.visitTryExpression(node)
             }
 
             override fun argument(
@@ -351,50 +376,63 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                     }
                 }
 
-                escapes = true
+                super.argument(call, reference)
             }
 
-            override fun returns(expression: UReturnExpression) {
-                escapes = true
-            }
+            private fun UCallExpression.name(): String? = methodName ?: methodIdentifier?.name
 
             override fun returnsSelf(call: UCallExpression): Boolean {
                 val returnsSelf = super.returnsSelf(call)
-                if (returnsSelf || !(recycleType == INPUT_STREAM_CLS || recycleType == OUTPUT_STREAM_CLS)) {
-                    return returnsSelf
+                if (returnsSelf) {
+                    return true
                 }
+                when (recycleType) {
+                    ASSET_FILE_DESCRIPTOR_CLS -> {
+                        return when (call.name()) {
+                            "getParcelFileDescriptor",
+                            "createInputStream",
+                            "createOutputStream",
+                            "getFileDescriptor" -> true
+                            else -> false
+                        }
+                    }
 
-                val callName = call.methodName ?: call.methodIdentifier?.name ?: return false
-                // For okio, treat input streams as sources and output streams as sinks
-                // such that calling stream.source().use { } treats the stream as used.
-                if (callName == "source" || callName == "sink") {
-                    return call.resolve()?.containingClass?.qualifiedName == "okio.Okio"
+                    PARCEL_FILE_DESCRIPTOR_CLS -> {
+                        return when (call.name()) {
+                            "getFileDescriptor",
+                            "detachFd" -> true
+                            else -> false
+                        }
+                    }
+
+                    INPUT_STREAM_CLS, OUTPUT_STREAM_CLS -> {
+                        val callName = call.name() ?: return false
+                        // For okio, treat input streams as sources and output streams as sinks
+                        // such that calling stream.source().use { } treats the stream as used.
+                        if (callName == "source" || callName == "sink") {
+                            return call.resolve()?.containingClass?.qualifiedName == "okio.Okio"
+                        }
+                    }
                 }
 
                 return false
             }
         }
-        method.accept(visitor)
 
-        if (recycled || escapes) return
-        if (visitor.failedResolve && method.anyCall(::isCleanup)) return
+        if (!method.isMissingTarget(visitor)) {
+            return
+        }
 
         val className = recycleType.substring(recycleType.lastIndexOf('.') + 1)
         val message = when (val recycleName = recycleNames.first()) {
             RECYCLE -> {
-                String.format(
-                    "This `%1\$s` should be recycled after use with `#recycle()`",
-                    className
-                )
+                "This `$className` should be recycled after use with `#recycle()`"
             }
             START -> {
                 "This animation should be started with `#start()`"
             }
             else -> {
-                String.format(
-                    "This `%1\$s` should be freed up after use with `#%2\$s()`",
-                    className, recycleName
-                )
+                "This `$className` should be freed up after use with `#$recycleName()`"
             }
         }
 
@@ -413,89 +451,53 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     ) {
         if (isBeginTransaction(context, calledMethod)) {
             val method = node.getParentOfType(UMethod::class.java) ?: return
-            var committed = false
-            var escaped = false
 
-            fun isCleanupCall(call: UCallExpression): Boolean =
-                isTransactionCommitMethodCall(context, call) || isShowFragmentMethodCall(context, call)
-
-            val visitor = object : DataFlowAnalyzer(setOf(node), emptyList()) {
-
-                override fun receiver(call: UCallExpression) {
-                    if (isCleanupCall(call)) {
-                        committed = true
+            val visitor = object : TargetMethodDataFlowAnalyzer(setOf(node), emptyList()) {
+                override fun isTargetMethodName(name: String): Boolean {
+                    return name == SHOW || name.startsWith(COMMIT)
+                }
+                override fun isTargetMethod(name: String, method: PsiMethod?): Boolean {
+                    method ?: return true
+                    return when (name) {
+                        // Transaction Commit Method Call
+                        COMMIT,
+                        COMMIT_ALLOWING_LOSS,
+                        COMMIT_NOW_ALLOWING_LOSS,
+                        COMMIT_NOW -> isMethodOnFragmentClass(
+                            context,
+                            method,
+                            FRAGMENT_TRANSACTION_ANDROIDX_CLS,
+                            FRAGMENT_TRANSACTION_CLS,
+                            FRAGMENT_TRANSACTION_V4_CLS
+                        )
+                        SHOW -> isMethodOnFragmentClass(context, method, DIALOG_ANDROIDX_FRAGMENT, DIALOG_FRAGMENT, DIALOG_V4_FRAGMENT)
+                        else -> false
                     }
                 }
-
-                override fun field(field: UElement) {
-                    escaped = true
-                }
-
-                override fun argument(
-                    call: UCallExpression,
-                    reference: UElement
-                ) {
-                    escaped = true
-                }
-
-                override fun returns(expression: UReturnExpression) {
-                    escaped = true
-                }
             }
-            method.accept(visitor)
 
-            if (!committed && !escaped && !(visitor.failedResolve && method.anyCall(::isCleanupCall))) {
+            if (method.isMissingTarget(visitor)) {
                 val message = "This transaction should be completed with a `commit()` call"
                 context.report(COMMIT_FRAGMENT, node, context.getNameLocation(node), message)
             }
         }
     }
 
-    private fun isTransactionCommitMethodCall(
-        context: JavaContext,
-        call: UCallExpression
-    ): Boolean {
-        val methodName = getMethodName(call)
-        return (
-            COMMIT == methodName ||
-                COMMIT_ALLOWING_LOSS == methodName ||
-                COMMIT_NOW_ALLOWING_LOSS == methodName ||
-                COMMIT_NOW == methodName
-            ) && isMethodOnFragmentClass(
-            context, call, FRAGMENT_TRANSACTION_ANDROIDX_CLS, FRAGMENT_TRANSACTION_CLS, FRAGMENT_TRANSACTION_V4_CLS, true
-        )
-    }
-
-    private fun isShowFragmentMethodCall(
-        context: JavaContext,
-        call: UCallExpression
-    ): Boolean {
-        val methodName = getMethodName(call)
-        return SHOW == methodName && isMethodOnFragmentClass(
-            context, call, DIALOG_ANDROIDX_FRAGMENT, DIALOG_FRAGMENT, DIALOG_V4_FRAGMENT, true
-        )
-    }
-
     private fun isMethodOnFragmentClass(
         context: JavaContext,
-        call: UCallExpression,
+        method: PsiMethod,
         fragmentClass: String,
         platformFragmentClass: String,
-        v4FragmentClass: String,
-        returnForUnresolved: Boolean
+        v4FragmentClass: String
     ): Boolean {
         // If we *can't* resolve the method call, caller can decide
         // whether to consider the method called or not
-        val method = call.resolve() ?: return returnForUnresolved
         val containingClass = method.containingClass
         val evaluator = context.evaluator
         return evaluator.extendsClass(containingClass, fragmentClass, false) ||
             evaluator.extendsClass(containingClass, platformFragmentClass, false) ||
             evaluator.extendsClass(containingClass, v4FragmentClass, false)
     }
-
-    private fun isSuperConstructorCall(node: UCallExpression) =
-        node.sourcePsi is KtSuperTypeCallEntry || node.methodName == "super"
 
     private fun checkEditorApplied(
         context: JavaContext,
@@ -510,39 +512,60 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                 return
             }
 
-            fun isSharedPrefsCleanup(call: UCallExpression) =
-                isEditorApplyMethodCall(context, call) || isEditorCommitMethodCall(context, call)
-
             val method = node.getParentOfType(UMethod::class.java) ?: return
-            var applied = false
-            var escaped = false
-            val visitor = object : DataFlowAnalyzer(setOf(node), emptyList()) {
-                override fun receiver(call: UCallExpression) {
-                    if (isSharedPrefsCleanup(call)) {
-                        applied = true
+            val visitor = object : TargetMethodDataFlowAnalyzer(setOf(node), emptyList()) {
+                override fun isTargetMethodName(name: String): Boolean {
+                    return name == APPLY || name == COMMIT
+                }
+
+                override fun isTargetMethod(
+                    name: String,
+                    method: PsiMethod?,
+                    call: UCallExpression?,
+                    methodRef: UCallableReferenceExpression?
+                ): Boolean {
+                    when (name) {
+                        APPLY -> {
+                            if (method != null) {
+                                val containingClass = method.containingClass
+                                val evaluator = context.evaluator
+                                return evaluator.extendsClass(
+                                    containingClass, ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR, false
+                                )
+                            } else if (call == null || call.valueArgumentCount == 0) {
+                                // Couldn't find method but it *looks* like an apply call
+                                return true
+                            }
+                            return false
+                        }
+                        COMMIT -> {
+                            if (method != null) {
+                                val containingClass = method.containingClass
+                                val evaluator = context.evaluator
+                                if (evaluator.extendsClass(
+                                        containingClass, ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR, false
+                                    )
+                                ) {
+                                    return true
+                                }
+                            } else if (call == null || call.valueArgumentCount == 0) {
+                                // Couldn't find method but it *looks* like an apply call
+                                return true
+                            }
+                        }
                     }
-                }
-
-                override fun field(field: UElement) {
-                    escaped = true
-                }
-
-                override fun argument(
-                    call: UCallExpression,
-                    reference: UElement
-                ) {
-                    escaped = true
-                }
-
-                override fun returns(expression: UReturnExpression) {
-                    escaped = true
+                    return false
                 }
             }
-            method.accept(visitor)
 
-            if (!applied && !escaped && !(visitor.failedResolve && method.anyCall(::isSharedPrefsCleanup))) {
+            if (method.isMissingTarget(visitor)) {
                 val message = "`SharedPreferences.edit()` without a corresponding `commit()` or `apply()` call"
                 context.report(SHARED_PREF, node, context.getLocation(node), message)
+            } else {
+                val targetCall = visitor.targetReference
+                if (targetCall is UCallExpression && targetCall.methodName == COMMIT) {
+                    suggestApplyIfApplicable(context, targetCall)
+                }
             }
         }
     }
@@ -561,54 +584,6 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                     containingClass, ANDROID_CONTENT_SHARED_PREFERENCES, false
                 ) && evaluator.typeMatches(type, ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR)
                 )
-        }
-
-        return false
-    }
-
-    private fun isEditorCommitMethodCall(
-        context: JavaContext,
-        call: UCallExpression
-    ): Boolean {
-        val methodName = getMethodName(call)
-        if (COMMIT == methodName) {
-            val method = call.resolve()
-            if (method != null) {
-                val containingClass = method.containingClass
-                val evaluator = context.evaluator
-                if (evaluator.extendsClass(
-                        containingClass, ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR, false
-                    )
-                ) {
-                    suggestApplyIfApplicable(context, call)
-                    return true
-                }
-            } else if (call.valueArgumentCount == 0) {
-                // Couldn't find method but it *looks* like an apply call
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private fun isEditorApplyMethodCall(
-        context: JavaContext,
-        call: UCallExpression
-    ): Boolean {
-        val methodName = getMethodName(call)
-        if (APPLY == methodName) {
-            val method = call.resolve()
-            if (method != null) {
-                val containingClass = method.containingClass
-                val evaluator = context.evaluator
-                return evaluator.extendsClass(
-                    containingClass, ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR, false
-                )
-            } else if (call.valueArgumentCount == 0) {
-                // Couldn't find method but it *looks* like an apply call
-                return true
-            }
         }
 
         return false

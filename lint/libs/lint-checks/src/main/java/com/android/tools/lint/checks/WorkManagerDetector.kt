@@ -123,7 +123,7 @@ class WorkManagerDetector : Detector(), SourceCodeScanner {
                     // Used in a list etc: start to track the list
                     val parent = skipParenthesizedExprUp(call.uastParent)
                     if (parent is UQualifiedReferenceExpression) {
-                        val listVariable = parent.receiver.skipParenthesizedExprDown()?.tryResolve()
+                        val listVariable = parent.receiver.skipParenthesizedExprDown().tryResolve()
                         if (listVariable is PsiLocalVariable) {
                             references.add(listVariable)
                         } else {

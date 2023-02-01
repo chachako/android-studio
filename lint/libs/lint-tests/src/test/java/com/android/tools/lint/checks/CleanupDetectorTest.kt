@@ -25,7 +25,6 @@ class CleanupDetectorTest : AbstractCheckTest() {
     }
 
     fun testRecycle() {
-
         val expected =
             """
             src/test/pkg/RecycleTest.java:56: Warning: This TypedArray should be recycled after use with #recycle() [Recycle]
@@ -1028,7 +1027,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
 
     // Shared preference tests
 
-    fun test() {
+    fun testSharedPrefs() {
         val expected =
             """
             src/test/pkg/SharedPrefsTest.java:16: Warning: Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background [ApplySharedPref]
@@ -1935,7 +1934,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
 
     fun testKtxUseStatement() {
         // Regression test for
-        //  140344435 Lint does not realised that TypedArray.recycle() will be done by
+        //  140344435 Lint does not realize that TypedArray.recycle() will be done by
         //    KTX function of TypedArray.use
         lint().files(
             kotlin(
@@ -2192,6 +2191,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
         // but continuing to report ValueAnimators, ObjectAnimators, etc.
         lint().files(
             kotlin(
+                "src/test/pkg/test.kt",
                 """
                 package test.pkg
 
@@ -2257,6 +2257,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         play(bouncer).before(fadeAnim)
                         start()
                     }
+                }
+
+                // Make sure we don't warn about non-animation methods named for example "ofInt" (b/267462840)
+                class Proto {
+                   companion object {
+                       fun ofInt(int: Int): Proto = Proto()
+                   }
+                }
+                fun testUnrelated() {
+                    val proto = Proto.ofInt(1000)
                 }
                 """
             ).indented()
@@ -3251,5 +3261,447 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 """
             ).indented()
         ).run().expectClean()
+    }
+
+    fun test267308328() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.os.Parcel;
+
+                public class ArrayEscapeTest {
+                    public static Parcel[] createParcelArray(Parcel p) {
+                        final int length = p.readInt();
+                        final Parcel[] result = new Parcel[length];
+                        for (int i = 0; i < length; i++) {
+                            int parcelSize = p.readInt();
+                            if (parcelSize != 0) {
+                                int currentDataPosition = p.dataPosition();
+                                Parcel item = Parcel.obtain();
+                                item.appendFrom(p, currentDataPosition, parcelSize);
+                                result[i] = item;
+                                p.setDataPosition(currentDataPosition + parcelSize);
+                            } else {
+                                result[i] = null;
+                            }
+                        }
+                        return result;
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
+    fun test267439692() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.content.ContentResolver;
+                import android.content.res.AssetFileDescriptor;
+                import android.net.Uri;
+                import android.os.ParcelFileDescriptor;
+
+                import java.io.FileNotFoundException;
+
+                public class Test  {
+                    protected ParcelFileDescriptor test(Uri uri, ContentResolver contentResolver) throws FileNotFoundException {
+                        AssetFileDescriptor assetFileDescriptor = contentResolver.openAssetFileDescriptor(uri, "r");
+                        return assetFileDescriptor.getParcelFileDescriptor();
+                    }
+                }
+                """
+            ).indented(),
+            java(
+                """
+                package test.pkg;
+
+                import android.content.ContentResolver;
+                import android.net.Uri;
+
+                @SuppressWarnings({"UnnecessaryLocalVariable", "unused"})
+                public class Test2 {
+                    private int openDeprecatedDataPath(ContentResolver cr, Uri uri, String path, String mode) throws Exception {
+                        int fd = cr.openFileDescriptor(uri, mode).detachFd();
+                        return fd;
+                    }
+                }
+                """
+            )
+        ).run().expectClean()
+    }
+
+    fun test267597964() {
+        // Regression test for
+        // 267597964: "Recycle" rule false positive for resource returned in ?: operator
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.content.Context;
+                import android.database.Cursor;
+                import android.net.Uri;
+
+                @SuppressWarnings("unused")
+                public abstract class CursorTest {
+                    public Cursor create(Context context, Uri remoteUri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+                        final Cursor cursor = context.getContentResolver().query(remoteUri, projection,
+                                selection, selectionArgs, sortOrder);
+                        return cursor == null ? createEmptyCursor(projection) : cursor;
+                    }
+
+                    abstract Cursor createEmptyCursor(String[] projection);
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
+    fun test267597120() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.animation.AnimatorSet;
+                import android.animation.ValueAnimator;
+
+                @SuppressWarnings("unused")
+                public abstract class MethodReferenceTest {
+                    public void test1() {
+                        AnimatorSet anim = new AnimatorSet(); // OK
+                        final Runnable startBounceAnimRunnable = anim::start;
+                        postDelayed(startBounceAnimRunnable);
+                    }
+
+                    public void test2() {
+                        final ValueAnimator va = ValueAnimator.ofFloat(0f, 1f); // OK
+                        // Animation length is already expected to be scaled.
+                        postDelayed(va::start);
+                    }
+
+                    public void test3() {
+                        AnimatorSet anim = new AnimatorSet(); // OK: we'v
+                        final Runnable startBounceAnimRunnable = anim::start;
+                        startBounceAnimRunnable.run();
+                    }
+
+                    public void test4() {
+                        AnimatorSet anim = new AnimatorSet(); // ERROR: We get a start() reference, but we don't actually call/pass it!
+                        final Runnable startBounceAnimRunnable = anim::start;
+                    }
+
+                    abstract void postDelayed(Runnable runnable);
+                }
+                """
+            ).indented()
+        ).run().expect(
+            """
+            src/test/pkg/MethodReferenceTest.java:27: Warning: This animation should be started with #start() [Recycle]
+                    AnimatorSet anim = new AnimatorSet(); // ERROR: We get a start() reference, but we don't actually call/pass it!
+                                       ~~~~~~~~~~~~~~~~~
+            0 errors, 1 warnings
+            """
+        )
+    }
+
+    fun test267592743() {
+        // Regression test for
+        // 267592743: "Recycle" rule false positive when calling this() constructor from resource code
+        lint().files(
+            java(
+                """
+                package android.graphics;
+
+                public class SurfaceTexture {
+                    public SurfaceTexture(int texName) {
+                        this(texName, false);
+                    }
+                    public SurfaceTexture(int texName, boolean singleBufferMode) {
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
+    fun testTryWithResources() {
+        // Regression test for
+        // 267743930: "Recycle" rule false positive for resource created right before try-with-resources
+        lint().files(
+            gradle(
+                // For `try (cursor)` (without declaration) we'll need level 9
+                // or PSI/UAST will return an empty variable list
+                """
+                android {
+                    compileOptions {
+                        sourceCompatibility JavaVersion.VERSION_1_9
+                        targetCompatibility JavaVersion.VERSION_1_9
+                    }
+                }
+                """
+            ).indented(),
+            java(
+                """
+                package test.pkg;
+
+                import android.content.ContentResolver;
+                import android.content.Context;
+                import android.database.Cursor;
+                import android.net.Uri;
+
+                public class CursorTestJava {
+                    public void test(Context context, Uri uri, String[] projection, String selection,
+                                     String[] selectionArgs, String sortOrder) {
+                        ContentResolver resolver = context.getContentResolver();
+                        Cursor cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder);
+                        try (cursor) {
+                            System.out.println(cursor.getColumnCount());
+                        }
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg
+
+                import android.content.Context
+                import android.net.Uri
+
+                fun testCursorKotlin(
+                    context: Context, uri: Uri, projection: Array<String>, selection: String,
+                    selectionArgs: Array<String>, sortOrder: String
+                ) {
+                    val resolver = context.contentResolver
+                    val cursor = resolver.query(uri, projection, selection, selectionArgs, sortOrder)
+                    cursor.use {
+                        println(cursor?.columnCount)
+                    }
+                }
+                """
+            )
+        ).run().expectClean()
+    }
+
+    fun testCasts() {
+        // Regression test for
+        //  267743132: "Recycle" rule false positive for resource assigned to a variable after type casting
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.content.ContentResolver;
+                import android.net.Uri;
+
+                import java.io.File;
+                import java.io.FileInputStream;
+                import java.io.FileOutputStream;
+                import java.io.IOException;
+                import java.io.OutputStream;
+
+                public abstract class CastTest {
+                    public void test(ContentResolver contentResolver, Uri destUri, File sourceFile)
+                            throws IOException {
+                        FileOutputStream fileOutputStream;
+                        OutputStream outputStream = contentResolver.openOutputStream(destUri, "rw");
+                        if (outputStream instanceof FileOutputStream) {
+                            fileOutputStream = (FileOutputStream) outputStream;
+                        } else {
+                            throw new IOException("OutputStream instance is not FileOutputStream");
+                        }
+                        copyFile(new FileInputStream(sourceFile), fileOutputStream);
+                    }
+
+                    abstract void copyFile(FileInputStream fileInputStream, FileOutputStream fileOutputStream);
+                }
+                """
+            )
+        ).run().expectClean()
+    }
+
+    fun testMethodReferences() {
+        lint().files(
+            java(
+                """
+                package test.pkg;
+
+                import android.app.FragmentManager;
+                import android.app.FragmentTransaction;
+                import android.content.Context;
+                import android.content.SharedPreferences;
+                import android.content.res.TypedArray;
+                import android.graphics.SurfaceTexture;
+                import android.os.Bundle;
+                import android.preference.PreferenceManager;
+                import android.util.AttributeSet;
+
+                @SuppressWarnings({"deprecation", "UnnecessaryLocalVariable", "unused"})
+                public abstract class MethodRefTestJava {
+                    abstract void handle(Object any);
+
+                    public void testError(FragmentManager manager) {
+                        FragmentTransaction fragmentTransaction = manager.beginTransaction(); // ERROR 1
+                        Runnable finish = fragmentTransaction::commit;
+                    }
+
+                    public Runnable testRefReturned(FragmentManager manager) {
+                        FragmentTransaction fragmentTransaction = manager.beginTransaction(); // OK 1
+                        Runnable finish = fragmentTransaction::commit;
+                        return finish;
+                    }
+
+                    public void testRefPassed(FragmentManager manager) {
+                        FragmentTransaction fragmentTransaction = manager.beginTransaction(); // OK 2
+                        Runnable finish = fragmentTransaction::commit;
+                        handle(finish);
+                    }
+
+                    public void testIntermediate(FragmentManager manager) {
+                        FragmentTransaction fragmentTransaction = manager.beginTransaction(); // OK 3
+                        Runnable finish = fragmentTransaction::commit;
+                        Runnable intermediate = ((Runnable) (finish));
+                        intermediate.run();
+                    }
+
+                    public void testTransactions(FragmentManager manager, boolean allow) {
+                        FragmentTransaction fragmentTransaction = manager.beginTransaction(); // OK 4
+                        Runnable finish = fragmentTransaction::commitAllowingStateLoss;
+                        Runnable now = fragmentTransaction::commitNow;
+                        if (allow) {
+                            finish.run();
+                        } else {
+                            now.run();
+                        }
+                    }
+
+                    @SuppressWarnings("NewApi")
+                    public void testSurfaceTexture() {
+                        SurfaceTexture texture = new SurfaceTexture(true); // OK 5
+                        Runnable release = texture::release;
+                        release.run();
+                    }
+
+                    public void testObtain(Context context, AttributeSet attrs, int defStyle, int[] view, int styleable) {
+                        final TypedArray a = context.obtainStyledAttributes(attrs, view, defStyle, 0); // OK 6
+                        String example = a.getString(styleable);
+                        Runnable recycler = a::recycle;
+                        new Runnable() {
+                            public void run() {
+                                recycler.run();
+                            }
+                        }.run();
+                    }
+
+                    public boolean testSharedPrefs(Context context, Bundle savedInstanceState) {
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+                        SharedPreferences.Editor editor = preferences.edit(); // OK 7
+                        Runnable apply = editor::apply;
+                        editor.putString("foo", "bar");
+                        editor.putInt("bar", 42);
+                        apply.run();
+                        return true;
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                @file:Suppress("DEPRECATION", "unused", "UNUSED_VARIABLE", "UNUSED_PARAMETER")
+                package test.pkg
+
+                import android.annotation.SuppressLint
+                import android.app.FragmentManager
+                import android.content.Context
+                import android.graphics.SurfaceTexture
+                import android.preference.PreferenceManager
+                import android.util.AttributeSet
+
+                abstract class MethodRefTestKotlin {
+                    abstract fun handle(any: Any?)
+
+                    fun testError(manager: FragmentManager) {
+                        val fragmentTransaction = manager.beginTransaction() // ERROR 2
+                        val finish = fragmentTransaction::commit
+                    }
+
+                    fun testRefReturned(manager: FragmentManager): () -> Int {
+                        val fragmentTransaction = manager.beginTransaction() // OK 1
+                        return fragmentTransaction::commit
+                    }
+
+                    fun testRefPassed(manager: FragmentManager) {
+                        val fragmentTransaction = manager.beginTransaction() // OK 2
+                        val finish = fragmentTransaction::commit
+                        handle(finish)
+                    }
+
+                    fun testIntermediate(manager: FragmentManager) {
+                        val fragmentTransaction = manager.beginTransaction() // OK 3
+                        val finish: () -> Int = fragmentTransaction::commit
+                        val intermediate = (finish as () -> Int)
+                        intermediate()
+                    }
+
+                    fun testTransactions(manager: FragmentManager, allow: Boolean) {
+                        val fragmentTransaction = manager.beginTransaction() // OK 4
+                        val finish: () -> Int = fragmentTransaction::commitAllowingStateLoss
+                        val now: () -> Unit = fragmentTransaction::commitNow
+                        if (allow) {
+                            finish.invoke()
+                        } else {
+                            now.invoke()
+                        }
+                    }
+
+                    @SuppressLint("NewApi")
+                    fun testSurfaceTexture() {
+                        val texture = SurfaceTexture(true) // OK 5
+                        val release = texture::release
+                        release()
+                    }
+
+                    fun testObtain(
+                        context: Context,
+                        attrs: AttributeSet?,
+                        defStyle: Int,
+                        view: IntArray?,
+                        styleable: Int
+                    ) {
+                        val a = context.obtainStyledAttributes(attrs, view!!, defStyle, 0) // OK 6
+                        val example = a.getString(styleable)
+                        val recycler = a::recycle
+                        Runnable { recycler.invoke() }.run()
+                    }
+
+                    fun testSharedPrefs(context: Context?): Boolean {
+                        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+                        val editor = preferences.edit() // OK 7
+                        val apply = editor::apply
+                        editor.putString("foo", "bar")
+                        editor.putInt("bar", 42)
+                        apply.invoke()
+                        return true
+                    }
+                }
+                """
+            ).indented()
+        ).run().expect(
+            """
+            src/test/pkg/MethodRefTestJava.java:18: Warning: This transaction should be completed with a commit() call [CommitTransaction]
+                    FragmentTransaction fragmentTransaction = manager.beginTransaction(); // ERROR 1
+                                                                      ~~~~~~~~~~~~~~~~
+            src/test/pkg/MethodRefTestKotlin.kt:15: Warning: This transaction should be completed with a commit() call [CommitTransaction]
+                    val fragmentTransaction = manager.beginTransaction() // ERROR 2
+                                                      ~~~~~~~~~~~~~~~~
+            0 errors, 2 warnings
+            """
+        )
     }
 }

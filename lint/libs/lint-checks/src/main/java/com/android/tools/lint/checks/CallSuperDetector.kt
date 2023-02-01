@@ -179,7 +179,7 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
 
         override fun visitSuperExpression(node: USuperExpression): Boolean {
             val containingClass = node.getContainingUClass()?.sourcePsi
-            if(childClass == null || containingClass?.isEquivalentTo(childClass) != false) {
+            if (childClass == null || containingClass?.isEquivalentTo(childClass) != false) {
                 anySuperCallCount++
                 val parent = skipParenthesizedExprUp(node.uastParent)
                 if (parent is UReferenceExpression) {

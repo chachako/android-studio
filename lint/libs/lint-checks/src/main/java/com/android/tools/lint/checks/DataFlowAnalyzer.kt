@@ -19,6 +19,7 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.getReceiverOrContainingClass
 import com.android.tools.lint.detector.api.isBelow
+import com.android.tools.lint.detector.api.isElvisIf
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isReturningContext
 import com.android.tools.lint.detector.api.isScopingIt
@@ -33,14 +34,16 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiVariable
+import org.jetbrains.kotlin.psi.KtCallableReferenceExpression
+import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBinaryExpressionWithType
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UDeclarationsExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
-import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UField
 import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULabeledExpression
@@ -64,9 +67,9 @@ import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedParentOrThis
 import org.jetbrains.uast.kotlin.KotlinPostfixOperators
-import org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
+import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
@@ -90,12 +93,18 @@ abstract class DataFlowAnalyzer(
     open fun receiver(call: UCallExpression) {}
 
     /**
-     * The instance being tracked is being returned from this block.
+     * A reference to a method on the tracked instance is being called
      */
+    open fun methodReference(call: UCallableReferenceExpression) {}
+
+    /** The instance being tracked is being returned from this block. */
     open fun returns(expression: UReturnExpression) {}
 
     /** The instance being tracked is being stored into a field. */
     open fun field(field: UElement) {}
+
+    /** The instance being tracked is being stored into an array. */
+    open fun array(array: UArrayAccessExpression) {}
 
     /** The instance being tracked is being passed in a method call. */
     open fun argument(
@@ -109,7 +118,7 @@ abstract class DataFlowAnalyzer(
 
     /**
      * We failed to resolve a reference; this means the code can
-     * be invalid or the environment incorrect and we should draw
+     * be invalid or the environment incorrect, and we should draw
      * conclusions very carefully.
      */
     open fun failedResolve(reference: UElement) {
@@ -134,6 +143,16 @@ abstract class DataFlowAnalyzer(
         }
     }
 
+    /** Start tracking the given instance */
+    protected open fun track(instance: UElement, source: UElement? = null): Boolean {
+        return instances.add(instance)
+    }
+
+    /** Start tracking the given reference */
+    protected open fun track(reference: PsiElement, source: UElement? = null): Boolean {
+        return references.add(reference)
+    }
+
     /**
      * If a tracked element is passed as an argument, [argument] will
      * be invoked unless this method returns true. This lets you exempt
@@ -141,7 +160,7 @@ abstract class DataFlowAnalyzer(
      * methods.
      */
     open fun ignoreArgument(call: UCallExpression, reference: UElement): Boolean {
-        val name = call.methodName ?: return false
+        val name = call.methodName ?: call.methodIdentifier?.name ?: return false
         if (name == "print" || name == "println" || name == "log") {
             return true
         } else if (name.length == 1) {
@@ -158,6 +177,7 @@ abstract class DataFlowAnalyzer(
      * is intended to be able to tell that in a constructor call chain
      * foo().bar().baz() is still invoking methods on the foo instance.
      */
+    @Suppress("RedundantIf")
     open fun returnsSelf(call: UCallExpression): Boolean {
         val resolvedCall = call.resolve() ?: run {
             failedResolve(call)
@@ -295,14 +315,14 @@ abstract class DataFlowAnalyzer(
                 receiver(node)
             }
             if (returnsSelf(node)) {
-                instances.add(node)
+                track(node, node)
                 val parent = skipParenthesizedExprUp(node.uastParent) as? UQualifiedReferenceExpression
                 if (parent != null) {
-                    instances.add(parent)
+                    track(parent, node)
                     val parentParent = skipParenthesizedExprUp(parent.uastParent) as? UQualifiedReferenceExpression
                     val chained = parentParent?.selector
                     if (chained != null) {
-                        instances.add(chained)
+                        track(chained, node)
                     }
                 }
             }
@@ -322,7 +342,8 @@ abstract class DataFlowAnalyzer(
                     argument(node, expression)
                 }
             } else if (expression is UReferenceExpression) {
-                if (references.contains(expression.resolve())) {
+                val resolved = expression.resolve()
+                if (references.contains(resolved)) {
                     if (!ignoreArgument(node, expression)) {
                         argument(node, expression)
                     }
@@ -334,6 +355,27 @@ abstract class DataFlowAnalyzer(
         super.afterVisitCallExpression(node)
     }
 
+    override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
+        val qualifier = node.qualifierExpression
+            // For odd reasons, UCallableReferenceExpression#qualifierExpression
+            // "can be null if the qualifierType is known" which the Kotlin implementation
+            // does. But we care about more than the type; we want to make sure
+            // that it's bound to the right instance, so we have to work a bit
+            // harder here.
+            ?: (node.sourcePsi as? KtCallableReferenceExpression)?.receiverExpression?.toUElement()
+
+        if (qualifier != null) {
+            if (instances.contains(qualifier)) {
+                methodReference(node)
+            } else if (qualifier is UReferenceExpression) {
+                if (references.contains(qualifier.resolve())) {
+                    methodReference(node)
+                }
+            }
+        }
+        return super.visitCallableReferenceExpression(node)
+    }
+
     private fun handleLambdaSuffix(lambda: ULambdaExpression, node: UCallExpression) {
         if (isScopingIt(node)) {
             // If we have X.let { Y }, and X is a tracked instance, we should now
@@ -341,7 +383,7 @@ abstract class DataFlowAnalyzer(
             // variable is called). Same case for X.also { Y }.
             if (lambda.valueParameters.size == 1) {
                 val lambdaVar = lambda.valueParameters.first()
-                instances.add(lambdaVar)
+                track(lambdaVar as UElement, node)
                 addVariableReference(lambdaVar)
             }
         } else if (isScopingThis(node)) {
@@ -378,7 +420,7 @@ abstract class DataFlowAnalyzer(
             or it could be to an unrelated variable or field in a scope outside
             this apply block.
 
-            This is all a long way of saying that that we cannot just look
+            This is all a long way of saying that we cannot just look
             at the top level expressions of the lambda, and that we need to
             figure out the binding for each receiver in nested blocks. Ideally,
             this information would simply be available in UAST, or even by
@@ -444,6 +486,7 @@ abstract class DataFlowAnalyzer(
      * Returns true if the given class matches the types of tracked
      * element scopes
      */
+    @Suppress("RedundantIf")
     private fun isMatchingType(containingClass: PsiClass?): Boolean {
         containingClass ?: return false
 
@@ -458,43 +501,38 @@ abstract class DataFlowAnalyzer(
         return false
     }
 
-    override fun visitParenthesizedExpression(node: UParenthesizedExpression): Boolean {
-        if (instances.contains(node)) { // node.sourcePsi?.text
-            instances.add(node.expression)
-        }
-        return super.visitParenthesizedExpression(node)
-    }
-
     override fun afterVisitParenthesizedExpression(node: UParenthesizedExpression) {
-        if (instances.contains(node.expression)) {
-            instances.add(node)
+        val expression = node.expression
+        if (instances.contains(expression)) {
+            track(node, expression)
+        } else if (expression is UReferenceExpression && references.contains(expression.resolve())) {
+            track(node, expression)
         }
         super.afterVisitParenthesizedExpression(node)
     }
 
-    override fun afterVisitVariable(node: UVariable) {
-        if (node is ULocalVariable) {
-            val initializer = node.uastInitializer?.skipParenthesizedExprDown()
-            if (initializer != null) {
-                if (instances.contains(initializer)) {
-                    // Instance is stored in a variable
-                    addVariableReference(node)
-                } else if (initializer is UReferenceExpression) {
-                    val resolved = initializer.resolve()
-                    if (resolved != null && references.contains(resolved)) {
-                        addVariableReference(node)
-                    }
+    override fun afterVisitLocalVariable(node: ULocalVariable) {
+        val initializer = node.uastInitializer?.skipParenthesizedExprDown()
+        if (initializer != null) {
+            if (instances.contains(initializer)) {
+                // Instance is stored in a variable
+                addVariableReference(node, initializer)
+            } else if (initializer is UReferenceExpression) {
+                val resolved = initializer.resolve()
+                if (resolved != null && references.contains(resolved)) {
+                    addVariableReference(node, initializer)
                 }
             }
         }
-        super.afterVisitVariable(node)
+        super.afterVisitLocalVariable(node)
     }
 
     override fun afterVisitPostfixExpression(node: UPostfixExpression) {
+        @Suppress("UnstableApiUsage")
         if (node.operator == KotlinPostfixOperators.EXCLEXCL) {
             val element = node.operand
             if (instances.contains(element)) {
-                instances.add(node)
+                track(node, element)
             }
         }
 
@@ -502,16 +540,21 @@ abstract class DataFlowAnalyzer(
     }
 
     override fun afterVisitBinaryExpressionWithType(node: UBinaryExpressionWithType) {
-        val element = node.operand
-        if (instances.contains(element)) {
-            instances.add(node)
+        val operand = node.operand
+        if (instances.contains(operand)) {
+            track(node, operand)
+        } else if (operand is UReferenceExpression) {
+            val resolved = operand.resolve()
+            if (references.contains(resolved)) {
+                track(node, operand)
+            }
         }
         super.afterVisitBinaryExpressionWithType(node)
     }
 
-    protected fun addVariableReference(node: UVariable): Boolean {
-        return (node.sourcePsi?.let { references.add(it) } ?: false)
-            .or(node.javaPsi?.let { references.add(it) } ?: false)
+    protected fun addVariableReference(node: UVariable, source: UElement = node): Boolean {
+        return (node.sourcePsi?.let { track(it, source) } ?: false)
+            .or(node.javaPsi?.let { track(it, source) } ?: false)
     }
 
     override fun afterVisitSwitchClauseExpression(node: USwitchClauseExpression) {
@@ -520,7 +563,7 @@ abstract class DataFlowAnalyzer(
                 if (instances.contains(expression)) {
                     val switch = node.getParentOfType<USwitchExpression>()
                     if (switch != null) {
-                        instances.add(switch)
+                        track(switch, expression)
                         break
                     }
                 }
@@ -534,14 +577,15 @@ abstract class DataFlowAnalyzer(
     override fun afterVisitYieldExpression(node: UYieldExpression) {
         val element: UElement? = node.expression
         if (element != null && instances.contains(element)) {
-            instances.add(node)
+            track(node, element)
         }
         super.afterVisitYieldExpression(node)
     }
 
     override fun afterVisitLabeledExpression(node: ULabeledExpression) {
-        if (instances.contains(node.expression)) {
-            instances.add(node)
+        val expression = node.expression
+        if (instances.contains(expression)) {
+            track(node, expression)
         }
         super.afterVisitLabeledExpression(node)
     }
@@ -554,20 +598,20 @@ abstract class DataFlowAnalyzer(
         if (!isJava(node.sourcePsi)) { // Does not apply to Java
             // Handle Elvis operator
             val parent = skipParenthesizedExprUp(node.uastParent)
-            if (parent is UExpressionList && parent.kind == KotlinSpecialExpressionKinds.ELVIS) {
+            if (parent != null && node.isElvisIf()) {
                 val then = node.thenExpression?.skipParenthesizedExprDown()
                 if (then is USimpleNameReferenceExpression) {
                     val variable = then.resolve()
                     if (variable != null) {
                         if (references.contains(variable)) {
-                            instances.add(parent)
+                            track(parent, node)
                         } else if (variable is UVariable) {
                             val psi = variable.javaPsi
                             val sourcePsi = variable.sourcePsi
                             if (psi != null && references.contains(psi) ||
                                 sourcePsi != null && references.contains(sourcePsi)
                             ) {
-                                instances.add(parent)
+                                track(parent, node)
                             }
                         }
                     }
@@ -580,22 +624,28 @@ abstract class DataFlowAnalyzer(
 
         val thenExpression = node.thenExpression?.skipParenthesizedExprDown()
         val elseExpression = node.elseExpression?.skipParenthesizedExprDown()
-        if (thenExpression != null && instances.contains(thenExpression)) {
-            instances.add(node)
-        } else if (elseExpression != null && instances.contains(elseExpression)) {
-            instances.add(node)
+        val thenReference = if (thenExpression is USimpleNameReferenceExpression) thenExpression.resolve() else null
+        val elseReference = if (elseExpression is USimpleNameReferenceExpression) elseExpression.resolve() else null
+        if (thenExpression != null && instances.contains(thenExpression) ||
+            thenReference != null && references.contains(thenReference)
+        ) {
+            track(node, thenExpression)
+        } else if (elseExpression != null && instances.contains(elseExpression) ||
+            elseReference != null && references.contains(elseReference)
+        ) {
+            track(node, elseExpression)
         } else {
             if (thenExpression is UBlockExpression) {
                 thenExpression.expressions.lastOrNull()?.let {
                     if (instances.contains(it)) {
-                        instances.add(node)
+                        track(node, it)
                     }
                 }
             }
             if (elseExpression is UBlockExpression) {
                 elseExpression.expressions.lastOrNull()?.let {
                     if (instances.contains(it)) {
-                        instances.add(node)
+                        track(node, it)
                     }
                 }
             }
@@ -608,14 +658,14 @@ abstract class DataFlowAnalyzer(
         val tryBlock = node.tryClause as? UBlockExpression ?: return
         tryBlock.expressions.lastOrNull()?.let { lastExpression ->
             if (instances.contains(lastExpression)) {
-                instances.add(node)
+                track(node, lastExpression)
             }
         }
         for (clause in node.catchClauses) {
             val clauseBody = clause.body as? UBlockExpression ?: continue
             clauseBody.expressions.lastOrNull()?.let { lastExpression ->
                 if (instances.contains(lastExpression)) {
-                    instances.add(node)
+                    track(node, lastExpression)
                 }
             }
         }
@@ -629,81 +679,85 @@ abstract class DataFlowAnalyzer(
             return
         }
 
-        var clearLhs = true
+        clearLhsVariable(node)
 
         val rhs = node.rightOperand
         if (instances.contains(rhs)) {
-            clearLhs = addBinaryExpressionReferences(node, rhs)
+            addBinaryExpressionReferences(node, rhs)
         } else if (rhs is UReferenceExpression) {
             val resolved = rhs.resolve()
             if (resolved != null && references.contains(resolved)) {
-                clearLhs = false
                 addBinaryExpressionReferences(node, rhs)
             }
         }
 
-        if (clearLhs) {
-            // If we reassign one of the variables, clear it out
-            val lhs = node.leftOperand.skipParenthesizedExprDown().tryResolve()
-            if (lhs != null && lhs != initial && references.contains(lhs)) {
-                val block = skipParenthesizedExprUp(node.uastParent)
-                if (block is UBlockExpression && initial.size == 1) {
-                    val element = (initial.first() as? UExpression)?.skipParenthesizedExprDown() ?: return
-                    if (element.isBelow(node)) {
-                        return
-                    }
-                    val initialBlock = element.getParentOfType<UElement>(
-                        false,
-                        UBlockExpression::class.java,
-                        UIfExpression::class.java
-                    ) ?: return
+        super.afterVisitBinaryExpression(node)
+    }
 
-                    if (initialBlock === block) {
-                        references.remove(lhs)
-                    } else if (node.isBelow(initialBlock)) {
-                        var referenced = false
-                        val target = skipParenthesizedExprUp(node.uastParent) ?: return
+    private fun clearLhsVariable(node: UBinaryExpression) {
+        // If we reassign one of the variables, clear it out
+        val lhs = node.leftOperand.skipParenthesizedExprDown().tryResolve()
+        if (lhs != null && lhs != initial && references.contains(lhs)) {
+            val block = skipParenthesizedExprUp(node.uastParent)
+            if (block is UBlockExpression && initial.size == 1) {
+                val element = (initial.first() as? UExpression)?.skipParenthesizedExprDown() ?: return
+                if (element.isBelow(node)) {
+                    return
+                }
+                val initialBlock = element.getParentOfType<UElement>(
+                    false,
+                    UBlockExpression::class.java,
+                    UIfExpression::class.java
+                ) ?: return
 
-                        initialBlock.accept(object : AbstractUastVisitor() {
-                            private var reachedTarget = false
+                if (initialBlock === block) {
+                    references.remove(lhs)
+                } else if (node.isBelow(initialBlock)) {
+                    var referenced = false
+                    val target = skipParenthesizedExprUp(node.uastParent) ?: return
 
-                            override fun afterVisitElement(node: UElement) {
-                                if (node == target) {
-                                    reachedTarget = true
-                                }
-                                super.afterVisitElement(node)
+                    initialBlock.accept(object : AbstractUastVisitor() {
+                        private var reachedTarget = false
+
+                        override fun afterVisitElement(node: UElement) {
+                            if (node == target) {
+                                reachedTarget = true
                             }
-
-                            override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
-                                if (reachedTarget) {
-                                    val resolved = node.resolve()
-                                    if (lhs.isEquivalentTo(resolved)) {
-                                        referenced = true
-                                        return true
-                                    }
-                                }
-                                return super.visitSimpleNameReferenceExpression(node)
-                            }
-                        })
-                        if (!referenced) {
-                            // The variable is reassigned in a different (deeper) block than the origin but
-                            // it is not referenced further after that
-                            references.remove(lhs)
+                            super.afterVisitElement(node)
                         }
+
+                        override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
+                            if (reachedTarget) {
+                                val resolved = node.resolve()
+                                if (lhs.isEquivalentTo(resolved)) {
+                                    referenced = true
+                                    return true
+                                }
+                            }
+                            return super.visitSimpleNameReferenceExpression(node)
+                        }
+                    })
+                    if (!referenced) {
+                        // The variable is reassigned in a different (deeper) block than the origin, but
+                        // it is not referenced further after that
+                        references.remove(lhs)
                     }
                 }
             }
         }
-        super.afterVisitBinaryExpression(node)
     }
 
     private fun addBinaryExpressionReferences(node: UBinaryExpression, rhs: UExpression): Boolean {
-        val lhs = node.leftOperand.tryResolve()
+        val leftOperand = node.leftOperand
+        if (leftOperand is UArrayAccessExpression) {
+            array(leftOperand)
+        }
+        val lhs = leftOperand.tryResolve() ?: return false
         var referenceAdded = false
         when (lhs) {
             is UVariable -> referenceAdded = addVariableReference(lhs)
-            is PsiLocalVariable -> referenceAdded = references.add(lhs)
-            is PsiParameter -> referenceAdded = references.add(lhs)
+            is PsiLocalVariable -> referenceAdded = track(lhs, node)
+            is PsiParameter -> referenceAdded = track(lhs, node)
             is PsiField -> field(rhs)
             is PsiMethod -> field(rhs)
         }
@@ -839,31 +893,247 @@ abstract class DataFlowAnalyzer(
                     }
                 }
             } else if (parent is UVariable && (allowFields || parent !is UField)) {
-                // Handle elvis operators in Kotlin. A statement like this:
-                //   val transaction = f.beginTransaction() ?: return
-                // is turned into
-                //   var transaction: android.app.FragmentTransaction = elvis {
-                //       @org.jetbrains.annotations.NotNull var var8633f9d5: android.app.FragmentTransaction = f.beginTransaction()
-                //       if (var8633f9d5 != null) var8633f9d5 else return
-                //   }
-                // and here we want to record "transaction", not "var8633f9d5", as the variable
-                // to track.
-                if (parent.uastParent is UDeclarationsExpression &&
-                    parent.uastParent!!.uastParent is UExpressionList
-                ) {
-                    val exp = parent.uastParent!!.uastParent as UExpressionList
-                    val kind = exp.kind
-                    if (kind.name == "elvis" && exp.uastParent is UVariable) {
-                        parent = exp.uastParent
-                    }
-                }
-
-                return (parent as UVariable).psi
+                return parent.javaPsi as? PsiVariable
             }
 
             return null
         }
     }
+}
+
+/**
+ * [DataFlowAnalyzer] which also tracks whether the tracked instances
+ * escape into fields, method calls, array assignments or as return
+ * values. Subclasses can check the value of the [escaped] property
+ * after visiting.
+ */
+open class EscapeCheckingDataFlowAnalyzer(
+    initial: Collection<UElement>,
+    initialReferences: Collection<PsiVariable> = emptyList()
+) : DataFlowAnalyzer(initial, initialReferences) {
+    var escaped: Boolean = false
+    override fun field(field: UElement) {
+        escaped = true
+    }
+
+    override fun argument(
+        call: UCallExpression,
+        reference: UElement
+    ) {
+        escaped = true
+    }
+
+    override fun returns(expression: UReturnExpression) {
+        escaped = true
+    }
+
+    override fun array(array: UArrayAccessExpression) {
+        escaped = true
+    }
+}
+
+/**
+ * Analyzer which makes it easier to check for a scenario where you want
+ * to track the flow from some sort of initialization expression (such
+ * as creating a transaction) to make sure that it eventually ends up
+ * calling one or more "target" methods (such as a transaction commit
+ * function).
+ *
+ * All you need to do is override one or more of the `isTargetMethod`
+ * functions to indicate that the given call or method is the target
+ * you're looking for.
+ *
+ * There are some utility methods in the companion object which makes it
+ * even simpler for some common and basic scenarios, but in general this
+ * continues to extend a UAST visitor, so you can override various AST
+ * visitor methods to customize the logic as needed.
+ */
+abstract class TargetMethodDataFlowAnalyzer(
+    initial: Collection<UElement>,
+    initialReferences: Collection<PsiVariable> = emptyList()
+) : EscapeCheckingDataFlowAnalyzer(initial, initialReferences) {
+    var targetReached = false
+    var targetReference: UElement? = null
+
+    /**
+     * Simple name filter; this lets you reject names that have no
+     * chance of being the target method, so we don't need to proceed to
+     * resolve the call for further checking. For convenience, it's safe
+     * to just return true here and do full filtering when given the
+     * method.
+     */
+    open fun isTargetMethodName(name: String): Boolean = true
+
+    /**
+     * Returns true if the given [method] is one of the targets we're
+     * after. If [method] is null, there was a resolve problem.
+     */
+    open fun isTargetMethod(name: String, method: PsiMethod?): Boolean = false
+
+    /**
+     * Returns true if the given [method] is one of the targets we're
+     * after. If [method] is null, there was a resolve problem. Here
+     * we're also passing in either the corresponding call expression or
+     * corresponding method reference expression, in case you want to
+     * perform additional validation.
+     */
+    open fun isTargetMethod(
+        name: String,
+        method: PsiMethod?,
+        call: UCallExpression?,
+        methodRef: UCallableReferenceExpression?
+    ): Boolean {
+        return isTargetMethod(name, method)
+    }
+
+    override fun visitElement(node: UElement): Boolean {
+        return targetReached
+    }
+
+    override fun receiver(call: UCallExpression) {
+        super.receiver(call)
+
+        if (targetReached) {
+            return
+        }
+        val name = call.methodName ?: call.methodIdentifier?.name
+        if (name != null && isTargetMethodName(name)) {
+            val resolved = call.resolve()
+            if (isTargetMethod(name, resolved, call, null)) {
+                targetReached = true
+                targetReference = call
+                return
+            }
+        }
+    }
+
+    override fun methodReference(call: UCallableReferenceExpression) {
+        super.methodReference(call)
+        val name = call.callableName
+        if (isTargetMethodName(name)) {
+            val resolved = call.resolve()
+            if (resolved is PsiMethod) {
+                if (isTargetMethod(name, resolved, null, call)) {
+                    val method = initial.firstOrNull()?.getParentOfType<UMethod>()
+                        ?: call.getParentOfType<UMethod>()
+                        ?: return
+                    val callTracker = object : EscapeCheckingDataFlowAnalyzer(listOf(call)) {
+                        override fun visitElement(node: UElement): Boolean {
+                            return targetReached
+                        }
+                        override fun receiver(call: UCallExpression) {
+                            targetReference = call
+                            targetReached = true
+                        }
+                    }
+                    method.accept(callTracker)
+                    if (callTracker.escaped) escaped = true
+                    if (callTracker.failedResolve) failedResolve = true
+                }
+            }
+        }
+    }
+
+    /**
+     * After visiting the given method, returns false if we reached
+     * the target, or if one of the tracked instances escaped from the
+     * method (via a return or method call or assignment into a field
+     * etc), or if we have some uncertainty about it (for example if
+     * there were resolve problems, and we observed a call or method
+     * reference with a name match).
+     */
+    internal fun isMissingTarget(within: UMethod, allowEscape: Boolean): Boolean {
+        if (targetReached || escaped && !allowEscape) {
+            return false
+        }
+        if (failedResolve) {
+            // There was a resolve failure somewhere; see if there is a match on the name
+            // part anywhere, and if so, don't conclude that the target was never reached.
+            var found = false
+            within.accept(object : AbstractUastVisitor() {
+                override fun visitCallExpression(node: UCallExpression): Boolean {
+                    val name = node.methodName ?: node.methodIdentifier?.name
+                    if (name != null && isTargetMethodName(name)) {
+                        val resolved = node.resolve()
+                        if (resolved !is PsiMethod || isTargetMethod(name, resolved, node, null)) {
+                            found = true
+                        }
+                    }
+                    return found || super.visitCallExpression(node)
+                }
+
+                override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
+                    val name = node.callableName
+                    if (isTargetMethodName(name)) {
+                        val resolved = node.resolve()
+                        if (resolved !is PsiMethod || isTargetMethod(name, resolved, null, node)) {
+                            found = true
+                        }
+                    }
+                    return found || super.visitCallableReferenceExpression(node)
+                }
+            })
+            return !found
+        }
+
+        return true
+    }
+
+    companion object {
+        /**
+         * Creates a simple [TargetMethodDataFlowAnalyzer] looking for
+         * the given method (identified by name and containing class
+         * fully qualified name) starting from the given source element.
+         */
+        fun create(source: UElement, targets: Map<String, List<String>>): TargetMethodDataFlowAnalyzer {
+            return object : TargetMethodDataFlowAnalyzer(listOf(source)) {
+                override fun isTargetMethodName(name: String): Boolean {
+                    return targets.containsKey(name)
+                }
+
+                override fun isTargetMethod(name: String, method: PsiMethod?): Boolean {
+                    val classes = targets[name] ?: return false
+                    return classes.contains(method?.containingClass?.qualifiedName)
+                }
+            }
+        }
+
+        /**
+         * Creates a simple [TargetMethodDataFlowAnalyzer] looking for
+         * the given method (identified by name and list of containing
+         * class fully qualified names) starting from the given source
+         * element.
+         */
+        fun create(source: UElement, methodName: String, containingClass: String?): TargetMethodDataFlowAnalyzer {
+            return object : TargetMethodDataFlowAnalyzer(listOf(source)) {
+                override fun isTargetMethodName(name: String): Boolean {
+                    return methodName == name
+                }
+
+                override fun isTargetMethod(name: String, method: PsiMethod?): Boolean {
+                    return containingClass == null || method?.containingClass?.qualifiedName == containingClass
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Given a [TargetMethodDataFlowAnalyzer], visits this method, and then
+ * checks whether the target was reached or not (and returns true if
+ * **not** found, or unknown because the instance escapes this method
+ * and could be reached elsewhere.)
+ *
+ * (After visiting the given method, returns false if we reached the
+ * target, or if one of the tracked instances escaped from the method
+ * (via a return or method call or assignment into a field etc), or if
+ * we have some uncertainty about it, for example if there were resolve
+ * problems, and we observed a call or method reference with a name
+ * match).
+ */
+fun UMethod.isMissingTarget(analyzer: TargetMethodDataFlowAnalyzer, allowEscape: Boolean = false): Boolean {
+    accept(analyzer)
+    return analyzer.isMissingTarget(this, allowEscape)
 }
 
 /**
@@ -884,7 +1154,7 @@ fun UMethod.anyCall(filter: (UCallExpression) -> Boolean): Boolean {
             if (filter(node)) {
                 found = true
             }
-            return super.visitCallExpression(node)
+            return found || super.visitCallExpression(node)
         }
     })
     return found

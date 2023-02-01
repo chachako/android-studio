@@ -29,6 +29,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMember
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiParameter
@@ -48,6 +49,8 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
+import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
+import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.psi.psiUtil.parameterIndex
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
@@ -57,7 +60,9 @@ import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UDeclaration
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UFile
+import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPrefixExpression
@@ -73,7 +78,9 @@ import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.internal.acceptList
+import org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds
 import org.jetbrains.uast.skipParenthesizedExprDown
+import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.visitor.UastVisitor
@@ -130,9 +137,11 @@ class UastLintUtils {
             is PsiMethod ->
                 element.containingClass?.let { getQualifiedName(it) }
                     ?.let { "$it.${element.name}" }
+
             is PsiField ->
                 element.containingClass?.let { getQualifiedName(it) }
                     ?.let { "$it.${element.name}" }
+
             else -> null
         }
 
@@ -185,12 +194,16 @@ class UastLintUtils {
         }
 
         /**
-         * Finds the first argument of a method that matches the given parameter type.
-         * @param node      the call expression.
-         * @param method    the method this call expression resolves to. It is expected the call expression and the method match.
-         *                  Otherwise, the result will be wrong.
-         * @param type:     the type of the parameter to be found.
-         * @return The FIRST expression representing the argument used in the call expression for the specific parameter.
+         * Finds the first argument of a method that matches the given
+         * parameter type.
+         *
+         * @param node the call expression.
+         * @param method the method this call expression resolves to. It
+         *     is expected the call expression and the method match.
+         *     Otherwise, the result will be wrong.
+         * @param type: the type of the parameter to be found.
+         * @return The FIRST expression representing the argument used
+         *     in the call expression for the specific parameter.
          */
         @JvmStatic
         fun findArgument(
@@ -547,8 +560,9 @@ fun isReturningContext(node: UCallExpression): Boolean {
 }
 
 /**
- * Returns true if the given node appears to be one of the scope functions. Only checks parent
- * class; caller should intend that it's actually one of let, with, apply, etc.
+ * Returns true if the given node appears to be one of the scope
+ * functions. Only checks parent class; caller should intend that it's
+ * actually one of let, with, apply, etc.
  */
 fun isScopingFunction(node: UCallExpression): Boolean {
     val called = node.resolve() ?: return true
@@ -719,6 +733,52 @@ fun PsiMember.getReceiver(): PsiClass? {
     } ?: return null
     val typeReference = callable.receiverTypeReference?.toUElement() as? UTypeReferenceExpression
     return (typeReference?.type as? PsiClassType)?.resolve()
+}
+
+/**
+ * Returns true if this if-expression is a UAST-generated if modeling an
+ * elvis (?:) expression.
+ */
+fun UIfExpression.isElvisIf(): Boolean {
+    val parent = skipParenthesizedExprUp(uastParent)
+    @Suppress("UnstableApiUsage")
+    return parent is UExpressionList && parent.kind == KotlinSpecialExpressionKinds.ELVIS
+}
+
+/**
+ * Returns true if this call represents a `this(...)` or a `super(...)`
+ * constructor call.
+ */
+fun UCallExpression.isThisOrSuperConstructorCall(): Boolean {
+    return this.isSuperConstructorCall() || this.isThisConstructorCall()
+}
+
+/**
+ * Returns true if this call represents a `super(...)` constructor call
+ */
+fun UCallExpression.isSuperConstructorCall(): Boolean {
+    // In theory, this should be as easy as checking for node or node.receiver being
+    // a UInstanceExpression, but in many practical cases that's not the case;
+    // we get a plain PsiMethodCallExpression with a null receiver etc.
+    return when (sourcePsi) {
+        is KtSuperTypeCallEntry -> true
+        is PsiMethodCallExpression -> methodName == "super"
+        else -> false
+    }
+}
+
+/**
+ * Returns true if this call represents a `this(...)` constructor call
+ */
+fun UCallExpression.isThisConstructorCall(): Boolean {
+    // In theory, this should be as easy as checking for node or node.receiver being
+    // a UInstanceExpression, but in many practical cases that's not the case;
+    // we get a plain PsiMethodCallExpression with a null receiver etc.
+    return when (sourcePsi) {
+        is KtThisExpression -> true
+        is PsiMethodCallExpression -> methodName == "this"
+        else -> false
+    }
 }
 
 /**

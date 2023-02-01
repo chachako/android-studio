@@ -187,4 +187,23 @@ class BodyRemovalTestModeTest {
         val converted = convertKotlin(kotlin)
         assertEquals(expected, converted)
     }
+
+    @Test
+    fun testElvis() {
+        @Language("kotlin")
+        val kotlin = """
+            package test.pkg
+
+            import android.app.FragmentManager
+
+            fun ok(f: FragmentManager) {
+                val transaction = f.beginTransaction() ?: return
+            }
+        """.trimIndent()
+
+        @Suppress("UnnecessaryVariable")
+        val expected = kotlin // expect no change here
+        val converted = convertKotlin(kotlin)
+        assertEquals(expected, converted)
+    }
 }

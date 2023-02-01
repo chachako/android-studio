@@ -541,17 +541,16 @@ class SliceDetector : Detector(), SourceCodeScanner {
         node: UCallExpression,
         method: UMethod
     ) {
-        var hasContent = false
-        method.accept(object : DataFlowAnalyzer(listOf(node)) {
-            override fun receiver(call: UCallExpression) {
-                val methodName = call.methodName ?: return
-                if (isContentMethod(methodName)) {
-                    hasContent = true
-                }
+        val analyzer = object : TargetMethodDataFlowAnalyzer(listOf(node)) {
+            override fun isTargetMethodName(name: String): Boolean {
+                return isContentMethod(name)
             }
-        })
 
-        if (!hasContent) {
+            // Only filtering by name
+            override fun isTargetMethod(name: String, method: PsiMethod?): Boolean = true
+        }
+
+        if (method.isMissingTarget(analyzer, allowEscape = true)) {
             val name = qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1)
             warnMissingContent(name, context, node)
         }

@@ -18,6 +18,7 @@ package com.android.tools.lint.checks.infrastructure
 
 import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.acceptSourceFile
+import com.android.tools.lint.detector.api.isElvisIf
 import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.JavaTokenType
 import com.intellij.psi.PsiElement
@@ -74,7 +75,7 @@ class BodyRemovalTestMode : UastSourceTransformationTestMode(
         val seen = mutableSetOf<PsiElement>()
         root.acceptSourceFile(object : EditVisitor() {
             override fun visitIfExpression(node: UIfExpression): Boolean {
-                if (!node.isTernary) {
+                if (!node.isTernary && !node.isElvisIf()) {
                     toggleBraces(node.thenExpression)
                     val elseExpression = node.elseExpression?.skipParenthesizedExprDown()
                     if (elseExpression != null && elseExpression !is UIfExpression) {

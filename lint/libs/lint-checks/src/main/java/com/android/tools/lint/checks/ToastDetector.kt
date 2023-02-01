@@ -23,16 +23,12 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
-import com.android.tools.lint.detector.api.getMethodName
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
-import org.jetbrains.uast.UElement
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UMethod
-import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.skipParenthesizedExprDown
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Detector looking for Toast.makeText() without a corresponding show()
@@ -82,39 +78,13 @@ class ToastDetector : Detector(), SourceCodeScanner {
         }
     }
 
-    private fun isShowCall(call: UCallExpression): Boolean = getMethodName(call) == "show"
-
     private fun checkShown(
         context: JavaContext,
         node: UCallExpression,
         toastName: String
     ) {
         val method = node.getParentOfType(UMethod::class.java) ?: return
-        val shown = AtomicBoolean(false)
-        val escapes = AtomicBoolean(false)
-        val visitor = object : DataFlowAnalyzer(setOf(node), emptyList()) {
-            override fun receiver(call: UCallExpression) {
-                if (isShowCall(call)) {
-                    shown.set(true)
-                    return
-                }
-                super.receiver(call)
-            }
-
-            override fun field(field: UElement) {
-                escapes.set(true)
-            }
-
-            override fun argument(call: UCallExpression, reference: UElement) {
-                escapes.set(true)
-            }
-
-            override fun returns(expression: UReturnExpression) {
-                escapes.set(true)
-            }
-        }
-        method.accept(visitor)
-        if (!shown.get() && !escapes.get() && !(visitor.failedResolve && method.anyCall(::isShowCall))) {
+        if (method.isMissingTarget(TargetMethodDataFlowAnalyzer.create(node, "show", null))) {
             val fix =
                 if (CheckResultDetector.isExpressionValueUnused(node)) {
                     fix().replace()
