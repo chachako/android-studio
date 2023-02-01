@@ -87,6 +87,8 @@ setlocal
   --build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/%INVOCATIONID%" ^
   --build_metadata=ab_build_id=%BUILDNUMBER% ^
   --build_metadata=ab_target=studio-win ^
+  --experimental_execution_graph_log=%TMPDIR%/execution_graph_dump.proto.zst ^
+  --experimental_execution_graph_log_dep_type=all ^
   --profile=%DISTDIR%\winprof%BUILDNUMBER%.json.gz ^
   %CONDITIONAL_FLAGS% ^
   -- ^

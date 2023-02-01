@@ -148,6 +148,8 @@ function run_bazel_test() {
     --build_metadata=ab_build_id="${BUILD_NUMBER}" \
     --build_metadata=ab_target="${target_name}" \
     --test_tag_filters=${test_tag_filters} \
+    --experimental_execution_graph_log="${TMPDIR:-/tmp}/execution_graph_dump.proto.zst" \
+    --experimental_execution_graph_log_dep_type=all \
     --tool_tag=${SCRIPT_NAME} \
     --embed_label="${AS_BUILD_NUMBER}" \
     --profile="${DIST_DIR:-/tmp}/profile-${BUILD_NUMBER}.json.gz" \
