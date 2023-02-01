@@ -20,6 +20,7 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
@@ -57,6 +58,40 @@ class FlowUtilTest {
     flow.value = listOf(device1, device2)
 
     channel.expectDeviceInState("C", "E")
+
+    job.cancel()
+  }
+
+  @Test
+  fun mapNestedStateNotNull() = runBlockingWithTimeout {
+    val flow = MutableStateFlow<List<Device>>(emptyList())
+    val pairedFlow =
+      flow.mapNestedStateNotNull({ it.state }, { _, state -> state.takeIf { state.length > 1 } })
+    val channel = Channel<List<String>>()
+    val job = launch { pairedFlow.collect { channel.send(it) } }
+
+    val device1 = Device()
+    val device2 = Device()
+
+    flow.value = listOf(device1, device2)
+
+    assertThat(channel.receive()).isEmpty()
+
+    device1.state.value = "A1"
+
+    assertThat(channel.receive()).containsExactly("A1")
+
+    device2.state.value = "A2"
+
+    assertThat(channel.receive()).containsExactly("A1", "A2")
+
+    flow.value = listOf(device2)
+
+    assertThat(channel.receive()).containsExactly("A2")
+
+    device2.state.value = ""
+
+    assertThat(channel.receive()).isEmpty()
 
     job.cancel()
   }
