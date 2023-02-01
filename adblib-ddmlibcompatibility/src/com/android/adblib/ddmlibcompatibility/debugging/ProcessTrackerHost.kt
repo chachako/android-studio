@@ -18,6 +18,7 @@ package com.android.adblib.ddmlibcompatibility.debugging
 import com.android.adblib.ConnectedDevice
 import com.android.ddmlib.Client
 import com.android.ddmlib.IDevice
+import com.android.ddmlib.ProfileableClient
 import kotlinx.coroutines.Deferred
 
 internal interface ProcessTrackerHost {
@@ -39,4 +40,8 @@ internal interface ProcessTrackerHost {
         HeapAllocations,
         ProfilingStatus,
     }
+
+    suspend fun profileableClientsUpdated(list: List<ProfileableClient>)
+
+    suspend fun postProfileableClientUpdated(clientWrapper: AdblibProfileableClientWrapper)
 }

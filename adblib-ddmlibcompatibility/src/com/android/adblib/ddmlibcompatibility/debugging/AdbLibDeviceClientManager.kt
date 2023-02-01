@@ -21,7 +21,9 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.ddmlibcompatibility.debugging.ProcessTrackerHost.ClientUpdateKind
+import com.android.adblib.deviceProperties
 import com.android.adblib.scope
+import com.android.adblib.selector
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.trackDevices
@@ -114,9 +116,13 @@ internal class AdbLibDeviceClientManager(
             }
     }
 
-    private fun launchProcessTracking(device: ConnectedDevice) {
+    private suspend fun launchProcessTracking(device: ConnectedDevice) {
         val host = ProcessTrackerHostImpl(device)
-        JdwpTracker(host).startTracking()
+        if (trackAppIsSupported(device)) {
+            AppProcessTracker(host).startTracking()
+        } else {
+            JdwpTracker(host).startTracking()
+        }
     }
 
     suspend fun postClientUpdateEvent(client: AdblibClientWrapper, updateKind: ClientUpdateKind): Deferred<Unit> {
@@ -144,6 +150,27 @@ internal class AdbLibDeviceClientManager(
             processed.complete(Unit)
         }
         return processed
+    }
+
+    private suspend fun trackAppIsSupported(device: ConnectedDevice): Boolean {
+        // Only supported on API 31+ (Android "S")
+        if (device.deviceProperties().api() < 31) {
+            return false
+        }
+
+        // Check `track-app` works at least once in case there is a problem with it
+        // b/266699981: This also helps with making tests pass until FakeAdbServer
+        // supports `track-app`.
+        return runCatching {
+            device.session.deviceServices.trackApp(device.selector).first()
+            true
+        }.onFailure { throwable ->
+            logger.warn(
+                throwable,
+                "There was an error invoking the `track-app` service on this " +
+                        "device, falling back to `track-jdwp`"
+            )
+        }.getOrDefault(false)
     }
 
     class DdmlibEventQueue(logger: AdbLogger, name: String) {
@@ -203,6 +230,21 @@ internal class AdbLibDeviceClientManager(
             updateKind: ClientUpdateKind
         ): Deferred<Unit> {
             return postClientUpdateEvent(clientWrapper, updateKind)
+        }
+
+        override suspend fun profileableClientsUpdated(list: List<ProfileableClient>) {
+            profileableClientList.set(list.toList())
+            ddmlibEventQueue.post(device.scope, "profileableClientsUpdated") {
+                listener.profileableProcessListUpdated(bridge, this@AdbLibDeviceClientManager)
+            }
+        }
+
+        override suspend fun postProfileableClientUpdated(clientWrapper: AdblibProfileableClientWrapper) {
+            ddmlibEventQueue.post(device.scope, "postProfileableClientUpdated") {
+                // Note: There is no finer grain mechanism for AppProcess, so we notify
+                // the whole list has changed.
+                listener.profileableProcessListUpdated(bridge, this@AdbLibDeviceClientManager)
+            }
         }
     }
 
