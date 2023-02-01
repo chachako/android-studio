@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 
 public class DeviceState {
 
@@ -103,7 +104,8 @@ public class DeviceState {
         mBuildVersionSdk = sdk;
         mCpuAbi = cpuAbi;
         mFeatures = initFeatures(sdk);
-        mProperties = combinedProperties(manufacturer, model, release, sdk, cpuAbi, properties);
+        mProperties =
+                combinedProperties(deviceId, manufacturer, model, release, sdk, cpuAbi, properties);
         mHostConnectionType = hostConnectionType;
         myTransportId = transportId;
         mDeviceStatus = DeviceStatus.OFFLINE;
@@ -433,6 +435,7 @@ public class DeviceState {
     }
 
     private static Map<String, String> combinedProperties(
+            @NotNull String serialNumber,
             @NonNull String manufacturer,
             @NonNull String model,
             @NonNull String release,
@@ -440,6 +443,7 @@ public class DeviceState {
             @NonNull String cpuAbi,
             @NonNull Map<String, String> properties) {
         Map<String, String> combined = new TreeMap<>(properties);
+        combined.put("ro.serialno", serialNumber);
         combined.put("ro.product.manufacturer", manufacturer);
         combined.put("ro.product.model", model);
         combined.put("ro.build.version.release", release);
