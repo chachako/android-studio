@@ -233,6 +233,8 @@ abstract class DexFileDependenciesTask: NonIncrementalTask() {
 
             if (dexingCreationConfig.isCoreLibraryDesugaringEnabled) {
                 task.libConfiguration.set(getDesugarLibConfig(creationConfig.services))
+                // bootclasspath is required by d8 to do API conversion for library desugaring
+                task.bootClasspath.from(creationConfig.global.bootClasspath)
             }
 
             task.classpath.disallowChanges()

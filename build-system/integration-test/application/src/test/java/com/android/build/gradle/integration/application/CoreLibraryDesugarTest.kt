@@ -409,8 +409,7 @@ class CoreLibraryDesugarTest {
         val desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)
             ?: fail("Failed to find the dex with class name $usedDesugarClass")
         DexSubject.assertThat(desugarLibDex).containsClass(usedDesugarClass2)
-        // FIXME(266954677): `desugarLibDex` does not contain `usedDesugarClass3`
-        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(usedDesugarClass3)
+        DexSubject.assertThat(desugarLibDex).containsClass(usedDesugarClass3)
         // check unused API classes are removed from the from desugar lib dex.
         DexSubject.assertThat(desugarLibDex).doesNotContainClasses(unusedDesugarClass)
     }
@@ -468,8 +467,7 @@ class CoreLibraryDesugarTest {
         val expectedKeepRules = "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
                 "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
                 "}$lineSeparator"
-        // FIXME(266954677): expectedKeepRules is not found
-        assertThat(collectKeepRulesUnderDirectory(out)).doesNotContain(expectedKeepRules)
+        assertThat(collectKeepRulesUnderDirectory(out)).contains(expectedKeepRules)
     }
 
     @Test

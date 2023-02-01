@@ -397,6 +397,7 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
                     this.desugaringClasspath.from(desugaringClasspathForArtifactTransforms)
                     this.errorFormat.set(task.dexParams.errorFormatMode)
                     this.enableDesugaring.set(task.dexParams.withDesugaring)
+                    this.libConfiguration.set(task.dexParams.coreLibDesugarConfig)
                     this.enableGlobalSynthetics.set(
                         services.projectOptions[BooleanOption.ENABLE_GLOBAL_SYNTHETICS])
                 }
