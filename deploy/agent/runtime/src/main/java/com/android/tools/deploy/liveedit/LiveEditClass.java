@@ -63,7 +63,6 @@ class LiveEditClass {
             try {
                 // Initializes proxyClass, castableTypes, superReflectedFields, and
                 // superReflectedMethods.
-                warnOnRiskyProxyUpdate(bytecode);
                 setUpProxyClass(bytecode);
             } catch (Exception e) {
                 throw new LiveEditException("Could not set up proxy class", e);
@@ -111,6 +110,7 @@ class LiveEditClass {
     // Returns a new proxy instance that implements all the proxied class' interfaces. Can only be
     // called if the LiveEditClass represents a proxiable class.
     public Object getProxy() {
+        Log.v("studio.deploy", "New proxy: " + getClassInternalName());
         if (proxyClass == null) {
             throw new LiveEditException(
                     "Cannot create a proxy object for a non-proxy LiveEdit class");
@@ -146,9 +146,9 @@ class LiveEditClass {
         }
     }
 
-    private void warnOnRiskyProxyUpdate(Interpretable bytecode) {
+    public RiskyChange checkForRiskyChange(Interpretable bytecode) {
         if (this.bytecode == null) {
-            return;
+            return RiskyChange.NONE;
         }
 
         if (!this.bytecode.getSuperName().equals(bytecode.getSuperName())) {
@@ -159,6 +159,7 @@ class LiveEditClass {
                             this.bytecode.getInternalName(),
                             this.bytecode.getSuperName(),
                             bytecode.getSuperName()));
+            return RiskyChange.SUPER_CHANGE;
         }
 
         if (!Arrays.equals(this.bytecode.getInterfaces(), bytecode.getInterfaces())) {
@@ -173,6 +174,7 @@ class LiveEditClass {
                             Arrays.stream(bytecode.getInterfaces())
                                     .sorted()
                                     .collect(Collectors.joining(", "))));
+            return RiskyChange.INTERFACE_CHANGE;
         }
 
         if (!this.bytecode.getFieldNames().equals(bytecode.getFieldNames())) {
@@ -187,7 +189,10 @@ class LiveEditClass {
                             bytecode.getFieldNames().stream()
                                     .sorted()
                                     .collect(Collectors.joining(", "))));
+            return RiskyChange.FIELD_CHANGE;
         }
+
+        return RiskyChange.NONE;
     }
 
     private void setUpProxyClass(Interpretable bytecode)

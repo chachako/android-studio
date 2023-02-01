@@ -69,7 +69,7 @@ public final class ProxyClassHandler implements InvocationHandler {
                 throw new LiveEditException("Could not access field", e);
             }
         }
-        throw new LiveEditException("No such field '" + name + "' found in class");
+        throw new ProxyMissingFieldException(clazz, name);
     }
 
     Object getField(String name) {
@@ -84,7 +84,7 @@ public final class ProxyClassHandler implements InvocationHandler {
                 throw new LiveEditException("Could not access field", e);
             }
         }
-        throw new LiveEditException("No such field '" + name + "' found in class");
+        throw new ProxyMissingFieldException(clazz, name);
     }
 
     // Must be public; invoked cross-classloader from LiveEditSuspendLambda and
@@ -101,8 +101,7 @@ public final class ProxyClassHandler implements InvocationHandler {
                 throw new LiveEditException("Could not invoke method '" + name + desc + "'", e);
             }
         }
-        throw new LiveEditException(
-                "No such method '" + name + desc + "' found in " + clazz.getClassInternalName());
+        throw new ProxyMissingMethodException(clazz, name, desc);
     }
 
     boolean isInstanceOf(Type type) {

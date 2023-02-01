@@ -55,7 +55,19 @@ public final class LiveEditStubs {
         // Process all support classes
         for (byte[] proxyBytes : proxyClasses) {
             Interpretable proxy = new Interpretable(proxyBytes);
-            addClass(proxy.getInternalName(), proxy, true);
+
+            LiveEditClass clazz = context.getClass(proxy.getInternalName());
+            if (clazz == null) {
+                context.addClass(proxy.getInternalName(), proxy, true);
+                continue;
+            }
+
+            RiskyChange changeType = clazz.checkForRiskyChange(proxy);
+            if (changeType != RiskyChange.NONE) {
+                ComposeSupport.addRiskyChange(proxy.getInternalName(), changeType);
+            }
+
+            clazz.updateBytecode(proxy, true);
         }
 
         return new UnsupportedChange[0];

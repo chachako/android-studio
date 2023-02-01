@@ -391,8 +391,9 @@ public class LiveUpdateDeployer {
         return result;
     }
 
-    /** @return True if there are recomposition errors, false otherwise. */
-    public boolean retrieveComposeStatus(Installer installer, AdbClient adb, String appId) {
+    /** @return A list of recomposition errors; empty if no errors occurred. */
+    public List<Deploy.ComposeException> retrieveComposeStatus(
+            Installer installer, AdbClient adb, String appId) {
         List<Integer> pids = adb.getPids(appId);
         Deploy.Arch arch = adb.getArch(pids);
 
@@ -415,11 +416,13 @@ public class LiveUpdateDeployer {
                 System.out.print("Live Edit Recompose Status Exception: (");
                 System.out.print(exception.getRecoverable() ? "Recoverable" : "Not Recoverable");
                 System.out.println(") " + exception.getMessage());
-                return false;
             }
+
+            return response.getExceptionsList();
         } catch (IOException e) {
             logger.error(e, "Cannot retrieve Compose Status");
         }
-        return true;
+
+        return Collections.emptyList();
     }
 }

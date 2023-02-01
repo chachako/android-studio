@@ -17,7 +17,12 @@ package com.android.tools.deploy.liveedit;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /** Support class to invoke Compose API functions. */
 public class ComposeSupport {
@@ -26,6 +31,12 @@ public class ComposeSupport {
     public static final String KEY_META_CONTAINER_NAME =
             "androidx.compose.runtime.internal.FunctionKeyMeta$Container";
     public static final String KEY_META_NAME = "androidx.compose.runtime.internal.FunctionKeyMeta";
+
+    private static final Map<RiskyChange, Set<String>> riskyChanges = new HashMap<>();
+
+    public static void addRiskyChange(String className, RiskyChange type) {
+        riskyChanges.computeIfAbsent(type, r -> new HashSet<>()).add(className);
+    }
 
     // Return empty string if success. Otherwise, an error message is returned.
     public static String recomposeFunction(Object reloader, int[] groupIds) {
@@ -64,6 +75,11 @@ public class ComposeSupport {
         private LiveEditRecomposeError(boolean recoverable, Exception cause) {
             this.recoverable = recoverable;
             this.cause = cause.toString();
+        }
+
+        private LiveEditRecomposeError(boolean recoverable, String message) {
+            this.recoverable = recoverable;
+            this.cause = message;
         }
     }
 
@@ -105,7 +121,31 @@ public class ComposeSupport {
                 Exception cause = (Exception) getCause.invoke(errorObject);
                 cause.printStackTrace();
 
-                result[index] = new LiveEditRecomposeError(recoverable, cause);
+                if (cause instanceof ProxyMissingFieldException) {
+                    ProxyMissingFieldException pmfe = (ProxyMissingFieldException) cause;
+                    Set<String> riskyClasses =
+                            riskyChanges.getOrDefault(
+                                    RiskyChange.FIELD_CHANGE, Collections.emptySet());
+                    if (riskyClasses.contains(pmfe.getClassName())) {
+                        result[index] =
+                                new LiveEditRecomposeError(
+                                        recoverable,
+                                        "Recomposition error, possibly due to lambda capture change");
+                    }
+                } else if (cause instanceof ProxyMissingMethodException) {
+                    ProxyMissingMethodException pmme = (ProxyMissingMethodException) cause;
+                    Set<String> riskyClasses =
+                            riskyChanges.getOrDefault(
+                                    RiskyChange.INTERFACE_CHANGE, Collections.emptySet());
+                    if (riskyClasses.contains(pmme.getClassName())) {
+                        result[index] =
+                                new LiveEditRecomposeError(
+                                        recoverable,
+                                        "Recomposition error, possibly due to lambda interface change");
+                    }
+                } else {
+                    result[index] = new LiveEditRecomposeError(recoverable, cause);
+                }
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
