@@ -36,8 +36,10 @@ import com.android.build.gradle.internal.cxx.logging.logStructured
 import com.android.build.gradle.internal.cxx.logging.toJsonString
 import com.android.build.gradle.internal.cxx.model.CxxAbiModel
 import com.android.build.gradle.internal.cxx.model.PrefabConfigurationState
+import com.android.build.gradle.internal.cxx.model.additionalProjectFilesIndexFile
 import com.android.build.gradle.internal.cxx.model.buildFileIndexFile
 import com.android.build.gradle.internal.cxx.model.buildSystemTag
+import com.android.build.gradle.internal.cxx.model.compileCommandsJsonBinFile
 import com.android.build.gradle.internal.cxx.model.compileCommandsJsonFile
 import com.android.build.gradle.internal.cxx.model.getBuildCommandArguments
 import com.android.build.gradle.internal.cxx.model.jsonFile
@@ -45,6 +47,7 @@ import com.android.build.gradle.internal.cxx.model.jsonGenerationLoggingRecordFi
 import com.android.build.gradle.internal.cxx.model.lastConfigureFingerPrintFile
 import com.android.build.gradle.internal.cxx.model.metadataGenerationCommandFile
 import com.android.build.gradle.internal.cxx.model.metadataGenerationTimingFolder
+import com.android.build.gradle.internal.cxx.model.miniConfigFile
 import com.android.build.gradle.internal.cxx.model.modelOutputFile
 import com.android.build.gradle.internal.cxx.model.ninjaBuildFile
 import com.android.build.gradle.internal.cxx.model.ninjaBuildLocationFile
@@ -171,17 +174,11 @@ abstract class ExternalNativeJsonGenerator internal constructor(
                                 abi.ninjaBuildLocationFile,
                                 abi.compileCommandsJsonFile,
                                 abi.prefabConfigFile,
-                                // -------------------------------------------------------------
-                                // Don't include files written to build/ folder since clean will
-                                // remove them and we don't want to trigger a C/C++ configure.
-                                // See b/240718091
-                                // -------------------------------------------------------------
-                                // abi.miniConfigFile,
-                                // abi.symbolFolderIndexFile,
-                                // abi.buildFileIndexFile,
-                                // abi.additionalProjectFilesIndexFile,
-                                // abi.compileCommandsJsonBinFile
-                                // -------------------------------------------------------------
+                                abi.miniConfigFile,
+                                abi.symbolFolderIndexFile,
+                                abi.buildFileIndexFile,
+                                abi.additionalProjectFilesIndexFile,
+                                abi.compileCommandsJsonBinFile
                             ),
                             hardConfigureFiles = listOf(abi.metadataGenerationCommandFile)
                         )

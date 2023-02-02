@@ -810,28 +810,28 @@ class CmakeBasicProjectTest(
          > abis:
             - armeabi-v7a:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/additional_project_files.txt{!}
             - x86_64:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{DEBUG}/x86_64/compile_commands.json.bin{F}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/symbol_folder_index.txt{F}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/build_file_index.txt{F}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/additional_project_files.txt{F}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{DEBUG}/x86_64/symbol_folder_index.txt{F}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{DEBUG}/x86_64/build_file_index.txt{F}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{DEBUG}/x86_64/additional_project_files.txt{F}
          < abis
       < debug
       > release:
          > abis:
             - armeabi-v7a:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/additional_project_files.txt{!}
             - x86_64:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{RELEASE}/x86_64/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{RELEASE}/x86_64/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{RELEASE}/x86_64/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{RELEASE}/x86_64/additional_project_files.txt{!}
          < abis
       < release
    < variants
@@ -855,28 +855,28 @@ class CmakeBasicProjectTest(
          > abis:
             - armeabi-v7a:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/additional_project_files.txt{!}
             - x86_64:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{DEBUG}/x86_64/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{DEBUG}/x86_64/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{DEBUG}/x86_64/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{DEBUG}/x86_64/additional_project_files.txt{!}
          < abis
       < debug
       > release:
          > abis:
             - armeabi-v7a:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/additional_project_files.txt{!}
             - x86_64:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{RELEASE}/x86_64/compile_commands.json.bin{!}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/symbol_folder_index.txt{!}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/build_file_index.txt{!}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/additional_project_files.txt{!}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{RELEASE}/x86_64/symbol_folder_index.txt{!}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{RELEASE}/x86_64/build_file_index.txt{!}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{RELEASE}/x86_64/additional_project_files.txt{!}
          < abis
       < release
    < variants
@@ -909,28 +909,28 @@ class CmakeBasicProjectTest(
          > abis:
             - armeabi-v7a:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/compile_commands.json.bin{F}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/symbol_folder_index.txt{F}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/build_file_index.txt{F}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{DEBUG}/meta/armeabi-v7a/additional_project_files.txt{$additionalProjectFileStatus}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/symbol_folder_index.txt{F}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/build_file_index.txt{F}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{DEBUG}/armeabi-v7a/additional_project_files.txt{$additionalProjectFileStatus}
             - x86_64:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{DEBUG}/x86_64/compile_commands.json.bin{F}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/symbol_folder_index.txt{F}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/build_file_index.txt{F}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{DEBUG}/meta/x86_64/additional_project_files.txt{$additionalProjectFileStatus}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{DEBUG}/x86_64/symbol_folder_index.txt{F}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{DEBUG}/x86_64/build_file_index.txt{F}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{DEBUG}/x86_64/additional_project_files.txt{$additionalProjectFileStatus}
          < abis
       < debug
       > release:
          > abis:
             - armeabi-v7a:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/compile_commands.json.bin{F}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/symbol_folder_index.txt{F}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/build_file_index.txt{F}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{RELEASE}/meta/armeabi-v7a/additional_project_files.txt{$additionalProjectFileStatus}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/symbol_folder_index.txt{F}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/build_file_index.txt{F}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{RELEASE}/armeabi-v7a/additional_project_files.txt{$additionalProjectFileStatus}
             - x86_64:
                - sourceFlagsFile                 = {PROJECT}/.cxx/{RELEASE}/x86_64/compile_commands.json.bin{F}
-               - symbolFolderIndexFile           = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/symbol_folder_index.txt{F}
-               - buildFileIndexFile              = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/build_file_index.txt{F}
-               - additionalProjectFilesIndexFile = {PROJECT}/build/intermediates/{RELEASE}/meta/x86_64/additional_project_files.txt{$additionalProjectFileStatus}
+               - symbolFolderIndexFile           = {PROJECT}/.cxx/{RELEASE}/x86_64/symbol_folder_index.txt{F}
+               - buildFileIndexFile              = {PROJECT}/.cxx/{RELEASE}/x86_64/build_file_index.txt{F}
+               - additionalProjectFilesIndexFile = {PROJECT}/.cxx/{RELEASE}/x86_64/additional_project_files.txt{$additionalProjectFileStatus}
          < abis
       < release
    < variants
