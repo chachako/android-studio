@@ -58,6 +58,7 @@ class AddJavascriptInterfaceDetector : Detector(), SourceCodeScanner {
             Implementation(AddJavascriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
         .addMoreInfo("https://support.google.com/faqs/answer/9095419?hl=en")
+        .addMoreInfo("https://goo.gle/AddJavascriptInterface")
 
     const val WEB_VIEW = "android.webkit.WebView"
     const val ADD_JAVASCRIPT_INTERFACE = "addJavascriptInterface"

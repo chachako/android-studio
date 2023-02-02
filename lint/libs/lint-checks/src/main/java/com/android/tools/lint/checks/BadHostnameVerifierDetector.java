@@ -49,16 +49,17 @@ public class BadHostnameVerifierDetector extends Detector implements SourceCodeS
 
     public static final Issue ISSUE =
             Issue.create(
-                    "BadHostnameVerifier",
-                    "Insecure HostnameVerifier",
-                    "This check looks for implementations of `HostnameVerifier` "
-                            + "whose `verify` method always returns true (thus trusting any hostname) "
-                            + "which could result in insecure network traffic caused by trusting arbitrary "
-                            + "hostnames in TLS/SSL certificates presented by peers.",
-                    Category.SECURITY,
-                    6,
-                    Severity.WARNING,
-                    IMPLEMENTATION);
+                            "BadHostnameVerifier",
+                            "Insecure HostnameVerifier",
+                            "This check looks for implementations of `HostnameVerifier` "
+                                    + "whose `verify` method always returns true (thus trusting any hostname) "
+                                    + "which could result in insecure network traffic caused by trusting arbitrary "
+                                    + "hostnames in TLS/SSL certificates presented by peers.",
+                            Category.SECURITY,
+                            6,
+                            Severity.WARNING,
+                            IMPLEMENTATION)
+                    .addMoreInfo("https://goo.gle/BadHostnameVerifier");
 
     // ---- implements SourceCodeScanner ----
 

@@ -102,23 +102,24 @@ class BidirectionalTextDetector : ResourceXmlDetector(), SourceCodeScanner, Grad
     @JvmField
     val BIDI_SPOOFING =
       create(
-        id = "BidiSpoofing",
-        briefDescription = "Bidirectional text spoofing",
-        explanation =
-          """
+          id = "BidiSpoofing",
+          briefDescription = "Bidirectional text spoofing",
+          explanation =
+            """
                 Unicode bidirectional text characters can alter the order in which the compiler processes \
                 tokens. However, this can also be used to hide malicious code, and can be difficult to spot. \
                 This lint check audits the source code and looks for cases where it looks like bidirectional \
                 text has the potential to be misleading.
                 """,
-        category = Category.SECURITY,
-        priority = 2,
-        severity = Severity.ERROR,
-        implementation = IMPLEMENTATION,
-        //noinspection LintImplUnexpectedDomain
-        moreInfo =
-          "https://krebsonsecurity.com/2021/11/trojan-source-bug-threatens-the-security-of-all-code/",
-      )
+          category = Category.SECURITY,
+          priority = 2,
+          severity = Severity.ERROR,
+          implementation = IMPLEMENTATION,
+          //noinspection LintImplUnexpectedDomain
+          moreInfo =
+            "https://krebsonsecurity.com/2021/11/trojan-source-bug-threatens-the-security-of-all-code/",
+        )
+        .addMoreInfo("https://goo.gle/BidiSpoofing")
 
     const val VT = '\u000B'
     const val FF = '\u000C'

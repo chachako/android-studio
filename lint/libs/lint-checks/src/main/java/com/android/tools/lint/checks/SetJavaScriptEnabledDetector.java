@@ -46,6 +46,7 @@ public class SetJavaScriptEnabledDetector extends Detector implements SourceCode
                             Severity.WARNING,
                             new Implementation(
                                     SetJavaScriptEnabledDetector.class, Scope.JAVA_FILE_SCOPE))
+                    .addMoreInfo("https://goo.gle/SetJavaScriptEnabled")
                     .addMoreInfo("https://developer.android.com/training/articles/security-tips")
                     .setAndroidSpecific(true);
 

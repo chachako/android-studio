@@ -56,7 +56,8 @@ public class AllowAllHostnameVerifierDetector extends Detector implements Source
                             6,
                             Severity.WARNING,
                             IMPLEMENTATION)
-                    .setAndroidSpecific(true);
+                    .setAndroidSpecific(true)
+                    .addMoreInfo("https://goo.gle/AllowAllHostnameVerifier");
 
     // ---- implements SourceCodeScanner ----
 

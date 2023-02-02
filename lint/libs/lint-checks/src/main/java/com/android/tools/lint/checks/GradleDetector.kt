@@ -3067,10 +3067,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     @JvmField
     val RISKY_LIBRARY =
       Issue.create(
-        id = "RiskyLibrary",
-        briefDescription = "Libraries with Privacy or Security Risks",
-        explanation =
-          """
+          id = "RiskyLibrary",
+          briefDescription = "Libraries with Privacy or Security Risks",
+          explanation =
+            """
                 Your app is using a version of a library that has been identified by \
                 the library developer as a potential source of privacy and/or security risks. \
                 This may be a violation of Google Play policies (see \
@@ -3083,13 +3083,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                 Please try updating your app with an updated version of this library, or remove \
                 it from your app.
             """,
-        category = Category.SECURITY,
-        priority = 4,
-        severity = Severity.WARNING,
-        androidSpecific = true,
-        implementation = IMPLEMENTATION_WITH_TOML,
-        moreInfo = GOOGLE_PLAY_SDK_INDEX_URL
-      )
+          category = Category.SECURITY,
+          priority = 4,
+          severity = Severity.WARNING,
+          androidSpecific = true,
+          implementation = IMPLEMENTATION_WITH_TOML,
+          moreInfo = GOOGLE_PLAY_SDK_INDEX_URL
+        )
+        .addMoreInfo("https://goo.gle/RiskyLibrary")
 
     @JvmField
     val ANNOTATION_PROCESSOR_ON_COMPILE_PATH =

@@ -48,7 +48,8 @@ public class StringAuthLeakDetector extends Detector implements SourceCodeScanne
                             6,
                             Severity.WARNING,
                             new Implementation(StringAuthLeakDetector.class, Scope.JAVA_FILE_SCOPE))
-                    .setAndroidSpecific(true);
+                    .setAndroidSpecific(true)
+                    .addMoreInfo("https://goo.gle/AuthLeak");
 
     @Nullable
     @Override

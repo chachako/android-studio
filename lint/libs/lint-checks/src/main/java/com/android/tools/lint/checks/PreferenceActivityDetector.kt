@@ -174,20 +174,21 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
     @JvmField
     val ISSUE =
       Issue.create(
-        id = "ExportedPreferenceActivity",
-        briefDescription = "PreferenceActivity should not be exported",
-        explanation =
-          """
+          id = "ExportedPreferenceActivity",
+          briefDescription = "PreferenceActivity should not be exported",
+          explanation =
+            """
                 Fragment injection gives anyone who can send your `PreferenceActivity` an intent \
                 the ability to load any fragment, with any arguments, in your process.""",
-        moreInfo =
-          //noinspection LintImplUnexpectedDomain
-          "http://securityintelligence.com/new-vulnerability-android-framework-fragment-injection",
-        category = Category.SECURITY,
-        priority = 8,
-        severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
-      )
+          moreInfo =
+            //noinspection LintImplUnexpectedDomain
+            "http://securityintelligence.com/new-vulnerability-android-framework-fragment-injection",
+          category = Category.SECURITY,
+          priority = 8,
+          severity = Severity.WARNING,
+          implementation = IMPLEMENTATION
+        )
+        .addMoreInfo("https://goo.gle/ExportedPreferenceActivity")
 
     private const val PREFERENCE_ACTIVITY = "android.preference.PreferenceActivity"
     private const val IS_VALID_FRAGMENT = "isValidFragment"

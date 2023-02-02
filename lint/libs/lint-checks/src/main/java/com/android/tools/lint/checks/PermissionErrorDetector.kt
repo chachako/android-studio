@@ -285,6 +285,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
                  Please double check the permission value you have supplied. The value is expected to be a \
                  permission string from the system, another app, or your own, NOT a boolean.
                 """,
+        moreInfo = "https://goo.gle/KnownPermissionError",
         category = Category.SECURITY,
         priority = 5,
         severity = Severity.ERROR,
@@ -346,6 +347,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
 
                 Please double check the permission value you have supplied.
                 """,
+        moreInfo = "https://goo.gle/CustomPermissionTypo",
         category = Category.SECURITY,
         priority = 5,
         severity = Severity.WARNING,
