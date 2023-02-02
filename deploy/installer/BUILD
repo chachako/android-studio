@@ -296,7 +296,7 @@ android_cc_binary(
         "armeabi-v7a",
         "arm64-v8a",
     ],
-    binary = ":installer.stripped",
+    binary = ":install-server.stripped",
     filename = "android-install-server",
     tags = [
         "no_windows",
