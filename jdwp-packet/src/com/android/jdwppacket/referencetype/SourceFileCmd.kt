@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.jdwppacket
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
+data class SourcefileCmd(val classID: Long) : Cmd(ReferenceType.SourceFile) {
+  override fun paramsKey(): String {
+    return "$classID"
+  }
 
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
+  override fun writePayload(writer: Writer) {
     writer.putClassID(classID)
-    writer.putMethodID(methodID)
-    writer.putLong(index)
   }
 
   companion object {
-
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
+    fun parse(reader: MessageReader): Cmd {
+      return SourcefileCmd(reader.getClassID())
     }
   }
 }

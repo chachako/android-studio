@@ -16,13 +16,19 @@
 package com.android.jdwppacket.stackframe
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class GetValuesReply(val numValues: Int) {
+data class GetValuesReply(val numValues: Int) : Reply() {
   companion object {
 
     @JvmStatic
     fun parse(reader: MessageReader): GetValuesReply {
       return GetValuesReply(reader.getInt())
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(numValues)
   }
 }

@@ -1,3 +1,7 @@
+import com.android.jdwppacket.IsObsoleteCmd
+import com.android.jdwppacket.LineTableCmd
+import org.junit.Test
+
 /*
  * Copyright (C) 2023 The Android Open Source Project
  *
@@ -13,27 +17,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+class MethodTest {
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
-
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
-    writer.putClassID(classID)
-    writer.putMethodID(methodID)
-    writer.putLong(index)
+  @Test
+  fun testIsObsoleteCmd() {
+    val packet = IsObsoleteCmd(Long.MAX_VALUE - 1, Long.MAX_VALUE - 2)
+    assertJDWPObjectAndWireEquals(packet, IsObsoleteCmd::parse)
   }
 
-  companion object {
-
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
-    }
+  @Test
+  fun testLineTableCmd() {
+    val packet = LineTableCmd(Long.MAX_VALUE - 1, Long.MAX_VALUE - 2)
+    assertJDWPObjectAndWireEquals(packet, LineTableCmd::parse)
   }
 }

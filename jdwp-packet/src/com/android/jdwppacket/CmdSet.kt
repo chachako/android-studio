@@ -15,25 +15,34 @@
  */
 package com.android.jdwppacket
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
-
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
-    writer.putClassID(classID)
-    writer.putMethodID(methodID)
-    writer.putLong(index)
-  }
+enum class CmdSet(val id: Int) {
+  NoSet(0),
+  Vm(1),
+  ReferenceType(2),
+  ClassType(3),
+  ArrayType(4),
+  InterfaceType(5),
+  Method(6),
+  // 7 unused
+  Field(8),
+  ObjectReference(9),
+  StringReference(10),
+  ThreadReference(11),
+  ThreadGroupReference(12),
+  ArrayReference(13),
+  ClassLoaderReference(14),
+  EventRequest(15),
+  StackFrame(16),
+  ClassObjectReference(17),
+  Event(64),
+  DDM(199);
 
   companion object {
 
+    private val map = CmdSet.values().associateBy(CmdSet::id)
+
     @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
-    }
+    fun fromInt(value: Int) =
+      CmdSet.map[value] ?: throw IllegalStateException("No CmdSet for $value")
   }
 }

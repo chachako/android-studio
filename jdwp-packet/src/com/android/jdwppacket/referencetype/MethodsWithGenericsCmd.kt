@@ -15,14 +15,25 @@
  */
 package com.android.jdwppacket.referencetype
 
+import com.android.jdwppacket.Cmd
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.ReferenceType
+import com.android.jdwppacket.Writer
 
-class MethodsWithGenericsCmd(val refType: Long) {
+data class MethodsWithGenericsCmd(val refType: Long) : Cmd(ReferenceType.MethodsWithGeneric) {
   companion object {
 
     @JvmStatic
     fun parse(reader: MessageReader): MethodsWithGenericsCmd {
       return MethodsWithGenericsCmd(reader.getReferenceTypeID())
     }
+  }
+
+  override fun paramsKey(): String {
+    return "$refType"
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putReferenceTypeID(refType)
   }
 }

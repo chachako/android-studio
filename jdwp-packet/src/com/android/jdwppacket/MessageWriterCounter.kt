@@ -15,25 +15,31 @@
  */
 package com.android.jdwppacket
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
+class MessageWriterCounter(idSizes: IDSizes) : Writer(idSizes) {
 
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
-    writer.putClassID(classID)
-    writer.putMethodID(methodID)
-    writer.putLong(index)
+  var bytesCounted = 0
+
+  override fun putByte(byte: Byte) {
+    bytesCounted += 1
   }
 
-  companion object {
+  override fun putInt(int: Int) {
+    bytesCounted += 4
+  }
 
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
-    }
+  override fun putShort(short: Short) {
+    bytesCounted += 2
+  }
+
+  override fun putLong(long: Long) {
+    bytesCounted += 8
+  }
+
+  override fun putID(size: Int, value: Long) {
+    bytesCounted += size
+  }
+
+  override fun putString(s: String) {
+    bytesCounted += Integer.BYTES + s.toByteArray().size
   }
 }

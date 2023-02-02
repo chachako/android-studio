@@ -15,25 +15,22 @@
  */
 package com.android.jdwppacket
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
+data class LineTableCmd(private val classID: Long, private val methodID: Long) :
+  Cmd(Method.LineTable), Keyable {
 
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
+  override fun writePayload(writer: Writer) {
     writer.putClassID(classID)
     writer.putMethodID(methodID)
-    writer.putLong(index)
+  }
+
+  override fun paramsKey(): String {
+    return "$classID-$methodID"
   }
 
   companion object {
 
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
+    fun parse(reader: MessageReader): Cmd {
+      return LineTableCmd(reader.getClassID(), reader.getMethodID())
     }
   }
 }

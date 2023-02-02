@@ -16,13 +16,19 @@
 package com.android.jdwppacket.eventrequest
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class SetReply(val requestID: Int) {
+data class SetReply(val requestID: Int) : Reply() {
   companion object {
 
     @JvmStatic
     fun parse(reader: MessageReader): SetReply {
       return SetReply(reader.getInt())
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(requestID)
   }
 }

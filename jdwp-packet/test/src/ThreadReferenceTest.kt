@@ -1,8 +1,5 @@
 import com.android.jdwppacket.Location
-import com.android.jdwppacket.MessageReader
-import com.android.jdwppacket.MessageWriter
 import com.android.jdwppacket.threadreference.FramesReply
-import org.junit.Assert
 import org.junit.Test
 
 /*
@@ -24,18 +21,7 @@ class ThreadReferenceTest {
 
   @Test
   fun testFramesReply() {
-    var frames = FramesReply(listOf(FramesReply.Frame(0, Location(1, 2, 3, 4))))
-    val writer = MessageWriter()
-
-    // Generate expected serialized bytebuffer
-    val expected = frames.toByteBuffer(writer)
-
-    // Parse and serialize again to generate actual bytebuffer
-    val reader = MessageReader()
-    reader.setBuffer(expected.duplicate())
-    val parsedFrame = FramesReply.parse(reader)
-    val actual = parsedFrame.toByteBuffer(writer)
-
-    Assert.assertEquals(expected, actual)
+    val packet = FramesReply(listOf(FramesReply.Frame(0, Location(1, 2, 3, 4))))
+    assertJDWPObjectAndWireEquals(packet, FramesReply::parse)
   }
 }

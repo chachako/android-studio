@@ -15,25 +15,23 @@
  */
 package com.android.jdwppacket
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
+import com.android.jdwppacket.vm.IDSizesReply
 
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
-    writer.putClassID(classID)
-    writer.putMethodID(methodID)
-    writer.putLong(index)
-  }
+class IDSizes(
+  val fieldIDSize: Int = 8,
+  val methodIDSize: Int = 8,
+  val objectIDSize: Int = 8,
+  val referenceTypeIDSize: Int = 8,
+  val frameIDSize: Int = 8
+) {
 
-  companion object {
-
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
-    }
-  }
+  constructor(
+    idSizes: IDSizesReply
+  ) : this(
+    idSizes.fieldIDSize,
+    idSizes.methodIDSize,
+    idSizes.objectIDSize,
+    idSizes.referenceTypeIDSize,
+    idSizes.frameIDSize
+  )
 }

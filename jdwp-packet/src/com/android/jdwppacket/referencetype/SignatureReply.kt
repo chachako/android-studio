@@ -16,13 +16,19 @@
 package com.android.jdwppacket.referencetype
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class SignatureReply(val signature: String) {
+data class SignatureReply(val signature: String) : Reply() {
   companion object {
 
     @JvmStatic
     fun parse(reader: MessageReader): SignatureReply {
       return SignatureReply(reader.getString())
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putString(signature)
   }
 }

@@ -16,15 +16,26 @@
 package com.android.jdwppacket.referencetype
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class MethodsWithGenericsReply(val methods: List<Method>) {
-  class Method(
+data class MethodsWithGenericsReply(val methods: List<Method>) : Reply() {
+  data class Method(
     val methodID: Long,
     val name: String,
     val signature: String,
     val genericSignature: String,
     val modBits: Int
-  )
+  ) {
+
+    fun write(writer: Writer) {
+      writer.putMethodID(methodID)
+      writer.putString(name)
+      writer.putString(signature)
+      writer.putString(genericSignature)
+      writer.putInt(modBits)
+    }
+  }
 
   companion object {
 
@@ -45,5 +56,10 @@ class MethodsWithGenericsReply(val methods: List<Method>) {
       }
       return MethodsWithGenericsReply(methods)
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(methods.size)
+    methods.forEach { it.write(writer) }
   }
 }

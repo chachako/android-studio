@@ -16,8 +16,11 @@
 package com.android.jdwppacket.referencetype
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class SignatureWithGenericReply(val signature: String, val genericSignature: String) {
+data class SignatureWithGenericReply(val signature: String, val genericSignature: String) :
+  Reply() {
 
   companion object {
 
@@ -25,5 +28,10 @@ class SignatureWithGenericReply(val signature: String, val genericSignature: Str
     fun parse(reader: MessageReader): SignatureWithGenericReply {
       return SignatureWithGenericReply(reader.getString(), reader.getString())
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putString(signature)
+    writer.putString(genericSignature)
   }
 }

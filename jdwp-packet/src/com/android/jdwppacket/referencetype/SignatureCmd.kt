@@ -15,14 +15,25 @@
  */
 package com.android.jdwppacket.referencetype
 
+import com.android.jdwppacket.Cmd
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.ReferenceType
+import com.android.jdwppacket.Writer
 
-class SignatureCmd(val refType: Long) {
+data class SignatureCmd(val refType: Long) : Cmd(ReferenceType.Signature) {
   companion object {
 
     @JvmStatic
     fun parse(reader: MessageReader): SignatureCmd {
       return SignatureCmd(reader.getReferenceTypeID())
     }
+  }
+
+  override fun paramsKey(): String {
+    return "$refType"
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putReferenceTypeID(refType)
   }
 }

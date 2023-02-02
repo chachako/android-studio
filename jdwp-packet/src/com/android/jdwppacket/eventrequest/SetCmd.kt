@@ -20,7 +20,7 @@ import com.android.jdwppacket.Location
 import com.android.jdwppacket.MessageReader
 import com.android.jdwppacket.ModKind
 
-class SetCmd(val kind: EventKind, val suspendPolicy: Byte, val modifiers: List<Modifier>) {
+data class SetCmd(val kind: EventKind, val suspendPolicy: Byte, val modifiers: List<Modifier>) {
 
   open class Modifier(val kind: ModKind)
   class ModifierCount(val count: Int) : Modifier(ModKind.COUNT)

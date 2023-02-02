@@ -16,14 +16,16 @@
 package com.android.jdwppacket.vm
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class IDSizesReply(
+data class IDSizesReply(
   val fieldIDSize: Int,
   val methodIDSize: Int,
   val objectIDSize: Int,
   val referenceTypeIDSize: Int,
   val frameIDSize: Int
-) {
+) : Reply() {
 
   companion object {
 
@@ -36,5 +38,13 @@ class IDSizesReply(
       val frameIDSize = reader.getInt()
       return IDSizesReply(fieldIDSize, methodIDSize, objectIDSize, referenceTypeIDSize, frameIDSize)
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(fieldIDSize)
+    writer.putInt(methodIDSize)
+    writer.putInt(objectIDSize)
+    writer.putInt(referenceTypeIDSize)
+    writer.putInt(frameIDSize)
   }
 }

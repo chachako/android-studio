@@ -18,7 +18,9 @@ package com.android.jdwppacket.event
 import com.android.jdwppacket.EventKind
 import com.android.jdwppacket.MessageReader
 
-class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) {
+// This is the event type, usually issued from the VM. We don't cache them and we don't
+// generate them. So not really a point in making them inherit from Cmd for now.
+data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) {
 
   open class Event(val kind: EventKind, val requestID: Int)
   class ClassPrepareEvent(

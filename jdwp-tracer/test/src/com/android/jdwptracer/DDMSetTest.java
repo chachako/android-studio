@@ -15,6 +15,7 @@
  */
 package com.android.jdwptracer;
 
+import com.android.jdwppacket.IDSizes;
 import com.android.jdwppacket.MessageReader;
 import java.nio.ByteBuffer;
 import org.junit.Test;
@@ -25,15 +26,12 @@ public class DDMSetTest {
     public void emptyDDM() {
         CmdSetDdm ddm = new CmdSetDdm();
 
-        MessageReader messageReader = new MessageReader();
-
         ByteBuffer fakeDDMPacket = ByteBuffer.allocate(8);
         fakeDDMPacket.putInt(CmdSetDdm.typeFromName(CmdSetDdm.HELO_CHUNK));
         fakeDDMPacket.putInt(0);
         fakeDDMPacket.rewind();
-        messageReader.setBuffer(fakeDDMPacket);
 
-        ddm.parseDdmReply(messageReader, new Session(new Log()));
+        ddm.parseDdmReply(new MessageReader(new IDSizes(), fakeDDMPacket), new Session(new Log()));
         // We don't assert anything. Reaching the end of the test without BufferUnderflowException
         // is enough to validate we detect an empty DDM packet.
     }
@@ -42,11 +40,8 @@ public class DDMSetTest {
     public void DDMWithoutChunkHeader() {
         CmdSetDdm ddm = new CmdSetDdm();
 
-        MessageReader messageReader = new MessageReader();
-
         ByteBuffer fakeDDMPacket = ByteBuffer.allocate(0);
-        messageReader.setBuffer(fakeDDMPacket);
-
+        MessageReader messageReader = new MessageReader(new IDSizes(), fakeDDMPacket);
         ddm.parseDdmReply(messageReader, new Session(new Log()));
         // We don't assert anything. Reaching the end of the test without BufferUnderflowException
         // is enough to validate we detect an empty DDM packet.

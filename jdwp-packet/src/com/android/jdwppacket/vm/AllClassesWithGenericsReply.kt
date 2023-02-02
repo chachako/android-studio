@@ -16,15 +16,26 @@
 package com.android.jdwppacket.vm
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class AllClassesWithGenericsReply(val classes: MutableList<Class>) {
-  class Class(
+data class AllClassesWithGenericsReply(val classes: List<Class>) : Reply() {
+  data class Class(
     val refTypeTag: Byte,
     val referenceTypeID: Long,
     val signature: String,
     val genericSignature: String,
     val status: Int
-  )
+  ) {
+
+    fun write(writer: Writer) {
+      writer.putByte(refTypeTag)
+      writer.putReferenceTypeID(referenceTypeID)
+      writer.putString(signature)
+      writer.putString(genericSignature)
+      writer.putInt(status)
+    }
+  }
 
   companion object {
 
@@ -43,5 +54,10 @@ class AllClassesWithGenericsReply(val classes: MutableList<Class>) {
       }
       return AllClassesWithGenericsReply(classes)
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(classes.size)
+    classes.forEach { it.write(writer) }
   }
 }

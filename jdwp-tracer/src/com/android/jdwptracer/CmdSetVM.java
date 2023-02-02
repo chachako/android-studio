@@ -16,6 +16,7 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.IDSizes;
 import com.android.jdwppacket.MessageReader;
 import com.android.jdwppacket.vm.AllClassesWithGenericsReply;
 import com.android.jdwppacket.vm.ClassesBySignatureReply;
@@ -105,19 +106,11 @@ class CmdSetVM extends CmdSet {
         Message message = new Message(reader);
 
         IDSizesReply reply = IDSizesReply.parse(reader);
-        reader.setFieldIDSize(reply.getFieldIDSize());
+        session.setIDSizes(new IDSizes(reply));
         message.addArg("FieldIDSize", Integer.toString(reply.getFieldIDSize()));
-
-        reader.setMethodIDSize(reply.getMethodIDSize());
         message.addArg("methodIDSize", Integer.toString(reply.getMethodIDSize()));
-
-        reader.setObjectIDSize(reply.getObjectIDSize());
         message.addArg("objectIDSize", Integer.toString(reply.getObjectIDSize()));
-
-        reader.setReferenceTypeIDSize(reply.getReferenceTypeIDSize());
         message.addArg("referenceTypeID", Integer.toString(reply.getReferenceTypeIDSize()));
-
-        reader.setFrameIDSize(reply.getFrameIDSize());
         message.addArg("frameIDSize", Integer.toString(reply.getFrameIDSize()));
 
         return message;

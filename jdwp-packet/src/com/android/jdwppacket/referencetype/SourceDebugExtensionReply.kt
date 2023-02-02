@@ -16,8 +16,10 @@
 package com.android.jdwppacket.referencetype
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class SourceDebugExtensionReply(val extension: String) {
+data class SourceDebugExtensionReply(val extension: String) : Reply() {
   companion object {
 
     @JvmStatic
@@ -30,5 +32,9 @@ class SourceDebugExtensionReply(val extension: String) {
       val extension = if (reader.hasRemaining()) reader.getString() else ""
       return SourceDebugExtensionReply(extension)
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putString(extension)
   }
 }

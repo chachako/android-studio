@@ -28,18 +28,7 @@ package com.android.jdwppacket
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-class MessageReader(
-
-  // TODO: Make these properties lateinit once we have an engine in this lib allowing to initialize
-  //  them at runtime with a VM::IDSize.
-  var fieldIDSize: Int = 8,
-  var methodIDSize: Int = 8,
-  var objectIDSize: Int = 8,
-  var referenceTypeIDSize: Int = 8,
-  var frameIDSize: Int = 8
-) {
-
-  private var buffer = ByteBuffer.allocate(0)
+class MessageReader(val idSizes: IDSizes, val buffer: ByteBuffer) {
 
   fun getByte() = buffer.get()
 
@@ -81,13 +70,13 @@ class MessageReader(
     }
   }
 
-  fun getFieldID() = getID(fieldIDSize)
+  fun getFieldID() = getID(idSizes.fieldIDSize)
 
-  fun getMethodID() = getID(methodIDSize)
+  fun getMethodID() = getID(idSizes.methodIDSize)
 
   fun getClassID() = getReferenceTypeID()
 
-  fun getObjectID() = getID(objectIDSize)
+  fun getObjectID() = getID(idSizes.objectIDSize)
 
   fun getThreadID() = getObjectID()
 
@@ -96,9 +85,9 @@ class MessageReader(
     getByte()
   }
 
-  fun getReferenceTypeID() = getID(referenceTypeIDSize)
+  fun getReferenceTypeID() = getID(idSizes.referenceTypeIDSize)
 
-  fun getFrameID() = getID(frameIDSize)
+  fun getFrameID() = getID(idSizes.frameIDSize)
 
   fun getString(): String {
     val bytes = ByteArray(getInt())
@@ -114,10 +103,6 @@ class MessageReader(
       8 -> buffer.getLong()
       else -> throw IllegalArgumentException("Unsupported id size: $size")
     }
-  }
-
-  fun setBuffer(buffer: ByteBuffer) {
-    this.buffer = buffer
   }
 
   fun remaining() = buffer.remaining()

@@ -16,10 +16,18 @@
 package com.android.jdwppacket.vm
 
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class ClassesBySignatureReply(val classes: List<Class>) {
+data class ClassesBySignatureReply(val classes: List<Class>) : Reply() {
 
-  class Class(val refTypeTag: Byte, val referenceTypeID: Long, val status: Int)
+  data class Class(val refTypeTag: Byte, val referenceTypeID: Long, val status: Int) {
+    fun write(writer: Writer) {
+      writer.putByte(refTypeTag)
+      writer.putReferenceTypeID(referenceTypeID)
+      writer.putInt(status)
+    }
+  }
 
   companion object {
 
@@ -36,5 +44,10 @@ class ClassesBySignatureReply(val classes: List<Class>) {
       }
       return ClassesBySignatureReply(classes)
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(classes.size)
+    classes.forEach { it.write(writer) }
   }
 }

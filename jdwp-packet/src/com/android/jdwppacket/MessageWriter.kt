@@ -17,65 +17,36 @@ package com.android.jdwppacket
 
 import java.nio.ByteBuffer
 
-class MessageWriter(
-  var fieldIDSize: Int = 8,
-  var methodIDSize: Int = 8,
-  var objectIDSize: Int = 8,
-  var referenceTypeIDSize: Int = 8,
-  var frameIDSize: Int = 8
-) {
+class MessageWriter(idSizes: IDSizes, size: Int) : Writer(idSizes) {
 
-  val locationSize: Int
-    get() = Byte.SIZE_BYTES + referenceTypeIDSize + methodIDSize + Long.SIZE_BYTES
-
-  private var buffer: ByteBuffer = ByteBuffer.allocate(0)
+  private var buffer: ByteBuffer = ByteBuffer.allocate(size)
 
   fun start(capacity: Int) {
     buffer = ByteBuffer.allocate(capacity)
   }
 
   fun finish(): ByteBuffer {
-    // Prevent more putX until start is called again?
     buffer.clear()
     return buffer
   }
 
-  fun putFrameID(value: Long) {
-    putID(referenceTypeIDSize, value)
-  }
-
-  fun putByte(byte: Byte) {
+  override fun putByte(byte: Byte) {
     buffer.put(byte)
   }
 
-  fun putInt(int: Int) {
+  override fun putInt(int: Int) {
     buffer.putInt(int)
   }
 
-  fun putLong(long: Long) {
+  override fun putShort(short: Short) {
+    buffer.putShort(short)
+  }
+
+  override fun putLong(long: Long) {
     buffer.putLong(long)
   }
 
-  fun putTypeTag(typeTag: Byte) {
-    putByte(typeTag)
-  }
-
-  fun putReferenceTypeID(ref: Long) {
-    putID(referenceTypeIDSize, ref)
-  }
-
-  private fun putMethodID(methodID: Long) {
-    putID(methodIDSize, methodID)
-  }
-
-  fun putLocation(location: Location) {
-    putTypeTag(location.typeTag)
-    putReferenceTypeID(location.classID)
-    putMethodID(location.methodID)
-    putLong(location.index)
-  }
-
-  private fun putID(size: Int, value: Long) {
+  override fun putID(size: Int, value: Long) {
     when (size) {
       1 -> buffer.put(value.toByte())
       2 -> buffer.putShort(value.toShort())
@@ -83,5 +54,11 @@ class MessageWriter(
       8 -> buffer.putLong(value)
       else -> throw IllegalArgumentException("Unsupported id size: $size")
     }
+  }
+
+  override fun putString(s: String) {
+    val array = s.toByteArray()
+    buffer.putInt(s.length)
+    buffer.put(array)
   }
 }

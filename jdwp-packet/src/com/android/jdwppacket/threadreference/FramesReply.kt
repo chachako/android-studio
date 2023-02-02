@@ -17,23 +17,16 @@ package com.android.jdwppacket.threadreference
 
 import com.android.jdwppacket.Location
 import com.android.jdwppacket.MessageReader
-import com.android.jdwppacket.MessageWriter
-import com.android.jdwppacket.Writable
+import com.android.jdwppacket.Reply
+import com.android.jdwppacket.Writer
 
-class FramesReply(val frames: List<Frame>) : Writable() {
+data class FramesReply(val frames: List<Frame>) : Reply() {
 
-  class Frame(val id: Long, val location: Location)
-
-  override fun writeTo(writer: MessageWriter) {
-    writer.putInt(frames.size)
-    for (frame in frames) {
-      writer.putFrameID(frame.id)
-      writer.putLocation(frame.location)
+  data class Frame(val id: Long, val location: Location) {
+    fun write(writer: Writer) {
+      writer.putFrameID(id)
+      writer.putLocation(location)
     }
-  }
-
-  override fun serializedSize(writer: MessageWriter): Int {
-    return Int.SIZE_BYTES + frames.size * (writer.referenceTypeIDSize + writer.locationSize)
   }
 
   companion object {
@@ -50,5 +43,10 @@ class FramesReply(val frames: List<Frame>) : Writable() {
       }
       return FramesReply(frames)
     }
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putInt(frames.size)
+    frames.forEach { it.write(writer) }
   }
 }

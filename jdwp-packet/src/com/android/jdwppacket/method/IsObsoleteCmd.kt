@@ -15,25 +15,20 @@
  */
 package com.android.jdwppacket
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
+data class IsObsoleteCmd(val classID: Long, val methodID: Long) : Cmd(Method.IsObsolete) {
 
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
+  override fun paramsKey(): String {
+    return "$classID-$methodID"
+  }
+
+  override fun writePayload(writer: Writer) {
     writer.putClassID(classID)
     writer.putMethodID(methodID)
-    writer.putLong(index)
   }
 
   companion object {
-
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
+    fun parse(reader: MessageReader): Cmd {
+      return IsObsoleteCmd(reader.getClassID(), reader.getMethodID())
     }
   }
 }

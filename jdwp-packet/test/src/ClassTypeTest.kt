@@ -1,3 +1,7 @@
+import com.android.jdwppacket.SuperClassCmd
+import com.android.jdwppacket.SuperClassReply
+import org.junit.Test
+
 /*
  * Copyright (C) 2023 The Android Open Source Project
  *
@@ -13,27 +17,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.jdwppacket
+class ClassTypeTest {
 
-data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, val index: Long) {
-
-  fun write(writer: Writer) {
-    writer.putTypeTag(typeTag)
-    writer.putClassID(classID)
-    writer.putMethodID(methodID)
-    writer.putLong(index)
+  @Test
+  fun testSuperClassCmd() {
+    val packet = SuperClassCmd(Long.MAX_VALUE)
+    assertJDWPObjectAndWireEquals(packet, SuperClassCmd::parse)
   }
 
-  companion object {
-
-    @JvmStatic
-    fun parse(reader: MessageReader): Location {
-      return Location(
-        reader.getTypeTag(),
-        reader.getClassID(),
-        reader.getMethodID(),
-        reader.getLong()
-      )
-    }
+  @Test
+  fun testSuperClassReply() {
+    val packet = SuperClassReply(Long.MAX_VALUE)
+    assertJDWPObjectAndWireEquals(packet, SuperClassReply::parse)
   }
 }

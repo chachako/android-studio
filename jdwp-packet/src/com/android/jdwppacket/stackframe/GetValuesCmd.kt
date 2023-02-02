@@ -15,28 +15,40 @@
  */
 package com.android.jdwppacket.stackframe
 
+import com.android.jdwppacket.Cmd
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.StackFrame
+import com.android.jdwppacket.Writer
 
-class GetValuesCmd(val threadID: Long, val frameID: Long, val slots: List<Slot>) {
-  class Slot(val slot: Int, val sibByte: Byte)
+data class GetValuesCmd(val threadID: Long, val frameID: Long, val slots: List<Slot>) :
+  Cmd(StackFrame.GetValues) {
+  data class Slot(val slot: Int, val sibByte: Byte) {
+    fun write(writer: Writer) {
+      writer.putInt(slot)
+      writer.putByte(sibByte)
+    }
+  }
 
   companion object {
 
     @JvmStatic
     fun parse(reader: MessageReader): GetValuesCmd {
-
       val threadID = reader.getThreadID()
       val frameID = reader.getFrameID()
-      val numSlots = reader.getInt()
 
-      val slots = mutableListOf<Slot>()
-      repeat(numSlots) {
-        val slot: Int = reader.getInt()
-        val sigbyte: Byte = reader.getByte()
-        slots.add(Slot(slot, sigbyte))
-      }
-
+      val slots = List(reader.getInt()) { Slot(reader.getInt(), reader.getByte()) }
       return GetValuesCmd(threadID, frameID, slots)
     }
+  }
+
+  override fun paramsKey(): String {
+    throw IllegalStateException("Not keyable (slots can vary too much)")
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putThreadID(threadID)
+    writer.putFrameID(frameID)
+    writer.putInt(slots.size)
+    slots.forEach { it.write(writer) }
   }
 }

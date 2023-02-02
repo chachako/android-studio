@@ -15,9 +15,21 @@
  */
 package com.android.jdwppacket.referencetype
 
+import com.android.jdwppacket.Cmd
 import com.android.jdwppacket.MessageReader
+import com.android.jdwppacket.ReferenceType
+import com.android.jdwppacket.Writer
 
-class SourceDebugExtensionCmd(val refType: Long) {
+data class SourceDebugExtensionCmd(val refType: Long) : Cmd(ReferenceType.SourceDebugExtension) {
+
+  override fun paramsKey(): String {
+    return "$refType"
+  }
+
+  override fun writePayload(writer: Writer) {
+    writer.putReferenceTypeID(refType)
+  }
+
   companion object {
 
     @JvmStatic

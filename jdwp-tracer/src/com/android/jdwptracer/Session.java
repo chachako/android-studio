@@ -16,6 +16,7 @@
 package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
+import com.android.jdwppacket.IDSizes;
 import com.android.jdwppacket.MessageReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.Map;
 // case of cmd/reply pairs, and convert them to "Event" which is the rendition's elementary unit.
 class Session {
 
-    private final MessageReader messageReader = new MessageReader();
+    private IDSizes idSizes = new IDSizes();
 
     private final HashMap<Integer, Transmission> idToTransmission = new HashMap<>();
 
@@ -64,7 +65,7 @@ class Session {
         int cmdID = packet.get() & 0xFF; // Convert from unsigned byte to signed int.
 
         // From here, we parse the packet with the message reader.
-        messageReader.setBuffer(packet);
+        MessageReader messageReader = new MessageReader(idSizes, packet);
 
         CmdSet cmdSet = CmdSets.get(cmdSetID);
         Message message = cmdSet.getCmd(cmdID).getCmdParser().parse(messageReader, this);
@@ -89,7 +90,7 @@ class Session {
         int cmdID = t.cmd().cmdID();
 
         // From here, we parse the packet with the message reader.
-        messageReader.setBuffer(packet);
+        MessageReader messageReader = new MessageReader(idSizes, packet);
 
         // Make a Reply
         CmdSet cmdSet = CmdSets.get(cmdSetID);
@@ -185,5 +186,9 @@ class Session {
         details += ",errorCode=" + buffer.getShort();
 
         return details;
+    }
+
+    void setIDSizes(@NonNull IDSizes idSizes) {
+        this.idSizes = idSizes;
     }
 }
