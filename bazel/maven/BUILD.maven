@@ -5637,25 +5637,25 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.apache.commons.commons-compress_1.20",
-    pom = "repository/org/apache/commons/commons-compress/1.20/commons-compress-1.20.pom",
+    name = "org.apache.commons.commons-compress_1.21",
+    pom = "repository/org/apache/commons/commons-compress/1.21/commons-compress-1.21.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/commons/commons-compress/1.20",
-    parent = "org.apache.commons.commons-parent_48",
+    repo_path = "org/apache/commons/commons-compress/1.21",
+    parent = "org.apache.commons.commons-parent_52",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "org.apache.commons.commons-compress",
     classifiers = [],
-    parent = "org.apache.commons.commons-parent_48",
+    parent = "org.apache.commons.commons-parent_52",
     jars = [
-        "repository/org/apache/commons/commons-compress/1.20/commons-compress-1.20.jar"
+        "repository/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar"
     ],
     original_deps = [],
-    pom = "repository/org/apache/commons/commons-compress/1.20/commons-compress-1.20.pom",
+    pom = "repository/org/apache/commons/commons-compress/1.21/commons-compress-1.21.pom",
     repo_root_path = "repository",
-    repo_path = "org/apache/commons/commons-compress/1.20",
+    repo_path = "org/apache/commons/commons-compress/1.21",
     visibility = ["//visibility:public"],
 )
 
@@ -33362,6 +33362,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.commons.commons-compress_1.20",
+    pom = "repository/org/apache/commons/commons-compress/1.20/commons-compress-1.20.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/commons/commons-compress/1.20",
+    parent = "org.apache.commons.commons-parent_48",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.apache.commons.commons-compress_1.8.1",
     pom = "repository/org/apache/commons/commons-compress/1.8.1/commons-compress-1.8.1.pom",
     repo_root_path = "repository",
@@ -42028,6 +42037,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.commons.commons-parent_52",
+    pom = "repository/org/apache/commons/commons-parent/52/commons-parent-52.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/commons/commons-parent/52",
+    parent = "org.apache.apache_23",
+)
+
+maven_artifact(
     name = "org.apache.commons.commons-parent_9",
     pom = "repository/org/apache/commons/commons-parent/9/commons-parent-9.pom",
     repo_root_path = "repository",
@@ -42281,6 +42298,13 @@ maven_artifact(
     pom = "repository/org/apache/apache/21/apache-21.pom",
     repo_root_path = "repository",
     repo_path = "org/apache/apache/21",
+)
+
+maven_artifact(
+    name = "org.apache.apache_23",
+    pom = "repository/org/apache/apache/23/apache-23.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/apache/23",
 )
 
 maven_artifact(
