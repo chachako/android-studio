@@ -21,7 +21,7 @@ package com.android.resources;
  *
  * <p>This is used in the resource folder names.
  */
-public enum GrammaticalGenderState implements ResourceEnum {
+public enum GrammaticalGender implements ResourceEnum {
     NEUTER("neuter", "Neuter", "Neuter"),
     FEMININE("feminine", "Feminine", "Feminine"),
     MASCULINE("masculine", "Masculine", "Masculine");
@@ -30,7 +30,7 @@ public enum GrammaticalGenderState implements ResourceEnum {
     private final String mShortDisplayValue;
     private final String mLongDisplayValue;
 
-    GrammaticalGenderState(String value, String shortDisplayValue, String longDisplayValue) {
+    GrammaticalGender(String value, String shortDisplayValue, String longDisplayValue) {
         mValue = value;
         mShortDisplayValue = shortDisplayValue;
         mLongDisplayValue = longDisplayValue;
@@ -42,8 +42,8 @@ public enum GrammaticalGenderState implements ResourceEnum {
      * @param value The qualifier value.
      * @return the enum for the qualifier value or null if no matching was found.
      */
-    public static GrammaticalGenderState getEnum(String value) {
-        for (GrammaticalGenderState state : values()) {
+    public static GrammaticalGender getEnum(String value) {
+        for (GrammaticalGender state : values()) {
             if (state.mValue.equals(value)) {
                 return state;
             }
@@ -67,12 +67,12 @@ public enum GrammaticalGenderState implements ResourceEnum {
         return mLongDisplayValue;
     }
 
-    public static int getIndex(GrammaticalGenderState value) {
+    public static int getIndex(GrammaticalGender value) {
         return value == null ? -1 : value.ordinal();
     }
 
-    public static GrammaticalGenderState getByIndex(int index) {
-        GrammaticalGenderState[] values = values();
+    public static GrammaticalGender getByIndex(int index) {
+        GrammaticalGender[] values = values();
         if (index >= 0 && index < values.length) {
             return values[index];
         }

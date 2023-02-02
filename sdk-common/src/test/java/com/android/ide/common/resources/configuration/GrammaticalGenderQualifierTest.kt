@@ -15,7 +15,7 @@
  */
 package com.android.ide.common.resources.configuration
 
-import com.android.resources.GrammaticalGenderState
+import com.android.resources.GrammaticalGender
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -34,21 +34,21 @@ class GrammaticalGenderQualifierTest {
     @Test
     fun testNeuter() {
         assertTrue(grammaticalGenderQualifier.checkAndSet("neuter", config))
-        assertEquals(GrammaticalGenderState.NEUTER, config.grammaticalGenderQualifier!!.value)
+        assertEquals(GrammaticalGender.NEUTER, config.grammaticalGenderQualifier!!.value)
         assertEquals("neuter", config.grammaticalGenderQualifier!!.toString())
     }
 
     @Test
     fun testFeminine() {
         assertTrue(grammaticalGenderQualifier.checkAndSet("feminine", config))
-        assertEquals(GrammaticalGenderState.FEMININE, config.grammaticalGenderQualifier!!.value)
+        assertEquals(GrammaticalGender.FEMININE, config.grammaticalGenderQualifier!!.value)
         assertEquals("feminine", config.grammaticalGenderQualifier!!.toString())
     }
 
     @Test
     fun testMasculine() {
         assertTrue(grammaticalGenderQualifier.checkAndSet("masculine", config))
-        assertEquals(GrammaticalGenderState.MASCULINE, config.grammaticalGenderQualifier!!.value)
+        assertEquals(GrammaticalGender.MASCULINE, config.grammaticalGenderQualifier!!.value)
         assertEquals("masculine", config.grammaticalGenderQualifier!!.toString())
     }
 

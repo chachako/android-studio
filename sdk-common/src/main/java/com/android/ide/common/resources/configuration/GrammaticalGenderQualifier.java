@@ -17,22 +17,22 @@
 package com.android.ide.common.resources.configuration;
 
 import com.android.annotations.Nullable;
-import com.android.resources.GrammaticalGenderState;
+import com.android.resources.GrammaticalGender;
 import com.android.resources.ResourceEnum;
 
 public class GrammaticalGenderQualifier extends EnumBasedResourceQualifier {
 
     public static final String NAME = "Grammatical Gender";
 
-    @Nullable private GrammaticalGenderState mValue = null;
+    @Nullable private GrammaticalGender mValue = null;
 
     public GrammaticalGenderQualifier() {}
 
-    public GrammaticalGenderQualifier(@Nullable GrammaticalGenderState value) {
+    public GrammaticalGenderQualifier(@Nullable GrammaticalGender value) {
         mValue = value;
     }
 
-    public GrammaticalGenderState getValue() {
+    public GrammaticalGender getValue() {
         return mValue;
     }
 
@@ -58,7 +58,7 @@ public class GrammaticalGenderQualifier extends EnumBasedResourceQualifier {
 
     @Override
     public boolean checkAndSet(String value, FolderConfiguration config) {
-        GrammaticalGenderState enumValue = GrammaticalGenderState.getEnum(value);
+        GrammaticalGender enumValue = GrammaticalGender.getEnum(value);
         if (enumValue != null) {
             GrammaticalGenderQualifier qualifier = new GrammaticalGenderQualifier(enumValue);
             config.setGrammaticalGenderQualifier(qualifier);
