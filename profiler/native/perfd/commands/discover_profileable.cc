@@ -22,7 +22,9 @@ using grpc::Status;
 namespace profiler {
 
 Status DiscoverProfileable::ExecuteOn(Daemon* daemon) {
-  ProfileableDetector::Instance(daemon->clock(), daemon->buffer()).Start();
+  ProfileableDetector::Instance(daemon->clock(), daemon->buffer(),
+                                trace_manager_)
+      .Start();
   return Status::OK;
 }
 

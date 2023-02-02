@@ -22,6 +22,7 @@
 
 #include "daemon/daemon.h"
 #include "daemon/event_buffer.h"
+#include "perfd/common/trace_manager.h"
 #include "utils/clock.h"
 #include "utils/fs/file_system.h"
 #include "utils/procfs_files.h"
@@ -70,16 +71,20 @@ class ProfileableChecker {
 class ProfileableDetector {
  public:
   // The entry point that's designed to be called in production.
-  static ProfileableDetector& Instance(Clock* clock, EventBuffer* buffer) {
-    static auto* instance = new ProfileableDetector(clock, buffer);
+  static ProfileableDetector& Instance(Clock* clock, EventBuffer* buffer,
+                                       TraceManager* trace_manager) {
+    static auto* instance =
+        new ProfileableDetector(clock, buffer, trace_manager);
     return *instance;
   }
 
   ProfileableDetector(Clock* clock, EventBuffer* buffer,
+                      std::unique_ptr<TraceManager> trace_manager,
                       std::unique_ptr<profiler::FileSystem> fs,
                       std::unique_ptr<ProfileableChecker> checker)
       : clock_(clock),
         buffer_(buffer),
+        trace_manager_(std::move(trace_manager)),
         fs_(std::move(fs)),
         profileable_checker_(std::move(checker)),
         running_(false),
@@ -87,7 +92,8 @@ class ProfileableDetector {
         zygote64_pid_(-1),
         first_snapshot_done_(false) {}
 
-  ProfileableDetector(Clock* clock, EventBuffer* buffer);
+  ProfileableDetector(Clock* clock, EventBuffer* buffer,
+                      TraceManager* trace_manager);
 
   ~ProfileableDetector();
 
@@ -106,6 +112,7 @@ class ProfileableDetector {
   ProfileableChecker* profileable_checker() {
     return profileable_checker_.get();
   }
+  TraceManager* trace_manager() { return trace_manager_.get(); }
   const profiler::ProcfsFiles* proc_files() { return &proc_files_; }
 
  private:
@@ -139,6 +146,17 @@ class ProfileableDetector {
 
   Clock* clock_;
   EventBuffer* buffer_;
+  // This instance of TraceManager is passed in through the
+  // DiscoverProfileable command's creation of a ProfileableDetector.
+  // The profileable detector utilizes the this TraceManager instance
+  // during the check for a process being profileable. By calling
+  // TraceManager::GetOngoingCpature we can see if the inspected
+  // process has an ongoing capture already. If so, we can prevent the call
+  // to the ProfileableChecker::Check method. This method, if called on
+  // a process that has an ongoing capture, can lead to harmful
+  // side-effects. One of which being it's execution of the `profile stop`
+  // command prematurely ending an ongoing capture of a startup trace.
+  std::unique_ptr<TraceManager> trace_manager_;
   // Files that are used to detect the change of processes and to obtain process
   // info. Configurable for testing.
   std::unique_ptr<profiler::FileSystem> fs_;

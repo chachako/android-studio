@@ -112,9 +112,11 @@ bool ProfileableChecker::Check(int32_t pid, const string& package_name) const {
   return true;
 }
 
-ProfileableDetector::ProfileableDetector(Clock* clock, EventBuffer* buffer)
+ProfileableDetector::ProfileableDetector(Clock* clock, EventBuffer* buffer,
+                                         TraceManager* trace_manager)
     : ProfileableDetector(
-          clock, buffer, std::unique_ptr<FileSystem>(new DiskFileSystem()),
+          clock, buffer, std::unique_ptr<TraceManager>(trace_manager),
+          std::unique_ptr<FileSystem>(new DiskFileSystem()),
           std::unique_ptr<ProfileableChecker>(new ProfileableChecker())) {}
 
 ProfileableDetector::~ProfileableDetector() {
@@ -183,8 +185,20 @@ SystemSnapshot ProfileableDetector::CollectProcessSnapshot() {
                    return;
                  }
 
+                 // In the case where there's a matching app name for the
+                 // ongoing capture, we know that this process had to be
+                 // profileable. Thus, we do not need to do the check via the
+                 // ProfileableChecker::Check method. This check can lead to
+                 // harmful side-effects. One of which being it's execution of
+                 // the `profile stop` command which can prematurely end an
+                 // ongoing capture.
                  bool profileable = false;
-                 if (isExaminedBefore(pid, start_time, package_name)) {
+                 CaptureInfo* capture =
+                     trace_manager_->GetOngoingCapture(package_name);
+
+                 if (capture != nullptr) {
+                   profileable = true;
+                 } else if (isExaminedBefore(pid, start_time, package_name)) {
                    profileable = snapshot_.apps[pid].profileable;
                  } else {
                    profileable = profileable_checker_->Check(pid, package_name);

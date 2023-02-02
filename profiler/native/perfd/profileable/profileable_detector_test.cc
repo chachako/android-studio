@@ -45,6 +45,12 @@ class MockProfileableChecker final : public profiler::ProfileableChecker {
   MOCK_CONST_METHOD2(Check, bool(int32_t pid, const std::string& package_name));
 };
 
+class MockTraceManager final : public profiler::TraceManager {
+ public:
+  MOCK_METHOD(CaptureInfo*, GetOngoingCapture, (const std::string& app_name),
+              (override));
+};
+
 // Helper class to handle event streaming from the EventBuffer.
 class TestEventWriter final : public EventWriter {
  public:
@@ -74,6 +80,7 @@ class ProfileableDetectorTest : public ::testing::Test {
       : event_buffer_(&clock_),
         detector_(
             &clock_, &event_buffer_,
+            unique_ptr<MockTraceManager>(new MockTraceManager()),
             unique_ptr<FileSystem>(new MemoryFileSystem()),
             unique_ptr<ProfileableChecker>(new MockProfileableChecker())) {
     SetupZygoteFiles();
@@ -136,6 +143,7 @@ class ProfileableDetectorTest : public ::testing::Test {
   // Variables referenced by the test below.
   FakeClock clock_;
   EventBuffer event_buffer_;
+  TraceManager* trace_manager_;
   ProfileableDetector detector_;
   std::vector<proto::Event> events_;
   std::condition_variable cv_;
@@ -159,6 +167,10 @@ class ProfileableDetectorTest : public ::testing::Test {
 TEST_F(ProfileableDetectorTest, Find32bitProfileable) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
   clock_.SetCurrentTime(5678);
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .WillOnce(Return(nullptr));
 
   int32_t checked_pid{0};
   string checked_name;
@@ -191,6 +203,10 @@ TEST_F(ProfileableDetectorTest, Find64bitProfileable) {
   AddProcessFiles(456, "com.app2", kZygote64Pid, 4321);
   clock_.SetCurrentTime(6789);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .WillOnce(Return(nullptr));
+
   int32_t checked_pid{0};
   string checked_name;
   EXPECT_CALL(
@@ -221,6 +237,11 @@ TEST_F(ProfileableDetectorTest, FindTwoProfileable) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
   AddProcessFiles(456, "com.app2", kZygote64Pid, 4321);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(2)
+      .WillRepeatedly(Return(nullptr));
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -246,6 +267,11 @@ TEST_F(ProfileableDetectorTest, FindOneProfileableOneNonProfileable) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
   AddProcessFiles(456, "com.app2", kZygote64Pid, 4321);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(2)
+      .WillRepeatedly(Return(nullptr));
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -259,6 +285,10 @@ TEST_F(ProfileableDetectorTest, FindOneProfileableOneNonProfileable) {
 TEST_F(ProfileableDetectorTest, DontCheckNonAppProcess) {
   AddProcessFiles(123, "NotAnApp", 11111 /* not zygote */, 2345);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(0);
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -268,6 +298,11 @@ TEST_F(ProfileableDetectorTest, DontCheckNonAppProcess) {
 
 TEST_F(ProfileableDetectorTest, DontCheckSameProfileableAppAgain) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(4)
+      .WillRepeatedly(Return(nullptr));
 
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
@@ -286,6 +321,11 @@ TEST_F(ProfileableDetectorTest, DontCheckSameProfileableAppAgain) {
 
 TEST_F(ProfileableDetectorTest, DontCheckSameNonProfileableAppAgain) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(4)
+      .WillRepeatedly(Return(nullptr));
 
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
@@ -306,6 +346,12 @@ TEST_F(ProfileableDetectorTest, CheckSameProcessIfNameChanges) {
 
   int32_t checked_pid;
   string checked_name;
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(2)
+      .WillRepeatedly(Return(nullptr));
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -327,6 +373,11 @@ TEST_F(ProfileableDetectorTest, CheckSameProcessIfNameChanges) {
 
 TEST_F(ProfileableDetectorTest, NonProfileableAndThenNewProfileable) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(3)
+      .WillRepeatedly(Return(nullptr));
 
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
@@ -351,6 +402,11 @@ TEST_F(ProfileableDetectorTest, NonProfileableAndThenNewProfileable) {
 TEST_F(ProfileableDetectorTest, AProfileableAndThenNewNonProfileable) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(3)
+      .WillRepeatedly(Return(nullptr));
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -374,6 +430,11 @@ TEST_F(ProfileableDetectorTest, AProfileableAndThenNewNonProfileable) {
 TEST_F(ProfileableDetectorTest, EmptyProfileableLogSectionForNewNonAppProcess) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(2)
+      .WillRepeatedly(Return(nullptr));
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -396,6 +457,11 @@ TEST_F(ProfileableDetectorTest, EmptyProfileableLogSectionForNewNonAppProcess) {
 TEST_F(ProfileableDetectorTest, ProfileableAppDies) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
   AddProcessFiles(456, "com.app2", kZygote64Pid, 6789);
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(3)
+      .WillRepeatedly(Return(nullptr));
 
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
@@ -427,6 +493,11 @@ TEST_F(ProfileableDetectorTest, ProfileableAppDies) {
 
 TEST_F(ProfileableDetectorTest, NonProfileableAppDies) {
   AddProcessFiles(123, "com.app1", kZygotePid, 2345);
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(4)
+      .WillRepeatedly(Return(nullptr));
 
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
@@ -463,6 +534,11 @@ TEST_F(ProfileableDetectorTest, NonAppProcessDies) {
   AddProcessFiles(123, "NotAnApp", 11111 /* not zygote */, 2345);
   AddProcessFiles(456, "com.app2", kZygote64Pid, 6789);
 
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .Times(2)
+      .WillRepeatedly(Return(nullptr));
+
   EXPECT_CALL(
       *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
       Check(_, _))
@@ -487,6 +563,73 @@ TEST_F(ProfileableDetectorTest, NonAppProcessDies) {
   WaitForEvents(2);
   EXPECT_THAT(events_[1].pid(), 456);
   EXPECT_THAT(events_[1].is_ended(), IsTrue());
+}
+
+TEST_F(ProfileableDetectorTest, ProfileableCheckIsNotCalledWithStartupTracing) {
+  AddProcessFiles(123, "com.app1", kZygotePid, 2345);
+
+  CaptureInfo* captureInfo = new CaptureInfo();
+  proto::TraceConfiguration configuration;
+  captureInfo->configuration = configuration;
+
+  string checked_app_name;
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .WillOnce(DoAll(SaveArg<0>(&checked_app_name), Return(captureInfo)));
+
+  // Because the returned capture initiation type is INITIATED_BY_STARTUP,
+  // the call to ProfileableChecker::Check should not be executed.
+  EXPECT_CALL(
+      *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
+      Check(_, _))
+      .Times(0);
+
+  EXPECT_THAT(events_, IsEmpty());
+
+  detector_.Refresh();
+  WaitForEvents(1);
+
+  // Verify that the app name used as a parameter in the call to
+  // TraceManager::GetOngoingCapture is as expected.
+  EXPECT_THAT(checked_app_name, StrEq("com.app1"));
+
+  // Verify the generated event's data is as expected.
+  EXPECT_THAT(events_[0].pid(), 123);
+  EXPECT_THAT(events_[0].process().process_started().process().name(),
+              StrEq("com.app1"));
+}
+
+TEST_F(ProfileableDetectorTest,
+       ProfileableCheckIsCalledWithNullOngoingCapture) {
+  AddProcessFiles(123, "com.app1", kZygotePid, 2345);
+
+  string checked_app_name;
+
+  EXPECT_CALL(*(static_cast<MockTraceManager*>(detector_.trace_manager())),
+              GetOngoingCapture(_))
+      .WillOnce(DoAll(SaveArg<0>(&checked_app_name), Return(nullptr)));
+
+  // Because the returned capture is nullptr, the call to
+  // ProfileableChecker::Check should be executed.
+  EXPECT_CALL(
+      *(static_cast<MockProfileableChecker*>(detector_.profileable_checker())),
+      Check(_, _))
+      .WillOnce(Return(true));
+
+  EXPECT_THAT(events_, IsEmpty());
+
+  detector_.Refresh();
+  WaitForEvents(1);
+
+  // Verify that the app name used as a parameter in the call to
+  // TraceManager::GetOngoingCapture is as expected.
+  EXPECT_THAT(checked_app_name, StrEq("com.app1"));
+
+  // Verify the generated event's data is as expected.
+  EXPECT_THAT(events_[0].pid(), 123);
+  EXPECT_THAT(events_[0].process().process_started().process().name(),
+              StrEq("com.app1"));
 }
 
 }  // namespace profiler

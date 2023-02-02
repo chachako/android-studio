@@ -91,8 +91,10 @@ int Perfd::Initialize(Daemon* daemon) {
                                  &BeginSession::Create);
   daemon->RegisterCommandHandler(proto::Command::END_SESSION,
                                  &EndSession::Create);
-  daemon->RegisterCommandHandler(proto::Command::DISCOVER_PROFILEABLE,
-                                 &DiscoverProfileable::Create);
+  daemon->RegisterCommandHandler(
+      proto::Command::DISCOVER_PROFILEABLE, [](proto::Command command) {
+        return DiscoverProfileable::Create(command, &trace_manager);
+      });
   daemon->RegisterCommandHandler(proto::Command::GET_CPU_CORE_CONFIG,
                                  &GetCpuCoreConfig::Create);
   daemon->RegisterCommandHandler(

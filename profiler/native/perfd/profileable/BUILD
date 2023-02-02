@@ -10,6 +10,7 @@ cc_library(
     tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
+        "//tools/base/profiler/native/perfd/common:trace_manager",
         "//tools/base/transport/native/daemon",
         "//tools/base/transport/native/utils",
     ],

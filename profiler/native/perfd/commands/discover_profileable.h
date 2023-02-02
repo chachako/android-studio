@@ -17,19 +17,37 @@
 #define PERFD_COMMANDS_DISCOVER_PROFILEABLE_H_
 
 #include "daemon/daemon.h"
+#include "perfd/common/trace_manager.h"
 #include "proto/transport.grpc.pb.h"
 
 namespace profiler {
 
 class DiscoverProfileable : public CommandT<DiscoverProfileable> {
  public:
-  DiscoverProfileable(const proto::Command& command) : CommandT(command) {}
+  DiscoverProfileable(const proto::Command& command,
+                      TraceManager* trace_manager)
+      : CommandT(command), trace_manager_(trace_manager) {}
 
-  static Command* Create(const proto::Command& command) {
-    return new DiscoverProfileable(command);
+  static Command* Create(const proto::Command& command,
+                         TraceManager* trace_manager) {
+    return new DiscoverProfileable(command, trace_manager);
   }
 
   virtual grpc::Status ExecuteOn(Daemon* daemon) override;
+
+ private:
+  // An instance of TraceManager is passed into this command
+  // so that it can be passed into the creation of
+  // a ProfileableDetector instance. This profileable detector
+  // utilizes the trace manager during the check for a process being
+  // profileable. By calling TraceManager::GetOngoingCpature we can
+  // see if the inspected process has an ongoing capture already.
+  // If so, we can prevent the call to the ProfileableChecker::Check
+  // method. This method, if called on a process that has an ongoing
+  // capture, can lead to harmful side-effects. One of which being it's
+  // execution of the `profile stop` command prematurely ending an
+  // ongoing capture of a startup trace.
+  TraceManager* trace_manager_;
 };
 
 }  // namespace profiler
