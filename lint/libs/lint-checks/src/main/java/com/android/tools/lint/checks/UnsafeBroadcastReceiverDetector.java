@@ -111,31 +111,33 @@ public class UnsafeBroadcastReceiverDetector extends Detector
 
     public static final Issue ACTION_STRING =
             Issue.create(
-                    "UnsafeProtectedBroadcastReceiver",
-                    "Unsafe Protected `BroadcastReceiver`",
-                    "`BroadcastReceiver`s that declare an intent-filter for a protected-broadcast action "
-                            + "string must check that the received intent's action string matches the expected "
-                            + "value, otherwise it is possible for malicious actors to spoof intents.",
-                    Category.SECURITY,
-                    6,
-                    Severity.WARNING,
-                    new Implementation(
-                            UnsafeBroadcastReceiverDetector.class,
-                            EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
-                            Scope.JAVA_FILE_SCOPE));
+                            "UnsafeProtectedBroadcastReceiver",
+                            "Unsafe Protected `BroadcastReceiver`",
+                            "`BroadcastReceiver`s that declare an intent-filter for a protected-broadcast action "
+                                    + "string must check that the received intent's action string matches the expected "
+                                    + "value, otherwise it is possible for malicious actors to spoof intents.",
+                            Category.SECURITY,
+                            6,
+                            Severity.WARNING,
+                            new Implementation(
+                                    UnsafeBroadcastReceiverDetector.class,
+                                    EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
+                                    Scope.JAVA_FILE_SCOPE))
+                    .addMoreInfo("https://goo.gle/UnsafeProtectedBroadcastReceiver");
 
     public static final Issue BROADCAST_SMS =
             Issue.create(
-                    "UnprotectedSMSBroadcastReceiver",
-                    "Unprotected SMS `BroadcastReceiver`",
-                    "BroadcastReceivers that declare an intent-filter for `SMS_DELIVER` or "
-                            + "`SMS_RECEIVED` must ensure that the caller has the `BROADCAST_SMS` permission, "
-                            + "otherwise it is possible for malicious actors to spoof intents.",
-                    Category.SECURITY,
-                    6,
-                    Severity.WARNING,
-                    new Implementation(
-                            UnsafeBroadcastReceiverDetector.class, Scope.MANIFEST_SCOPE));
+                            "UnprotectedSMSBroadcastReceiver",
+                            "Unprotected SMS `BroadcastReceiver`",
+                            "BroadcastReceivers that declare an intent-filter for `SMS_DELIVER` or "
+                                    + "`SMS_RECEIVED` must ensure that the caller has the `BROADCAST_SMS` permission, "
+                                    + "otherwise it is possible for malicious actors to spoof intents.",
+                            Category.SECURITY,
+                            6,
+                            Severity.WARNING,
+                            new Implementation(
+                                    UnsafeBroadcastReceiverDetector.class, Scope.MANIFEST_SCOPE))
+                    .addMoreInfo("https://goo.gle/UnprotectedSMSBroadcastReceiver");
 
     private Set<String> mReceiversWithProtectedBroadcastIntentFilter = null;
 

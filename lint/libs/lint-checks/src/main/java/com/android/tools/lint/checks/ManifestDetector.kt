@@ -202,10 +202,10 @@ class ManifestDetector : Detector(), XmlScanner {
     @JvmField
     val DATA_EXTRACTION_RULES =
       Issue.create(
-        "DataExtractionRules",
-        briefDescription = "Missing data extraction rules",
-        explanation =
-          """
+          "DataExtractionRules",
+          briefDescription = "Missing data extraction rules",
+          explanation =
+            """
                 Before Android 12, the attributes `android:allowBackup` and `android:fullBackupContent` \
                 were used to configure all forms of backup, including cloud backups, device-to-device \
                 transfers and adb backup.
@@ -217,11 +217,12 @@ class ManifestDetector : Detector(), XmlScanner {
                 versions, you'll still want to specify an `android:fullBackupContent` resource if the default \
                 behavior is not right for your app.
                 """,
-        category = Category.SECURITY,
-        priority = 3,
-        moreInfo = "https://developer.android.com/about/versions/12/backup-restore#xml-changes",
-        implementation = IMPLEMENTATION
-      )
+          category = Category.SECURITY,
+          priority = 3,
+          moreInfo = "https://developer.android.com/about/versions/12/backup-restore#xml-changes",
+          implementation = IMPLEMENTATION
+        )
+        .addMoreInfo("https://goo.gle/DataExtractionRules")
 
     /** Conflicting permission names */
     @JvmField

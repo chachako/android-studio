@@ -70,7 +70,8 @@ public class X509TrustManagerDetector extends Detector implements SourceCodeScan
                             6,
                             Severity.WARNING,
                             IMPLEMENTATION)
-                    .setAndroidSpecific(true);
+                    .setAndroidSpecific(true)
+                    .addMoreInfo("https://goo.gle/TrustAllX509TrustManager");
 
     public static final Issue IMPLEMENTS_CUSTOM =
             Issue.create(
@@ -81,7 +82,8 @@ public class X509TrustManagerDetector extends Detector implements SourceCodeScan
                             5,
                             Severity.WARNING,
                             IMPLEMENTATION)
-                    .setAndroidSpecific(true);
+                    .setAndroidSpecific(true)
+                    .addMoreInfo("https://goo.gle/CustomX509TrustManager");
 
     public X509TrustManagerDetector() {}
 

@@ -55,7 +55,8 @@ public class SslCertificateSocketFactoryDetector extends Detector implements Sou
                             6,
                             Severity.WARNING,
                             IMPLEMENTATION_JAVA)
-                    .setAndroidSpecific(true);
+                    .setAndroidSpecific(true)
+                    .addMoreInfo("https://goo.gle/SSLCertificateSocketFactoryCreateSocket");
 
     public static final Issue GET_INSECURE =
             Issue.create(
@@ -72,7 +73,8 @@ public class SslCertificateSocketFactoryDetector extends Detector implements Sou
                             6,
                             Severity.WARNING,
                             IMPLEMENTATION_JAVA)
-                    .setAndroidSpecific(true);
+                    .setAndroidSpecific(true)
+                    .addMoreInfo("https://goo.gle/SSLCertificateSocketFactoryGetInsecure");
 
     private static final String INET_ADDRESS_CLASS = "java.net.InetAddress";
 

@@ -156,6 +156,7 @@ class ExportedFlagDetector : Detector(), XmlScanner {
                 prior to this requirement) unless you have a good reason to export a particular \
                 component.
             """,
+        moreInfo = "https://goo.gle/IntentFilterExportedReceiver",
         category = Category.SECURITY,
         priority = 5,
         severity = Severity.WARNING,

@@ -163,6 +163,7 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
                 `Cipher#getInstance` should not be called with ECB as the cipher mode or \
                 without setting the cipher mode because the default mode on android is \
                 ECB, which is insecure.""",
+        moreInfo = "https://goo.gle/GetInstance",
         category = Category.SECURITY,
         priority = 9,
         severity = Severity.WARNING,
@@ -174,21 +175,22 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
     @JvmField
     val DEPRECATED_PROVIDER =
       Issue.create(
-        id = "DeprecatedProvider",
-        briefDescription = "Using BC Provider",
-        explanation =
-          """
-            The `BC` provider has been deprecated and will not be provided when `targetSdkVersion` is P or higher.
-            """,
-        moreInfo =
-          "https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html",
-        category = Category.SECURITY,
-        priority = 9,
-        severity = Severity.WARNING,
-        androidSpecific = true,
-        implementation =
-          Implementation(CipherGetInstanceDetector::class.java, Scope.JAVA_FILE_SCOPE)
-      )
+          id = "DeprecatedProvider",
+          briefDescription = "Using BC Provider",
+          explanation =
+            """
+        The `BC` provider has been deprecated and will not be provided when `targetSdkVersion` is P or higher.
+        """,
+          moreInfo =
+            "https://android-developers.googleblog.com/2018/03/cryptography-changes-in-android-p.html",
+          category = Category.SECURITY,
+          priority = 9,
+          severity = Severity.WARNING,
+          androidSpecific = true,
+          implementation =
+            Implementation(CipherGetInstanceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        )
+        .addMoreInfo("https://goo.gle/DeprecatedProvider")
 
     private const val JAVAX_CRYPTO_CIPHER = "javax.crypto.Cipher"
     private const val GET_INSTANCE = "getInstance"

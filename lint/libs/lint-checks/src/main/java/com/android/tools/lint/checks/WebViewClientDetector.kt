@@ -82,6 +82,7 @@ class WebViewClientDetector : Detector(), SourceCodeScanner {
         explanation =
           "This check looks for `onReceivedSslError` implementations " +
             "that invoke `SslErrorHandler#proceed`.",
+        moreInfo = "https://goo.gle/WebViewClientOnReceivedSslError",
         category = Category.SECURITY,
         priority = 5,
         androidSpecific = true,

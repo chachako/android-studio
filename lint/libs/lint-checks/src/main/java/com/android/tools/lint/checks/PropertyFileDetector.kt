@@ -261,6 +261,7 @@ class PropertyFileDetector : Detector() {
                 secure since it protects against man-in-the-middle attacks etc. Older \
                 projects created in Android Studio used HTTP but we now default to HTTPS \
                 and recommend upgrading existing projects.""",
+        moreInfo = "https://goo.gle/UsingHttp",
         category = Category.SECURITY,
         priority = 6,
         severity = Severity.WARNING,

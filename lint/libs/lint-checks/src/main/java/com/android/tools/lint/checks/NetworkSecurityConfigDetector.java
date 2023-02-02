@@ -117,6 +117,7 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                             5,
                             Severity.WARNING,
                             IMPLEMENTATION)
+                    .addMoreInfo("https://goo.gle/InsecureBaseConfiguration")
                     .addMoreInfo(
                             "https://developer.android.com/preview/features/security-config.html");
 
@@ -133,6 +134,7 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                             5,
                             Severity.WARNING,
                             IMPLEMENTATION)
+                    .addMoreInfo("https://goo.gle/AcceptsUserCertificates")
                     .addMoreInfo(
                             "https://developer.android.com/training/articles/security-config#TrustingDebugCa");
 
