@@ -21,10 +21,8 @@ import com.android.SdkConstants.DOT_DEX
 import com.android.SdkConstants.FD_ASSETS
 import com.android.SdkConstants.FD_DEX
 import com.android.build.api.artifact.SingleArtifact
-import com.android.build.api.artifact.SingleArtifact.MERGED_NATIVE_LIBS
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
-import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.dependency.AndroidAttributes
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
@@ -47,7 +45,6 @@ import com.android.builder.packaging.JarCreator
 import com.android.builder.packaging.JarFlinger
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
@@ -365,7 +362,7 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
             task.javaResJar.setDisallowChanges(
                 artifacts.get(InternalArtifactType.MERGED_JAVA_RES)
             )
-            task.nativeLibsFiles.from(getNativeLibsFiles(creationConfig))
+            task.nativeLibsFiles.from(creationConfig.artifacts.get(STRIPPED_NATIVE_LIBS))
             task.featureJavaResFiles.from(
                 creationConfig.variantDependencies.getArtifactFileCollection(
                     AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
@@ -463,14 +460,3 @@ private class ResRelocator : JarCreator.Relocator {
     }
 }
 
-/**
- * Returns a file collection containing all of the native libraries to be packaged.
- */
-fun getNativeLibsFiles(creationConfig: ComponentCreationConfig): FileCollection {
-    val nativeLibs = creationConfig.services.fileCollection()
-    if (creationConfig.componentType.isForTesting) {
-        return nativeLibs.from(creationConfig.artifacts.get(MERGED_NATIVE_LIBS))
-    }
-    nativeLibs.from(creationConfig.artifacts.get(STRIPPED_NATIVE_LIBS))
-    return nativeLibs
-}

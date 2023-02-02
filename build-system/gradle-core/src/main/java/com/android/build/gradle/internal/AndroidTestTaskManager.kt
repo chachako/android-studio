@@ -39,6 +39,7 @@ import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestS
 import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
+import com.android.build.gradle.internal.tasks.StripDebugSymbolsTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
 import com.android.build.gradle.internal.tasks.TestServerTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
@@ -194,6 +195,7 @@ class AndroidTestTaskManager(
         createValidateSigningTask(androidTestProperties)
         taskFactory.register(SigningConfigWriterTask.CreationAction(androidTestProperties))
         taskFactory.register(SigningConfigVersionsWriterTask.CreationAction(androidTestProperties))
+        taskFactory.register(StripDebugSymbolsTask.CreationAction(androidTestProperties))
         createPackagingTask(androidTestProperties)
         taskFactory.configure(
             ASSEMBLE_ANDROID_TEST

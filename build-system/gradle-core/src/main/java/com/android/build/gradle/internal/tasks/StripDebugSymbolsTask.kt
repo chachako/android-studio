@@ -20,7 +20,7 @@ import com.android.build.api.artifact.SingleArtifact.MERGED_NATIVE_LIBS
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.NdkHandlerInput
 import com.android.build.gradle.internal.SdkComponentsBuildService
-import com.android.build.gradle.internal.component.VariantCreationConfig
+import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.stripping.SymbolStripExecutableFinder
 import com.android.build.gradle.internal.initialize
@@ -113,8 +113,8 @@ abstract class StripDebugSymbolsTask : NewIncrementalTask() {
 
 
     class CreationAction(
-        creationConfig: VariantCreationConfig
-    ) : VariantTaskCreationAction<StripDebugSymbolsTask, VariantCreationConfig>(
+        creationConfig: ConsumableCreationConfig
+    ) : VariantTaskCreationAction<StripDebugSymbolsTask, ConsumableCreationConfig>(
         creationConfig
     ) {
 

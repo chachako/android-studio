@@ -24,6 +24,7 @@ import static com.android.build.gradle.internal.publishing.AndroidArtifacts.MODU
 import static com.android.build.gradle.internal.scope.InternalArtifactType.COMPRESSED_ASSETS;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.MERGED_JAVA_RES;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.SIGNING_CONFIG_VERSIONS;
+import static com.android.build.gradle.internal.scope.InternalArtifactType.STRIPPED_NATIVE_LIBS;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
@@ -56,7 +57,6 @@ import com.android.build.gradle.internal.signing.SigningConfigDataProvider;
 import com.android.build.gradle.internal.signing.SigningConfigProviderParams;
 import com.android.build.gradle.internal.tasks.ModuleMetadata;
 import com.android.build.gradle.internal.tasks.NewIncrementalTask;
-import com.android.build.gradle.internal.tasks.PerModuleBundleTaskKt;
 import com.android.build.gradle.internal.tasks.SigningConfigUtils;
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction;
 import com.android.build.gradle.internal.workeractions.DecoratedWorkParameters;
@@ -1411,7 +1411,8 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
         }
 
         protected void finalConfigure(TaskT task) {
-            task.getJniFolders().from(PerModuleBundleTaskKt.getNativeLibsFiles(creationConfig));
+            task.getJniFolders()
+                    .from(creationConfig.getArtifacts().get(STRIPPED_NATIVE_LIBS.INSTANCE));
 
             task.setSigningConfigData(SigningConfigDataProvider.create(creationConfig));
         }
