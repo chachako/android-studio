@@ -56,7 +56,7 @@ cc_binary(
     }),
     deps = [
         ":skia-lib",
-        "@freetype_repo//:libft2",
+        "@freetype_repo//:freetype",
         "@libpng_repo//:libpng",
     ],
 )
@@ -68,12 +68,13 @@ cc_library(
         "src/main/native/*.h",
     ]) + ["src/main/native/server.cc"],
     copts = [
-        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
         "-UFORTIFY_SOURCE",
         "-DATRACE_TAG=ATRACE_TAG_VIEW",
         "-DSKIA_IMPLEMENTATION=1",
         "-DSK_PRINT_CODEC_MESSAGES",
         "-D_FORTIFY_SOURCE=1",
+        "-DGOOGLE_PROTOBUF_NO_RTTI=1",
+        "-fno-rtti",
     ] + select({
         "//tools/base/bazel:windows": [],
         "//conditions:default": [
@@ -87,7 +88,9 @@ cc_library(
             "-mssse3",
         ],
     }),
-    includes = ["src/main/native"],
+    includes = [
+        "src/main/native",
+    ],
     linkopts = select({
         "//tools/base/bazel:windows": ["Ws2_32.lib"],
         "//conditions:default": ["-ldl"],
@@ -96,8 +99,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/dynamic-layout-inspector/skia/proto:layout_inspector_skia_cc_proto",
-        # TODO(b/202336345): use @skia_repo//:libskia when skia build rules are ready.
-        "@prebuilt_skia//:libskia",
+        "@skia_repo//:skia_public",
     ],
     alwayslink = 1,
 )
@@ -116,14 +118,15 @@ cc_library(
     name = "skiaparser_test_support",
     srcs = ["src/test/native/testing/skia_parser_test_java_jni.cc"],
     copts = [
-        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
+        "-DGOOGLE_PROTOBUF_NO_RTTI=1",
+        "-fno-rtti",
     ],
     linkstatic = 1,
     deps = [
         ":skia-lib",
         "//prebuilts/studio/jdk:jni_headers",
         "//tools/base/dynamic-layout-inspector/skia/proto:layout_inspector_skia_cc_proto",
-        "@freetype_repo//:libft2",
+        "@freetype_repo//:freetype",
         "@libpng_repo//:libpng",
     ],
     alwayslink = 1,

@@ -1,7 +1,9 @@
-#include <SkGradientShader.h>
-#include <SkPictureRecorder.h>
 #include <jni.h>
 #include <string>
+#include "include/core/SkBitmap.h"
+#include "include/core/SkEncodedImageFormat.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/effects/SkGradientShader.h"
 #include "skia.grpc.pb.h"
 #include "skia.pb.h"
 #include "tree_building_canvas.h"
