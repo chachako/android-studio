@@ -81,6 +81,12 @@ int IO::mkdir(const std::string& pathname, mode_t mode) {
   return ::mkdir(ResolvePath(pathname).c_str(), mode);
 }
 
+bool IO::ReadOnlyFileExists(const std::string& file_path) {
+  struct stat sb;
+  return (stat(file_path.c_str(), &sb) == 0 && S_ISREG(sb.st_mode) &&
+          !(sb.st_mode & S_IWUSR));
+}
+
 static bool DirectoryExists(const char* dir_path) {
   struct stat sb;
   return (stat(dir_path, &sb) == 0 && S_ISDIR(sb.st_mode));

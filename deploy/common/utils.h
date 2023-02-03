@@ -122,7 +122,16 @@ bool WriteFile(const std::string& file_path, const T& content) {
   static_assert(
       is_string<T>::value || is_vector<T>::value,
       "Template parameter 'T' must have type std::vector or std::string");
-  int fd = IO::creat(file_path, S_IRWXU);
+
+  if (IO::ReadOnlyFileExists(file_path)) {
+    if (IO::unlink(file_path) != 0) {
+      ErrEvent("Could not unlink read-only file at '" + file_path +
+               "': " + strerror(errno));
+      return false;
+    }
+  }
+
+  int fd = IO::creat(file_path, S_IRUSR | S_IXUSR);
   if (fd == -1) {
     ErrEvent("Could not create file at '" + file_path +
              "': " + strerror(errno));
