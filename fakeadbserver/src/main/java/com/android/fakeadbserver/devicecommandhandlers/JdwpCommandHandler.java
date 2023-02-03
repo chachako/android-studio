@@ -122,6 +122,18 @@ public class JdwpCommandHandler extends DeviceCommandHandler {
         }
 
         try {
+            jdwpLoop(device, client, iStream, oStream);
+        } finally {
+            client.stopJdwpSession();
+        }
+    }
+
+    private void jdwpLoop(
+            @NonNull DeviceState device,
+            @NonNull ClientState client,
+            @NonNull InputStream iStream,
+            @NonNull OutputStream oStream) {
+        try {
             writeOkay(oStream);
         } catch (IOException ignored) {
             return;
