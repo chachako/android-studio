@@ -24,6 +24,7 @@ import com.android.ddmlib.clientmanager.ClientManager;
 import com.android.ddmlib.internal.ClientImpl;
 import com.android.ddmlib.internal.DeviceMonitor;
 import com.android.ddmlib.internal.MonitorThread;
+import com.android.ddmlib.internal.jdwp.chunkhandler.HandleARTT;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleAppName;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleHeap;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleHello;
@@ -307,6 +308,7 @@ public class AndroidDebugBridge {
         HandleProfiling.register(monitorThread);
         HandleNativeHeap.register(monitorThread);
         HandleViewDebug.register(monitorThread);
+        HandleARTT.register(monitorThread);
     }
 
     /**
