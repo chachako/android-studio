@@ -572,7 +572,8 @@ def iml_module(
         lint_timeout = None,
         back_deps = [],
         exec_properties = {},
-        kotlin_use_compose = False):
+        kotlin_use_compose = False,
+        generate_k2_tests = False):
     prod_deps = []
     test_deps = []
     for dep in deps:
@@ -677,41 +678,44 @@ def iml_module(
         test_data = test_data + [test_agent]
         test_jvm_flags = test_jvm_flags + ["-javaagent:$(location " + test_agent + ")"]
 
-    if split_test_targets and test_flaky:
-        fail("must use the Flaky attribute per split_test_target")
-    if split_test_targets and test_shard_count:
-        fail("test_shard_count and split_test_targets should not both be specified")
     if enable_tests:
         test_tags = tags + test_tags if tags and test_tags else (tags if tags else test_tags)
-        if split_test_targets:
-            _gen_split_tests(
-                name = name,
+        _gen_tests(
+            name = name,
+            split_test_targets = split_test_targets,
+            test_flaky = test_flaky,
+            test_shard_count = test_shard_count,
+            test_tags = test_tags,
+            test_data = test_data,
+            runtime_deps = [":" + name + "_testlib"] + test_utils,
+            jvm_flags = test_jvm_flags + ["-Dtest.suite.jar=" + name + "_test.jar"],
+            main_class = test_main_class,
+            test_class = test_class,
+            timeout = test_timeout,
+            exec_properties = exec_properties,
+            visibility = visibility,
+        )
+
+        if generate_k2_tests:
+            _gen_tests(
+                name = name + "_k2",
                 split_test_targets = split_test_targets,
-                test_tags = test_tags,
+                test_flaky = test_flaky,
+                test_shard_count = test_shard_count,
+                test_tags = (test_tags or []) + ["kotlin-plugin-k2"],
                 test_data = test_data,
                 runtime_deps = [":" + name + "_testlib"] + test_utils,
-                timeout = test_timeout,
-                jvm_flags = test_jvm_flags + ["-Dtest.suite.jar=" + name + "_test.jar"],
-                test_class = test_class,
-                visibility = visibility,
+                jvm_flags = test_jvm_flags + [
+                    "-Dtest.suite.jar=" + name + "_test.jar",
+                    "-Didea.kotlin.plugin.use.k2=true",
+                ],
                 main_class = test_main_class,
-                exec_properties = exec_properties,
-            )
-        else:
-            coverage_java_test(
-                name = name + "_tests",
-                tags = test_tags,
-                runtime_deps = [":" + name + "_testlib"] + test_utils,
-                flaky = test_flaky,
-                timeout = test_timeout,
-                shard_count = test_shard_count,
-                data = test_data,
-                jvm_flags = test_jvm_flags + ["-Dtest.suite.jar=" + name + "_test.jar"],
                 test_class = test_class,
-                visibility = visibility,
-                main_class = test_main_class,
+                timeout = test_timeout,
                 exec_properties = exec_properties,
+                visibility = visibility,
             )
+
     else:
         if test_tags:
             fail("enable_tests is False but test_tags was specified.")
@@ -820,6 +824,51 @@ def _iml_test(
         **kwargs
     )
 
+def _gen_tests(
+        name,
+        split_test_targets,
+        test_flaky = None,
+        test_shard_count = None,
+        test_tags = None,
+        test_data = None,
+        **kwargs):
+    """Generates potentially-split test target(s).
+
+    If split_test_targets is True, generates split test targets as per
+    _gen_split_tests. Otherwise, generates a single test target.
+
+    Args:
+        name: The base name of the test.
+        split_test_targets: A dict of names to split_test_target definitions.
+        test_flaky: Whether the generated test should be marked flaky. Only valid for single tests.
+        test_shard_count: Shard count for the generated test. Only valid for single tests.
+        test_tags: optional list of tags to include for test targets.
+        test_data: optional list of data to include for test targets.
+    """
+
+    if split_test_targets and test_flaky:
+        fail("must use the Flaky attribute per split_test_target")
+    if split_test_targets and test_shard_count:
+        fail("test_shard_count and split_test_targets should not both be specified")
+
+    if split_test_targets:
+        _gen_split_tests(
+            name = name,
+            split_test_targets = split_test_targets,
+            test_tags = test_tags,
+            test_data = test_data,
+            **kwargs
+        )
+    else:
+        coverage_java_test(
+            name = name + "_tests",
+            flaky = test_flaky,
+            shard_count = test_shard_count,
+            tags = test_tags,
+            data = test_data,
+            **kwargs
+        )
+
 def _gen_split_tests(
         name,
         split_test_targets,
@@ -860,8 +909,8 @@ def _gen_split_tests(
         test_name = name + "_tests__" + split_name
         split_target = split_test_targets[split_name]
         shard_count = split_target.get("shard_count")
-        tags = split_target.get("tags", default = [])
-        data = split_target.get("data", default = [])
+        tags = list(split_target.get("tags", default = []))
+        data = list(split_target.get("data", default = []))
         split_timeout = split_target.get("timeout", default = timeout)
         flaky = split_target.get("flaky")
         if "manual" not in tags:
