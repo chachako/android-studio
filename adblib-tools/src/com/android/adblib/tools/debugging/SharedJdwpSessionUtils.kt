@@ -21,6 +21,7 @@ import com.android.adblib.tools.debugging.packets.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
+import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.MPRQ
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.VURTOpCode
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes.Companion.chunkTypeToString
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
@@ -32,22 +33,48 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.throwFailException
 import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.withPrefix
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeout
 import java.nio.ByteBuffer
+import java.time.Duration
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
+
+internal val DDMS_NO_REPLY_WAIT_TIMEOUT = Duration.ofSeconds(2)
 
 /**
  * Progress reporting when executing a JDWP/DDMS command.
  */
 interface JdwpCommandProgress {
 
+    /**
+     * Invoked just before sending the packet on the [SharedJdwpSession]
+     */
     suspend fun beforeSend(packet: JdwpPacketView) {}
+
+    /**
+     * Invoked just after sending the packet on the [SharedJdwpSession]
+     */
     suspend fun afterSend(packet: JdwpPacketView) {}
+
+    /**
+     * Invoked when the JDWP command was acknowledged with a [JdwpPacketView] reply packet
+     */
     suspend fun onReply(packet: JdwpPacketView) {}
+
+    /**
+     * Invoked when there is no reply to be expected from the JDWP command
+     * (see [DdmsProtocolKind])
+     */
+    suspend fun noReply() {}
 }
 
 /**
@@ -117,7 +144,7 @@ suspend fun SharedJdwpSession.sendDdmsExit(status: Int) {
  */
 suspend fun SharedJdwpSession.handleDdmsHPGC(progress: JdwpCommandProgress? = null) {
     val requestPacket = createDdmsPacket(DdmsChunkTypes.HPGC, emptyByteBuffer)
-    handleEmptyReplyDdmsCommand(requestPacket, DdmsChunkTypes.HPGC, progress)
+    handleDdmsCommandWithEmptyReply(requestPacket, DdmsChunkTypes.HPGC, progress)
 }
 
 /**
@@ -138,7 +165,7 @@ suspend fun SharedJdwpSession.handleDdmsREAE(
     payload.flip()  // [pos=0, limit=1]
 
     val requestPacket = createDdmsPacket(DdmsChunkTypes.REAE, payload)
-    handleEmptyReplyDdmsCommand(requestPacket, DdmsChunkTypes.REAE, progress)
+    handleDdmsCommandWithEmptyReply(requestPacket, DdmsChunkTypes.REAE, progress)
 }
 
 /**
@@ -176,7 +203,7 @@ suspend fun <R> SharedJdwpSession.handleDdmsREAL(
 }
 
 suspend fun SharedJdwpSession.handleDdmsMPRQ(progress: JdwpCommandProgress? = null): Int {
-    return handleDdmsCommand(DdmsChunkTypes.MPRQ, emptyByteBuffer, progress) { chunkReply ->
+    return handleDdmsCommand(MPRQ, emptyByteBuffer, progress) { chunkReply ->
         val replyPayload = chunkReply.payload.toByteBuffer(chunkReply.length)
         val result = replyPayload.get()
         result.toInt()
@@ -283,13 +310,13 @@ suspend fun <R> SharedJdwpSession.handleDdmsCommand(
 ): R {
     val commandPacket = createDdmsPacket(chunkType, payload)
     return handleJdwpCommand(commandPacket, progress) { replyPacket ->
-        handleDdmsReplyPacket(replyPacket, chunkType) {
+        processDdmsReplyPacket(replyPacket, chunkType) {
             replyHandler(it)
         }
     }
 }
 
-private suspend fun <R> SharedJdwpSession.handleDdmsReplyPacket(
+private suspend fun <R> SharedJdwpSession.processDdmsReplyPacket(
     packet: JdwpPacketView,
     chunkType: Int,
     block: suspend (packet: DdmsChunkView) -> R
@@ -339,7 +366,7 @@ private suspend fun <R> SharedJdwpSession.handleDdmsReplyPacket(
  * @throws DdmsFailException if the JDWP reply packet contains a [DdmsChunkTypes.FAIL] chunk
  * @throws DdmsCommandException if there is an unexpected DDMS/JDWP protocol error
  */
-suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
+suspend fun SharedJdwpSession.handleDdmsCommandWithEmptyReply(
     requestPacket: JdwpPacketView,
     chunkType: Int,
     progress: JdwpCommandProgress?
@@ -349,12 +376,27 @@ suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
 
     logger.debug { "Invoking DDMS command $chunkTypeString" }
 
+    return handleDdmsCommandAndReplyProtocol(progress) { signal ->
+        handleAlwaysEmptyReplyDdmsCommand(requestPacket, chunkType, progress, signal)
+    }
+}
+
+private suspend fun SharedJdwpSession.handleAlwaysEmptyReplyDdmsCommand(
+    requestPacket: JdwpPacketView,
+    chunkType: Int,
+    progress: JdwpCommandProgress?,
+    signal: Signal<Unit>?
+) {
+    val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
+    val chunkTypeString = chunkTypeToString(chunkType)
+
     newPacketReceiver()
         .withName("handleEmptyReplyDdmsCommand($chunkTypeString)")
         .onActivation {
             progress?.beforeSend(requestPacket)
             sendPacket(requestPacket)
             progress?.afterSend(requestPacket)
+            signal?.complete(Unit)
         }
         .flow()
         .first { packet ->
@@ -364,13 +406,13 @@ suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
             val isReply = (packet.isReply && packet.id == requestPacket.id)
             if (isReply) {
                 progress?.onReply(packet)
-                handleEmptyDdmsReplyPacket(packet, chunkType)
+                processEmptyDdmsReplyPacket(packet, chunkType)
             }
             isReply
         }
 }
 
-suspend fun SharedJdwpSession.handleEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
+suspend fun SharedJdwpSession.processEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
     val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
     val chunkTypeString = chunkTypeToString(chunkType)
 
@@ -494,4 +536,133 @@ private suspend fun JdwpPacketView.getDdmsFail(): DdmsChunkView? {
         }.map {
             it.clone()
         }.firstOrNull()
+}
+
+/**
+ * Invokes [block] with the assumption that is executes a `DDMS` command that may return
+ * an empty reply packet.
+ *
+ * This method takes into account the value of [DdmsProtocolKind] of the device
+ * of this [SharedJdwpSession]:
+ *
+ * * For [DdmsProtocolKind.EmptyRepliesAllowed], [block] is invoked "as-is"
+ * * For [DdmsProtocolKind.EmptyRepliesDiscarded], [block] is invoked with a timeout
+ * of [DDMS_NO_REPLY_WAIT_TIMEOUT], so that [DdmsChunkTypes.FAIL] replies can be detected
+ * even in the absence of "ACK" reply (i.e. empty JDWP packet).
+ *
+ * See [DdmsProtocolKind] for a more detailed description of this behavior.
+ */
+internal suspend fun <R> SharedJdwpSession.handleDdmsCommandAndReplyProtocol(
+    progress: JdwpCommandProgress?,
+    block: suspend (signal: Signal<R>) -> Unit,
+): R {
+    return when (device.ddmsProtocolKind()) {
+        DdmsProtocolKind.EmptyRepliesAllowed -> {
+            val signal = Signal<R>()
+            block(signal)
+            signal.getOrThrow() // This should not throw if "block" behaved as expected
+        }
+
+        DdmsProtocolKind.EmptyRepliesDiscarded -> {
+            // We will not get an "empty" JDWP packet, but we may get "FAIL" chunk
+            // if there was an error. We have no other option that wait for it
+            // with a "reasonable" timeout
+            var blockSignal: Signal<R>? = null
+            try {
+                withTimeoutAfterSignal<R>(DDMS_NO_REPLY_WAIT_TIMEOUT) { signal ->
+                    blockSignal = signal
+                    block(signal)
+                }
+            } catch (e: TimeoutCancellationException) {
+                progress?.noReply()
+                blockSignal?.getOrThrow() ?: run {
+                    // Rethrow exception if "block" never signalled anything
+                    throw e
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Invokes the coroutine [block], allowing it to set a computation result [R] through
+ * a [Signal], then waits for that coroutine to terminates within the specified [timeout].
+ *
+ * @return The value of [Signal] set by [block]
+ * @throws TimeoutCancellationException if [block] does not terminate within the timeout
+ * @throws Throwable if [block]] throws an exception at any point
+ */
+internal suspend fun <R> withTimeoutAfterSignal(
+    timeout: Duration,
+    block: suspend (signal: Signal<R>) -> Unit
+): R {
+    val signal = Signal<R>()
+    return coroutineScope {
+        // Run "block" asynchronously
+        val blockJob = async { block(signal) }
+
+        // If "block" throws an exception, ensure signal is set to that exception too
+        blockJob.invokeOnCompletion { cause: Throwable? ->
+            cause?.also { signal.completeExceptionally(cause) }
+        }
+
+        // Wait for block to tell us "ok, start the timeout now"
+        // If "block" throws an exception or is cancelled, the exception is rethrown here
+        val result = signal.await()
+
+        // Start a coroutine for the timeout, waiting for "block" to terminate
+        // If "block" terminates before timeout expires, this job terminates successfully
+        // If "block" throws an exception or is cancelled, this job rethrows
+        // If the timeout expires, "block" is cancelled
+        val timeoutJob = async {
+            try {
+                withTimeout(timeout.toMillis()) {
+                    blockJob.await()
+                }
+            } catch (t: TimeoutCancellationException) {
+                blockJob.cancel(t)
+            }
+        }
+
+        // Wait for both jobs to succeed, ensuring exceptions are rethrown if needed
+        awaitAll(blockJob, timeoutJob)
+
+        // The result of this function is the value of the "signal"
+        result
+    }
+}
+
+/**
+ * Similar to [CompletableDeferred], except the completion result can be retrieved
+ * directly with [getOrThrow]
+ */
+internal class Signal<R> {
+    private val deferred = CompletableDeferred<R>()
+    private var result: Result<R>? = null
+
+    fun complete(value: R): Boolean {
+        return deferred.complete(value).also { wasCompleted ->
+            if (wasCompleted) {
+                result = Result.success(value)
+            }
+        }
+    }
+
+    fun completeExceptionally(exception: Throwable): Boolean {
+        result = Result.failure(exception)
+        return deferred.completeExceptionally(exception).also { wasCompleted ->
+            if (wasCompleted) {
+                result = Result.failure(exception)
+            }
+        }
+    }
+
+    fun getOrThrow(): R {
+        return result?.getOrThrow()
+            ?: throw IllegalStateException("A signalled value has not been initialized")
+    }
+
+    suspend fun await(): R {
+        return deferred.await()
+    }
 }

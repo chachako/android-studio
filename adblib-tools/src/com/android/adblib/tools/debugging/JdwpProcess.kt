@@ -17,8 +17,10 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.deviceProperties
 import com.android.adblib.tools.debugging.impl.JdwpProcessAllocationTrackerImpl
 import com.android.adblib.tools.debugging.impl.JdwpProcessProfilerImpl
+import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
@@ -123,3 +125,30 @@ val JdwpProcess.profiler: JdwpProcessProfiler
     get() = this.cache.getOrPut(jdwpProcessProfilerKey) {
         JdwpProcessProfilerImpl(this)
     }
+
+enum class DdmsProtocolKind {
+    /**
+     * DDMS commands always return a [JdwpPacketView.isReply], even when there is no
+     * data to send back. This is currently the protocol used for devices API < 28.
+     */
+    EmptyRepliesAllowed,
+
+    /**
+     * DDMS commands **never** return an empty [JdwpPacketView.isReply] when there is no
+     * payload in the chunk response. This is a bug introduced in the DDMS protocol used for
+     * devices API >= 28.
+     */
+    EmptyRepliesDiscarded
+}
+
+private val ddmsProtocolKindKey = CoroutineScopeCache.Key<DdmsProtocolKind>("DdmsProtocolKind")
+
+suspend fun ConnectedDevice.ddmsProtocolKind(): DdmsProtocolKind {
+    return cache.getOrPutSuspending(ddmsProtocolKindKey) {
+        val api = deviceProperties().api()
+        when {
+            api >= 28 -> DdmsProtocolKind.EmptyRepliesDiscarded
+            else -> DdmsProtocolKind.EmptyRepliesAllowed
+        }
+    }
+}
