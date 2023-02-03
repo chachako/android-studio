@@ -16,17 +16,18 @@
 #include <google/protobuf/text_format.h>
 #include <skia.pb.h>
 
-#include <SkBlendMode.h>
-#include <SkClipOp.h>
+#include "include/core/SkBlendMode.h"
+#include "include/core/SkClipOp.h"
 #include <deque>
 #include <iostream>
 #include <memory>
 
-#include "SkCanvasVirtualEnforcer.h"
-#include "SkPicture.h"
-#include "SkScalar.h"
-#include "SkStream.h"
-#include "SkSurface.h"
+#include "include/core/SkCanvasVirtualEnforcer.h"
+#include "include/core/SkPicture.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkColorSpace.h"
 
 #ifndef SKIA_TREEBUILDINGCANVAS_H
 #define SKIA_TREEBUILDINGCANVAS_H
@@ -136,7 +137,7 @@ class TreeBuildingCanvas : public SkCanvasVirtualEnforcer<SkCanvas> {
 
   SkImageInfo onImageInfo() const override;
 
-  bool onGetProps(SkSurfaceProps* props) const override;
+  bool onGetProps(SkSurfaceProps* props, bool top) const override;
 
   void onFlush() override;
 
