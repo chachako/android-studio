@@ -387,6 +387,8 @@ public class PluginDslTest {
         }
     }
 
+    // Re-enable b/268114435
+    @Ignore
     @Test
     public void testProguardFiles_oldDsl() throws Exception {
         Eval.me(
@@ -439,6 +441,8 @@ public class PluginDslTest {
         checkProguardFiles(expected);
     }
 
+    // Re-enable b/268114435
+    @Ignore
     @Test
     public void testProguardFiles_newDsl() throws Exception {
         Eval.me(

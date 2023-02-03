@@ -1023,7 +1023,7 @@ class VariantManager<
         variantPropertiesApiServices = VariantServicesImpl(
             projectServices,
             // detects whether we are running the plugin under unit test mode
-            forUnitTesting = project.hasProperty("_agp_internal_test_mode_")
+            forUnitTesting = project.providers.gradleProperty("_agp_internal_test_mode_").isPresent
         )
         taskCreationServices = TaskCreationServicesImpl(projectServices)
     }

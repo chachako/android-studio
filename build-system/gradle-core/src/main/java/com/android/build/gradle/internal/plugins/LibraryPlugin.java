@@ -103,7 +103,8 @@ public class LibraryPlugin
                         LibraryExtensionImpl.class, dslServices, dslContainers);
 
         // detects whether we are running the plugin under unit test mode
-        boolean forUnitTesting = project.hasProperty("_agp_internal_test_mode_");
+        boolean forUnitTesting =
+                project.getProviders().gradleProperty("_agp_internal_test_mode_").isPresent();
 
         BootClasspathConfigImpl bootClasspathConfig =
                 new BootClasspathConfigImpl(
