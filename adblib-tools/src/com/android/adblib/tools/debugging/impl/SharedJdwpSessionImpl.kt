@@ -16,6 +16,8 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
+import com.android.adblib.scope
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
@@ -47,7 +49,6 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -66,17 +67,22 @@ import java.util.concurrent.TimeUnit
  * Implementation of [SharedJdwpSession]
  */
 internal class SharedJdwpSessionImpl(
-    override val session: AdbSession,
-    override val pid: Int,
-    private val jdwpSession: JdwpSession
+    private val jdwpSession: JdwpSession,
+    override val pid: Int
 ) : SharedJdwpSession {
+
+    private val session: AdbSession
+        get() = device.session
+
+    override val device: ConnectedDevice
+        get() = jdwpSession.device
 
     private val logger = thisLogger(session)
 
     /**
      * The scope used to run coroutines for sending and receiving packets
      */
-    private val scope = session.scope.createChildScope()
+    private val scope = device.scope.createChildScope(isSupervisor = true)
 
     /**
      * The class that ensures [sendPacket] is thread-safe and also safe

@@ -16,13 +16,12 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbChannel
-import com.android.adblib.AdbSession
 import com.android.adblib.AutoShutdown
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import java.io.EOFException
 
 /**
@@ -44,7 +43,11 @@ import java.io.EOFException
  *   of receivers coroutine does not close the underlying [socket][AdbChannel].
  */
 interface SharedJdwpSession : AutoShutdown {
-    val session: AdbSession
+
+    /**
+     * The [ConnectedDevice] this [SharedJdwpSession] is connected to.
+     */
+    val device: ConnectedDevice
 
     /**
      * The process ID this [SharedJdwpSession] handles
@@ -125,8 +128,8 @@ interface SharedJdwpSession : AutoShutdown {
 
     companion object {
 
-        internal fun create(session: AdbSession, pid: Int, jdwpSession: JdwpSession): SharedJdwpSession {
-            return SharedJdwpSessionImpl(session, pid, jdwpSession)
+        internal fun create(jdwpSession: JdwpSession, pid: Int): SharedJdwpSession {
+            return SharedJdwpSessionImpl(jdwpSession, pid)
         }
     }
 }

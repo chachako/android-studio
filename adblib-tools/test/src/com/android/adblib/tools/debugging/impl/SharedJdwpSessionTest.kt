@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ByteBufferAdbOutputChannel
-import com.android.adblib.DeviceSelector
 import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
@@ -56,7 +55,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -70,12 +68,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun nextPacketIdIsThreadSafe() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val threadCount = 100
         val packetCount = 1000
         val ids = (1..threadCount)
@@ -98,10 +95,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun sendPacketWithActiveReceiverWorks() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val ready = MutableStateFlow(false)
 
         // Act
@@ -129,10 +125,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         // Act
         exceptionRule.expect(Exception::class.java)
@@ -155,10 +150,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         // Act
         exceptionRule.expect(CancellationException::class.java)
@@ -182,11 +176,10 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val receiverCount = 10
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         // Act
         val readyDef = mutableListOf<CompletableDeferred<Unit>>()
@@ -226,11 +219,10 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val receiverCount = 10
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         // Act
         val activationCount = AtomicInteger(0)
@@ -265,11 +257,10 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val receiverCount = 10
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         // Act
         val activationCount = AtomicInteger(0)
@@ -300,12 +291,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun receivePacketsFlowEndsOnClientTerminate() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packets = jdwpSession.newPacketReceiver()
             .onActivation {
                 val sendPacket = createHeloDdmsPacket(jdwpSession)
@@ -325,12 +315,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun receivePacketsFlowEndsConsistentlyOnClientTerminate() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packets = jdwpSession.newPacketReceiver()
             .withName("test1")
             .onActivation {
@@ -355,10 +344,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun sendPacketThrowExceptionAfterClose() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packet = createHeloDdmsPacket(jdwpSession)
         jdwpSession.sendPacket(packet)
 
@@ -375,10 +363,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun receivePacketThrowExceptionAfterClose() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packet = createHeloDdmsPacket(jdwpSession)
         jdwpSession.sendPacket(packet)
 
@@ -402,12 +389,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun receivePacketFlowContainsReplayPackets() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val sendPacket3 = createHeloDdmsPacket(jdwpSession)
         val sendPacket1 = sendPacket3.clone().also { it.id = jdwpSession.nextPacketId() }
         val sendPacket2 = sendPacket3.clone().also { it.id = jdwpSession.nextPacketId() }
@@ -446,12 +432,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun addReplayPacketDoesCloneJdwpPacket() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         val packetToReplay = createHeloDdmsPacket(jdwpSession)
         jdwpSession.addReplayPacket(packetToReplay)
 
@@ -468,12 +453,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun sendVmExitPacketWorks() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         jdwpSession.sendVmExit(1)
 
         // Assert: Wait until client process is gone
@@ -484,12 +468,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun sendDdmsExitPacketWorks() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         jdwpSession.sendDdmsExit(1)
 
         // Assert: Wait until client process is gone
@@ -500,12 +483,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun sendDdmsHpgcPacketWorks() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         val client = fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
         jdwpSession.handleDdmsHPGC()
 
         assertEquals(client.hgpcRequestsCount, 1)
@@ -515,12 +497,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
     fun handleInvalidDdmsCommandThrows() = runBlockingWithTimeout {
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         exceptionRule.expect(DdmsCommandException::class.java)
         jdwpSession.handleDdmsCaptureView("foo", "bar") {
@@ -536,12 +517,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val testJdwpSessionMonitorFactory = TestJdwpSessionMonitorFactory()
         session.addSharedJdwpSessionMonitorFactory(testJdwpSessionMonitorFactory)
-        val jdwpSession = openSharedJdwpSession(session, deviceSelector, 10)
+        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
 
         // Act
         jdwpSession.newPacketReceiver()
@@ -593,11 +573,12 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
 
     private suspend fun openSharedJdwpSession(
         session: AdbSession,
-        device: DeviceSelector,
+        deviceSerial: String,
         pid: Int
     ): SharedJdwpSession {
-        val jdwpSession = JdwpSession.openJdwpSession(session, device, 10, 100)
-        return registerCloseable(SharedJdwpSession.create(session, pid, jdwpSession))
+        val connectedDevice = waitForOnlineConnectedDevice(session, deviceSerial)
+        val jdwpSession = JdwpSession.openJdwpSession(connectedDevice, 10, 100)
+        return registerCloseable(SharedJdwpSession.create(jdwpSession, pid))
     }
 
     private suspend fun assertFlowTimeSpansAreSorted(

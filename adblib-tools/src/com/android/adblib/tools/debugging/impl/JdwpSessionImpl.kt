@@ -20,6 +20,7 @@ import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbInputChannelSlice
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.skipRemaining
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpSession
@@ -37,11 +38,13 @@ import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class JdwpSessionImpl(
-    session: AdbSession,
+    override val device: ConnectedDevice,
     private val channel: AdbChannel,
     private val pid: Int,
     nextPacketIdBase: Int?
 ) : JdwpSession {
+    private val session: AdbSession
+        get() = device.session
 
     private val logger = thisLogger(session)
 

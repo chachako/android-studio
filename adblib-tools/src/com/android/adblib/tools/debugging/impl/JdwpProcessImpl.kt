@@ -19,7 +19,6 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.scope
-import com.android.adblib.selector
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcess
@@ -32,7 +31,6 @@ import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.closeOnException
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -98,15 +96,15 @@ internal class JdwpProcessImpl(
          */
         val JDWP_SESSION_FIRST_PACKET_ID = 0x40000000
 
-        JdwpSession.openJdwpSession(session, device.selector, pid, JDWP_SESSION_FIRST_PACKET_ID)
+        JdwpSession.openJdwpSession(device, pid, JDWP_SESSION_FIRST_PACKET_ID)
             .closeOnException { jdwpSession ->
-                SharedJdwpSession.create(session, pid, jdwpSession)
+                SharedJdwpSession.create(jdwpSession, pid)
             }
     }
 
     private val collector = JdwpProcessPropertiesCollector(session, pid, jdwpSessionRef)
 
-    private val jdwpSessionProxy = JdwpSessionProxy(session, pid, jdwpSessionRef)
+    private val jdwpSessionProxy = JdwpSessionProxy(device, pid, jdwpSessionRef)
 
     fun startMonitoring() {
         scope.launch {

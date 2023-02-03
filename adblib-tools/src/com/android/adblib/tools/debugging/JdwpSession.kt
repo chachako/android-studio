@@ -17,9 +17,9 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbDeviceServices
-import com.android.adblib.AdbSession
 import com.android.adblib.AutoShutdown
-import com.android.adblib.DeviceSelector
+import com.android.adblib.ConnectedDevice
+import com.android.adblib.selector
 import com.android.adblib.tools.debugging.impl.JdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.utils.closeOnException
@@ -36,6 +36,10 @@ import java.io.IOException
  * @see [AdbDeviceServices.jdwp]
  */
 internal interface JdwpSession : AutoShutdown {
+    /**
+     * The [ConnectedDevice] this [JdwpSession] is connected to.
+     */
+    val device: ConnectedDevice
 
     /**
      * Sends a [JdwpPacketView] to the process VM.
@@ -81,14 +85,13 @@ internal interface JdwpSession : AutoShutdown {
          * @see [AdbDeviceServices.jdwp]
          */
         suspend fun openJdwpSession(
-            session: AdbSession,
-            device: DeviceSelector,
+            device: ConnectedDevice,
             pid: Int,
             nextPacketIdBase: Int?
         ): JdwpSession {
-            val channel = session.deviceServices.jdwp(device, pid)
+            val channel = device.session.deviceServices.jdwp(device.selector, pid)
             channel.closeOnException {
-                return JdwpSessionImpl(session, channel, pid, nextPacketIdBase)
+                return JdwpSessionImpl(device, channel, pid, nextPacketIdBase)
             }
         }
 
@@ -102,12 +105,12 @@ internal interface JdwpSession : AutoShutdown {
          * [UnsupportedOperationException] when called.
          */
         fun wrapSocketChannel(
-            session: AdbSession,
+            device: ConnectedDevice,
             channel: AdbChannel,
             pid: Int,
             nextPacketIdBase: Int?
         ): JdwpSession {
-            return JdwpSessionImpl(session, channel, pid, nextPacketIdBase)
+            return JdwpSessionImpl(device, channel, pid, nextPacketIdBase)
         }
     }
 }

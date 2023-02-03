@@ -19,6 +19,7 @@ import com.android.adblib.AdbChannel
 import com.android.adblib.AdbChannelFactory
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcessProperties
@@ -33,7 +34,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import java.io.EOFException
@@ -48,10 +48,12 @@ import java.io.EOFException
  * packets between the external debugger and the process on the device.
  */
 internal class JdwpSessionProxy(
-    private val session: AdbSession,
+    private val device: ConnectedDevice,
     private val pid: Int,
     private val jdwpSessionRef: ReferenceCountedResource<SharedJdwpSession>,
 ) {
+    private val session: AdbSession
+        get() = device.session
 
     private val logger = thisLogger(session)
 
@@ -107,7 +109,7 @@ internal class JdwpSessionProxy(
         jdwpSessionRef.withResource { deviceSession ->
             // The JDWP Session proxy does not need to send custom JDWP packets,
             // so we pass a `null` value for `nextPacketIdBase`.
-            JdwpSession.wrapSocketChannel(session, debuggerSocket, pid, null).use { debuggerSession ->
+            JdwpSession.wrapSocketChannel(device, debuggerSocket, pid, null).use { debuggerSession ->
                 coroutineScope {
                     // Note about termination of this coroutine scope:
                     // * [automatic] The common case is to wait for job1 and job2 to complete

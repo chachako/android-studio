@@ -100,7 +100,7 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         val clientSocket =
             registerCloseable(session.channelFactory.connectSocket(process.properties.jdwpSessionProxyStatus.socketAddress!!))
         val jdwpSession =
-            registerCloseable(JdwpSession.wrapSocketChannel(session, clientSocket, 10, 2_000))
+            registerCloseable(JdwpSession.wrapSocketChannel(connectedDevice, clientSocket, 10, 2_000))
 
         val heloChunk = MutableDdmsChunk()
         heloChunk.type = DdmsChunkTypes.HELO

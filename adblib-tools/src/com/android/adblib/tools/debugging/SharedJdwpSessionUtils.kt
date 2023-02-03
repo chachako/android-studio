@@ -51,7 +51,7 @@ interface JdwpCommandProgress {
 }
 
 /**
- * Flags for [sendDdmsMPSS]. These can be ORed together.
+ * Flags for [createDdmsMPSS]. These can be ORed together.
  */
 enum class MPSSFlags(val flag: Int) {
 
@@ -59,6 +59,7 @@ enum class MPSSFlags(val flag: Int) {
      * TRACE_COUNT_ALLOCS adds the results from startAllocCounting to the
      * trace key file.
      */
+    @Suppress("unused")
     @Deprecated("Accurate counting is a burden on the runtime and may be removed.")
     TRACE_COUNT_ALLOCS(1)
 }
@@ -293,7 +294,7 @@ private suspend fun <R> SharedJdwpSession.handleDdmsReplyPacket(
     chunkType: Int,
     block: suspend (packet: DdmsChunkView) -> R
 ): R {
-    val logger = thisLogger(session)
+    val logger = thisLogger(device.session)
     val chunkTypeString = chunkTypeToString(chunkType)
 
     // Error: FAIL packet
@@ -343,7 +344,7 @@ suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
     chunkType: Int,
     progress: JdwpCommandProgress?
 ) {
-    val logger = thisLogger(session).withPrefix("pid=$pid: ")
+    val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
     val chunkTypeString = chunkTypeToString(chunkType)
 
     logger.debug { "Invoking DDMS command $chunkTypeString" }
@@ -370,7 +371,7 @@ suspend fun SharedJdwpSession.handleEmptyReplyDdmsCommand(
 }
 
 suspend fun SharedJdwpSession.handleEmptyDdmsReplyPacket(packet: JdwpPacketView, chunkType: Int) {
-    val logger = thisLogger(session).withPrefix("pid=$pid: ")
+    val logger = thisLogger(device.session).withPrefix("pid=$pid: ")
     val chunkTypeString = chunkTypeToString(chunkType)
 
     // Error: FAIL packet
@@ -410,7 +411,7 @@ suspend fun <R> SharedJdwpSession.handleJdwpCommand(
     progress: JdwpCommandProgress?,
     replyHandler: suspend (JdwpPacketView) -> R
 ): R {
-    val logger = thisLogger(this.session)
+    val logger = thisLogger(device.session)
 
     if (!commandPacket.isCommand) {
         throw IllegalArgumentException("JDWP packet is not a command packet")
@@ -459,7 +460,7 @@ suspend fun AdbInputChannel.toByteArray(size: Int): ByteArray {
 fun SharedJdwpSession.createDdmsPacket(chunkType: Int, chunkPayload: ByteBuffer): JdwpPacketView {
     return JdwpPacketFactory.createDdmsPacket(nextPacketId(), chunkType, chunkPayload)
         .also { packet ->
-            val logger = thisLogger(session)
+            val logger = thisLogger(device.session)
             logger.verbose { "Sending DDMS command '${chunkTypeToString(chunkType)}' in JDWP packet $packet" }
         }
 }
