@@ -243,13 +243,25 @@ public class ManifestMerger2 {
                 loadLibraries(selectors, mergingReportBuilder, originalMainManifestPackageName);
 
         // make sure each module/library has a unique namespace
-        checkUniqueNamespaces(
-                loadedMainManifestInfo,
-                loadedLibraryDocuments,
-                mAllowedNonUniqueNamespaces,
-                mergingReportBuilder,
-                mOptionalFeatures.contains(Invoker.Feature.ENFORCE_UNIQUE_PACKAGE_NAME));
-
+        boolean enforceUniquePackageName =
+                mOptionalFeatures.contains(Invoker.Feature.ENFORCE_UNIQUE_PACKAGE_NAME);
+        boolean disablePackageUniquenessCheck =
+                mOptionalFeatures.contains(Invoker.Feature.DISABLE_PACKAGE_NAME_UNIQUENESS_CHECK);
+        if (enforceUniquePackageName && disablePackageUniquenessCheck) {
+            mLogger.warning(
+                    "Both flags ENFORCE_UNIQUE_PACKAGE_NAME and"
+                            + " DISABLE_PACKAGE_NAME_UNIQUENESS_CHECK are found to be true."
+                            + " Flag ENFORCE_UNIQUE_PACKAGE_NAME will be ignored because package"
+                            + " name uniqueness check is disabled.");
+        }
+        if (!disablePackageUniquenessCheck) {
+            checkUniqueNamespaces(
+                    loadedMainManifestInfo,
+                    loadedLibraryDocuments,
+                    mAllowedNonUniqueNamespaces,
+                    mergingReportBuilder,
+                    enforceUniquePackageName);
+        }
         // perform system property injection
         performSystemPropertiesInjection(mergingReportBuilder,
                 loadedMainManifestInfo.getXmlDocument());
@@ -1737,6 +1749,9 @@ public class ManifestMerger2 {
 
             /** Rewrite local resource references with fully qualified namespace */
             FULLY_NAMESPACE_LOCAL_RESOURCES,
+
+            /* Disables check for uniqueness of package names in dependencies manifests */
+            DISABLE_PACKAGE_NAME_UNIQUENESS_CHECK,
 
             /** Enforce that dependencies manifests don't have duplicated package names. */
             ENFORCE_UNIQUE_PACKAGE_NAME,

@@ -170,6 +170,13 @@ public class ManifestMerger2Test {
                                     testCaseIs("96_enforce_unique_package_name_error.xml"),
                                     ManifestMerger2.Invoker.Feature.ENFORCE_UNIQUE_PACKAGE_NAME)
                             .put(
+                                    testCaseIs("96b_enforce_unique_package_name_error.xml"),
+                                    ManifestMerger2.Invoker.Feature.ENFORCE_UNIQUE_PACKAGE_NAME)
+                            .put(
+                                    testCaseIs("96b_enforce_unique_package_name_error.xml"),
+                                    ManifestMerger2.Invoker.Feature
+                                            .DISABLE_PACKAGE_NAME_UNIQUENESS_CHECK)
+                            .put(
                                     testCaseIs(
                                             "97_enforce_unique_package_name_same_as_app_error.xml"),
                                     ManifestMerger2.Invoker.Feature.ENFORCE_UNIQUE_PACKAGE_NAME)
