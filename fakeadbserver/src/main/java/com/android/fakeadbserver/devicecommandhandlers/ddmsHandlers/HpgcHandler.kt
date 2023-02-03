@@ -30,9 +30,12 @@ class HpgcHandler : DDMPacketHandler {
     ): Boolean {
 
         client.requestHgpc()
-        val responsePacket = JdwpPacket.createEmptyDdmsResponse(packet.id)
 
-        responsePacket.write(oStream)
+        // Empty response used to be sent out before the release of Android 28
+        if (device.apiLevel < 28) {
+            val responsePacket = JdwpPacket.createEmptyDdmsResponse(packet.id)
+            responsePacket.write(oStream)
+        }
 
         // Keep JDWP connection open
         return true

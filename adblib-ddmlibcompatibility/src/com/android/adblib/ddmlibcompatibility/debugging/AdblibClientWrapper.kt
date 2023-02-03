@@ -34,6 +34,7 @@ import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.debugging.toByteBuffer
+import com.android.adblib.utils.createChildScope
 import com.android.adblib.withErrorTimeout
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge.IClientChangeListener
@@ -43,11 +44,13 @@ import com.android.ddmlib.ClientData.MethodProfilingStatus
 import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.DebugViewDumpHandler
 import com.android.ddmlib.IDevice
+import com.google.common.annotations.VisibleForTesting
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.Duration
@@ -70,6 +73,8 @@ internal class AdblibClientWrapper(
     private val clientDataWrapper = ClientData(this, jdwpProcess.pid)
 
     private var featuresAdded = false
+
+    private val legacyOperationsScope = jdwpProcess.scope.createChildScope(isSupervisor = true)
 
     fun startTracking() {
         // Track process changes as long as process coroutine scope is active
@@ -539,7 +544,7 @@ internal class AdblibClientWrapper(
     ) {
         // Note: We use `async` here to make sure exceptions are not propagated to
         // the parent context.
-        val deferred = jdwpProcess.scope.async {
+        val deferred = legacyOperationsScope.async {
             block()
         }
         // We log errors here because legacy ddmlib APIs wrapped by this method don't
@@ -554,6 +559,11 @@ internal class AdblibClientWrapper(
                 }
             }
         }
+    }
+
+    @VisibleForTesting
+    suspend fun awaitLegacyOperations() {
+        legacyOperationsScope.coroutineContext.job.children.toList().joinAll()
     }
 
     private fun launchLegacyWithJdwpSession(

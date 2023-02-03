@@ -26,6 +26,8 @@ import com.android.adblib.ddmlibcompatibility.testutils.disconnectTestDevice
 import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
+import com.android.adblib.tools.debugging.DdmsProtocolKind
+import com.android.adblib.tools.debugging.ddmsProtocolKind
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener
 import com.android.ddmlib.Client
@@ -55,7 +57,7 @@ class AdbLibDeviceClientManagerTest {
 
     @JvmField
     @Rule
-    val fakeAdb = FakeAdbRule()
+    val fakeAdb = FakeAdbRule().withClientSupport(false)
 
     @JvmField
     @Rule
@@ -599,6 +601,84 @@ class AdbLibDeviceClientManagerTest {
         // Assert
         assertEqualsByteBuffer(data1, buffer1)
         assertEqualsByteBuffer(data2, buffer2)
+    }
+
+    @Test
+    fun testExecuteGarbageCollectorWorks() = runBlockingWithTimeout {
+        // Prepare
+        val session = fakeAdb.createAdbSession(closeables)
+        val clientManager = AdbLibClientManager(session)
+        val listener = TestDeviceClientManagerListener()
+        val (device, deviceState) = fakeAdb.connectTestDevice()
+        val deviceClientManager =
+            clientManager.createDeviceClientManager(
+                fakeAdb.bridge,
+                device,
+                listener
+            )
+
+        // Act
+        val clientState = deviceState.startClient(10, 0, "foo.bar", false)
+
+        yieldUntil {
+            // Wait for both processes to show up and for both the JDWP proxy
+            // and process properties to be initialized.
+            deviceClientManager.clients.size == 1 &&
+                    deviceClientManager.clients.all {
+                        it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null
+                    }
+        }
+        val client = deviceClientManager.clients.first { it.clientData.pid == 10 }
+
+        client.executeGarbageCollector()
+        val adblibClientWrapper = client as AdblibClientWrapper
+        adblibClientWrapper.awaitLegacyOperations()
+
+        // Assert
+        Assert.assertEquals(
+            DdmsProtocolKind.EmptyRepliesDiscarded,
+            adblibClientWrapper.jdwpProcess.device.ddmsProtocolKind()
+        )
+        Assert.assertEquals(1, clientState.hgpcRequestsCount)
+    }
+
+    @Test
+    fun testExecuteGarbageCollectorOnPreApi28DeviceWorks() = runBlockingWithTimeout {
+        // Prepare
+        val session = fakeAdb.createAdbSession(closeables)
+        val clientManager = AdbLibClientManager(session)
+        val listener = TestDeviceClientManagerListener()
+        val (device, deviceState) = fakeAdb.connectTestDevice(sdk = "27")
+        val deviceClientManager =
+            clientManager.createDeviceClientManager(
+                fakeAdb.bridge,
+                device,
+                listener
+            )
+
+        // Act
+        val clientState = deviceState.startClient(10, 0, "foo.bar", false)
+
+        yieldUntil {
+            // Wait for both processes to show up and for both the JDWP proxy
+            // and process properties to be initialized.
+            deviceClientManager.clients.size == 1 &&
+                    deviceClientManager.clients.all {
+                        it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null
+                    }
+        }
+        val client = deviceClientManager.clients.first { it.clientData.pid == 10 }
+
+        client.executeGarbageCollector()
+        val adblibClientWrapper = client as AdblibClientWrapper
+        adblibClientWrapper.awaitLegacyOperations()
+
+        // Assert
+        Assert.assertEquals(
+            DdmsProtocolKind.EmptyRepliesAllowed,
+            adblibClientWrapper.jdwpProcess.device.ddmsProtocolKind()
+        )
+        Assert.assertEquals(1, clientState.hgpcRequestsCount)
     }
 
     private fun assertThrows(block: () -> Unit) {
