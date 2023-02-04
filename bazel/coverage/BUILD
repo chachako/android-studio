@@ -1086,6 +1086,7 @@ coverage_report(
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver_tests",
         "//tools/base/fakeadbserver:tools.tests",
         "//tools/base/flags:studio.android.sdktools.flags_tests",
+        "//tools/base/jdwp-packet:jdwp-packet.tests.test",
         "//tools/base/layoutlib-api:studio.android.sdktools.layoutlib-api_tests",
         "//tools/base/layoutlib-api:tools.tests",
         "//tools/base/lint:studio-checks-tests.test",
