@@ -16,10 +16,14 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbChannel
+import com.android.adblib.AdbSession
 import com.android.adblib.AutoShutdown
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.CoroutineScopeCache
+import com.android.adblib.tools.debugging.SharedJdwpSessionFilter.FilterId
 import com.android.adblib.tools.debugging.impl.SharedJdwpSessionImpl
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
+import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import java.io.EOFException
@@ -127,8 +131,29 @@ interface SharedJdwpSession : AutoShutdown {
     suspend fun addReplayPacket(packet: JdwpPacketView)
 
     companion object {
+        private val sessionInitKey = CoroutineScopeCache.Key<SessionInit>(
+            "SharedJdwpSession.sessionInit")
+
+        private class SessionInit(private val session: AdbSession) {
+            // Use "by lazy" to ensure the code is run only once
+            private val lazyInit by lazy {
+                session.addSharedJdwpSessionFilterFactory(NoDdmsPacketFilterFactory())
+            }
+
+            fun initOnceOnly() {
+                lazyInit
+            }
+        }
 
         internal fun create(jdwpSession: JdwpSession, pid: Int): SharedJdwpSession {
+            // Add the DdmsPacketFilterFactory to the list of active filters of the AdbSession
+            // (in a very round-about way to make sure the filter is added only once per
+            // AdbSession instance).
+            //TODO: Make this configurable
+            jdwpSession.device.session.cache.getOrPut(sessionInitKey) {
+                SessionInit(jdwpSession.device.session)
+            }.initOnceOnly()
+
             return SharedJdwpSessionImpl(jdwpSession, pid)
         }
     }
@@ -140,17 +165,29 @@ interface SharedJdwpSession : AutoShutdown {
  * @see SharedJdwpSession.newPacketReceiver
  */
 abstract class JdwpPacketReceiver {
+
     var name: String = ""
         private set
 
     protected var activation: suspend () -> Unit = { }
         private set
 
+    var filterId: FilterId? = null
+
     /**
      * Sets an arbitrary name for this receiver
      */
     fun withName(name: String): JdwpPacketReceiver {
         this.name = name
+        return this
+    }
+
+    /**
+     * Applies a [FilterId] to this [JdwpPacketReceiver] so its [flow] does not emit
+     * [JdwpPacketView] instances filtered by the corresponding [SharedJdwpSessionFilter].
+     */
+    fun withFilter(filterId: FilterId): JdwpPacketReceiver {
+        this.filterId = filterId
         return this
     }
 
@@ -168,19 +205,21 @@ abstract class JdwpPacketReceiver {
      *
      * When the flow is collected,
      * 1. the (optional) lambda passed to [onActivation] is invoked,
-     * 1. all replay packets are sent to the collector
+     * 1. all replay packets are sent to the collector,
      * 1. the underlying [SharedJdwpSession] is activated if needed, i.e. [JdwpPacketView]
-     * are read from the underlying [JdwpSession]
-     * 1. [JdwpPacketView] received from the underlying [JdwpSession] are emitted to the
-     * flow collector,
+     * are read from the underlying [JdwpSession],
+     * 1. all [JdwpPacketView] received from the underlying [JdwpSession] are emitted to the
+     * flow collector, except for the packets filtered by the (optional) [SharedJdwpSessionFilter]
+     * specified in [withFilter].
      *
      * ### Notes
      *
      * * The returned [Flow] ends when the underlying [SharedJdwpSession] reaches EOF.
      * * The returned [Flow] throws when the underlying [SharedJdwpSession] ends for
      *   any other reason than EOF.
-     * * This flow implementation guarantees all collectors invoked sequentially,
-     *   allowing them to consume [JdwpPacketView.payload] without explicit synchronization.
+     * * This flow implementation guarantees all active [JdwpPacketReceiver] flow collectors
+     *   are invoked sequentially, allowing them to consume [JdwpPacketView.payload] without
+     *   explicit synchronization.
      */
     abstract fun flow(): Flow<JdwpPacketView>
 

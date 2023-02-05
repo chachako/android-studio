@@ -19,6 +19,7 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.scope
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -131,6 +132,8 @@ internal class SharedJdwpSessionImpl(
             factory.create(this)
         })
 
+    private val jdwpFilter = SharedJdwpSessionFilterEngine(this)
+
     init {
         scope.launch {
             sendReceivedPackets()
@@ -169,6 +172,7 @@ internal class SharedJdwpSessionImpl(
         scope.cancel(exception)
         jdwpSession.close()
         jdwpMonitor?.close()
+        jdwpFilter.close()
     }
 
     private suspend fun addActiveReceiver(name: String): ActiveReceiver {
@@ -257,6 +261,7 @@ internal class SharedJdwpSessionImpl(
                     logger.verbose { "pid=$pid: Emitting session packet $localPacket to receiver '${receiver.name}'" }
                     sendPacketResultToReceiver(receiver, Result.success(localPacket))
                 }
+                jdwpFilter.afterReceivePacket(localPacket)
             }
         }
     }
@@ -345,6 +350,9 @@ internal class SharedJdwpSessionImpl(
             private val name: String
                 get() = jdwpPacketReceiver.name
 
+            private val filterId: SharedJdwpSessionFilter.FilterId?
+                get() = jdwpPacketReceiver.filterId
+
             private val receiverLogger = thisLogger(session).withPrefix("receiver for '$name': ")
 
             private val flowLogger = thisLogger(session).withPrefix("flow for '$name': ")
@@ -415,8 +423,12 @@ internal class SharedJdwpSessionImpl(
                         flowLogger.debug { "EOF reached, ending flow" }
                         break
                     }
-                    flowLogger.verbose { "Emitting packet flow: $packet" }
-                    emit(packet)
+                    if (jdwpSession.jdwpFilter.filterReceivedPacket(filterId, packet)) {
+                        flowLogger.verbose { "Emitting packet flow: $packet" }
+                        emit(packet)
+                    } else {
+                        flowLogger.verbose { "Skipping packet due to filter: $packet" }
+                    }
 
                     // Give control back to receiver callback
                     channels.releasePacket.send(Unit)
@@ -506,6 +518,7 @@ internal class SharedJdwpSessionImpl(
             val deferred = CompletableDeferred<Unit>(scope.coroutineContext.job)
             scope.launch {
                 sharedJdwpSession.jdwpMonitor?.onSendPacket(packet)
+                sharedJdwpSession.jdwpFilter.beforeSendPacket(packet)
                 sharedJdwpSession.jdwpSession.sendPacket(packet)
                 deferred.complete(Unit)
             }.invokeOnCompletion {

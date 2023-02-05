@@ -22,11 +22,13 @@ import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
+import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.rethrowCancellation
+import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.launchCancellable
@@ -52,6 +54,7 @@ internal class JdwpSessionProxy(
     private val pid: Int,
     private val jdwpSessionRef: ReferenceCountedResource<SharedJdwpSession>,
 ) {
+
     private val session: AdbSession
         get() = device.session
 
@@ -94,7 +97,7 @@ internal class JdwpSessionProxy(
             processStateFlow.updateProxyStatus { it.copy(isExternalDebuggerAttached = true) }
             try {
                 proxyJdwpSession(debuggerSocket)
-            } catch(t: Throwable) {
+            } catch (t: Throwable) {
                 t.rethrowCancellation()
                 logger.info(t) { "pid=$pid: Debugger proxy had an error: $t" }
             } finally {
@@ -119,7 +122,6 @@ internal class JdwpSessionProxy(
                     // * [manual] If job1 or job2 throws a CancellationException, we need to
                     //   propagate cancellation to the scope so that all jobs are cancelled
                     //   together.
-
 
                     // We need to ensure forwarding from the device starts
                     val startStateFlow = MutableStateFlow(false)
@@ -146,6 +148,10 @@ internal class JdwpSessionProxy(
         }
     }
 
+    /**
+     * Forwards JDWP packets from the external debugger [JdwpSession] to the device
+     * [SharedJdwpSession].
+     */
     private suspend fun forwardDebuggerJdwpSession(
         debuggerSession: JdwpSession,
         deviceSession: SharedJdwpSession,
@@ -155,11 +161,15 @@ internal class JdwpSessionProxy(
             // Wait until receiver has started to avoid skipping packets
             startStateFlow.first { receiverHasStarted -> receiverHasStarted }
 
-            logger.verbose { "pid=$pid: debugger->device proxy: Forwarding packet to shared jdwp session" }
+            logger.verbose { "pid=$pid: proxy: debugger->device: Forwarding packet to shared jdwp session" }
             deviceSession.sendPacket(packet)
         }
     }
 
+    /**
+     * Forwards JDWP packets from the device [SharedJdwpSession] to the external
+     * debugger [JdwpSession].
+     */
     private suspend fun forwardDeviceJdwpSession(
         deviceSession: SharedJdwpSession,
         debuggerSession: JdwpSession,
@@ -167,6 +177,7 @@ internal class JdwpSessionProxy(
     ) {
         deviceSession.newPacketReceiver()
             .withName("device session forwarder")
+            .withNoDdmsPacketFilter()
             .onActivation {
                 logger.verbose { "pid=$pid: device->debugger proxy: Device session is ready to receive packets" }
                 startStateFlow.value = true
@@ -174,6 +185,28 @@ internal class JdwpSessionProxy(
                 logger.verbose { "pid=$pid: device->debugger proxy: Forwarding packet to session" }
                 debuggerSession.sendPacket(packet)
             }
+    }
+
+    /**
+     * Apply the "no ddms packet" filter so all DDMS command/reply packets are filtered out.
+     *
+     * * Filtering out DDMS packets is not strictly required for JDWP compliant debuggers
+     *   (i.e. The JDWP spec. mentions extension packets should be ignored by debuggers
+     *   that don't support them), but the reference JDI implementation emits a `System.err`
+     *   message when any unsupported packet is received leading to the assumption there
+     *   is a serious issue.
+     *   (see https://github.com/JetBrains/intellij-deps-jdi/blob/9d99ceeacefabae3e4c37b411e5f4b7637aba162/src/main/java/com/jetbrains/jdi/TargetVM.java#L244)
+     *
+     * * Filtering out DDMS packets also slightly improve performances of this debugger
+     *   proxy, as DDMS packets are not sent/received on the communication channel
+     *   between the external debugger [JdwpSession] and the device [SharedJdwpSession].
+     *
+     * The main drawback of applying the DDMS filter is that, if needed in the future,
+     * it prevents any external debugger connecting to this proxy from directly sending
+     * DDMS commands to an Android process.
+     */
+    private fun JdwpPacketReceiver.withNoDdmsPacketFilter(): JdwpPacketReceiver {
+        return withFilter(NoDdmsPacketFilterFactory.filterId)
     }
 
     private fun AtomicStateFlow<JdwpProcessProperties>.updateProxyStatus(
