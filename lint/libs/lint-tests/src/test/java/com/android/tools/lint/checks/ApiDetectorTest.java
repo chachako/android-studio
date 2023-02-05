@@ -2153,6 +2153,17 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "public class UnitTest {\n"
                                         + "    private GridLayout field1 = new GridLayout(null);\n"
+                                        + "}\n"),
+                        java(
+                                "androidTest/test/pkg/InstrumentationTest.java",
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.annotation.SuppressLint;\n"
+                                        + "import android.widget.GridLayout;\n"
+                                        + "\n"
+                                        + "public class InstrumentationTest {\n"
+                                        + "    private GridLayout field1 = new GridLayout(null);\n"
                                         + "}\n"))
                 .checkMessage(this::checkReportedError)
                 .run()

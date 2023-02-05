@@ -315,6 +315,7 @@ class IgnoreWithoutReasonDetectorTest {
                 stubJUnitTest,
                 stubJUnitIgnore,
                 java(
+                    "test/test/pkg/MyJavaTest.java",
                     """
                     package test.pkg;
 
@@ -334,7 +335,42 @@ class IgnoreWithoutReasonDetectorTest {
             .run()
             .expect(
                 """
-                src/test/pkg/MyJavaTest.java:7: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
+                test/test/pkg/MyJavaTest.java:7: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
+                  @Ignore // comment after
+                  ~~~~~~~
+                0 errors, 1 warnings
+                """
+            )
+    }
+
+    @Test
+    fun testInstrumentationTest() {
+        lint()
+            .files(
+                stubJUnitTest,
+                stubJUnitIgnore,
+                java(
+                    "androidTest/test/pkg/MyJavaTest.java",
+                    """
+                    package test.pkg;
+
+                    import org.junit.Ignore;
+                    import org.junit.Test;
+
+                    class MyJavaTest {
+                      @Ignore // comment after
+                      @Test public void test1() {
+                      }
+                    }
+                    """
+                ).indented(),
+            )
+            .issues(IgnoreWithoutReasonDetector.ISSUE)
+            .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, false)
+            .run()
+            .expect(
+                """
+                androidTest/test/pkg/MyJavaTest.java:7: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                   @Ignore // comment after
                   ~~~~~~~
                 0 errors, 1 warnings

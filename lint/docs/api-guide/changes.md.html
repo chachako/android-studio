@@ -33,6 +33,10 @@ Guide.
   the Kotlin compiler to target JVM 17, otherwise you may see errors
   when calling inline functions declared in Lint, UAST, or PSI.
 
+* Lint's testing infrastructure now looks not just for test/
+  but also androidTest/ and testFixtures/ to set the corresponding
+  source set type on each test context.
+
 **8.0**
 
 * A new testmode which makes sure lint checks are all suppressible.

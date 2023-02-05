@@ -1797,21 +1797,6 @@ public class TestLintClient extends LintCliClient {
 
     @NonNull
     @Override
-    public List<File> getTestSourceFolders(@NonNull Project project) {
-        List<File> testSourceFolders = super.getTestSourceFolders(project);
-
-        File tests = new File(project.getDir(), "test");
-        if (tests.exists()) {
-            List<File> all = Lists.newArrayList(testSourceFolders);
-            all.add(tests);
-            testSourceFolders = all;
-        }
-
-        return testSourceFolders;
-    }
-
-    @NonNull
-    @Override
     public List<File> getExternalAnnotations(@NonNull Collection<? extends Project> projects) {
         List<File> externalAnnotations = Lists.newArrayList(super.getExternalAnnotations(projects));
 
@@ -2252,6 +2237,61 @@ public class TestLintClient extends LintCliClient {
             }
 
             return testSourceFolders;
+        }
+
+        @NonNull
+        public List<File> getUnitTestSourceFolders() {
+            if (unitTestSourceFolders == null) {
+                List<File> testSourceFolders = super.getInstrumentationTestSourceFolders();
+
+                if (testSourceFolders.isEmpty()) {
+                    File instrumentationTests = new File(getDir(), "test");
+                    if (instrumentationTests.exists()) {
+                        List<File> all = Lists.newArrayList(testSourceFolders);
+                        all.add(instrumentationTests);
+                        testSourceFolders = all;
+                    }
+                }
+                unitTestSourceFolders = testSourceFolders;
+            }
+            return unitTestSourceFolders;
+        }
+
+        @NonNull
+        public List<File> getInstrumentationTestSourceFolders() {
+            if (instrumentationTestSourceFolders == null) {
+                List<File> testSourceFolders = super.getInstrumentationTestSourceFolders();
+
+                if (testSourceFolders.isEmpty()) {
+                    File instrumentationTests = new File(getDir(), "androidTest");
+                    if (instrumentationTests.exists()) {
+                        List<File> all = Lists.newArrayList(testSourceFolders);
+                        all.add(instrumentationTests);
+                        testSourceFolders = all;
+                    }
+                }
+                instrumentationTestSourceFolders = testSourceFolders;
+            }
+            return instrumentationTestSourceFolders;
+        }
+
+        @NonNull
+        @Override
+        public List<File> getTestFixturesSourceFolders() {
+            if (testFixturesSourceFolders == null) {
+                List<File> fixtureFolders = super.getTestFixturesSourceFolders();
+
+                if (fixtureFolders.isEmpty()) {
+                    File instrumentationTests = new File(getDir(), "testFixtures");
+                    if (instrumentationTests.exists()) {
+                        List<File> all = Lists.newArrayList(fixtureFolders);
+                        all.add(instrumentationTests);
+                        fixtureFolders = all;
+                    }
+                }
+                testFixturesSourceFolders = fixtureFolders;
+            }
+            return testFixturesSourceFolders;
         }
 
         public void setReferenceDir(File dir) {
