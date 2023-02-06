@@ -11120,10 +11120,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.benchmark.benchmark-gradle-plugin_1.1.0-beta04",
-    pom = "repository/androidx/benchmark/benchmark-gradle-plugin/1.1.0-beta04/benchmark-gradle-plugin-1.1.0-beta04.pom",
+    name = "androidx.benchmark.benchmark-gradle-plugin_1.1.1",
+    pom = "repository/androidx/benchmark/benchmark-gradle-plugin/1.1.1/benchmark-gradle-plugin-1.1.1.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/benchmark/benchmark-gradle-plugin/1.1.0-beta04",
+    repo_path = "androidx/benchmark/benchmark-gradle-plugin/1.1.1",
     deps = [
         "com.android.tools.build.gradle_4.0.0-beta04",
         "org.jetbrains.kotlin.kotlin-stdlib_1.6.10",

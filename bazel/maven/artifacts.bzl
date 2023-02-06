@@ -193,7 +193,7 @@ DATA = [
     "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02",
     "androidx.privacysandbox.tools:tools-apipackager:1.0.0-alpha02",
     "androidx.privacysandbox.tools:tools-core:1.0.0-alpha02",
-    "androidx.benchmark:benchmark-gradle-plugin:1.1.0-beta04",
+    "androidx.benchmark:benchmark-gradle-plugin:1.1.1",
     "androidx.compose.animation:animation:1.2.0-alpha05",
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.foundation:foundation:1.2.0-alpha05",
