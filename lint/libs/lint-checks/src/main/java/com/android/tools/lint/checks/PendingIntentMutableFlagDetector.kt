@@ -91,11 +91,11 @@ class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
             priority = 5,
             /**
              * The severity of this issue is reported conditionally.  See the overridden `filterIncident` method.
-             * - targetSdk >= 31: ERROR
+             * - targetSdk >= 31: FATAL
              * - 23 <= targetSdk < 31: WARNING
              * - targetSdk < 23: not reported
              */
-            severity = Severity.ERROR,
+            severity = Severity.FATAL,
             implementation = Implementation(
                 PendingIntentMutableFlagDetector::class.java,
                 Scope.JAVA_FILE_SCOPE
