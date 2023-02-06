@@ -305,6 +305,7 @@ internal class SharedJdwpSessionImpl(
     private suspend fun sendReplayPlacketsToReceiver(receiver: ActiveReceiver) {
         receiver.replayPackets {
             replayPackets.forEach { packet ->
+                logger.verbose { "pid=$pid: Sending replay packet to receiver '${receiver.name}': $packet" }
                 sendPacketResultToReceiver(receiver, Result.success(packet))
             }
         }
