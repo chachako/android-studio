@@ -35,7 +35,7 @@ class Session {
 
     private final List<Event> events = new ArrayList<>();
 
-    private Map<Long, DdmJDWPTiming> timings = new HashMap<>();
+    private Map<Integer, DdmJDWPTiming> timings = new HashMap<>();
 
     private String name = "unknown";
 
@@ -110,11 +110,11 @@ class Session {
     }
 
     @NonNull
-    Map<Long, DdmJDWPTiming> timings() {
+    Map<Integer, DdmJDWPTiming> timings() {
         return timings;
     }
 
-    void addTimings(@NonNull Map<Long, DdmJDWPTiming> timings) {
+    void addTimings(@NonNull Map<Integer, DdmJDWPTiming> timings) {
         this.timings.putAll(timings);
     }
 

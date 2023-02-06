@@ -61,7 +61,7 @@ class SystraceOutput {
     }
 
     private static void addARTTimings(@NonNull Session session, FileWriter out) throws IOException {
-        Map<Long, DdmJDWPTiming> idToArtTimings = session.timings();
+        Map<Integer, DdmJDWPTiming> idToArtTimings = session.timings();
         List<Transmission> transmissions = event2Transmission(session.events());
 
         // To integrate the ART timings with the local JDWP packet timings, we need to synchronize
@@ -139,7 +139,10 @@ class SystraceOutput {
         }
 
         JsonObject args = new JsonObject();
-        args.addProperty("id", transmission.jdpwId());
+
+        // Display id using hex to make it easier to recogize the fingerprint of a debug participant
+        // ddmlib uses 0x80000000, ddm Android OS uses 0x40000000, scache 0x90000000
+        args.addProperty("id", "0x" + Integer.toHexString(transmission.jdpwId()));
 
         if (transmission.reply().isPresent()) {
             Reply reply = transmission.reply().get();

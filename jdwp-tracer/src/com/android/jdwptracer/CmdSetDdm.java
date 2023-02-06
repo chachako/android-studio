@@ -128,14 +128,14 @@ class CmdSetDdm extends CmdSet {
         int numTimings = reader.getInt();
         msg.addArg("numTimings", numTimings);
 
-        Map<Long, DdmJDWPTiming> timings = new HashMap<>();
+        Map<Integer, DdmJDWPTiming> timings = new HashMap<>();
         for (int i = 0; i < numTimings; i++) {
             int id = reader.getInt();
             int cmdset = reader.getInt();
             int cmd = reader.getInt();
             long start_ns = reader.getLong();
             long duration_ns = reader.getLong();
-            timings.put((long) id, new DdmJDWPTiming(id, cmdset, cmd, start_ns, duration_ns));
+            timings.put(id, new DdmJDWPTiming(id, cmdset, cmd, start_ns, duration_ns));
         }
         session.addTimings(timings);
     }
