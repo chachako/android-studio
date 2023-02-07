@@ -9162,6 +9162,59 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "10 errors, 0 warnings");
     }
 
+    public void testCompilerGeneratedParameter() {
+        // Regression test for b/268057027
+        // Originally, `@Composable operator get` is involved, but the same kind of OOBE can happen
+        // for any kinds of compiler-generated parameters, such as `suspend`.
+        // In this test, even default value parameter is good enough to reproduce the error.
+        lint().files(
+                        bytecode(
+                                "libs/lib1.jar",
+                                kotlin(
+                                        "src/test/Dependency.kt",
+                                        ""
+                                                + "package test\n"
+                                                + "\n"
+                                                + "class Foo {\n"
+                                                + "    var x : Int = 42\n"
+                                                + "    operator fun get(i: Int, j: Foo = this) = i + j.x\n"
+                                                + "}\n"),
+                                0x7b34d11a,
+                                "META-INF/main.kotlin_module:"
+                                        + "H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC"
+                                        + "JAAAAA==",
+                                "test/Foo.class:"
+                                        + "H4sIAAAAAAAA/2VUSW/TQBT+ZuIkjpumbim0NOwUSEPBaVlFWcQihCEtiKIK"
+                                        + "qRemyVCcxUaZSQUXlBP/gStnLkhs4oCiHvlRiDeOaQMcPPPeN+/73jIj//z1"
+                                        + "/QeA87jMYGuptHc3irJgDG5DbAmvJcJN7+FGQ9Z0FimGzNUgDPR1hlRpbi2P"
+                                        + "NDIOLGQZ2Cv6/DxycHLgGGGw9ItAMTjVP7JLhG1K/TQm++So2LFK/twaQ/Yq"
+                                        + "uWduGGkKYiiU/F2mCT9ejTqbXkPqjY4IQuWJMIy00EFE9kqkV7qtFmVgDRtT"
+                                        + "DIeakW4FodfYantBqGUnFC3PD3WHmEFNZbGfYW/thaw1E+oj0RFtSYEMp0rV"
+                                        + "f3tfGkJWjcjmkmm/iAMOZnCQ0gYMI1T3bF0+F90W1X+6tFu+P2z+pz1HY5vE"
+                                        + "XofGdoxhvJqUviy1qAstqCne3krRLTGz5MwCytgk/FVgvApZ9QUG2e9NOnya"
+                                        + "O9zt9xxuG8OmPTvd7y3yCruV3n6f4S6/X3RzM7xiLWZcJ95tm7sjZPV797bf"
+                                        + "8sczbsrAT7ffFohQcPq9GctOu5ljlp11bZNskZkSRu/IlzKsy7D2+myTWrZu"
+                                        + "R3XJMFYNQrnSbW/IzhOx0SJkohrVRGtNdALjJ+Ds426og7b0w61ABQTtXMHN"
+                                        + "3ZulJKta1JrL4mVCc1ajbqcm7wbG2Z9orA0UhohYoHFa8aS4eZRkpcmmB0vr"
+                                        + "AnnXCKcuMFL+Crvslj8j/5FcjkVaCzBzTZGARdQUzpGXH4RjlE6BcYzBTaQ8"
+                                        + "cx0mQfkT8h92RDIxaA2R0zvkcUwk5CsUzU10ufhXCcPsfYOIhG2sPVQWvRXz"
+                                        + "bujM6Dyg3RQ9Oj8x/Q2HivNUy7O/i8lQAUbuyCBwR24Uh2M5Y00Rxul/QA+N"
+                                        + "x9PbB7g5ohxN6q0QOU372MH0m3fU8nK5OP8FxweZLsRTY/ZQB2mCL8aHFVyi"
+                                        + "/SGhs4SeWEfKx0kfp3yUMEcmyj5OY34dTOEMzq4jr1BQ8BQyCrnYGFNwFcYV"
+                                        + "JhQmFQ4rTP0G+7ridsIEAAA="),
+                        kotlin(
+                                ""
+                                        + "import test.Foo\n"
+                                        + "\n"
+                                        + "fun test(foo : Foo) {\n"
+                                        + "    for (i in 1..10) {\n"
+                                        + "        val x = foo[i]\n"
+                                        + "    }\n"
+                                        + "}\n"))
+                .run()
+                .expectClean();
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();

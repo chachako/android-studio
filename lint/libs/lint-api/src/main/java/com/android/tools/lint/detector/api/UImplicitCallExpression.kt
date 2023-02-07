@@ -106,15 +106,21 @@ abstract class UImplicitCallExpression(
     override val typeArguments: List<PsiType> get() = emptyList()
     override val uastParent: UElement? get() = expression.uastParent
     override val valueArgumentCount: Int get() = valueArguments.size
-    override fun getArgumentForParameter(i: Int): UExpression {
-        val parameter = operator.parameterList.parameters[i]
+    override fun getArgumentForParameter(i: Int): UExpression? {
+        // `parameters` from JVM methods (i.e., compiled bytecode) can be bigger than
+        // `arguments` when
+        //   1) there are parameters with default values (so the actual call can skip them); or
+        //   2) compiler/plugin added synthetic parameter, e.g., `suspend` or `@Composable`.
+        // upstream [UCallExpression#getArgumentForParameter] returns `null` when an argument is not found,
+        // including such out-of-bound case. We should use fail-safe array access in a similar fashion.
+        val parameter = operator.parameterList.parameters.getOrNull(i) ?: return null
         val argumentMapping = getArgumentMapping()
         for ((argument, p) in argumentMapping) {
             if (parameter == p) {
                 return argument
             }
         }
-        return valueArguments[i]
+        return valueArguments.getOrNull(i)
     }
     override fun resolve(): PsiMethod = operator
 }
