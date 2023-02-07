@@ -147,7 +147,7 @@ class Session {
             return details;
         }
         byte flag = buffer.get();
-        details += "flags=" + flag;
+        details += ", flags=0x" + Integer.toHexString(flag);
 
         if (Packet.isReply(flag)) {
             details += detailsReply(buffer);
@@ -166,13 +166,13 @@ class Session {
             details += ", no cmdset";
             return details;
         }
-        details += ",cmdset=" + buffer.get();
+        details += ", cmdset=" + buffer.get();
 
         if (buffer.remaining() < Byte.BYTES) {
             details += ", no cmd";
             return details;
         }
-        details += ",cmd=" + buffer.get();
+        details += ", cmd=" + buffer.get();
 
         return details;
     }
@@ -183,7 +183,7 @@ class Session {
             details += ", no errorCode";
             return details;
         }
-        details += ",errorCode=" + buffer.getShort();
+        details += ", errorCode=" + buffer.getShort();
 
         return details;
     }
