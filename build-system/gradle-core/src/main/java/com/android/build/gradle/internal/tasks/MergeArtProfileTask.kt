@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.gradle.internal.api.BaselineProfiles
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -55,7 +56,12 @@ abstract class MergeArtProfileTask: MergeFileTask() {
         workerExecutor.noIsolation().submit(MergeFilesWorkAction::class.java) {
             it.initializeFromAndroidVariantTask(this)
             it.inputFiles.from(inputFiles)
-            it.inputFiles.from(profileSourceDirectories.get().map(Directory::getAsFileTree))
+
+            it.inputFiles.from(
+                profileSourceDirectories.get().map { directory -> directory.asFileTree.files }
+                    .flatten()
+                    .filter(BaselineProfiles::shouldBeMerged)
+            )
             if (profileSource.get().asFile.isFile) {
                 it.inputFiles.from(profileSource)
             }
@@ -88,7 +94,9 @@ abstract class MergeArtProfileTask: MergeFileTask() {
             creationConfig.artifacts.setInitialProvider(
                 taskProvider,
                 MergeFileTask::outputFile
-            ).on(InternalArtifactType.MERGED_ART_PROFILE)
+            ).withName(BaselineProfiles.BaselineProfileFileName)
+                .on(InternalArtifactType.MERGED_ART_PROFILE)
+
         }
 
         override fun configure(task: MergeArtProfileTask) {

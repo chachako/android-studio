@@ -72,5 +72,9 @@ public final class TestSourceFile {
         return new TestSourceFile(
                 relativePath, Bytes.concat(content, additionalContent.getBytes()));
     }
+
+    public TestSourceFile rewriteContent(@NonNull String content) {
+        return new TestSourceFile(relativePath, content.getBytes());
+    }
 }
 

@@ -190,5 +190,7 @@ fun runR8(
         libConfiguration = null,
         inputArtProfile = null,
         outputArtProfile = null,
+        enableDexStartupOptimization = false,
+        inputProfileForDexStartupOptimization = null,
     )
 }

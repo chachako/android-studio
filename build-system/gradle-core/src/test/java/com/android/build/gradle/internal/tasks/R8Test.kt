@@ -722,6 +722,8 @@ class R8Test(val r8OutputType: R8OutputType) {
             libConfiguration = libConfiguration,
             inputArtProfile = null,
             outputArtProfile = null,
+            enableDexStartupOptimization = false,
+            inputProfileForDexStartupOptimization = null,
         )
     }
 

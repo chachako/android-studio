@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.dsl
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.parseBoolean
 
-enum class ModulePropertyKeys(private val keyValue: String, private val defaultValue: Any) {
+enum class ModulePropertyKeys(val keyValue: String, private val defaultValue: Any) {
 
     /**
      * If false - the test APK instruments the target project APK, and the classes are provided.
@@ -33,9 +33,13 @@ enum class ModulePropertyKeys(private val keyValue: String, private val defaultV
      */
     ART_PROFILE_R8_REWRITING("android.experimental.art-profile-r8-rewriting", false),
 
-    VERIFY_AAR_CLASSES(BooleanOption.VERIFY_AAR_CLASSES.propertyName, false)
+    VERIFY_AAR_CLASSES(BooleanOption.VERIFY_AAR_CLASSES.propertyName, false),
 
-    ;
+    /**
+     * If false - R8 will not attempt to optimize startup dex
+     * If true - R8 will optimize first dex for optimal startup performance.
+     */
+    R8_DEX_STARTUP_OPTIMIZATION("android.experimental.r8.dex-startup-optimization", false);
 
     fun getValue(properties: Map<String, Any>): Any {
         return properties[keyValue] ?: return defaultValue
