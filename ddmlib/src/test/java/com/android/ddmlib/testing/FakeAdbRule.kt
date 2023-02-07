@@ -44,6 +44,7 @@ class FakeAdbRule : ExternalResource() {
 
   private val isJdwpProxyEnabledDefault = DdmPreferences.isJdwpProxyEnabled()
   private var initAdbBridgeDuringSetup = true
+  private var clientSupportEnabled = true
   private var closeFakeAdbServerDuringCleanUp = true
   private lateinit var fakeAdbServer: FakeAdbServer
   private val startingDevices: MutableMap<String, CountDownLatch> = mutableMapOf()
@@ -79,6 +80,11 @@ class FakeAdbRule : ExternalResource() {
     fun withEmulatorConsoleFactory(factory: (String, String) -> EmulatorConsole) = apply {
         consoleFactory = factory
     }
+
+    /**
+     * Configure whether to enable ClientSupport. Must be called before @Before tasks are run.
+     */
+    fun withClientSupport(enabled: Boolean) = apply { clientSupportEnabled = enabled }
 
     /**
    * Initialize the ADB bridge as part of the setup.
@@ -144,7 +150,7 @@ class FakeAdbRule : ExternalResource() {
     if (initAdbBridgeDuringSetup) {
       AndroidDebugBridge.enableFakeAdbServerMode(fakeAdbServer.port)
       val options = AdbInitOptions.builder()
-          .setClientSupportEnabled(true)
+          .setClientSupportEnabled(clientSupportEnabled)
           .useJdwpProxyService(false)
           .build()
       AndroidDebugBridge.init(options)
