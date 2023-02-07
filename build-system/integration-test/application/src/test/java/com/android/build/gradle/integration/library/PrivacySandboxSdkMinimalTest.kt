@@ -24,7 +24,6 @@ import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.StringOption
 import com.android.sdklib.BuildToolInfo
 import com.android.testutils.apk.Apk
 import com.android.utils.FileUtils
@@ -34,49 +33,19 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.File
 
-class MinimalPrivacySandboxSdkTest {
+class PrivacySandboxSdkMinimalTest {
 
     @get:Rule
     val project = createGradleProjectBuilder {
-        val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
-                .replace("""\""", """\\""")
-        val androidxPrivacySandboxSdkVersion = "1.0.0-alpha02"
-        subProject(":androidlib3") {
-            useNewPluginsDsl = true
-            plugins.add(PluginType.ANDROID_LIB)
-            plugins.add(PluginType.KOTLIN_ANDROID)
-            plugins.add(PluginType.KSP)
+        privacySandboxSdkLibraryProject(":androidlib3") {
             android {
-                defaultCompileSdk()
                 namespace = "com.example.androidlib3"
                 minSdk = 14
-                compileSdkPreview = "TiramisuPrivacySandbox"
             }
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-                implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxSdkVersion")
-                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:$androidxPrivacySandboxSdkVersion")
-                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:$androidxPrivacySandboxSdkVersion")
-
-                ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxSdkVersion")
-            }
-            appendToBuildFile {
-                """
-                   def aidlCompilerPath = '$aidlPath'
-                   ksp { arg("aidl_compiler_path", aidlCompilerPath) }
-                """
-            }
-            addFile("src/main/AndroidManifest.xml", """
-                <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-                </manifest>
-                """.trimIndent()
-            )
+            dependencies {}
         }
-        subProject(":empty-privacy-sandbox-sdk") {
-            plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
+        privacySandboxSdkProject(":empty-privacy-sandbox-sdk") {
             android {
-                defaultCompileSdk()
                 minSdk = 14
             }
             appendToBuildFile {

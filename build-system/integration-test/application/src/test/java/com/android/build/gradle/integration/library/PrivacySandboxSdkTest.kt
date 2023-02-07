@@ -58,69 +58,32 @@ class PrivacySandboxSdkTest {
 
     @get:Rule
     val project = createGradleProjectBuilder {
-        val androidxPrivacySandboxSdkVersion = "1.0.0-alpha02"
-        val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
-                .replace("""\""", """\\""")
-        subProject(":android-lib1") {
-            useNewPluginsDsl = true
-            plugins.add(PluginType.ANDROID_LIB)
-            plugins.add(PluginType.KOTLIN_ANDROID)
-            plugins.add(PluginType.KSP)
-            android {
-                defaultCompileSdk()
-                namespace = "com.example.androidlib1"
-                minSdk = 14
-                compileSdkPreview = "TiramisuPrivacySandbox"
-            }
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-                implementation("androidx.privacysandbox.tools:tools:$androidxPrivacySandboxSdkVersion")
-                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT")
-                implementation("androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT")
-                implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxSdkVersion")
-                ksp("androidx.privacysandbox.tools:tools-apicompiler:$androidxPrivacySandboxSdkVersion")
-            }
-            appendToBuildFile {
-                "def aidlCompilerPath = '$aidlPath'\n" +
-                        "ksp { arg(\"aidl_compiler_path\", aidlCompilerPath) }"
-            }
-            addFile(
-                    "src/main/res/values/strings.xml",
-                    """<resources>
-                <string name="string_from_android_lib_1">androidLib2</string>
-              </resources>"""
-            )
-            addFile(
-                    "src/main/java/com/example/androidlib1/Example.java",
-                    // language=java
-                    """
-                package com.example.androidlib1;
-
-                class Example {
-
-                    public Example() {}
-
-                    public void f1() {}
+        privacySandboxSdkProject(":privacy-sandbox-sdk") {
+                android {
+                    minSdk = 14
                 }
-            """.trimIndent()
-            )
-            addFile("src/main/resources/my_java_resource.txt", "some java resource")
-            addFile("src/main/assets/asset_from_androidlib1.txt", "some asset")
-            // Have an empty manifest as a regression test of b/237279793
-            addFile("src/main/AndroidManifest.xml", """
-                <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-                </manifest>
-                """.trimIndent()
-            )
+                appendToBuildFile {
+                    """
+                        android {
+                            bundle {
+                                applicationId = "com.example.privacysandboxsdk"
+                                sdkProviderClassName = "Test"
+                                compatSdkProviderClassName = "Test"
+                                setVersion(1, 2, 3)
+                            }
+                        }
+                    """.trimIndent()
+                }
+                dependencies {
+                    include(project(":android-lib1"))
+                    include(project(":android-lib2"))
+                    include("com.externaldep:externaljar:1")
+                }
         }
-        subProject(":android-lib2") {
-            plugins.add(PluginType.ANDROID_LIB)
+        privacySandboxSdkLibraryProject(":android-lib2") {
             android {
-                defaultCompileSdk()
                 namespace = "com.example.androidlib2"
                 minSdk = 14
-                compileSdkPreview = "TiramisuPrivacySandbox"
             }
             addFile(
                     "src/main/java/com/example/androidlib2/Example.java",
@@ -144,31 +107,38 @@ class PrivacySandboxSdkTest {
                 """.trimIndent()
             )
         }
-        subProject(":privacy-sandbox-sdk") {
-            plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
+
+        privacySandboxSdkLibraryProject(":android-lib1") {
             android {
-                defaultCompileSdk()
+                namespace = "com.example.androidlib1"
                 minSdk = 14
-                compileSdkPreview = "TiramisuPrivacySandbox"
-            }
-            appendToBuildFile {
-                """
-                        android {
-                            bundle {
-                                applicationId = "com.example.privacysandboxsdk"
-                                sdkProviderClassName = "Test"
-                                compatSdkProviderClassName = "Test"
-                                setVersion(1, 2, 3)
-                            }
-                        }
-                    """.trimIndent()
             }
             dependencies {
-                include(project(":android-lib1"))
-                include(project(":android-lib2"))
-                include("com.externaldep:externaljar:1")
+                implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxSdkToolsVersion")
             }
+            addFile(
+                    "src/main/res/values/strings.xml",
+                    """<resources>
+                <string name="string_from_android_lib_1">androidLib</string>
+              </resources>"""
+            )
+            addFile(
+                    "src/main/java/com/example/androidlib1/Example.java",
+                    // language=java
+                    """
+                package com.example.androidlib1;
 
+                class Example {
+
+                    public Example() {}
+                    public void f1() {}
+                    public void f2() {
+                    }
+                }
+            """.trimIndent()
+            )
+            addFile("src/main/resources/my_java_resource.txt", "some java resource")
+            addFile("src/main/assets/asset_from_androidlib1.txt", "some asset")
         }
         subProject(":example-app") {
             plugins.add(PluginType.ANDROID_APP)
