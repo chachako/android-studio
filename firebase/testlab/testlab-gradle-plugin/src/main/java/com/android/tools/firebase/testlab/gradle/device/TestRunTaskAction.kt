@@ -18,17 +18,38 @@ package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction
+import com.google.api.services.testing.model.AndroidModel
+import com.google.gson.GsonBuilder
+import com.google.gson.ToNumberPolicy
 import java.util.Locale
 
 open class TestRunTaskAction: DeviceTestRunTaskAction<DeviceTestRunInput> {
 
     override fun runTests(params: DeviceTestRunParameters<DeviceTestRunInput>): Boolean {
+         val gson = GsonBuilder()
+            .setObjectToNumberStrategy {
+                val number = ToNumberPolicy.LONG_OR_DOUBLE.readNumber(it)
+                if (number is Long) {
+                    number.toInt()
+                } else {
+                    number
+                }
+            }
+            .create()
+
+        val ftlDeviceModel = gson.fromJson(
+            params.setupResult.file("${params.testRunData.deviceName}.json")
+                .get().asFile.readText(),
+            AndroidModel::class.java
+        )
+
         val results = params.deviceInput.buildService.get().runTestsOnDevice(
             params.testRunData.deviceName,
             params.deviceInput.device.get(),
             params.deviceInput.apiLevel.get(),
             Locale.forLanguageTag(params.deviceInput.locale.get()),
             params.deviceInput.orientation.get(),
+            ftlDeviceModel,
             params.testRunData.testData,
             params.testRunData.outputDirectory.asFile,
             params.testRunData.projectPath,

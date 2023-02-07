@@ -38,6 +38,7 @@ import com.google.api.services.testing.model.AndroidDevice
 import com.google.api.services.testing.model.AndroidDeviceCatalog
 import com.google.api.services.testing.model.AndroidDeviceList
 import com.google.api.services.testing.model.AndroidInstrumentationTest
+import com.google.api.services.testing.model.AndroidModel
 import com.google.api.services.testing.model.ClientInfo
 import com.google.api.services.testing.model.EnvironmentMatrix
 import com.google.api.services.testing.model.GoogleCloudStorage
@@ -162,6 +163,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         deviceApiLevel: Int,
         deviceLocale: Locale,
         deviceOrientation: Orientation,
+        ftlDeviceModel: AndroidModel,
         testData: StaticTestData,
         resultsOutDir: File,
         projectPath: String,
@@ -200,7 +202,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         )
 
         val configProvider = createConfigProvider(
-            deviceId, deviceLocale, deviceApiLevel
+            ftlDeviceModel, deviceLocale, deviceApiLevel
         )
         val appApkStorageObject = uploadToCloudStorage(
             testData.testedApkFinder(configProvider).first(),
@@ -703,24 +705,16 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     }
 
     private fun createConfigProvider(
-        deviceId: String, locale: Locale, apiLevel: Int
+        ftlDeviceModel: AndroidModel,
+        locale: Locale,
+        apiLevel: Int
     ): DeviceConfigProvider {
-        val deviceModel = catalog().models.firstOrNull {
-            it.id == deviceId
-        } ?: error("Could not find device: $deviceId")
-
-        if (!deviceModel.supportedVersionIds.contains(apiLevel.toString())) {
-            error("""
-                apiLevel: $apiLevel is not supported by device: $deviceId. Available Api levels are:
-                ${deviceModel.supportedVersionIds}
-            """.trimIndent())
-        }
         return object : DeviceConfigProvider {
             override fun getConfigFor(abi: String?): String {
                 return requireNotNull(abi)
             }
 
-            override fun getDensity(): Int = deviceModel.screenDensity
+            override fun getDensity(): Int = ftlDeviceModel.screenDensity
 
             override fun getLanguage(): String {
                 return locale.language
@@ -730,7 +724,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 return locale.country
             }
 
-            override fun getAbis() = deviceModel.supportedAbis
+            override fun getAbis() = ftlDeviceModel.supportedAbis
 
             override fun getApiLevel() = apiLevel
         }

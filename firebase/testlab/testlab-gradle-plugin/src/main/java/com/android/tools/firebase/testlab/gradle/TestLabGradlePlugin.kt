@@ -20,6 +20,8 @@ import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.api.AndroidBasePlugin
+import com.android.tools.firebase.testlab.gradle.device.SetupConfigureAction
+import com.android.tools.firebase.testlab.gradle.device.SetupTaskAction
 import com.android.tools.firebase.testlab.gradle.device.TestRunConfigureAction
 import com.android.tools.firebase.testlab.gradle.device.TestRunTaskAction
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
@@ -46,8 +48,12 @@ class TestLabGradlePlugin : Plugin<Project> {
             project.extensions.getByType(AndroidComponentsExtension::class.java)
                 .managedDeviceRegistry.registerDeviceType(ManagedDevice::class.java) {
                     dslImplementationClass = ManagedDeviceImpl::class.java
+                    setSetupActions(
+                        SetupConfigureAction::class.java,
+                        SetupTaskAction::class.java)
                     setTestRunActions(
-                        TestRunConfigureAction::class.java, TestRunTaskAction::class.java)
+                        TestRunConfigureAction::class.java,
+                        TestRunTaskAction::class.java)
                 }
 
             val androidExtension = project.extensions.getByType(CommonExtension::class.java)
