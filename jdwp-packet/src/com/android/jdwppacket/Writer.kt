@@ -52,4 +52,12 @@ abstract class Writer(val s: IDSizes) {
     location.write(this)
     return locationSize
   }
+
+  fun putBoolean(boolean: Boolean) {
+    if (boolean) {
+      putByte(1)
+    } else {
+      putByte(0)
+    }
+  }
 }

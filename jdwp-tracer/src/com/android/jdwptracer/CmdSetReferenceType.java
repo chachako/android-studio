@@ -17,6 +17,8 @@ package com.android.jdwptracer;
 
 import com.android.annotations.NonNull;
 import com.android.jdwppacket.MessageReader;
+import com.android.jdwppacket.SourceFileCmd;
+import com.android.jdwppacket.SourceFileReply;
 import com.android.jdwppacket.referencetype.MethodsCmd;
 import com.android.jdwppacket.referencetype.MethodsReply;
 import com.android.jdwppacket.referencetype.MethodsWithGenericsCmd;
@@ -49,7 +51,11 @@ class CmdSetReferenceType extends CmdSet {
                 CmdSetReferenceType::parseMethodsCmd,
                 CmdSetReferenceType::parseMethodsReply);
         add(6, "GetValues");
-        add(7, "SourceFile");
+        add(
+                7,
+                "SourceFile",
+                CmdSetReferenceType::parseSourceFileCmd,
+                CmdSetReferenceType::parseSourceFileReply);
         add(8, "NestedTypes");
         add(9, "Status");
         add(10, "Interfaces");
@@ -180,6 +186,22 @@ class CmdSetReferenceType extends CmdSet {
         }
         message.addArg("methods", methods);
 
+        return message;
+    }
+
+    private static Message parseSourceFileCmd(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
+        SourceFileCmd cmd = SourceFileCmd.parse(reader);
+        message.addArg("refType", cmd.getRefType());
+        return message;
+    }
+
+    private static Message parseSourceFileReply(
+            @NonNull MessageReader reader, @NonNull Session session) {
+        Message message = new Message(reader);
+        SourceFileReply reply = SourceFileReply.parse(reader);
+        message.addArg("sourceFile", reply.getSourceFile());
         return message;
     }
 }

@@ -15,22 +15,21 @@
  */
 package com.android.jdwppacket
 
-data class LineTableCmd(private val classID: Long, private val methodID: Long) :
-  Cmd(Method.LineTable), Keyable {
+data class LineTableCmd(val refType: Long, val methodID: Long) : Cmd(Method.LineTable), Keyable {
 
   override fun writePayload(writer: Writer) {
-    writer.putClassID(classID)
+    writer.putReferenceTypeID(refType)
     writer.putMethodID(methodID)
   }
 
   override fun paramsKey(): String {
-    return "$classID-$methodID"
+    return "$refType-$methodID"
   }
 
   companion object {
-
-    fun parse(reader: MessageReader): Cmd {
-      return LineTableCmd(reader.getClassID(), reader.getMethodID())
+    @JvmStatic
+    fun parse(reader: MessageReader): LineTableCmd {
+      return LineTableCmd(reader.getReferenceTypeID(), reader.getMethodID())
     }
   }
 }

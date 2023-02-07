@@ -1,5 +1,7 @@
 import com.android.jdwppacket.IsObsoleteCmd
+import com.android.jdwppacket.IsObsoleteReply
 import com.android.jdwppacket.LineTableCmd
+import com.android.jdwppacket.LineTableReply
 import org.junit.Test
 
 /*
@@ -25,9 +27,28 @@ class MethodTest {
     assertJDWPObjectAndWireEquals(packet, IsObsoleteCmd::parse)
   }
 
+  fun testIsObsoleteReply() {
+    val packetTrue = IsObsoleteReply(true)
+    assertJDWPObjectAndWireEquals(packetTrue, IsObsoleteCmd::parse)
+
+    val packetFalse = IsObsoleteReply(false)
+    assertJDWPObjectAndWireEquals(packetFalse, IsObsoleteCmd::parse)
+  }
+
   @Test
   fun testLineTableCmd() {
     val packet = LineTableCmd(Long.MAX_VALUE - 1, Long.MAX_VALUE - 2)
     assertJDWPObjectAndWireEquals(packet, LineTableCmd::parse)
+  }
+
+  @Test
+  fun testLineTableReply() {
+    val packet =
+      LineTableReply(
+        Long.MAX_VALUE - 1,
+        Long.MAX_VALUE - 2,
+        listOf(LineTableReply.Line(Long.MAX_VALUE, Int.MAX_VALUE))
+      )
+    assertJDWPObjectAndWireEquals(packet, LineTableReply::parse)
   }
 }

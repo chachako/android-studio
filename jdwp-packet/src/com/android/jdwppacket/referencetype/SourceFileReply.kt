@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.jdwppacket
 
-data class IsObsoleteCmd(val refType: Long, val methodID: Long) : Cmd(Method.IsObsolete) {
-
-  override fun paramsKey(): String {
-    return "$refType-$methodID"
-  }
+data class SourceFileReply(val sourceFile: String) : Reply() {
 
   override fun writePayload(writer: Writer) {
-    writer.putReferenceTypeID(refType)
-    writer.putMethodID(methodID)
+    writer.putString(sourceFile)
   }
 
   companion object {
     @JvmStatic
-    fun parse(reader: MessageReader): IsObsoleteCmd {
-      return IsObsoleteCmd(reader.getReferenceTypeID(), reader.getMethodID())
+    fun parse(reader: MessageReader): SourceFileReply {
+      return SourceFileReply(reader.getString())
     }
   }
 }

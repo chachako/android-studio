@@ -15,21 +15,16 @@
  */
 package com.android.jdwppacket
 
-data class IsObsoleteCmd(val refType: Long, val methodID: Long) : Cmd(Method.IsObsolete) {
-
-  override fun paramsKey(): String {
-    return "$refType-$methodID"
-  }
+data class IsObsoleteReply(val obsolete: Boolean) : Reply() {
 
   override fun writePayload(writer: Writer) {
-    writer.putReferenceTypeID(refType)
-    writer.putMethodID(methodID)
+    writer.putBoolean(obsolete)
   }
 
   companion object {
     @JvmStatic
-    fun parse(reader: MessageReader): IsObsoleteCmd {
-      return IsObsoleteCmd(reader.getReferenceTypeID(), reader.getMethodID())
+    fun parse(reader: MessageReader): IsObsoleteReply {
+      return IsObsoleteReply(reader.getBoolean())
     }
   }
 }

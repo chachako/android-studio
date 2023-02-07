@@ -15,21 +15,29 @@
  */
 package com.android.jdwppacket
 
-data class IsObsoleteCmd(val refType: Long, val methodID: Long) : Cmd(Method.IsObsolete) {
+data class LineTableReply(val start: Long, val end: Long, val lines: List<Line>) : Reply() {
 
-  override fun paramsKey(): String {
-    return "$refType-$methodID"
+  data class Line(val lineCodeIndex: Long, val lineNumber: Int) {
+    fun writePayload(writer: Writer) {
+      writer.putLong(lineCodeIndex)
+      writer.putInt(lineNumber)
+    }
   }
 
   override fun writePayload(writer: Writer) {
-    writer.putReferenceTypeID(refType)
-    writer.putMethodID(methodID)
+    writer.putLong(start)
+    writer.putLong(end)
+    writer.putInt(lines.size)
+    lines.forEach { it.writePayload(writer) }
   }
 
   companion object {
     @JvmStatic
-    fun parse(reader: MessageReader): IsObsoleteCmd {
-      return IsObsoleteCmd(reader.getReferenceTypeID(), reader.getMethodID())
+    fun parse(reader: MessageReader): LineTableReply {
+      val start = reader.getLong()
+      val end = reader.getLong()
+      val lines = List(reader.getInt()) { Line(reader.getLong(), reader.getInt()) }
+      return LineTableReply(start, end, lines)
     }
   }
 }

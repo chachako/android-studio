@@ -16,18 +16,19 @@
 
 package com.android.jdwppacket
 
-data class SourcefileCmd(val classID: Long) : Cmd(ReferenceType.SourceFile) {
+data class SourceFileCmd(val refType: Long) : Cmd(ReferenceType.SourceFile) {
   override fun paramsKey(): String {
-    return "$classID"
+    return "$refType"
   }
 
   override fun writePayload(writer: Writer) {
-    writer.putClassID(classID)
+    writer.putReferenceTypeID(refType)
   }
 
   companion object {
-    fun parse(reader: MessageReader): Cmd {
-      return SourcefileCmd(reader.getClassID())
+    @JvmStatic
+    fun parse(reader: MessageReader): SourceFileCmd {
+      return SourceFileCmd(reader.getReferenceTypeID())
     }
   }
 }
