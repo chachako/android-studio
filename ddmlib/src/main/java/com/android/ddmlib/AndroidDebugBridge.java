@@ -30,6 +30,7 @@ import com.android.ddmlib.internal.jdwp.chunkhandler.HandleHeap;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleHello;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleNativeHeap;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleProfiling;
+import com.android.ddmlib.internal.jdwp.chunkhandler.HandleSTAG;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleTest;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleThread;
 import com.android.ddmlib.internal.jdwp.chunkhandler.HandleViewDebug;
@@ -309,6 +310,7 @@ public class AndroidDebugBridge {
         HandleNativeHeap.register(monitorThread);
         HandleViewDebug.register(monitorThread);
         HandleARTT.register(monitorThread);
+        HandleSTAG.register(monitorThread);
     }
 
     /**
