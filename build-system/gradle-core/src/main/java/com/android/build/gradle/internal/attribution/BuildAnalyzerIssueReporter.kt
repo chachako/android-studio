@@ -36,7 +36,6 @@ class BuildAnalyzerIssueReporter(
     companion object {
         private val booleanOptionBasedIssues = mapOf(
             TaskCategoryIssue.NON_TRANSITIVE_R_CLASS_DISABLED to BooleanOption.NON_TRANSITIVE_R_CLASS,
-            TaskCategoryIssue.RESOURCE_VALIDATION_ENABLED to BooleanOption.DISABLE_RESOURCE_VALIDATION,
             TaskCategoryIssue.NON_FINAL_RES_IDS_DISABLED to BooleanOption.USE_NON_FINAL_RES_IDS,
         )
     }
