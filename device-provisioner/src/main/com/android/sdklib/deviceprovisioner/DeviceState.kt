@@ -100,9 +100,9 @@ class TimeoutTracker(private val duration: Duration) {
  * Then, we invoke [advanceAction]: this is an arbitrary action that should cause the state to
  * advance out of the intermediate state before the [timeout].
  *
- * We then listen for updates to the state: if the state advances before [timeout], we are done.
- * Otherwise, we attempt to reset the state to the original state, and cancel the [advanceAction].
- * If we reset the state back to the original state, [onAbort] is invoked.
+ * We then listen for updates to the state: if the state advances before [timeout], we are done. If
+ * the state does not advance before [timeout] or an exception is thrown by [advanceAction], the
+ * original state is restored.
  *
  * This uses atomic compareAndSet operations to ensure that we do not clobber concurrent state
  * updates from elsewhere.
@@ -126,8 +126,8 @@ suspend fun <T> MutableStateFlow<T>.advanceStateWithTimeout(
           takeWhile { it == intermediateState }.collect()
         }
         return true
-      } catch (e: TimeoutCancellationException) {
-        if (!compareAndSet(intermediateState, originalState)) {
+      } catch (e: Exception) {
+        if (!compareAndSet(intermediateState, originalState) && e is TimeoutCancellationException) {
           // This is unlikely, but it means we advanced to the final state right after cancellation.
           return true
         }
