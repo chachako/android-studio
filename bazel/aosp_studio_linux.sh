@@ -14,7 +14,7 @@ readonly AS_BUILD_NUMBER="${BUILD_NUMBER/#P/0}"
 readonly SCRIPT_DIR="$(dirname "$0")"
 readonly SCRIPT_NAME="$(basename "$0")"
 
-readonly CONFIG_OPTIONS="--config=ci --config=without_vendor"
+readonly CONFIG_OPTIONS="--config=ci --config=without_vendor --no//tools/base/bazel:studio-release"
 
 ####################################
 # Copies bazel artifacts to an output directory named 'artifacts'.
@@ -30,8 +30,12 @@ function copy_bazel_artifacts() {(
   local -r artifacts_dir="${DIST_DIR}/artifacts"
   mkdir -p ${artifacts_dir}
   local -r bin_dir="$("${SCRIPT_DIR}"/bazel info ${CONFIG_OPTIONS} bazel-bin)"
-
-  cp -a ${bin_dir}/tools/base/gmaven/gmaven_without_vendor.zip ${artifacts_dir}
+  local -r gmaven_without_vendor_zip="${bin_dir}/tools/base/gmaven/gmaven_without_vendor.zip"
+  cp -a ${gmaven_without_vendor_zip} ${artifacts_dir}
+  # Also unzip so the snapshots can be used as a maven repo
+  local -r repository="${artifacts_dir}/repository"
+  mkdir ${repository}
+  unzip -d ${repository} ${gmaven_without_vendor_zip}
 )}
 
 ####################################
