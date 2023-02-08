@@ -29,6 +29,8 @@ class CmdSetDdm extends CmdSet {
 
     static final String APNM_CHUNK = "APNM";
 
+    private static final String STAG_CHUNK = "STAG";
+
     private static final DDMChunkHandler defaultDDMHandler = new DDMChunkHandler();
 
     static final String WARNING_ON_EMPTY = "Cannot trace empty DDM packet";
@@ -36,10 +38,11 @@ class CmdSetDdm extends CmdSet {
     static {
         ddmHandlers.put(
                 typeFromName(APNM_CHUNK),
-                new DDMChunkHandler(CmdSetDdm::parseAPNMCmd, CmdSetDdm::parseAPNMReply));
+                new DDMChunkHandler(CmdSetDdm::parseAPNMCmd, CmdSetDdm::doNothing));
         ddmHandlers.put(typeFromName("EXIT"), defaultDDMHandler);
-        ddmHandlers.put(typeFromName(HELO_CHUNK),
-                new DDMChunkHandler(CmdSetDdm::parseHELOCmd, CmdSetDdm::parseHELOReply));
+        ddmHandlers.put(
+                typeFromName(HELO_CHUNK),
+                new DDMChunkHandler(CmdSetDdm::doNothing, CmdSetDdm::parseHELOReply));
         ddmHandlers.put(typeFromName("FEAT"), defaultDDMHandler);
         ddmHandlers.put(typeFromName("TEST"), defaultDDMHandler);
         ddmHandlers.put(typeFromName("WAIT"), defaultDDMHandler);
@@ -64,8 +67,18 @@ class CmdSetDdm extends CmdSet {
         ddmHandlers.put(typeFromName("REAQ"), defaultDDMHandler);
         ddmHandlers.put(typeFromName("REAL"), defaultDDMHandler);
 
-        ddmHandlers.put( typeFromName(ART_TIMING_CHUNK),
-                new DDMChunkHandler( CmdSetDdm::parseArtMetricsCmd, CmdSetDdm::parseArtMetricsReply));
+        ddmHandlers.put(
+                typeFromName(ART_TIMING_CHUNK),
+                new DDMChunkHandler(CmdSetDdm::parseArtMetricsCmd, CmdSetDdm::doNothing));
+        ddmHandlers.put(
+                typeFromName(STAG_CHUNK),
+                new DDMChunkHandler(CmdSetDdm::parseStagCmd, CmdSetDdm::doNothing));
+    }
+
+    private static void doNothing(MessageReader reader, Session session, Message message) {}
+
+    private static void parseStagCmd(MessageReader reader, Session session, Message message) {
+        message.setName("STAG:" + typeToName(reader.getInt()));
     }
 
     // Source debugmon.html
@@ -102,6 +115,7 @@ class CmdSetDdm extends CmdSet {
         return msg;
     }
 
+    @NonNull
     Message parseDdmCmd(@NonNull MessageReader reader, @NonNull Session session) {
         Message msg = new Message(reader);
 
@@ -139,14 +153,6 @@ class CmdSetDdm extends CmdSet {
         }
         session.addTimings(timings);
     }
-
-    @NonNull
-    private static void parseArtMetricsReply(
-            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {}
-
-    @NonNull
-    private static void parseHELOCmd(
-            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {}
 
     @NonNull
     private static void parseHELOReply(
@@ -197,10 +203,12 @@ class CmdSetDdm extends CmdSet {
         // process renaming from AndroidManifest.xml). If we don't reach this point, `processName`
         // , read earlier, is used as a fallback.
         session.setName(packageName);
-    }
 
-    private static void parseAPNMReply(
-            @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {}
+        if (!reader.hasRemaining()) {
+            return;
+        }
+        msg.addArg("Stage", typeToName(reader.getInt()));
+    }
 
     private static void parseAPNMCmd(
             @NonNull MessageReader reader, @NonNull Session session, @NonNull Message msg) {
