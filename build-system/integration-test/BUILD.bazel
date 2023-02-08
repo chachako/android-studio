@@ -100,8 +100,8 @@ KGP_LATEST = [
 
 # Kotlin dependencies for Gradle
 KTS = [
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.0",
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.10",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.10",
 ]
 
 # Kotlin Gradle plugin dependencies

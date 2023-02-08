@@ -95,8 +95,8 @@ class KotlinMultiplatformPublishingTest {
     private fun normalizeModuleFile(file: File): String {
         val original = file.readText().trim()
         return original.normalizeAgpVersion()
-            .replace(GradleTestProject.GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
             .replace(TestUtils.KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION}")
+            .replace(GradleTestProject.GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
             .replace(Regex("\"sha512\": \".*\""), "\"sha512\": \"{DIGEST}\"")
             .replace(Regex("\"sha256\": \".*\""), "\"sha256\": \"{DIGEST}\"")
             .replace(Regex("\"sha1\": \".*\""), "\"sha1\": \"{DIGEST}\"")
