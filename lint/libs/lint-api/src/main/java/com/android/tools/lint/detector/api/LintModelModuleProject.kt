@@ -477,25 +477,8 @@ open class LintModelModuleProject(
                 for (dependency: LintModelDependency in roots) {
                     val library = dependency.findLibrary()
                     if (library is LintModelModuleLibrary) {
-                        val projectPath = library.projectPath
-                        val dependsOn = projectMap[projectPath]
-                        if (dependsOn == null) {
-                            val packageDependencies =
-                                variant.mainArtifact
-                                    .dependencies
-                                    .packageDependencies
-                                    .roots
-                                    .map { it.findLibrary() }
-                                    .filterIsInstance<LintModelModuleLibrary>()
-                                    .map { it.projectPath }
-                            // don't throw error for compile-only dependencies.
-                            if (packageDependencies.contains(projectPath)) {
-                                error(
-                                    "Missing lint model for $projectPath, which is a dependency " +
-                                        "of ${project.getName()}"
-                                )
-                            }
-                        } else {
+                        val dependsOn = projectMap[library.projectPath]
+                        if (dependsOn != null) {
                             if (reporting && project.type == DYNAMIC_FEATURE && dependsOn.type != DYNAMIC_FEATURE) {
                                 // When reporting, reverse the dependencies such that
                                 // we treat the consuming app module as the root and we merge
