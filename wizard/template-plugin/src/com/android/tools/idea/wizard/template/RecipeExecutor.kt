@@ -16,6 +16,7 @@
 package com.android.tools.idea.wizard.template
 
 import java.io.File
+import com.intellij.openapi.module.Module
 
 /** Execution engine for the instructions in a recipe. */
 interface RecipeExecutor {
@@ -51,6 +52,19 @@ interface RecipeExecutor {
    * build.gradle[.kts] file.
    **/
   fun applyPlugin(plugin: String, revision: String?, minRev: String? = null)
+
+  /**
+   * Adds "plugins { id '`plugin`' }" statement to the [module] build.gradle[.kts] file and
+   * if settings.gradle[.kts] has a `pluginManagement` block, it also adds
+   * "plugins { id '`plugin`' version '`revision`'}" statement to the project top level
+   * build.gradle[.kts] file.
+   **/
+  fun applyPluginInModule(
+    plugin: String,
+    module: Module,
+    revision: String?,
+    minRev: String? = null,
+  )
 
   /**
    * Records a classpath dependency. If settings.gradle[.kts] has a `pluginManagement` block
