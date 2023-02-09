@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-@file:JvmName("StartParameterUtils")
+@file:JvmName("ProjectIsolationUtils")
 
 package com.android.build.gradle.internal
 
-import org.gradle.StartParameter
-import org.gradle.api.internal.StartParameterInternal
-import org.gradle.api.logging.Logging
+import org.gradle.api.provider.ProviderFactory
 
-internal val StartParameter.isProjectIsolation: Boolean?
-    get() {
-        return try {
-            (this as StartParameterInternal).isolatedProjects.get()
-        } catch (e: Throwable) {
-            Logging.getLogger("StartParameterUtils")
-                .debug("Unable to decide if project isolation is enabled")
-            return null
-        }
-    }
+// TODO switch to public API once https://github.com/gradle/gradle/issues/23840 is fixed
+fun projectIsolationRequested(providers: ProviderFactory): Boolean {
+    return providers.systemProperty(PROJECT_ISOLATION_PROPERTY).orNull.toBoolean()
+            || providers.gradleProperty(PROJECT_ISOLATION_PROPERTY).orNull.toBoolean()
+}
+
+private const val PROJECT_ISOLATION_PROPERTY = "org.gradle.unsafe.isolated-projects"

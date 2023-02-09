@@ -111,10 +111,10 @@ class BasicInstantExecutionTest {
 
     @Test
     fun testWithProjectIsolation() {
-        // TODO(b/228885012): Make plugin version checks compatible with project isolation.
         executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION)
-            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=32")
+            // https://buganizer.corp.google.com/issues/190037100
+            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=6")
             .run("assemble")
     }
 
