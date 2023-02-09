@@ -30,5 +30,8 @@ public interface ClientStateChangeHandlerFactory extends StateChangeHandlerFacto
     Callable<HandlerResult> createClientListChangedHandler();
 
     @NonNull
+    Callable<HandlerResult> createAppProcessListChangedHandler();
+
+    @NonNull
     Callable<HandlerResult> createLogcatMessageAdditionHandler(@NonNull String message);
 }

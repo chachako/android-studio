@@ -43,7 +43,7 @@ class DeviceStateConfig(
     val serialNumber: String,
     val files: ArrayList<DeviceFileState>,
     val logcatMessages: ArrayList<String>,
-    val clients: ArrayList<ClientState>,
+    val processes: ArrayList<ProcessState>,
     val hostConnectionType: HostConnectionType,
     val manufacturer: String,
     val model: String,

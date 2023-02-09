@@ -3,6 +3,7 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
+load("//tools/base/bazel:proto.bzl", "java_proto_library")
 
 # managed by go/iml_to_build
 iml_module(
@@ -18,6 +19,7 @@ iml_module(
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/common:studio.android.sdktools.common[module, test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
+        "//tools/adt/idea/.idea/libraries:libapp-processes-proto",
     ],
 )
 
@@ -27,6 +29,9 @@ maven_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
+    bundled_deps = [
+        ":app-processes-proto",
+    ],
     coordinates = "com.android.tools.fakeadbserver:fakeadbserver",
     description = "Library implementing the ADB Server protocol",
     module_name = "fakeadbserver",
@@ -54,4 +59,10 @@ coverage_java_test(
         "@maven//:com.google.guava.guava",
         "@maven//:junit.junit",
     ],
+)
+
+java_proto_library(
+    name = "app-processes-proto",
+    srcs = glob(["src/main/proto/app_processes.proto"]),
+    visibility = ["//visibility:public"],
 )

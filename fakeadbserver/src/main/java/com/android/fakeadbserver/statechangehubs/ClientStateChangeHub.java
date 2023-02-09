@@ -35,6 +35,16 @@ public class ClientStateChangeHub extends StateChangeHub<ClientStateChangeHandle
         }
     }
 
+    public void appProcessListChanged() {
+        synchronized (mHandlers) {
+            mHandlers.forEach(
+                    (stateChangeQueue, clientStateChangeHandlerFactory) ->
+                            stateChangeQueue.add(
+                                    clientStateChangeHandlerFactory
+                                            .createAppProcessListChangedHandler()));
+        }
+    }
+
     public void logcatMessageAdded(@NonNull String message) {
         synchronized (mHandlers) {
             mHandlers.forEach(

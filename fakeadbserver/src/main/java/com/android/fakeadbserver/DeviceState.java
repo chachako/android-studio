@@ -44,7 +44,8 @@ public class DeviceState {
 
     private final List<String> mLogcatMessages = new ArrayList<>();
 
-    private final Map<Integer, ClientState> mClients = new HashMap<>();
+    /** PID -> {@link ProcessState} */
+    private final Map<Integer, ProcessState> mProcessStates = new HashMap<>();
 
     private final Map<Integer, PortForwarder> mPortForwarders = new HashMap<>();
 
@@ -127,7 +128,8 @@ public class DeviceState {
         config.getFiles().forEach(fileState -> mFiles.put(fileState.getPath(), fileState));
         mLogcatMessages.addAll(config.getLogcatMessages());
         mDeviceStatus = config.getDeviceStatus();
-        config.getClients().forEach(clientState -> mClients.put(clientState.getPid(), clientState));
+        config.getProcesses()
+                .forEach(clientState -> mProcessStates.put(clientState.getPid(), clientState));
     }
 
     public void stop() {
@@ -248,29 +250,67 @@ public class DeviceState {
             @NonNull String processName,
             @NonNull String packageName,
             boolean isWaiting) {
-        synchronized (mClients) {
+        synchronized (mProcessStates) {
             ClientState clientState =
                     new ClientState(pid, uid, processName, packageName, isWaiting);
-            mClients.put(pid, clientState);
+            mProcessStates.put(pid, clientState);
             mClientStateChangeHub.clientListChanged();
+            mClientStateChangeHub.appProcessListChanged();
             return clientState;
         }
     }
 
     public void stopClient(int pid) {
-        synchronized (mClients) {
-            ClientState client = mClients.remove(pid);
-            if (client != null) {
+        synchronized (mProcessStates) {
+            ProcessState processState = mProcessStates.remove(pid);
+            if (processState instanceof ClientState) {
                 mClientStateChangeHub.clientListChanged();
-                client.stopJdwpSession();
+                mClientStateChangeHub.appProcessListChanged();
+                ((ClientState) processState).stopJdwpSession();
             }
         }
     }
 
     @Nullable
     public ClientState getClient(int pid) {
-        synchronized (mClients) {
-            return mClients.get(pid);
+        synchronized (mProcessStates) {
+            ProcessState processState = mProcessStates.get(pid);
+            if (processState instanceof ClientState) {
+                return (ClientState) processState;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    @NonNull
+    public ProfileableProcessState startProfileableProcess(int pid, @NonNull String architecture) {
+        synchronized (mProcessStates) {
+            ProfileableProcessState process = new ProfileableProcessState(pid, architecture);
+            mProcessStates.put(pid, process);
+            mClientStateChangeHub.appProcessListChanged();
+            return process;
+        }
+    }
+
+    public void stopProfileableProcess(int pid) {
+        synchronized (mProcessStates) {
+            ProcessState process = mProcessStates.remove(pid);
+            if (process instanceof ProfileableProcessState) {
+                mClientStateChangeHub.appProcessListChanged();
+            }
+        }
+    }
+
+    @Nullable
+    public ProfileableProcessState getProfileableProcess(int pid) {
+        synchronized (mProcessStates) {
+            ProcessState process = mProcessStates.get(pid);
+            if (process instanceof ProfileableProcessState) {
+                return (ProfileableProcessState) process;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -347,11 +387,17 @@ public class DeviceState {
 
     @NonNull
     public String getClientListString() {
-        synchronized (mClients) {
-            return mClients.values()
-                    .stream()
+        synchronized (mProcessStates) {
+            return mProcessStates.values().stream()
+                    .filter(process -> process instanceof ClientState)
                     .map(clientState -> Integer.toString(clientState.getPid()))
                     .collect(Collectors.joining("\n"));
+        }
+    }
+
+    public List<ProcessState> copyOfProcessStates() {
+        synchronized (mProcessStates) {
+            return new ArrayList<>(mProcessStates.values());
         }
     }
 
@@ -361,7 +407,7 @@ public class DeviceState {
                 mDeviceId,
                 new ArrayList<>(mFiles.values()),
                 new ArrayList<>(mLogcatMessages),
-                new ArrayList<>(mClients.values()),
+                new ArrayList<>(mProcessStates.values()),
                 mHostConnectionType,
                 mManufacturer,
                 mModel,

@@ -24,9 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ClientState {
-
-    private final int mPid;
+public class ClientState extends ProcessState {
 
     private final int mUid;
 
@@ -81,7 +79,7 @@ public class ClientState {
             @NonNull String processName,
             @NonNull String packageName,
             boolean isWaiting) {
-        mPid = pid;
+        super(pid);
         mUid = uid;
         mProcessName = processName;
         mPackageName = packageName;
@@ -90,8 +88,14 @@ public class ClientState {
         mFeatures.addAll(Arrays.asList(mBuiltinFrameworkFeatures));
     }
 
-    public int getPid() {
-        return mPid;
+    @Override
+    public boolean getDebuggable() {
+        return true;
+    }
+
+    @Override
+    public boolean getProfileable() {
+        return false;
     }
 
     public int getUid() {

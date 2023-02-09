@@ -73,6 +73,13 @@ public class TrackJdwpCommandHandler extends DeviceCommandHandler {
                                     @NonNull
                                     @Override
                                     public Callable<HandlerResult>
+                                            createAppProcessListChangedHandler() {
+                                        return () -> new HandlerResult(true);
+                                    }
+
+                                    @NonNull
+                                    @Override
+                                    public Callable<HandlerResult>
                                             createLogcatMessageAdditionHandler(
                                                     @NonNull String message) {
                                         return () -> new HandlerResult(true);

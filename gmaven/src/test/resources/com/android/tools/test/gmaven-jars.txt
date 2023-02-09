@@ -2541,6 +2541,9 @@ com/android/tools/fakeadbserver/fakeadbserver
   com/android/fakeadbserver/shellcommandhandlers/
   com/android/fakeadbserver/shellv2commandhandlers/
   com/android/fakeadbserver/statechangehubs/
+  com/android/server/
+  com/android/server/adb/
+  com/android/server/adb/protos/
 
 com/android/tools/layoutlib/layoutlib-api
   META-INF/
