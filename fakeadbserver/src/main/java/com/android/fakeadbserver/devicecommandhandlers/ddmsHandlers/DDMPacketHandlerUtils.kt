@@ -18,6 +18,8 @@
 package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 /**
  * Builds the payload of a DDM packet by invoking [block] with a [DdmPayloadWriter]
@@ -38,5 +40,11 @@ internal class DdmPayloadWriter {
 
     fun writeByte(byte: Byte) {
         stream.write(byte.toInt())
+    }
+
+    fun writeString(string: String) {
+        val byteBuffer = ByteBuffer.allocate(string.ddmByteCount()).order(ByteOrder.BIG_ENDIAN)
+        byteBuffer.putDdmString(string)
+        stream.writeBytes(byteBuffer.array())
     }
 }

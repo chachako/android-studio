@@ -73,6 +73,10 @@ public class ClientState extends ProcessState {
 
     @Nullable private Socket jdwpSocket;
 
+    private boolean allocationTrackerEnabled;
+
+    private String allocationTrackerDetails = "";
+
     private final AtomicInteger hgpcRequestsCount = new AtomicInteger();
 
     ClientState(
@@ -172,5 +176,21 @@ public class ClientState extends ProcessState {
 
     public int getHgpcRequestsCount() {
         return hgpcRequestsCount.get();
+    }
+
+    public void setAllocationTrackerEnabled(boolean enabled) {
+        allocationTrackerEnabled = enabled;
+    }
+
+    public boolean isAllocationTrackerEnabled() {
+        return allocationTrackerEnabled;
+    }
+
+    public String getAllocationTrackerDetails() {
+        return allocationTrackerDetails;
+    }
+
+    public void setAllocationTrackerDetails(String details) {
+        this.allocationTrackerDetails = details;
     }
 }
