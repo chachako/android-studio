@@ -5,13 +5,12 @@ set PATH=c:\tools\msys64\usr\bin;%PATH%
 
 @rem The current directory the executing script is in.
 set SCRIPTDIR=%~dp0
-call :normalize_path "%SCRIPTDIR%..\..\.." BASEDIR
-
+call :normalize_path "%SCRIPTDIR%..\..\..\.." BASEDIR
 
 @rem Positional arguments:
-set OUTDIR=%_arg1%
-set DISTDIR=%_arg2%
-set BUILDNUMBER=%_arg3%
+set OUTDIR=%1
+set DISTDIR=%2
+set BUILDNUMBER=%3
 
 if not defined DISTDIR (
   set DISTDIR=%TEMP%
@@ -60,7 +59,7 @@ setlocal
   --config=ci ^
   --config=ants ^
   --tool_tag=qa_studio_win.cmd ^
-  --build_tag_filters=-no_windows ^
+  --build_tag_filters=%TESTTAGFILTERS% ^
   --invocation_id=%INVOCATIONID% ^
   --build_event_binary_file=%DISTDIR%\bazel-%BUILDNUMBER%.bes ^
   --test_tag_filters=%TESTTAGFILTERS% ^
@@ -71,7 +70,7 @@ setlocal
   --profile=%DISTDIR%\winprof%BUILDNUMBER%.json.gz ^
   %CONDITIONAL_FLAGS% ^
   -- ^
-  //tools/base/profiler/native/trace_processor_daemon ^
+  //tools/adt/idea/android-uitests/... ^
   %TARGETS%
 endlocal & set /a EXITCODE=%ERRORLEVEL%
 
