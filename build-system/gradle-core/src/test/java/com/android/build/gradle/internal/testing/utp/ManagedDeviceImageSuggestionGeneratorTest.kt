@@ -210,10 +210,11 @@ class ManagedDeviceImageSuggestionGeneratorTest {
                 "system-images;android-31;aosp_atd;x86",
                 "system-images;android-29;google_apis;x86",
                 "system-images;android-31;google_atd;x86",
+                // Wear images are included.
+                "system-images;android-30;android-wear;x86",
+
                 // Irrelevant images are ignored.
                 "system-images;android-29;google_apis_playstore;arm64-v8a",
-                // Wear images are ignored
-                "system-images;android-30;android-wear;x86"
             )
         )
 
@@ -224,7 +225,7 @@ class ManagedDeviceImageSuggestionGeneratorTest {
                     "This is likely due to an invalid image source. The source specified by " +
                     "invalid_source_and_api is \"foo\".\n" +
                     "Set systemImageSource to any of [default, aosp_atd, google_apis, " +
-                    "google_atd, aosp, aosp-atd, google, google-atd] to get more suggestions."
+                    "google_atd, android-wear, aosp, aosp-atd, google, google-atd] to get more suggestions."
         )
     }
 }

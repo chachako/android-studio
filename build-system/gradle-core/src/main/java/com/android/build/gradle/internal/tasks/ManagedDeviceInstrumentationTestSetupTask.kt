@@ -34,8 +34,8 @@ import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.repository.Revision
 import com.android.testing.utils.computeSystemImageHashFromDsl
-import com.android.testing.utils.isWearTvOrAutoDevice
-import com.android.testing.utils.isWearTvOrAutoSource
+import com.android.testing.utils.isTvOrAutoDevice
+import com.android.testing.utils.isTvOrAutoSource
 import com.android.utils.osArchitecture
 import com.google.common.annotations.VisibleForTesting
 import org.gradle.api.provider.Property
@@ -100,7 +100,7 @@ abstract class ManagedDeviceInstrumentationTestSetupTask: NonIncrementalGlobalTa
     abstract val require64Bit: Property<Boolean>
 
     override fun doTaskAction() {
-        assertNoWearTvOrAuto()
+        assertNoTvOrAuto()
 
         workerExecutor.noIsolation().submit(ManagedDeviceSetupRunnable::class.java) {
             it.initializeWith(projectPath,  path, analyticsService)
@@ -121,25 +121,24 @@ abstract class ManagedDeviceInstrumentationTestSetupTask: NonIncrementalGlobalTa
         }
     }
 
-    private fun assertNoWearTvOrAuto() {
-        // Since we presently don't support wear and tv devices, we need to check
+    private fun assertNoTvOrAuto() {
+        // Since we presently don't support tv or auto devices, we need to check
         // if the developer is trying to use an image from those sources.
-        if (isWearTvOrAutoSource(systemImageVendor.get())) {
+        if (isTvOrAutoSource(systemImageVendor.get())) {
             error(
                 """
                     ${managedDeviceName.get()} has a systemImageSource of ${systemImageVendor.get()}.
-                    Wear, TV and Auto devices are presently not supported with Gradle Managed Devices.
+                    TV and Auto devices are presently not supported with Gradle Managed Devices.
                 """.trimIndent()
             )
         }
 
-        // Or is attempting to use a wear, tv, or automotive device profile.
-        if (isWearTvOrAutoDevice(hardwareProfile.get())) {
-
+        // Or is attempting to use a tv or automotive device profile.
+        if (isTvOrAutoDevice(hardwareProfile.get())) {
             error(
                 """
                     ${managedDeviceName.get()} has a device profile of ${hardwareProfile.get()}.
-                    Wear, TV and Auto devices are presently not supported with Gradle Managed Devices.
+                    TV and Auto devices are presently not supported with Gradle Managed Devices.
                 """.trimIndent()
             )
         }
