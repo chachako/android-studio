@@ -159,10 +159,11 @@ class ProfileableTest {
     @Test
     fun `build with compileSdk less than 29 fails`() {
         val app = project.getSubproject(":app")
+        val lowCompileSdkVersion = 28
         TestFileUtils.searchAndReplace(
             app.buildFile.absoluteFile,
             "android.compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION",
-            "android.compileSdkVersion 28",
+            "android.compileSdkVersion $lowCompileSdkVersion",
         )
         val result = project.executor()
             .with(StringOption.PROFILING_MODE, "profileable")
@@ -172,6 +173,9 @@ class ProfileableTest {
         result.stderr.use { out ->
             ScannerSubject.assertThat(out).contains(
                 "'profileable' is enabled with compile SDK less than API 29."
+            )
+            ScannerSubject.assertThat(out).contains(
+                    "Recommended action: If possible, upgrade compileSdk from $lowCompileSdkVersion to at least API 29."
             )
         }
     }

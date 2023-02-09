@@ -83,7 +83,7 @@ internal class ApplicationVariantDslInfoImpl(
                 services.issueReporter.reportError(
                     IssueReporter.Type.COMPILE_SDK_VERSION_TOO_LOW,
                     """'profileable' is enabled with compile SDK less than API 29.
-                        Recommended action: If possible, upgrade compileSdk from ${minSdkVersion.apiLevel} to at least API 29."""
+                        Recommended action: If possible, upgrade compileSdk from $compileSdk to at least API 29."""
                         .trimIndent()
                 )
             }
