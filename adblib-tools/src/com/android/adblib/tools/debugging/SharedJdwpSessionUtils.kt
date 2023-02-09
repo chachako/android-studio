@@ -74,7 +74,7 @@ interface JdwpCommandProgress {
      * Invoked when there is no reply to be expected from the JDWP command
      * (see [DdmsProtocolKind])
      */
-    suspend fun noReply() {}
+    suspend fun onReplyTimeout() {}
 }
 
 /**
@@ -574,9 +574,11 @@ internal suspend fun <R> SharedJdwpSession.handleDdmsCommandAndReplyProtocol(
                     block(signal)
                 }
             } catch (e: TimeoutCancellationException) {
-                progress?.noReply()
+                progress?.onReplyTimeout()
                 blockSignal?.getOrThrow() ?: run {
-                    // Rethrow exception if "block" never signalled anything
+                    // Rethrow exception if "block" never signalled anything.
+                    // Note that in this case the TimeoutCancellationException we get here is
+                    // not caused by a `withTimeout` call inside the `withTimeoutAfterSignal`
                     throw e
                 }
             }
@@ -600,11 +602,6 @@ internal suspend fun <R> withTimeoutAfterSignal(
     return coroutineScope {
         // Run "block" asynchronously
         val blockJob = async { block(signal) }
-
-        // If "block" throws an exception, ensure signal is set to that exception too
-        blockJob.invokeOnCompletion { cause: Throwable? ->
-            cause?.also { signal.completeExceptionally(cause) }
-        }
 
         // Wait for block to tell us "ok, start the timeout now"
         // If "block" throws an exception or is cancelled, the exception is rethrown here

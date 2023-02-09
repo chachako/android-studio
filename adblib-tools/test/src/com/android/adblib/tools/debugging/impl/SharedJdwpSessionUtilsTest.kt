@@ -15,14 +15,24 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.AdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.tools.debugging.DdmsProtocolKind
+import com.android.adblib.tools.debugging.JdwpSession
+import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.Signal
+import com.android.adblib.tools.debugging.ddmsProtocolKind
+import com.android.adblib.tools.debugging.handleDdmsCommandAndReplyProtocol
 import com.android.adblib.tools.debugging.withTimeoutAfterSignal
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.io.IOException
@@ -119,5 +129,74 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
 
         // Assert
         fail("Should not be reached")
+    }
+
+    @Test
+    fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_returnsResultOnTimeout() =
+        runBlockingWithTimeout {
+            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+            val fakeDevice = addFakeDevice(fakeAdb, 30)
+            val session = createSession(fakeAdb)
+            fakeDevice.startClient(10, 0, "a.b.c", false)
+
+            // Act
+            val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+            val jdwpCommandProgress = FakeJdwpCommandProgress()
+            val result =
+                jdwpSession.handleDdmsCommandAndReplyProtocol(jdwpCommandProgress) { signal: Signal<Long> ->
+                    signalAndWait(500000, signal) { 101L }
+                }
+
+            assertEquals(
+                DdmsProtocolKind.EmptyRepliesDiscarded,
+                jdwpSession.device.ddmsProtocolKind()
+            )
+            assertEquals(101L, result)
+            assertTrue(jdwpCommandProgress.onReplyTimeoutIsCalled)
+        }
+
+    @Test
+    fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_canHandleExceptionAfterSignal() =
+        runBlockingWithTimeout {
+            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+            val fakeDevice = addFakeDevice(fakeAdb, 30)
+            val session = createSession(fakeAdb)
+            fakeDevice.startClient(10, 0, "a.b.c", false)
+
+            // Act
+            val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+            assertEquals(
+                DdmsProtocolKind.EmptyRepliesDiscarded,
+                jdwpSession.device.ddmsProtocolKind()
+            )
+
+            exceptionRule.expect(IOException::class.java)
+            exceptionRule.expectMessage("Foo")
+            jdwpSession.handleDdmsCommandAndReplyProtocol(null) { signal: Signal<Long> ->
+                signalAndWait(100, signal) { 101L }
+                throw IOException("Foo")
+            }
+
+            // Assert
+            fail("Should not be reached")
+        }
+
+    private suspend fun signalAndWait(
+        waitTimeMillis: Long,
+        signal: Signal<Long>,
+        block: suspend () -> Long
+    ) {
+        signal.complete(block())
+        delay(waitTimeMillis)
+    }
+
+    private suspend fun openSharedJdwpSession(
+        session: AdbSession,
+        deviceSerial: String,
+        pid: Int
+    ): SharedJdwpSession {
+        val connectedDevice = waitForOnlineConnectedDevice(session, deviceSerial)
+        val jdwpSession = JdwpSession.openJdwpSession(connectedDevice, pid, 100)
+        return registerCloseable(SharedJdwpSession.create(jdwpSession, pid))
     }
 }
