@@ -68,6 +68,7 @@ class JdkImageTransformDelegateTest {
                 exports android.net.ssl;
                 exports android.system;
                 exports dalvik.annotation;
+                exports dalvik.annotation.optimization;
                 exports dalvik.bytecode;
                 exports dalvik.system;
                 exports java.awt.font;
@@ -78,6 +79,7 @@ class JdkImageTransformDelegateTest {
                 exports java.lang.invoke;
                 exports java.lang.ref;
                 exports java.lang.reflect;
+                exports java.lang.runtime;
                 exports java.math;
                 exports java.net;
                 exports java.nio;

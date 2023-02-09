@@ -4772,19 +4772,19 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/SdkExtensionsTest.java:12: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:12: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
                     requiresExtRv4(); // ERROR 1
                     ~~~~~~~~~~~~~~
-            src/test/pkg/SdkExtensionsTest.java:14: Error: Call requires version 4 of the R SDK (current min is 3): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:14: Error: Call requires version 4 of the R Extensions SDK (current min is 3): requiresExtRv4 [NewApi]
                         requiresExtRv4(); // ERROR 2
                         ~~~~~~~~~~~~~~
-            src/test/pkg/SdkExtensionsTest.java:37: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:37: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
                     requiresExtRv4(); // ERROR 3 (wrong id check)
                     ~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:8: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]
+            src/test/pkg/test.kt:8: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
                 requiresExtRv4() // ERROR 4
                 ~~~~~~~~~~~~~~
-            src/test/pkg/test.kt:9: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4OrS [NewApi]
+            src/test/pkg/test.kt:9: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4OrS [NewApi]
                 requiresExtRv4OrS() // ERROR 5
                 ~~~~~~~~~~~~~~~~~
             5 errors, 0 warnings
@@ -4980,22 +4980,22 @@ class VersionChecksTest : AbstractCheckTest() {
         .run()
         .expect(
           """
-                src/test/pkg/Test.kt:20: Error: Call requires version 4 of the R SDK (current min is 0): rOnly [NewApi]
+                src/test/pkg/Test.kt:20: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rOnly [NewApi]
                             rOnly()  // ERROR 1: We may not have R, we may only have U
                             ~~~~~
                 src/test/pkg/Test.kt:21: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
                             uOnly()  // ERROR 2: We may not have U, we may only have R
                             ~~~~~
-                src/test/pkg/Test.kt:22: Error: Call requires version 4 of the R SDK (current min is 0): other [NewApi]
+                src/test/pkg/Test.kt:22: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]
                             other()  // ERROR 3: We may not have R or RB
                             ~~~~~
                 src/test/pkg/Test.kt:30: Error: Call requires API level 34 (current min is 30): uOnly [NewApi]
                             uOnly()  // ERROR 5: We may not have U, we may only have R
                             ~~~~~
-                src/test/pkg/Test.kt:31: Error: Call requires version 4 of the R SDK (current min is 4): other [NewApi]
+                src/test/pkg/Test.kt:31: Error: Call requires version 4 of the R Extensions SDK (current min is 4): other [NewApi]
                             other()  // ERROR 6: We may not have R or RB
                             ~~~~~
-                src/test/pkg/Test.kt:53: Error: Call requires version 4 of the R SDK (current min is 0): other [NewApi]
+                src/test/pkg/Test.kt:53: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]
                             other() // ERROR 7
                             ~~~~~
                 src/test/pkg/Test.kt:60: Error: Call requires API level 30 (current min is 1): android.os.ext.SdkExtensions#getExtensionVersion [NewApi]
@@ -5095,10 +5095,10 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/SdkExtensionsTest.java:13: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:13: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
                     requiresExtRv4(); // ERROR 1
                     ~~~~~~~~~~~~~~
-            src/test/pkg/SdkExtensionsTest.java:21: Error: Call requires version 4 of the R SDK (current min is 3): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:21: Error: Call requires version 4 of the R Extensions SDK (current min is 3): requiresExtRv4 [NewApi]
                         requiresExtRv4(); // ERROR 2
                         ~~~~~~~~~~~~~~
             2 errors, 0 warnings
@@ -5210,10 +5210,10 @@ class VersionChecksTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/SdkExtensionsTest.java:16: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:16: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]
                     requiresExtRv4(); // ERROR 1
                     ~~~~~~~~~~~~~~
-            src/test/pkg/SdkExtensionsTest.java:21: Error: Call requires version 4 of the R SDK (current min is 3): requiresExtRv4 [NewApi]
+            src/test/pkg/SdkExtensionsTest.java:21: Error: Call requires version 4 of the R Extensions SDK (current min is 3): requiresExtRv4 [NewApi]
                         requiresExtRv4(); // ERROR 2
                         ~~~~~~~~~~~~~~
             2 errors, 0 warnings

@@ -8561,10 +8561,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/SdkExtensionsTest.kt:9: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]\n"
+                                + "src/test/pkg/SdkExtensionsTest.kt:9: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]\n"
                                 + "        requiresExtRv4() // ERROR 1\n"
                                 + "        ~~~~~~~~~~~~~~\n"
-                                + "src/test/pkg/SdkExtensionsTest.kt:31: Error: Call requires version 4 of the R SDK (current min is 0): requiresExtRv4 [NewApi]\n"
+                                + "src/test/pkg/SdkExtensionsTest.kt:31: Error: Call requires version 4 of the R Extensions SDK (current min is 0): requiresExtRv4 [NewApi]\n"
                                 + "        requiresExtRv4() // ERROR 2\n"
                                 + "        ~~~~~~~~~~~~~~\n"
                                 + "2 errors, 0 warnings");
@@ -8594,7 +8594,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/test.kt:7: Error: Call requires version 2 of the TIRAMISU SDK (current min is 0): method [NewApi]\n"
+                                + "src/test/pkg/test.kt:7: Error: Call requires version 2 of the T Extensions SDK (current min is 0): method [NewApi]\n"
                                 + "    method()\n"
                                 + "    ~~~~~~\n"
                                 + "1 errors, 0 warnings");
@@ -8705,19 +8705,19 @@ public class ApiDetectorTest extends AbstractCheckTest {
                     .run()
                     .expect(
                             ""
-                                    + "src/test/pkg/Test2.kt:16: Error: Call requires version 4 of SDK 1000000 (current min is 0): rAndRb [NewApi]\n"
+                                    + "src/test/pkg/Test2.kt:16: Error: Call requires version 4 of the Ad Services Extensions SDK (current min is 0): rAndRb [NewApi]\n"
                                     + "        rAndRb() // ERROR 1: We need RB\n"
                                     + "        ~~~~~~\n"
-                                    + "src/test/pkg/Test2.kt:28: Error: Call requires version 4 of the R SDK (current min is 0): rAndRb [NewApi]\n"
+                                    + "src/test/pkg/Test2.kt:28: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rAndRb [NewApi]\n"
                                     + "        rAndRb() // ERROR 2: We need R\n"
                                     + "        ~~~~~~\n"
-                                    + "src/test/pkg/Test2.kt:34: Error: Call requires version 4 of SDK 1000000 (current min is 0): rAndRb [NewApi]\n"
+                                    + "src/test/pkg/Test2.kt:34: Error: Call requires version 4 of the Ad Services Extensions SDK (current min is 0): rAndRb [NewApi]\n"
                                     + "            rAndRb() // ERROR 3: We need RB\n"
                                     + "            ~~~~~~\n"
-                                    + "src/test/pkg/Test2.kt:37: Error: Call requires version 4 of SDK 1000000 (current min is 0): rAndRb [NewApi]\n"
+                                    + "src/test/pkg/Test2.kt:37: Error: Call requires version 4 of the Ad Services Extensions SDK (current min is 0): rAndRb [NewApi]\n"
                                     + "            rAndRb() // ERROR 4: We need RB\n"
                                     + "            ~~~~~~\n"
-                                    + "src/test/pkg/Test2.kt:43: Error: Call requires version 4 of the R SDK (current min is 0): rAndRb [NewApi]\n"
+                                    + "src/test/pkg/Test2.kt:43: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rAndRb [NewApi]\n"
                                     + "            rAndRb() // ERROR 5: We need both and only have either\n"
                                     + "            ~~~~~~\n"
                                     + "5 errors, 0 warnings");
@@ -8791,19 +8791,19 @@ public class ApiDetectorTest extends AbstractCheckTest {
                     .run()
                     .expect(
                             ""
-                                    + "src/test/pkg/Test.kt:14: Error: Call requires version 4 of the R SDK (current min is 0): rOnly [NewApi]\n"
+                                    + "src/test/pkg/Test.kt:14: Error: Call requires version 4 of the R Extensions SDK (current min is 0): rOnly [NewApi]\n"
                                     + "        rOnly()  // ERROR 1: We may not have R, we may only have U\n"
                                     + "        ~~~~~\n"
                                     + "src/test/pkg/Test.kt:15: Error: Call requires API level 34 (current min is 1): uOnly [NewApi]\n"
                                     + "        uOnly()  // ERROR 2: We may not have U, we may only have R\n"
                                     + "        ~~~~~\n"
-                                    + "src/test/pkg/Test.kt:16: Error: Call requires version 4 of the R SDK (current min is 0): other [NewApi]\n"
+                                    + "src/test/pkg/Test.kt:16: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]\n"
                                     + "        other()  // ERROR 3: We may not have R or RB\n"
                                     + "        ~~~~~\n"
-                                    + "src/test/pkg/Test.kt:23: Error: Call requires version 4 of the R SDK (current min is 0): other [NewApi]\n"
+                                    + "src/test/pkg/Test.kt:23: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]\n"
                                     + "        other() // ERROR 4\n"
                                     + "        ~~~~~\n"
-                                    + "src/test/pkg/Test.kt:40: Error: Call requires version 4 of the R SDK (current min is 0): other [NewApi]\n"
+                                    + "src/test/pkg/Test.kt:40: Error: Call requires version 4 of the R Extensions SDK (current min is 0): other [NewApi]\n"
                                     + "            other() // ERROR 5\n"
                                     + "            ~~~~~\n"
                                     + "5 errors, 0 warnings");

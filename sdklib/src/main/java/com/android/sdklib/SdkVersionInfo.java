@@ -28,14 +28,14 @@ public class SdkVersionInfo {
      * updated for a new release. This number is used as a baseline and any more recent platforms
      * found can be used to increase the highest known number.
      */
-    public static final int HIGHEST_KNOWN_API = 33;
+    public static final int HIGHEST_KNOWN_API = 34;
 
     /**
      * Like {@link #HIGHEST_KNOWN_API} but does not include preview platforms.
      *
      * <p>Make sure to keep this in sync with the value in TestUtils.
      */
-    public static final int HIGHEST_KNOWN_STABLE_API = 33;
+    public static final int HIGHEST_KNOWN_STABLE_API = 34;
 
     /**
      * The highest supported version of the Android platform (as an API level) that this version of
@@ -54,7 +54,7 @@ public class SdkVersionInfo {
      * <p>Generally we shouldn't <i>prevent</i> the user from proceeding; the intent is to make the
      * user <b>aware</b> that the SDK may not work correctly without a newer version of the tools.
      */
-    public static final int HIGHEST_SUPPORTED_API = 33; // b/230535497; this is not yet enforced
+    public static final int HIGHEST_SUPPORTED_API = 34; // b/230535497; this is not yet enforced
 
     /**
      * The lowest active API level in the ecosystem. This number will change over time as the
@@ -175,6 +175,8 @@ public class SdkVersionInfo {
             case 32: return "12L";
             case 33:
                 return "13.0";
+            case 34:
+                return "14.0";
                 // If you add more versions here, also update #HIGHEST_KNOWN_STABLE_API
             default:
                 return null;
@@ -268,6 +270,8 @@ public class SdkVersionInfo {
                 return "Sv2";
             case 33:
                 return "Tiramisu";
+            case 34:
+                return "UpsideDownCake";
             // If you add more versions here, also update #getBuildCodes and
             // #HIGHEST_KNOWN_API
 
@@ -322,6 +326,8 @@ public class SdkVersionInfo {
             case 32: return "S_V2";
             case 33:
                 return "TIRAMISU";
+            case 34:
+                return "UPSIDE_DOWN_CAKE";
                 // If you add more versions here, also update #getCodeName and
                 // #HIGHEST_KNOWN_API
         }

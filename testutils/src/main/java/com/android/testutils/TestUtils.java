@@ -71,7 +71,7 @@ public class TestUtils {
      *
      * <p>If changing this value, also update //tools/base/build-system:android_platform_for_tests
      */
-    public static final int ANDROID_PLATFORM_FOR_AGP_UNIT_TESTS = 33;
+    public static final int ANDROID_PLATFORM_FOR_AGP_UNIT_TESTS = 34;
 
     /**
      * Unix file-mode mask indicating that the file is executable by owner, group, and other.
@@ -552,7 +552,7 @@ public class TestUtils {
         if (testType == TestType.AGP) {
             return "android-" + ANDROID_PLATFORM_FOR_AGP_UNIT_TESTS;
         }
-        return "android-33";
+        return "android-34";
     }
 
     /**

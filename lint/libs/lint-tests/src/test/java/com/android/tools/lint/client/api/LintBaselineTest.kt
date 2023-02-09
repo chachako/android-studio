@@ -427,8 +427,8 @@ class LintBaselineTest {
     assertTrue(
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
-        "Call requires version 4 of the R SDK (current min is 0): `requiresExtRv4`",
-        "Call requires version 4 of the R SDK (current min is 10): `requiresExtRv4`"
+        "Call requires version 4 of the R Extensions SDK (current min is 0): `requiresExtRv4`",
+        "Call requires version 4 of the R Extensions SDK (current min is 10): `requiresExtRv4`"
       )
     )
 

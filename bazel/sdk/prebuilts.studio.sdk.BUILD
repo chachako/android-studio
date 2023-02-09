@@ -172,26 +172,26 @@ filegroup(
 
 filegroup(
     name = "platforms/latest_build_only",
-    srcs = [":platforms/android-33_build_only"],
+    srcs = [":platforms/android-34_build_only"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "platforms/latest",
-    srcs = [":platforms/android-33"],
+    srcs = [":platforms/android-34"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "platforms/latest-preview",
-    srcs = [":platforms/android-33"],  # Currently there isn't a preview available
+    srcs = [":platforms/android-34"],  # Currently there isn't a preview available
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "platforms/latest/framework.aidl",
     srcs = sdk_glob(
-        include = ["platforms/android-33/framework.aidl"],
+        include = ["platforms/android-34/framework.aidl"],
     ),
     visibility = ["//visibility:public"],
 )
@@ -208,7 +208,7 @@ filegroup(
 # Note: these stubbed classes will not be available at runtime.
 java_import(
     name = "platforms/latest_jar",
-    jars = sdk_path(["platforms/android-33/android.jar"]),
+    jars = sdk_path(["platforms/android-34/android.jar"]),
     neverlink = 1,
     visibility = [
         "//tools/adt/idea/streaming/screen-sharing-agent:__pkg__",
@@ -227,7 +227,7 @@ java_import(
 java_import(
     name = "platforms/latest_runtime_jar",
     testonly = 1,
-    jars = sdk_path(["platforms/android-33/android.jar"]),
+    jars = sdk_path(["platforms/android-34/android.jar"]),
     visibility = [
         "//tools/base/app-inspection/inspectors:__subpackages__",
         "//tools/base/dynamic-layout-inspector/agent:__subpackages__",
@@ -241,6 +241,11 @@ platform_filegroup(
         "//tools/adt/idea/project-system-gradle:__subpackages__",
         "//tools/base/build-system/integration-test:__subpackages__",
     ],
+)
+
+platform_filegroup(
+    name = "platforms/android-34",
+    visibility = ["//visibility:public"],
 )
 
 platform_filegroup(
