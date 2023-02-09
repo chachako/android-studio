@@ -60,8 +60,14 @@ if errorlevel 1 (
 @rem )
 @rem @echo native_win.cmd time: %time%
 
-@rem TODO runnerw
-@rem TODO WslTools
+@rem Disabled. requires "MSVC v140 - VS 2015 C++ build tools" and "Windows XP support for C++"
+@rem
+@rem @echo "Building runnerw.exe"
+@rem call %SCRIPT_DIR%build-win-runnerw.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+@rem if errorlevel 1 (
+@rem   set /A EXITCODE=EXITCODE+1
+@rem )
+@rem @echo native_win.cmd time: %time%
 
 @echo "All Done!"
 exit /b %EXITCODE%
