@@ -18354,6 +18354,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.application.com.android.application.gradle.plugin_7.4.1",
+    pom = "repository/com/android/application/com.android.application.gradle.plugin/7.4.1/com.android.application.gradle.plugin-7.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/application/com.android.application.gradle.plugin/7.4.1",
+    deps = [
+        "com.android.tools.build.gradle_7.4.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.databinding.baseLibrary_1.0-rc5",
     pom = "repository/com/android/databinding/baseLibrary/1.0-rc5/baseLibrary-1.0-rc5.pom",
     repo_root_path = "repository",
@@ -18602,6 +18613,17 @@ maven_artifact(
     repo_path = "com/android/library/com.android.library.gradle.plugin/7.2.0",
     deps = [
         "com.android.tools.build.gradle_7.2.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.library.com.android.library.gradle.plugin_7.4.1",
+    pom = "repository/com/android/library/com.android.library.gradle.plugin/7.4.1/com.android.library.gradle.plugin-7.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/library/com.android.library.gradle.plugin/7.4.1",
+    deps = [
+        "com.android.tools.build.gradle_7.4.1",
     ],
     visibility = ["//visibility:public"],
 )
