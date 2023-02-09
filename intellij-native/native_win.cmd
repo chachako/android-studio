@@ -29,6 +29,39 @@ if errorlevel 1 (
 )
 @echo native_win.cmd time: %time%
 
+@echo "Building breakgen64.dll"
+call %SCRIPT_DIR%build-win-breakgen.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+if errorlevel 1 (
+  set /A EXITCODE=EXITCODE+1
+)
+@echo native_win.cmd time: %time%
+
+@echo "Building WinProcessListHelper"
+call %SCRIPT_DIR%build-win-process-list-helper.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+if errorlevel 1 (
+  set /A EXITCODE=EXITCODE+1
+)
+@echo native_win.cmd time: %time%
+
+@echo "Building WinRestarter"
+call %SCRIPT_DIR%build-win-restarter.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+if errorlevel 1 (
+  set /A EXITCODE=EXITCODE+1
+)
+@echo native_win.cmd time: %time%
+
+
+@rem Disabled. requires Active Template Library (ATL) that VS don't have installed currently
+@rem
+@rem @echo "Building WinShellIntegration"
+@rem call %SCRIPT_DIR%build-win-shell-integration.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+@rem if errorlevel 1 (
+@rem   set /A EXITCODE=EXITCODE+1
+@rem )
+@rem @echo native_win.cmd time: %time%
+
+@rem TODO runnerw
+@rem TODO WslTools
 
 @echo "All Done!"
 exit /b %EXITCODE%
