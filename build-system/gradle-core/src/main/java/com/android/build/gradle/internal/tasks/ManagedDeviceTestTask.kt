@@ -43,17 +43,17 @@ import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.model.TestOptions
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
-import java.io.File
-import javax.inject.Inject
 import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
@@ -66,6 +66,8 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.logging.ConsoleRenderer
+import java.io.File
+import javax.inject.Inject
 
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
 @CacheableTask
@@ -85,6 +87,11 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
 
     @get:Input
     abstract val deviceDslName: Property<String>
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    @get:Optional
+    abstract val setupResult: DirectoryProperty
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -171,6 +178,7 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
             try {
                 val testRunParams = object: DeviceTestRunParameters<DeviceTestRunInput> {
                     override val deviceInput = this@ManagedDeviceTestTask.deviceInput.get()
+                    override val setupResult = this@ManagedDeviceTestTask.setupResult
                     override val testRunData = TestRunData(
                         testData.get().flavorName.get(),
                         path,
@@ -251,6 +259,7 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
         private val testReportOutputDir: File,
         private val additionalTestOutputDir: File,
         private val coverageOutputDir: File,
+        private val setupResultDir: Provider<Directory>?,
         nameSuffix: String = ""
     ): VariantTaskCreationAction<
             ManagedDeviceTestTask,
@@ -306,6 +315,10 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
             task.testData.setDisallowChanges(testData)
 
             task.deviceDslName.setDisallowChanges(device.name)
+
+            if (setupResultDir != null) {
+                task.setupResult.setDisallowChanges(setupResultDir)
+            }
 
             task.dependencies =
                 creationConfig

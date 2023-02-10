@@ -17,7 +17,7 @@
 package com.android.build.api.instrumentation.manageddevice
 
 import org.gradle.api.Incubating
-import org.gradle.api.file.RegularFile
+import org.gradle.api.file.Directory
 
 /**
  * The Action for doing setup for a given Device.
@@ -59,14 +59,11 @@ interface DeviceSetupTaskAction<SetupInputT: DeviceSetupInput> {
      * If the setup fails, this function should throw an Exception.
      *
      * @param setupInput All parameters required to run the setup.
-     * @param outputFile The output file for the task action. This will be
+     * @param outputDir The output directory for the task action. This will be
      * consumed by the [DeviceTestRunTaskAction] as [DeviceTestRunParameters.setupResult].
-     *
-     * The contents and format of this file are left to the specific implementation
-     * of the Custom Managed Device.
      *
      * @suppress Do not use from production code. This API is exposed for prototype.
      */
     @Incubating
-    fun setup(setupInput: SetupInputT, outputFile: RegularFile)
+    fun setup(setupInput: SetupInputT, outputDir: Directory)
 }

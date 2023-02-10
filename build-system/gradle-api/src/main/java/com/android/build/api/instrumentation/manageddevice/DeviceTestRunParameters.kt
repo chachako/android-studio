@@ -17,7 +17,7 @@
 package com.android.build.api.instrumentation.manageddevice
 
 import org.gradle.api.Incubating
-import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.file.DirectoryProperty
 
 // TODO(b/260721648) add more information on how the output is supposed to be formatted.
 /**
@@ -39,8 +39,14 @@ interface DeviceTestRunParameters<InputT: DeviceTestRunInput> {
      *
      * @suppress Do not use from production code. This API is exposed for prototype.
      */
-    @get: Incubating
+    @get:Incubating
     val deviceInput: InputT
+
+    /**
+     * The output from the [DeviceSetupTaskAction] for managed device the test is being run on.
+     */
+    @get:Incubating
+    val setupResult: DirectoryProperty
 
     /**
      * All inputs for the Test Run independent of the type of managed device.
@@ -49,6 +55,6 @@ interface DeviceTestRunParameters<InputT: DeviceTestRunInput> {
      *
      * @suppress Do not use from production code. This API is exposed for prototype.
      */
-    @get: Incubating
+    @get:Incubating
     val testRunData: TestRunData
 }

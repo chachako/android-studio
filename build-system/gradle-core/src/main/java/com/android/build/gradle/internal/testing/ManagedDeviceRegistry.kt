@@ -25,6 +25,10 @@ import com.android.build.api.instrumentation.manageddevice.DeviceSetupTaskAction
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction
+import com.android.build.gradle.internal.setupTaskName
+import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
+import java.io.File
 
 /**
  * Implementation class of the Managed Device Registry.
@@ -166,5 +170,8 @@ class ManagedDeviceRegistry(
         val setupTaskAction: Class<out DeviceSetupTaskAction<*>>?,
         val testRunConfigAction : Class<out DeviceTestRunConfigureAction<DeviceT, *>>,
         val testRunTaskAction: Class<out DeviceTestRunTaskAction<*>>,
-    )
+    ) {
+        val hasSetupActions: Boolean
+            get() = setupConfigAction != null && setupTaskAction != null
+    }
 }

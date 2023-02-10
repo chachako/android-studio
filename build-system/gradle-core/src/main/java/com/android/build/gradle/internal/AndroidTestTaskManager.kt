@@ -35,6 +35,7 @@ import com.android.build.gradle.internal.tasks.DeviceSerialTestTask
 import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
+import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
@@ -47,6 +48,8 @@ import com.android.build.gradle.internal.test.BundleTestDataImpl
 import com.android.build.gradle.internal.test.TestDataImpl
 import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.options.BooleanOption
+import com.android.builder.core.BuilderConstants.FD_MANAGED_DEVICE_SETUP_RESULTS
+import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -333,12 +336,32 @@ class AndroidTestTaskManager(
         }
 
         for (device in managedDevices) {
-            val setupTask = when (device) {
-                is ManagedVirtualDevice -> taskFactory.register(
+            val registration = globalConfig.managedDeviceRegistry.get(device.javaClass)
+
+            val setupTask = when {
+                device is ManagedVirtualDevice -> taskFactory.register(
                     ManagedDeviceInstrumentationTestSetupTask.CreationAction(
                         setupTaskName(device),
                         device,
                         globalConfig))
+                registration != null -> {
+                    if (registration.hasSetupActions) {
+                        taskFactory.register(
+                            ManagedDeviceSetupTask.CreationAction(
+                                project.layout.buildDirectory.dir(
+                                    FileUtils.join(FD_MANAGED_DEVICE_SETUP_RESULTS, device.name)
+                                ),
+                                registration.setupConfigAction!!,
+                                registration.setupTaskAction!!,
+                                device,
+                                globalConfig,
+
+                            )
+                        )
+                    } else {
+                        taskFactory.register(setupTaskName(device))
+                    }
+                }
                 else -> {
                     taskFactory.register(setupTaskName(device))
                 }

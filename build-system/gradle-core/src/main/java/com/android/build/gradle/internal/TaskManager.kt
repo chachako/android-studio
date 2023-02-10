@@ -94,6 +94,7 @@ import com.android.build.gradle.internal.tasks.LintCompile
 import com.android.build.gradle.internal.tasks.ListingFileRedirectTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestResultAggregationTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestTask
+import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceTestTask
 import com.android.build.gradle.internal.tasks.MergeAaptProguardFilesCreationAction
 import com.android.build.gradle.internal.tasks.MergeClassesTask
@@ -124,7 +125,6 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.tasks.featuresplit.getFeatureName
 import com.android.build.gradle.internal.tasks.mlkit.GenerateMlModelClass
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
-import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.internal.testing.utp.TEST_RESULT_PB_FILE_NAME
 import com.android.build.gradle.internal.testing.utp.shouldEnableUtp
 import com.android.build.gradle.internal.transforms.ShrinkAppBundleResourcesTask
@@ -943,6 +943,13 @@ abstract class TaskManager(
                         )
                     )
                 registration != null -> {
+                    val setupResult: Provider<Directory>? = if (registration.hasSetupActions) {
+                        taskFactory.named(setupTaskName(managedDevice)).flatMap { task ->
+                            (task as ManagedDeviceSetupTask).setupResultDir
+                        }
+                    } else {
+                        null
+                    }
                     taskFactory.register(
                         ManagedDeviceTestTask.CreationAction(
                             creationConfig,
@@ -954,6 +961,7 @@ abstract class TaskManager(
                             deviceReports,
                             deviceAdditionalOutputs,
                             deviceCoverage,
+                            setupResult,
                             testTaskSuffix,
                         )
                     )

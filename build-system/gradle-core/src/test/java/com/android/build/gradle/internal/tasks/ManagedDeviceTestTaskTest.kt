@@ -83,6 +83,7 @@ class ManagedDeviceTestTaskTest {
             tempFolderRule.newFolder(),
             tempFolderRule.newFolder(),
             tempFolderRule.newFolder(),
+            null,
         )
 
         val mockTask = mock<ManagedDeviceTestTask>(withSettings().defaultAnswer(RETURNS_DEEP_STUBS))
