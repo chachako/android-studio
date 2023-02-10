@@ -38,6 +38,8 @@ public class ClientState extends ProcessState {
 
     private final ClientViewsState mViewsState = new ClientViewsState();
 
+    private final ProfilerState mProfilerState = new ProfilerState();
+
     /**
      * Set of DDMS features for this process.
      *
@@ -119,6 +121,11 @@ public class ClientState extends ProcessState {
     @NonNull
     public ClientViewsState getViewsState() {
         return mViewsState;
+    }
+
+    @NonNull
+    public ProfilerState getProfilerState() {
+        return mProfilerState;
     }
 
     public synchronized boolean startJdwpSession(@NonNull Socket socket) {

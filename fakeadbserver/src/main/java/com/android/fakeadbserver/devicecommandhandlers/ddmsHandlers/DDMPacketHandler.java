@@ -44,4 +44,5 @@ public interface DDMPacketHandler {
         JdwpPacket packet = new JdwpPacket(packetId, true, (short) 0, new byte[0], 0, 0);
         packet.write(oStream);
     }
+
 }

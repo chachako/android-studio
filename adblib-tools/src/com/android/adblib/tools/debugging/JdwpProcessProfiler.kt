@@ -39,10 +39,13 @@ private const val DEFAULT_PROFILING_BUFFER_SIZE = 0
 interface JdwpProcessProfiler {
 
     /**
-     * The process corresponding to this [JdwpProcessProfiler]
+     * The JDWP process associated to this [JdwpProcessProfiler]
      */
-    //val process: JdwpProcess
+    val process: JdwpProcess
 
+    /**
+     * Returns the current [ProfilerStatus] of this [process] by querying the Android VM.
+     */
     suspend fun queryStatus(progress: JdwpCommandProgress? = null): ProfilerStatus
 
     /**

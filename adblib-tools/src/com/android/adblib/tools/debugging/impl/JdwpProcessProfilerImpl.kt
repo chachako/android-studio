@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
 internal class JdwpProcessProfilerImpl(
-    val process: JdwpProcess
+    override val process: JdwpProcess
 ) : JdwpProcessProfiler {
 
     private val session: AdbSession
