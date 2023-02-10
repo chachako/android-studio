@@ -130,7 +130,7 @@ class ComposeProject(val lintProject: com.android.tools.lint.detector.api.Projec
         // Needed by MergedManifest
         componentManager.registerService(
             StartupManager::class.java,
-            StartupManagerImpl(ideaProject)
+            StartupManagerImpl(ideaProject, ideaProject.getCoroutineScope())
         )
 
         // Needed by StudioConfigurationModelModule
