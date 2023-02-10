@@ -34,7 +34,7 @@ import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.DeviceSerialTestTask
 import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
-import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
+import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
@@ -335,7 +335,7 @@ class AndroidTestTaskManager(
         for (device in managedDevices) {
             val setupTask = when (device) {
                 is ManagedVirtualDevice -> taskFactory.register(
-                    ManagedDeviceSetupTask.CreationAction(
+                    ManagedDeviceInstrumentationTestSetupTask.CreationAction(
                         setupTaskName(device),
                         device,
                         globalConfig))

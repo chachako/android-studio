@@ -48,7 +48,7 @@ private const val HASH_DIVIDER = ";"
 private const val WAIT_AFTER_BOOT_MS = 5000L
 private const val DEVICE_BOOT_TIMEOUT_SEC = 80L
 
-private val loggerWrapper = LoggerWrapper.getLogger(ManagedDeviceSetupTask::class.java)
+private val loggerWrapper = LoggerWrapper.getLogger(ManagedDeviceInstrumentationTestSetupTask::class.java)
 
 /**
  * Task to create an AVD from a managed device definition in the DSL.
@@ -62,7 +62,7 @@ private val loggerWrapper = LoggerWrapper.getLogger(ManagedDeviceSetupTask::clas
  */
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
-abstract class ManagedDeviceSetupTask: NonIncrementalGlobalTask() {
+abstract class ManagedDeviceInstrumentationTestSetupTask: NonIncrementalGlobalTask() {
 
     @get: Internal
     abstract val sdkService: Property<SdkComponentsBuildService>
@@ -203,7 +203,7 @@ abstract class ManagedDeviceSetupTask: NonIncrementalGlobalTask() {
         private val managedDeviceName: String,
         private val require64Bit: Boolean,
         creationConfig: GlobalTaskCreationConfig
-    ) : GlobalTaskCreationAction<ManagedDeviceSetupTask>(creationConfig) {
+    ) : GlobalTaskCreationAction<ManagedDeviceInstrumentationTestSetupTask>(creationConfig) {
 
         constructor(
             name: String,
@@ -219,10 +219,10 @@ abstract class ManagedDeviceSetupTask: NonIncrementalGlobalTask() {
             managedDevice.require64Bit,
             creationConfig)
 
-        override val type: Class<ManagedDeviceSetupTask>
-            get() = ManagedDeviceSetupTask::class.java
+        override val type: Class<ManagedDeviceInstrumentationTestSetupTask>
+            get() = ManagedDeviceInstrumentationTestSetupTask::class.java
 
-        override fun configure(task: ManagedDeviceSetupTask) {
+        override fun configure(task: ManagedDeviceInstrumentationTestSetupTask) {
             super.configure(task)
             task.sdkService.setDisallowChanges(
                 getBuildService(creationConfig.services.buildServiceRegistry)

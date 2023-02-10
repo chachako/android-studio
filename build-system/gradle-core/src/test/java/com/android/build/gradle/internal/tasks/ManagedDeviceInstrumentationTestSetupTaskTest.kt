@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.profile.AnalyticsService
-import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.build.gradle.options.StringOption
 import com.android.repository.Revision
@@ -39,19 +38,16 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.gradle.api.NamedDomainObjectSet
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.internal.TaskOutputsInternal
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceRegistration
 import org.gradle.testfixtures.ProjectBuilder
 import org.mockito.Answers.CALLS_REAL_METHODS
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import org.mockito.ArgumentMatchers.startsWith
 import org.mockito.Mock
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
@@ -61,7 +57,7 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 
-class ManagedDeviceSetupTaskTest {
+class ManagedDeviceInstrumentationTestSetupTaskTest {
     private lateinit var mockVersionedSdkLoader: VersionedSdkLoader
 
     @get:Rule
@@ -97,9 +93,9 @@ class ManagedDeviceSetupTaskTest {
             .thenReturn(mockGeneralRegistration)
     }
 
-    private fun basicTaskSetup(): ManagedDeviceSetupTask {
+    private fun basicTaskSetup(): ManagedDeviceInstrumentationTestSetupTask {
         val task = mock(
-            ManagedDeviceSetupTask::class.java,
+            ManagedDeviceInstrumentationTestSetupTask::class.java,
             CALLS_REAL_METHODS)
 
         // Need to use a real property for all variables passed into the ManagedDeviceSetupRunnable
@@ -253,7 +249,7 @@ class ManagedDeviceSetupTaskTest {
                 }
                 systemPropertyOverrides.setProperty("os.arch", "x86_64")
 
-                val config = ManagedDeviceSetupTask.CreationAction(
+                val config = ManagedDeviceInstrumentationTestSetupTask.CreationAction(
                     "setupTaskName",
                     ManagedVirtualDevice("testName").also {
                         it.device = "Pixel 3"
@@ -263,7 +259,7 @@ class ManagedDeviceSetupTaskTest {
                     globalConfig
                 )
 
-                val task = mock(ManagedDeviceSetupTask::class.java, RETURNS_DEEP_STUBS)
+                val task = mock(ManagedDeviceInstrumentationTestSetupTask::class.java, RETURNS_DEEP_STUBS)
 
                 // default path for emulator mode ("auto-no-window")
                 `when`(
@@ -366,7 +362,7 @@ class ManagedDeviceSetupTaskTest {
                 }
                 systemPropertyOverrides.setProperty("os.arch", "x86_64")
 
-                val config = ManagedDeviceSetupTask.CreationAction(
+                val config = ManagedDeviceInstrumentationTestSetupTask.CreationAction(
                     "setupTaskName",
                     ManagedVirtualDevice("testName").also {
                         it.device = "Pixel 3"
@@ -376,7 +372,7 @@ class ManagedDeviceSetupTaskTest {
                     globalConfig
                 )
 
-                val task = mock(ManagedDeviceSetupTask::class.java, RETURNS_DEEP_STUBS)
+                val task = mock(ManagedDeviceInstrumentationTestSetupTask::class.java, RETURNS_DEEP_STUBS)
 
                 // default path for emulator mode ("auto-no-window")
                 `when`(
@@ -469,7 +465,7 @@ class ManagedDeviceSetupTaskTest {
     fun generateSystemErrorMessage_offlineMode() {
         `when`(mockVersionedSdkLoader.offlineMode).thenReturn(true)
 
-        val result = ManagedDeviceSetupTask.generateSystemImageErrorMessage(
+        val result = ManagedDeviceInstrumentationTestSetupTask.generateSystemImageErrorMessage(
             "test_device_name",
             28,
             "aosp",
@@ -490,7 +486,7 @@ class ManagedDeviceSetupTaskTest {
         `when`(mockVersionedSdkLoader.offlineMode).thenReturn(false)
         `when`(mockVersionedSdkLoader.allSystemImageHashes()).thenReturn(listOf())
 
-        val result = ManagedDeviceSetupTask.generateSystemImageErrorMessage(
+        val result = ManagedDeviceInstrumentationTestSetupTask.generateSystemImageErrorMessage(
             "some_test_device",
             28,
             "aosp",
