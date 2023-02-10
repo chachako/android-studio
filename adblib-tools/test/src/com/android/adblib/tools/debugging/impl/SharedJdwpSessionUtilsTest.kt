@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.tools.debugging.DDMS_NO_REPLY_WAIT_TIMEOUT
 import com.android.adblib.tools.debugging.DdmsProtocolKind
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -32,6 +33,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -130,6 +132,86 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
         // Assert
         fail("Should not be reached")
     }
+
+    @Test
+    fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesAllowed_doesNotTimeOut() =
+        runBlockingWithTimeout {
+            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+            // Api 27 maps to DdmsProtocolKind.EmptyRepliesAllowed
+            val fakeDevice = addFakeDevice(fakeAdb, 27)
+            val session = createSession(fakeAdb)
+            fakeDevice.startClient(10, 0, "a.b.c", false)
+
+            // Act
+            val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+            val jdwpCommandProgress = FakeJdwpCommandProgress()
+            val result =
+                jdwpSession.handleDdmsCommandAndReplyProtocol(jdwpCommandProgress) { signal: Signal<Long> ->
+                    signalAndWait(DDMS_NO_REPLY_WAIT_TIMEOUT.toMillis() + 100, signal) { 101L }
+                }
+
+            assertEquals(
+                DdmsProtocolKind.EmptyRepliesAllowed,
+                jdwpSession.device.ddmsProtocolKind()
+            )
+            assertEquals(101L, result)
+            // For DdmsProtocolKind.EmptyRepliesAllowed timeout is not triggered after the
+            // DDMS_NO_REPLY_WAIT_TIMEOUT has passed
+            assertFalse(jdwpCommandProgress.onReplyTimeoutIsCalled)
+        }
+
+    @Test
+    fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesAllowed_canHandleExceptionAfterSignal() =
+        runBlockingWithTimeout {
+            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+            // Api 27 maps to DdmsProtocolKind.EmptyRepliesAllowed
+            val fakeDevice = addFakeDevice(fakeAdb, 27)
+            val session = createSession(fakeAdb)
+            fakeDevice.startClient(10, 0, "a.b.c", false)
+
+            // Act
+            val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+            assertEquals(
+                DdmsProtocolKind.EmptyRepliesAllowed,
+                jdwpSession.device.ddmsProtocolKind()
+            )
+
+            exceptionRule.expect(IOException::class.java)
+            exceptionRule.expectMessage("Foo")
+            jdwpSession.handleDdmsCommandAndReplyProtocol(null) { signal: Signal<Long> ->
+                signalAndWait(100, signal) { 101L }
+                throw IOException("Foo")
+            }
+
+            // Assert
+            fail("Should not be reached")
+        }
+
+    @Test
+    fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_returnsResultBeforeTimeout() =
+        runBlockingWithTimeout {
+            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+            val fakeDevice = addFakeDevice(fakeAdb, 30)
+            val session = createSession(fakeAdb)
+            fakeDevice.startClient(10, 0, "a.b.c", false)
+
+            // Act
+            val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
+            val jdwpCommandProgress = FakeJdwpCommandProgress()
+            val result =
+                jdwpSession.handleDdmsCommandAndReplyProtocol(jdwpCommandProgress) { signal: Signal<Long> ->
+                    signalAndWait(100, signal) { 101L }
+                }
+
+            // Assert
+            assertEquals(
+                DdmsProtocolKind.EmptyRepliesDiscarded,
+                jdwpSession.device.ddmsProtocolKind()
+            )
+            assertEquals(101L, result)
+            // Doesn't wait for timeout if the result is available sooner
+            assertFalse(jdwpCommandProgress.onReplyTimeoutIsCalled)
+        }
 
     @Test
     fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_returnsResultOnTimeout() =
