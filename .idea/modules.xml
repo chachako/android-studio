@@ -20,7 +20,7 @@
       <module fileurl="file://$PROJECT_DIR$/bazel/avd/android.sdktools.base.bazel.avd.iml" filepath="$PROJECT_DIR$/bazel/avd/android.sdktools.base.bazel.avd.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/aapt2-proto/android.sdktools.base.build-system.aapt2-proto.iml" filepath="$PROJECT_DIR$/build-system/aapt2-proto/android.sdktools.base.build-system.aapt2-proto.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/manifest-merger/android.sdktools.base.build-system.manifest-merger-base.iml" filepath="$PROJECT_DIR$/build-system/manifest-merger/android.sdktools.base.build-system.manifest-merger-base.iml" />
-      <module fileurl="file://$PROJECT_DIR$/gmaven/android.sdktools.base.gmaven.iml" filepath="$PROJECT_DIR$/gmaven-test/android.sdktools.base.gmaven-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gmaven/android.sdktools.base.gmaven.iml" filepath="$PROJECT_DIR$/gmaven/android.sdktools.base.gmaven.iml" />
       <module fileurl="file://$PROJECT_DIR$/jaxb-inheritance-plugin/android.sdktools.base.jaxb-inheritance-plugin.iml" filepath="$PROJECT_DIR$/jaxb-inheritance-plugin/android.sdktools.base.jaxb-inheritance-plugin.iml" />
       <module fileurl="file://$PROJECT_DIR$/../adt/idea/layoutlib/android.sdktools.base.layoutlib.iml" filepath="$PROJECT_DIR$/../adt/idea/layoutlib/android.sdktools.base.layoutlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/layoutlib-api/android.sdktools.base.layoutlib-api-base.iml" filepath="$PROJECT_DIR$/layoutlib-api/android.sdktools.base.layoutlib-api-base.iml" />
@@ -32,6 +32,8 @@
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-model/android.sdktools.base.lint.model-base.iml" filepath="$PROJECT_DIR$/lint/libs/lint-model/android.sdktools.base.lint.model-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/studio-checks/android.sdktools.base.lint.studio-checks.iml" filepath="$PROJECT_DIR$/lint/studio-checks/android.sdktools.base.lint.studio-checks.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-tests/android.sdktools.base.lint.tests.iml" filepath="$PROJECT_DIR$/lint/libs/lint-tests/android.sdktools.base.lint.tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bazel/lnzipper/android.sdktools.base.lnzipper.iml" filepath="$PROJECT_DIR$/bazel/lnzipper/android.sdktools.base.lnzipper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../adt/idea/render-resources/android.sdktools.base.render-resources.iml" filepath="$PROJECT_DIR$/../adt/idea/render-resources/android.sdktools.base.render-resources.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdk-common/android.sdktools.base.sdk-common-base.iml" filepath="$PROJECT_DIR$/sdk-common/android.sdktools.base.sdk-common-base.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdk-common/generate-locale-data/android.sdktools.base.sdk-common.generate-locale-data.iml" filepath="$PROJECT_DIR$/sdk-common/generate-locale-data/android.sdktools.base.sdk-common.generate-locale-data.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdklib/android.sdktools.base.sdklib-base.iml" filepath="$PROJECT_DIR$/sdklib/android.sdktools.base.sdklib-base.iml" />
@@ -86,7 +88,6 @@
       <module fileurl="file://$PROJECT_DIR$/testutils/testutils-tests.iml" filepath="$PROJECT_DIR$/testutils/testutils-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/transport/test-framework/transport-test-framework.iml" filepath="$PROJECT_DIR$/transport/test-framework/transport-test-framework.iml" />
       <module fileurl="file://$PROJECT_DIR$/usb-devices/usb-devices.iml" filepath="$PROJECT_DIR$/usb-devices/usb-devices.iml" />
-      <module fileurl="file://$PROJECT_DIR$/bazel/lnzipper/android.sdktools.base.lnzipper.iml" filepath="$PROJECT_DIR$/bazel/lnzipper/android.sdktools.base.lnzipper.iml" />
     </modules>
   </component>
 </project>
