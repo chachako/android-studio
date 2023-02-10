@@ -22,6 +22,7 @@ import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.JavaI
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskInfo
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData.TaskCategoryInfo
 import com.android.utils.FileUtils
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -51,8 +52,9 @@ class AndroidGradlePluginAttributionDataTest {
                 "c.c:c:1.0"
         ),
         buildInfo = BuildInfo(
-                agpVersion = "7.0.0",
-                configurationCacheIsOn = true
+                agpVersion = "8.1.0",
+                configurationCacheIsOn = true,
+                gradleVersion = "8.1.0"
         ),
         taskNameToTaskInfoMap = mapOf("a" to TaskInfo(
             className = "b",
@@ -107,7 +109,8 @@ class AndroidGradlePluginAttributionDataTest {
     |"c.c:c:1.0"
 |],
 |"buildInfo":{
-    |"agpVersion":"7.0.0",
+    |"agpVersion":"8.1.0",
+    |"gradleVersion":"8.1.0",
     |"configurationCacheIsOn":true
 |},
 |"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
@@ -117,7 +120,6 @@ class AndroidGradlePluginAttributionDataTest {
 |"taskCategoryIssues":["MINIFICATION_ENABLED_IN_DEBUG_BUILD","NON_TRANSITIVE_R_CLASS_DISABLED"]
 |}
 """.trimMargin().replace("\n", "")
-
         )
     }
 
@@ -165,6 +167,49 @@ class AndroidGradlePluginAttributionDataTest {
     }
 
     @Test
+    fun testDeserializationOfAgp_8_0_DataWorks() {
+        val outputDir = temporaryFolder.newFolder()
+        // Create file of old format with some data missing.
+        val file = FileUtils.join(
+            outputDir,
+            SdkConstants.FD_BUILD_ATTRIBUTION,
+            SdkConstants.FN_AGP_ATTRIBUTION_DATA
+        )
+        file.parentFile.mkdirs()
+        file.writeText("""
+|{
+|"tasksSharingOutput":[{"filePath":"e","tasksList":["f","g"]}],
+|"garbageCollectionData":[{"gcName":"gc","duration":100}],
+|"buildSrcPlugins":["h","i"],
+|"javaInfo":{
+    |"javaVersion":"11.0.8",
+    |"javaVendor":"JetBrains s.r.o",
+    |"javaHome":"/tmp/test/java/home",
+    |"vmArguments":["-Xmx8G","-XX:+UseSerialGC"]
+|},
+|"buildscriptDependencies":[
+    |"a.a:a:1.0",
+    |"b.b:b:1.0",
+    |"c.c:c:1.0"
+|],
+|"buildInfo":{
+    |"agpVersion":"8.0.0",
+    |"configurationCacheIsOn":true
+|},
+|"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
+                |"secondaryTaskCategories":["COMPILATION","SOURCE_PROCESSING"]},
+                |{"taskName":"c","className":"d","primaryTaskCategory":"UNCATEGORIZED","secondaryTaskCategories":[]}
+|],
+|"taskCategoryIssues":["MINIFICATION_ENABLED_IN_DEBUG_BUILD","NON_TRANSITIVE_R_CLASS_DISABLED"]
+|}
+""".trimMargin().replace("\n", "")
+        )
+
+        val deserializedData = AndroidGradlePluginAttributionData.load(outputDir)
+        assertThat(deserializedData).isNotNull()
+    }
+
+    @Test
     fun testDeserializationOfNewerAgpData() {
         val outputDir = temporaryFolder.newFolder()
         save(outputDir, data)
@@ -196,7 +241,8 @@ class AndroidGradlePluginAttributionDataTest {
     |"c.c:c:1.0"
 |],
 |"buildInfo":{
-    |"agpVersion":"7.0.0",
+    |"agpVersion":"8.1.0",
+    |"gradleVersion":"8.1.0",
     |"configurationCacheIsOn":true
 |},
 |"taskNameToTaskInfoMap":[{"taskName":"a","className":"b","primaryTaskCategory":"ANDROID_RESOURCES",
@@ -216,7 +262,7 @@ class AndroidGradlePluginAttributionDataTest {
     @Test
     fun testEmptyBuildInfo() {
         val outputDir = temporaryFolder.newFolder()
-        val data = AndroidGradlePluginAttributionData(buildInfo = BuildInfo(null, null))
+        val data = AndroidGradlePluginAttributionData(buildInfo = BuildInfo(null, null, null))
 
         save(outputDir, data)
         val deserializedData = AndroidGradlePluginAttributionData.load(outputDir)!!

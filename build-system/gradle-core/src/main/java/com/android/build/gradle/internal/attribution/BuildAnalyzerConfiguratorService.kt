@@ -129,6 +129,7 @@ abstract class BuildAnalyzerConfiguratorService: BuildService<BuildServiceParame
             parameters.buildInfo.set(
                 AndroidGradlePluginAttributionData.BuildInfo(
                     agpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION,
+                    gradleVersion = project.gradle.gradleVersion,
                     configurationCacheIsOn = project.gradle.startParameter.isConfigurationCacheRequested
                 )
             )
