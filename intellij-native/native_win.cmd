@@ -50,24 +50,19 @@ if errorlevel 1 (
 )
 @echo native_win.cmd time: %time%
 
+@echo "Building WinShellIntegration"
+call %SCRIPT_DIR%build-win-shell-integration.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+if errorlevel 1 (
+  set /A EXITCODE=EXITCODE+1
+)
+@echo native_win.cmd time: %time%
 
-@rem Disabled. requires Active Template Library (ATL) that VS don't have installed currently
-@rem
-@rem @echo "Building WinShellIntegration"
-@rem call %SCRIPT_DIR%build-win-shell-integration.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
-@rem if errorlevel 1 (
-@rem   set /A EXITCODE=EXITCODE+1
-@rem )
-@rem @echo native_win.cmd time: %time%
-
-@rem Disabled. requires "MSVC v140 - VS 2015 C++ build tools" and "Windows XP support for C++"
-@rem
-@rem @echo "Building runnerw.exe"
-@rem call %SCRIPT_DIR%build-win-runnerw.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
-@rem if errorlevel 1 (
-@rem   set /A EXITCODE=EXITCODE+1
-@rem )
-@rem @echo native_win.cmd time: %time%
+@echo "Building runnerw.exe"
+call %SCRIPT_DIR%build-win-runnerw.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
+if errorlevel 1 (
+  set /A EXITCODE=EXITCODE+1
+)
+@echo native_win.cmd time: %time%
 
 @echo "All Done!"
 exit /b %EXITCODE%
