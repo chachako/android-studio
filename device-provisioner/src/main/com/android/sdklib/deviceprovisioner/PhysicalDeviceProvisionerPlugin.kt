@@ -40,6 +40,7 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
     val deviceProperties =
       PhysicalDeviceProperties.build {
         readCommonProperties(properties)
+        isVirtual = false
         connectionType =
           when (WIFI_SERIAL_NUMBER.matchEntire(device.serialNumber)) {
             null -> ConnectionType.USB

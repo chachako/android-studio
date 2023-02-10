@@ -50,6 +50,12 @@ interface DeviceProperties {
   val deviceType: DeviceType?
 
   /**
+   * If true, the device is running on emulated / virtualized hardware; if false, it is running on
+   * native hardware.
+   */
+  val isVirtual: Boolean?
+
+  /**
    * A string ideally unique to the device instance (e.g. serial number or emulator console port),
    * used for disambiguating this device from others with similar properties.
    */
@@ -79,6 +85,7 @@ interface DeviceProperties {
     var androidRelease: String? = null
     var disambiguator: String? = null
     var deviceType: DeviceType? = null
+    var isVirtual: Boolean? = null
 
     fun readCommonProperties(properties: Map<String, String>) {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
@@ -97,10 +104,20 @@ interface DeviceProperties {
           characteristics.contains("automotive") -> DeviceType.AUTOMOTIVE
           else -> DeviceType.HANDHELD
         }
+      isVirtual = properties["ro.kernel.qemu"] != null
     }
 
     fun buildBase(): DeviceProperties =
-      Impl(manufacturer, model, androidVersion, abi, androidRelease, disambiguator, deviceType)
+      Impl(
+        manufacturer = manufacturer,
+        model = model,
+        androidVersion = androidVersion,
+        abi = abi,
+        androidRelease = androidRelease,
+        disambiguator = disambiguator,
+        deviceType = deviceType,
+        isVirtual = isVirtual,
+      )
   }
 
   class Impl(
@@ -110,7 +127,8 @@ interface DeviceProperties {
     override val abi: Abi?,
     override val androidRelease: String?,
     override val disambiguator: String?,
-    override val deviceType: DeviceType?
+    override val deviceType: DeviceType?,
+    override val isVirtual: Boolean?,
   ) : DeviceProperties
 }
 

@@ -376,7 +376,7 @@ class LocalEmulatorProperties(
 
   companion object {
     fun build(block: Builder.() -> Unit) =
-      Builder().apply(block).run {
+      Builder().apply { isVirtual = true }.apply(block).run {
         LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
       }
   }

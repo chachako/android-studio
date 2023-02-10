@@ -32,7 +32,8 @@ class DevicePropertiesTest {
         "ro.build.version.sdk" to "33",
         "ro.product.cpu.abi" to SdkConstants.ABI_ARM64_V8A,
         "ro.build.version.release" to "13",
-        "ro.build.characteristics" to "watch,nosdcard"
+        "ro.build.characteristics" to "watch,nosdcard",
+        "ro.kernel.qemu" to "1",
       )
     )
     val props = builder.buildBase()
@@ -42,5 +43,6 @@ class DevicePropertiesTest {
     assertThat(props.androidRelease).isEqualTo("13")
     assertThat(props.abi).isEqualTo(Abi.ARM64_V8A)
     assertThat(props.deviceType).isEqualTo(DeviceType.WEAR)
+    assertThat(props.isVirtual).isTrue()
   }
 }
