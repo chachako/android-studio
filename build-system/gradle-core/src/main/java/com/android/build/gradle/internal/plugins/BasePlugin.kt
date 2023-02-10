@@ -88,6 +88,7 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfigImpl
+import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.internal.utils.enforceMinimumVersionsOfPlugins
 import com.android.build.gradle.internal.utils.getKotlinPluginVersion
 import com.android.build.gradle.internal.utils.syncAgpAndKgpSources
@@ -199,6 +200,12 @@ abstract class BasePlugin<
         )
     }
 
+    private var _managedDeviceRegistry: ManagedDeviceRegistry? = null
+    val managedDeviceRegistry: ManagedDeviceRegistry
+        get() = _managedDeviceRegistry ?: ManagedDeviceRegistry(newExtension.testOptions).also {
+            _managedDeviceRegistry = it
+        }
+
     private val globalConfig by lazy {
         withProject("globalConfig") { project ->
             @Suppress("DEPRECATION")
@@ -213,7 +220,8 @@ abstract class BasePlugin<
                 createCustomLintChecksConfig(project),
                 createAndroidJarConfig(project),
                 createFakeDependencyConfig(project),
-                createSettingsOptions()
+                createSettingsOptions(),
+                managedDeviceRegistry
             )
         }
     }

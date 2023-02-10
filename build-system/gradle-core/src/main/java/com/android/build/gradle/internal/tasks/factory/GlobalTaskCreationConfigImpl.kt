@@ -44,6 +44,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.BaseServices
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.builder.core.LibraryRequest
@@ -70,7 +71,8 @@ class GlobalTaskCreationConfigImpl(
     override val lintChecks: Configuration,
     private val androidJar: Configuration,
     override val fakeDependency: Configuration,
-    override val settingsOptions: SettingsOptions
+    override val settingsOptions: SettingsOptions,
+    override val managedDeviceRegistry: ManagedDeviceRegistry,
 ) : GlobalTaskCreationConfig, BootClasspathConfig by bootClasspathConfig {
 
     companion object {

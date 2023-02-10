@@ -250,7 +250,7 @@ public class DynamicFeaturePlugin
                                 DynamicFeatureAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
-                                new ManagedDeviceRegistry(getExtension().getTestOptions()),
+                                getManagedDeviceRegistry(),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 

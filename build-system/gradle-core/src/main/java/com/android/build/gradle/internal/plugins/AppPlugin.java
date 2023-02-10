@@ -242,7 +242,7 @@ public class AppPlugin
                                 ApplicationAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
-                                new ManagedDeviceRegistry(getExtension().getTestOptions()),
+                                getManagedDeviceRegistry(),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 

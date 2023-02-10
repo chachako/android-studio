@@ -234,7 +234,7 @@ public class TestPlugin
                                 TestAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
-                                new ManagedDeviceRegistry(getExtension().getTestOptions()),
+                                getManagedDeviceRegistry(),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 

@@ -224,7 +224,7 @@ public class LibraryPlugin
                                 LibraryAndroidComponentsExtensionImplCompat.class,
                                 dslServices,
                                 sdkComponents,
-                                new ManagedDeviceRegistry(getExtension().getTestOptions()),
+                                getManagedDeviceRegistry(),
                                 variantApiOperationsRegistrar,
                                 getExtension());
 

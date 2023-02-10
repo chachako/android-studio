@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.core.SettingsOptions
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.BaseServices
+import com.android.build.gradle.internal.testing.ManagedDeviceRegistry
 import com.android.builder.core.LibraryRequest
 import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestServer
@@ -124,6 +125,8 @@ interface GlobalTaskCreationConfig: BootClasspathConfig {
     val versionedSdkLoader: Provider<SdkComponentsBuildService.VersionedSdkLoader>
 
     val versionedNdkHandler: SdkComponentsBuildService.VersionedNdkHandler
+
+    val managedDeviceRegistry: ManagedDeviceRegistry
 
     // configurations that may need to be accessible
     val lintPublish: Configuration
