@@ -28,14 +28,17 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.tools.debugging.DdmsProtocolKind
 import com.android.adblib.tools.debugging.ddmsProtocolKind
+import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener
 import com.android.ddmlib.Client
+import com.android.ddmlib.ClientData
 import com.android.ddmlib.DebugViewDumpHandler
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.clientmanager.DeviceClientManager
 import com.android.ddmlib.clientmanager.DeviceClientManagerListener
 import com.android.ddmlib.testing.FakeAdbRule
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.readLengthPrefixedString
 import junit.framework.Assert
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
@@ -628,16 +631,15 @@ class AdbLibDeviceClientManagerTest {
                         it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null
                     }
         }
-        val client = deviceClientManager.clients.first { it.clientData.pid == 10 }
+        val client = deviceClientManager.getClientWrapper(10)
 
         client.executeGarbageCollector()
-        val adblibClientWrapper = client as AdblibClientWrapper
-        adblibClientWrapper.awaitLegacyOperations()
+        client.awaitLegacyOperations()
 
         // Assert
         Assert.assertEquals(
             DdmsProtocolKind.EmptyRepliesDiscarded,
-            adblibClientWrapper.jdwpProcess.device.ddmsProtocolKind()
+            client.jdwpProcess.device.ddmsProtocolKind()
         )
         Assert.assertEquals(1, clientState.hgpcRequestsCount)
     }
@@ -667,18 +669,94 @@ class AdbLibDeviceClientManagerTest {
                         it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null
                     }
         }
-        val client = deviceClientManager.clients.first { it.clientData.pid == 10 }
+        val client = deviceClientManager.getClientWrapper(10)
 
         client.executeGarbageCollector()
-        val adblibClientWrapper = client as AdblibClientWrapper
-        adblibClientWrapper.awaitLegacyOperations()
+        client.awaitLegacyOperations()
 
         // Assert
         Assert.assertEquals(
             DdmsProtocolKind.EmptyRepliesAllowed,
-            adblibClientWrapper.jdwpProcess.device.ddmsProtocolKind()
+            client.jdwpProcess.device.ddmsProtocolKind()
         )
         Assert.assertEquals(1, clientState.hgpcRequestsCount)
+    }
+
+    @Test
+    fun testRequestAllocationDetails() = runBlockingWithTimeout {
+        // Prepare
+        val session = fakeAdb.createAdbSession(closeables)
+        val clientManager = AdbLibClientManager(session)
+        val listener = TestDeviceClientManagerListener()
+        val (device, deviceState) = fakeAdb.connectTestDevice()
+        val deviceClientManager =
+            clientManager.createDeviceClientManager(
+                fakeAdb.bridge,
+                device,
+                listener
+            )
+        val expectedAllocationTrackerDetails = "sample allocation tracker details"
+
+        // Act
+        val clientState = deviceState.startClient(10, 0, "foo.bar", false)
+        clientState.allocationTrackerDetails = expectedAllocationTrackerDetails
+
+        yieldUntil {
+            // Wait for both processes to show up and for both the JDWP proxy
+            // and process properties to be initialized.
+            deviceClientManager.clients.size == 1 &&
+                    deviceClientManager.clients.all {
+                        it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null
+                    }
+        }
+        val client = deviceClientManager.getClientWrapper(10)
+
+        var allocationDetailsResult = ""
+        ClientData.setAllocationTrackingHandler { data, _ ->
+            val dataBuffer = ByteBuffer.wrap(data).order(DdmsPacketConstants.DDMS_CHUNK_BYTE_ORDER)
+            allocationDetailsResult = dataBuffer.readLengthPrefixedString()
+        }
+
+        client.requestAllocationDetails()
+        client.awaitLegacyOperations()
+        ClientData.setAllocationTrackingHandler(null)
+
+        // Assert
+        Assert.assertEquals(expectedAllocationTrackerDetails, allocationDetailsResult)
+    }
+
+    @Test
+    fun testEnableAllocationTrackerWorks() = runBlockingWithTimeout {
+        // Prepare
+        val session = fakeAdb.createAdbSession(closeables)
+        val clientManager = AdbLibClientManager(session)
+        val listener = TestDeviceClientManagerListener()
+        val (device, deviceState) = fakeAdb.connectTestDevice()
+        val deviceClientManager =
+            clientManager.createDeviceClientManager(
+                fakeAdb.bridge,
+                device,
+                listener
+            )
+
+        // Act
+        val clientState = deviceState.startClient(10, 0, "foo.bar", false)
+
+        yieldUntil {
+            // Wait for both processes to show up and for both the JDWP proxy
+            // and process properties to be initialized.
+            deviceClientManager.clients.size == 1 &&
+                    deviceClientManager.clients.all {
+                        it.debuggerListenPort > 0 && it.clientData.vmIdentifier != null
+                    }
+        }
+        val client = deviceClientManager.getClientWrapper(10)
+
+        client.enableAllocationTracker(true)
+        client.awaitLegacyOperations()
+
+        // Assert
+        Assert.assertEquals(true, clientState.isAllocationTrackerEnabled)
     }
 
     private fun assertThrows(block: () -> Unit) {

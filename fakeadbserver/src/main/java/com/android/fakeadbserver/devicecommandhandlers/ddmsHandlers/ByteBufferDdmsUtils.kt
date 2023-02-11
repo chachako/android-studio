@@ -21,7 +21,7 @@ internal fun ByteBuffer.readInt(): Int {
     return int
 }
 
-internal fun ByteBuffer.readLengthPrefixedString(): String {
+fun ByteBuffer.readLengthPrefixedString(): String {
     val length = int
     val chars = CharArray(length)
     for(index in 0 until length) {

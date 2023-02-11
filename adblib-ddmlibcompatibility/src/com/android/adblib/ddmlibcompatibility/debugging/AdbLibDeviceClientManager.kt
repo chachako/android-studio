@@ -86,6 +86,10 @@ internal class AdbLibDeviceClientManager(
         return profileableClientList.get().toMutableList()
     }
 
+    fun getClientWrapper(pid: Int) : AdblibClientWrapper {
+        return clientList.get().first { it.clientData.pid == pid } as AdblibClientWrapper
+    }
+
     fun startDeviceTracking() {
         session.scope.launch {
             ddmlibEventQueue.runDispatcher()
