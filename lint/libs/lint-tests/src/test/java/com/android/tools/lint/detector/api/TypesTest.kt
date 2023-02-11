@@ -351,7 +351,7 @@ class TypesTest : TestCase() {
     }
 
     fun testKotlinEnums() {
-        // Regression test for https://youtrack.jetbrains.com/oauth?state=%2Fissue%2FKT-23456
+        // Regression test for https://youtrack.jetbrains.com/issue/KT-23456
         val pair = LintUtilsTest.parseKotlin(
             "" +
                 "package test.pkg\n" +
@@ -386,9 +386,8 @@ class TypesTest : TestCase() {
                 "            UParameter (name = resId) [@org.jetbrains.annotations.NotNull var resId: int] : PsiType:int\n" +
                 "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
                 "        UMethod (name = values) [public static fun values() : test.pkg.KotlinEnum[] = UastEmptyExpression] : PsiType:KotlinEnum[]\n" +
-                "        UMethod (name = valueOf) [public static fun valueOf(@org.jetbrains.annotations.NotNull name: java.lang.String) : test.pkg.KotlinEnum = UastEmptyExpression] : PsiType:KotlinEnum\n" +
-                "            UParameter (name = name) [@org.jetbrains.annotations.NotNull var name: java.lang.String] : PsiType:String\n" +
-                "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n",
+                "        UMethod (name = valueOf) [public static fun valueOf(name: java.lang.String) : test.pkg.KotlinEnum = UastEmptyExpression] : PsiType:KotlinEnum\n" +
+                "            UParameter (name = name) [var name: java.lang.String] : PsiType:String\n",
             file?.asLogTypes()
         )
         Disposer.dispose(pair.second)

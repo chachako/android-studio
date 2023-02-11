@@ -102,6 +102,7 @@ private fun createAnalysisSession(
     CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
 
     val analysisSession = buildStandaloneAnalysisAPISession(
+        applicationDisposable = parentDisposable,
         projectDisposable = parentDisposable,
         withPsiDeclarationFromBinaryModuleProvider = true
     ) {

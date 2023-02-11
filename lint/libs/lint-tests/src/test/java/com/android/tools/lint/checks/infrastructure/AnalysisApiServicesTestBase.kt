@@ -171,7 +171,7 @@ abstract class AnalysisApiServicesTestBase {
                     val ktClass = node.sourcePsi as? KtClassOrObject ?: return super.visitClass(node)
 
                     analyzeForLint(ktClass) {
-                        val symbol = ktClass.getClassOrObjectSymbol()
+                        val symbol = ktClass.getClassOrObjectSymbol()!!
                         val typeParams = symbol.typeParameters
                         assertEquals(1, typeParams.size)
                         val typeParam = typeParams.single()

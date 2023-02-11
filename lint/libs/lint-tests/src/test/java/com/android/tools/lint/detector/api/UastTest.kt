@@ -770,9 +770,8 @@ class UastTest : TestCase() {
                                 USimpleNameReferenceExpression (identifier = Direction) [Direction]
                             UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]
                             UMethod (name = values) [public static fun values() : test.pkg.FooAnnotation.Direction[] = UastEmptyExpression] : PsiType:Direction[]
-                            UMethod (name = valueOf) [public static fun valueOf(@org.jetbrains.annotations.NotNull name: java.lang.String) : test.pkg.FooAnnotation.Direction = UastEmptyExpression] : PsiType:Direction
-                                UParameter (name = name) [@org.jetbrains.annotations.NotNull var name: java.lang.String] : PsiType:String
-                                    UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
+                            UMethod (name = valueOf) [public static fun valueOf(name: java.lang.String) : test.pkg.FooAnnotation.Direction = UastEmptyExpression] : PsiType:Direction
+                                UParameter (name = name) [var name: java.lang.String] : PsiType:String
                         UClass (name = Bar) [public static abstract annotation Bar {...}]
                         UClass (name = Companion) [public static final class Companion {...}]
                             UField (name = bar) [@org.jetbrains.annotations.NotNull private static final var bar: int = 42] : PsiType:int
@@ -1846,10 +1845,8 @@ class UastTest : TestCase() {
                     if (node.sourcePsi !is KtPropertyAccessor) return super.visitMethod(node)
 
                     val javaPsiModifierList = node.modifierList
-                    // TODO(b/242182822): will be inverted when an upstream fix is landed
-                    assertFalse(javaPsiModifierList.textOffset > 0)
-                    // TODO(b/242182822): will be inverted when an upstream fix is landed
-                    assertTrue(javaPsiModifierList.textRange.isEmpty)
+                    assertTrue(javaPsiModifierList.textOffset > 0)
+                    assertFalse(javaPsiModifierList.textRange.isEmpty)
                     assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
 
                     val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
@@ -1859,8 +1856,7 @@ class UastTest : TestCase() {
                     assertFalse(sourceModifierList.textRange.isEmpty)
                     assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
 
-                    // TODO(b/242182822): will be equal when an upstream fix is landed
-                    assertNotSame(sourceModifierList.text, javaPsiModifierList.text)
+                    assertEquals(sourceModifierList.text, javaPsiModifierList.text)
                     assertEquals("@MyComposable", sourceModifierList.text)
                     return super.visitMethod(node)
                 }
