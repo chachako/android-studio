@@ -20,7 +20,6 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.component.impl.features.BuildConfigCreationConfigImpl
 import com.android.build.api.component.impl.features.DexingCreationConfigImpl
-import com.android.build.api.component.impl.features.ManifestPlaceholdersCreationConfigImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.component.impl.features.RenderscriptCreationConfigImpl
 import com.android.build.api.component.impl.features.ShadersCreationConfigImpl
@@ -51,6 +50,7 @@ import com.android.build.gradle.internal.component.features.RenderscriptCreation
 import com.android.build.gradle.internal.component.features.ShadersCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.features.ManifestPlaceholdersDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
@@ -207,6 +207,7 @@ open class AndroidTestImpl @Inject constructor(
     override val manifestPlaceholders: MapProperty<String, String>
         get() = manifestPlaceholdersCreationConfig.placeholders
 
+
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
@@ -234,6 +235,11 @@ open class AndroidTestImpl @Inject constructor(
         }
     }
 
+    override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
+        createManifestPlaceholdersCreationConfig(
+                dslInfo.manifestPlaceholdersDslInfo?.placeholders)
+    }
+
     override val renderscriptCreationConfig: RenderscriptCreationConfig? by lazy(LazyThreadSafetyMode.NONE) {
         if (buildFeatures.renderScript) {
             RenderscriptCreationConfigImpl(
@@ -244,13 +250,6 @@ open class AndroidTestImpl @Inject constructor(
         } else {
             null
         }
-    }
-
-    override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
-        ManifestPlaceholdersCreationConfigImpl(
-            dslInfo.manifestPlaceholdersDslInfo!!,
-            internalServices
-        )
     }
 
     override val dexingCreationConfig: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {

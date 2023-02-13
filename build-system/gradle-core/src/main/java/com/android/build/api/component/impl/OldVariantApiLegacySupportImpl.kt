@@ -43,7 +43,9 @@ import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.ApkProducingComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.MultiVariantComponentDslInfo
+import com.android.build.gradle.internal.core.dsl.features.ManifestPlaceholdersDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.ComponentDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.ManifestPlaceholdersDslInfoImpl
 import com.android.build.gradle.internal.dependency.ArtifactCollectionWithExtraArtifact
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.PublishingSpecs.Companion.getVariantPublishingSpec
@@ -79,6 +81,13 @@ class OldVariantApiLegacySupportImpl(
         get() = (dslInfo as ComponentDslInfoImpl).mergedFlavor
     override val dslSigningConfig: com.android.build.gradle.internal.dsl.SigningConfig? =
         (dslInfo as? ApkProducingComponentDslInfo)?.signingConfig
+
+    override val manifestPlaceholdersDslInfo: ManifestPlaceholdersDslInfo? by lazy(LazyThreadSafetyMode.NONE) {
+        ManifestPlaceholdersDslInfoImpl(
+                mergedFlavor,
+                buildTypeObj
+        )
+    }
 
     /**
      * The old variant API runs after the new variant API, yet we need to make sure that whatever

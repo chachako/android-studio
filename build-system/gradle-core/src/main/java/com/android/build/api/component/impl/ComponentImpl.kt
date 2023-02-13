@@ -21,6 +21,7 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.component.impl.features.AssetsCreationConfigImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
+import com.android.build.api.component.impl.features.ManifestPlaceholdersCreationConfigImpl
 import com.android.build.api.component.impl.features.ResValuesCreationConfigImpl
 import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.FramesComputationMode
@@ -37,6 +38,7 @@ import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.AssetsCreationConfig
 import com.android.build.gradle.internal.component.features.InstrumentationCreationConfig
+import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
 import com.android.build.gradle.internal.component.features.ResValuesCreationConfig
 import com.android.build.gradle.internal.component.legacy.OldVariantApiLegacySupport
 import com.android.build.gradle.internal.core.ProductFlavor
@@ -413,6 +415,17 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
         }
 
     override fun getArtifactName(name: String) = name
+
+    protected fun createManifestPlaceholdersCreationConfig(
+            placeholders: Map<String, String>?): ManifestPlaceholdersCreationConfig {
+        val legacyApiManifestPlaceholders = oldVariantApiLegacySupport?.manifestPlaceholdersDslInfo?.placeholders
+                ?: mapOf()
+        val allPlaceholders = (placeholders ?: mapOf()) + legacyApiManifestPlaceholders
+        return ManifestPlaceholdersCreationConfigImpl(
+                allPlaceholders,
+                internalServices
+        )
+    }
 
     /**
      * Publish an intermediate artifact.

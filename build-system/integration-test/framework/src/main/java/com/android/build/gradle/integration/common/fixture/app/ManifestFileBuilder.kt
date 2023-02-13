@@ -21,6 +21,14 @@ class ManifestFileBuilder() {
 
     private val tags = StringBuilder()
 
+    fun addUsePermissionsTag(androidName: String) {
+        tags.append(
+                """
+                    <uses-permission android:name="$androidName" />
+                """.trimIndent()
+        )
+    }
+
     @JvmOverloads
     fun addApplicationTag(activityClassName: String, namespace:String = "", isMainActivity: Boolean = true) {
         val mainLauncherIntentFilter = """
