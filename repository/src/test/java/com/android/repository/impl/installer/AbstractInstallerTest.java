@@ -226,7 +226,7 @@ public class AbstractInstallerTest {
         assertEquals(
                 installer.getName(),
                 String.format(
-                        "Install %1$s (revision: %2$s)",
+                        "Install %1$s (version %2$s)",
                         remote.getDisplayName(), remote.getVersion()));
     }
 

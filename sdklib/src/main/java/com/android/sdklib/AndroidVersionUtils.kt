@@ -37,6 +37,7 @@ import java.lang.RuntimeException
  * @param includeCodeName whether to include the codename in the string
  * @return a suitable version display name
  */
+@JvmOverloads
 fun AndroidVersion.getFullApiName(
     includeReleaseName: Boolean = false,
     includeCodeName: Boolean = false,

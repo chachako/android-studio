@@ -45,7 +45,7 @@ public class AbstractUninstallerTest {
         assertEquals(
                 uninstaller.getName(),
                 String.format(
-                        "Uninstall %1$s (revision: %2$s)",
+                        "Uninstall %1$s (version %2$s)",
                         local.getDisplayName(), local.getVersion()));
     }
 
