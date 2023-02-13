@@ -28,6 +28,7 @@ import com.android.testutils.TestUtils
 import com.android.tools.lint.checks.GradleDetector.Companion.ACCIDENTAL_OCTAL
 import com.android.tools.lint.checks.GradleDetector.Companion.AGP_DEPENDENCY
 import com.android.tools.lint.checks.GradleDetector.Companion.ANNOTATION_PROCESSOR_ON_COMPILE_PATH
+import com.android.tools.lint.checks.GradleDetector.Companion.BOM_WITHOUT_PLATFORM
 import com.android.tools.lint.checks.GradleDetector.Companion.BUNDLED_GMS
 import com.android.tools.lint.checks.GradleDetector.Companion.CHROMEOS_ABI_SUPPORT
 import com.android.tools.lint.checks.GradleDetector.Companion.COMPATIBILITY
@@ -6010,6 +6011,109 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testBomWithoutPlatform() {
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            composeBom = "2023.01.00"
+            [libraries]
+            compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+            """
+          )
+          .indented(),
+        gradle(
+            """
+            plugins {
+                id 'com.android.application'
+                id 'kotlin-android'
+            }
+            dependencies {
+                implementation(libs.compose.bom)
+                testImplementation(libs.compose.bom)
+                testImplementation "androidx.compose:compose-bom:2023.01.00"
+                api("androidx.compose:compose-bom:2023.01.00")
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(BOM_WITHOUT_PLATFORM)
+      .run()
+      .expect(
+        """
+        build.gradle:6: Warning: BOM should be added with a call to platform() [BomWithoutPlatform]
+            implementation(libs.compose.bom)
+                           ~~~~~~~~~~~~~~~~
+        build.gradle:7: Warning: BOM should be added with a call to platform() [BomWithoutPlatform]
+            testImplementation(libs.compose.bom)
+                               ~~~~~~~~~~~~~~~~
+        build.gradle:8: Warning: BOM should be added with a call to platform() [BomWithoutPlatform]
+            testImplementation "androidx.compose:compose-bom:2023.01.00"
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle:9: Warning: BOM should be added with a call to platform() [BomWithoutPlatform]
+            api("androidx.compose:compose-bom:2023.01.00")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 4 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+        Fix for build.gradle line 6: Add platform() to BOM declaration:
+        @@ -6 +6
+        -     implementation(libs.compose.bom)
+        +     implementation(platform(libs.compose.bom))
+        Fix for build.gradle line 7: Add platform() to BOM declaration:
+        @@ -7 +7
+        -     testImplementation(libs.compose.bom)
+        +     testImplementation(platform(libs.compose.bom))
+        Fix for build.gradle line 8: Add platform() to BOM declaration:
+        @@ -8 +8
+        -     testImplementation "androidx.compose:compose-bom:2023.01.00"
+        +     testImplementation platform("androidx.compose:compose-bom:2023.01.00")
+        Fix for build.gradle line 9: Add platform() to BOM declaration:
+        @@ -9 +9
+        -     api("androidx.compose:compose-bom:2023.01.00")
+        +     api(platform("androidx.compose:compose-bom:2023.01.00"))
+        """
+      )
+  }
+
+  fun testBomWithoutPlatformClean() {
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            composeBom = "2023.01.00"
+            [libraries]
+            compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+            """
+          )
+          .indented(),
+        gradle(
+            """
+            plugins {
+                id 'com.android.application'
+                id 'kotlin-android'
+            }
+            dependencies {
+                def composeBom = platform(libs.compose.bom)
+                implementation(composeBom)
+                implementation(platform(libs.compose.bom))
+                api(platform("androidx.compose:compose-bom:2023.01.00"))
+                testImplementation(platform("androidx.compose:compose-bom:2023.01.00"))
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(BOM_WITHOUT_PLATFORM)
+      .run()
+      .expectClean()
+  }
+
   fun testJavaLanguageLevelClean() {
     val sourceCompatibility =
       listOf(
@@ -6875,6 +6979,15 @@ class GradleDetectorTest : AbstractCheckTest() {
                 </androidx.slidingpanelayout>
                 """
           .trimIndent()
+      )
+      task.networkData(
+        "https://maven.google.com/androidx/compose/group-index.xml",
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <androidx.compose>
+          <compose-bom versions="2022.10.00,2022.11.00,2022.12.00,2023.01.00"/>
+        </androidx.compose>
+        """
       )
       task.networkData(
         "https://maven.google.com/androidx/compose/foundation/group-index.xml",

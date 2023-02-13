@@ -588,6 +588,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
           if (property == "kapt") {
             checkKaptUsage(dependency, libTomlValue, context, statementCookie)
           }
+          checkForBomUsageWithoutPlatform(property, dependency, value, context, valueCookie)
         }
       }
     } else if (property == "packageNameSuffix") {
@@ -2068,6 +2069,30 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
     report(context, cookie, KTX_EXTENSION_AVAILABLE, msg, fix)
   }
 
+  private fun checkForBomUsageWithoutPlatform(
+    property: String,
+    dependency: String,
+    value: String,
+    context: GradleContext,
+    valueCookie: Any
+  ) {
+    if (
+      dependency.substringBeforeLast(':') in commonBoms &&
+        (CompileConfiguration.IMPLEMENTATION.matches(property) ||
+          CompileConfiguration.API.matches(property))
+    ) {
+      val message = "BOM should be added with a call to platform()"
+      val fix =
+        fix()
+          .name("Add platform() to BOM declaration", true)
+          .replace()
+          .text(value)
+          .with("platform($value)")
+          .build()
+      report(context, valueCookie, BOM_WITHOUT_PLATFORM, message, fix)
+    }
+  }
+
   /**
    * Report any blocked dependencies that weren't found in the build.gradle source file during
    * processing (we don't have accurate position info at this point)
@@ -3209,6 +3234,24 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       )
 
     @JvmField
+    val BOM_WITHOUT_PLATFORM =
+      Issue.create(
+        id = "BomWithoutPlatform",
+        briefDescription = "Using a BOM without platform call",
+        explanation =
+          """
+          When including a BOM, the dependency's coordinates must be wrapped \
+          in a call to `platform()` for Gradle to interpret it correctly.
+          """,
+        category = Category.CORRECTNESS,
+        priority = 4,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation = IMPLEMENTATION_WITH_TOML,
+        moreInfo = "https://developer.android.com/r/tools/gradle-bom-docs"
+      )
+
+    @JvmField
     val JAVA_PLUGIN_LANGUAGE_LEVEL =
       Issue.create(
         id = "JavaPluginLanguageLevel",
@@ -3838,6 +3881,36 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         "com.airbnb:deeplinkdispatch-processor" to "com.airbnb:deeplinkdispatch-processor",
         "com.airbnb.android:epoxy-processor" to "com.airbnb.android:epoxy-processor",
         "com.airbnb.android:paris-processor" to "com.airbnb.android:paris-processor",
+      )
+
+    private val commonBoms: Set<String> =
+      setOf(
+        // Google
+        "androidx.compose:compose-bom",
+        "com.google.firebase:firebase-bom",
+        // JetBrains
+        "org.jetbrains.kotlin:kotlin-bom",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-bom",
+        "io.ktor:ktor-bom",
+        // Network and serialization
+        "com.squareup.okio:okio-bom",
+        "com.squareup.okhttp3:okhttp-bom",
+        "com.squareup.wire:wire-bom",
+        "com.fasterxml.jackson:jackson-bom",
+        "io.grpc:grpc-bom",
+        "org.http4k:http4k-bom",
+        "org.http4k:http4k-connect-bom",
+        // Testing
+        "org.junit:junit-bom",
+        "io.kotest:kotest-bom",
+        "io.cucumber:cucumber-bom",
+        // Others
+        "io.arrow-kt:arrow-stack",
+        "io.sentry:sentry-bom",
+        "dev.chrisbanes.compose:compose-bom",
+        "org.ow2.asm:asm-bom",
+        "software.amazon.awssdk:bom",
+        "com.walletconnect:android-bom",
       )
 
     private fun libraryHasKtxExtension(mavenName: String): Boolean {
