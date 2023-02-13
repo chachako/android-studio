@@ -20,6 +20,7 @@ import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.AbiSplit
 import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.AnnotationProcessorOptions
+import com.android.build.api.dsl.ApplicationAndroidResources
 import com.android.build.api.dsl.ApplicationPublishing
 import com.android.build.api.dsl.AssetPackBundleExtension
 import com.android.build.api.dsl.Bundle
@@ -57,6 +58,7 @@ import com.android.build.api.dsl.ViewBinding
 import com.android.build.gradle.internal.dsl.AaptOptions
 import com.android.build.gradle.internal.dsl.AarMetadataImpl
 import com.android.build.gradle.internal.dsl.AbiSplitOptions
+import com.android.build.gradle.internal.dsl.ApplicationAndroidResourcesImpl
 import com.android.build.gradle.internal.dsl.AnnotationProcessorOptions as AnnotationProcessorOptionsImpl
 import com.android.build.gradle.internal.dsl.ApplicationPublishingImpl
 import com.android.build.gradle.internal.dsl.AssetPackBundleExtensionImpl
@@ -106,6 +108,7 @@ val AGP_SUPPORTED_PROPERTY_TYPES: List<SupportedPropertyType> = listOf(
     SupportedPropertyType.Block(AbiSplit::class.java, AbiSplitOptions::class.java),
     SupportedPropertyType.Block(AndroidResources::class.java, AaptOptions::class.java),
     SupportedPropertyType.Block(AnnotationProcessorOptions::class.java, AnnotationProcessorOptionsImpl::class.java),
+    SupportedPropertyType.Block(ApplicationAndroidResources::class.java, ApplicationAndroidResourcesImpl::class.java),
     SupportedPropertyType.Block(ApplicationPublishing::class.java, ApplicationPublishingImpl::class.java),
     SupportedPropertyType.Block(AssetPackBundleExtension::class.java, AssetPackBundleExtensionImpl::class.java),
     SupportedPropertyType.Block(Bundle::class.java, BundleOptions::class.java),

@@ -172,6 +172,7 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
                 parameters.manifestPlaceholders.get(),
                 optionalFeatures,
                 emptyList(),
+                generatedLocaleConfigAttribute = null,
                 parameters.reportFile.asFile.get(),
                 LoggerWrapper.getLogger(ProcessLibraryManifest::class.java)
             )

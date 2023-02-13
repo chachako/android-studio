@@ -138,6 +138,7 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
                         placeHolders = emptyMap(),
                         optionalFeatures = listOf(ManifestMerger2.Invoker.Feature.NO_PLACEHOLDER_REPLACEMENT),
                         dependencyFeatureNames = emptyList(),
+                        generatedLocaleConfigAttribute = null,
                         reportFile = reportFile.get().asFile,
                         logger = LoggerWrapper.getLogger(FusedLibraryManifestMergerTask::class.java)
                 )

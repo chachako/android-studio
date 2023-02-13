@@ -335,7 +335,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
                                                 higherPriority, lowerPriority);
                                     }
                                 }),
-                AttributeModel.newModel("localeConfig")
+                AttributeModel.newModel(SdkConstants.ATTR_LOCALE_CONFIG)
                         .setMergingPolicy(
                                 new AttributeModel.MergingPolicy() {
                                     @Override

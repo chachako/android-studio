@@ -382,6 +382,12 @@ package com.android.build.api.dsl {
     property @Deprecated public abstract boolean isV2SigningEnabled;
   }
 
+  public interface ApplicationAndroidResources extends com.android.build.api.dsl.AndroidResources {
+    method @org.gradle.api.Incubating public boolean getGenerateLocaleConfig();
+    method @org.gradle.api.Incubating public void setGenerateLocaleConfig(boolean generateLocaleConfig);
+    property @org.gradle.api.Incubating public abstract boolean generateLocaleConfig;
+  }
+
   public interface ApplicationBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.ApplicationVariantDimension {
     method public String? getApplicationId();
     method public Integer? getMaxSdk();
@@ -440,12 +446,14 @@ package com.android.build.api.dsl {
   public interface ApplicationExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.ApplicationBuildFeatures,com.android.build.api.dsl.ApplicationBuildType,com.android.build.api.dsl.ApplicationDefaultConfig,com.android.build.api.dsl.ApplicationProductFlavor> com.android.build.api.dsl.ApkExtension com.android.build.api.dsl.TestedExtension {
     method public void bundle(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Bundle,kotlin.Unit> action);
     method public void dependenciesInfo(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DependenciesInfo,kotlin.Unit> action);
+    method public com.android.build.api.dsl.ApplicationAndroidResources getAndroidResources();
     method public java.util.Set<java.lang.String> getAssetPacks();
     method public com.android.build.api.dsl.Bundle getBundle();
     method public com.android.build.api.dsl.DependenciesInfo getDependenciesInfo();
     method public java.util.Set<java.lang.String> getDynamicFeatures();
     method public com.android.build.api.dsl.ApplicationPublishing getPublishing();
     method public void publishing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApplicationPublishing,kotlin.Unit> action);
+    property public abstract com.android.build.api.dsl.ApplicationAndroidResources androidResources;
     property public abstract java.util.Set<java.lang.String> assetPacks;
     property public abstract com.android.build.api.dsl.Bundle bundle;
     property public abstract com.android.build.api.dsl.DependenciesInfo dependenciesInfo;

@@ -1299,6 +1299,7 @@ public final class SdkConstants {
     public static final String MANIFEST_ATTR_TITLE = "title";
     public static final String ATTR_TARGET_ACTIVITY = "targetActivity";
     public static final String ATTR_MIMETYPE = "mimeType";
+    public static final String ATTR_LOCALE_CONFIG = "localeConfig";
 
     // Attributes: Resources
     public static final String ATTR_ATTR = "attr";

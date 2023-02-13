@@ -44,6 +44,7 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.DexingType
+import com.android.ide.common.resources.generateLocaleConfigManifestAttribute
 import com.android.manifmerger.ManifestMerger2
 import com.android.manifmerger.ManifestMerger2.Invoker
 import com.android.manifmerger.ManifestMerger2.WEAR_APP_SUB_MANIFEST
@@ -136,6 +137,9 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
     var navigationJsons: FileCollection? = null
         private set
 
+    @get:Input
+    abstract val addLocaleConfigAttribute: Property<Boolean>
+
     /**
      * For non-application components, we still depend on the multiApkManifests artifacts as part of
      * the manifest processing pipeline, and since these components don't have splits, we can just
@@ -198,6 +202,11 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
                 }
             ),
             dependencyFeatureNames,
+            generatedLocaleConfigAttribute = if (addLocaleConfigAttribute.get()) {
+                generateLocaleConfigManifestAttribute(LOCALE_CONFIG_FILE_NAME)
+            } else {
+                null
+            },
             reportFile.get().asFile,
             LoggerWrapper.getLogger(ProcessApplicationManifest::class.java),
             compileSdk = compileSdk.orNull
@@ -517,6 +526,10 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             task.buildTypeName = creationConfig.buildType
             task.projectBuildFile.set(task.project.buildFile)
             task.projectBuildFile.disallowChanges()
+            task.addLocaleConfigAttribute.setDisallowChanges(
+                (creationConfig is ApplicationCreationConfig) &&
+                (creationConfig.generateLocaleConfig)
+            )
             // TODO: here in the "else" block should be the code path for the namespaced pipeline
         }
 

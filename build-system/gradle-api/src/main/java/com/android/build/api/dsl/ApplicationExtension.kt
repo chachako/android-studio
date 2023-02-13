@@ -63,4 +63,6 @@ interface ApplicationExtension :
      * For more information about the properties you can configure in this block, see [ApplicationPublishing]
      */
     fun publishing(action: ApplicationPublishing.() -> Unit)
+
+    override val androidResources: ApplicationAndroidResources
 }

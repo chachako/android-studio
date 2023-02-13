@@ -208,7 +208,9 @@ abstract class MapSourceSetPathsTask : NonIncrementalTask() {
                         }
                 }
                 creationConfig.oldVariantApiLegacySupport?.registerPostOldVariantApiAction {
-                    resSources.getLocalSources().values.forEach {
+                    resSources.getVariantSourcesWithFilter {
+                        !it.isUserAdded && !it.isGenerated
+                    }.values.forEach {
                         task.localResources.addAll(it)
                     }
                     task.localResources.disallowChanges()

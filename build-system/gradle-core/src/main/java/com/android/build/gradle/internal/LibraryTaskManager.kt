@@ -60,6 +60,7 @@ import com.android.build.gradle.tasks.CompileLibraryResourcesTask
 import com.android.build.gradle.tasks.ExtractAnnotations
 import com.android.build.gradle.tasks.ExtractDeepLinksTask
 import com.android.build.gradle.tasks.ExtractDeepLinksTask.AarCreationAction
+import com.android.build.gradle.tasks.ExtractSupportedLocalesTask
 import com.android.build.gradle.tasks.JavaDocGenerationTask
 import com.android.build.gradle.tasks.JavaDocJarTask
 import com.android.build.gradle.tasks.MergeResources
@@ -258,6 +259,9 @@ class LibraryTaskManager(
 
         // Add a task to write the local lint AAR file
         taskFactory.register(LibraryLocalLintCreationAction(libraryVariant))
+
+        taskFactory.register(ExtractSupportedLocalesTask.CreationAction(libraryVariant))
+
         createBundleTask(libraryVariant)
     }
 

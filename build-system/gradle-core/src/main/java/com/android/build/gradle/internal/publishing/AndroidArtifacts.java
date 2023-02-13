@@ -190,6 +190,8 @@ public class AndroidArtifacts {
     private static final String TYPE_SOURCES_JAR = "android-sources-jar";
     private static final String TYPE_JAVA_DOC_JAR = "android-java-doc-jar";
 
+    private static final String TYPE_SUPPORTED_LOCALE_LIST = "supported-locale-list";
+
     public enum ConsumedConfigType {
         COMPILE_CLASSPATH("compileClasspath", API_ELEMENTS, true),
         RUNTIME_CLASSPATH("runtimeClasspath", RUNTIME_ELEMENTS, true),
@@ -558,6 +560,9 @@ public class AndroidArtifacts {
         // The artifact-transform derived manifest snippet from a privacy sandbox SDK
         ANDROID_PRIVACY_SANDBOX_SDK_USES_SDK_LIBRARY_MANIFEST_SNIPPET(
                 TYPE_ANDROID_PRIVACY_SANDBOX_USES_SDK_LIBRARY_MANIFEST_SNIPPET),
+
+        // The file describing the supported locales in the module
+        SUPPORTED_LOCALE_LIST(TYPE_SUPPORTED_LOCALE_LIST),
         ;
 
         @NonNull private final String type;

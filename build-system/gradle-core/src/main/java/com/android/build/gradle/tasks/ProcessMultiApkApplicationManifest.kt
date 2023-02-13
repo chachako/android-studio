@@ -158,6 +158,7 @@ abstract class ProcessMultiApkApplicationManifest: ManifestProcessorTask() {
             mapOf(),
             listOf(),
             listOf(),
+            generatedLocaleConfigAttribute = null,
             null,
             LoggerWrapper.getLogger(ProcessApplicationManifest::class.java),
             checkIfPackageInMainManifest = false

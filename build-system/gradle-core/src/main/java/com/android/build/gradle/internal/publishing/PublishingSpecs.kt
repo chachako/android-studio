@@ -79,6 +79,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.RUNTIME_LIBR
 import com.android.build.gradle.internal.scope.InternalArtifactType.RUNTIME_LIBRARY_CLASSES_JAR
 import com.android.build.gradle.internal.scope.InternalArtifactType.SIGNING_CONFIG_DATA
 import com.android.build.gradle.internal.scope.InternalArtifactType.SIGNING_CONFIG_VERSIONS
+import com.android.build.gradle.internal.scope.InternalArtifactType.SUPPORTED_LOCALE_LIST
 import com.android.build.gradle.internal.scope.InternalArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME
 import com.android.build.gradle.internal.utils.toImmutableSet
 import com.android.builder.core.ComponentType
@@ -255,6 +256,8 @@ class PublishingSpecs {
                 runtime(COMPILED_LOCAL_RESOURCES, ArtifactType.COMPILED_DEPENDENCIES_RESOURCES)
                 runtime(AAR_METADATA, ArtifactType.AAR_METADATA)
                 runtime(InternalArtifactType.LIBRARY_ART_PROFILE, ArtifactType.ART_PROFILE)
+                runtime(SUPPORTED_LOCALE_LIST, ArtifactType.SUPPORTED_LOCALE_LIST)
+
                 // Publish lint artifacts to API_AND_RUNTIME_ELEMENTS to support compileOnly module
                 // dependencies.
                 output(LINT_PUBLISH_JAR, ArtifactType.LINT)

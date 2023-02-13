@@ -826,6 +826,7 @@ com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getAaptOptions: com
 com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getAdbOptions: com.android.build.api.dsl.AdbOptions ()
 com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getAdbOptions: com.android.build.gradle.internal.dsl.AdbOptions ()
 com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getAndroidResources: com.android.build.api.dsl.AndroidResources ()
+com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getAndroidResources: com.android.build.api.dsl.ApplicationAndroidResources ()
 com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getAssetPacks: java.util.Set<java.lang.String> ()
 com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getBuildFeatures: com.android.build.api.dsl.ApplicationBuildFeatures ()
 com.android.build.gradle.internal.dsl.BaseAppModuleExtension.getBuildFeatures: com.android.build.api.dsl.BuildFeatures ()

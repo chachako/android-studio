@@ -249,4 +249,7 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val isWearAppUnbundled: Boolean?
         get() = dslInfo.isWearAppUnbundled
+
+    override val generateLocaleConfig: Boolean
+        get() = dslInfo.generateLocaleConfig
 }

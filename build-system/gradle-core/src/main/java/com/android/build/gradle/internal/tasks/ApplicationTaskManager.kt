@@ -46,6 +46,8 @@ import com.android.build.gradle.internal.variant.ComponentInfo
 import com.android.build.gradle.internal.variant.VariantModel
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.BuildPrivacySandboxSdkApks
+import com.android.build.gradle.tasks.ExtractSupportedLocalesTask
+import com.android.build.gradle.tasks.GenerateLocaleConfigTask
 import com.android.build.gradle.tasks.sync.ApplicationVariantModelTask
 import com.android.build.gradle.tasks.sync.AppIdListTask
 import com.android.builder.core.ComponentType
@@ -117,6 +119,11 @@ class ApplicationTaskManager(
 
         taskFactory.register(MergeArtProfileTask.CreationAction(variant))
         taskFactory.register(CompileArtProfileTask.CreationAction(variant))
+
+        if (variant.generateLocaleConfig) {
+            taskFactory.register(ExtractSupportedLocalesTask.CreationAction(variant))
+            taskFactory.register(GenerateLocaleConfigTask.CreationAction(variant))
+        }
 
         if (variant.buildFeatures.dataBinding
                 && globalConfig.hasDynamicFeatures) {

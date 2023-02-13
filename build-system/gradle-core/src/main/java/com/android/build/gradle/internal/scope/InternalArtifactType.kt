@@ -230,6 +230,12 @@ InternalArtifactType<T : FileSystemLocation>(
     object COMPILED_LOCAL_RESOURCES: InternalArtifactType<Directory>(DIRECTORY), Replaceable
     object STABLE_RESOURCE_IDS_FILE: InternalArtifactType<RegularFile>(FILE)
 
+    // final output of the locale config generator.
+    object GENERATED_LOCALE_CONFIG: InternalArtifactType<Directory>(DIRECTORY), Replaceable
+
+    // intermediate output of the locale config generator.
+    object SUPPORTED_LOCALE_LIST: InternalArtifactType<RegularFile>(FILE), Replaceable
+
     // Artifacts for legacy multidex
     object LEGACY_MULTIDEX_AAPT_DERIVED_PROGUARD_RULES: InternalArtifactType<RegularFile>(FILE), Replaceable
     object LEGACY_MULTIDEX_MAIN_DEX_LIST: InternalArtifactType<RegularFile>(FILE), Replaceable

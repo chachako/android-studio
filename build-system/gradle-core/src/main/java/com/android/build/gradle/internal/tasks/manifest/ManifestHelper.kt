@@ -60,6 +60,7 @@ fun mergeManifests(
     placeHolders: Map<String, Any>,
     optionalFeatures: Collection<ManifestMerger2.Invoker.Feature>,
     dependencyFeatureNames: Collection<String>,
+    generatedLocaleConfigAttribute: String?,
     reportFile: File?,
     logger: ILogger,
     checkIfPackageInMainManifest: Boolean = true,
@@ -95,6 +96,8 @@ fun mergeManifests(
         if (outAaptSafeManifestLocation != null) {
             manifestMergerInvoker.withFeatures(ManifestMerger2.Invoker.Feature.MAKE_AAPT_SAFE)
         }
+
+        manifestMergerInvoker.setGeneratedLocaleConfigAttribute(generatedLocaleConfigAttribute)
 
         setInjectableValues(
             manifestMergerInvoker,

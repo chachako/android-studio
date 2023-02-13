@@ -151,6 +151,7 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
                     placeHolders = emptyMap(),
                     optionalFeatures = emptyList(),
                     dependencyFeatureNames = emptyList(),
+                    generatedLocaleConfigAttribute = null,
                     reportFile = null,
                     logger = LoggerWrapper.getLogger(ProcessPackagedManifestTask::class.java),
                     checkIfPackageInMainManifest = false

@@ -178,6 +178,10 @@ internal class ApplicationVariantDslInfoImpl(
         )
     }
 
+    override val generateLocaleConfig: Boolean by lazy {
+        extension.androidResources.generateLocaleConfig
+    }
+
     private fun computeVersionNameSuffix(): String {
         // for the suffix we combine the suffix from all the flavors. However, we're going to
         // want the higher priority one to be last.

@@ -3018,6 +3018,42 @@ public class ManifestMerger2SmallTest {
         }
     }
 
+    @Test
+    public void testLocaleConfigIsAddedWhenRequested() throws Exception {
+        String appInput =
+                ""
+                        + "<manifest\n"
+                        + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"com.example.app1\">\n"
+                        + "    <application/>\n"
+                        + "</manifest>";
+
+        File appFile = TestUtils.inputAsFile("testLocaleConfigIsAdded", appInput);
+        assertTrue(appFile.exists());
+        try {
+            ManifestMerger2.Invoker invoker =
+                    ManifestMerger2.newMerger(
+                            appFile, new MockLog(), ManifestMerger2.MergeType.APPLICATION);
+
+            invoker.setGeneratedLocaleConfigAttribute("_generated_res_locale_config");
+            MergingReport mergingReport = invoker.merge();
+            assertThat(mergingReport.getResult()).isEqualTo(MergingReport.Result.SUCCESS);
+            Document mergedDocument =
+                    parse(mergingReport.getMergedDocument(MergedManifestKind.MERGED));
+            assertEquals(
+                    "_generated_res_locale_config",
+                    mergedDocument
+                            .getElementsByTagName(SdkConstants.TAG_APPLICATION)
+                            .item(0)
+                            .getAttributes()
+                            .getNamedItemNS(
+                                    SdkConstants.ANDROID_URI, SdkConstants.ATTR_LOCALE_CONFIG)
+                            .getNodeValue());
+        } finally {
+            assertThat(appFile.delete()).named("appFile was deleted").isTrue();
+        }
+    }
+
     public static void validateFeatureName(
             ManifestMerger2.Invoker invoker, String featureName, boolean isValid) throws Exception {
         try {

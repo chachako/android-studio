@@ -114,6 +114,7 @@ public class ManifestMerger2 {
     @NonNull private final DocumentModel<ManifestModel.NodeTypes> mModel;
     @NonNull private final ImmutableList<String> mDependencyFeatureNames;
     @NonNull private final ImmutableList<String> mAllowedNonUniqueNamespaces;
+    @Nullable private final String mGeneratedLocaleConfigAttribute;
 
     private ManifestMerger2(
             @NonNull ILogger logger,
@@ -134,7 +135,8 @@ public class ManifestMerger2 {
             @NonNull ImmutableList<File> navigationFiles,
             @NonNull ImmutableList<File> navigationJsons,
             @NonNull ImmutableList<String> dependencyFeatureNames,
-            @NonNull ImmutableList<String> allowedNonUniqueNamespaces) {
+            @NonNull ImmutableList<String> allowedNonUniqueNamespaces,
+            @Nullable String generatedLocaleConfigAttribute) {
         this.mSystemPropertyResolver = systemPropertiesResolver;
         this.mPlaceHolderValues = placeHolderValues;
         this.mManifestFile = mainManifestFile;
@@ -158,6 +160,7 @@ public class ManifestMerger2 {
                         mOptionalFeatures.contains(
                                 Invoker.Feature.HANDLE_VALUE_CONFLICTS_AUTOMATICALLY));
         this.mAllowedNonUniqueNamespaces = allowedNonUniqueNamespaces;
+        this.mGeneratedLocaleConfigAttribute = generatedLocaleConfigAttribute;
     }
 
     /**
@@ -665,6 +668,11 @@ public class ManifestMerger2 {
         if (mOptionalFeatures.contains(Invoker.Feature.MAKE_AAPT_SAFE)) {
             createAaptSafeManifest(xmlDocument, mergingReport);
         }
+
+        // If generated locale config is present set it if user locale config is not present.
+        if (mMergeType == MergeType.APPLICATION && mGeneratedLocaleConfigAttribute != null) {
+            addLocaleConfig(xmlDocument, mGeneratedLocaleConfigAttribute);
+        }
     }
 
     /**
@@ -774,6 +782,33 @@ public class ManifestMerger2 {
 
         String attributeName = SdkConstants.ATTR_FEATURE_SPLIT;
         manifest.setAttribute(attributeName, featureName);
+    }
+
+    /**
+     * Set android:localeConfig to a generated resource. Produces an error if a user set locale
+     * config is present.
+     *
+     * @param document the document for which the localeConfig attribute should be set.
+     * @param configLocation the string to set the locale config to.
+     */
+    private void addLocaleConfig(@NonNull XmlDocument document, @NonNull String configLocation) {
+        XmlElement manifest = document.getRootNode();
+        manifest.applyToFirstChildElementOfType(
+                ManifestModel.NodeTypes.APPLICATION,
+                application -> {
+                    if (application
+                            .getXml()
+                            .hasAttributeNS(
+                                    SdkConstants.ANDROID_URI, SdkConstants.ATTR_LOCALE_CONFIG)) {
+                        String message =
+                                "Locale config generation was requested but user locale config is present in manifest";
+                        mLogger.error(null, message);
+                        throw new RuntimeException(message);
+                    } else {
+                        setAndroidAttribute(
+                                application, SdkConstants.ATTR_LOCALE_CONFIG, configLocation);
+                    }
+                });
     }
 
     /**
@@ -1622,6 +1657,8 @@ public class ManifestMerger2 {
         private final ImmutableList.Builder<String> mAllowedNonUniqueNamespaces =
                 new ImmutableList.Builder<>();
 
+        @Nullable private String mGeneratedLocaleConfigAttribute = null;
+
         /**
          * Sets a value for a {@link ManifestSystemProperty}
          *
@@ -2059,6 +2096,18 @@ public class ManifestMerger2 {
         }
 
         /**
+         * Set the location of the generated locale config to add to the manifest.
+         *
+         * @param generatedLocaleConfigAttribute the attribute pointing to the generated locale
+         *     config.
+         * @return itself
+         */
+        public Invoker setGeneratedLocaleConfigAttribute(String generatedLocaleConfigAttribute) {
+            this.mGeneratedLocaleConfigAttribute = generatedLocaleConfigAttribute;
+            return this;
+        }
+
+        /**
          * Perform the merging and return the result.
          *
          * @return an instance of {@link MergingReport} that will give access to all the logging and
@@ -2112,7 +2161,8 @@ public class ManifestMerger2 {
                             mNavigationFilesBuilder.build(),
                             mNavigationJsonsBuilder.build(),
                             mDependencyFetureNamesBuilder.build(),
-                            mAllowedNonUniqueNamespaces.build());
+                            mAllowedNonUniqueNamespaces.build(),
+                            mGeneratedLocaleConfigAttribute);
 
             return manifestMerger.merge();
         }

@@ -25,6 +25,7 @@ interface ApplicationCreationConfig: ApkCreationConfig, VariantCreationConfig, P
     val consumesFeatureJars: Boolean
     val needAssetPackTasks: Boolean
     val isWearAppUnbundled: Boolean?
+    val generateLocaleConfig: Boolean
     override val bundleConfig: BundleConfigImpl
 
     val outputs: VariantOutputList

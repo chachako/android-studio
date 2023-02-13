@@ -62,6 +62,7 @@ class PublishingSpecsTest {
             AndroidArtifacts.ArtifactType.UNFILTERED_PROGUARD_RULES,
             AndroidArtifacts.ArtifactType.SOURCES_JAR,
             AndroidArtifacts.ArtifactType.JAVA_DOC_JAR,
+            AndroidArtifacts.ArtifactType.SUPPORTED_LOCALE_LIST,
         )
 
         val libraryOutputs = getVariantPublishingSpec(ComponentTypeImpl.LIBRARY).outputs

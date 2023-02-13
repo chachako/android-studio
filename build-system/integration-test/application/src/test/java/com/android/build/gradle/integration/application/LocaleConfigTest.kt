@@ -26,7 +26,7 @@ import org.junit.Test
 /**
  * Regression test for Issue 226200249
  */
-class LocalesConfigTest {
+class LocaleConfigTest {
 
     @get:Rule
     val project =
@@ -39,11 +39,11 @@ class LocalesConfigTest {
         TestFileUtils.searchAndReplace(
             project.file("src/main/AndroidManifest.xml"),
             "<application />",
-            "<application android:localeConfig=\"@xml/locales_config\"/>"
+            "<application android:localeConfig=\"@xml/locale_config\"/>"
         )
-        val localesConfigFile = project.file("src/main/res/xml/locales_config.xml")
-        localesConfigFile.parentFile.mkdirs()
-        localesConfigFile.writeText(
+        val localeConfigFile = project.file("src/main/res/xml/locale_config.xml")
+        localeConfigFile.parentFile.mkdirs()
+        localeConfigFile.writeText(
             """
                 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
                     <locale android:name="en-US"/>
@@ -57,7 +57,7 @@ class LocalesConfigTest {
     }
 
     @Test
-    fun testLocalesConfig() {
+    fun testLocaleConfig() {
         project.executor().run("bundleDebug")
     }
 }
