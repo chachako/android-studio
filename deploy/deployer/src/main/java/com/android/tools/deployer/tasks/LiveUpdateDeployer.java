@@ -118,25 +118,25 @@ public class LiveUpdateDeployer {
      * agreed "best effort" nature of LL updates.
      */
     public static class UpdateLiveEditError {
-        private static final String APP_RESTART_STR = "\nPlease Re-Run your application.";
+        private static final String APP_RESTART_STR = "Rerun app to apply changes.";
         private static final String ADDED_CLASS_STR =
-                "Unsupported addition of new class '%s' in file '%s'.";
+                "Unsupported addition of new class:<br>'%s' in file '%s'.";
         private static final String ADDED_METHOD_STR =
-                "Unsupported addition of new method '%s.%s' in file '%s', line %d.";
+                "Unsupported addition of new method:<br>'%s.%s' in file '%s', line %d.";
         private static final String REMOVED_METHOD_STR =
-                "Unsupported deletion of method '%s.%s' in file '%s'.";
+                "Unsupported deletion of method:<br>'%s.%s' in file '%s'.";
         private static final String ADDED_FIELD_STR =
-                "Unsupported addition of field '%s' in class '%s' in file '%s'.";
+                "Unsupported addition of field:<br>'%s' in class '%s' in file '%s'.";
         private static final String REMOVED_FIELD_STR =
-                "Unsupported deletion of field '%s' in class '%s' in file '%s'.";
+                "Unsupported deletion of field:<br>'%s' in class '%s' in file '%s'.";
         private static final String MODIFIED_FIELD_STR =
-                "Unsupported change to field '%s' in class '%s' in file '%s'.";
+                "Unsupported change to field:<br>'%s' in class '%s' in file '%s'.";
         private static final String MODIFIED_SUPER_STR =
-                "Unsupported change to superclass of class '%s' in file '%s'.";
+                "Unsupported change to superclass of class:<br>'%s' in file '%s'.";
         private static final String ADDED_INTERFACE_STR =
-                "Unsupported change to interfaces of class '%s' in file '%s'.";
+                "Unsupported change to interfaces of class:<br>'%s' in file '%s'.";
         private static final String REMOVED_INTERFACE_STR =
-                "Unsupported change to interfaces of class '%s' in file '%s'.";
+                "Unsupported change to interfaces of class:<br>'%s' in file '%s'.";
 
         private static final String UNSUPPORTED_COMPOSE_VERSION =
                 "Update Compose runtime and compiler versions 1.3.0 or higher "
@@ -240,7 +240,7 @@ public class LiveUpdateDeployer {
                     msg = UNSUPPORTED_COMPOSE_VERSION;
                     break;
                 default:
-                    msg = "Unknown error";
+                    msg = "Unknown error.";
             }
         }
 
@@ -248,7 +248,7 @@ public class LiveUpdateDeployer {
             if (type == Deploy.UnsupportedChange.Type.UNSUPPORTED_COMPOSE_VERSION) {
                 return msg;
             }
-            return msg + (msg.endsWith(".") ? "" : ".") + APP_RESTART_STR;
+            return String.format("%s<br>%s", msg, APP_RESTART_STR);
         }
 
         public Deploy.UnsupportedChange.Type getType() {
