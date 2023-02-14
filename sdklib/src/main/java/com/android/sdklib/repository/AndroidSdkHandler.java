@@ -297,6 +297,13 @@ public final class AndroidSdkHandler {
         return mSystemImageManager;
     }
 
+    /** Clears cache of the {@link SystemImageManager}. */
+    public void clearSystemImageManagerCache() {
+        if (mSystemImageManager != null) {
+            mSystemImageManager.clearCache();
+        }
+    }
+
     /**
      * Gets (and creates if necessary) an {@link AndroidTargetManager} based on our local sdk
      * packages.

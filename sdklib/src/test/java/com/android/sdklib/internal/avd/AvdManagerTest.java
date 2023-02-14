@@ -37,6 +37,7 @@ import com.android.testutils.MockLog;
 import com.android.testutils.file.InMemoryFileSystems;
 import com.android.testutils.truth.PathSubject;
 import com.android.utils.NullLogger;
+import com.android.utils.PathUtils;
 import com.google.common.collect.Maps;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -650,6 +651,33 @@ public final class AvdManagerTest {
                 AvdManager.parseIniFile(
                         new PathFileWrapper(mAvdFolder.resolve("config.ini")), null);
         assertThat(baseConfigProperties.get("AvdId")).isNotEqualTo(newName); // Different or null
+    }
+
+    @Test
+    public void reloadAvds() throws Exception {
+        // Create an AVD.
+        AvdInfo avd =
+                mAvdManager.createAvd(
+                        mAvdFolder,
+                        name.getMethodName(),
+                        mSystemImageAosp,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        false,
+                        false,
+                        false);
+        assertNotNull("Could not create AVD", avd);
+        assertEquals(AvdInfo.AvdStatus.OK, avd.getStatus());
+
+        // Delete the system image of the AVD.
+        PathUtils.deleteRecursivelyIfExists(mSystemImageAosp.getLocation());
+        mAvdManager.reloadAvds();
+        avd = mAvdManager.getAvd(avd.getName(), false);
+        assertNotNull(avd);
+        assertEquals(AvdInfo.AvdStatus.ERROR_IMAGE_MISSING, avd.getStatus());
     }
 
     @Test

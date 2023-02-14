@@ -777,7 +777,8 @@ public class AvdManager {
      */
     @Slow
     public void reloadAvds() throws AndroidLocationsException {
-        // build the list in a temp list first, in case the method throws an exception.
+        mSdkHandler.clearSystemImageManagerCache();
+        // Build the list in a temp list first, in case the method throws an exception.
         // It's better than deleting the whole list before reading the new one.
         ArrayList<AvdInfo> allList = new ArrayList<>();
         buildAvdList(allList);
