@@ -21,6 +21,7 @@ import com.android.adblib.tools.debugging.retrieveProcessName
 import com.android.adblib.tools.debugging.scope
 import com.android.ddmlib.ProfileableClient
 import com.android.ddmlib.ProfileableClientData
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
@@ -64,7 +65,9 @@ internal class AdblibProfileableClientWrapper(
         runCatching {
             appProcess.retrieveProcessName()
         }.onFailure { throwable ->
-            logger.warn(throwable, "Error retrieving process name for $appProcess: ${throwable.message}")
+            if (throwable !is CancellationException) {
+                logger.warn(throwable, "Error retrieving process name for $appProcess: ${throwable.message}")
+            }
         }.onSuccess { processName ->
             data.processName = processName
             trackerHost.postProfileableClientUpdated(this)
