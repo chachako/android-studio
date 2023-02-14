@@ -21,7 +21,7 @@ class ManifestFileBuilder() {
 
     private val tags = StringBuilder()
 
-    fun addUsePermissionsTag(androidName: String) {
+    fun addUsesPermissionTag(androidName: String) {
         tags.append(
                 """
                     <uses-permission android:name="$androidName" />

@@ -36,7 +36,7 @@ class LegacyVariantApiDslManifestPlaceholderTest {
         private const val unitTestPermissionSuffix = "unitTest"
         private const val permissionPrefix = "org.test.permission.READ_CREDENTIALS"
         private val libraryManifest = with(ManifestFileBuilder()) {
-            addUsePermissionsTag("$permissionPrefix:\${permissionSuffix}")
+            addUsesPermissionTag("$permissionPrefix:\${permissionSuffix}")
             build()
         }
     }
@@ -74,42 +74,8 @@ class LegacyVariantApiDslManifestPlaceholderTest {
                 minSdk = 14
                 hasInstrumentationTests = true
                 defaultCompileSdk()
-                addFile(
-                        "src/test/java/${namespace.replace('.','/')}/ExampleUnitTest.java",
-                        """
-                            package $namespace
-                            import static org.junit.Assert.*;
-                            import org.junit.Test;
-
-                            public class ExampleUnitTest {
-                                @Test
-                                public void addition_isCorrect() throws Exception {
-                                    assertEquals(4, 2 + 2);
-                                }
-                            }
-                        """.trimIndent())
-                addFile(
-                        "src/androidTest/java/${namespace.replace('.','/')}/ExampleAndroidTest.java",
-                        """
-                            package $namespace
-                            import static org.junit.Assert.*;
-                            import org.junit.Test;
-
-                            public class ExampleAndroidTest {
-                                @Test
-                                public void addition_isCorrect() throws Exception {
-                                    assertEquals(4, 2 + 2);
-                                }
-                            }
-                        """.trimIndent())
             }
             dependencies {
-                api("com.android.support:appcompat-v7:+")
-                api("com.google.guava:guava:19.0")
-                api("com.android.support.constraint:constraint-layout:1.0.2")
-                testImplementation("junit:junit:4.12")
-                androidTestImplementation("com.android.support.test:runner:+")
-                androidTestImplementation("com.android.support.test.espresso:espresso-core:+")
                 androidTestImplementation(project(":lib2"))
                 testImplementation(project(":lib2"))
             }

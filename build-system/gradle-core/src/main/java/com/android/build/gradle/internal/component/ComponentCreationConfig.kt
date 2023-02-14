@@ -17,7 +17,6 @@
 package com.android.build.gradle.internal.component
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
-import com.android.build.api.component.impl.features.ManifestPlaceholdersCreationConfigImpl
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.InternalSources
@@ -31,7 +30,6 @@ import com.android.build.gradle.internal.component.features.ResValuesCreationCon
 import com.android.build.gradle.internal.component.legacy.ModelV1LegacySupport
 import com.android.build.gradle.internal.component.legacy.OldVariantApiLegacySupport
 import com.android.build.gradle.internal.core.ProductFlavor
-import com.android.build.gradle.internal.core.dsl.features.ManifestPlaceholdersDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.BuildFeatureValues
