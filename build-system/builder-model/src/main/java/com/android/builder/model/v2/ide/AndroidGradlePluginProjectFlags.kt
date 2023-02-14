@@ -91,13 +91,12 @@ interface AndroidGradlePluginProjectFlags {
         /**
          * Returns the value of this flag for the given gradle project flags.
          *
-         * If the value is not supplied by the build system, return [defaultValue] (e.g.,
-         * [defaultValue] could be read directly from `gradle.properties` during sync).
-         *
-         * If [defaultValue] is not provided, return [legacyDefault].
+         * If the value is not supplied by the build system, return [fallbackValue] (e.g.,
+         * [fallbackValue] could be read through a `ToolingModelBuilder` during sync). If
+         * [fallbackValue] is also not provided, return [legacyDefault].
          */
-        fun getValue(flags: AndroidGradlePluginProjectFlags, defaultValue: Boolean? = null): Boolean {
-            return flags.getFlagValue(name) ?: defaultValue ?: legacyDefault
+        fun getValue(flags: AndroidGradlePluginProjectFlags, fallbackValue: Boolean? = null): Boolean {
+            return flags.getFlagValue(name) ?: fallbackValue ?: legacyDefault
         }
 
     }
