@@ -458,7 +458,7 @@ DATA = [
     "org.javassist:javassist:3.26.0-GA",
     "org.jdeferred:jdeferred-android-aar:1.2.2",
     "org.jdeferred:jdeferred-android-aar:1.2.3",
-    "org.jetbrains.compose.compiler:compiler-hosted:1.2.0",
+    "org.jetbrains.compose.compiler:compiler-hosted:1.3.2",
     "org.jetbrains.compose.foundation:foundation-desktop:1.1.1",
     "com.android.tools.utp:android-test-plugin-host-retention:30.2.0",
     "com.android.tools.utp:android-test-plugin-result-listener-gradle:30.2.0",
