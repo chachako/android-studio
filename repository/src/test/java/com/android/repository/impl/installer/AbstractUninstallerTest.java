@@ -44,9 +44,7 @@ public class AbstractUninstallerTest {
         assertSame(uninstaller.getPackage(), local);
         assertEquals(
                 uninstaller.getName(),
-                String.format(
-                        "Uninstall %1$s (version %2$s)",
-                        local.getDisplayName(), local.getVersion()));
+                String.format("Uninstall %1$s v.%2$s", local.getDisplayName(), local.getVersion()));
     }
 
     private static class TestUninstaller extends AbstractUninstaller {

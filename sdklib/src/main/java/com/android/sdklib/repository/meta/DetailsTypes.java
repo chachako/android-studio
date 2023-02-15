@@ -16,6 +16,7 @@
 
 package com.android.sdklib.repository.meta;
 
+import static com.android.sdklib.AndroidVersionUtils.getFullApiName;
 import static com.android.sdklib.repository.targets.SystemImage.DEFAULT_TAG;
 
 import com.android.SdkConstants;
@@ -26,7 +27,6 @@ import com.android.repository.api.RepoPackage;
 import com.android.repository.impl.meta.PackageDisplayNameQualifier;
 import com.android.repository.impl.meta.TypeDetails;
 import com.android.sdklib.AndroidVersion;
-import com.android.sdklib.AndroidVersionUtils;
 import com.android.sdklib.OptionalLibrary;
 import com.android.sdklib.repository.IdDisplay;
 import java.util.ArrayList;
@@ -139,8 +139,8 @@ public final class DetailsTypes {
 
         @Override
         @NonNull
-        default String getVersionTerm() {
-            return "revision";
+        default String getQualifierTemplate() {
+            return " (revision {0})";
         }
 
         static int getApiLevelInt(String apiLevel) {
@@ -344,9 +344,9 @@ public final class DetailsTypes {
         IdDisplay getVendor();
 
         @Override
-        @Nullable
-        default String getPackageDisplayNameQualifier() {
-            return AndroidVersionUtils.getFullApiName(getAndroidVersion());
+        @NonNull
+        default String getQualifierTemplate() {
+            return " " + getFullApiName(getAndroidVersion()) + " (revision {0})";
         }
     }
 

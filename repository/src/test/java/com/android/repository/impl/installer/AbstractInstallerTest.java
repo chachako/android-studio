@@ -225,9 +225,7 @@ public class AbstractInstallerTest {
         assertSame(installer.getPackage(), remote);
         assertEquals(
                 installer.getName(),
-                String.format(
-                        "Install %1$s (version %2$s)",
-                        remote.getDisplayName(), remote.getVersion()));
+                String.format("Install %1$s v.%2$s", remote.getDisplayName(), remote.getVersion()));
     }
 
     private static class TestInstaller extends AbstractInstaller {

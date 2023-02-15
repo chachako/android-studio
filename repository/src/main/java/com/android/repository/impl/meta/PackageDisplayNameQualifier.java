@@ -16,21 +16,14 @@
 package com.android.repository.impl.meta;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
 
 public interface PackageDisplayNameQualifier {
     /**
-     * Returns a non-empty string to be appended to the package name, or null to not append
-     * anything.
+     * Returns a template of the qualifier to be appended to the package name. The "{0}" placeholder
+     * in the template is intended to be replaced by the package version.
      */
-    @Nullable
-    default String getPackageDisplayNameQualifier() {
-        return null;
-    }
-
-    /** Returns the term used to identify package version in UI. */
     @NonNull
-    default String getVersionTerm() {
-        return "version";
+    default String getQualifierTemplate() {
+        return " v.{0}";
     }
 }

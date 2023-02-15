@@ -22,7 +22,6 @@ import com.android.repository.Revision;
 import com.android.repository.impl.meta.CommonFactory;
 import com.android.repository.impl.meta.RepoPackageImpl;
 import com.android.repository.impl.meta.TypeDetails;
-import com.google.common.base.Strings;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -56,15 +55,8 @@ public interface RepoPackage extends Comparable<RepoPackage> {
     /** Returns the user-friendly name of this package with additional details. */
     @NonNull
     default String getDetailedDisplayName() {
-        TypeDetails typeDetails = getTypeDetails();
-        StringBuilder result = new StringBuilder(getDisplayName());
-        String qualifier = typeDetails.getPackageDisplayNameQualifier();
-        if (!Strings.isNullOrEmpty(qualifier)) {
-            result.append(' ').append(qualifier);
-        }
-        result.append(" (").append(typeDetails.getVersionTerm());
-        result.append(' ').append(getVersion()).append(")");
-        return result.toString();
+        String qualifierTemplate = getTypeDetails().getQualifierTemplate();
+        return getDisplayName() + qualifierTemplate.replaceAll("\\{0}", getVersion().toString());
     }
 
     /**
