@@ -533,6 +533,376 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testAddNewTomlDependencyFromVariable() {
+    // Checks that (1) we pick a reasonable default library name, (2) when we are already
+    // using version variables in build.gradle.kts we suggest the same variable name, and
+    // (3) repeatedly adding dependencies reuses the same new variable
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            kotlin = "1.7.20"
+
+            [libraries]
+            kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+            kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+            kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+            [plugins]
+            kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            """
+          )
+          .indented(),
+        kts(
+            """
+            val myVer = "31.1.0-alpha04"
+            dependencies {
+              implementation("com.android.tools.lint:lint-api:＄myVer")
+              implementation("com.android.tools.lint:lint-checks:＄myVer")
+              testImplementation("com.google.truth:truth:1.1.3")
+              testImplementation(libs.kotlinTest)
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expect(
+        """
+        build.gradle.kts:3: Warning: Use version catalog instead [UseTomlInstead]
+          implementation("com.android.tools.lint:lint-api:＄myVer")
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:4: Warning: Use version catalog instead [UseTomlInstead]
+          implementation("com.android.tools.lint:lint-checks:＄myVer")
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:5: Warning: Use version catalog instead [UseTomlInstead]
+          testImplementation("com.google.truth:truth:1.1.3")
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 3 warnings
+        """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for lint-api:
+        @@ -3 +3
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-api:＄myVer")
+        +   implementation(libs.lint.api)
+            implementation("com.android.tools.lint:lint-checks:＄myVer")
+        gradle/libs.versions.toml:
+        @@ -3 +3
+          kotlin = "1.7.20"
+        + myVer = "31.1.0-alpha04"
+
+        @@ -8 +9
+          kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+        + lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "myVer" }
+        Autofix for build.gradle.kts line 4: Replace with new library catalog declaration for lint-checks:
+        @@ -4 +4
+            implementation("com.android.tools.lint:lint-api:＄myVer")
+        -   implementation("com.android.tools.lint:lint-checks:＄myVer")
+        +   implementation(libs.lint.checks)
+            testImplementation("com.google.truth:truth:1.1.3")
+        gradle/libs.versions.toml:
+        @@ -3 +3
+          kotlin = "1.7.20"
+        + myVer = "31.1.0-alpha04"
+
+        @@ -8 +9
+          kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "myVer" }
+        Autofix for build.gradle.kts line 5: Replace with new library catalog declaration for truth:
+        @@ -5 +5
+            implementation("com.android.tools.lint:lint-checks:＄myVer")
+        -   testImplementation("com.google.truth:truth:1.1.3")
+        +   testImplementation(libs.truth)
+            testImplementation(libs.kotlinTest)
+        gradle/libs.versions.toml:
+        @@ -3 +3
+          kotlin = "1.7.20"
+        + truth = "1.1.3"
+
+        @@ -8 +9
+          kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+        + truth = { module = "com.google.truth:truth", version.ref = "truth" }
+        """
+      )
+  }
+
+  fun testAddNewTomlDependencyFromVariableAlreadyExistsSameVersion() {
+    // If we have a Gradle dependency with a version variable, and that version
+    // variable already exists in the TOML file, and the version is an exact match,
+    // then we just offer to use it, with no other alternatives
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            kotlin = "1.7.20"
+            lintVersion = "31.1.0-alpha04"
+
+            [libraries]
+            kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+            """
+          )
+          .indented(),
+        kts(
+            """
+            val lintVersion = "31.1.0-alpha04"
+            dependencies {
+              implementation("com.android.tools.lint:lint-checks:＄{lintVersion}")
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expect(
+        """
+            build.gradle.kts:3: Warning: Use version catalog instead [UseTomlInstead]
+              implementation("com.android.tools.lint:lint-checks:＄{lintVersion}")
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            0 errors, 1 warnings
+            """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for lint-checks:
+        @@ -3 +3
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-checks:＄{lintVersion}")
+        +   implementation(libs.lint.checks)
+          }
+        gradle/libs.versions.toml:
+        @@ -7 +7
+          kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        """
+      )
+  }
+
+  @Suppress("GroovyUnusedAssignment")
+  fun testAddNewTomlDependencyFromVariableAlreadyExistsSameVersionGroovy() {
+    // Like testAddNewTomlDependencyFromVariableAlreadyExistsSameVersion, but with Groovy instead of
+    // KTS
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            kotlin = "1.7.20"
+            lintVersion = "31.1.0-alpha04"
+
+            [libraries]
+            kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+            """
+          )
+          .indented(),
+        gradle(
+            """
+            def lintVersion = "31.1.0-alpha04"
+            dependencies {
+              implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+              implementation("com.android.tools.lint:lint-api:＄{lintVersion}")
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expect(
+        """
+        build.gradle:3: Warning: Use version catalog instead [UseTomlInstead]
+          implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle:4: Warning: Use version catalog instead [UseTomlInstead]
+          implementation("com.android.tools.lint:lint-api:＄{lintVersion}")
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 2 warnings
+        """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Autofix for build.gradle line 3: Replace with new library catalog declaration for lint-checks:
+        @@ -3 +3
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+        +   implementation(libs.lint.checks)
+            implementation("com.android.tools.lint:lint-api:＄{lintVersion}")
+        gradle/libs.versions.toml:
+        @@ -7 +7
+          kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        Autofix for build.gradle line 4: Replace with new library catalog declaration for lint-api:
+        @@ -4 +4
+            implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+        -   implementation("com.android.tools.lint:lint-api:＄{lintVersion}")
+        +   implementation(libs.lint.api)
+          }
+        gradle/libs.versions.toml:
+        @@ -7 +7
+          kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        + lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lintVersion" }
+        """
+      )
+  }
+
+  fun testAddNewTomlDependencyFromVariableAlreadyExistsWrongVersion() {
+    // Similar to testAddNewTomlDependencyFromVariable, we have a dependency in the build.gradle
+    // file which already includes a version variable name; try to reuse this, but here, the
+    // variable already exists in the TOML file too (common in the middle of migrating many
+    // dependencies); check that we get two fixes suggested; one to reuse, one to create new.
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            kotlin = "1.7.20"
+            lintVersion = "30.0.0"
+
+            [libraries]
+            kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+            """
+          )
+          .indented(),
+        kts(
+            """
+            val lintVersion = "31.1.0-alpha04"
+            dependencies {
+              implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expect(
+        """
+        build.gradle.kts:3: Warning: Use version catalog instead [UseTomlInstead]
+          implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Fix for build.gradle.kts line 3: Replace with new library catalog declaration, reusing version variable lintVersion (version=30.0.0):
+        @@ -3 +3
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+        +   implementation(libs.lint.checks)
+          }
+        gradle/libs.versions.toml:
+        @@ -7 +7
+          kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        Fix for build.gradle.kts line 3: Change lintVersion to 31.1.0-alpha04:
+        gradle/libs.versions.toml:
+        @@ -3 +3
+          kotlin = "1.7.20"
+        - lintVersion = "30.0.0"
+        + lintVersion = "31.1.0-alpha04"
+        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for android-lint-checks:
+        @@ -3 +3
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-checks:＄lintVersion")
+        +   implementation(libs.android.lint.checks)
+          }
+        gradle/libs.versions.toml:
+        @@ -3 +3
+          kotlin = "1.7.20"
+        + lintChecks = "31.1.0-alpha04"
+          lintVersion = "30.0.0"
+        @@ -6 +7
+          [libraries]
+        + android-lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintChecks" }
+          kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        """
+      )
+  }
+
+  fun testAddNewTomlDependencyFromVariableOfferExistingVariable() {
+    // Look through the existing variables, and if one of them is a match for this specific
+    // version, offer to use it.
+    lint()
+      .files(
+        gradleToml(
+            """
+            [versions]
+            kotlin = "1.7.20"
+            lintVersion = "31.1.0-alpha04"
+
+            [libraries]
+            kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+            lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lintVersion" }
+            """
+          )
+          .indented(),
+        kts(
+            """
+            dependencies {
+              implementation("com.android.tools.lint:lint-checks:31.1.0-alpha04")
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .run()
+      .expect(
+        """
+        build.gradle.kts:2: Warning: Use version catalog instead [UseTomlInstead]
+          implementation("com.android.tools.lint:lint-checks:31.1.0-alpha04")
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+        Autofix for build.gradle.kts line 2: Replace with new library catalog declaration, reusing version variable lintVersion:
+        @@ -2 +2
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-checks:31.1.0-alpha04")
+        +   implementation(libs.lint.checks)
+          }
+        gradle/libs.versions.toml:
+        @@ -8 +8
+          lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lintVersion" }
+        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        Autofix for build.gradle.kts line 2: Replace with new library catalog declaration for android-lint-checks:
+        @@ -2 +2
+          dependencies {
+        -   implementation("com.android.tools.lint:lint-checks:31.1.0-alpha04")
+        +   implementation(libs.android.lint.checks)
+          }
+        gradle/libs.versions.toml:
+        @@ -3 +3
+          kotlin = "1.7.20"
+        + lintChecks = "31.1.0-alpha04"
+          lintVersion = "31.1.0-alpha04"
+        @@ -6 +7
+          [libraries]
+        + android-lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintChecks" }
+          kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+        """
+      )
+  }
+
   fun testAddNewTomlDependencyKts() {
     // Like testAddNewTomlDependency, but with three changes:
     // (11) Add something after the libraries such that the last library isn't at the end of the
@@ -721,11 +1091,11 @@ class GradleDetectorTest : AbstractCheckTest() {
                 gradle/libs.versions.toml:
                 @@ -7 +7
                   flamingo="5"
-                + fragment = "1.5.1"
+                + fragmentVersion = "1.5.1"
                   giraffe="6"
                 @@ -11 +12
                   androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
-                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+                + androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragmentVersion" }
                   androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
                 """
       )

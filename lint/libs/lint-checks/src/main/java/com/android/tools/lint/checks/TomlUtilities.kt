@@ -131,8 +131,9 @@ fun createMoveToTomlFix(
   context: GradleContext,
   librariesMap: LintTomlValue,
   gc: GradleCoordinate,
-  valueCookie: Any
-): Pair<String, LintFix>? {
+  valueCookie: Any,
+  versionVar: String?,
+): Pair<String?, LintFix>? {
   if (librariesMap !is LintTomlMapValue) return null
   val document = librariesMap.getDocument()
   val versionsMap = document.getValue(VC_VERSIONS) as? LintTomlMapValue
@@ -141,12 +142,13 @@ fun createMoveToTomlFix(
   var artifactVersionNode: LintTomlValue? = null
   var artifactVersion: Version? = null
 
+  val revision = gc.revision
   for ((key, library) in librariesMap.getMappedValues()) {
     val (coordinate, versionNode) = getLibraryFromTomlEntry(versionsMap, library) ?: continue
     val c = GradleCoordinate.parseCoordinateString(coordinate) ?: continue
     if (c.groupId == gc.groupId && c.artifactId == gc.artifactId) {
       // We already have this dependency in the TOML file!
-      if (c.revision == gc.revision) {
+      if (c.revision == revision) {
         // It even matches by version! Just switch the dependency over to it!
         val fix =
           createSwitchToLibraryFix(document, library, key, context, valueCookie, safe = true)
@@ -177,12 +179,13 @@ fun createMoveToTomlFix(
         document,
         context,
         valueCookie,
+        versionVar,
         includeVersionInKey = true
       )
     // (2) Change the version catalog's artifact variable to point to this new version (if higher)
     val higher = artifactVersion != null && gc.lowerBoundVersion > artifactVersion
     val changeVersionFix =
-      if (higher) createChangeVersionFix(gc.revision, artifactVersionNode!!) else null
+      if (higher) createChangeVersionFix(revision, artifactVersionNode!!) else null
     // (3) Change this gradle dependency reference to instead point to the version catalog
     val key = artifactLibrary.getKey()!!
     val switchToVersion =
@@ -194,11 +197,134 @@ fun createMoveToTomlFix(
     return message to fix
   }
 
+  val existingVersionNode = if (versionVar != null) versionsMap?.get(versionVar) else null
+  val existingVersion = existingVersionNode?.getActualValue()?.toString()
+
+  val matchExistingVar = findExistingVariable(gc, versionsMap, librariesMap)?.key
+
   // We didn't find this artifact in the version catalog at all; offer to add it.
-  val fix =
-    createAddNewCatalogLibrary(gc, versionsMap, librariesMap, document, context, valueCookie)
-      ?: return null
-  return "Use version catalog instead" to fix
+  if (existingVersion == null || existingVersion == revision) {
+    val fix =
+      LintFix.create()
+        .alternatives(
+          if (matchExistingVar != null) {
+            // One of the existing version variables matches this exact revision; offer to re-use
+            // it.
+            createAddNewCatalogLibrary(
+              gc,
+              versionsMap,
+              librariesMap,
+              document,
+              context,
+              valueCookie,
+              matchExistingVar,
+              allowExistingVersionVar = true,
+              overrideMessage =
+                "Replace with new library catalog declaration, reusing version variable $matchExistingVar"
+            )
+          } else {
+            null
+          },
+          createAddNewCatalogLibrary(
+            gc,
+            versionsMap,
+            librariesMap,
+            document,
+            context,
+            valueCookie,
+            versionVar,
+            true,
+            autoFix = true,
+            independent = false
+          )
+            ?: return null
+        )
+    return null to fix
+  } else {
+    // The same version variable already exists, but has a different version.
+    // Create three alternatives: Reusing the existing version variable, change version variable to
+    // the new version, or create a new version variable. Only the last option is safe, but probably
+    // usually not
+    // what people want.
+    val fix =
+      LintFix.create()
+        .alternatives(
+          createAddNewCatalogLibrary(
+            gc,
+            versionsMap,
+            librariesMap,
+            document,
+            context,
+            valueCookie,
+            versionVar,
+            allowExistingVersionVar = true,
+            overrideMessage =
+              "Replace with new library catalog declaration, reusing version variable $versionVar (version=$existingVersion)",
+            autoFix = false
+          ),
+          createChangeVersionFix(revision, existingVersionNode),
+          createAddNewCatalogLibrary(
+            gc,
+            versionsMap,
+            librariesMap,
+            document,
+            context,
+            valueCookie,
+            versionVar,
+            allowExistingVersionVar = false
+          ),
+        )
+    return null to fix
+  }
+}
+
+/**
+ * Given a dependency coordinate, looks through existing version variables and decides whether one
+ * of them should be offered as the version variable to be used for this dependency.
+ *
+ * This will be true if (1) the version matches exactly, and (2) if the group matches exactly.
+ */
+private fun findExistingVariable(
+  gc: GradleCoordinate,
+  versions: LintTomlMapValue?,
+  libraries: LintTomlMapValue?
+): Map.Entry<String, LintTomlValue>? {
+  versions ?: return null
+  libraries ?: return null
+  val revision = gc.revision
+  val group = gc.groupId
+  for (versionEntry in versions.getMappedValues()) {
+    val versionNode = versionEntry.value
+    val value = versionNode.getActualValue()
+    if (value == revision) {
+      // See if this variable matches the group of any libraries
+      for (entry in libraries.getMappedValues()) {
+        val library = entry.value as? LintTomlMapValue ?: continue
+        val libraryVersion = getVersion(library, versions) ?: return null
+        if (libraryVersion != versionNode) {
+          continue
+        }
+
+        val module = library["module"]
+        if (module is LintTomlLiteralValue) {
+          val artifact = module.getActualValue()?.toString()?.trim()
+          if (artifact != null) {
+            val index = artifact.indexOf(':')
+            if (index != -1 && group.regionMatches(0, artifact, 0, index)) {
+              return versionEntry
+            }
+          }
+        } else {
+          val libraryGroup = library["group"]?.getActualValue()?.toString()?.trim()
+          if (libraryGroup == group) {
+            return versionEntry
+          }
+        }
+      }
+    }
+  }
+
+  return null
 }
 
 /** Creates fix which changes the version variable in [versionNode] to [version] */
@@ -223,20 +349,32 @@ private fun createAddNewCatalogLibrary(
   document: LintTomlDocument,
   context: GradleContext,
   valueCookie: Any,
-  includeVersionInKey: Boolean = false
+  versionVar: String?,
+  allowExistingVersionVar: Boolean = false,
+  includeVersionInKey: Boolean = false,
+  overrideMessage: String? = null,
+  autoFix: Boolean = true,
+  independent: Boolean = autoFix
 ): LintFix? {
   // TODO: Be smarter about version variables:
   //   (1) use the same naming convention
   //   (2) for related libraries, offer to "reuse" it? (e.g. for related kotlin libraries. Be
   // careful here.)
-
-  val versionVariable = pickVersionVariableName(gc, versionsMap?.getMappedValues())
+  val versionVariable =
+    pickVersionVariableName(gc, versionsMap?.getMappedValues(), versionVar, allowExistingVersionVar)
   val libraryVariable =
     pickLibraryVariableName(gc, librariesMap.getMappedValues(), includeVersionInKey)
 
   val source = document.getSource()
-  val versionVariableFix = createAddVersionFix(versionsMap, source, document, versionVariable, gc)
-  val usedVariable = if (versionVariableFix == null) null else versionVariable
+  val versionVariableFix: LintFix?
+  val usedVariable: String?
+  if (versionsMap == null || !versionsMap.contains(versionVariable)) {
+    versionVariableFix = createAddVersionFix(versionsMap, source, document, versionVariable, gc)
+    usedVariable = if (versionVariableFix == null) null else versionVariable
+  } else {
+    versionVariableFix = null
+    usedVariable = versionVariable
+  }
   val insertLibraryFix =
     createInsertLibraryFix(librariesMap, source, libraryVariable, gc, usedVariable, document)
       ?: return null
@@ -244,7 +382,7 @@ private fun createAddNewCatalogLibrary(
     createReplaceWithLibraryReferenceFix(document, context, valueCookie, libraryVariable, true)
 
   return LintFix.create()
-    .name("Replace with new library catalog declaration for $libraryVariable")
+    .name(overrideMessage ?: "Replace with new library catalog declaration for $libraryVariable")
     .composite(
       // Insert versions variable declaration
       versionVariableFix,
@@ -253,7 +391,7 @@ private fun createAddNewCatalogLibrary(
       // Update build.gradle to link to it
       gradleFix
     )
-    .autoFix()
+    .autoFix(autoFix, independent)
 }
 
 /**
@@ -392,10 +530,10 @@ private fun createAddVersionFix(
   gc: GradleCoordinate
 ): LintFix? {
   val separator = if (spaceAroundEquals(versionsMap)) " = " else "="
-  var variableDeclaration = "$versionVariable$separator\"${gc.revision}\"\n"
+  val variableDeclaration = "$versionVariable$separator\"${gc.revision}\"\n"
 
   // Is the list already in alphabetical order?
-  var independent = true
+  val independent = true
   val before = getBeforeIfAlphabeticOrder(versionsMap, versionVariable)
   val versionInsertOffset: Int =
     if (before != null) {
@@ -605,14 +743,33 @@ private fun pickLibraryVariableName(
 }
 
 /**
+ * Whether this map of versions or library keys contains the given [name], with case-insensitive
+ * matching.
+ */
+private fun LintTomlMapValue?.contains(name: String): Boolean {
+  this ?: return false
+  return getMappedValues().any { it.key.equals(name, ignoreCase = true) }
+}
+
+/**
  * Picks a suitable name for the version variable to use for [gc] which is unique and ideally
- * follows the existing naming style.
+ * follows the existing naming style. Ensures that the suggested name does not conflict with an
+ * existing versions listed in the [versionsMap].
+ *
+ * If the optional [versionVar] name is provided, this is a preferred name to use. It will only use
+ * that name if it is not already in use, **or**, if [allowExistingVersionVar] is set to true.
  */
 @VisibleForTesting
 fun pickVersionVariableName(
   gc: GradleCoordinate,
-  versionsMap: Map<String, LintTomlValue>?
+  versionsMap: Map<String, LintTomlValue>?,
+  versionVar: String? = null,
+  allowExistingVersionVar: Boolean = false
 ): String {
+  if (allowExistingVersionVar && versionVar != null) {
+    return versionVar
+  }
+
   val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
   if (versionsMap != null) {
@@ -624,6 +781,14 @@ fun pickVersionVariableName(
   val reservedQuickfixNames = getReservedQuickfixNames(VC_VERSIONS)
   for (key in reservedQuickfixNames) {
     reserved.add(key)
+  }
+
+  // Is the gradle coordinate *already* using a variable name? If so, use that!
+  // (we do this *outside* of the reservedQuickfix check because for multiple
+  // dependencies all referencing the same variable we want to make the same
+  // suggestion over and over.
+  if (versionVar != null && !reserved.contains(versionVar)) {
+    return versionVar
   }
 
   val suggestion = pickVersionVariableName(gc, reserved)

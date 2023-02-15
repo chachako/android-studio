@@ -147,6 +147,17 @@ class TomlUtilitiesTest {
       "com-google-foo-bar",
       "com-google-foo-bar2"
     )
+
+    // If there is a preferred version variable, use it -- unless it exists, or we allow reuse
+    versionName("myVariable", "com.google:foo:1.0", versionVariable = "myVariable")
+    versionName("foo", "com.google:foo:1.0", "myVariable", versionVariable = "myVariable")
+    versionName(
+      "myVariable",
+      "com.google:foo:1.0",
+      "myVariable",
+      versionVariable = "myVariable",
+      allowExistingVersionVar = true
+    )
   }
 
   // Test fixtures below
@@ -157,20 +168,34 @@ class TomlUtilitiesTest {
     vararg variableNames: String,
     includeVersions: Boolean = false
   ) {
-    check(expected, coordinateString, ::pickLibraryVariableName, includeVersions, *variableNames)
+    check(
+      expected,
+      coordinateString,
+      { gc, libraries, include, _, _ -> pickLibraryVariableName(gc, libraries, include) },
+      includeVersions,
+      null,
+      false,
+      *variableNames
+    )
   }
 
   private fun versionName(
     expected: String,
     coordinateString: String,
     vararg variableNames: String,
-    includeVersions: Boolean = false
+    includeVersions: Boolean = false,
+    versionVariable: String? = null,
+    allowExistingVersionVar: Boolean = false
   ) {
     check(
       expected,
       coordinateString,
-      { gc, map, _ -> pickVersionVariableName(gc, map) },
+      { gc, map, _, _, _ ->
+        pickVersionVariableName(gc, map, versionVariable, allowExistingVersionVar)
+      },
       includeVersions,
+      versionVariable,
+      allowExistingVersionVar,
       *variableNames
     )
   }
@@ -180,9 +205,15 @@ class TomlUtilitiesTest {
     coordinateString: String,
     suggestName:
       (
-        gc: GradleCoordinate, libraryMap: Map<String, LintTomlValue>, includeVersionInKey: Boolean
+        gc: GradleCoordinate,
+        libraryMap: Map<String, LintTomlValue>,
+        includeVersionInKey: Boolean,
+        preferred: String?,
+        allowExisting: Boolean
       ) -> String,
     includeVersions: Boolean,
+    versionVariable: String?,
+    allowExisting: Boolean,
     vararg variableNames: String
   ) {
     val gc = GradleCoordinate.parseCoordinateString(coordinateString)!!
@@ -191,7 +222,7 @@ class TomlUtilitiesTest {
     for (variable in variableNames) {
       map[variable] = value
     }
-    val name = suggestName(gc, map, includeVersions)
+    val name = suggestName(gc, map, includeVersions, versionVariable, allowExisting)
     assertEquals(expected, name)
     GradleDetector.reservedQuickfixNames = null
   }

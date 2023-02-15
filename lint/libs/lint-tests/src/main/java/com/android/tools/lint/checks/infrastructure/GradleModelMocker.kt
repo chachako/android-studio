@@ -1294,6 +1294,16 @@ constructor(
           }
         }
       }
+      key.startsWith("def ") && !key.contains("{") -> {
+        val s = key.removePrefix("def ").trim()
+        val space = s.indexOf(' ')
+        if (space != -1) {
+          val name = s.substring(0, space).trim()
+          ext[name] = getUnquotedValue(key)
+        } else {
+          warn("ignored line: $line, context=$context")
+        }
+      }
       else -> {
         warn("ignored line: $line, context=$context")
       }

@@ -530,8 +530,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
             }
 
             val tomlLibraries = context.getTomlValue(VC_LIBRARIES)
-            if (tomlLibraries != null && !dependency.contains("+")) {
-              val result = createMoveToTomlFix(context, tomlLibraries, gc, valueCookie)
+            if (
+              tomlLibraries != null &&
+                !dependency.contains("+") &&
+                (!dependency.contains("$") || isResolved)
+            ) {
+              val versionVar = getVersionVariable(value)
+              val result = createMoveToTomlFix(context, tomlLibraries, gc, valueCookie, versionVar)
               val message = result?.first ?: "Use version catalog instead"
               val fix = result?.second
               report(context, valueCookie, SWITCH_TO_TOML, message, fix)
@@ -625,6 +630,37 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
       property == "include" && parent == "abi" || property == "abiFilters" && parent == "ndk"
     ) {
       checkForChromeOSAbiSplits(context, valueCookie, value)
+    }
+  }
+
+  /**
+   * Given a dependency string, returns the name of the version variable, if any, assuming it's a
+   * single variable which represents the whole revision. For example, for `foo:bar:$version` and
+   * `foo:bar:${version}` and `foo:bar:${version}@jar` it would return "version". For `foo:bar:1.0`
+   * or `foo:bar:${version}-alpha` it would return null.
+   */
+  private fun getVersionVariable(dependency: String): String? {
+    if (!dependency.contains("\$")) {
+      return null
+    }
+    var value = dependency.removeSurrounding("'").removeSurrounding("\"").substringAfterLast(':')
+    if (value.startsWith("\$")) {
+      if (value.startsWith("\${")) {
+        val end = value.indexOf('}')
+        if (end == -1 || end < value.length - 1 && value[end + 1] != '@') {
+          return null
+        }
+        value = value.removePrefix("\${").removeSuffix("}")
+      } else {
+        value = value.removePrefix("\$")
+      }
+    } else {
+      return null
+    }
+    if (value.all { it.isLetter() }) {
+      return value
+    } else {
+      return null
     }
   }
 
