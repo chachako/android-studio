@@ -16,6 +16,9 @@
 
 package com.android.build.gradle.integration.application;
 
+import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
+import static com.android.testutils.truth.PathSubject.assertThat;
+
 import com.android.SdkConstants;
 import com.android.Version;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
@@ -33,11 +36,6 @@ import com.android.testutils.apk.Dex;
 import com.android.utils.FileUtils;
 import com.android.utils.Pair;
 import com.google.common.collect.Sets;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,9 +43,9 @@ import java.nio.file.Path;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.testutils.truth.PathSubject.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /** Assemble tests for minify. */
 public class MinifyTest {
@@ -79,8 +77,6 @@ public class MinifyTest {
         assertThat(debugShrinker).isNull();
     }
 
-    // TODO(b/205264185): Re-enable test and publicize
-    @Ignore
     @Test
     public void appApkIsMinified() throws Exception {
         GradleBuildResult result = project.executor().run("assembleMinified");
@@ -95,19 +91,18 @@ public class MinifyTest {
         Set<String> allClasses = Sets.newHashSet();
         for (Dex dex : apk.getAllDexes()) {
             allClasses.addAll(
-                    dex.getClasses()
-                            .keySet()
-                            .stream()
+                    dex.getClasses().keySet().stream()
                             .filter(
                                     c ->
                                             !c.startsWith("Lorg/jacoco")
+                                                    && !c.startsWith("Lcom/android/tests/basic/R$")
                                                     && !c.equals("Lcom/vladium/emma/rt/RT;"))
                             .collect(Collectors.toSet()));
         }
 
         assertThat(allClasses)
                 .containsExactly(
-                        "La/a;",
+                        "Lcom/android/tests/basic/StringProvider;",
                         "Lcom/android/tests/basic/Main;",
                         "Lcom/android/tests/basic/IndirectlyReferencedClass;");
 
@@ -243,8 +238,6 @@ public class MinifyTest {
         assertThat(minified).doesNotContainClass("Lexample/ToBeRemoved;");
     }
 
-    // TODO(b/205264185): Re-enabel and publicize
-    @Ignore
     @Test
     public void testApkIsNotMinified_butMappingsAreApplied() throws Exception {
         // Run just a single task, to make sure task dependencies are correct.
@@ -268,7 +261,7 @@ public class MinifyTest {
         assertThat(apk)
                 .hasClass("Lcom/android/tests/basic/MainTest;")
                 .that()
-                .hasFieldWithType("stringProvider", "La/a;");
+                .hasFieldWithType("stringProvider", "Lcom/android/tests/basic/StringProvider;");
     }
 
     @Test

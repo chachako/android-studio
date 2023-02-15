@@ -548,8 +548,6 @@ class MinifyFeaturesTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    // TODO(b/205264185): To re-enable
-    @Ignore
     @Test
     fun testApksAreMinified() {
 
@@ -584,10 +582,10 @@ class MinifyFeaturesTest {
         project.getSubproject("baseModule").getApk(apkType).use { apk ->
             assertThat(apk.file).exists()
             assertThat(apk).containsClass("Lcom/example/baseModule/Main;")
-            assertThat(apk).containsClass("Lcom/example/baseModule/a;")
+            assertThat(apk).containsClass("Lcom/example/baseModule/StringProvider;")
             assertThat(apk).containsClass("Lcom/example/baseModule/EmptyClassToKeep;")
             assertThat(apk).containsClass("Lcom/example/lib1/EmptyClassToKeep;")
-            assertThat(apk).containsClass("Lcom/example/lib1/a;")
+            assertThat(apk).containsClass("Lcom/example/lib1/Lib1Class;")
             assertThat(apk).containsJavaResource("base_java_res.txt")
             assertThat(apk).containsJavaResource("lib1_java_res.txt")
             assertThat(apk).doesNotContainClass("Lcom/example/baseFeature/EmptyClassToRemove;")
@@ -611,7 +609,7 @@ class MinifyFeaturesTest {
             )
             assertThat(apk).containsClass("Lcom/example/lib2/EmptyClassToKeep;")
             assertThat(apk).containsClass("Lcom/example/lib2/FooView;")
-            assertThat(apk).containsClass("Lcom/example/lib2/a;")
+            assertThat(apk).containsClass("Lcom/example/lib2/Lib2Class;")
             assertThat(apk).doesNotContainClass(
                     "Lcom/example/otherFeature1/EmptyClassToRemove;"
             )
@@ -638,8 +636,6 @@ class MinifyFeaturesTest {
         }
     }
 
-    // TODO(b/205264185): Re-enable
-    @Ignore
     @Test
     fun testBundleIsMinified() {
         project.executor().run("bundleMinified")
@@ -662,10 +658,10 @@ class MinifyFeaturesTest {
             // check base classes
             val expectedBaseClasses = listOf(
                 "Lcom/example/baseModule/Main;",
-                "Lcom/example/baseModule/a;",
+                "Lcom/example/baseModule/StringProvider;",
                 "Lcom/example/baseModule/EmptyClassToKeep;",
                 "Lcom/example/lib1/EmptyClassToKeep;",
-                "Lcom/example/lib1/a;"
+                "Lcom/example/lib1/Lib1Class;"
             )
             expectedBaseClasses.forEach {
                     className -> assertThat(it).containsClass("base", className)
@@ -675,7 +671,7 @@ class MinifyFeaturesTest {
                 "Lcom/example/lib1/EmptyClassToRemove;",
                 "Lcom/example/lib2/EmptyClassKeep;",
                 "Lcom/example/lib2/Lib2Class;",
-                "Lcom/example/lib2/a;",
+                "Lcom/example/lib2/EmptyClassToKeep;",
                 "Lcom/example/otherFeature1/Main;",
                 "Lcom/example/otherFeature2/Main;"
             )
@@ -688,7 +684,7 @@ class MinifyFeaturesTest {
                 "Lcom/example/otherFeature1/EmptyClassToKeep;",
                 "Lcom/example/lib2/EmptyClassToKeep;",
                 "Lcom/example/lib2/FooView;",
-                "Lcom/example/lib2/a;"
+                "Lcom/example/lib2/Lib2Class;"
             )
             expectedOtherFeature1Classes.forEach {
                     className -> assertThat(it).containsClass("otherFeature1", className)
@@ -698,7 +694,6 @@ class MinifyFeaturesTest {
                 "Lcom/example/lib2/EmptyClassToRemove;",
                 "Lcom/example/lib1/EmptyClassToKeep;",
                 "Lcom/example/lib1/Lib1Class;",
-                "Lcom/example/lib1/a;",
                 "Lcom/example/baseModule/Main;",
                 "Lcom/example/otherFeature2/Main;"
             )
