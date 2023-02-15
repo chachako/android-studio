@@ -667,7 +667,12 @@ public class ResourceResolver extends RenderResources {
     @Override
     @Nullable
     public StyleResourceValue getStyle(@NonNull ResourceReference styleReference) {
-        ResourceValue style = getUnresolvedResource(styleReference);
+        ResourceValue style;
+        if (styleReference.getResourceType() == ResourceType.ATTR) {
+            style = resolveResValue(findItemInTheme(styleReference));
+        } else {
+            style = getUnresolvedResource(styleReference);
+        }
         if (style == null) {
             return null;
         }

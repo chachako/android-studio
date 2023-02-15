@@ -160,6 +160,7 @@ public class ResourceResolverNoNamespacesTest extends TestCase {
                                     + "    <style name=\"MyTheme\" parent=\"android:Theme.Light\">\n"
                                     + "        <item name=\"android:textColor\">#999999</item>\n"
                                     + "        <item name=\"foo\">?android:colorForeground</item>\n"
+                                    + "        <item name=\"bar\">@style/RandomStyle</item>\n"
                                     + "    </style>\n"
                                     + "    <style name=\"MyTheme.Dotted1\" parent=\"\">\n"
                                     + "    </style>"
@@ -292,6 +293,12 @@ public class ResourceResolverNoNamespacesTest extends TestCase {
         assertNotNull(themeLight);
         StyleResourceValue theme = resolver.getTheme("Theme", true);
         assertNotNull(theme);
+
+        // getStyle
+        StyleResourceValue style =
+                resolver.getStyle(ResourceReference.style(RES_AUTO, "RandomStyle"));
+        assertNotNull(style);
+        assertSame(style, resolver.getStyle(ResourceReference.attr(RES_AUTO, "bar")));
 
         // getParent
         StyleResourceValue parent = resolver.getParent(myTheme);
