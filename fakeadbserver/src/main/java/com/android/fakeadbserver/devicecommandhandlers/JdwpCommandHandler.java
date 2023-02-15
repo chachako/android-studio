@@ -33,6 +33,7 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpCommandI
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpPacket;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpPacketHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmExitHandler;
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmIdSizesHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmVersionHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.MprqHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ReaeHandler;
@@ -76,6 +77,8 @@ public class JdwpCommandHandler extends DeviceCommandHandler {
         addJdwpPacketHandler(JdwpVmExitHandler.Companion.getCommandId(), new JdwpVmExitHandler());
         addJdwpPacketHandler(
                 JdwpVmVersionHandler.Companion.getCommandId(), new JdwpVmVersionHandler());
+        addJdwpPacketHandler(
+                JdwpVmIdSizesHandler.Companion.getCommandId(), new JdwpVmIdSizesHandler());
     }
 
     public void addDdmPacketHandler(int chunkType, @NonNull DDMPacketHandler packetHandler) {
