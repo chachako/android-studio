@@ -43,7 +43,6 @@ import com.android.build.gradle.internal.dependency.ExtractAarTransform
 import com.android.build.gradle.internal.dependency.ExtractCompileSdkShimTransform
 import com.android.build.gradle.internal.dependency.ExtractJniTransform
 import com.android.build.gradle.internal.dependency.ExtractProGuardRulesTransform
-import com.android.build.gradle.internal.dependency.ExtractRuntimeSdkShimTransform
 import com.android.build.gradle.internal.dependency.ExtractSdkShimTransform
 import com.android.build.gradle.internal.dependency.FilterShrinkerRulesTransform
 import com.android.build.gradle.internal.dependency.GenericTransformParameters
@@ -62,6 +61,7 @@ import com.android.build.gradle.internal.dependency.registerDexingOutputSplitTra
 import com.android.build.gradle.internal.dsl.BaseFlavor
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.DefaultConfig
+import com.android.build.gradle.internal.dsl.ModuleStringPropertyKeys
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreSigningConfig
@@ -452,8 +452,7 @@ class DependencyConfigurator(
         return this
     }
 
-    fun configurePrivacySandboxSdkConsumerTransforms(
-            compileSdkHashString: String, buildToolsRevision: Revision, bootstrapCreationConfig : BootClasspathConfig) : DependencyConfigurator {
+    fun configurePrivacySandboxSdkConsumerTransforms(): DependencyConfigurator {
         if (projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
             val defaultDebugSigning = getBuildService(
                     projectServices.buildServiceRegistry,
@@ -488,91 +487,93 @@ class DependencyConfigurator(
                     it.targetType.set(from)
                 }
             }
+        }
+        return this
+    }
 
-            val extractSdkShimTransformParamConfig = {
-                reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
-                val apigeneratorArtifact =
-                        projectServices.projectOptions
-                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
-                                ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
-                val runtimeDependenciesForShimSdk =
-                        projectServices.projectOptions
-                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES)
+    fun <VariantBuilderT : VariantBuilder, VariantT : VariantCreationConfig>
+            configurePrivacySandboxSdkVariantTransforms(
+            components: List<ComponentInfo<VariantBuilderT, VariantT>>,
+            compileSdkHashString: String,
+            buildToolsRevision: Revision,
+            bootstrapCreationConfig: BootClasspathConfig): DependencyConfigurator {
+        if (!projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+            return this
+        }
+
+        fun configureExtractSdkShimTransforms(component: ComponentInfo<VariantBuilderT, VariantT>) {
+            val extractSdkShimTransformParamConfig =
+                    { reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
+                        val experimentalProperties = component.variant.experimentalProperties
+                        experimentalProperties.finalizeValue()
+                        val apigeneratorArtifact =
+                                ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR
+                                        .getValueAsString(experimentalProperties.get())
+                                        ?: projectServices.projectOptions
+                                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
+                                        ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
+                        val runtimeDependenciesForShimSdk =
+                                (ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES
+                                        .getValueAsString(experimentalProperties.get())
+                                        ?: projectServices.projectOptions
+                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES))
                                 ?.split(",")
                                 ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
 
+                        val params = reg.parameters
+                        params.apiGenerator.setFrom(
+                                project.configurations.detachedConfiguration(
+                                        project.dependencies.create(apigeneratorArtifact)))
+                        params.buildTools.initialize(
+                                projectServices.buildServiceRegistry,
+                                compileSdkHashString,
+                                buildToolsRevision)
 
-                val params = reg.parameters
-                params.apiGenerator.setFrom(
-                        project.configurations.detachedConfiguration(
-                                project.dependencies.create(apigeneratorArtifact)))
-                params.buildTools.initialize(
-                        projectServices.buildServiceRegistry,
-                        compileSdkHashString,
-                        buildToolsRevision)
+                        // For kotlin compilation
+                        params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
 
-                // For kotlin compilation
-                params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
+                        val kotlinCompiler = project.configurations.detachedConfiguration(
+                                project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
+                        )
+                        params.kotlinCompiler.from(kotlinCompiler)
+                        params.requireServices.set(
+                                projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES])
+                        params.runtimeDependencies.from(project.configurations.detachedConfiguration(
+                                *runtimeDependenciesForShimSdk.map {
+                                    project.dependencies.create(it)
+                                }.toTypedArray()))
+                    }
 
-                val kotlinCompiler = project.configurations.detachedConfiguration(
-                        project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
-                )
-                params.kotlinCompiler.from(kotlinCompiler)
-                params.requireServices.set(
-                        projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES])
-                params.runtimeDependencies.from(project.configurations.detachedConfiguration(
-                        *runtimeDependenciesForShimSdk.map {
-                            project.dependencies.create(it)
-                        }.toTypedArray()))
+            fun registerExtractSdkShimTransform(usage: String) {
+                project.dependencies.registerTransform(
+                        ExtractCompileSdkShimTransform::class.java,
+                ) { reg ->
+                    val usageObj: Usage = project.objects.named(Usage::class.java, usage)
+                    reg.from.attribute(
+                            ArtifactAttributes.ARTIFACT_FORMAT,
+                            AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
+                    )
+                    reg.from.attribute(
+                            Usage.USAGE_ATTRIBUTE,
+                            usageObj
+                    )
+                    reg.to.attribute(
+                            ArtifactAttributes.ARTIFACT_FORMAT,
+                            AndroidArtifacts.ArtifactType.CLASSES_JAR.type
+                    )
+                    reg.to.attribute(
+                            Usage.USAGE_ATTRIBUTE,
+                            usageObj
+                    )
+                    extractSdkShimTransformParamConfig(reg)
+                }
             }
+            registerExtractSdkShimTransform(Usage.JAVA_API)
+            registerExtractSdkShimTransform(Usage.JAVA_RUNTIME)
+        }
 
-            project.dependencies.registerTransform(
-                ExtractCompileSdkShimTransform::class.java,
-            ) { reg ->
-                val compileUsage: Usage =
-                    project.objects.named(Usage::class.java, Usage.JAVA_API)
-
-                reg.from.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
-                )
-                reg.from.attribute(
-                    Usage.USAGE_ATTRIBUTE,
-                    compileUsage
-                )
-                reg.to.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
-                    AndroidArtifacts.ArtifactType.CLASSES_JAR.type
-                )
-                reg.to.attribute(
-                    Usage.USAGE_ATTRIBUTE,
-                    compileUsage
-                )
-                extractSdkShimTransformParamConfig(reg)
-            }
-            project.dependencies.registerTransform(
-                ExtractRuntimeSdkShimTransform::class.java,
-            ) { reg ->
-                val runtimeUsage: Usage = project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
-
-                reg.from.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR.type
-                )
-                reg.from.attribute(
-                    Usage.USAGE_ATTRIBUTE,
-                    runtimeUsage
-                )
-                reg.to.attribute(
-                    ArtifactAttributes.ARTIFACT_FORMAT,
-                    AndroidArtifacts.ArtifactType.CLASSES_JAR.type
-                )
-                reg.to.attribute(
-                    Usage.USAGE_ATTRIBUTE,
-                    runtimeUsage
-                )
-                extractSdkShimTransformParamConfig(reg)
-            }
+        for (component in components) {
+            configureExtractSdkShimTransforms(component)
         }
         return this
     }

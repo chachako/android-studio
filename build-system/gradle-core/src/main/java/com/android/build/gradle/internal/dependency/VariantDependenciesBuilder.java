@@ -48,7 +48,7 @@ import com.android.build.gradle.internal.core.dsl.MultiVariantComponentDslInfo;
 import com.android.build.gradle.internal.core.dsl.PublishableComponentDslInfo;
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo;
 import com.android.build.gradle.internal.dsl.AbstractPublishing;
-import com.android.build.gradle.internal.dsl.ModulePropertyKeys;
+import com.android.build.gradle.internal.dsl.ModuleBooleanPropertyKeys;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
 import com.android.build.gradle.internal.publishing.ComponentPublishingInfo;
 import com.android.build.gradle.internal.publishing.PublishedConfigSpec;
@@ -688,7 +688,8 @@ public class VariantDependenciesBuilder {
         }
 
         boolean isSelfInstrumenting =
-                ModulePropertyKeys.SELF_INSTRUMENTING.getValueAsBoolean(experimentalProperties);
+                ModuleBooleanPropertyKeys.SELF_INSTRUMENTING.getValueAsBoolean(
+                        experimentalProperties);
         return new VariantDependencies(
                 variantName,
                 dslInfo.getComponentType(),

@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.dsl
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.parseBoolean
 
-enum class ModulePropertyKeys(val keyValue: String, private val defaultValue: Any) {
+enum class ModuleBooleanPropertyKeys(val keyValue: String, private val defaultValue: Any) {
 
     /**
      * If false - the test APK instruments the target project APK, and the classes are provided.

@@ -19,7 +19,7 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.android.build.gradle.internal.dsl.ModulePropertyKeys
+import com.android.build.gradle.internal.dsl.ModuleBooleanPropertyKeys
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -109,7 +109,7 @@ class StartupProfileDexOptimizationTest(
                         // and turn on the feature if necessary
                         onVariants(selector().withName("release"), { variant ->
                             variant.experimentalProperties.put(
-                                "${ModulePropertyKeys.R8_DEX_STARTUP_OPTIMIZATION.keyValue}",
+                                "${ModuleBooleanPropertyKeys.R8_DEX_STARTUP_OPTIMIZATION.keyValue}",
                                 $startupProfileDexOptimization
                             )
                         })
@@ -139,7 +139,7 @@ class StartupProfileDexOptimizationTest(
             // the build should have failed with a proper message to the user.
             assertThat(buildResult.failedTasks).contains(":app:minifyReleaseWithR8")
             assertThat(buildResult.failureMessage).contains(
-                ModulePropertyKeys.R8_DEX_STARTUP_OPTIMIZATION.keyValue
+                ModuleBooleanPropertyKeys.R8_DEX_STARTUP_OPTIMIZATION.keyValue
             )
             return
         }
