@@ -1822,6 +1822,63 @@ abstract class ViewLayoutInspectorTestBase {
     }
 
     @Test
+    fun emptyViewBoundsYieldsNoImage() = createViewInspector { viewInspector ->
+        val eventQueue = ArrayBlockingQueue<ByteArray>(5)
+        inspectorRule.connection.eventListeners.add { bytes ->
+            eventQueue.add(bytes)
+        }
+
+        val packageName = "view.inspector.test"
+        val resources = createResources(packageName)
+        val context = Context(packageName, resources)
+        val mainScreen = ViewGroup(context).apply {
+            setAttachInfo(View.AttachInfo())
+            width = 0
+            height = -1
+        }
+        val fakeBitmapHeader = byteArrayOf(1, 2, 3) // trailed by 0s
+
+        WindowManagerGlobal.getInstance().rootViews.addAll(listOf(mainScreen))
+
+        val startFetchCommand = Command.newBuilder().apply {
+            startFetchCommandBuilder.apply {
+                continuous = true
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            startFetchCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+
+        ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
+
+        mainScreen.viewRootImpl = ViewRootImpl()
+        mainScreen.viewRootImpl.mSurface = Surface()
+        mainScreen.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
+
+        checkNonProgressEvent(eventQueue) { event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
+        }
+        val check = { event: Event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
+            // verify there is no screenshot in the event
+            assertThat(event.layoutEvent.hasScreenshot()).isTrue()
+
+            event.layoutEvent.screenshot.let { screenshot ->
+                assertThat(screenshot.type).isEqualTo(Screenshot.Type.BITMAP)
+                val decompressedBytes = screenshot.bytes.toByteArray().decompress()
+
+                // The full screenshot byte array is width * height
+                assertThat(decompressedBytes.size).isEqualTo(0)
+            }
+        }
+        checkNonProgressEvent(eventQueue, check)
+        // There will be a second one to capture the end of any animation.
+        checkNonProgressEvent(eventQueue, check)
+    }
+
+    @Test
     fun settingScreenshotTypeToExistingDoesntTriggerInvalidate() = createViewInspector { viewInspector ->
         val responseQueue = ArrayBlockingQueue<ByteArray>(1)
         inspectorRule.commandCallback.replyListeners.add { bytes ->

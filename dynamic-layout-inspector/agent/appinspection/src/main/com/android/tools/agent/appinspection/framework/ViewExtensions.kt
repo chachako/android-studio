@@ -68,6 +68,9 @@ fun View.flatten(): Sequence<View> {
  * This method may return null if the app runs out of memory or has a reflection issue.
  */
 fun View.takeScreenshot(scale: Float, bitmapType: BitmapType): Bitmap? {
+    if (width <= 0 || height <= 0) {
+        return null
+    }
     val bitmap = Bitmap.createBitmap(
         (width * scale).roundToInt(),
         (height * scale).roundToInt(),
