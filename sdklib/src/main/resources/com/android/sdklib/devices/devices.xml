@@ -24,6 +24,12 @@
                     <d:mechanism>finger</d:mechanism>
                     <d:screen-type>capacitive</d:screen-type>
                 </d:touch>
+                <d:foldable-region>
+                    <d:x-folded-offset>0</d:x-folded-offset>
+                    <d:y-folded-offset>0</d:y-folded-offset>
+                    <d:x-folded-dimension>884</d:x-folded-dimension>
+                    <d:y-folded-dimension>2208</d:y-folded-dimension>
+                </d:foldable-region>
             </d:screen>
             <d:networking>
                 Wifi
