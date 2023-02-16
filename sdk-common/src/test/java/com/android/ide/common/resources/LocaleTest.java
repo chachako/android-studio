@@ -150,6 +150,7 @@ public class LocaleTest extends TestCase {
         assertEquals(
                 "Serbian (sr / RS) [Latn]",
                 Locale.getLocaleLabel(Locale.create("b+sr+Latn+RS"), true));
+        assertEquals("Spanish (es / 419)", Locale.getLocaleLabel(Locale.create("b+es+419"), true));
     }
 
     public void testLocaleLongLabel() {
@@ -165,5 +166,8 @@ public class LocaleTest extends TestCase {
         assertEquals(
                 "Serbian (sr) in Serbia (RS) [Latn]",
                 Locale.getLocaleLabel(Locale.create("b+sr+Latn+RS"), false));
+        assertEquals(
+                "Spanish (es) in Latin America and the Caribbean (419)",
+                Locale.getLocaleLabel(Locale.create("b+es+419"), false));
     }
 }

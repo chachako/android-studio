@@ -7,5 +7,6 @@ gradle/wrapper/gradle-wrapper.properties
 gradlew
 gradlew.bat
 src/main/resources/ISO-639-2_utf-8.txt
+src/main/resources/UNSD.csv
 src/main/resources/obp.html
 src/main/resources/iso-639-3.zip

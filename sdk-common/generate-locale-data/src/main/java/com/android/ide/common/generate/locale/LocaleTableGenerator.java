@@ -20,13 +20,13 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ibm.icu.util.ULocale;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -404,7 +404,7 @@ public class LocaleTableGenerator {
         importLanguageSpec639_3();
 
         // UMN.49: http://en.wikipedia.org/wiki/UN_M.49
-        populateUNM49();
+        importUNM49();
 
         mLanguage3to2 = Maps.newHashMap();
         for (Map.Entry<String,String> entry : mLanguage2to3.entrySet()) {
@@ -537,19 +537,79 @@ public class LocaleTableGenerator {
         }
     }
 
-    private void populateUNM49() {
-        // TODO: Populate region names from http://en.wikipedia.org/wiki/UN_M.49, e.g.
-        // via something like the following (but we're not doing this, since ICU4J
-        // can't provide actual region names:
-        //        for (Region region : Region.getAvailable(Region.RegionType.CONTINENT)) {
-        //            mRegionName.put(String.valueOf(region.getNumericCode()), region.toString());
-        //        }
-        // What we want here are codes like
-        //  001 World
-        //  002 Africa
-        //  015 Northern Africa
-        //  014 Eastern Africa
-        // etc
+    private void importUNM49() {
+        String fileContent;
+
+        try {
+            InputStream stream = LocaleTableGenerator.class.getResourceAsStream("/UNSD.csv");
+            if (stream == null) {
+                System.err.println(
+                        "Visit https://unstats.un.org/unsd/methodology/m49/overview/ to see the full set of M49 codes,");
+                System.err.println(
+                        "and click the \"CSV\" button to download the data in CSV form.");
+                System.err.println(
+                        "Then save the .csv file at sdk-common/generate-locale-data/src/main/resources/UNSD.csv and rerun.");
+                System.exit(-1);
+            }
+
+            byte[] bytes = ByteStreams.toByteArray(stream);
+            fileContent = new String(bytes, Charsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (fileContent.charAt(0) == '\ufeff') { // Strip off UTF-8 BOM
+            fileContent = fileContent.substring(1);
+        }
+
+        int found = 0;
+        boolean firstLine = true;
+        for (String line : Splitter.on('\n').trimResults().omitEmptyStrings().split(fileContent)) {
+            if (firstLine) {
+                assert line.equals(
+                        "Global Code;Global Name;Region Code;Region Name;Sub-region Code;Sub-region Name;Intermediate Region Code;Intermediate Region Name;Country or Area;M49 Code;ISO-alpha2 Code;ISO-alpha3 Code;Least Developed Countries (LDC);Land Locked Developing Countries (LLDC);Small Island Developing States (SIDS)");
+                firstLine = false;
+                continue;
+            }
+
+            List<String> fields = ImmutableList.copyOf(Splitter.on(';').trimResults().split(line));
+
+            // Global code/name
+            if (registerUNM49Region(fields.get(0), fields.get(1))) found++;
+
+            // Region code/name
+            if (registerUNM49Region(fields.get(2), fields.get(3))) found++;
+
+            // Sub-region code/name
+            if (registerUNM49Region(fields.get(4), fields.get(5))) found++;
+
+            // Intermediate region code/name
+            if (registerUNM49Region(fields.get(6), fields.get(7))) found++;
+
+            // Country or area code/name (these fields are deliberately out of order from the others
+            // above to match column order in the csv).
+            if (registerUNM49Region(fields.get(9), fields.get(8))) found++;
+        }
+
+        if (DEBUG) {
+            System.out.println("Added in " + found + " extra region codes from the UN M49 data.");
+        }
+    }
+
+    private boolean registerUNM49Region(String regionCode, String regionName) {
+        // Many fields in the M49 data are not filled out.
+        if (regionCode.length() == 0) return false;
+
+        assert regionName.length() != 0 : "regionName must have value when regionCode is present";
+
+        if (mRegionName.containsKey(regionCode)) {
+            assert mRegionName.get(regionCode).equals(regionName)
+                    : "Code '" + regionCode + "' has differing values.";
+            return false;
+        }
+
+        mRegionName.put(regionCode, regionName);
+        return true;
     }
 
     private String stripTrailing(String s) {
@@ -813,7 +873,7 @@ public class LocaleTableGenerator {
     }
 
     private String getIso2Region(String iso3Code) {
-        assert iso3Code.length() == 3 : iso3Code;
+        assert iso3Code.length() == 3 : iso3Code + " was " + iso3Code.length() + " chars";
         return mRegion3to2.get(iso3Code);
     }
 
