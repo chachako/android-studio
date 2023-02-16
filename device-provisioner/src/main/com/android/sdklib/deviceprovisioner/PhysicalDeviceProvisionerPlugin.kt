@@ -35,7 +35,7 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
   override val devices = _devices.asStateFlow()
 
   override suspend fun claim(device: ConnectedDevice): DeviceHandle? {
-    val properties = device.deviceProperties().allReadonly()
+    val properties = device.deviceProperties().all().asMap()
 
     val deviceProperties =
       PhysicalDeviceProperties.build {

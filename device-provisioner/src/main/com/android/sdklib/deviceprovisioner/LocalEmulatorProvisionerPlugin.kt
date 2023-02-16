@@ -196,7 +196,7 @@ class LocalEmulatorProvisionerPlugin(
       val handle = deviceHandles[path] ?: return@withLock null
       // For the offline device, we got most properties from the AvdInfo, though we had to
       // compute androidRelease. Now read them from the device.
-      val deviceProperties = device.deviceProperties().allReadonly()
+      val deviceProperties = device.deviceProperties().all().asMap()
       val properties =
         LocalEmulatorProperties.build {
           readCommonProperties(deviceProperties)

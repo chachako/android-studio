@@ -29,9 +29,9 @@ class DevicePropertiesTest {
       mapOf(
         "ro.manufacturer" to "Google",
         "ro.product.model" to "Pixel 5",
-        "ro.build.version.sdk" to "33",
+        "ro.build.version.sdk" to "29",
         "ro.product.cpu.abi" to SdkConstants.ABI_ARM64_V8A,
-        "ro.build.version.release" to "13",
+        "ro.build.version.release" to "10",
         "ro.build.characteristics" to "watch,nosdcard",
         "ro.kernel.qemu" to "1",
       )
@@ -39,10 +39,69 @@ class DevicePropertiesTest {
     val props = builder.buildBase()
     assertThat(props.manufacturer).isEqualTo("Google")
     assertThat(props.model).isEqualTo("Pixel 5")
-    assertThat(props.androidVersion).isEqualTo(AndroidVersion(33))
-    assertThat(props.androidRelease).isEqualTo("13")
+    assertThat(props.androidVersion).isEqualTo(AndroidVersion(29))
+    assertThat(props.androidRelease).isEqualTo("10")
     assertThat(props.abi).isEqualTo(Abi.ARM64_V8A)
     assertThat(props.deviceType).isEqualTo(DeviceType.WEAR)
     assertThat(props.isVirtual).isTrue()
+  }
+
+  @Test
+  fun readAndroidVersion_r() {
+    assertThat(
+        readAndroidVersion(
+          mapOf(
+            "ro.build.version.sdk" to "30",
+            "build.version.extensions.r" to "0",
+          )
+        )
+      )
+      .isEqualTo(AndroidVersion(30, null, null, true))
+  }
+
+  @Test
+  fun readAndroidVersion_tiramisuSidegrade() {
+    assertThat(
+        readAndroidVersion(
+          mapOf(
+            "ro.build.version.sdk" to "33",
+            "build.version.extensions.r" to "5",
+            "build.version.extensions.s" to "5",
+            "build.version.extensions.t" to "3",
+          )
+        )
+      )
+      .isEqualTo(AndroidVersion(33, null, 3, true))
+  }
+
+  @Test
+  fun readAndroidVersion_tiramisu_ext4() {
+    assertThat(
+        readAndroidVersion(
+          mapOf(
+            "ro.build.version.sdk" to "33",
+            "build.version.extensions.r" to "4",
+            "build.version.extensions.s" to "4",
+            "build.version.extensions.t" to "4",
+          )
+        )
+      )
+      .isEqualTo(AndroidVersion(33, null, 4, false))
+  }
+
+  @Test
+  fun readAndroidVersion_udc() {
+    assertThat(
+        readAndroidVersion(
+          mapOf(
+            "ro.build.version.sdk" to "33",
+            "ro.build.version.codename" to "UpsideDownCake",
+            "build.version.extensions.r" to "5",
+            "build.version.extensions.s" to "5",
+            "build.version.extensions.t" to "5",
+          )
+        )
+      )
+      .isEqualTo(AndroidVersion(33, "UpsideDownCake", 5, true))
   }
 }

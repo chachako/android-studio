@@ -23,6 +23,7 @@ import static com.android.sdklib.SdkVersionInfo.RECOMMENDED_MIN_SDK_VERSION;
 import static com.android.sdklib.SdkVersionInfo.camelCaseToUnderlines;
 import static com.android.sdklib.SdkVersionInfo.getApiByBuildCode;
 import static com.android.sdklib.SdkVersionInfo.getApiByPreviewName;
+import static com.android.sdklib.SdkVersionInfo.getBaseExtensionLevel;
 import static com.android.sdklib.SdkVersionInfo.getBuildCode;
 import static com.android.sdklib.SdkVersionInfo.getCodeName;
 import static com.android.sdklib.SdkVersionInfo.getVersion;
@@ -152,6 +153,13 @@ public class SdkVersionInfoTest extends TestCase {
         // make sure all known versions are non-null
         for (int i = 1; i <= HIGHEST_KNOWN_STABLE_API; i++) {
             assertNotNull(getVersionString(i));
+        }
+    }
+
+    public void testAllNewStableApisBaseExtensionLevelDefined() {
+        // When new stable APIs are added, we need to add their base extension level.
+        for (int i = 33; i <= HIGHEST_KNOWN_STABLE_API; i++) {
+            assertTrue(getBaseExtensionLevel(i) > 0);
         }
     }
 }

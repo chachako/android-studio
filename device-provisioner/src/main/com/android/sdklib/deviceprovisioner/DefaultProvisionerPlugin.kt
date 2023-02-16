@@ -39,7 +39,7 @@ class DefaultProvisionerPlugin : DeviceProvisionerPlugin {
   override val devices: StateFlow<List<DeviceHandle>> = _devices.asStateFlow()
 
   override suspend fun claim(device: ConnectedDevice): DeviceHandle {
-    val properties = device.deviceProperties().allReadonly()
+    val properties = device.deviceProperties().all().asMap()
     val deviceProperties = DeviceProperties.build { readCommonProperties(properties) }
     val handle =
       DefaultDeviceHandle(

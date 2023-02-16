@@ -17,7 +17,9 @@ package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.DeviceProperty
 import com.android.adblib.scope
+import com.android.adblib.utils.toImmutableMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +64,8 @@ interface DeviceProvisionerPlugin {
   val createDeviceTemplateAction: CreateDeviceTemplateAction?
     get() = null
 }
+
+fun List<DeviceProperty>.asMap() = associate { it.name to it.value }.toImmutableMap()
 
 /** On device disconnection, runs the given block in the [AdbSession] scope. */
 fun ConnectedDevice.invokeOnDisconnection(block: suspend () -> Unit) {
