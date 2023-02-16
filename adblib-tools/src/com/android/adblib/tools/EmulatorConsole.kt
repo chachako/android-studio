@@ -62,6 +62,15 @@ class EmulatorConsole constructor(
                 ?: throw EmulatorCommandException("No output from \"avd path\"")
         )
 
+    /**
+     * Checks if the virtual machine of Android emulator was stopped.
+     */
+    suspend fun isVmStopped(): Boolean {
+        val status = (sendCommand("avd status").throwOnError().outputLines.firstOrNull()
+            ?: throw EmulatorCommandException("No output from \"avd status\""))
+        return status.endsWith(" stopped")
+    }
+
     suspend fun kill() {
         sendCommand("kill").throwOnError()
     }

@@ -25,6 +25,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.BufferedReader
 import java.io.IOException
@@ -127,6 +128,21 @@ class EmulatorConsoleTest {
         assertEquals(listOf("/tmp/avd/nexus_5.avd"), avdPath.outputLines)
 
         fakeEmulator.close()
+    }
+
+    @Test
+    fun isVmStopped() {
+        val console = connectNoAuth()
+
+        val stopped1 = scope.async { console.isVmStopped() }
+        assertEquals("avd status", fakeEmulator.inputQueue.take())
+        fakeEmulator.outputQueue.put("virtual device is running\r\nOK\r\n")
+        runBlockingWithTimeout { assertFalse(stopped1.await()) }
+
+        val stopped2 = scope.async { console.isVmStopped() }
+        assertEquals("avd status", fakeEmulator.inputQueue.take())
+        fakeEmulator.outputQueue.put("virtual device is stopped\r\nOK\r\n")
+        runBlockingWithTimeout { assertTrue(stopped2.await()) }
     }
 
     @Test
