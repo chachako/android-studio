@@ -3704,4 +3704,97 @@ class CleanupDetectorTest : AbstractCheckTest() {
             """
         )
     }
+
+    fun test269431232() {
+        // Regression test for
+        // 269431232: "Recycle" rule false positive for labeled expression as use() argument
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+
+                import android.animation.ValueAnimator
+
+                fun labelTest() {
+                    val animator = ValueAnimator()
+                    animator.let label@{
+                        it.start()
+                    }
+
+                    ValueAnimator().apply label2@ {
+                        start()
+                    }
+                }
+                """
+            ).indented(),
+            kotlin(
+                """
+                package test.pkg
+
+                import android.content.Context
+                import android.net.Uri
+
+                @Suppress("unused")
+                typealias Strings = Array<String>
+                abstract class CursorTest {
+                    abstract fun something(): Boolean
+                    fun create(ctx: Context, uri: Uri, proj: Strings, selection: String, args: Strings, order: String) {
+                        ctx.contentResolver.query(uri, proj, selection, args, order).use cursor@ { cursor ->
+                            if (something()) {
+                                return@cursor
+                            }
+                        }
+                    }
+                }
+                """
+            ).indented()
+        ).run().expectClean()
+    }
+
+    fun test269431736() {
+        // Regression test for
+        // 269431736: "Recycle" rule false positive for resource set to property in primary constructor
+        lint().files(
+            kotlin(
+                """
+                package test.pkg
+
+                import android.animation.ValueAnimator
+                import android.view.View
+                import android.widget.Button
+
+                abstract class Builder(
+                    view: View,
+                    private val rotateAnimator: ValueAnimator = ValueAnimator(), // OK 1
+                    fadeAnimator: ValueAnimator = ValueAnimator()                // OK 2
+                ) : View.DragShadowBuilder(view), ValueAnimator.AnimatorUpdateListener {
+                    constructor(
+                        enabled: Boolean,
+                        button: Button,
+                        animator: ValueAnimator = ValueAnimator()                // OK 3
+                    ) : this(button, animator)
+
+                    private val rotateAnimator2: ValueAnimator
+                    init {
+                        rotateAnimator2 = ValueAnimator()                        // OK 4
+                        fadeAnimator.start()
+                    }
+
+                    init {
+                        val rotateAnimator3 = ValueAnimator() // ERROR 1
+                    }
+
+                    fun animate() = rotateAnimator.start()
+                }
+                """
+            ).indented()
+        ).run().expect(
+            """
+            src/test/pkg/Builder.kt:25: Warning: This animation should be started with #start() [Recycle]
+                    val rotateAnimator3 = ValueAnimator() // ERROR 1
+                                          ~~~~~~~~~~~~~
+            0 errors, 1 warnings
+            """
+        )
+    }
 }

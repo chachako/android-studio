@@ -63,6 +63,7 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UIfExpression
+import org.jetbrains.uast.ULabeledExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPrefixExpression
@@ -803,6 +804,15 @@ fun UFile.acceptSourceFile(visitor: UastVisitor) {
     } else {
         accept(visitor)
     }
+}
+
+/** Skips down across labeled expressions */
+fun UExpression.skipLabeledExpression(): UExpression {
+    var expression = this
+    while (expression is ULabeledExpression) {
+        expression = expression.expression
+    }
+    return expression
 }
 
 /**

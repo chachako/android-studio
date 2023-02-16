@@ -32,6 +32,7 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isThisOrSuperConstructorCall
+import com.android.tools.lint.detector.api.skipLabeledExpression
 import com.intellij.psi.LambdaUtil
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
@@ -307,7 +308,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                     // loosely match kotlin.io.use() signature and at the same time allow custom
                     // overloads for types not extending Closeable
                     if (call != null && call.valueArgumentCount == 1) {
-                        val argumentType = call.valueArguments.first().getExpressionType()
+                        val argumentType = call.valueArguments.first().skipLabeledExpression().getExpressionType()
                         if (argumentType != null && LambdaUtil.isFunctionalType(argumentType)) {
                             return true
                         }

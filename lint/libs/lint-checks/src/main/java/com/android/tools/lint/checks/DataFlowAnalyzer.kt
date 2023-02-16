@@ -24,6 +24,7 @@ import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isReturningContext
 import com.android.tools.lint.detector.api.isScopingIt
 import com.android.tools.lint.detector.api.isScopingThis
+import com.android.tools.lint.detector.api.skipLabeledExpression
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -35,6 +36,8 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiPrimitiveType
 import com.intellij.psi.PsiVariable
 import org.jetbrains.kotlin.psi.KtCallableReferenceExpression
+import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtSecondaryConstructor
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBinaryExpressionWithType
@@ -327,7 +330,7 @@ abstract class DataFlowAnalyzer(
                 }
             }
 
-            val lambda = node.valueArguments.lastOrNull()?.skipParenthesizedExprDown() as? ULambdaExpression
+            val lambda = node.valueArguments.lastOrNull()?.skipParenthesizedExprDown()?.skipLabeledExpression() as? ULambdaExpression
             if (lambda != null) {
                 handleLambdaSuffix(lambda, node)
             }
@@ -777,6 +780,42 @@ abstract class DataFlowAnalyzer(
             }
         }
         super.afterVisitReturnExpression(node)
+    }
+
+    override fun visitMethod(node: UMethod): Boolean {
+        // If the reference is in a constructor method, it's very likely being passed in
+        // to a property or chained constructor
+        if (node.sourcePsi is KtConstructor<*>) {
+            if (node.sourcePsi is KtSecondaryConstructor) {
+                // See if the tracked value is coming from an initializer if we're in a constructor, and if so,
+                // see if the property is a parameter
+                val body = node.uastBody
+                val call = if (body is UBlockExpression) {
+                    body.expressions.firstOrNull()
+                } else {
+                    body
+                }
+                if (call is UCallExpression) {
+                    for (parameter in node.uastParameters) {
+                        val initializer = parameter.uastInitializer?.skipParenthesizedExprDown()
+                        if (initializer != null && instances.contains(initializer)) {
+                            argument(call, parameter)
+                        }
+                    }
+                }
+            } else {
+                // See if the tracked value is coming from a parameter initializer if we're in a constructor.
+                // This means the value can escape into the class (even if it's just a variable, not a property,
+                // constructor blocks throughout the class can directly reference it.)
+                for (parameter in node.uastParameters) {
+                    val initializer = parameter.uastInitializer?.skipParenthesizedExprDown()
+                    if (initializer != null && instances.contains(initializer)) {
+                        field(parameter)
+                    }
+                }
+            }
+        }
+        return super.visitMethod(node)
     }
 
     /**
