@@ -446,6 +446,11 @@ def _impl(ctx):
         ],
     )
 
+    archive_param_file_feature = feature(
+        name = "archive_param_file",
+        enabled = True,
+    )
+
     compiler_param_file_feature = feature(
         name = "compiler_param_file",
     )
@@ -1852,6 +1857,7 @@ def _impl(ctx):
 
     if ctx.attr.cpu == "k8":
         features = [
+            archive_param_file_feature,
             dependency_file_feature,
             random_seed_feature,
             pic_feature,
@@ -1910,6 +1916,7 @@ def _impl(ctx):
         ]
     elif ctx.attr.cpu == "x64_windows":
         features = [
+            archive_param_file_feature,
             no_legacy_features_feature,
             nologo_feature,
             has_configured_linker_path_feature,
