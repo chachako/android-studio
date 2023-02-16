@@ -24,7 +24,7 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
  * 2. DATA: Sends data to an open stream.
  * 3. CLSE: Closes an open stream.
  * 4. KILL: Kills the reverse forward by no longer accepting local connections. Pre-existing
- * connections may terminate normally.
+ *    connections may terminate normally.
  * 5. REDY: Indicates that the daemon is ready to accept client connections and write to a stream.
  */
 enum class MessageType(val const: Int) {

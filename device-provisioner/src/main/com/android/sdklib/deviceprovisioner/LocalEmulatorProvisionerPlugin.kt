@@ -222,8 +222,10 @@ class LocalEmulatorProvisionerPlugin(
 
   private fun IdDisplay.toDeviceType(): DeviceType =
     when (this) {
-      ANDROID_TV_TAG, GOOGLE_TV_TAG -> DeviceType.TV
-      AUTOMOTIVE_TAG, AUTOMOTIVE_PLAY_STORE_TAG -> DeviceType.AUTOMOTIVE
+      ANDROID_TV_TAG,
+      GOOGLE_TV_TAG -> DeviceType.TV
+      AUTOMOTIVE_TAG,
+      AUTOMOTIVE_PLAY_STORE_TAG -> DeviceType.AUTOMOTIVE
       WEAR_TAG -> DeviceType.WEAR
       else -> DeviceType.HANDHELD
     }
@@ -376,9 +378,12 @@ class LocalEmulatorProperties(
 
   companion object {
     fun build(block: Builder.() -> Unit) =
-      Builder().apply { isVirtual = true }.apply(block).run {
-        LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
-      }
+      Builder()
+        .apply { isVirtual = true }
+        .apply(block)
+        .run {
+          LocalEmulatorProperties(buildBase(), checkNotNull(avdName), checkNotNull(displayName))
+        }
   }
 
   class Builder : DeviceProperties.Builder() {

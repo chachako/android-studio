@@ -80,8 +80,7 @@ class OfflineDeviceProvisionerPlugin : DeviceProvisionerPlugin {
 internal class OfflineConnectedDevice(delegate: ConnectedDevice, initialDeviceInfo: DeviceInfo) :
   ConnectedDevice by delegate {
   override val deviceInfoFlow =
-    delegate
-      .deviceInfoFlow
+    delegate.deviceInfoFlow
       .filter { it.deviceState != ONLINE }
       .stateIn(delegate.scope, SharingStarted.Eagerly, initialDeviceInfo)
 }

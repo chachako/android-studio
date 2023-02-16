@@ -108,7 +108,7 @@ class TimeoutTracker(private val duration: Duration) {
  * updates from elsewhere.
  *
  * @return true if we advanced to the final state, false if we failed to update to the intermediate
- * state
+ *   state
  * @throws TimeoutCancellationException if we timed out before advancing past the intermediate state
  */
 suspend fun <T> MutableStateFlow<T>.advanceStateWithTimeout(

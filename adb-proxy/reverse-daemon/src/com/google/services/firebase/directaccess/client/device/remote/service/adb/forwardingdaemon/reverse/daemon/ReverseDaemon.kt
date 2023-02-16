@@ -72,7 +72,8 @@ object ReverseDaemon {
       val acceptor =
         when (type) {
           "tcp" -> TcpSocketAcceptor(Integer.parseInt(targetPort))
-          "local", "localabstract" -> LocalSocketAcceptor(targetPort)
+          "local",
+          "localabstract" -> LocalSocketAcceptor(targetPort)
           else -> exitProcess(1)
         }
 

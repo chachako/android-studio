@@ -189,8 +189,7 @@ class DeviceProvisionerTest {
 
       // Verify that we never see the offline handle as online
       val states = async {
-        offlineHandle
-          .stateFlow
+        offlineHandle.stateFlow
           .flatMapLatest {
             when (val device = it.connectedDevice) {
               null -> flowOf(null)

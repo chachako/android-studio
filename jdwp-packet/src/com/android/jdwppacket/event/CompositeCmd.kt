@@ -62,7 +62,8 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) {
             reader.getTagValue()
             events.add(Event(kind, requestID))
           }
-          EventKind.MONITOR_CONTENDED_ENTER, EventKind.MONITOR_CONTENDED_ENTERED -> {
+          EventKind.MONITOR_CONTENDED_ENTER,
+          EventKind.MONITOR_CONTENDED_ENTERED -> {
             reader.getThreadID()
             reader.getTaggedObjectID()
             reader.getLocation()
@@ -89,7 +90,9 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) {
             reader.getLocation() // catch location
             events.add(Event(kind, requestID))
           }
-          EventKind.VM_START, EventKind.THREAD_START, EventKind.THREAD_DEATH -> {
+          EventKind.VM_START,
+          EventKind.THREAD_START,
+          EventKind.THREAD_DEATH -> {
             reader.getThreadID()
             events.add(Event(kind, requestID))
           }

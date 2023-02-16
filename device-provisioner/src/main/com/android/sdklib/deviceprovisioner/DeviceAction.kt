@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
  * are defined on subinterfaces, since their signatures may vary.
  *
  * TODO: These did not end up varying much; we perhaps don't need a distinct interface for every
- * action type
+ *   action type
  */
 interface DeviceAction {
   val label: String

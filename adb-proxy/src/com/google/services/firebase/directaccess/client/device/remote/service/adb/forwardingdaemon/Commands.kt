@@ -40,6 +40,7 @@ private const val WRTE = 0x45545257
  *
  * The packets are laid out as follows:
  * 1. Command type (one of CNXN, OPEN, OKAY, CLSE, or WRTE). There are commands we don't support in
+ *
  * ```
  *    this implementation, such as AUTH.
  * ```

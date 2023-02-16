@@ -24,10 +24,10 @@ import com.android.adblib.AdbOutputChannel
  * Each [ForwardingDaemon] creates exactly one [StreamOpener], which it uses to open new [Stream]s.
  * The StreamOpener is responsible for
  * * Opening new streams when requested by the ForwardingDaemon. For this, the StreamOpener may
- * reach out to a remote service.
+ *   reach out to a remote service.
  * * Handling Stream events (likely forwarding them along to the server)
  * * Dispatching new commands received from a remote service back to the *ForwardingDaemon* so that
- * it can appropriately manage the lifecycle of streams.
+ *   it can appropriately manage the lifecycle of streams.
  */
 interface StreamOpener {
   /** Connect to the remote service and register the provided ForwardingDaemon for callbacks. */

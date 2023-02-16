@@ -18,7 +18,9 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbSession
+import java.nio.ByteBuffer
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
@@ -35,8 +37,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import java.nio.ByteBuffer
-import java.util.concurrent.TimeUnit
 
 /**
  * An implementation of the ADB server to device protocol that forwards all commands to a remote
@@ -75,16 +75,17 @@ internal class ForwardingDaemonImpl(
             deviceStateLatch.waitForOnline()
             logger.info("Device is online at port: $devicePort!")
             // A mutex is added to the wrapped AdbChannel for concurrent write calling.
-            localAdbChannel = serverSocket.accept().let { adbChannel ->
+            localAdbChannel =
+              serverSocket.accept().let { adbChannel ->
                 object : AdbChannel by adbChannel {
-                    val writeMutex = Mutex()
-                    override suspend fun write(
-                        buffer: ByteBuffer,
-                        timeout: Long,
-                        unit: TimeUnit
-                    ): Int  = writeMutex.withLock { adbChannel.write(buffer, timeout, unit) }
+                  val writeMutex = Mutex()
+                  override suspend fun write(
+                    buffer: ByteBuffer,
+                    timeout: Long,
+                    unit: TimeUnit
+                  ): Int = writeMutex.withLock { adbChannel.write(buffer, timeout, unit) }
                 }
-            }
+              }
             reverseService =
               ReverseService("localhost:$devicePort", scope, localAdbChannel, adbSession)
 

@@ -84,8 +84,7 @@ internal class ReverseForwardStream(
     scope.launch(Dispatchers.IO) {
       val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
 
-      adbSession
-        .deviceServices
+      adbSession.deviceServices
         .shellCommand(
           device,
           "CLASSPATH=/data/local/tmp/reverse_daemon.dex app_process " +

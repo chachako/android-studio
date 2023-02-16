@@ -121,7 +121,8 @@ class FakeAdbDeviceProvisionerPlugin(
         override suspend fun activate(params: ActivationParams) {
           val properties = state.properties
           fakeAdbDevice =
-            fakeAdb.connectDevice(
+            fakeAdb
+              .connectDevice(
                 serialNumber,
                 properties.manufacturer ?: "(Unknown manufacturer)",
                 properties.model ?: "(Unknown model)",

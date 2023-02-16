@@ -26,9 +26,10 @@ import kotlinx.coroutines.CoroutineScope
  *
  * A forwarding daemon has two primary components:
  * 1. A local server socket, where it speaks the ADB server to device protocol, and it behaves
- * exactly as a local TCP Android device (such as an emulator or device on the same network) would.
+ *    exactly as a local TCP Android device (such as an emulator or device on the same network)
+ *    would.
  * 2. A "StreamOpener" that forwards connections opened locally to a remote service of some kind
- * (possibly gRPC or even just the ADB client to server protocol).
+ *    (possibly gRPC or even just the ADB client to server protocol).
  *
  * In the context of the ForwardingDaemon and its surrounding components, "local" refers to
  * everything on the machine that the forwarding daemon is running on, and "remote" refers to the
