@@ -20,6 +20,7 @@ import com.android.io.CancellableFileIo
 import com.android.prefs.AbstractAndroidLocations.Companion.FOLDER_DOT_ANDROID
 import com.android.utils.EnvironmentProvider
 import com.android.utils.ILogger
+import com.android.utils.NullLogger
 import com.google.common.annotations.VisibleForTesting
 import java.nio.file.Files
 import java.nio.file.Path
@@ -138,7 +139,7 @@ This is the path of preference folder expected by the Android tools."""
      *
      */
     private fun computeAndroidFolder(): Path  {
-        val locator = AndroidPathLocator(environmentProvider, if (!silent) logger else null)
+        val locator = AndroidPathLocator(environmentProvider, if (!silent) logger else NullLogger())
 
         val folder =
                 locator.singlePathOf(

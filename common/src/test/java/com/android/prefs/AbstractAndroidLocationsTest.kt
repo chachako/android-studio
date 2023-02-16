@@ -182,20 +182,20 @@ class AbstractAndroidLocationsTest {
 
         val logger = RecordingLogger()
 
-        checkException(
-            """
-                ANDROID_SDK_HOME is set to the root of your SDK: $testLocation
-                ANDROID_SDK_HOME was meant to be the parent path of the preference folder expected by the Android tools.
-                It is now deprecated.
+        AndroidLocations(provider, logger, silent = false).prefsLocation
+        Truth.assertWithMessage("Expected warning is missing").that(logger.warnings)
+            .containsExactly(
+                """
+                    ANDROID_SDK_HOME is set to the root of your SDK: $testLocation
+                    ANDROID_SDK_HOME was meant to be the parent path of the preference folder expected by the Android tools.
+                    It is now deprecated.
 
-                To set a custom preference folder location, use ANDROID_USER_HOME.
+                    To set a custom preference folder location, use ANDROID_USER_HOME.
 
-                It should NOT be set to the same directory as the root of your SDK.
-                To set a custom SDK location, use ANDROID_HOME.
-            """.trimIndent()
-        ) {
-            AndroidLocations(provider, logger).prefsLocation
-        }
+                    It should NOT be set to the same directory as the root of your SDK.
+                    To set a custom SDK location, use ANDROID_HOME.
+                """.trimIndent()
+        )
     }
 
     @Test
@@ -491,5 +491,6 @@ internal class RecordingLogger: ILogger {
 
 private class AndroidLocations(
     environmentProvider: EnvironmentProvider,
-    logger: ILogger
-): AbstractAndroidLocations(environmentProvider, logger, silent = true)
+    logger: ILogger,
+    silent: Boolean = true,
+): AbstractAndroidLocations(environmentProvider, logger, silent = silent)
