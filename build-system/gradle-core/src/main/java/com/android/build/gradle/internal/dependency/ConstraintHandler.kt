@@ -64,21 +64,6 @@ internal fun Configuration.alignWith(
                             }
                         }
                     }
-                } else if (componentIdentifier is ProjectComponentIdentifier
-                    && componentIdentifier.build.isCurrentBuild
-                    && dependency.requested is ModuleComponentSelector
-                ) {
-                    // Requested external library has been replaced with the project dependency,
-                    // add the same substitution to the target configuration, so it can be chosen
-                    // instead of the external library as well.
-                    // We should avoid doing this for composite builds, so we check if the selected
-                    // project is from the current build.
-                    resolutionStrategy.dependencySubstitution.let { sb ->
-                        sb.substitute(dependency.requested)
-                            .because(stringCachingService.cacheString(
-                                "$srcConfigName uses project ${componentIdentifier.getIdString()}"))
-                            .using(sb.project(componentIdentifier.getIdString()))
-                    }
                 }
             }
         }
