@@ -694,6 +694,7 @@ com.android.build.gradle.internal.dsl.LintOptions.warning: void (java.lang.Strin
 com.android.build.gradle.internal.dsl.ManagedDevices.getAllDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
 com.android.build.gradle.internal.dsl.ManagedDevices.getDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
 com.android.build.gradle.internal.dsl.ManagedDevices.getGroups: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> ()
+com.android.build.gradle.internal.dsl.ManagedDevices.getLocalDevices: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ManagedVirtualDevice> ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getApiLevel: int ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getApiPreview: java.lang.String ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getDevice: java.lang.String ()

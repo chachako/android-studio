@@ -124,6 +124,33 @@ class UtpTestTaskStatesTest {
     }
 
     @Test
+    fun checkAddLocalDevicesAddsTasks() {
+        project.gradlePropertiesFile.appendText(
+            "\nandroid.experimental.androidTest.useUnifiedTestPlatform=true\n")
+        appProject.buildFile.appendText("""
+            android {
+                testOptions {
+                    managedDevices {
+                        localDevices {
+                            device1 {
+                                device = "Pixel 2"
+                                apiLevel = 29
+                                systemImageSource = "aosp"
+                            }
+                        }
+                    }
+                }
+            }
+        """)
+        assertTaskExists(project, "app:cleanManagedDevices")
+        assertTaskExists(project, "app:device1Setup")
+        assertTaskExists(project, "app:device1DebugAndroidTest")
+        assertTaskExists(project, "app:allDevicesDebugAndroidTest")
+        assertTaskExists(project, "app:device1Check")
+        assertTaskExists(project, "app:allDevicesCheck")
+    }
+
+    @Test
     fun checkDslSupportsMultipleDevices() {
         project.gradlePropertiesFile.appendText(
             "\nandroid.experimental.androidTest.useUnifiedTestPlatform=true\n")

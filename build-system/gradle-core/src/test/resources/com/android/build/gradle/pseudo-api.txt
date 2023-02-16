@@ -1694,6 +1694,7 @@ com.android.build.gradle.internal.dsl.ManagedDevices.<init>: com.android.build.g
 com.android.build.gradle.internal.dsl.ManagedDevices.getAllDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
 com.android.build.gradle.internal.dsl.ManagedDevices.getDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
 com.android.build.gradle.internal.dsl.ManagedDevices.getGroups: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> ()
+com.android.build.gradle.internal.dsl.ManagedDevices.getLocalDevices: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ManagedVirtualDevice> ()
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice implements com.android.build.api.dsl.ManagedVirtualDevice
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.<init>: com.android.build.gradle.internal.dsl.ManagedVirtualDevice (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.getApiLevel: int ()
@@ -1707,6 +1708,10 @@ com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setApiPreview: void (
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setDevice: void (java.lang.String)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setRequire64Bit: void (boolean)
 com.android.build.gradle.internal.dsl.ManagedVirtualDevice.setSystemImageSource: void (java.lang.String)
+com.android.build.gradle.internal.dsl.ManagedVirtualDeviceFactory implements org.gradle.api.NamedDomainObjectFactory
+com.android.build.gradle.internal.dsl.ManagedVirtualDeviceFactory.<init>: com.android.build.gradle.internal.dsl.ManagedVirtualDeviceFactory (com.android.build.gradle.internal.services.DslServices)
+com.android.build.gradle.internal.dsl.ManagedVirtualDeviceFactory.create: com.android.build.gradle.internal.dsl.ManagedVirtualDevice (java.lang.String)
+com.android.build.gradle.internal.dsl.ManagedVirtualDeviceFactory.create: java.lang.Object (java.lang.String)
 com.android.build.gradle.internal.dsl.NdkBuildOptions implements com.android.build.gradle.internal.model.CoreNdkBuildOptions, com.android.build.api.dsl.NdkBuild
 com.android.build.gradle.internal.dsl.NdkBuildOptions.<init>: com.android.build.gradle.internal.dsl.NdkBuildOptions (com.android.build.gradle.internal.services.DslServices)
 com.android.build.gradle.internal.dsl.NdkBuildOptions.buildStagingDirectory: void (java.lang.Object)
