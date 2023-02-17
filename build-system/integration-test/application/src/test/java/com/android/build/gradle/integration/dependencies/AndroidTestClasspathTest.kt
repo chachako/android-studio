@@ -19,11 +19,10 @@ package com.android.build.gradle.integration.dependencies
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
-import com.android.build.gradle.integration.common.utils.IgnoredTests
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -47,13 +46,11 @@ class AndroidTestClasspathTest {
         )
     ).create()
 
-    /** See b/155802460 for more details. */
-    @Ignore(IgnoredTests.BUG_184038058)
     @Test
     fun testAndroidTestClasspathContainsProjectDep() {
-        project.getSubproject("app").buildFile.appendText(
+        val appBuildFile = project.getSubproject("app").buildFile
+        appBuildFile.appendText(
             """
-
             dependencies {
                 implementation "com.test:lib:1.0"
                 implementation project(":lib")
@@ -80,7 +77,23 @@ class AndroidTestClasspathTest {
                 it.writeText("package test; public class DataTest extends Data {}")
             }
 
+            val failure =
+                    executor().expectFailure().run("assembleDebug", "assembleDebugAndroidTest")
+            failure.stderr.use {
+                ScannerSubject.assertThat(it).contains(
+                        "Unable to align dependencies in configurations 'debugRuntimeClasspath' and 'debugAndroidTestRuntimeClasspath', as both require a 'project :lib'.\n" +
+                                "  Recommended action: Add 'androidTestImplementation(project(\":lib\"))' as a dependency in build file: ${buildFile.absolutePath}"
+                )
+            }
+            appBuildFile.appendText(
+                    """
+                            dependencies {
+                                    androidTestImplementation project(":lib")
+                            }
+                            """
+            )
             executor().run("assembleDebug", "assembleDebugAndroidTest")
+
             getApk(GradleTestProject.ApkType.DEBUG).use {
                 assertThatApk(it).containsClass("Ltest/Data;")
             }

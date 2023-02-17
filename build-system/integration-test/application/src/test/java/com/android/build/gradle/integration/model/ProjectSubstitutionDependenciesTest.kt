@@ -41,12 +41,10 @@ class ProjectSubstitutionDependenciesTest: ModelComparator() {
             appendToBuildFile {
                 """
                     configurations.all {
-                      if (name.contains("RuntimeClasspath")) {
                         resolutionStrategy.dependencySubstitution {
                           substitute module("com.example:lib:1.0") using project(":lib")
                           substitute module("com.example:lib2:1.0") using project(":lib2")
                         }
-                      }
                     }
                 """.trimIndent()
             }
