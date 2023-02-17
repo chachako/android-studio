@@ -1511,32 +1511,30 @@ class LintDriver(
             var gradleToml: LintTomlDocument? = null
             val parser = client.getTomlParser()
             for (file in files) {
-                client.runReadAction {
-                    val contents = client.readFile(file)
-                    if (contents.isBlank()) {
-                        return@runReadAction
-                    }
-                    val tomlDocument = parser.parse(file, contents)
-                    if (file.path.endsWith(DOT_VERSIONS_DOT_TOML) && file.parentFile?.name == FD_GRADLE &&
-                        (gradleToml == null || file.name == FN_VERSION_CATALOG)
-                    ) {
-                        // Keep result around for Gradle resolving:
-                        // See https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
-                        gradleToml = tomlDocument
-                    }
-                    val context = TomlContext(this, project, main, file, contents, tomlDocument)
-                    fireEvent(EventType.SCANNING_FILE, context)
-                    for (detector in detectors) {
-                        detector.beforeCheckFile(context)
-                    }
-                    for (detector in tomlScanners) {
-                        tomlDocument.accept(context, detector)
-                    }
-                    for (detector in detectors) {
-                        detector.afterCheckFile(context)
-                    }
-                    fileCount++
+                val contents = client.readFile(file)
+                if (contents.isBlank()) {
+                    continue
                 }
+                val tomlDocument = parser.parse(file, contents)
+                if (file.path.endsWith(DOT_VERSIONS_DOT_TOML) && file.parentFile?.name == FD_GRADLE &&
+                    (gradleToml == null || file.name == FN_VERSION_CATALOG)
+                ) {
+                    // Keep result around for Gradle resolving:
+                    // See https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
+                    gradleToml = tomlDocument
+                }
+                val context = TomlContext(this, project, main, file, contents, tomlDocument)
+                fireEvent(EventType.SCANNING_FILE, context)
+                for (detector in detectors) {
+                    detector.beforeCheckFile(context)
+                }
+                for (detector in tomlScanners) {
+                    tomlDocument.accept(context, detector)
+                }
+                for (detector in detectors) {
+                    detector.afterCheckFile(context)
+                }
+                fileCount++
             }
 
             return gradleToml
