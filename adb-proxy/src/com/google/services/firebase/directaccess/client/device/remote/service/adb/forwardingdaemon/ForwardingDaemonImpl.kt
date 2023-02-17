@@ -31,6 +31,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -48,7 +52,6 @@ internal class ForwardingDaemonImpl(
   private val adbSession: AdbSession
 ) : ForwardingDaemon {
   private val streams = mutableMapOf<Int, Stream>()
-  private val deviceStateLatch = DeviceStateLatch()
   private val startedLatch = Mutex(locked = true)
   private val started = AtomicBoolean(false)
 
@@ -59,7 +62,8 @@ internal class ForwardingDaemonImpl(
   // The socket the local ADB server sends ADB commands to. Bytes, in this case ADB commands,
   // coming to this socket are forwarded to the remote device.
   private lateinit var localAdbChannel: AdbChannel
-  private lateinit var deviceState: DeviceState
+  private val deviceState = MutableStateFlow(DeviceState.MISSING)
+  private val onlineStates = setOf(DeviceState.DEVICE, DeviceState.RECOVERY, DeviceState.RESCUE)
   private lateinit var adbCommandHandler: Job
 
   private suspend fun run() {
@@ -72,7 +76,7 @@ internal class ForwardingDaemonImpl(
         while (true) {
           try {
             logger.info("Waiting for remote device to come online.")
-            deviceStateLatch.waitForOnline()
+            deviceState.takeWhile { it !in onlineStates }.collect()
             logger.info("Device is online at port: $devicePort!")
             // A mutex is added to the wrapped AdbChannel for concurrent write calling.
             localAdbChannel =
@@ -142,15 +146,14 @@ internal class ForwardingDaemonImpl(
 
   override suspend fun onStateChanged(newState: DeviceState, features: String?) {
     if (features != null) this.features = features
-    deviceState = newState
-    deviceStateLatch.onState(newState)
+    deviceState.update { newState }
     if (this::localAdbChannel.isInitialized) localAdbChannel.close()
   }
 
   private suspend fun handleConnect() {
     // We ignore the information in the connect request coming from the local ADB server and
     // respond with device information we gathered when waiting for the device to come online.
-    val response = ConnectCommand(banner = "${deviceState.adbState}::features=$features")
+    val response = ConnectCommand(banner = "${deviceState.value.adbState}::features=$features")
     response.writeTo(localAdbChannel)
   }
 
@@ -183,31 +186,6 @@ internal class ForwardingDaemonImpl(
   /** Receive a command from the remote ADB server. */
   override suspend fun receiveRemoteCommand(command: StreamCommand) {
     streams[command.remoteId]?.receiveCommand(command)
-  }
-
-  private class DeviceStateLatch {
-    private val onlineStates = setOf(DeviceState.DEVICE, DeviceState.RECOVERY, DeviceState.RESCUE)
-    private val waiters = mutableSetOf<Mutex>()
-    private val lock = Mutex()
-    private var state = DeviceState.MISSING
-
-    suspend fun waitForOnline() {
-      val waiter = Mutex(locked = true)
-      lock.withLock {
-        if (state in onlineStates) {
-          return
-        }
-        waiters.add(waiter)
-      }
-      waiter.lock()
-      lock.withLock { waiters.remove(waiter) }
-    }
-
-    suspend fun onState(newState: DeviceState) {
-      if (newState in onlineStates) {
-        lock.withLock { waiters.forEach { if (it.isLocked) it.unlock() } }
-      }
-    }
   }
 
   companion object {
