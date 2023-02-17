@@ -416,7 +416,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
                             + ":"
                             + version)
             // TODO load config name from source sets
-            if (dataBindingOptions.isEnabledForTests || this is LibraryTaskManager) {
+            if (dataBindingOptions.enableForTests || this is LibraryTaskManager) {
                 val dataBindingArtifact =
                     SdkConstants.DATA_BINDING_ANNOTATION_PROCESSOR_ARTIFACT + ":" + version
                 project.dependencies

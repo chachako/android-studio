@@ -134,7 +134,7 @@ internal class DynamicFeatureVariantFactory(
         return UnitTestBuildFeaturesValuesImpl(
             buildFeatures,
             projectOptions,
-            dataBindingOverride = if (!dataBinding.isEnabledForTests) {
+            dataBindingOverride = if (!dataBinding.enableForTests) {
                 false
             } else {
                 null // means whatever is default.
@@ -156,7 +156,7 @@ internal class DynamicFeatureVariantFactory(
         return AndroidTestBuildFeatureValuesImpl(
             buildFeatures,
             projectOptions,
-            dataBindingOverride = if (!dataBinding.isEnabledForTests) {
+            dataBindingOverride = if (!dataBinding.enableForTests) {
                 false
             } else {
                 null // means whatever is default.
