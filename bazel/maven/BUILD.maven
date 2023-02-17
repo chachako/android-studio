@@ -7770,6 +7770,35 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.java-websocket.Java-WebSocket_1.5.3",
+    pom = "repository/org/java-websocket/Java-WebSocket/1.5.3/Java-WebSocket-1.5.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/java-websocket/Java-WebSocket/1.5.3",
+    deps = [
+        "org.slf4j.slf4j-api_1.7.25",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.java-websocket.Java-WebSocket",
+    classifiers = [],
+    jars = [
+        "repository/org/java-websocket/Java-WebSocket/1.5.3/Java-WebSocket-1.5.3.jar"
+    ],
+    exports = [
+        "org.slf4j.slf4j-api",
+    ],
+    original_deps = [
+        "org.slf4j.slf4j-api_1.7.25",
+    ],
+    pom = "repository/org/java-websocket/Java-WebSocket/1.5.3/Java-WebSocket-1.5.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/java-websocket/Java-WebSocket/1.5.3",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jdom.jdom2_2.0.6",
     pom = "repository/org/jdom/jdom2/2.0.6/jdom2-2.0.6.pom",
     repo_root_path = "repository",
@@ -41237,6 +41266,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.slf4j.slf4j-api_1.7.25",
+    pom = "repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom",
+    repo_root_path = "repository",
+    repo_path = "org/slf4j/slf4j-api/1.7.25",
+    parent = "org.slf4j.slf4j-parent_1.7.25",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.slf4j.slf4j-api_1.7.30",
     pom = "repository/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.pom",
     repo_root_path = "repository",
@@ -43226,6 +43264,13 @@ maven_artifact(
     pom = "repository/org/slf4j/slf4j-parent/1.7.2/slf4j-parent-1.7.2.pom",
     repo_root_path = "repository",
     repo_path = "org/slf4j/slf4j-parent/1.7.2",
+)
+
+maven_artifact(
+    name = "org.slf4j.slf4j-parent_1.7.25",
+    pom = "repository/org/slf4j/slf4j-parent/1.7.25/slf4j-parent-1.7.25.pom",
+    repo_root_path = "repository",
+    repo_path = "org/slf4j/slf4j-parent/1.7.25",
 )
 
 maven_artifact(
