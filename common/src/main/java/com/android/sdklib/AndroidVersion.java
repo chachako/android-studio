@@ -88,6 +88,32 @@ public final class AndroidVersion implements Comparable<AndroidVersion>, Seriali
         public static final int TIRAMISU = 33;
     }
 
+    /**
+     * Starting Android "T", every new release has a base <a
+     * href="https://developer.android.com/guide/sdk-extensions">SDK extension</a> version, i.e. the
+     * minimum SDK extension version number supported by that release.
+     */
+    public enum ApiBaseExtension {
+        TIRAMISU(33, 3);
+
+        private final int myApi;
+
+        private final int myExtension;
+
+        ApiBaseExtension(int api, int extension) {
+            myApi = api;
+            myExtension = extension;
+        }
+
+        public int getApi() {
+            return myApi;
+        }
+
+        public int getExtension() {
+            return myExtension;
+        }
+    }
+
     public static final Pattern PREVIEW_PATTERN = Pattern.compile("^[A-Z][0-9A-Za-z_]*$");
 
     private static final long serialVersionUID = 1L;
@@ -482,6 +508,21 @@ public final class AndroidVersion implements Comparable<AndroidVersion>, Seriali
      */
     public boolean isGreaterOrEqualThan(int api, int extensionLevel) {
         return compareTo(new AndroidVersion(api, null, extensionLevel, true)) >= 0;
+    }
+
+    /**
+     * Returns the base extension level of the given API version, i.e. the extension level at
+     * release.
+     */
+    public static int getBaseExtensionLevel(int api) {
+
+        ApiBaseExtension[] values = ApiBaseExtension.values();
+        for (ApiBaseExtension value : values) {
+            if (value.getApi() == api) {
+                return value.getExtension();
+            }
+        }
+        return 0;
     }
 
     /**

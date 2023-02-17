@@ -277,19 +277,6 @@ public class SdkVersionInfo {
     }
 
     /**
-     * Returns the base extension level of the given API version, i.e. the extension level at
-     * release.
-     */
-    public static int getBaseExtensionLevel(int api) {
-        switch (api) {
-            case 33:
-                return 3;
-            default:
-                return 0;
-        }
-    }
-
-    /**
      * Returns the applicable build code (for
      * {@code android.os.Build.VERSION_CODES}) for the corresponding API level,
      * or null if it's unknown. The highest number (inclusive) that is supported

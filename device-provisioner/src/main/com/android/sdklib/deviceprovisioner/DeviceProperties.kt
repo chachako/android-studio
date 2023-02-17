@@ -16,16 +16,14 @@
 package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.DevicePropertyNames.RO_BUILD_CHARACTERISTICS
-import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_CODENAME
 import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_RELEASE
-import com.android.adblib.DevicePropertyNames.RO_BUILD_VERSION_SDK
 import com.android.adblib.DevicePropertyNames.RO_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_MODEL
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_CPU_ABI
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MANUFACTURER
 import com.android.adblib.DevicePropertyNames.RO_PRODUCT_MODEL
 import com.android.sdklib.AndroidVersion
-import com.android.sdklib.SdkVersionInfo
+import com.android.sdklib.AndroidVersionUtil
 import com.android.sdklib.devices.Abi
 
 /**
@@ -91,7 +89,7 @@ interface DeviceProperties {
     fun readCommonProperties(properties: Map<String, String>) {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
       model = properties[RO_PRODUCT_MODEL] ?: properties[RO_MODEL]
-      androidVersion = readAndroidVersion(properties)
+      androidVersion = AndroidVersionUtil.androidVersionFromDeviceProperties(properties)
       abi = properties[RO_PRODUCT_CPU_ABI]?.let { Abi.getEnum(it) }
       androidRelease = properties[RO_BUILD_VERSION_RELEASE]
       val characteristics = (properties[RO_BUILD_CHARACTERISTICS] ?: "").split(",")
@@ -128,21 +126,6 @@ interface DeviceProperties {
     override val deviceType: DeviceType?,
     override val isVirtual: Boolean?,
   ) : DeviceProperties
-}
-
-internal fun readAndroidVersion(properties: Map<String, String>): AndroidVersion? {
-  val apiLevel = properties[RO_BUILD_VERSION_SDK]?.toIntOrNull() ?: return null
-  val extensions = properties.filter { it.key.startsWith("build.version.extensions.") }
-  // We want to use the extension level of the release that is running on the device.
-  // However, for prereleases, we don't have a "build.version.extensions." property corresponding to
-  // that release yet. Thus, we just use the extension level of the latest release.
-  val extensionLevel = extensions.maxByOrNull { it.key }?.value?.toIntOrNull() ?: 0
-  val baseExtensionLevel = SdkVersionInfo.getBaseExtensionLevel(apiLevel)
-  val codename = properties[RO_BUILD_VERSION_CODENAME]
-  // We consider preview releases to be base, since we don't necessarily know their base extension
-  // level, and when they are released it should be at least the level we see now.
-  val isBase = codename != null || extensionLevel <= baseExtensionLevel
-  return AndroidVersion(apiLevel, codename, extensionLevel.takeIf { it > 0 }, isBase)
 }
 
 /**
