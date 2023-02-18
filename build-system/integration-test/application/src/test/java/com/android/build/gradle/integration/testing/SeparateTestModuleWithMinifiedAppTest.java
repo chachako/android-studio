@@ -21,8 +21,6 @@ import static com.android.build.gradle.integration.common.truth.TruthHelper.asse
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.testutils.apk.Apk;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -56,26 +54,5 @@ public class SeparateTestModuleWithMinifiedAppTest {
         assertThat(result.getFailureMessage())
                 .contains("Mapping file found in tested application.");
 
-    }
-
-    // TODO(b/205264185): Re-enable and make public
-    @Ignore
-    @Test
-    public void checkMappingsApplied() throws Exception {
-        project.executor().run("clean", ":test:assembleMinified");
-
-        GradleTestProject testProject = project.getSubproject("test");
-
-        Apk minified = testProject.getApk("minified");
-        assertThat(minified)
-                .hasClass("Lcom/android/tests/basic/MainTest;")
-                .that()
-                .hasField("mUtility");
-
-        // assert that the field does not have the original type, as it should be remapped
-        assertThat(minified)
-                .hasClass("Lcom/android/tests/basic/MainTest;")
-                .that()
-                .doesNotHaveFieldWithType("mUtility", "Lcom/android/tests/utils/Utility;");
     }
 }

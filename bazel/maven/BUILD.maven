@@ -307,6 +307,56 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.android.tools.desugar_jdk_libs_configuration_nio_2.0.2",
+    pom = "repository/com/android/tools/desugar_jdk_libs_configuration_nio/2.0.2/desugar_jdk_libs_configuration_nio-2.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/desugar_jdk_libs_configuration_nio/2.0.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.android.tools.desugar_jdk_libs_configuration_nio",
+    classifiers = [],
+    jars = [
+        "repository/com/android/tools/desugar_jdk_libs_configuration_nio/2.0.2/desugar_jdk_libs_configuration_nio-2.0.2.jar"
+    ],
+    original_deps = [],
+    pom = "repository/com/android/tools/desugar_jdk_libs_configuration_nio/2.0.2/desugar_jdk_libs_configuration_nio-2.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/desugar_jdk_libs_configuration_nio/2.0.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.desugar_jdk_libs_nio_2.0.2",
+    pom = "repository/com/android/tools/desugar_jdk_libs_nio/2.0.2/desugar_jdk_libs_nio-2.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/desugar_jdk_libs_nio/2.0.2",
+    deps = [
+        "com.android.tools.desugar_jdk_libs_configuration_nio_2.0.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.android.tools.desugar_jdk_libs_nio",
+    classifiers = [],
+    jars = [
+        "repository/com/android/tools/desugar_jdk_libs_nio/2.0.2/desugar_jdk_libs_nio-2.0.2.jar"
+    ],
+    exports = [
+        "com.android.tools.desugar_jdk_libs_configuration_nio",
+    ],
+    original_deps = [
+        "com.android.tools.desugar_jdk_libs_configuration_nio_2.0.2",
+    ],
+    pom = "repository/com/android/tools/desugar_jdk_libs_nio/2.0.2/desugar_jdk_libs_nio-2.0.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/desugar_jdk_libs_nio/2.0.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.beust.jcommander_1.78",
     pom = "repository/com/beust/jcommander/1.78/jcommander-1.78.pom",
     repo_root_path = "repository",

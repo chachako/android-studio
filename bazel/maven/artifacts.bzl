@@ -8,6 +8,8 @@ ARTIFACTS = [
     "com.android.tools.build:transform-api:2.0.0-deprecated-use-gradle-api",
     "com.android.tools:desugar_jdk_libs:1.1.5",
     "com.android.tools:desugar_jdk_libs_configuration:1.1.5",
+    "com.android.tools:desugar_jdk_libs_nio:2.0.2",
+    "com.android.tools:desugar_jdk_libs_configuration_nio:2.0.2",
     "com.github.javaparser:javaparser-core:3.23.0",
     "com.google.apis:google-api-services-storage:v1-rev82-1.22.0",
     "com.google.auto:auto-common:0.10",

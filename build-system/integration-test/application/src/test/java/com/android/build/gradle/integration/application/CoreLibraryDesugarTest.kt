@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.Adb
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
+import com.android.build.gradle.integration.common.fixture.DESUGAR_NIO_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.TestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
@@ -81,6 +82,7 @@ class CoreLibraryDesugarTest {
     private val usedDesugarClass = "Lj$/util/stream/Stream;"
     private val usedDesugarClass2 = "Lj$/time/Month;"
     private val usedDesugarClass3 = "Lj$/time/LocalTime;"
+    private val usedDesugarClass4 = "Lj$/nio/file/Path;"
     private val unusedDesugarClass = "Lj$/time/Year;"
     // Class java.util.stream.StreamOpFlag is selected as it is package private, and used
     // indirectly by the test.
@@ -712,6 +714,65 @@ class CoreLibraryDesugarTest {
         assertNotNull(getDexWithSpecificClass(usedDesugarClass2, apk.allDexes))
     }
 
+    @Test
+    fun testDesugarNioApis() {
+        TestFileUtils.searchAndReplace(
+                app.buildFile,
+                DESUGAR_DEPENDENCY,
+                DESUGAR_NIO_DEPENDENCY
+        )
+        TestFileUtils.searchAndReplace(
+                library.buildFile,
+                DESUGAR_DEPENDENCY,
+                DESUGAR_NIO_DEPENDENCY
+        )
+        TestFileUtils.addMethod(
+                FileUtils.join(app.mainSrcDir,"com/example/helloworld/HelloWorld.java"),
+                """
+                public static String getPathString() {
+                    java.io.File file = new java.io.File("file.txt");
+                    java.nio.file.Path path1 = file.toPath();
+      		    java.nio.file.Path dir = java.nio.file.Paths.get("dir/");
+                    java.nio.file.Path resolve = dir.resolve(path1);
+                    return resolve.toString();
+                }
+            """.trimIndent())
+
+        executor().run("app:assembleDebug")
+        var apk = app.getApk(GradleTestProject.ApkType.DEBUG)
+        var dex = getDexWithSpecificClass(programClass, apk.allDexes)
+                ?: fail("Failed to find the dex with class name $programClass")
+        DexClassSubject.assertThat(dex.classes[programClass])
+                .hasMethodThatInvokes(
+                        "getPathString",
+                        "Lj$/nio/file/Paths;->get(Ljava/lang/String;[Ljava/lang/String;)Lj$/nio/file/Path;")
+        val desugarLibDex = getDexWithSpecificClass(usedDesugarClass4, apk.allDexes)!!
+        assertThat(getAllStartLocals(desugarLibDex)).named("debug locals info").isNotEmpty()
+        assertThat(getAllDexWithJDollarTypes(apk.allDexes))
+                .named("all dex files with desugar jdk lib classes").hasSize(1)
+
+        app.buildFile.appendText("""
+
+            android.buildTypes.release.minifyEnabled = true
+        """.trimIndent())
+
+        TestFileUtils.searchAndReplace(
+                FileUtils.join(app.mainSrcDir, "com/example/helloworld/HelloWorld.java"),
+                "// onCreate",
+                "getPathString();"
+        )
+
+        executor().run("app:assembleRelease")
+        apk = app.getApk(GradleTestProject.ApkType.RELEASE)
+        dex = getDexWithSpecificClass(programClass, apk.allDexes)
+                ?: fail("Failed to find the dex with class name $programClass")
+        DexClassSubject.assertThat(dex.classes[programClass])
+                .hasMethodThatInvokes(
+                        "a",
+                        "Lj$/nio/file/Paths;->get(Ljava/lang/String;[Ljava/lang/String;)Lj$/nio/file/Path;")
+    }
+
+
     private fun addFileDependencies(project: GradleTestProject) {
         val fileDep = "withDesugarApi.jar"
         val fileDep2 = "withDesugarApi2.jar"
@@ -794,6 +855,8 @@ class CoreLibraryDesugarTest {
         private const val LIBRARY_PACKAGE = "com.example.lib"
         private const val DESUGAR_DEPENDENCY
                 = "com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION"
+        private const val DESUGAR_NIO_DEPENDENCY
+                = "com.android.tools:desugar_jdk_libs_nio:$DESUGAR_NIO_DEPENDENCY_VERSION"
     }
 
     private val lineSeparator: String = System.lineSeparator()
