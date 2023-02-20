@@ -495,6 +495,12 @@ class DependencyConfigurator(
                         projectServices.projectOptions
                                 .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
                                 ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
+                val runtimeDependenciesForShimSdk =
+                        projectServices.projectOptions
+                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES)
+                                ?.split(",")
+                                ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
+
 
                 val params = reg.parameters
                 params.apiGenerator.setFrom(
@@ -515,8 +521,9 @@ class DependencyConfigurator(
                 params.requireServices.set(
                         projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES])
                 params.runtimeDependencies.from(project.configurations.detachedConfiguration(
-                        project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
-                ))
+                        *runtimeDependenciesForShimSdk.map {
+                            project.dependencies.create(it)
+                        }.toTypedArray()))
             }
 
             project.dependencies.registerTransform(
