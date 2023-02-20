@@ -284,8 +284,10 @@ internal class DefaultLintTomlParser(
         while (offset < length) {
             val before = offset
             val token = getToken(!first).tomlStringSourceToString()
-            if (validate && token.isEmpty() && !first) {
-                warn("Key cannot be alone on a line", before)
+            if (token.isEmpty() && !first) {
+                if (validate) {
+                    warn("Key cannot be alone on a line", before)
+                }
                 return null
             }
             first = false

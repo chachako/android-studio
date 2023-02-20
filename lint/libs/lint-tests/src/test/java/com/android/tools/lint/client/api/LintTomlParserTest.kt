@@ -614,8 +614,13 @@ class LintTomlParserTest {
 
     // Tests adapted from the test cases in com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest
 
-    private fun parseTomlToMap(file: File, s: String, source: Boolean): Map<String, Any> {
-        val result = parseToml(file, s)
+    private fun parseTomlToMap(
+        file: File,
+        s: String,
+        source: Boolean,
+        validate: Boolean
+    ): Map<String, Any> {
+        val result = parseToml(file, s, validate)
         return if (source) {
             result.getSourceValueMap()
         } else {
@@ -625,10 +630,11 @@ class LintTomlParserTest {
 
     private fun doTest(
         @Language("TOML") toml: String,
-        expected: Map<String, Any>
+        expected: Map<String, Any>,
+        validate: Boolean = false
     ) {
         val source = false
-        val map = parseTomlToMap(File("test.toml"), toml.trimIndent(), source)
+        val map = parseTomlToMap(File("test.toml"), toml.trimIndent(), source, validate)
         assertEquals(expected, map)
     }
 
@@ -887,15 +893,36 @@ class LintTomlParserTest {
         doTest(toml, expected)
     }
 
+    @Test
+    fun testInvalidResynchronization() {
+        val toml = """
+            [libraries]
+            junit = { module = "junit:junit", version = "4.13" } a
+            junit5 = { module = "junit:junit", version = "5.14" }
+        """.trimIndent()
+        val expected = mapOf(
+            "libraries" to mapOf(
+                "junit" to mapOf("module" to "junit:junit", "version" to "4.13"),
+                "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+            )
+        )
+        doTest(toml, expected)
+    }
+
     // ------------------------------------------------
     // Test fixtures only below
     // ------------------------------------------------
 
-    private fun parseToml(file: File, contents: String): ParseResult {
+    private fun parseToml(file: File, contents: String, validate: Boolean = true): ParseResult {
         val problems = mutableListOf<Triple<Severity, Location, String>>()
 
-        val document = LintTomlParser().parse(file, contents) { severity, location, message ->
-            problems.add(Triple(severity, location, message))
+        val document = LintTomlParser().run {
+            when (validate) {
+                true -> parse(file, contents) { severity, location, message ->
+                    problems.add(Triple(severity, location, message))
+                }
+                false -> parse(file, contents)
+            }
         }
 
         return ParseResult(document, problems)
