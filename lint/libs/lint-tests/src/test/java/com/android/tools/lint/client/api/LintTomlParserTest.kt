@@ -35,18 +35,20 @@ class LintTomlParserTest {
             key = "value"  # This is a comment at the end of a line
             another = "# This is not a comment"
             """.trimIndent()
-        val document = parseToml(File("test.toml"), source).describe()
-        assertEquals(
-            """
-            key="value", String = value
-              key = "value"  # This is a comment at the end of a line
-              ~~~   ~~~~~~~
-            another="# This is not a comment", String = # This is not a comment
-              another = "# This is not a comment"
-              ~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~
-            """.trimIndent(),
-            document.trim()
-        )
+        checkToml(source) {
+            val document = it.describe()
+            assertEquals(
+                """
+                key="value", String = value
+                  key = "value"  # This is a comment at the end of a line
+                  ~~~   ~~~~~~~
+                another="# This is not a comment", String = # This is not a comment
+                  another = "# This is not a comment"
+                  ~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~
+                """.trimIndent(),
+                document.trim()
+            )
+        }
     }
 
     @Test
@@ -72,68 +74,69 @@ class LintTomlParserTest {
             site."with \"quoted\"" = false
             fruit . flavor = "banana"   # same as fruit.flavor
             """.trimIndent()
-        val result = parseToml(File("test.toml"), source)
-        val described = result.describe()
-        assertEquals(
-            """
-            key="value", String = value
-              key = "value"
-              ~~~   ~~~~~~~
-            bare_key="value", String = value
-              bare_key = "value"
-              ~~~~~~~~   ~~~~~~~
-            bare-key="value", String = value
-              bare-key = "value"
-              ~~~~~~~~   ~~~~~~~
-            1234="value", String = value
-              1234 = "value"
-              ~~~~   ~~~~~~~
-            127.0.0.1="value", String = value
-              "127.0.0.1" = "value"
-              ~~~~~~~~~~~   ~~~~~~~
-            character encoding="value", String = value
-              "character encoding" = "value"
-              ~~~~~~~~~~~~~~~~~~~~   ~~~~~~~
-            ʎǝʞ="value", String = value
-              "ʎǝʞ" = "value"
-              ~~~~~   ~~~~~~~
-            key2="value", String = value
-              'key2' = "value"
-              ~~~~~~   ~~~~~~~
-            quoted "value"="value", String = value
-              'quoted "value"' = "value"
-              ~~~~~~~~~~~~~~~~   ~~~~~~~
-            ="blank", String = blank
-              "" = "blank"     # VALID but discouraged
-              ~~   ~~~~~~~
-            name="Orange", String = Orange
-              name = "Orange"
-              ~~~~   ~~~~~~~~
-            physical.color="orange", String = orange
-              physical.color = "orange"
-              ~~~~~~~~~~~~~~   ~~~~~~~~
-            physical.shape="round", String = round
-              physical.shape = "round"
-              ~~~~~~~~~~~~~~   ~~~~~~~
-            site.google.com=true, Boolean = true
-              site."google.com" = true
-              ~~~~~~~~~~~~~~~~~   ~~~~
-            site.with "quoted"=false, Boolean = false
-              site."with \"quoted\"" = false
-              ~~~~~~~~~~~~~~~~~~~~~~   ~~~~~
-            fruit.flavor="banana", String = banana
-              fruit . flavor = "banana"   # same as fruit.flavor
-              ~~~~~~~~~~~~~~   ~~~~~~~~
-            """.trimIndent(),
-            described.trim()
-        )
-        // Here above we've flattened site."google.com" into site.google.com when pretty printing the key,
-        // but in the model it's treated properly; check that
-        val document = result.document
-        assertNull(document.getValue("site.google.com"))
-        assertEquals(true, document.getValue(listOf("site", "google.com"))?.getActualValue())
-        assertEquals(true, document.getValue("site.\"google.com\"")?.getActualValue())
-        assertEquals(false, document.getValue("site.\"with \\\"quoted\\\"\"")?.getActualValue())
+        checkToml(source) { result ->
+            val described = result.describe()
+            assertEquals(
+                """
+                key="value", String = value
+                  key = "value"
+                  ~~~   ~~~~~~~
+                bare_key="value", String = value
+                  bare_key = "value"
+                  ~~~~~~~~   ~~~~~~~
+                bare-key="value", String = value
+                  bare-key = "value"
+                  ~~~~~~~~   ~~~~~~~
+                1234="value", String = value
+                  1234 = "value"
+                  ~~~~   ~~~~~~~
+                127.0.0.1="value", String = value
+                  "127.0.0.1" = "value"
+                  ~~~~~~~~~~~   ~~~~~~~
+                character encoding="value", String = value
+                  "character encoding" = "value"
+                  ~~~~~~~~~~~~~~~~~~~~   ~~~~~~~
+                ʎǝʞ="value", String = value
+                  "ʎǝʞ" = "value"
+                  ~~~~~   ~~~~~~~
+                key2="value", String = value
+                  'key2' = "value"
+                  ~~~~~~   ~~~~~~~
+                quoted "value"="value", String = value
+                  'quoted "value"' = "value"
+                  ~~~~~~~~~~~~~~~~   ~~~~~~~
+                ="blank", String = blank
+                  "" = "blank"     # VALID but discouraged
+                  ~~   ~~~~~~~
+                name="Orange", String = Orange
+                  name = "Orange"
+                  ~~~~   ~~~~~~~~
+                physical.color="orange", String = orange
+                  physical.color = "orange"
+                  ~~~~~~~~~~~~~~   ~~~~~~~~
+                physical.shape="round", String = round
+                  physical.shape = "round"
+                  ~~~~~~~~~~~~~~   ~~~~~~~
+                site.google.com=true, Boolean = true
+                  site."google.com" = true
+                  ~~~~~~~~~~~~~~~~~   ~~~~
+                site.with "quoted"=false, Boolean = false
+                  site."with \"quoted\"" = false
+                  ~~~~~~~~~~~~~~~~~~~~~~   ~~~~~
+                fruit.flavor="banana", String = banana
+                  fruit . flavor = "banana"   # same as fruit.flavor
+                  ~~~~~~~~~~~~~~   ~~~~~~~~
+                """.trimIndent(),
+                described.trim()
+            )
+            // Here above we've flattened site."google.com" into site.google.com when pretty printing the key,
+            // but in the model result's treated properly; check that
+            val document = result.document
+            assertNull(document.getValue("site.google.com"))
+            assertEquals(true, document.getValue(listOf("site", "google.com"))?.getActualValue())
+            assertEquals(true, document.getValue("site.\"google.com\"")?.getActualValue())
+            assertEquals(false, document.getValue("site.\"with \\\"quoted\\\"\"")?.getActualValue())
+        }
     }
 
     @Test
@@ -175,69 +178,71 @@ class LintTomlParserTest {
             # 'That,' she said, 'is still pointless.'
             str = ''''That,' she said, 'is still pointless.''''
             """.trimIndent()
-        val document = parseToml(File("test.toml"), source).describe()
-        assertEquals(
-            // not using raw string since we have trailing whitespace
-            "" +
-                "str1=\"\"\"\n" +
-                "Roses are red\n" +
-                "Violets are blue\"\"\", String = Roses are red\n" +
-                "Violets are blue\n" +
-                "  str1 = \"\"\"\n" +
-                "  ~~~~   ^\n" +
-                "str3=\"Roses are red\\r\\nViolets are blue\", String = Roses are red\r\n" +
-                "Violets are blue\n" +
-                "  str3 = \"Roses are red\\r\\nViolets are blue\"\n" +
-                "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "str2=\"\"\"\n" +
-                "The quick brown \\\n" +
-                "\n" +
-                "\n" +
-                "  fox jumps over \\\n" +
-                "    the lazy dog.\"\"\", String = The quick brown fox jumps over the lazy dog.\n" +
-                "  str2 = \"\"\"\n" +
-                "  ~~~~   ^\n" +
-                "str4=\"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\", String = Here are two quotation marks: \"\". Simple enough.\n" +
-                "  str4 = \"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\"\n" +
-                "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "winpath='C:\\Users\\nodejs\\templates', String = C:\\Users\\nodejs\\templates\n" +
-                "  winpath  = 'C:\\Users\\nodejs\\templates'\n" +
-                "  ~~~~~~~    ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "winpath2='\\\\ServerX\\admin\$\\system32\\', String = \\\\ServerX\\admin\$\\system32\\\n" +
-                "  winpath2 = '\\\\ServerX\\admin\$\\system32\\'\n" +
-                "  ~~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "quoted='Tom \"Dubs\" Preston-Werner', String = Tom \"Dubs\" Preston-Werner\n" +
-                "  quoted   = 'Tom \"Dubs\" Preston-Werner'\n" +
-                "  ~~~~~~     ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "regex='<\\i\\c*\\s*>', String = <\\i\\c*\\s*>\n" +
-                "  regex    = '<\\i\\c*\\s*>'\n" +
-                "  ~~~~~      ~~~~~~~~~~~~\n" +
-                "regex2='''I [dw]on't need \\d{2} apples''', String = I [dw]on't need \\d{2} apples\n" +
-                "  regex2 = '''I [dw]on't need \\d{2} apples'''\n" +
-                "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "lines='''\n" +
-                "The first newline is\n" +
-                "trimmed in raw strings.\n" +
-                "   All other whitespace\n" +
-                "   is preserved.\n" +
-                "''', String = The first newline is\n" +
-                "trimmed in raw strings.\n" +
-                "   All other whitespace\n" +
-                "   is preserved.\n" +
-                "\n" +
-                "  lines  = '''\n" +
-                "  ~~~~~    ^\n" +
-                "quot15='''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"''', String = Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\n" +
-                "  quot15 = '''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"'''\n" +
-                "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "apos15=\"Here are fifteen apostrophes: '''''''''''''''\", String = Here are fifteen apostrophes: '''''''''''''''\n" +
-                "  apos15 = \"Here are fifteen apostrophes: '''''''''''''''\"\n" +
-                "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "str=''''That,' she said, 'is still pointless.'''', String = 'That,' she said, 'is still pointless.'\n" +
-                "  str = ''''That,' she said, 'is still pointless.''''\n" +
-                "  ~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-            document.trim()
-        )
+        checkToml(source) {
+            val document = it.describe()
+            assertEquals(
+                // not using raw string since we have trailing whitespace
+                "" +
+                    "str1=\"\"\"\n" +
+                    "Roses are red\n" +
+                    "Violets are blue\"\"\", String = Roses are red\n" +
+                    "Violets are blue\n" +
+                    "  str1 = \"\"\"\n" +
+                    "  ~~~~   ^\n" +
+                    "str3=\"Roses are red\\r\\nViolets are blue\", String = Roses are red\r\n" +
+                    "Violets are blue\n" +
+                    "  str3 = \"Roses are red\\r\\nViolets are blue\"\n" +
+                    "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "str2=\"\"\"\n" +
+                    "The quick brown \\\n" +
+                    "\n" +
+                    "\n" +
+                    "  fox jumps over \\\n" +
+                    "    the lazy dog.\"\"\", String = The quick brown fox jumps over the lazy dog.\n" +
+                    "  str2 = \"\"\"\n" +
+                    "  ~~~~   ^\n" +
+                    "str4=\"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\", String = Here are two quotation marks: \"\". Simple enough.\n" +
+                    "  str4 = \"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\"\n" +
+                    "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "winpath='C:\\Users\\nodejs\\templates', String = C:\\Users\\nodejs\\templates\n" +
+                    "  winpath  = 'C:\\Users\\nodejs\\templates'\n" +
+                    "  ~~~~~~~    ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "winpath2='\\\\ServerX\\admin\$\\system32\\', String = \\\\ServerX\\admin\$\\system32\\\n" +
+                    "  winpath2 = '\\\\ServerX\\admin\$\\system32\\'\n" +
+                    "  ~~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "quoted='Tom \"Dubs\" Preston-Werner', String = Tom \"Dubs\" Preston-Werner\n" +
+                    "  quoted   = 'Tom \"Dubs\" Preston-Werner'\n" +
+                    "  ~~~~~~     ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "regex='<\\i\\c*\\s*>', String = <\\i\\c*\\s*>\n" +
+                    "  regex    = '<\\i\\c*\\s*>'\n" +
+                    "  ~~~~~      ~~~~~~~~~~~~\n" +
+                    "regex2='''I [dw]on't need \\d{2} apples''', String = I [dw]on't need \\d{2} apples\n" +
+                    "  regex2 = '''I [dw]on't need \\d{2} apples'''\n" +
+                    "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "lines='''\n" +
+                    "The first newline is\n" +
+                    "trimmed in raw strings.\n" +
+                    "   All other whitespace\n" +
+                    "   is preserved.\n" +
+                    "''', String = The first newline is\n" +
+                    "trimmed in raw strings.\n" +
+                    "   All other whitespace\n" +
+                    "   is preserved.\n" +
+                    "\n" +
+                    "  lines  = '''\n" +
+                    "  ~~~~~    ^\n" +
+                    "quot15='''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"''', String = Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\n" +
+                    "  quot15 = '''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"'''\n" +
+                    "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "apos15=\"Here are fifteen apostrophes: '''''''''''''''\", String = Here are fifteen apostrophes: '''''''''''''''\n" +
+                    "  apos15 = \"Here are fifteen apostrophes: '''''''''''''''\"\n" +
+                    "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                    "str=''''That,' she said, 'is still pointless.'''', String = 'That,' she said, 'is still pointless.'\n" +
+                    "  str = ''''That,' she said, 'is still pointless.''''\n" +
+                    "  ~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+                document.trim()
+            )
+        }
     }
 
     @Test
@@ -300,50 +305,52 @@ class LintTomlParserTest {
             lt1 = 07:32:00
             lt2 = 00:32:00.999999
             """.trimIndent()
-        val document = parseToml(File("test.toml"), source).describe(includeSources = false)
-        assertEquals(
-            """
-            int1=+99, Integer = 99
-            int2=42, Integer = 42
-            int3=0, Integer = 0
-            int4=-17, Integer = -17
-            int5=1_000, Integer = 1000
-            int6=5_349_221, Integer = 5349221
-            int7=53_49_221, Integer = 5349221
-            int8=1_2_3_4_5, Integer = 12345
-            hex1=0xDEADBEEF, Long = 3735928559
-            hex2=0xdeadbeef, Long = 3735928559
-            hex3=0xdead_beef, Long = 3735928559
-            oct1=0o01234567, Long = 342391
-            oct2=0o755, Long = 493
-            bin1=0b11010110, Long = 214
-            flt1=+1.0, Float = 1.0
-            flt2=3.1415, Float = 3.1415
-            flt3=-0.01, Float = -0.01
-            flt4=5e+22, Double = 4.9999999999999996E22
-            flt5=1e06, Double = 1000000.0
-            flt6=-2E-2, Double = -0.02
-            flt7=6.626e-34, Double = 6.626E-34
-            flt8=224_617.445_991_228, Float = 224617.45
-            sf1=inf, Double = Infinity
-            sf2=+inf, Double = Infinity
-            sf3=-inf, Double = -Infinity
-            sf4=nan, Double = NaN
-            sf5=+nan, Double = NaN
-            sf6=-nan, Double = NaN
-            bool1=true, Boolean = true
-            bool2=false, Boolean = false
-            odt1=1979-05-27T07:32:00Z, Instant = 1979-05-27T07:32:00Z
-            odt2=1979-05-27T00:32:00-07:00, Instant = 1979-05-27T07:32:00Z
-            odt3=1979-05-27T00:32:00.999999-07:00, Instant = 1979-05-27T07:32:00.999999Z
-            ld1=1979-05-27, LocalDate = 1979-05-27
-            ldt1=1979-05-27T07:32:00, LocalDateTime = 1979-05-27T07:32
-            ldt2=1979-05-27T00:32:00.999999, LocalDateTime = 1979-05-27T00:32:00.999999
-            lt1=07:32:00, LocalTime = 07:32
-            lt2=00:32:00.999999, LocalTime = 00:32:00.999999
-            """.trimIndent(),
-            document.trim()
-        )
+        checkToml(source) {
+            val document = it.describe(includeSources = false)
+            assertEquals(
+                """
+                int1=+99, Integer = 99
+                int2=42, Integer = 42
+                int3=0, Integer = 0
+                int4=-17, Integer = -17
+                int5=1_000, Integer = 1000
+                int6=5_349_221, Integer = 5349221
+                int7=53_49_221, Integer = 5349221
+                int8=1_2_3_4_5, Integer = 12345
+                hex1=0xDEADBEEF, Long = 3735928559
+                hex2=0xdeadbeef, Long = 3735928559
+                hex3=0xdead_beef, Long = 3735928559
+                oct1=0o01234567, Long = 342391
+                oct2=0o755, Long = 493
+                bin1=0b11010110, Long = 214
+                flt1=+1.0, Float = 1.0
+                flt2=3.1415, Float = 3.1415
+                flt3=-0.01, Float = -0.01
+                flt4=5e+22, Double = 4.9999999999999996E22
+                flt5=1e06, Double = 1000000.0
+                flt6=-2E-2, Double = -0.02
+                flt7=6.626e-34, Double = 6.626E-34
+                flt8=224_617.445_991_228, Float = 224617.45
+                sf1=inf, Double = Infinity
+                sf2=+inf, Double = Infinity
+                sf3=-inf, Double = -Infinity
+                sf4=nan, Double = NaN
+                sf5=+nan, Double = NaN
+                sf6=-nan, Double = NaN
+                bool1=true, Boolean = true
+                bool2=false, Boolean = false
+                odt1=1979-05-27T07:32:00Z, Instant = 1979-05-27T07:32:00Z
+                odt2=1979-05-27T00:32:00-07:00, Instant = 1979-05-27T07:32:00Z
+                odt3=1979-05-27T00:32:00.999999-07:00, Instant = 1979-05-27T07:32:00.999999Z
+                ld1=1979-05-27, LocalDate = 1979-05-27
+                ldt1=1979-05-27T07:32:00, LocalDateTime = 1979-05-27T07:32
+                ldt2=1979-05-27T00:32:00.999999, LocalDateTime = 1979-05-27T00:32:00.999999
+                lt1=07:32:00, LocalTime = 07:32
+                lt2=00:32:00.999999, LocalTime = 00:32:00.999999
+                """.trimIndent(),
+                document.trim()
+            )
+        }
     }
 
     @Test
@@ -351,27 +358,29 @@ class LintTomlParserTest {
         val source =
             //language=toml
             """
-          [bundles]
-          groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
+            [bundles]
+            groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
             """.trimIndent()
-        val document = parseToml(File("test.toml"), source).describe()
-        assertEquals(
-            """
-            bundles.groovy[0]="groovy-core", String = groovy-core
-              groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
-                        ~~~~~~~~~~~~~
-            bundles.groovy[1]="groovy-json", String = groovy-json
-              groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
-                                       ~~~~~~~~~~~~~
-            bundles.groovy[2].name="groovy-nio", String = groovy-nio
-              groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
-                                                        ~~~~   ~~~~~~~~~~~~
-            bundles.groovy[2].version="3.14", String = 3.14
-              groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
-                                                                             ~~~~~~~   ~~~~~~
-            """.trimIndent(),
-            document.trim()
-        )
+        checkToml(source) {
+            val document = it.describe()
+            assertEquals(
+                """
+                bundles.groovy[0]="groovy-core", String = groovy-core
+                  groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
+                            ~~~~~~~~~~~~~
+                bundles.groovy[1]="groovy-json", String = groovy-json
+                  groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
+                                           ~~~~~~~~~~~~~
+                bundles.groovy[2].name="groovy-nio", String = groovy-nio
+                  groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
+                                                            ~~~~   ~~~~~~~~~~~~
+                bundles.groovy[2].version="3.14", String = 3.14
+                  groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
+                                                                                 ~~~~~~~   ~~~~~~
+                """.trimIndent(),
+                document.trim()
+            )
+        }
     }
 
     @Test
@@ -384,36 +393,37 @@ class LintTomlParserTest {
             point = { x = 1, y = 2 }
             animal = { type.name = "pug" }
             """.trimIndent()
-        val result = parseToml(File("test.toml"), source)
-        val dump = result.describe()
-        assertEquals(
-            """
-            name.first="Tom", String = Tom
-              name = { first = "Tom", last = "Preston-Werner" }
-                       ~~~~~   ~~~~~
-            name.last="Preston-Werner", String = Preston-Werner
-              name = { first = "Tom", last = "Preston-Werner" }
-                                      ~~~~   ~~~~~~~~~~~~~~~~
-            point.x=1, Integer = 1
-              point = { x = 1, y = 2 }
-                        ~   ~
-            point.y=2, Integer = 2
-              point = { x = 1, y = 2 }
-                               ~   ~
-            animal.type.name="pug", String = pug
-              animal = { type.name = "pug" }
-                         ~~~~~~~~~   ~~~~~
-            """.trimIndent(),
-            dump.trim()
-        )
-        val document = result.document
-        assertEquals(2, document.getValue(listOf("point", "y"))?.getActualValue())
-        assertEquals("pug", document.getValue("animal.type.name")?.getActualValue())
-        val value = document.getValue(listOf("animal", "type", "name"))!!
-        assertEquals("pug", value.getActualValue())
-        // spot check ranges too
-        assertEquals("type.name", document.getSource().substring(value.getKeyStartOffset(), value.getKeyEndOffset()))
-        assertEquals("\"pug\"", document.getSource().substring(value.getStartOffset(), value.getEndOffset()))
+        checkToml(source) { result ->
+            val dump = result.describe()
+            assertEquals(
+                """
+                name.first="Tom", String = Tom
+                  name = { first = "Tom", last = "Preston-Werner" }
+                           ~~~~~   ~~~~~
+                name.last="Preston-Werner", String = Preston-Werner
+                  name = { first = "Tom", last = "Preston-Werner" }
+                                          ~~~~   ~~~~~~~~~~~~~~~~
+                point.x=1, Integer = 1
+                  point = { x = 1, y = 2 }
+                            ~   ~
+                point.y=2, Integer = 2
+                  point = { x = 1, y = 2 }
+                                   ~   ~
+                animal.type.name="pug", String = pug
+                  animal = { type.name = "pug" }
+                             ~~~~~~~~~   ~~~~~
+                """.trimIndent(),
+                dump.trim()
+            )
+            val document = result.document
+            assertEquals(2, document.getValue(listOf("point", "y"))?.getActualValue())
+            assertEquals("pug", document.getValue("animal.type.name")?.getActualValue())
+            val value = document.getValue(listOf("animal", "type", "name"))!!
+            assertEquals("pug", value.getActualValue())
+            // spot check ranges too
+            assertEquals("type.name", document.getSource().substring(value.getKeyStartOffset(), value.getKeyEndOffset()))
+            assertEquals("\"pug\"", document.getSource().substring(value.getStartOffset(), value.getEndOffset()))
+        }
     }
 
     @Test
@@ -434,7 +444,6 @@ class LintTomlParserTest {
 
             color = "gray"
             """.trimIndent()
-        val document = parseToml(File("test.toml"), source)
 
         /* From https://toml.io/en/v1.0.0#array-of-tables
             {
@@ -476,46 +485,47 @@ class LintTomlParserTest {
                 "androidx-appCompat",
             ]
             """.trimIndent()
-        val document = parseToml(File("gradle/libs.versions.toml"), source)
-        val dump = document.describe()
-        assertEquals(
-            """
-            versions.activityCompose="1.7.0-alpha02", String = 1.7.0-alpha02
-              activityCompose = "1.7.0-alpha02"
-              ~~~~~~~~~~~~~~~   ~~~~~~~~~~~~~~~
-            versions.appCompat="1.5.1", String = 1.5.1
-              appCompat = "1.5.1"
-              ~~~~~~~~~   ~~~~~~~
-            versions.hiltNavigationCompose="1.0.0", String = 1.0.0
-              hiltNavigationCompose = "1.0.0"
-              ~~~~~~~~~~~~~~~~~~~~~   ~~~~~~~
-            libraries.androidx-activity-activityCompose.module="androidx.activity:activity-compose", String = androidx.activity:activity-compose
-              androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-                                                    ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            libraries.androidx-activity-activityCompose.version.ref="activityCompose", String = activityCompose
-              androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-                                                                                                   ~~~~~~~~~~~   ~~~~~~~~~~~~~~~~~
-            libraries.androidx-hilt-hiltNavigationCompose.module="androidx.hilt:hilt-navigation-compose", String = androidx.hilt:hilt-navigation-compose
-              androidx-hilt-hiltNavigationCompose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-                                                      ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            libraries.androidx-hilt-hiltNavigationCompose.version.ref="hiltNavigationCompose", String = hiltNavigationCompose
-              androidx-hilt-hiltNavigationCompose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-                                                                                                        ~~~~~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~
-            libraries.androidx-appCompat.module="androidx.appcompat:appcompat", String = androidx.appcompat:appcompat
-              androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
-                                     ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            libraries.androidx-appCompat.version.ref="appCompat", String = appCompat
-              androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
-                                                                              ~~~~~~~~~~~   ~~~~~~~~~~~
-            bundles.androidx[0]="androidx-activity-activityCompose", String = androidx-activity-activityCompose
-              "androidx-activity-activityCompose",
-              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            bundles.androidx[1]="androidx-appCompat", String = androidx-appCompat
-              "androidx-appCompat",
-              ~~~~~~~~~~~~~~~~~~~~
-            """.trimIndent(),
-            dump.trim()
-        )
+        checkToml(source) {
+            val dump = it.describe()
+            assertEquals(
+                """
+                versions.activityCompose="1.7.0-alpha02", String = 1.7.0-alpha02
+                  activityCompose = "1.7.0-alpha02"
+                  ~~~~~~~~~~~~~~~   ~~~~~~~~~~~~~~~
+                versions.appCompat="1.5.1", String = 1.5.1
+                  appCompat = "1.5.1"
+                  ~~~~~~~~~   ~~~~~~~
+                versions.hiltNavigationCompose="1.0.0", String = 1.0.0
+                  hiltNavigationCompose = "1.0.0"
+                  ~~~~~~~~~~~~~~~~~~~~~   ~~~~~~~
+                libraries.androidx-activity-activityCompose.module="androidx.activity:activity-compose", String = androidx.activity:activity-compose
+                  androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+                                                        ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                libraries.androidx-activity-activityCompose.version.ref="activityCompose", String = activityCompose
+                  androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+                                                                                                       ~~~~~~~~~~~   ~~~~~~~~~~~~~~~~~
+                libraries.androidx-hilt-hiltNavigationCompose.module="androidx.hilt:hilt-navigation-compose", String = androidx.hilt:hilt-navigation-compose
+                  androidx-hilt-hiltNavigationCompose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+                                                          ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                libraries.androidx-hilt-hiltNavigationCompose.version.ref="hiltNavigationCompose", String = hiltNavigationCompose
+                  androidx-hilt-hiltNavigationCompose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+                                                                                                            ~~~~~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~
+                libraries.androidx-appCompat.module="androidx.appcompat:appcompat", String = androidx.appcompat:appcompat
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                                         ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                libraries.androidx-appCompat.version.ref="appCompat", String = appCompat
+                  androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "appCompat" }
+                                                                                  ~~~~~~~~~~~   ~~~~~~~~~~~
+                bundles.androidx[0]="androidx-activity-activityCompose", String = androidx-activity-activityCompose
+                  "androidx-activity-activityCompose",
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                bundles.androidx[1]="androidx-appCompat", String = androidx-appCompat
+                  "androidx-appCompat",
+                  ~~~~~~~~~~~~~~~~~~~~
+                """.trimIndent(),
+                dump.trim()
+            )
+        }
     }
 
     @Test
@@ -630,12 +640,13 @@ class LintTomlParserTest {
 
     private fun doTest(
         @Language("TOML") toml: String,
-        expected: Map<String, Any>,
-        validate: Boolean = false
+        expected: Map<String, Any>
     ) {
         val source = false
-        val map = parseTomlToMap(File("test.toml"), toml.trimIndent(), source, validate)
-        assertEquals(expected, map)
+        for (validate in listOf(false, true)) {
+            val map = parseTomlToMap(File("test.toml"), toml.trimIndent(), source, validate)
+            assertEquals(expected, map)
+        }
     }
 
     @Test
@@ -895,6 +906,9 @@ class LintTomlParserTest {
 
     @Test
     fun testInvalidResynchronization() {
+        // Deliberate TOML error below; not showing as TOML since there isn't a way
+        // to turn off this error in nested highlighting for TOML here
+        @Language("TEXT")
         val toml = """
             [libraries]
             junit = { module = "junit:junit", version = "4.13" } a
@@ -913,6 +927,13 @@ class LintTomlParserTest {
     // Test fixtures only below
     // ------------------------------------------------
 
+    private fun checkToml(@Language("TOML") source: String, check: (ParseResult) -> Unit) {
+        for (validate in listOf(false, true)) {
+            val parseResult = parseToml(File("test.toml"), source, validate)
+            check(parseResult)
+        }
+    }
+
     private fun parseToml(file: File, contents: String, validate: Boolean = true): ParseResult {
         val problems = mutableListOf<Triple<Severity, Location, String>>()
 
@@ -925,12 +946,13 @@ class LintTomlParserTest {
             }
         }
 
-        return ParseResult(document, problems)
+        return ParseResult(document, problems, validate)
     }
 
     private class ParseResult(
         val document: LintTomlDocument,
-        val problems: List<Triple<Severity, Location, String>>
+        val problems: List<Triple<Severity, Location, String>>,
+        val validated: Boolean
     ) {
         fun describe(includeSources: Boolean = true, includeProblems: Boolean = false): String {
             val sb = StringBuilder()

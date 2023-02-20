@@ -325,7 +325,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
             return arguments.any {
                 // TODO: we won't need this typecast once studio-sdk moves to kotlinc 1.8.20-Beta or stable.
                 it is KtTypeArgument &&
-                it !is KtStarProjectionTypeArgument && it.type?.isFlexibleRecursive() == true
+                    it !is KtStarProjectionTypeArgument && it.type?.isFlexibleRecursive() == true
             }
         }
 

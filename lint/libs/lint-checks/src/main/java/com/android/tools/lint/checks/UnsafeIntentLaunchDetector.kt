@@ -181,18 +181,17 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
             val getUriStringMethod = (getUriStringCall?.findSelector() as? UCallExpression)?.resolve() ?: return false
             return isUnParcellingStringMethods(evaluator, getUriStringMethod)
         } else return false
-
     }
 
     private fun isUnParcellingIntentMethods(evaluator: JavaEvaluator, method: PsiMethod): Boolean {
-        return (method.name == "getParcelableExtra") && evaluator.isMemberInSubClassOf(method, INTENT_CLASS)
-                || method.name == "getParcelable" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle")
-                || method.name == "getIntent" && evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)
+        return (method.name == "getParcelableExtra") && evaluator.isMemberInSubClassOf(method, INTENT_CLASS) ||
+            method.name == "getParcelable" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle") ||
+            method.name == "getIntent" && evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)
     }
 
     private fun isUnParcellingStringMethods(evaluator: JavaEvaluator, method: PsiMethod): Boolean {
-        return (method.name == "getStringExtra") && evaluator.isMemberInSubClassOf(method, INTENT_CLASS)
-                || method.name == "getString" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle")
+        return (method.name == "getStringExtra") && evaluator.isMemberInSubClassOf(method, INTENT_CLASS) ||
+            method.name == "getString" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle")
     }
 
     private fun processRuntimeReceiver(context: JavaContext, node: UCallExpression, method: PsiMethod) {
