@@ -51,6 +51,7 @@ internal class AndroidProjectBuilderImpl(
     private var aarMetadata: AarMetadataBuilderImpl? = null
     private var androidResources: AndroidResourcesImpl? = null
     private var compileOptions: CompileOptionsImpl? = null
+    private var kotlinOptions: KotlinOptionsBuilderImpl? = null
     private var prefabContainer = PrefabContainerBuilderImpl()
     private var sourceSetsContainer = SourceSetsContainerBuilderImpl()
 
@@ -102,6 +103,10 @@ internal class AndroidProjectBuilderImpl(
         val options = compileOptions ?: CompileOptionsImpl().also { compileOptions = it}
 
         action(options)
+    }
+
+    override fun kotlinOptions(action: KotlinOptionsBuilder.() -> Unit) {
+        action(kotlinOptions ?: KotlinOptionsBuilderImpl().also { kotlinOptions = it })
     }
 
     override fun useLibrary(name: String) {
@@ -226,6 +231,14 @@ internal class AndroidProjectBuilderImpl(
                 sb.append("    coreLibraryDesugaringEnabled = true")
             }
             sb.append("  }\n") // COMPILE-OPTIONS
+        }
+
+        kotlinOptions?.apply {
+            sb.append("  kotlinOptions{\n")
+            jvmTarget?.apply {
+                sb.append("    jvmTarget = $jvmTarget\n")
+            }
+            sb.append("  }\n")
         }
 
         if (buildTypes.items.isNotEmpty()) {
@@ -477,6 +490,11 @@ internal class CompileOptionsImpl: CompileOptions {
     override fun targetCompatibility(targetCompatibility: Any) {
         throw RuntimeException("Not yet implemented")
     }
+}
+
+internal class KotlinOptionsBuilderImpl : KotlinOptionsBuilder {
+
+    override var jvmTarget: String? = null
 }
 
 internal class SourceSetsBuilderImpl(override val name: String) : SourceSetsBuilder {

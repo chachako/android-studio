@@ -35,6 +35,10 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
     testOptions {
         emulatorSnapshots {
             enableForTestFailures = true

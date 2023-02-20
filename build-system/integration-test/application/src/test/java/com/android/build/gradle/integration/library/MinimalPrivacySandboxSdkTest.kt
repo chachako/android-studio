@@ -222,6 +222,7 @@ class MinimalPrivacySandboxSdkTest {
 
     }
 
+    @Ignore("Re-enable once we use a newer KSP version -- see bug 271248269")
     @Test
     fun checkPrivacySandboxOptInRequired() {
         TestFileUtils.searchAndReplace(

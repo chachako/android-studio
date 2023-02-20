@@ -38,6 +38,10 @@ android {
         warningsAsErrors = true
         baseline = file('lint-baseline.xml')
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

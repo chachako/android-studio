@@ -97,6 +97,15 @@ android {
     namespace "${HelloWorldApp.NAMESPACE}"
     compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
     buildToolsVersion '${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}'
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+    }
 }
 
 dependencies {

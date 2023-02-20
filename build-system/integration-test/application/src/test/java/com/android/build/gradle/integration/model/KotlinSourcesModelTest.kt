@@ -79,28 +79,36 @@ class KotlinSourcesModelTest {
 
     @Test
     fun testKotlinMultiplatform() {
-        val buildFile = project.buildFile.readText()
-        with(buildFile.replace("kotlin-android", "kotlin-multiplatform")) {
-            project.buildFile.writeText(this)
-            project.buildFile.appendText("""
+        val updatedBuildFileContents = project.buildFile.readText()
+            .replace("kotlin-android", "kotlin-multiplatform")
+            .replace("    kotlinOptions {\n" + "        jvmTarget = JavaVersion.VERSION_1_8\n" + "    }\n", "")
+        project.buildFile.writeText(updatedBuildFileContents)
+        project.buildFile.appendText(
+            """
 
-                kotlin {
-                    android()
+            kotlin {
+                android()
 
-                    sourceSets {
-                        named("androidTest") {
-                            dependencies {
-                            }
+                sourceSets {
+                    named("androidTest") {
+                        dependencies {
                         }
                     }
                 }
 
-                // TODO workaround for https://youtrack.jetbrains.com/issue/KT-43944 is fixed
-                configurations.create("testApi")
-                configurations.create("testDebugApi")
-                configurations.create("testReleaseApi")
-            """.trimIndent())
-        }
+                android {
+                    compilations.all {
+                        kotlinOptions.jvmTarget = "1.8"
+                    }
+                }
+            }
+
+            // TODO workaround for https://youtrack.jetbrains.com/issue/KT-43944 is fixed
+            configurations.create("testApi")
+            configurations.create("testDebugApi")
+            configurations.create("testReleaseApi")
+            """.trimIndent()
+        )
 
         val basicProject =
             project.modelV2().fetchModels().container.singleProjectInfo.basicAndroidProject!!

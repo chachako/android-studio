@@ -75,6 +75,12 @@ class SourcePublishingTest {
                     }
                 }
 
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                    }
+                }
+
                 dependencies {
                     kapt 'com.google.dagger:dagger-compiler:2.28.3'
                     api 'com.google.dagger:dagger:2.28.3'

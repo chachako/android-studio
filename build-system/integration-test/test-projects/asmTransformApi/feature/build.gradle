@@ -27,6 +27,9 @@ android {
     defaultConfig {
         minSdkVersion rootProject.supportLibMinSdk
     }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

@@ -464,6 +464,17 @@ class IncrementalJavaCompileWithAPsTest(
                 """.trimIndent()
             )
             TestFileUtils.searchAndReplace(appBuildFile, "annotationProcessor", "kapt")
+            TestFileUtils.appendToFile(
+                appBuildFile,
+                """
+                android.kotlinOptions.jvmTarget = '1.8'
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                    }
+                }
+                """.trimIndent()
+            )
         }
     }
 

@@ -7,6 +7,9 @@ plugins {
 android {
     namespace "com.example.lib"
     compileSdkVersion rootProject.latestCompileSdk
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 apply from: "../../commonHeader.gradle"  // for $kotlinVersion

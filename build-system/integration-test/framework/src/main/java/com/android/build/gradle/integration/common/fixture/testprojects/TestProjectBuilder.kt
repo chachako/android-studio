@@ -186,6 +186,7 @@ interface AndroidProjectBuilder {
     fun androidResources(action: AndroidResources.() -> Unit)
 
     fun compileOptions(action: CompileOptions.() -> Unit)
+    fun kotlinOptions(action: KotlinOptionsBuilder.() -> Unit)
 
     fun useLibrary(name: String)
 }
@@ -224,6 +225,10 @@ interface BuildFeaturesBuilder {
 
 interface TestFixturesBuilder {
     var enable: Boolean?
+}
+
+interface KotlinOptionsBuilder {
+    var jvmTarget: String?
 }
 
 interface ContainerBuilder<T> {

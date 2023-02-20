@@ -74,6 +74,17 @@ class JetifierTest(private val withKotlin: Boolean) {
                 "annotationProcessor 'com.example.annotationprocessor:annotationProcessor:1.0'",
                 "kapt 'com.example.annotationprocessor:annotationProcessor:1.0'"
             )
+            TestFileUtils.appendToFile(
+                project.getSubproject(":app").buildFile,
+                """
+                android.kotlinOptions.jvmTarget = '1.8'
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                    }
+                }
+                """.trimIndent()
+            )
         }
     }
 

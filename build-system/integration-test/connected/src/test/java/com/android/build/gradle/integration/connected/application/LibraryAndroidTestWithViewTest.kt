@@ -121,6 +121,9 @@ class LibraryAndroidTestWithViewTest {
                 buildFeatures {
                     viewBinding = true
                 }
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
             }
             addFile("src/main/java/${srcPackage}/TestView.kt", testViewSrc)
             addFile("src/androidTest/AndroidManifest.xml", testManifest)

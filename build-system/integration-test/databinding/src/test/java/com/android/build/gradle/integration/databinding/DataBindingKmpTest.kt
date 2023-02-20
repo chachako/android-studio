@@ -40,6 +40,16 @@ class DataBindingKmpTest {
                 """
                 kotlin {
                     android()
+                    android {
+                        compilations.all {
+                            kotlinOptions.jvmTarget = '1.8'
+                        }
+                    }
+                }
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                    }
                 }
                 """.trimIndent()
             }
@@ -98,6 +108,16 @@ class DataBindingKmpTest {
                 """
                 kotlin {
                     android()
+                    android {
+                        compilations.all {
+                            kotlinOptions.jvmTarget = '1.8'
+                        }
+                    }
+                }
+                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+                    compilerOptions {
+                        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                    }
                 }
                 """.trimIndent()
             }

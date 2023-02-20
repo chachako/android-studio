@@ -111,6 +111,12 @@ class LintRClassAliasTest {
             """
                 apply plugin: 'com.android.library'
                 apply plugin: 'kotlin-android'
+
+                android {
+                    kotlinOptions {
+                        jvmTarget = JavaVersion.VERSION_1_8
+                    }
+                }
             """.trimIndent()
         )
 

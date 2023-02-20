@@ -20,6 +20,10 @@ apply plugin: 'kotlin-android'
 android {
     namespace "com.example.util_lib"
     compileSdkVersion rootProject.latestCompileSdk
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

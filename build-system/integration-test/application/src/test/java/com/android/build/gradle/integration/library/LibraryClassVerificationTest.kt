@@ -37,6 +37,9 @@ class LibraryClassVerificationTest {
                 defaultCompileSdk()
                 namespace = "com.example.lib"
                 minSdk = 21
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
             }
             dependencies {
                 implementation(project(":otherlib"))
@@ -89,6 +92,9 @@ class LibraryClassVerificationTest {
                 defaultCompileSdk()
                 namespace = "com.example.otherlib"
                 minSdk = 21
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
             }
             addFile("src/main/java/com/example/otherlib/OtherLibClass.kt",
                     //language=kotlin

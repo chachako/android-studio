@@ -57,6 +57,11 @@ class Java11WithKotlinCompileTest {
                 }
             """.trimIndent()
         )
+        TestFileUtils.searchAndReplace(
+            app.buildFile,
+            "jvmTarget = JavaVersion.VERSION_1_8",
+            "jvmTarget = JavaVersion.VERSION_11"
+        )
 
         val javaSourceFile = FileUtils.join(app.mainSrcDir, "com/example/android/Foo.java")
         javaSourceFile.parentFile.mkdirs()

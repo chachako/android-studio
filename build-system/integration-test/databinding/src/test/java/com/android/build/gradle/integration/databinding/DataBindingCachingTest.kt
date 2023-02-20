@@ -123,6 +123,17 @@ class DataBindingCachingTest(private val withKotlin: Boolean) {
                             "apply plugin: 'kotlin-android'\n" +
                             "apply plugin: 'kotlin-kapt'"
                 )
+                TestFileUtils.appendToFile(
+                    project.buildFile,
+                    """
+                    android.kotlinOptions.jvmTarget = '1.8'
+                    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).configureEach {
+                        compilerOptions {
+                            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                        }
+                    }
+                    """.trimIndent()
+                )
             }
         }
     }

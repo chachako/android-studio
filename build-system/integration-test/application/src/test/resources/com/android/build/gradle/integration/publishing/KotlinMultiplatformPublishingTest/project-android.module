@@ -112,6 +112,28 @@
           "md5": "{DIGEST}"
         }
       ]
+    },
+    {
+      "name": "releaseSourcesElements-published",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "files": [
+        {
+          "name": "project-android-0.1.2-sources.jar",
+          "url": "project-android-0.1.2-sources.jar",
+          "size": {SIZE},
+          "sha512": "{DIGEST}",
+          "sha256": "{DIGEST}",
+          "sha1": "{DIGEST}",
+          "md5": "{DIGEST}"
+        }
+      ]
     }
   ]
 }

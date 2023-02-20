@@ -36,6 +36,9 @@ android {
         textOutput file("lint-results.txt")
         checkOnly 'MissingClass'
     }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

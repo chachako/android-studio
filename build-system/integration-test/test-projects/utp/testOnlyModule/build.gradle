@@ -35,6 +35,10 @@ android {
     }
 
     targetProjectPath = project(":app").path
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

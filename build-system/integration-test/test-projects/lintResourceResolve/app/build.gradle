@@ -39,6 +39,9 @@ android {
         warningsAsErrors true
         checkOnly 'SupportAnnotationUsage'
     }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

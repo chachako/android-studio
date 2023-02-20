@@ -26,6 +26,10 @@ android {
             systemProperty 'foo', 'bar'
         }
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

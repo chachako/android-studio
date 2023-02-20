@@ -41,6 +41,9 @@ android {
         sarifOutput file("$reportsDir/lint-results.sarif")
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
