@@ -17,19 +17,16 @@ package com.android.tools.lint.checks
 
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.detector.api.ConstantEvaluator
-import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
+import com.android.tools.lint.detector.api.UastLintUtils.Companion.findConstruction
 import com.android.tools.lint.detector.api.getMethodName
-import com.android.tools.lint.detector.api.isReturningContext
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
-import com.intellij.psi.PsiVariable
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UParenthesizedExpression
-import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.getContainingUClass
@@ -89,36 +86,9 @@ object BroadcastReceiverUtils {
    */
   private fun findIntentFilterConstruction(
     expression: UExpression,
-    node: UCallExpression,
+    endAt: UElement,
   ): UCallExpression? {
-    val resolved = expression.tryResolve()
-
-    if (resolved is PsiVariable) {
-      val assignment = findLastAssignment(resolved, node) ?: return null
-      return findIntentFilterConstruction(assignment, node)
-    }
-
-    if (expression is UParenthesizedExpression) {
-      return findIntentFilterConstruction(expression.expression, node)
-    }
-
-    if (expression is UQualifiedReferenceExpression) {
-      val call = expression.selector as? UCallExpression ?: return null
-      return if (isReturningContext(call)) {
-        // eg. filter.apply { addAction("abc") } --> use filter variable.
-        findIntentFilterConstruction(expression.receiver, node)
-      } else {
-        // eg. IntentFilter.create("abc") --> use create("abc") UCallExpression.
-        findIntentFilterConstruction(call, node)
-      }
-    }
-
-    val method = resolved as? PsiMethod ?: return null
-    return if (isIntentFilterFactoryMethod(method)) {
-      expression as? UCallExpression
-    } else {
-      null
-    }
+    return findConstruction("android.content.IntentFilter", expression, endAt)
   }
 
   private fun isIntentFilterFactoryMethod(method: PsiMethod?) =

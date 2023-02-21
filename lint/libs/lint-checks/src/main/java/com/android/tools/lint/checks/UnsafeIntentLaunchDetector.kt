@@ -41,27 +41,37 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UastLintUtils
+import com.android.tools.lint.detector.api.UastLintUtils.Companion.findConstruction
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.findSelector
+import com.android.tools.lint.detector.api.isReturningContext
 import com.android.tools.lint.detector.api.isReturningLambdaResult
 import com.android.tools.lint.detector.api.isScopingThis
 import com.android.utils.iterator
 import com.android.utils.subtag
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiSwitchLabelStatementBase
 import com.intellij.psi.PsiVariable
 import java.util.EnumSet
+import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
+import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParameter
+import org.jetbrains.uast.UQualifiedReferenceExpression
+import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.USwitchClauseExpression
+import org.jetbrains.uast.USwitchExpression
 import org.jetbrains.uast.UThisExpression
+import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedName
 import org.jetbrains.uast.isNullLiteral
@@ -174,6 +184,9 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
             initial = setOf(intentParam ?: return),
             context = context,
             location = context.getLocation(intentParam.sourcePsi),
+            checkProtectedBroadcast =
+              UNSAFE_INTENT_AS_PARAMETER_METHODS[BROADCAST_RECEIVER_CLASS]?.contains(methodName) ==
+                true
           )
         method.accept(visitor)
         if (visitor.launched) {
@@ -261,10 +274,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     if (receiverArg.isNullLiteral()) return
 
     if (!isRuntimeReceiverProtected(call, method, context.evaluator)) {
-      val receiverVar = receiverArg.tryResolve() as? PsiVariable ?: return
-      val receiverAssignment =
-        findLastAssignment(receiverVar, call)?.skipParenthesizedExprDown() ?: return
-      val receiverConstructor = receiverAssignment.findSelector() as? UCallExpression
+      val receiverConstructor = findConstruction(BROADCAST_RECEIVER_CLASS, receiverArg, call, true)
       val unprotectedReceiverClassName =
         receiverConstructor?.classReference.getQualifiedName() ?: return
       storeUnprotectedComponents(context, unprotectedReceiverClassName)
@@ -375,7 +385,8 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     var launched: Boolean = false,
     var returned: Boolean = false,
     var unprotectedReceiver: Boolean = false,
-    var resolveCallDepth: Int = 0
+    var resolveCallDepth: Int = 0,
+    var checkProtectedBroadcast: Boolean = false
   ) : DataFlowAnalyzer(initial) {
 
     override fun returnsSelf(call: UCallExpression): Boolean {
@@ -418,9 +429,11 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         }
       }
       if (isIntentLaunchedBySystem(context.evaluator, call)) {
-        launched = true
-        location.secondary = context.getLocation(call)
-        location.secondary?.message = "The unsafe intent is launched here."
+        if (!checkProtectedBroadcast || !inProtectedBroadcastBranch(context, call, reference)) {
+          launched = true
+          location.secondary = context.getLocation(call)
+          location.secondary?.message = "The unsafe intent is launched here."
+        }
       } else {
         if (resolveCallDepth > MAX_CALL_DEPTH) return
         // escaped to another method call. check the method recursively.
@@ -442,6 +455,113 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
           // if the visited method returns the passed-in unsafe Intent, add this call to track it.
           instances.add(call)
         }
+      }
+    }
+
+    /** Returns if the expression is evaluated to a protected broadcast action. */
+    private fun isProtectedBroadcastAction(expression: UExpression?): Boolean {
+      return BroadcastReceiverUtils.isProtectedBroadcast(
+        ConstantEvaluator().allowFieldInitializers().evaluate(expression) as String
+      )
+    }
+
+    /**
+     * Check if the call is within a branch of code that is protected by a protected broadcast
+     * action. If could either be an if statement that checks if the action of the intent is equal
+     * to a protected action; or an equivalent of a switch case statement.
+     */
+    private fun inProtectedBroadcastBranch(
+      context: JavaContext,
+      call: UCallExpression,
+      reference: UElement
+    ): Boolean {
+      return inProtectedBroadcastIfBranch(context, call, reference) ||
+        inProtectedBroadcastSwitchCase(call, reference)
+    }
+
+    private fun inProtectedBroadcastIfBranch(
+      context: JavaContext,
+      call: UCallExpression,
+      reference: UElement
+    ): Boolean {
+      var ifExp = call.getParentOfType<UIfExpression>()
+      while (ifExp != null) {
+        var op1: UExpression? = null
+        var op2: UExpression? = null
+        val condition = ifExp.condition
+        if (condition is UBinaryExpression && condition.operator === UastBinaryOperator.EQUALS) {
+          // handle kotlin ==
+          op1 = condition.leftOperand
+          op2 = condition.rightOperand
+        } else if (condition is UQualifiedReferenceExpression) {
+          // handle java equals method.
+          val methodCall = condition.selector as? UCallExpression
+          if (methodCall?.methodName == "equals") {
+            op1 = condition.receiver
+            op2 = methodCall.valueArguments[0]
+          }
+        }
+        if (
+          op1 != null &&
+            op2 != null &&
+            ((isIntentAction(op1, reference) && isProtectedBroadcastAction(op2)) ||
+              (isIntentAction(op2, reference) && isProtectedBroadcastAction(op1)))
+        ) {
+          return context.getLocation(call) in context.getLocation(ifExp.thenExpression)
+        }
+        ifExp = ifExp.getParentOfType()
+      }
+      return false
+    }
+
+    private fun inProtectedBroadcastSwitchCase(
+      call: UCallExpression,
+      reference: UElement
+    ): Boolean {
+      var switchExp = call.getParentOfType<USwitchExpression>()
+      while (switchExp != null) {
+        val subject = switchExp.expression as? UReferenceExpression
+        val caseExpression = call.getParentOfType<USwitchClauseExpression>() ?: return false
+        val caseValue = caseExpression.caseValues.firstOrNull() ?: return false
+        if ((caseValue.sourcePsi as? PsiSwitchLabelStatementBase)?.isDefaultCase == true)
+          return false
+        if (isIntentAction(subject, reference) && isProtectedBroadcastAction(caseValue)) return true
+        switchExp = switchExp.getParentOfType()
+      }
+      return false
+    }
+
+    private fun isIntentAction(expression: UExpression?, intentRef: UElement): Boolean {
+      val actionAssignmentCall = findIntentActionAssignmentCall(expression)
+      return actionAssignmentCall?.receiver?.skipParenthesizedExprDown()?.tryResolve() ===
+        intentRef.tryResolve()
+    }
+
+    private fun findIntentActionAssignmentCall(expression: UExpression?): UCallExpression? {
+      val actionExpr = expression?.skipParenthesizedExprDown()
+      val resolved = actionExpr?.tryResolve()
+
+      if (resolved is PsiVariable) {
+        val assignment = findLastAssignment(resolved, actionExpr) ?: return null
+        return findIntentActionAssignmentCall(assignment)
+      }
+
+      if (actionExpr is UQualifiedReferenceExpression) {
+        val call = actionExpr.selector as? UCallExpression ?: return null
+        return if (isReturningContext(call)) {
+          // eg. intent.apply { setAction("abc") } --> use filter variable.
+          findIntentActionAssignmentCall(actionExpr.receiver)
+        } else {
+          // eg. intent.getAction("abc") --> use getAction("abc") UCallExpression.
+          findIntentActionAssignmentCall(call)
+        }
+      }
+
+      val method = resolved as? PsiMethod ?: return null
+      return if ("getAction" == method.name) {
+        actionExpr as? UCallExpression
+      } else {
+        null
       }
     }
 

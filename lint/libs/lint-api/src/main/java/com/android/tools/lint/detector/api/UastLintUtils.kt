@@ -34,6 +34,7 @@ import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiVariable
+import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
@@ -78,12 +79,15 @@ import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.getParentOfType
+import org.jetbrains.uast.getQualifiedName
+import org.jetbrains.uast.getUCallExpression
 import org.jetbrains.uast.internal.acceptList
 import org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
+import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.visitor.UastVisitor
 
 class UastLintUtils {
@@ -160,7 +164,7 @@ class UastLintUtils {
     }
 
     @JvmStatic
-    fun findLastAssignment(variable: PsiVariable, call: UElement): UExpression? {
+    fun findLastAssignment(variable: PsiVariable, endAt: UElement): UExpression? {
       var currVariable = variable
       var lastAssignment: UElement? = null
 
@@ -172,9 +176,9 @@ class UastLintUtils {
         !currVariable.hasModifierProperty(PsiModifier.FINAL) &&
           (currVariable is PsiLocalVariable || currVariable is PsiParameter)
       ) {
-        val containingFunction = call.getContainingUMethod()
+        val containingFunction = endAt.getContainingUMethod()
         if (containingFunction != null) {
-          val finder = ConstantEvaluatorImpl.LastAssignmentFinder(currVariable, call, null, -1)
+          val finder = ConstantEvaluatorImpl.LastAssignmentFinder(currVariable, endAt, null, -1)
           containingFunction.accept(finder)
           lastAssignment = finder.lastAssignment
         }
@@ -210,6 +214,93 @@ class UastLintUtils {
     @JvmStatic
     fun findArgument(node: UCallExpression, type: String): UExpression? {
       return findArgument(node, node.resolve() ?: return null, type)
+    }
+
+    /**
+     * Finds the initialization method (factory method or constructor) of a variable whose type is a
+     * specific class.
+     *
+     * @param fullQualifiedClassName fully qualified class name to be searched for.
+     * @param origExpression the variable or the initialization method itself.
+     * @param endAt where the search ends
+     * @param includeSubClass if true, include constructor of a subclass of the specified class.
+     */
+    fun findConstruction(
+      fullQualifiedClassName: String,
+      origExpression: UExpression,
+      endAt: UElement,
+      includeSubClass: Boolean = false
+    ): UCallExpression? {
+      val expression = origExpression.skipParenthesizedExprDown()
+
+      val call = expression.getUCallExpression(1)
+      if (call != null) {
+        // handle the case of a default constructor, in which case the call cannot be resolved if
+        // not defined.
+        val classRef = call.classReference
+        if (
+          classRef != null &&
+            (call.classReference?.getQualifiedName() == fullQualifiedClassName ||
+              includeSubClass &&
+                InheritanceUtil.isInheritor(
+                  classRef.resolve() as? PsiClass,
+                  true,
+                  fullQualifiedClassName
+                ))
+        ) {
+          return call
+        } else if (expression is UQualifiedReferenceExpression) {
+          return if (isReturningContext(call)) {
+            // eg. filter.apply { addAction("abc") } --> use filter variable.
+            findConstruction(fullQualifiedClassName, expression.receiver, endAt, includeSubClass)
+          } else { // eg. IntentFilter.create("abc") --> use create("abc") UCallExpression.
+            findConstruction(fullQualifiedClassName, call, endAt, includeSubClass)
+          }
+        }
+      }
+
+      return when (val resolved = expression.tryResolve()) {
+        is PsiVariable -> {
+          val assignment = findLastAssignment(resolved, endAt) ?: return null
+          findConstruction(fullQualifiedClassName, assignment, endAt, includeSubClass)
+        }
+        is PsiMethod -> {
+          if (isFactoryMethodForClass(fullQualifiedClassName, resolved, includeSubClass)) {
+            expression as? UCallExpression
+          } else {
+            null
+          }
+        }
+        else -> null
+      }
+    }
+
+    private fun isFactoryMethodForClass(
+      fullQualifiedClassName: String,
+      method: PsiMethod,
+      includeSubClass: Boolean = false
+    ): Boolean {
+      return (method.returnType?.canonicalText == fullQualifiedClassName || method.isConstructor) &&
+        (isMemberInClass(method, fullQualifiedClassName) ||
+          includeSubClass && isMemberInSubClassOf(method, fullQualifiedClassName))
+    }
+
+    fun isMemberInSubClassOf(
+      member: PsiMember,
+      className: String,
+      strict: Boolean = false
+    ): Boolean {
+      val containingClass = member.containingClass
+      return containingClass != null &&
+        InheritanceUtil.isInheritor(containingClass, strict, className)
+    }
+
+    fun isMemberInClass(member: PsiMember?, className: String): Boolean {
+      if (member == null) {
+        return false
+      }
+      val containingClass = member.containingClass?.qualifiedName
+      return className == containingClass
     }
 
     @JvmStatic

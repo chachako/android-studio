@@ -240,6 +240,15 @@ protected constructor(
     return start == null || end == null || start.sameLine(end)
   }
 
+  /** Returns true if the other location is within the range of this location. */
+  operator fun contains(other: Location): Boolean {
+    val thisStart = this.start ?: DefaultPosition(0, 0, 0)
+    val otherStart = other.start ?: DefaultPosition(0, 0, 0)
+    val thisEnd = this.end ?: DefaultPosition(Int.MAX_VALUE, 0, Int.MAX_VALUE)
+    val otherEnd = other.end ?: DefaultPosition(Int.MAX_VALUE, 0, Int.MAX_VALUE)
+    return thisStart <= otherStart && thisEnd >= otherEnd
+  }
+
   override fun toString(): String =
     "Location [file=${file.name}, start=$start, end=$end, message=$message]"
 

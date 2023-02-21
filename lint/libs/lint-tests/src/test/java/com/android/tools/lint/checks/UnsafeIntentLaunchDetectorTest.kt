@@ -1431,6 +1431,308 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testRuntimeExportedBroadcastReceiverLaunchWithProtectedBroadcast() {
+    lint()
+      .files(
+        java(
+            """
+          package test.pkg;
+
+          import android.app.Activity;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+
+          public class TestActivity extends Activity {
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
+                  // actual IntentFilter action is not looked at.
+                  IntentFilter filter = new IntentFilter("qwerty");
+                  TestReceiver receiver = new TestReceiver();
+                  registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
+                  registerReceiver(new TestReceiver2(), filter, Context.RECEIVER_EXPORTED);
+                  registerReceiver(new TestReceiver3(), filter, Context.RECEIVER_EXPORTED);
+                  registerReceiver(new TestReceiver4(), filter, Context.RECEIVER_EXPORTED);
+              }
+          }
+          """
+          )
+          .indented(),
+        java(
+            """
+          package test.pkg;
+
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+
+          public class TestReceiver extends BroadcastReceiver {
+              private static final String testProtectedBroadcast = "android.accounts.action.ACCOUNT_REMOVED";
+              private static final String testUnProtectedBroadcast = "com.example.UNPROTECTED_ACTION";
+
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                  String action = intent.getAction();
+                  if (action != null) {
+                      if (action.equals(testProtectedBroadcast)) {
+                          peekService(context, intent);   // OK
+                          // only the broadcast intent is protected. This extra intent is not.
+                          context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT)); // ERROR 2
+                      } else {
+                          context.startService(intent);  // ERROR 1
+                      }
+                  }
+              }
+          }
+          """
+          )
+          .indented(),
+        java(
+            """
+          package test.pkg;
+
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+
+          public class TestReceiver2 extends BroadcastReceiver {
+              private static final String testProtectedBroadcast = "android.accounts.action.ACCOUNT_REMOVED";
+              private static final String testUnProtectedBroadcast = "com.example.UNPROTECTED_ACTION";
+
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                  String action = intent.getAction();
+                  if (action != null) {
+                      if (action.equals(testProtectedBroadcast)) {
+                          peekService(context, intent);   // OK
+                      } else if (testUnProtectedBroadcast.equals(action)) {
+                          context.startService(intent);   // ERROR 3
+                      }
+                  }
+              }
+          }
+          """
+          )
+          .indented(),
+        java(
+            """
+          package test.pkg;
+
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+
+          public class TestReceiver3 extends BroadcastReceiver {
+              private static final String testProtectedBroadcast = "android.accounts.action.ACCOUNT_REMOVED";
+              private static final String testUnProtectedBroadcast = "com.example.UNPROTECTED_ACTION";
+
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                  String action = intent.getAction();
+                  if (action != null) {
+                      switch (action) {
+                          case testProtectedBroadcast -> context.startService(intent);   // OK
+                          case testUnProtectedBroadcast -> context.startService(intent);   // ERROR 4
+                          default -> context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT));  // ERROR 5
+                      }
+                  }
+              }
+          }
+          """
+          )
+          .indented(),
+        java(
+            """
+          package test.pkg;
+
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+
+          public class TestReceiver4 extends BroadcastReceiver {
+              private static final String testProtectedBroadcast = "android.accounts.action.ACCOUNT_REMOVED";
+              private static final String testUnProtectedBroadcast = "com.example.UNPROTECTED_ACTION";
+
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                  String action = intent.getAction();
+                  if (action != null) {
+                      switch (action) {
+                          case testProtectedBroadcast -> context.startService(intent);   // OK
+                          default -> peekService(context, intent);    // ERROR 6
+                      }
+                  }
+              }
+          }
+          """
+          )
+          .indented(),
+        *stubs
+      )
+      .issues(UnsafeIntentLaunchDetector.ISSUE)
+      .testModes(TestMode.PARTIAL)
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestReceiver.java:12: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver. You could either make the component test.pkg.TestReceiver protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            public void onReceive(Context context, Intent intent) {
+                                                   ~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver.java:20: The unsafe intent is launched here.
+                        context.startService(intent);  // ERROR 1
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver.java:18: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver. You could either make the component test.pkg.TestReceiver protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                        context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT)); // ERROR 2
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver.java:18: The unsafe intent is launched here.
+                        context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT)); // ERROR 2
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver2.java:12: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver2. You could either make the component test.pkg.TestReceiver2 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            public void onReceive(Context context, Intent intent) {
+                                                   ~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver2.java:18: The unsafe intent is launched here.
+                        context.startService(intent);   // ERROR 3
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver3.java:12: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver3. You could either make the component test.pkg.TestReceiver3 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            public void onReceive(Context context, Intent intent) {
+                                                   ~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver3.java:17: The unsafe intent is launched here.
+                        case testUnProtectedBroadcast -> context.startService(intent);   // ERROR 4
+                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver3.java:18: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver3. You could either make the component test.pkg.TestReceiver3 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                        default -> context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT));  // ERROR 5
+                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver3.java:18: The unsafe intent is launched here.
+                        default -> context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT));  // ERROR 5
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver4.java:12: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver4. You could either make the component test.pkg.TestReceiver4 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            public void onReceive(Context context, Intent intent) {
+                                                   ~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver4.java:17: The unsafe intent is launched here.
+                        default -> peekService(context, intent);    // ERROR 6
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 6 warnings
+        """
+      )
+  }
+
+  fun testRuntimeExportedBroadcastReceiverLaunchWithProtectedBroadcastKotlin() {
+    lint()
+      .files(
+        kotlin(
+            """
+          package test.pkg;
+
+          import android.app.Activity;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+
+          class TestActivity : Activity {
+
+              override fun onCreate(savedInstanceState : Bundle) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_main)
+                  // actual IntentFilter action is not looked at.
+                  val filter = IntentFilter("qwerty")
+                  val receiver = TestReceiver()
+                  registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+                  registerReceiver(TestReceiver2(), filter, Context.RECEIVER_EXPORTED)
+              }
+          }
+          """
+          )
+          .indented(),
+        kotlin(
+            """
+          package test.pkg
+
+          import android.content.BroadcastReceiver
+          import android.content.Context
+          import android.content.Intent
+
+          class TestReceiver : BroadcastReceiver {
+              private const val testProtectedBroadcast = "android.accounts.action.ACCOUNT_REMOVED"
+              private const val testUnProtectedBroadcast = "com.example.UNPROTECTED_ACTION"
+
+              override fun onReceive(context : Context, intent : Intent) {
+                  val action = intent.getAction()
+                  if (action != null) {
+                      if (action == testProtectedBroadcast) {
+                          peekService(context, intent)   // OK
+                          // only the broadcast intent is protected. This extra intent is not.
+                          context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT)) // ERROR 2
+                      } else {
+                          context.startService(intent)  // ERROR 1
+                      }
+                  }
+              }
+          }
+          """
+          )
+          .indented(),
+        kotlin(
+            """
+          package test.pkg
+
+          import android.content.BroadcastReceiver
+          import android.content.Context
+          import android.content.Intent
+
+          class TestReceiver2 : BroadcastReceiver {
+              private const val testProtectedBroadcast = "android.accounts.action.ACCOUNT_REMOVED"
+              private const val testUnProtectedBroadcast = "com.example.UNPROTECTED_ACTION"
+
+              @Override
+              override fun onReceive(context : Context, intent : Intent) {
+                  val action = intent.getAction()
+                  if (action != null) {
+                      if (action == testProtectedBroadcast) {
+                          peekService(context, intent)   // OK
+                      } else if (testUnProtectedBroadcast == action) {
+                          context.startService(intent)   // ERROR 3
+                      }
+                  }
+              }
+          }
+          """
+          )
+          .indented(),
+        *stubs
+      )
+      .issues(UnsafeIntentLaunchDetector.ISSUE)
+      .skipTestModes(TestMode.SUPPRESSIBLE)
+      .testModes(TestMode.PARTIAL)
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestReceiver.kt:11: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver. You could either make the component test.pkg.TestReceiver protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            override fun onReceive(context : Context, intent : Intent) {
+                                                      ~~~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver.kt:19: The unsafe intent is launched here.
+                        context.startService(intent)  // ERROR 1
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver.kt:17: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver. You could either make the component test.pkg.TestReceiver protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                        context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT)) // ERROR 2
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver.kt:17: The unsafe intent is launched here.
+                        context.startActivity(intent.getParcelableExtra(Intent.EXTRA_INTENT)) // ERROR 2
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/TestReceiver2.kt:12: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestReceiver2. You could either make the component test.pkg.TestReceiver2 protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            override fun onReceive(context : Context, intent : Intent) {
+                                                      ~~~~~~~~~~~~~~~
+            src/test/pkg/TestReceiver2.kt:18: The unsafe intent is launched here.
+                        context.startService(intent)   // ERROR 3
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 3 warnings
+        """
+      )
+  }
+
   private val intentStub: TestFile =
     java(
         """
@@ -1447,6 +1749,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
             public String getStringExtra(String key) { return null; }
             public Bundle getExtras() { return new Bundle(); }
             public Intent setAction(String action) { return this; }
+            public String getAction() { return null; }
             public static Intent parseUri(String uri, int flags) { return null; }
         }
         """

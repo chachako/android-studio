@@ -17,7 +17,7 @@
 package com.android.tools.lint.detector.api
 
 /** Information about a position in a file/document. */
-abstract class Position {
+abstract class Position : Comparable<Position> {
   /**
    * Returns the line number (0-based where the first line is line 0)
    *
@@ -42,5 +42,11 @@ abstract class Position {
   /** Returns true if this position is on the same lne as another position. */
   open fun sameLine(end: Position): Boolean {
     return line == end.line
+  }
+
+  override operator fun compareTo(other: Position): Int {
+    return if (this.line == other.line && this.offset == other.offset) 0
+    else if (this.line < other.line || this.line == other.line && this.offset < other.offset) -1
+    else 1
   }
 }
