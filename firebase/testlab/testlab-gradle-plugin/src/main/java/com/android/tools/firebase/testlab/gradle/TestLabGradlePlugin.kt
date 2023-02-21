@@ -17,6 +17,7 @@
 package com.android.tools.firebase.testlab.gradle
 
 import com.android.build.api.AndroidPluginVersion
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.api.AndroidBasePlugin
 import com.android.tools.firebase.testlab.gradle.device.TestRunConfigureAction
@@ -51,7 +52,14 @@ class TestLabGradlePlugin : Plugin<Project> {
                         TestRunConfigureAction::class.java, TestRunTaskAction::class.java)
                 }
 
-            project.extensions.create("firebaseTestLab", TestLabGradlePluginExtension::class.java)
+            val androidExtension = project.extensions.getByType(CommonExtension::class.java)
+            project.extensions.create(
+                TestLabGradlePluginExtension::class.java,
+                "firebaseTestLab",
+                TestLabGradlePluginExtensionImpl::class.java,
+                project.objects,
+                androidExtension.testOptions.managedDevices
+            )
         }
     }
 

@@ -16,6 +16,8 @@
 
 package com.google.firebase.testlab.gradle
 
+import com.android.build.api.dsl.ManagedDevices
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Incubating
 import org.gradle.api.file.RegularFileProperty
 
@@ -31,4 +33,14 @@ interface TestLabGradlePluginExtension {
      */
     @get:Incubating
     val serviceAccountCredentials: RegularFileProperty
+
+    /**
+     * Convenience container for specifying FTL managed devices of the type [ManagedDevice].
+     *
+     * Any devices created as a part of this container are automatically added to the list of
+     * devices contained in the [managedDevices Block][ManagedDevices.devices].
+     */
+    @get:Incubating
+    val managedDevices: NamedDomainObjectContainer<ManagedDevice>
+
 }
