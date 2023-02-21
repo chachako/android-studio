@@ -31,15 +31,15 @@ import org.junit.Test
 
 @Suppress("LintDocExample")
 class UImplicitCallExpressionTest {
-    private fun lint(): TestLintTask {
-        return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
-    }
+  private fun lint(): TestLintTask {
+    return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
+  }
 
-    @Test
-    fun testWrapping() {
-        listOf(
-            kotlin(
-                """
+  @Test
+  fun testWrapping() {
+    listOf(
+        kotlin(
+            """
                 package test.pkg
 
                 class Resource {
@@ -64,32 +64,38 @@ class UImplicitCallExpressionTest {
                     println(resource / color)
                 }
                 """
-            ).indented()
-        ).use { context ->
-            val file = context.uastFile!!
+          )
+          .indented()
+      )
+      .use { context ->
+        val file = context.uastFile!!
 
-            val sb = StringBuilder()
-            file.accept(object : UastCallVisitor() {
-                override fun visitCall(node: UCallExpression): Boolean {
-                    assertEquals(node.lang, KotlinLanguage.INSTANCE)
-                    val name = node.methodName
-                    if (name == "println") {
-                        return false
-                    }
-                    val receiver = node.receiver
-                    if (receiver != null) {
-                        sb.append("${receiver.sourcePsi?.text ?: ""}.")
-                    }
-                    sb.append("$name(${node.valueArguments.joinToString(",") { it.sourcePsi?.text ?: "" }})\n")
-                    if (node is UImplicitCallExpression) {
-                        sb.append("  from \"${node.sourcePsi?.text}\"\n")
-                    }
-                    return false
-                }
-            })
+        val sb = StringBuilder()
+        file.accept(
+          object : UastCallVisitor() {
+            override fun visitCall(node: UCallExpression): Boolean {
+              assertEquals(node.lang, KotlinLanguage.INSTANCE)
+              val name = node.methodName
+              if (name == "println") {
+                return false
+              }
+              val receiver = node.receiver
+              if (receiver != null) {
+                sb.append("${receiver.sourcePsi?.text ?: ""}.")
+              }
+              sb.append(
+                "$name(${node.valueArguments.joinToString(",") { it.sourcePsi?.text ?: "" }})\n"
+              )
+              if (node is UImplicitCallExpression) {
+                sb.append("  from \"${node.sourcePsi?.text}\"\n")
+              }
+              return false
+            }
+          }
+        )
 
-            assertEquals(
-                """
+        assertEquals(
+          """
                 resource.get(1,2,3)
                   from "resource[1, 2, 3]"
                 resource.set(1,2,3,hello)
@@ -107,17 +113,19 @@ class UImplicitCallExpressionTest {
                   from "resource combine resource2"
                 div(resource,color)
                   from "resource / color"
-                """.trimIndent().trim(),
-                sb.toString().trim()
-            )
-        }
-    }
-
-    @Test
-    fun testArrayResolve() {
-        listOf(
-            kotlin(
                 """
+            .trimIndent()
+            .trim(),
+          sb.toString().trim()
+        )
+      }
+  }
+
+  @Test
+  fun testArrayResolve() {
+    listOf(
+        kotlin(
+            """
                 package test.pkg
 
                 class Test {
@@ -134,32 +142,39 @@ class UImplicitCallExpressionTest {
                     test[string, sb]
                 }
                 """
-            ).indented()
-        ).use { context ->
+          )
+          .indented()
+      )
+      .use { context ->
+        var found = false
+        context.uastFile?.accept(
+          object : AbstractUastVisitor() {
+            override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
+              found = true
+              assertEquals("test[string, sb]", node.sourcePsi?.text)
+              val resolved = node.resolveOperator()
+              assertEquals(
+                "operator fun get(key: Int, key2: List<CharSequence>) {}",
+                resolved?.text
+              )
+              return super.visitArrayAccessExpression(node)
+            }
+          }
+        )
+        assertTrue(found)
+      }
+  }
 
-            var found = false
-            context.uastFile?.accept(object : AbstractUastVisitor() {
-                override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
-                    found = true
-                    assertEquals("test[string, sb]", node.sourcePsi?.text)
-                    val resolved = node.resolveOperator()
-                    assertEquals("operator fun get(key: Int, key2: List<CharSequence>) {}", resolved?.text)
-                    return super.visitArrayAccessExpression(node)
-                }
-            })
-            assertTrue(found)
-        }
-    }
-
-    @Test
-    fun testElementVisitor() {
-        // Make sure that the call DSL support also works for non-AST calls. Here we have a custom
-        // detector which just lists operator names that it cares about and reports any that are
-        // called -- this lets us make sure that the element visitor is really invoking the call
-        // mechanism for things like array access and binary operators.
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testElementVisitor() {
+    // Make sure that the call DSL support also works for non-AST calls. Here we have a custom
+    // detector which just lists operator names that it cares about and reports any that are
+    // called -- this lets us make sure that the element visitor is really invoking the call
+    // mechanism for things like array access and binary operators.
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import kotlin.random.Random
@@ -218,9 +233,13 @@ class UImplicitCallExpressionTest {
                     println(resource..string)
                 }
                 """
-            ).indented()
-        ).issues(TestDispatchDetector.ISSUE).run().expect(
-            """
+          )
+          .indented()
+      )
+      .issues(TestDispatchDetector.ISSUE)
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.kt:11: Error: Found overloaded function call get [_DispatchTestIssue]
                 test[string]
                     ~
@@ -244,26 +263,32 @@ class UImplicitCallExpressionTest {
                                 ~~
             7 errors, 0 warnings
             """
+      )
+  }
+
+  class TestDispatchDetector : Detector(), SourceCodeScanner {
+    override fun getApplicableMethodNames(): List<String> =
+      listOf("get", "set", "compareTo", "inc", "in", "rangeTo", "contains", "plus", "minus")
+
+    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      context.report(
+        ISSUE,
+        context.getCallLocation(node, includeReceiver = false, includeArguments = false),
+        "Found overloaded function call ${node.methodName}"
+      )
+    }
+
+    companion object {
+      val ISSUE =
+        Issue.create(
+          "_DispatchTestIssue",
+          "Blah blah",
+          "Blah blah blah",
+          Category.CORRECTNESS,
+          5,
+          Severity.ERROR,
+          Implementation(TestDispatchDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
     }
-
-    class TestDispatchDetector : Detector(), SourceCodeScanner {
-        override fun getApplicableMethodNames(): List<String> =
-            listOf("get", "set", "compareTo", "inc", "in", "rangeTo", "contains", "plus", "minus")
-
-        override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-            context.report(
-                ISSUE, context.getCallLocation(node, includeReceiver = false, includeArguments = false),
-                "Found overloaded function call ${node.methodName}"
-            )
-        }
-
-        companion object {
-            val ISSUE = Issue.create(
-                "_DispatchTestIssue", "Blah blah", "Blah blah blah",
-                Category.CORRECTNESS, 5, Severity.ERROR,
-                Implementation(TestDispatchDetector::class.java, Scope.JAVA_FILE_SCOPE)
-            )
-        }
-    }
+  }
 }

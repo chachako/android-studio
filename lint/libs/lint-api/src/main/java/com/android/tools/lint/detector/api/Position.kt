@@ -18,33 +18,29 @@ package com.android.tools.lint.detector.api
 
 /** Information about a position in a file/document. */
 abstract class Position {
-    /**
-     * Returns the line number (0-based where the first line is line 0)
-     *
-     * @return the 0-based line number
-     */
-    abstract val line: Int
+  /**
+   * Returns the line number (0-based where the first line is line 0)
+   *
+   * @return the 0-based line number
+   */
+  abstract val line: Int
 
-    /**
-     * The character offset
-     *
-     * @return the 0-based character offset
-     */
-    abstract val offset: Int
+  /**
+   * The character offset
+   *
+   * @return the 0-based character offset
+   */
+  abstract val offset: Int
 
-    /**
-     * Returns the column number (where the first character on the line
-     * is 0), or -1 if unknown
-     *
-     * @return the 0-based column number
-     */
-    abstract val column: Int
+  /**
+   * Returns the column number (where the first character on the line is 0), or -1 if unknown
+   *
+   * @return the 0-based column number
+   */
+  abstract val column: Int
 
-    /**
-     * Returns true if this position is on the same lne as another
-     * position.
-     */
-    open fun sameLine(end: Position): Boolean {
-        return line == end.line
-    }
+  /** Returns true if this position is on the same lne as another position. */
+  open fun sameLine(end: Position): Boolean {
+    return line == end.line
+  }
 }

@@ -20,14 +20,15 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.detector.api.Detector
 
 class ReturnThisDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ReturnThisDetector()
-    }
+  override fun getDetector(): Detector {
+    return ReturnThisDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.ReturnThis
 
                 @ReturnThis
@@ -49,23 +50,27 @@ class ReturnThisDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            returnThisStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        returnThisStub
+      )
+      .run()
+      .expect(
+        """
             src/Builder.kt:18: Error: This method should return this (because it has been annotated with @ReturnThis) [ReturnThis]
                     return MyClass()
                     ~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testSkipNested() {
-        @Suppress("ObjectLiteralToLambda", "ConstantConditionIf")
-        lint().files(
-            kotlin(
-                """
+  fun testSkipNested() {
+    @Suppress("ObjectLiteralToLambda", "ConstantConditionIf")
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.ReturnThis
 
                 open class Builder {
@@ -96,10 +101,13 @@ class ReturnThisDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            returnThisStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        returnThisStub
+      )
+      .run()
+      .expect(
+        """
             src/Builder.kt:6: Error: This method should return this (because it has been annotated with @ReturnThis) [ReturnThis]
                     return Builder() // ERROR 1
                     ~~~~~~~~~~~~~~~~
@@ -108,12 +116,13 @@ class ReturnThisDetectorTest : AbstractCheckTest() {
                                               ~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }
 
-val returnThisStub: TestFile = kotlin(
-    """
+val returnThisStub: TestFile =
+  kotlin(
+      """
     package androidx.annotation
     import kotlin.annotation.AnnotationTarget.CLASS
     import kotlin.annotation.AnnotationTarget.FUNCTION
@@ -122,4 +131,5 @@ val returnThisStub: TestFile = kotlin(
     @Target(FUNCTION, CLASS)
     annotation class ReturnThis
     """
-).indented()
+    )
+    .indented()

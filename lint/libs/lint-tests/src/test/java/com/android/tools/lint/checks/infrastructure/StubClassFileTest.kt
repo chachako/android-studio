@@ -39,323 +39,329 @@ import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
+import java.io.File
+import java.util.jar.JarFile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
-import java.util.jar.JarFile
 
 /**
- * Unit test for [StubClassFile]; this test will take Java stub files,
- * convert them to class files, and then load these using PSI and pretty
- * print the class file APIs back to something resembling metalava
- * API signatures, checking that in the bytecode we found everything
- * we expect -- methods, parameters, types, generics, throws lists,
- * constant initial values, etc.
+ * Unit test for [StubClassFile]; this test will take Java stub files, convert them to class files,
+ * and then load these using PSI and pretty print the class file APIs back to something resembling
+ * metalava API signatures, checking that in the bytecode we found everything we expect -- methods,
+ * parameters, types, generics, throws lists, constant initial values, etc.
  */
 @Suppress("LintDocExample")
 class StubClassFileTest {
-    @get:Rule
-    var temporaryFolder = TemporaryFolder()
+  @get:Rule var temporaryFolder = TemporaryFolder()
 
-    private fun check(expected: String, testFile: TestFile, allowKotlin: Boolean = false) {
-        val root = temporaryFolder.root
-        val classes = mutableSetOf<String>()
+  private fun check(expected: String, testFile: TestFile, allowKotlin: Boolean = false) {
+    val root = temporaryFolder.root
+    val classes = mutableSetOf<String>()
 
-        // We need at least one source file such that we can get a UAST context back where the libraries are attached
-        val projects = lint().allowKotlinClassStubs(allowKotlin)
-            .files(testFile, java("class LintTestPlaceHolder {}"), SUPPORT_ANNOTATIONS_JAR).createProjects(root)
+    // We need at least one source file such that we can get a UAST context back where the libraries
+    // are attached
+    val projects =
+      lint()
+        .allowKotlinClassStubs(allowKotlin)
+        .files(testFile, java("class LintTestPlaceHolder {}"), SUPPORT_ANNOTATIONS_JAR)
+        .createProjects(root)
 
-        assertEquals(1, projects.size)
-        val jar = File(projects[0], testFile.targetRelativePath)
+    assertEquals(1, projects.size)
+    val jar = File(projects[0], testFile.targetRelativePath)
 
-        JarFile(jar).use { jarFile ->
-            jarFile.entries().toList().forEach { entry ->
-                val name = entry.name
-                if (name.endsWith(DOT_CLASS) && !name.contains("$")) {
-                    classes.add(name.removeSuffix(DOT_CLASS).replace('/', '.'))
-                }
-            }
+    JarFile(jar).use { jarFile ->
+      jarFile.entries().toList().forEach { entry ->
+        val name = entry.name
+        if (name.endsWith(DOT_CLASS) && !name.contains("$")) {
+          classes.add(name.removeSuffix(DOT_CLASS).replace('/', '.'))
         }
-
-        val parsed = parse(projects.first())
-        val contexts = parsed.first
-        val evaluator = contexts.first().evaluator
-        val sb = StringBuilder()
-        for (className in classes) {
-            val cls = evaluator.findClass(className)
-            val signatures = cls?.prettyPrint()
-            sb.append(signatures)
-        }
-
-        Disposer.dispose(parsed.second)
-
-        assertEquals(expected.trimIndent(), sb.toString().trim())
+      }
     }
 
-    private fun PsiClass.prettyPrint(): String {
-        val sb = StringBuilder()
-        accept(object : JavaRecursiveElementVisitor() {
-            private var depth = 0
-            private fun indent(level: Int) {
-                for (i in 0 until level) {
-                    sb.append("    ")
-                }
-            }
-
-            private fun appendModifiers(owner: PsiModifierListOwner) {
-                val modifierList = owner.modifierList ?: return
-                val annotations = modifierList.annotations
-                for (annotation in annotations) {
-                    sb.append('@').append(annotation.qualifiedName)
-                    val attributes = annotation.attributes
-                    if (attributes.size > 0) {
-                        sb.append('(')
-                        sb.append(
-                            attributes.joinToString(", ") { it.toSource() }
-                        )
-                        sb.append(')')
-                    }
-                    sb.append(' ')
-                }
-
-                if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
-                    sb.append("public ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.PROTECTED)) {
-                    sb.append("protected ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
-                    sb.append("private ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.STATIC) &&
-                    // enums and interfaces are implicitly static
-                    !(owner is PsiClass && (owner.isEnum || owner.isInterface))
-                ) {
-                    sb.append("static ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.ABSTRACT) &&
-                    // interfaces are implicitly abstract and static
-                    !(owner is PsiClass && owner.isInterface)
-                ) {
-                    sb.append("abstract ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.FINAL) &&
-                    // enum constants are implicitly final
-                    !(owner is PsiClass && owner.isEnum)
-                ) {
-                    sb.append("final ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.NATIVE)) {
-                    sb.append("native ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.SYNCHRONIZED)) {
-                    sb.append("synchronized ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.STRICTFP)) {
-                    sb.append("strictfp ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.TRANSIENT)) {
-                    sb.append("transient ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.VOLATILE)) {
-                    sb.append("volatile ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.DEFAULT)) {
-                    sb.append("default ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.OPEN)) {
-                    sb.append("open ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.TRANSITIVE)) {
-                    sb.append("transitive ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.SEALED)) {
-                    sb.append("sealed ")
-                }
-                if (modifierList.hasModifierProperty(PsiModifier.NON_SEALED)) {
-                    sb.append("non-sealed ")
-                }
-            }
-
-            private fun appendType(type: PsiType?) {
-                type ?: return
-                sb.append(type.canonicalText.replace('$', '.'))
-            }
-
-            private fun PsiLiteral.toSource(): String {
-                return when (val value = this.value) {
-                    is String ->
-                        "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
-                    is Char -> "'$value'"
-                    else -> value.toString()
-                }
-            }
-
-            private fun JvmAnnotationConstantValue.toSource(): String {
-                return when (val value = this.constantValue) {
-                    is String ->
-                        "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
-                    is Char -> "'$value'"
-                    else -> value.toString()
-                }
-            }
-
-            private fun JvmAnnotationAttribute.toSource(): String {
-                return attributeName + "=" + (attributeValue?.toSource())
-            }
-
-            @Suppress("UnstableApiUsage")
-            private fun JvmAnnotationAttributeValue.toSource(): String {
-                return when (this) {
-                    is PsiLiteral -> (this as PsiLiteral).toSource()
-                    is JvmAnnotationConstantValue -> this.toSource()
-                    is JvmAnnotationClassValue -> "$qualifiedName.class"
-                    is JvmNestedAnnotationValue -> "@${value.qualifiedName}(${value.attributes.joinToString { it.toSource() }})"
-                    is JvmAnnotationEnumFieldValue -> "$containingClassName.${this.fieldName}"
-                    is JvmAnnotationArrayValue -> "{" + values.joinToString(", ") { it.toSource() } + "}"
-                    else -> this.toString()
-                }
-            }
-
-            private fun PsiClass.isAnnotation(): Boolean {
-                return isAnnotationType || isInterface &&
-                    // bytecode doesn't show up as annotation
-                    this.superClass?.qualifiedName == "java.lang.annotation.Annotation"
-            }
-
-            override fun visitClass(aClass: PsiClass) {
-                indent(depth)
-                appendModifiers(aClass)
-                if (aClass.isAnnotation()) {
-                    sb.append("@interface")
-                } else if (aClass.isInterface) {
-                    sb.append("interface")
-                } else if (aClass.isEnum) {
-                    sb.append("enum")
-                } else {
-                    sb.append("class")
-                }
-                sb.append(" ${aClass.qualifiedName}")
-                val superClass = aClass.superClass?.qualifiedName
-                if (aClass.typeParameters.isNotEmpty()) {
-                    appendTypeParameters(aClass.typeParameters)
-                }
-                if (superClass != null && !(aClass.isInterface || aClass.isEnum || aClass.isAnnotation())) {
-                    sb.append(" extends ")
-                    sb.append(aClass.superTypes.joinToString(",") { it.canonicalText.replace("$", ".") })
-                }
-                val interfaces = aClass.implementsListTypes
-                if (interfaces.isNotEmpty()) {
-                    sb.append(" implements ")
-                    sb.append(interfaces.joinToString(",") { it.canonicalText.replace("$", ".") })
-                }
-                sb.append(" {\n")
-                depth++
-
-                if (aClass.isEnum) {
-                    val enumFields = aClass.fields.filter { isEnumConstant(it) }
-                    if (enumFields.isNotEmpty()) {
-                        indent(depth)
-                        sb.append(enumFields.joinToString(", ") { it.name }).append(";\n")
-                    }
-                }
-
-                super.visitClass(aClass)
-                depth--
-                indent(depth)
-                sb.append("}\n")
-            }
-
-            private fun appendTypeParameters(typeParameters: Array<PsiTypeParameter>) {
-                sb.append('<')
-                typeParameters.forEachIndexed { index, parameter ->
-                    if (index > 0) sb.append(", ")
-                    sb.append(parameter.name)
-                    val qualifiedName = parameter.superClass?.qualifiedName
-                    if (qualifiedName != null && qualifiedName != "java.lang.Object") {
-                        sb.append(" extends ").append(qualifiedName)
-                    }
-                    sb.append(parameter.interfaces.joinToString("") { itf -> " & ${itf.qualifiedName}" })
-                }
-                sb.append('>')
-            }
-
-            override fun visitMethod(method: PsiMethod) {
-                if (method.isConstructor && (
-                    method.containingClass?.isEnum == true ||
-                        method.containingClass?.isAnnotation() == true
-                    )
-                ) {
-                    return
-                }
-
-                indent(depth)
-                appendModifiers(method)
-                if (!method.isConstructor) {
-                    appendType(method.returnType)
-                    sb.append(' ')
-                }
-
-                val typeParameters = method.typeParameters
-                if (typeParameters.isNotEmpty()) {
-                    appendTypeParameters(typeParameters)
-                    sb.append(' ')
-                }
-
-                sb.append("${method.name}(")
-                method.parameterList.parameters.forEachIndexed { i, parameter ->
-                    if (i > 0) {
-                        sb.append(", ")
-                    }
-                    appendModifiers(parameter)
-                    sb.append(parameter.type.canonicalText)
-                    val name = parameter.name
-                    sb.append(" $name")
-                }
-                sb.append(")")
-                val throws = method.throwsList.referencedTypes
-                if (throws.isNotEmpty()) {
-                    sb.append(" throws ")
-                    sb.append(throws.joinToString(", ") { it.className })
-                }
-
-                sb.append(";\n")
-
-                super.visitMethod(method)
-            }
-
-            private fun isEnumConstant(field: PsiField): Boolean {
-                // For source, we can just look to see if it's PsiEnumConstant,
-                // but from class files they're "just" fields
-                return field.containingClass?.isEnum == true &&
-                    (field.type as? PsiClassType)?.canonicalText == field.containingClass?.qualifiedName
-            }
-
-            override fun visitField(field: PsiField) {
-                if (!isEnumConstant(field)) { // Handled inline in the class visitor
-                    indent(depth)
-                    appendModifiers(field)
-                    appendType(field.type)
-                    sb.append(" ${field.name}")
-                    val initial = field.computeConstantValue()
-                    if (initial != null) {
-                        sb.append(" = $initial")
-                    }
-                    sb.append(";\n")
-                }
-                super.visitField(field)
-            }
-        })
-        return sb.toString()
+    val parsed = parse(projects.first())
+    val contexts = parsed.first
+    val evaluator = contexts.first().evaluator
+    val sb = StringBuilder()
+    for (className in classes) {
+      val cls = evaluator.findClass(className)
+      val signatures = cls?.prettyPrint()
+      sb.append(signatures)
     }
 
-    @Test
-    fun testBasic() {
-        check(
-            """
+    Disposer.dispose(parsed.second)
+
+    assertEquals(expected.trimIndent(), sb.toString().trim())
+  }
+
+  private fun PsiClass.prettyPrint(): String {
+    val sb = StringBuilder()
+    accept(
+      object : JavaRecursiveElementVisitor() {
+        private var depth = 0
+        private fun indent(level: Int) {
+          for (i in 0 until level) {
+            sb.append("    ")
+          }
+        }
+
+        private fun appendModifiers(owner: PsiModifierListOwner) {
+          val modifierList = owner.modifierList ?: return
+          val annotations = modifierList.annotations
+          for (annotation in annotations) {
+            sb.append('@').append(annotation.qualifiedName)
+            val attributes = annotation.attributes
+            if (attributes.size > 0) {
+              sb.append('(')
+              sb.append(attributes.joinToString(", ") { it.toSource() })
+              sb.append(')')
+            }
+            sb.append(' ')
+          }
+
+          if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
+            sb.append("public ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.PROTECTED)) {
+            sb.append("protected ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
+            sb.append("private ")
+          }
+          if (
+            modifierList.hasModifierProperty(PsiModifier.STATIC) &&
+              // enums and interfaces are implicitly static
+              !(owner is PsiClass && (owner.isEnum || owner.isInterface))
+          ) {
+            sb.append("static ")
+          }
+          if (
+            modifierList.hasModifierProperty(PsiModifier.ABSTRACT) &&
+              // interfaces are implicitly abstract and static
+              !(owner is PsiClass && owner.isInterface)
+          ) {
+            sb.append("abstract ")
+          }
+          if (
+            modifierList.hasModifierProperty(PsiModifier.FINAL) &&
+              // enum constants are implicitly final
+              !(owner is PsiClass && owner.isEnum)
+          ) {
+            sb.append("final ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.NATIVE)) {
+            sb.append("native ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.SYNCHRONIZED)) {
+            sb.append("synchronized ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.STRICTFP)) {
+            sb.append("strictfp ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.TRANSIENT)) {
+            sb.append("transient ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.VOLATILE)) {
+            sb.append("volatile ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.DEFAULT)) {
+            sb.append("default ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.OPEN)) {
+            sb.append("open ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.TRANSITIVE)) {
+            sb.append("transitive ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.SEALED)) {
+            sb.append("sealed ")
+          }
+          if (modifierList.hasModifierProperty(PsiModifier.NON_SEALED)) {
+            sb.append("non-sealed ")
+          }
+        }
+
+        private fun appendType(type: PsiType?) {
+          type ?: return
+          sb.append(type.canonicalText.replace('$', '.'))
+        }
+
+        private fun PsiLiteral.toSource(): String {
+          return when (val value = this.value) {
+            is String -> "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+            is Char -> "'$value'"
+            else -> value.toString()
+          }
+        }
+
+        private fun JvmAnnotationConstantValue.toSource(): String {
+          return when (val value = this.constantValue) {
+            is String -> "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+            is Char -> "'$value'"
+            else -> value.toString()
+          }
+        }
+
+        private fun JvmAnnotationAttribute.toSource(): String {
+          return attributeName + "=" + (attributeValue?.toSource())
+        }
+
+        @Suppress("UnstableApiUsage")
+        private fun JvmAnnotationAttributeValue.toSource(): String {
+          return when (this) {
+            is PsiLiteral -> (this as PsiLiteral).toSource()
+            is JvmAnnotationConstantValue -> this.toSource()
+            is JvmAnnotationClassValue -> "$qualifiedName.class"
+            is JvmNestedAnnotationValue ->
+              "@${value.qualifiedName}(${value.attributes.joinToString { it.toSource() }})"
+            is JvmAnnotationEnumFieldValue -> "$containingClassName.${this.fieldName}"
+            is JvmAnnotationArrayValue -> "{" + values.joinToString(", ") { it.toSource() } + "}"
+            else -> this.toString()
+          }
+        }
+
+        private fun PsiClass.isAnnotation(): Boolean {
+          return isAnnotationType ||
+            isInterface &&
+              // bytecode doesn't show up as annotation
+              this.superClass?.qualifiedName == "java.lang.annotation.Annotation"
+        }
+
+        override fun visitClass(aClass: PsiClass) {
+          indent(depth)
+          appendModifiers(aClass)
+          if (aClass.isAnnotation()) {
+            sb.append("@interface")
+          } else if (aClass.isInterface) {
+            sb.append("interface")
+          } else if (aClass.isEnum) {
+            sb.append("enum")
+          } else {
+            sb.append("class")
+          }
+          sb.append(" ${aClass.qualifiedName}")
+          val superClass = aClass.superClass?.qualifiedName
+          if (aClass.typeParameters.isNotEmpty()) {
+            appendTypeParameters(aClass.typeParameters)
+          }
+          if (
+            superClass != null && !(aClass.isInterface || aClass.isEnum || aClass.isAnnotation())
+          ) {
+            sb.append(" extends ")
+            sb.append(aClass.superTypes.joinToString(",") { it.canonicalText.replace("$", ".") })
+          }
+          val interfaces = aClass.implementsListTypes
+          if (interfaces.isNotEmpty()) {
+            sb.append(" implements ")
+            sb.append(interfaces.joinToString(",") { it.canonicalText.replace("$", ".") })
+          }
+          sb.append(" {\n")
+          depth++
+
+          if (aClass.isEnum) {
+            val enumFields = aClass.fields.filter { isEnumConstant(it) }
+            if (enumFields.isNotEmpty()) {
+              indent(depth)
+              sb.append(enumFields.joinToString(", ") { it.name }).append(";\n")
+            }
+          }
+
+          super.visitClass(aClass)
+          depth--
+          indent(depth)
+          sb.append("}\n")
+        }
+
+        private fun appendTypeParameters(typeParameters: Array<PsiTypeParameter>) {
+          sb.append('<')
+          typeParameters.forEachIndexed { index, parameter ->
+            if (index > 0) sb.append(", ")
+            sb.append(parameter.name)
+            val qualifiedName = parameter.superClass?.qualifiedName
+            if (qualifiedName != null && qualifiedName != "java.lang.Object") {
+              sb.append(" extends ").append(qualifiedName)
+            }
+            sb.append(parameter.interfaces.joinToString("") { itf -> " & ${itf.qualifiedName}" })
+          }
+          sb.append('>')
+        }
+
+        override fun visitMethod(method: PsiMethod) {
+          if (
+            method.isConstructor &&
+              (method.containingClass?.isEnum == true ||
+                method.containingClass?.isAnnotation() == true)
+          ) {
+            return
+          }
+
+          indent(depth)
+          appendModifiers(method)
+          if (!method.isConstructor) {
+            appendType(method.returnType)
+            sb.append(' ')
+          }
+
+          val typeParameters = method.typeParameters
+          if (typeParameters.isNotEmpty()) {
+            appendTypeParameters(typeParameters)
+            sb.append(' ')
+          }
+
+          sb.append("${method.name}(")
+          method.parameterList.parameters.forEachIndexed { i, parameter ->
+            if (i > 0) {
+              sb.append(", ")
+            }
+            appendModifiers(parameter)
+            sb.append(parameter.type.canonicalText)
+            val name = parameter.name
+            sb.append(" $name")
+          }
+          sb.append(")")
+          val throws = method.throwsList.referencedTypes
+          if (throws.isNotEmpty()) {
+            sb.append(" throws ")
+            sb.append(throws.joinToString(", ") { it.className })
+          }
+
+          sb.append(";\n")
+
+          super.visitMethod(method)
+        }
+
+        private fun isEnumConstant(field: PsiField): Boolean {
+          // For source, we can just look to see if it's PsiEnumConstant,
+          // but from class files they're "just" fields
+          return field.containingClass?.isEnum == true &&
+            (field.type as? PsiClassType)?.canonicalText == field.containingClass?.qualifiedName
+        }
+
+        override fun visitField(field: PsiField) {
+          if (!isEnumConstant(field)) { // Handled inline in the class visitor
+            indent(depth)
+            appendModifiers(field)
+            appendType(field.type)
+            sb.append(" ${field.name}")
+            val initial = field.computeConstantValue()
+            if (initial != null) {
+              sb.append(" = $initial")
+            }
+            sb.append(";\n")
+          }
+          super.visitField(field)
+        }
+      }
+    )
+    return sb.toString()
+  }
+
+  @Test
+  fun testBasic() {
+    check(
+      """
             public class com.example.myapplication.Test extends java.lang.Object {
                 public static final java.lang.String MY_CONSTANT = myconst;
                 public static final int MY_FORTY_TWO = 42;
@@ -382,12 +388,12 @@ class StubClassFileTest {
                     public java.lang.String displayName();
                 }
             }
-            """.trimIndent(),
-
-            binaryStub(
-                "libs/test.jar",
-                java(
-                    """
+            """
+        .trimIndent(),
+      binaryStub(
+        "libs/test.jar",
+        java(
+            """
                     package com.example.myapplication;
 
                     import java.io.IOException;
@@ -423,15 +429,16 @@ class StubClassFileTest {
                         }
                     }
                     """
-                ).indented()
-            )
-        )
-    }
+          )
+          .indented()
+      )
+    )
+  }
 
-    @Test
-    fun testGenerics() {
-        check(
-            """
+  @Test
+  fun testGenerics() {
+    check(
+      """
             public class test.pkg.DiffUtil extends java.lang.Object {
                 public DiffUtil();
                 public static abstract class test.pkg.DiffUtil.ItemCallback<S, T extends java.util.List & java.util.List & java.util.RandomAccess, FOO> extends test.pkg.DiffUtil.Foo<FOO,T> {
@@ -455,13 +462,14 @@ class StubClassFileTest {
                     public Bar();
                 }
             }
-            """.trimIndent(),
-
-            binaryStub(
-                "libs/diffutil.jar",
-                stubSources = listOf(
-                    java(
-                        """
+            """
+        .trimIndent(),
+      binaryStub(
+        "libs/diffutil.jar",
+        stubSources =
+          listOf(
+            java(
+                """
                         package test.pkg;
 
                         import java.io.IOException;
@@ -515,16 +523,17 @@ class StubClassFileTest {
                             }
                         }
                         """
-                    ).indented()
-                )
-            )
-        )
-    }
+              )
+              .indented()
+          )
+      )
+    )
+  }
 
-    @Test
-    fun testAnnotations() {
-        check(
-            """
+  @Test
+  fun testAnnotations() {
+    check(
+      """
             public class test.pkg.TestAnnotations extends java.lang.Object {
                 public static final int MY_CONSTANT = 15;
                 public TestAnnotations();
@@ -572,12 +581,14 @@ class StubClassFileTest {
                     TestAnnotationsOnParameter(@test.pkg.TestAnnotations.MyAnno(value=4) float f);
                 }
             }
-            """.trimIndent(),
-            binaryStub(
-                "libs/annotations.jar",
-                stubSources = listOf(
-                    java(
-                        """
+            """
+        .trimIndent(),
+      binaryStub(
+        "libs/annotations.jar",
+        stubSources =
+          listOf(
+            java(
+                """
                         package test.pkg;
 
                         import android.Manifest;
@@ -683,12 +694,14 @@ class StubClassFileTest {
                             }
                         }
                         """
-                    ).indented()
-                ),
-                compileOnly = listOf(
-                    SUPPORT_ANNOTATIONS_JAR,
-                    java(
-                        """
+              )
+              .indented()
+          ),
+        compileOnly =
+          listOf(
+            SUPPORT_ANNOTATIONS_JAR,
+            java(
+                """
                         package android;
                         public class Manifest {
                             public static final class permission {
@@ -697,16 +710,17 @@ class StubClassFileTest {
                             }
                         }
                         """
-                    ).indented()
-                )
-            )
-        )
-    }
+              )
+              .indented()
+          )
+      )
+    )
+  }
 
-    @Test
-    fun testKotlin() {
-        check(
-            """
+  @Test
+  fun testKotlin() {
+    check(
+      """
             public final class test.pkg.MyAnnotationKt extends java.lang.Object {
                 public MyAnnotationKt();
                 public static final void topLevelFunction(@test.pkg.MyAnnotation int p);
@@ -726,12 +740,12 @@ class StubClassFileTest {
                     private Companion();
                 }
             }
-            """.trimIndent(),
-
-            binaryStub(
-                "libs/test.jar",
-                kotlin(
-                    """
+            """
+        .trimIndent(),
+      binaryStub(
+        "libs/test.jar",
+        kotlin(
+            """
                     package test.pkg
 
                     annotation class MyAnnotation
@@ -744,59 +758,63 @@ class StubClassFileTest {
                         }
                     }
                     """
-                ).indented()
-            ),
-            allowKotlin = true
-        )
-    }
+          )
+          .indented()
+      ),
+      allowKotlin = true
+    )
+  }
 
-    @Test
-    fun testPackageInfo() {
-        check(
-            """
+  @Test
+  fun testPackageInfo() {
+    check(
+      """
             @androidx.annotation.RestrictTo(value={androidx.annotation.RestrictTo.Scope.GROUP_ID}) interface library.pkg.internal.package-info {
             }
-            """.trimIndent(),
-
-            binaryStub(
-                "libs/test.jar",
-                stubSources = listOf(
-                    java(
-                        """
+            """
+        .trimIndent(),
+      binaryStub(
+        "libs/test.jar",
+        stubSources =
+          listOf(
+            java(
+                """
                         @RestrictTo(RestrictTo.Scope.GROUP_ID)
                         package library.pkg.internal;
 
                         import androidx.annotation.RestrictTo;
                         """
-                    ).indented()
-                ),
-                compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
-            )
-        )
-    }
+              )
+              .indented()
+          ),
+        compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
+      )
+    )
+  }
 
-    @Test
-    fun testNotStubbable() {
-        try {
-            check(
-                "",
-                binaryStub(
-                    "libs/test.jar",
-                    java(
-                        """
+  @Test
+  fun testNotStubbable() {
+    try {
+      check(
+        "",
+        binaryStub(
+          "libs/test.jar",
+          java(
+              """
                         package test.pkg;
                         public class Test {
                             public String getName() { return ""; }
                             public String displayName() { return getName(); }
                         }
                         """
-                    ).indented()
-                )
             )
-            fail("Unstubbable method `displayName` should have raised an error")
-        } catch (e: Throwable) {
-            assertEquals(
-                """
+            .indented()
+        )
+      )
+      fail("Unstubbable method `displayName` should have raised an error")
+    } catch (e: Throwable) {
+      assertEquals(
+        """
                 Method `test.pkg.Test.displayName()Ljava/lang/String;` is not just a stub method;
                 it contains code, which the testing infrastructure bytecode stubber can't handle.
                 You'll need to switch to a `compiled` or `bytecode` test file type instead (where
@@ -804,39 +822,42 @@ class StubClassFileTest {
                 necessary for the test, remove it and replace with a simple return or throw.
                 Method body: { return getName(); }
 
-                """.trimIndent(),
-                e.message
-            )
-        }
+                """
+          .trimIndent(),
+        e.message
+      )
     }
+  }
 
-    @Test
-    fun testMustOptInToKotlin() {
-        try {
-            check(
-                "",
-                binaryStub(
-                    "libs/test.jar",
-                    kotlin(
-                        """
+  @Test
+  fun testMustOptInToKotlin() {
+    try {
+      check(
+        "",
+        binaryStub(
+          "libs/test.jar",
+          kotlin(
+              """
                         package test.pkg
                         class Test
                     """
-                    ).indented()
-                )
             )
-            fail("Using Kotlin without opting in should throw exception")
-        } catch (e: Throwable) {
-            assertEquals(
-                """
+            .indented()
+        )
+      )
+      fail("Using Kotlin without opting in should throw exception")
+    } catch (e: Throwable) {
+      assertEquals(
+        """
                 You cannot use Kotlin in a binaryStub or mavenLibrary unless you also turn on
                 `lint().allowKotlinClassStubs(true)`. Kotlin stubs work in general, but module
                 metadata is still missing, which means that if your test relies on this metadata
                 (for example to call package level functions from Kotlin, or to access things like
                 default values or inline methods), that will not work.
-                """.trimIndent(),
-                e.message
-            )
-        }
+                """
+          .trimIndent(),
+        e.message
+      )
     }
+  }
 }

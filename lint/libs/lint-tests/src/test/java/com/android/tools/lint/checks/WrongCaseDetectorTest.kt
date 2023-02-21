@@ -18,16 +18,17 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class WrongCaseDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return WrongCaseDetector()
-    }
+  override fun getDetector(): Detector {
+    return WrongCaseDetector()
+  }
 
-    fun testBasic() {
-        //noinspection all // Sample code
-        lint().files(
-            xml(
-                "res/layout/case.xml",
-                """
+  fun testBasic() {
+    //noinspection all // Sample code
+    lint()
+      .files(
+        xml(
+            "res/layout/case.xml",
+            """
                 <Merge xmlns:android="http://schemas.android.com/apk/res/android" >
 
                     <Fragment android:name="foo.bar.Fragment" />
@@ -36,9 +37,12 @@ class WrongCaseDetectorTest : AbstractCheckTest() {
 
                 </Merge>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/case.xml:1: Error: Invalid tag <Merge>; should be <merge> [WrongCase]
             <Merge xmlns:android="http://schemas.android.com/apk/res/android" >
              ~~~~~
@@ -53,6 +57,6 @@ class WrongCaseDetectorTest : AbstractCheckTest() {
                  ~~~~~~~~~~~~
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

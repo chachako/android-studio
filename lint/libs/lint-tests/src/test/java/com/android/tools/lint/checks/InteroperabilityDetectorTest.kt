@@ -21,14 +21,15 @@ import com.android.tools.lint.checks.InteroperabilityDetector.Issues.PLATFORM_NU
 import com.android.tools.lint.detector.api.Detector
 
 class InteroperabilityDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return InteroperabilityDetector()
-    }
+  override fun getDetector(): Detector {
+    return InteroperabilityDetector()
+  }
 
-    fun testKeywords() {
-        lint().files(
-            java(
-                """
+  fun testKeywords() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 @SuppressWarnings("ClassNameDiffersFromFileName")
@@ -38,9 +39,10 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     public Object object = null;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import org.json.JSONException;
@@ -55,9 +57,13 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).issues(InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS).run().expect(
-            """
+          )
+          .indented()
+      )
+      .issues(InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS)
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:5: Warning: Avoid method names that are Kotlin hard keywords ("fun"); see https://android.github.io/kotlin-guides/interop.html#no-hard-keywords [NoHardKeywords]
                 public void fun() { }
                             ~~~
@@ -66,13 +72,14 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                               ~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testLambdaLast() {
-        lint().files(
-            java(
-                """
+  fun testLambdaLast() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 @SuppressWarnings("ClassNameDiffersFromFileName")
                 public class Test {
@@ -93,9 +100,10 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
 
                     fun ok1(bar: (Int) -> Int) { }
@@ -106,10 +114,13 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     // interoperability issue
                     fun error(bar: (Int) -> Int, foo: Int) { }
                 """
-            ).indented()
-
-        ).issues(InteroperabilityDetector.LAMBDA_LAST).run().expect(
-            """
+          )
+          .indented()
+      )
+      .issues(InteroperabilityDetector.LAMBDA_LAST)
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:11: Warning: Functional interface parameters (such as parameter 1, "run", in test.pkg.Test.error1) should be last to improve Kotlin interoperability; see https://kotlinlang.org/docs/reference/java-interop.html#sam-conversions [LambdaLast]
                 public void error1(Runnable run, int x) { }
                                                  ~~~~~
@@ -118,14 +129,15 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                                                      ~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testLambdaLast2() {
-        // Regression test for https://issuetracker.google.com/135275901
-        lint().files(
-            java(
-                """
+  fun testLambdaLast2() {
+    // Regression test for https://issuetracker.google.com/135275901
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import java.util.concurrent.Executor;
@@ -140,17 +152,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).issues(InteroperabilityDetector.LAMBDA_LAST).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(InteroperabilityDetector.LAMBDA_LAST)
+      .run()
+      .expectClean()
+  }
 
-    fun testInheritedMethods() {
-        // 213362704: Skip flagging overridden methods
-        // For both lambda-should-be-last and name-is-kotlin-keyword, don't flag APIs that
-        // are inherited where you don't have the ability to rename it anyway.
-        lint().files(
-            java(
-                """
+  fun testInheritedMethods() {
+    // 213362704: Skip flagging overridden methods
+    // For both lambda-should-be-last and name-is-kotlin-keyword, don't flag APIs that
+    // are inherited where you don't have the ability to rename it anyway.
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 @SuppressWarnings("LambdaLast")
                 public class Parent {
@@ -165,9 +182,10 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 public class Child extends Parent {
                     @Override public void error1(Runnable run, int x) { } // Override, don't flag
@@ -175,14 +193,19 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     @Override public void fun() { } // Override, don't flag
                 }
                 """
-            ).indented(),
-        ).issues(InteroperabilityDetector.LAMBDA_LAST).run().expectClean()
-    }
+          )
+          .indented(),
+      )
+      .issues(InteroperabilityDetector.LAMBDA_LAST)
+      .run()
+      .expectClean()
+  }
 
-    fun testNullness() {
-        lint().files(
-            java(
-                """
+  fun testNullness() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.NonNull;
@@ -219,10 +242,14 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     public Float error8;
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:10: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
                 public Object error1(Integer error2, int[] error3) { return null; }
                        ~~~~~~
@@ -249,12 +276,13 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                        ~~~~~
             0 errors, 8 warnings
             """
-        ).expectFixDiffs(
-            // The unit testing infrastructure doesn't support shortening identifiers so
-            // here we see fully qualified annotations inserted; in the IDE, the annotations
-            // would get imported at the top of the compilation unit and shortened names
-            // used here
-            """
+      )
+      .expectFixDiffs(
+        // The unit testing infrastructure doesn't support shortening identifiers so
+        // here we see fully qualified annotations inserted; in the IDE, the annotations
+        // would get imported at the top of the compilation unit and shortened names
+        // used here
+        """
             Fix for src/test/pkg/Test.java line 10: Annotate @NonNull:
             @@ -10 +10
             -     public Object error1(Integer error2, int[] error3) { return null; }
@@ -320,35 +348,38 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             -     @Deprecated
             +     @Nullable @Deprecated
             """
-        )
-    }
+      )
+  }
 
-    fun testNullnessWithoutDeprecatedElements() {
-        // Normally everything is flagged, but via options (and envvars) you can
-        // filter out deprecated elements; this tests that
-        lint().files(
-            xml(
-                "lint.xml",
-                """
+  fun testNullnessWithoutDeprecatedElements() {
+    // Normally everything is flagged, but via options (and envvars) you can
+    // filter out deprecated elements; this tests that
+    lint()
+      .files(
+        xml(
+            "lint.xml",
+            """
                 <lint>
                     <issue id="UnknownNullness">
                         <option name="ignore-deprecated" value="true" />
                     </issue>
                 </lint>
                 """
-            ).indented(),
-            xml(
-                "src/other/pkg/lint.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "src/other/pkg/lint.xml",
+            """
                 <lint>
                     <issue id="TooManyViews">
                         <option name="maxCount" value="20" />
                     </issue>
                 </lint>
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package other.pkg;
 
                 import androidx.annotation.NonNull;
@@ -363,43 +394,49 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     public Float error5;
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expectClean()
+  }
 
-    fun testNullnessWithoutDeprecatedElementsOldTestDSL() {
-        PLATFORM_NULLNESS.setEnabledByDefault(true)
+  fun testNullnessWithoutDeprecatedElementsOldTestDSL() {
+    PLATFORM_NULLNESS.setEnabledByDefault(true)
 
-        // Like testNullnessWithoutDeprecatedElements, but uses the old Lint Test API.
-        // This is less a test of the detector and more a test of lint's test infrastructure;
-        // all the old tests have been used, but this test verifies that things still work.
-        @Suppress("DEPRECATION")
-        assertEquals(
-            "No warnings.",
-            lintProject(
-                xml(
-                    "lint.xml",
-                    """
+    // Like testNullnessWithoutDeprecatedElements, but uses the old Lint Test API.
+    // This is less a test of the detector and more a test of lint's test infrastructure;
+    // all the old tests have been used, but this test verifies that things still work.
+    @Suppress("DEPRECATION")
+    assertEquals(
+      "No warnings.",
+      lintProject(
+        xml(
+            "lint.xml",
+            """
                     <lint>
                         <issue id="UnknownNullness">
                             <option name="ignore-deprecated" value="true" />
                         </issue>
                     </lint>
                     """
-                ).indented(),
-                xml(
-                    "src/other/pkg/lint.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "src/other/pkg/lint.xml",
+            """
                     <lint>
                         <issue id="TooManyViews">
                             <option name="maxCount" value="20" />
                         </issue>
                     </lint>
                     """
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     package other.pkg;
                     import androidx.annotation.NonNull;
                     import androidx.annotation.Nullable;
@@ -413,18 +450,20 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         public Float error5;
                     }
                     """
-                ).indented(),
-                SUPPORT_ANNOTATIONS_JAR
-            )
-        )
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+    )
 
-        PLATFORM_NULLNESS.setEnabledByDefault(false)
-    }
+    PLATFORM_NULLNESS.setEnabledByDefault(false)
+  }
 
-    fun testPropertyAccess() {
-        lint().files(
-            java(
-                """
+  fun testPropertyAccess() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 @SuppressWarnings({"ClassNameDiffersFromFileName", "unused", "MethodMayBeStatic", "NonBooleanMethodNameMayNotStartWithQuestion"})
@@ -501,9 +540,13 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).issues(KOTLIN_PROPERTY).run().expect(
-            """
+          )
+          .indented()
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expect(
+        """
             src/test/pkg/GetterSetter.java:30: Warning: This method should be called getError1 such that error1 can be accessed as a property from Kotlin; see https://android.github.io/kotlin-guides/interop.html#property-prefixes [KotlinPropertyAccess]
                 public String hasError1() { return ""; }
                               ~~~~~~~~~
@@ -533,15 +576,16 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                                   ~~~~~~~~~~
             0 errors, 7 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testInflexibleGetter() {
-        // Regression test for
-        // 78097965: KotlinPropertyAccess lint rule wants me to change Activity.java
-        lint().files(
-            java(
-                """
+  fun testInflexibleGetter() {
+    // Regression test for
+    // 78097965: KotlinPropertyAccess lint rule wants me to change Activity.java
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -553,17 +597,21 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess1() {
-        // Regression test for
-        // 78650191: KotlinPropertyAccess should ignore void methods when attempting to make matches
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess1() {
+    // Regression test for
+    // 78650191: KotlinPropertyAccess should ignore void methods when attempting to make matches
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import java.io.FileDescriptor;
@@ -578,17 +626,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess2() {
-        // Regression test for
-        // 78649678: KotlinPropertyAccess should ignore private methods when matching
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess2() {
+    // Regression test for
+    // 78649678: KotlinPropertyAccess should ignore private methods when matching
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -597,17 +650,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     public void setName(boolean name) {}
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess3() {
-        // Regression test for
-        // 78644287: KotlinPropertyAccess not resolving/comparing generic type parameters correctly
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess3() {
+    // Regression test for
+    // 78644287: KotlinPropertyAccess not resolving/comparing generic type parameters correctly
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -630,17 +688,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess4() {
-        // Regression test for
-        // 78632440: KotlinPropertyAccess false positive with overloaded setter
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess4() {
+    // Regression test for
+    // 78632440: KotlinPropertyAccess false positive with overloaded setter
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.res.ColorStateList;
@@ -658,17 +721,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess5() {
-        // Regression test for
-        // 80088526: KotlinPropertyAccess false positive with private getter
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess5() {
+    // Regression test for
+    // 80088526: KotlinPropertyAccess false positive with private getter
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.ColorRes;
@@ -688,17 +756,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess6() {
-        // Regression test for
-        // 80092799: KotlinPropertyAccess false positive on framework method override
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess6() {
+    // Regression test for
+    // 80092799: KotlinPropertyAccess false positive on framework method override
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -724,17 +797,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess7() {
-        // Regression test for
-        // 80092906: KotlinPropertyAccess targeting getter which already has perfectly matching setter
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess7() {
+    // Regression test for
+    // 80092906: KotlinPropertyAccess targeting getter which already has perfectly matching setter
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -760,17 +838,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         }
                     }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess8() {
-        // Regression test for
-        // 80092802: KotlinPropertyAccess should ignore constructors
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess8() {
+    // Regression test for
+    // 80092802: KotlinPropertyAccess should ignore constructors
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -786,17 +869,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         }
                     }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess9() {
-        // Regression test for
-        // 80092804: KotlinPropertyAccess should prefer matching getters with the same type
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess9() {
+    // Regression test for
+    // 80092804: KotlinPropertyAccess should prefer matching getters with the same type
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     import android.content.SharedPreferences;
@@ -819,17 +907,22 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         }
                     }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expectClean()
+  }
 
-    fun testNonPropertyAccess10() {
-        // Regression test for
-        // 80088529: KotlinPropertyAccess should suggest removing "is" from setter when is-er is present
-        lint().files(
-            java(
-                """
+  fun testNonPropertyAccess10() {
+    // Regression test for
+    // 80088529: KotlinPropertyAccess should suggest removing "is" from setter when is-er is present
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -843,22 +936,27 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
 
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(KOTLIN_PROPERTY).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(KOTLIN_PROPERTY)
+      .run()
+      .expect(
+        """
             src/test/pkg/RecyclerView.java:5: Warning: This method should be called setRecyclable such that (along with the isRecyclable getter) Kotlin code can access it as a property (recyclable); see https://android.github.io/kotlin-guides/interop.html#property-prefixes [KotlinPropertyAccess]
                 public final void setIsRecyclable(boolean recyclable) {
                                   ~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testEqualsAndToString1() {
-        lint().files(
-            java(
-                """
+  fun testEqualsAndToString1() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 @SuppressWarnings({"unused", "ClassNameDiffersFromFileName"})
@@ -874,15 +972,20 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expectClean()
+  }
 
-    fun testInitializedConstants() {
-        lint().files(
-            java(
-                """
+  fun testInitializedConstants() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 @SuppressWarnings({"unused", "ClassNameDiffersFromFileName", "NonConstantFieldWithUpperCaseName"})
@@ -892,22 +995,27 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     public String MY_CONSTANT3 = "constant"; // Unknown
                 }
             """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expect(
+        """
             src/test/pkg/NullnessTest.java:7: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
                 public String MY_CONSTANT3 = "constant"; // Unknown
                        ~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testIncorrectNullnessAnnotations() {
-        lint().files(
-            java(
-                """
+  fun testIncorrectNullnessAnnotations() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.NonNull;
@@ -927,10 +1035,14 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expect(
+        """
             src/test/pkg/NullnessTest.java:9: Warning: Unexpected @NonNull: The equals contract allows the parameter to be null [UnknownNullness]
                 public boolean equals(@NonNull Object obj) {
                                       ~~~~~~~~
@@ -939,14 +1051,16 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testSkipDeprecated() {
-        // Regression test for https://issuetracker.google.com/112126735
-        val result = lint().files(
-            java(
-                """
+  fun testSkipDeprecated() {
+    // Regression test for https://issuetracker.google.com/112126735
+    val result =
+      lint()
+        .files(
+          java(
+              """
                 package test.pkg;
 
                 @SuppressWarnings({"unused", "ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -960,14 +1074,17 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run()
-        if (InteroperabilityDetector.IGNORE_DEPRECATED) {
-            result.expectClean()
-        } else {
-            result.expect(
-                """
+            )
+            .indented(),
+          SUPPORT_ANNOTATIONS_JAR
+        )
+        .issues(PLATFORM_NULLNESS)
+        .run()
+    if (InteroperabilityDetector.IGNORE_DEPRECATED) {
+      result.expectClean()
+    } else {
+      result.expect(
+        """
                 src/test/pkg/DeprecatedNullnessTest.java:6: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
                     public Object error1() { return null; }
                            ~~~~~~
@@ -976,32 +1093,37 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                                            ~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-        }
+      )
     }
+  }
 
-    fun testAnnotationMemberNonNull() {
-        // Regression test for https://issuetracker.google.com/112185120
-        lint().files(
-            // Don't flag annotation members as platform types
-            java(
-                """
+  fun testAnnotationMemberNonNull() {
+    // Regression test for https://issuetracker.google.com/112185120
+    lint()
+      .files(
+        // Don't flag annotation members as platform types
+        java(
+          """
                 package test.pkg;
                 @SuppressWarnings("ClassNameDiffersFromFileName")
                 public @interface ClassType {
                     Class value();
                 }
             """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expectClean()
+  }
 
-    fun testPlatformPropagation() {
-        // Regression test for https://issuetracker.google.com/134237547
-        lint().files(
-            kotlin(
-                """
+  fun testPlatformPropagation() {
+    // Regression test for https://issuetracker.google.com/134237547
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import java.util.concurrent.LinkedBlockingQueue
@@ -1018,9 +1140,10 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     fun ok() = Bar.getString() // OK
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package test.pkg;
 
                 public class Bar {
@@ -1028,10 +1151,13 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     public static String getString() { return "hello"; }
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(PLATFORM_NULLNESS).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expect(
+        """
             src/test/pkg/Foo.kt:7: Warning: Should explicitly declare type here since implicit type does not specify nullness [UnknownNullness]
                 fun takeRequest(timeout: Long, unit: TimeUnit) = requestQueue.poll(timeout, unit) // ERROR
                     ~~~~~~~~~~~
@@ -1040,15 +1166,16 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     ~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testPlatformPropagation2() {
-        // Regression test for
-        // 202559682: UnknownNullness check false positives on kotlin properties
-        lint().files(
-            java(
-                """
+  fun testPlatformPropagation2() {
+    // Regression test for
+    // 202559682: UnknownNullness check false positives on kotlin properties
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.NonNull;
@@ -1068,18 +1195,20 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import androidx.annotation.Nullable;
                 public interface Answer<T> {
                     T answer(@Nullable String invocation) throws Throwable;
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 fun kotlinNonNull() = MyClass.nonnull() // OK 1
@@ -1099,10 +1228,13 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 val ANSWER_THROWS = Answer { 42 } // ERROR 7
                 val ANSWER_THROWS: Answer<Int?> = Answer { 42 } // OK 9
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyClass.java:15: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
                 public static String platform() { // ERROR 1
                               ~~~~~~
@@ -1123,29 +1255,35 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~
             0 errors, 6 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testUnknownNullnessForTypeParameters() {
-        // Regression test for https://issuetracker.google.com/169691664.
-        lint().files(
-            java(
-                """
+  fun testUnknownNullnessForTypeParameters() {
+    // Regression test for https://issuetracker.google.com/169691664.
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     public class Foo<T> {
                         public T foo() { return null; }
                     }
                 """
-            ).indented(),
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testOverridePlatform() {
-        // Regression test for 206454502: UnknownNullness check shouldn't trigger on overrides of un-annotated platform APIs
-        lint().files(
-            java(
-                """
+  fun testOverridePlatform() {
+    // Regression test for 206454502: UnknownNullness check shouldn't trigger on overrides of
+    // un-annotated platform APIs
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.util.AttributeSet;
@@ -1171,9 +1309,10 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.util.AttributeSet;
@@ -1195,15 +1334,19 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCoroutines() {
-        // Regression test for https://issuetracker.google.com/236498269
-        lint().files(
-            java(
-                """
+  fun testCoroutines() {
+    // Regression test for https://issuetracker.google.com/236498269
+    lint()
+      .files(
+        java(
+            """
                 package com.google.common.util.concurrent;
                 import java.util.concurrent.Executor;
                 import java.util.concurrent.Future;
@@ -1213,16 +1356,18 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     void addListener(Runnable var1, Executor var2);
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 public final class Data {
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import com.google.common.util.concurrent.ListenableFuture;
                 @SuppressWarnings("UnknownNullness")
@@ -1232,18 +1377,20 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package androidx.work
                 import com.google.common.util.concurrent.ListenableFuture
                 public suspend inline fun <R> ListenableFuture<R>.await(): R {
                     TODO()
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import androidx.work.await
                 public abstract class RemoteCoroutineWorker() : ListenableWorker() {
@@ -1252,8 +1399,11 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         }
                  }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 }

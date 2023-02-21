@@ -19,12 +19,13 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ExtraTextDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector = ExtraTextDetector()
+  override fun getDetector(): Detector = ExtraTextDetector()
 
-    fun testDocumentationExample() {
-        lint().files(
-            manifest(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     package="com.android.adservices.api">
@@ -38,33 +39,39 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     `
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/drawable/icon.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/drawable/icon.xml",
+            """
                 <shape>>
                   <item></item>>
                 </shape>
                 """
-            ).indented(),
-            xml(
-                "res/values/strings.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/strings.xml",
+            """
                 <resources>
                     <string name="test">Test</string> <!-- Text is allowed in value resource files -->
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/xml/myfile.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml/myfile.xml",
+            """
                 <foo>
                     Test <!-- Text is allowed in xml and raw folder files -->
                 </foo>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:7: Error: Unexpected text found in manifest file: "android:label="Android AdServices" android:forceQueryable="true" android:directBootAware="true">" [ExtraText]
                     android:label="Android AdServices"
                     ^
@@ -73,22 +80,23 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                    ~
             1 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testBrokenLayout() {
-        val expected =
-            """
+  fun testBrokenLayout() {
+    val expected =
+      """
             res/layout/broken.xml:5: Error: Unexpected text found in layout file: "ImageButton android:id="@+id/android_logo2" android:layout_width="wrap_content" android:layout_heigh..." [ExtraText]
                 ImageButton android:id="@+id/android_logo2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
 
-        lint().files(
-            xml(
-                "res/layout/broken.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/layout/broken.xml",
+            """
                 <?xml version="1.0" encoding="utf-8"?>
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/newlinear" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
                     <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
@@ -98,22 +106,26 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     <Button android:id="@+android:id/summary" android:contentDescription="@string/label" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testManifest() {
-        val expected =
-            """
+  fun testManifest() {
+    val expected =
+      """
             AndroidManifest.xml:6: Error: Unexpected text found in manifest file: "permission android:name="com.android.vending.BILLING" android:label="@string/perm_billing_label" and..." [ExtraText]
                 permission android:name="com.android.vending.BILLING"
                 ^
             1 errors, 0 warnings
             """
 
-        lint().files(
-            manifest(
-                """
+    lint()
+      .files(
+        manifest(
+            """
                 <?xml version="1.0" encoding="utf-8"?>
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                           xmlns:tools="http://schemas.android.com/tools">
@@ -135,29 +147,37 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testValuesOk() {
-        lint().files(
-            xml(
-                "res/values/strings.xml",
-                """
+  fun testValuesOk() {
+    lint()
+      .files(
+        xml(
+            "res/values/strings.xml",
+            """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources>
                     <string name="foo">Foo</string>
                 </resources>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAaptOkay() {
-        lint().files(
-            xml(
-                "res/layout/layout.xml",
-                """
+  fun testAaptOkay() {
+    lint()
+      .files(
+        xml(
+            "res/layout/layout.xml",
+            """
                 <merge xmlns:android="http://schemas.android.com/apk/res/android"
                        xmlns:aapt="http://schemas.android.com/aapt">
                     <include layout="@layout/message">
@@ -177,15 +197,19 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     </TextView>
                 </merge>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testItemOkay() {
-        lint().files(
-            xml(
-                "res/drawable/drawable.xml",
-                """
+  fun testItemOkay() {
+    lint()
+      .files(
+        xml(
+            "res/drawable/drawable.xml",
+            """
                 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
                     <solid android:color="@color/tv_volume_dialog_accent" />
                     <size android:width="@dimen/tv_volume_seek_bar_thumb_diameter"
@@ -197,7 +221,10 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     <item name="android:shadowDy">@dimen/tv_volume_seek_bar_thumb_shadow_dy</item>
                 </shape>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

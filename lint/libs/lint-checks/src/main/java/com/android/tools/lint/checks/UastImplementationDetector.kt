@@ -39,125 +39,130 @@ import org.jetbrains.uast.UTypeReferenceExpression
 
 /** A special check that detects uses of UAST implementations */
 class UastImplementationDetector : Detector(), SourceCodeScanner {
-    companion object {
-        private val IMPLEMENTATION =
-            Implementation(
-                UastImplementationDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
+  companion object {
+    private val IMPLEMENTATION =
+      Implementation(UastImplementationDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        /** Use UAST interface, in lieu of UAST implementation */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "UastImplementation",
-            briefDescription = "Avoid using UAST implementation",
-            explanation = """
+    /** Use UAST interface, in lieu of UAST implementation */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "UastImplementation",
+        briefDescription = "Avoid using UAST implementation",
+        explanation =
+          """
                 Use UAST interface whenever possible, and do not rely on UAST implementation, \
                 which is subject to change. If language-specific information is needed, \
                 the next option is to use PSI directly (though these APIs are less stable and \
                 can depend on compiler internals, especially in the case of Kotlin).
             """,
-            category = CUSTOM_LINT_CHECKS,
-            priority = 4,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION,
-            platforms = JDK_SET,
-        )
+        category = CUSTOM_LINT_CHECKS,
+        priority = 4,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION,
+        platforms = JDK_SET,
+      )
 
-        private const val UAST_PREFIX = "org.jetbrains.uast."
-        private const val UAST_JAVA_PREFIX = UAST_PREFIX + "java."
-        private const val UAST_KT_PREFIX = UAST_PREFIX + "kotlin."
+    private const val UAST_PREFIX = "org.jetbrains.uast."
+    private const val UAST_JAVA_PREFIX = UAST_PREFIX + "java."
+    private const val UAST_KT_PREFIX = UAST_PREFIX + "kotlin."
 
-        private fun isUastImplementation(fqName: String): Boolean {
-            return fqName.startsWith(UAST_JAVA_PREFIX) || fqName.startsWith(UAST_KT_PREFIX)
-        }
-
-        private fun isNotAllowedUastImplementation(fqName: String): Boolean {
-            return isUastImplementation(fqName) && !isAllowedUastImplementation(fqName)
-        }
-
-        private fun isAllowedUastImplementation(fqName: String): Boolean = when (fqName) {
-            "org.jetbrains.uast.java.JavaUDeclarationsExpression", // no plugin API to create this
-            "org.jetbrains.uast.java.JavaUastLanguagePlugin", // plugin
-            "org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService", // service
-            "org.jetbrains.uast.kotlin.KotlinBinaryExpressionWithTypeKinds", // See below
-            "org.jetbrains.uast.kotlin.KotlinBinaryOperators", // no API to retrieve lang-specific op
-            "org.jetbrains.uast.kotlin.KotlinPostfixOperators", // we need a consolidated place :\
-            "org.jetbrains.uast.kotlin.KotlinQualifiedExpressionAccessTypes", // again
-            "org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin", // plugin
-            // TODO(b/229742431, b/251847039): remove FE1.0-specific uses
-            "org.jetbrains.uast.kotlin.KotlinUastResolveProviderService", // FE1.0 service
-            "org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds" // and again
-            -> true
-            else -> false
-        }
+    private fun isUastImplementation(fqName: String): Boolean {
+      return fqName.startsWith(UAST_JAVA_PREFIX) || fqName.startsWith(UAST_KT_PREFIX)
     }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>> = listOf(
-        UClassLiteralExpression::class.java,
-        UImportStatement::class.java,
-        UTypeReferenceExpression::class.java,
+    private fun isNotAllowedUastImplementation(fqName: String): Boolean {
+      return isUastImplementation(fqName) && !isAllowedUastImplementation(fqName)
+    }
+
+    private fun isAllowedUastImplementation(fqName: String): Boolean =
+      when (fqName) {
+        "org.jetbrains.uast.java.JavaUDeclarationsExpression", // no plugin API to create this
+        "org.jetbrains.uast.java.JavaUastLanguagePlugin", // plugin
+        "org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService", // service
+        "org.jetbrains.uast.kotlin.KotlinBinaryExpressionWithTypeKinds", // See below
+        "org.jetbrains.uast.kotlin.KotlinBinaryOperators", // no API to retrieve lang-specific op
+        "org.jetbrains.uast.kotlin.KotlinPostfixOperators", // we need a consolidated place :\
+        "org.jetbrains.uast.kotlin.KotlinQualifiedExpressionAccessTypes", // again
+        "org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin", // plugin
+        // TODO(b/229742431, b/251847039): remove FE1.0-specific uses
+        "org.jetbrains.uast.kotlin.KotlinUastResolveProviderService", // FE1.0 service
+        "org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds" // and again
+        -> true
+        else -> false
+      }
+  }
+
+  override fun getApplicableUastTypes(): List<Class<out UElement>> =
+    listOf(
+      UClassLiteralExpression::class.java,
+      UImportStatement::class.java,
+      UTypeReferenceExpression::class.java,
     )
 
-    override fun createUastHandler(
-        context: JavaContext
-    ): UElementHandler = object : UElementHandler() {
-        override fun visitClassLiteralExpression(node: UClassLiteralExpression) {
-            val fqName = node.type?.canonicalText ?: return
+  override fun createUastHandler(context: JavaContext): UElementHandler =
+    object : UElementHandler() {
+      override fun visitClassLiteralExpression(node: UClassLiteralExpression) {
+        val fqName = node.type?.canonicalText ?: return
+        if (isNotAllowedUastImplementation(fqName)) {
+          reportUastImplementation(node, fqName, (node.type as? PsiClassType)?.resolve())
+        }
+      }
+
+      override fun visitImportStatement(node: UImportStatement) {
+        checkUastImplementation(node)
+      }
+
+      override fun visitTypeReferenceExpression(node: UTypeReferenceExpression) {
+        checkUastImplementation(node)
+      }
+
+      private fun <T> checkUastImplementation(uElement: T) where T : UResolvable, T : UElement {
+        when (val resolvedElement = uElement.resolve()) {
+          is PsiClass -> {
+            val fqName = resolvedElement.qualifiedName ?: return
             if (isNotAllowedUastImplementation(fqName)) {
-                reportUastImplementation(node, fqName, (node.type as? PsiClassType)?.resolve())
+              reportUastImplementation(uElement, fqName, resolvedElement)
             }
-        }
-
-        override fun visitImportStatement(node: UImportStatement) {
-            checkUastImplementation(node)
-        }
-
-        override fun visitTypeReferenceExpression(node: UTypeReferenceExpression) {
-            checkUastImplementation(node)
-        }
-
-        private fun <T> checkUastImplementation(uElement: T) where T : UResolvable, T : UElement {
-            when (val resolvedElement = uElement.resolve()) {
-                is PsiClass -> {
-                    val fqName = resolvedElement.qualifiedName ?: return
-                    if (isNotAllowedUastImplementation(fqName)) {
-                        reportUastImplementation(uElement, fqName, resolvedElement)
-                    }
-                }
-                is PsiMember -> {
-                    val containingClass = resolvedElement.containingClass ?: return
-                    val fqName = containingClass.qualifiedName ?: return
-                    if (isNotAllowedUastImplementation(fqName)) {
-                        reportUastImplementation(uElement, fqName, containingClass)
-                    }
-                }
-            }
-        }
-
-        private fun checkUastImplementation(node: UTypeReferenceExpression) {
-            val fqName = node.getQualifiedName() ?: return
+          }
+          is PsiMember -> {
+            val containingClass = resolvedElement.containingClass ?: return
+            val fqName = containingClass.qualifiedName ?: return
             if (isNotAllowedUastImplementation(fqName)) {
-                reportUastImplementation(node, fqName, PsiTypesUtil.getPsiClass(node.type))
+              reportUastImplementation(uElement, fqName, containingClass)
             }
+          }
         }
+      }
 
-        private fun reportUastImplementation(node: UElement, fqName: String, psiClass: PsiClass?) {
-            val superClasses: Set<PsiClass> = psiClass?.let { InheritanceUtil.getSuperClasses(it) } ?: emptySet<PsiClass>()
-            val filtered = superClasses
-                .filter { it.isInterface }
-                .filter {
-                    val qualified = it.qualifiedName ?: ""
-                    qualified.startsWith(UAST_PREFIX) && !isNotAllowedUastImplementation(qualified)
-                }
-                .map { it.name }
-                .filter { it != "UElement" && it != "UMultiResolvable" }
-                .toList().let { LinkedHashSet(it) }.toList() // Remove duplicates while preserving order
-                .joinToString(", ") { "`$it`" }
-            val message = "$fqName is UAST implementation. Consider using one of its corresponding UAST interfaces${
+      private fun checkUastImplementation(node: UTypeReferenceExpression) {
+        val fqName = node.getQualifiedName() ?: return
+        if (isNotAllowedUastImplementation(fqName)) {
+          reportUastImplementation(node, fqName, PsiTypesUtil.getPsiClass(node.type))
+        }
+      }
+
+      private fun reportUastImplementation(node: UElement, fqName: String, psiClass: PsiClass?) {
+        val superClasses: Set<PsiClass> =
+          psiClass?.let { InheritanceUtil.getSuperClasses(it) } ?: emptySet<PsiClass>()
+        val filtered =
+          superClasses
+            .filter { it.isInterface }
+            .filter {
+              val qualified = it.qualifiedName ?: ""
+              qualified.startsWith(UAST_PREFIX) && !isNotAllowedUastImplementation(qualified)
+            }
+            .map { it.name }
+            .filter { it != "UElement" && it != "UMultiResolvable" }
+            .toList()
+            .let { LinkedHashSet(it) }
+            .toList() // Remove duplicates while preserving order
+            .joinToString(", ") { "`$it`" }
+        val message =
+          "$fqName is UAST implementation. Consider using one of its corresponding UAST interfaces${
             if (filtered.isEmpty()) "." else ": $filtered"
             }"
-            context.report(ISSUE, node, context.getLocation(node), message)
-        }
+        context.report(ISSUE, node, context.getLocation(node), message)
+      }
     }
 }

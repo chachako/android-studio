@@ -40,108 +40,100 @@ import org.jetbrains.uast.USwitchExpression
 import org.jetbrains.uast.UastFacade
 
 /**
- * Warns against using non-constant resource IDs in Java switch
- * statement blocks and annotations. This aims to prevent users from
- * using resource IDs as switch cases and annotations.
+ * Warns against using non-constant resource IDs in Java switch statement blocks and annotations.
+ * This aims to prevent users from using resource IDs as switch cases and annotations.
  */
 class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>> {
-        return listOf(
-            UAnnotation::class.java,
-            USwitchExpression::class.java,
-            UField::class.java
-        )
+  override fun getApplicableUastTypes(): List<Class<out UElement>> {
+    return listOf(UAnnotation::class.java, USwitchExpression::class.java, UField::class.java)
+  }
+
+  override fun createUastHandler(context: JavaContext): UElementHandler {
+    return ResourceIdVisitor(context)
+  }
+
+  class ResourceIdVisitor(val context: JavaContext) : UElementHandler() {
+    override fun visitSwitchExpression(node: USwitchExpression) {
+      if (isJava(node.sourcePsi)) {
+        checkSwitchCasesForRClassReferences(node.body)
+      }
     }
 
-    override fun createUastHandler(context: JavaContext): UElementHandler {
-        return ResourceIdVisitor(context)
+    /** Checks switch cases values for non-constant expressions which are R class references. */
+    private fun checkSwitchCasesForRClassReferences(body: UExpressionList) {
+      for (expression in body.expressions) {
+        if (expression is USwitchClauseExpression) {
+          checkExpression(expression.caseValues.firstOrNull(), "in switch case statements")
+        }
+      }
     }
 
-    class ResourceIdVisitor(val context: JavaContext) : UElementHandler() {
-        override fun visitSwitchExpression(node: USwitchExpression) {
-            if (isJava(node.sourcePsi)) {
-                checkSwitchCasesForRClassReferences(node.body)
-            }
-        }
-
-        /**
-         * Checks switch cases values for non-constant expressions which
-         * are R class references.
-         */
-        private fun checkSwitchCasesForRClassReferences(body: UExpressionList) {
-            for (expression in body.expressions) {
-                if (expression is USwitchClauseExpression) {
-                    checkExpression(expression.caseValues.firstOrNull(), "in switch case statements")
-                }
-            }
-        }
-
-        override fun visitAnnotation(node: UAnnotation) {
-            for (attribute in node.attributeValues) {
-                checkExpression(attribute.expression, "as annotation attributes")
-            }
-        }
-
-        override fun visitField(node: UField) {
-            val initializer = node.uastInitializer
-            if (initializer != null && isKotlin(node) && context.evaluator.isConst(node)) {
-                checkExpression(initializer, "in const fields")
-            }
-        }
-
-        private fun checkExpression(node: UExpression?, where: String) {
-            node ?: return
-            if (expressionReceiverIsRClass(node)) {
-                reportNonConstantUsage(node, where)
-            }
-        }
-
-        private fun reportNonConstantUsage(element: UElement, where: String) {
-            val location = context.getLocation(element)
-            context.report(
-                NON_CONSTANT_RESOURCE_ID,
-                element,
-                location,
-                "Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, " +
-                    "avoid using them $where"
-            )
-        }
-
-        private fun expressionReceiverIsRClass(expression: UExpression, depth: Int = 0): Boolean {
-            if (expression is USimpleNameReferenceExpression) {
-                val resolved = expression.resolve()
-                if (resolved is PsiVariable && depth < 3) {
-                    UastFacade.getInitializerBody(resolved)?.let { initializer ->
-                        return expressionReceiverIsRClass(initializer, depth + 1)
-                    }
-                }
-            }
-
-            val reference = ResourceReference.get(expression)
-            return reference != null && !reference.isFramework
-        }
+    override fun visitAnnotation(node: UAnnotation) {
+      for (attribute in node.attributeValues) {
+        checkExpression(attribute.expression, "as annotation attributes")
+      }
     }
 
-    companion object {
-        @JvmField
-        val NON_CONSTANT_RESOURCE_ID = Issue.create(
-            id = "NonConstantResourceId",
-            briefDescription = "Checks use of resource IDs in places requiring constants",
-            explanation = """
+    override fun visitField(node: UField) {
+      val initializer = node.uastInitializer
+      if (initializer != null && isKotlin(node) && context.evaluator.isConst(node)) {
+        checkExpression(initializer, "in const fields")
+      }
+    }
+
+    private fun checkExpression(node: UExpression?, where: String) {
+      node ?: return
+      if (expressionReceiverIsRClass(node)) {
+        reportNonConstantUsage(node, where)
+      }
+    }
+
+    private fun reportNonConstantUsage(element: UElement, where: String) {
+      val location = context.getLocation(element)
+      context.report(
+        NON_CONSTANT_RESOURCE_ID,
+        element,
+        location,
+        "Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, " +
+          "avoid using them $where"
+      )
+    }
+
+    private fun expressionReceiverIsRClass(expression: UExpression, depth: Int = 0): Boolean {
+      if (expression is USimpleNameReferenceExpression) {
+        val resolved = expression.resolve()
+        if (resolved is PsiVariable && depth < 3) {
+          UastFacade.getInitializerBody(resolved)?.let { initializer ->
+            return expressionReceiverIsRClass(initializer, depth + 1)
+          }
+        }
+      }
+
+      val reference = ResourceReference.get(expression)
+      return reference != null && !reference.isFramework
+    }
+  }
+
+  companion object {
+    @JvmField
+    val NON_CONSTANT_RESOURCE_ID =
+      Issue.create(
+        id = "NonConstantResourceId",
+        briefDescription = "Checks use of resource IDs in places requiring constants",
+        explanation =
+          """
                 Avoid the usage of resource IDs where constant expressions are required.
 
                 A future version of the Android Gradle Plugin will generate R classes with \
                 non-constant IDs in order to improve the performance of incremental compilation.
                 """,
-            category = Category.CORRECTNESS,
-            priority = 5,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = Implementation(
-                NonConstantResourceIdDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
-        )
-    }
+        category = Category.CORRECTNESS,
+        priority = 5,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation =
+          Implementation(NonConstantResourceIdDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
+  }
 }

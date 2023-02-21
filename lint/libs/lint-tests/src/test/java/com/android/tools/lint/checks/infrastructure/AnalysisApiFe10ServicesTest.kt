@@ -22,47 +22,47 @@ import org.junit.BeforeClass
 import org.junit.Test
 
 class AnalysisApiFe10ServicesTest : AnalysisApiServicesTestBase() {
-    companion object {
-        @BeforeClass
-        @JvmStatic
-        fun setup() {
-            System.setProperty(FIR_UAST_KEY, "false")
-        }
-
-        @AfterClass
-        @JvmStatic
-        fun teardown() {
-            UastEnvironment.disposeApplicationEnvironment()
-        }
+  companion object {
+    @BeforeClass
+    @JvmStatic
+    fun setup() {
+      System.setProperty(FIR_UAST_KEY, "false")
     }
 
-    @Test
-    fun testDynamicType() {
-        checkDynamicType()
+    @AfterClass
+    @JvmStatic
+    fun teardown() {
+      UastEnvironment.disposeApplicationEnvironment()
     }
+  }
 
-    @Test
-    fun testInternalModifier() {
-        checkInternalModifier()
-    }
+  @Test
+  fun testDynamicType() {
+    checkDynamicType()
+  }
 
-    @Test
-    fun testSamType() {
-        checkSamType()
-    }
+  @Test
+  fun testInternalModifier() {
+    checkInternalModifier()
+  }
 
-    @Test
-    fun testExtensionLambda() {
-        checkExtensionLambda()
-    }
+  @Test
+  fun testSamType() {
+    checkSamType()
+  }
 
-    @Test
-    fun testAnnotationOnTypeParameter() {
-        checkAnnotationOnTypeParameter()
-    }
+  @Test
+  fun testExtensionLambda() {
+    checkExtensionLambda()
+  }
 
-    @Test
-    fun testParameterModifiers() {
-        checkParameterModifiers()
-    }
+  @Test
+  fun testAnnotationOnTypeParameter() {
+    checkAnnotationOnTypeParameter()
+  }
+
+  @Test
+  fun testParameterModifiers() {
+    checkParameterModifiers()
+  }
 }

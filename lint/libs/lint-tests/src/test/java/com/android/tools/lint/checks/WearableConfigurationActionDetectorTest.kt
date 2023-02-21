@@ -17,25 +17,28 @@
 package com.android.tools.lint.checks
 
 class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
-    override fun getDetector() = WearableConfigurationActionDetector()
+  override fun getDetector() = WearableConfigurationActionDetector()
 
-    companion object {
-        private val GRADLE_WATCHFACE_DEPENDENCY = gradle(
-            """
+  companion object {
+    private val GRADLE_WATCHFACE_DEPENDENCY =
+      gradle(
+          """
                 apply plugin: 'com.android.application'
 
                 dependencies {
                     implementation "androidx.wear.watchface:watchface:1.2.3"
                 }
                 """
-        ).indented()
-    }
+        )
+        .indented()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            GRADLE_WATCHFACE_DEPENDENCY,
-            manifest(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        GRADLE_WATCHFACE_DEPENDENCY,
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.complications">
                   <intent-filter>
@@ -63,21 +66,25 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                     </service>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/main/AndroidManifest.xml:4: Warning: Watch face configuration tag is required [WearableConfigurationAction]
                 <action android:name="androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR" />
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNoAndroidXDependency() {
-        lint().files(
-            manifest(
-                """
+  fun testNoAndroidXDependency() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.complications">
                   <intent-filter>
@@ -105,15 +112,19 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                     </service>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMetaDataMissing() {
-        lint().files(
-            GRADLE_WATCHFACE_DEPENDENCY,
-            manifest(
-                """
+  fun testMetaDataMissing() {
+    lint()
+      .files(
+        GRADLE_WATCHFACE_DEPENDENCY,
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.complications">
                   <uses-sdk android:minSdkVersion="29"/>
@@ -163,22 +174,26 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                   </application>
 
                 </manifest>                    """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/main/AndroidManifest.xml:17: Warning: wearableConfigurationAction metadata is missing [WearableConfigurationAction]
                     <action android:name="androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR" />
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMinSdk30() {
-        lint().files(
-            GRADLE_WATCHFACE_DEPENDENCY,
-            manifest(
-                """
+  fun testMinSdk30() {
+    lint()
+      .files(
+        GRADLE_WATCHFACE_DEPENDENCY,
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.complications">
                   <uses-sdk android:minSdkVersion="30"/>
@@ -228,15 +243,19 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                   </application>
 
                 </manifest>                    """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testActionMissing() {
-        lint().files(
-            GRADLE_WATCHFACE_DEPENDENCY,
-            manifest(
-                """
+  fun testActionMissing() {
+    lint()
+      .files(
+        GRADLE_WATCHFACE_DEPENDENCY,
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.complications">
 
@@ -252,22 +271,26 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                   </intent-filter>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/main/AndroidManifest.xml:5: Warning: Watch face configuration activity is missing [WearableConfigurationAction]
                   android:name="com.google.android.wearable.watchface.wearableConfigurationAction"
                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNoWatchFaceDependency() {
-        lint().files(
-            // no GRADLE_WATCHFACE_DEPENDENCY
-            manifest(
-                """
+  fun testNoWatchFaceDependency() {
+    lint()
+      .files(
+        // no GRADLE_WATCHFACE_DEPENDENCY
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.complications">
 
@@ -283,14 +306,18 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                   </intent-filter>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMultiProject() {
-        val lib1 = project(
-            manifest(
-                """
+  fun testMultiProject() {
+    val lib1 =
+      project(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg.app">
                   <meta-data
@@ -298,11 +325,13 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                       android:value="androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR" />
                 </manifest>
                 """
-            ).indented()
-        )
-        val app = project(
-            manifest(
-                """
+          )
+          .indented()
+      )
+    val app =
+      project(
+          manifest(
+              """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg.app">
                     <application
@@ -324,16 +353,19 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented(),
-            GRADLE_WATCHFACE_DEPENDENCY
-        ).dependsOn(lib1)
-        lint().projects(app).run().expectClean()
-    }
+            )
+            .indented(),
+          GRADLE_WATCHFACE_DEPENDENCY
+        )
+        .dependsOn(lib1)
+    lint().projects(app).run().expectClean()
+  }
 
-    fun testMultiProjectWithIssues() {
-        val lib1 = project(
-            manifest(
-                """
+  fun testMultiProjectWithIssues() {
+    val lib1 =
+      project(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg.app">
                   <meta-data
@@ -341,11 +373,13 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                       android:value="androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR" />
                 </manifest>
                 """
-            ).indented()
-        )
-        val app = project(
-            manifest(
-                """
+          )
+          .indented()
+      )
+    val app =
+      project(
+          manifest(
+              """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg.app">
                     <application
@@ -355,24 +389,30 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented(),
-            GRADLE_WATCHFACE_DEPENDENCY,
-        ).dependsOn(lib1)
-        lint().projects(app).run().expect(
-            """
+            )
+            .indented(),
+          GRADLE_WATCHFACE_DEPENDENCY,
+        )
+        .dependsOn(lib1)
+    lint()
+      .projects(app)
+      .run()
+      .expect(
+        """
             ../lib/AndroidManifest.xml:4: Warning: Watch face configuration activity is missing [WearableConfigurationAction]
                   android:name="com.google.android.wearable.watchface.wearableConfigurationAction"
                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testActionDuplicate() {
-        lint().files(
-            GRADLE_WATCHFACE_DEPENDENCY,
-            manifest(
-                """
+  fun testActionDuplicate() {
+    lint()
+      .files(
+        GRADLE_WATCHFACE_DEPENDENCY,
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.style">
 
@@ -438,22 +478,26 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/main/AndroidManifest.xml:20: Warning: Duplicate watch face configuration activities found [WearableActionDuplicate]
                     <action android:name="androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR" />
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testCorrectWearableConfiguration() {
-        lint().files(
-            GRADLE_WATCHFACE_DEPENDENCY,
-            manifest(
-                """
+  fun testCorrectWearableConfiguration() {
+    lint()
+      .files(
+        GRADLE_WATCHFACE_DEPENDENCY,
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="androidx.wear.watchface.samples.minimal.style">
 
@@ -515,7 +559,10 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

@@ -19,12 +19,13 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class WorkManagerDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector = WorkManagerDetector()
+  override fun getDetector(): Detector = WorkManagerDetector()
 
-    fun testJava() {
-        lint().files(
-            java(
-                """
+  fun testJava() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import java.util.ArrayList;
@@ -139,10 +140,13 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *workManagerStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *workManagerStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/WorkManagerTest.java:15: Warning: WorkContinuation cont not enqueued: did you forget to call enqueue()? [EnqueueWork]
                     WorkContinuation cont = workManager.beginWith(workRequest1, workRequest2); // ERROR
                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,13 +164,14 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 5 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testKotlin() {
-        lint().files(
-            kotlin(
-                """
+  fun testKotlin() {
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("UNUSED_VARIABLE", "unused")
 
                 package test.pkg
@@ -264,10 +269,13 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                     private fun doSomeOtherStuff() {}
                 }
                 """
-            ).indented(),
-            *workManagerStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *workManagerStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/WorkManagerTest.kt:12: Warning: WorkContinuation cont not enqueued: did you forget to call enqueue()? [EnqueueWork]
                     val cont = workManager.beginWith(workRequest1, workRequest2) // ERROR
                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -282,14 +290,15 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 4 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testEnqueueSync() {
-        // Regression test for https://issuetracker.google.com/113167619
-        lint().files(
-            kotlin(
-                """
+  fun testEnqueueSync() {
+    // Regression test for https://issuetracker.google.com/113167619
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.work.ExistingWorkPolicy
@@ -305,15 +314,19 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *workManagerStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *workManagerStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUnresolvable() {
-        lint().files(
-            kotlin(
-                """
+  fun testUnresolvable() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.work.OneTimeWorkRequest
@@ -365,10 +378,13 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 //private fun WorkContinuation.unknown(): WorkContinuation = error("not yet implemented")
                 //private fun WorkContinuation.something(): Unit = error("not yet implemented")
                 """
-            ).indented(),
-            *workManagerStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *workManagerStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:27: Warning: WorkContinuation not enqueued: did you forget to call enqueue()? [EnqueueWork]
                 workManager.beginWith(workRequest) // ERROR 1
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -377,13 +393,14 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    private val workManagerStubs = arrayOf(
-        // WorkManager stubs
-        java(
-            """
+  private val workManagerStubs =
+    arrayOf(
+      // WorkManager stubs
+      java(
+          """
             package androidx.work;
             @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
             public abstract class WorkManager {
@@ -398,9 +415,10 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
 
             }
             """
-        ).indented(),
-        java(
-            """
+        )
+        .indented(),
+      java(
+          """
             package androidx.work;
             import java.util.List;
 
@@ -430,17 +448,19 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 public abstract SynchronousWorkContinuation synchronous();
             }
             """
-        ).indented(),
-        java(
-            """
+        )
+        .indented(),
+      java(
+          """
             package androidx.work;
             @SuppressWarnings("ClassNameDiffersFromFileName")
             public class OneTimeWorkRequest {
             }
             """
-        ).indented(),
-        java(
-            """
+        )
+        .indented(),
+      java(
+          """
             package androidx.work;
             @SuppressWarnings("ClassNameDiffersFromFileName")
             public enum ExistingWorkPolicy {
@@ -449,15 +469,16 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 APPEND
             }
             """
-        ).indented(),
-        java(
-            """
+        )
+        .indented(),
+      java(
+        """
             package androidx.work;
             @SuppressWarnings("ClassNameDiffersFromFileName")
             public interface SynchronousWorkContinuation {
                 void enqueueSync();
             }
             """
-        )
+      )
     )
 }

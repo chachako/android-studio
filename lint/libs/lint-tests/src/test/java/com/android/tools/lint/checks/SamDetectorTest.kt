@@ -19,14 +19,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class SamDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return SamDetector()
-    }
+  override fun getDetector(): Detector {
+    return SamDetector()
+  }
 
-    fun testStashingImplicitInstances() {
-        lint().files(
-            kotlin(
-                """
+  fun testStashingImplicitInstances() {
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("RedundantSamConstructor", "MoveLambdaOutsideParentheses")
 
                 package test.pkg
@@ -65,9 +66,10 @@ class SamDetectorTest : AbstractCheckTest() {
                     view.postDelayed({ println ("Hello") }, 50)
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import java.util.List;
@@ -79,18 +81,20 @@ class SamDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public interface MyInterface {
                     void act();
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import java.util.List;
@@ -149,9 +153,12 @@ class SamDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:17: Warning: Implicit new MyInterface instance being passed to method which ends up checking instance equality; this can lead to subtle bugs [ImplicitSamInstance]
                 handler.stash(lambda, list) // WARN
                               ~~~~~~
@@ -169,8 +176,9 @@ class SamDetectorTest : AbstractCheckTest() {
                               ~~~~~~~
             0 errors, 5 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/test.kt line 17: Explicitly create MyInterface instance:
             @@ -16 +16
             -     val lambda = { println("hello") }
@@ -192,13 +200,14 @@ class SamDetectorTest : AbstractCheckTest() {
             -     lambda2 = { println("hello") }
             +     lambda2 = MyInterface { println("hello") }
             """
-        )
-    }
+      )
+  }
 
-    fun testHandler() {
-        lint().files(
-            kotlin(
-                """
+  fun testHandler() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.os.Handler
@@ -213,9 +222,12 @@ class SamDetectorTest : AbstractCheckTest() {
                     view.removeCallbacks { callback() } // OK
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:9: Warning: Implicit new Runnable instance being passed to method which ends up checking instance equality; this can lead to subtle bugs [ImplicitSamInstance]
                 handler.post(::callback)
                              ~~~~~~~~~~
@@ -227,13 +239,15 @@ class SamDetectorTest : AbstractCheckTest() {
                           ~~~~~~~~~~
             0 errors, 3 warnings
             """
-        ).expectFixDiffs("")
-    }
+      )
+      .expectFixDiffs("")
+  }
 
-    fun testAidlCompileTestCase() {
-        lint().files(
-            kotlin(
-                """
+  fun testAidlCompileTestCase() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 abstract class AidlCompile {
                     abstract val execOperations: ExecOperations
@@ -243,9 +257,10 @@ class SamDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package test.pkg;
                 import java.util.function.Function;
                 public class GradleProcessExecutor {
@@ -259,39 +274,41 @@ class SamDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
                 public interface Action<T> {
                     void execute(T var1);
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
                 public interface ExecOperations {
                     ExecResult exec(Action<? super ExecSpec> var1);
                     ExecResult javaexec(Action<? super ExecSpec> var1);
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
                 public interface ExecResult { }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
                 import java.util.List;
                 public interface ExecSpec {
                     void setCommandLine(List<String> var1);
                 }
                 """
-            )
-        ).run().expectClean()
-    }
+        )
+      )
+      .run()
+      .expectClean()
+  }
 }

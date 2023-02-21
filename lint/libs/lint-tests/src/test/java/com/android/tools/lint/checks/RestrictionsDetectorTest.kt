@@ -22,16 +22,17 @@ import com.android.tools.lint.detector.api.Detector
 
 class RestrictionsDetectorTest : AbstractCheckTest() {
 
-    override fun getDetector(): Detector {
-        return RestrictionsDetector()
-    }
+  override fun getDetector(): Detector {
+    return RestrictionsDetector()
+  }
 
-    fun testSample() {
-        // Sample from https://developer.android.com/samples/AppRestrictionSchema/index.html
-        // We expect no warnings.
-        lint().files(
-            manifest(
-                """
+  fun testSample() {
+    // Sample from https://developer.android.com/samples/AppRestrictionSchema/index.html
+    // We expect no warnings.
+    lint()
+      .files(
+        manifest(
+            """
                         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                             package="com.example.android.apprestrictionschema"
                             android:versionCode="1"
@@ -61,10 +62,11 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
 
 
                         </manifest>"""
-            ).indented(),
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                     <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
 
                         <!--
@@ -119,13 +121,16 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                             android:title="@string/title_secret_code"/>
 
                     </restrictions>"""
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMissingRequiredAttributes() {
-        val expected =
-            """
+  fun testMissingRequiredAttributes() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:2: Error: Missing required attribute android:key [ValidRestrictions]
                 <restriction />
                 ~~~~~~~~~~~~~~~
@@ -137,22 +142,27 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~
             3 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction />
                         </restrictions>"""
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testNewSample() {
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+  fun testNewSample() {
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                     <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                         <restriction android:key="key_bool"
                                 android:restrictionType="bool"
@@ -206,13 +216,16 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         </restriction>
                     </restrictions>
                     """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMissingRequiredAttributesForChoice() {
-        val expected =
-            """
+  fun testMissingRequiredAttributesForChoice() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:2: Error: Missing required attribute android:entries [ValidRestrictions]
                 <restriction
                  ~~~~~~~~~~~
@@ -221,10 +234,11 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                  ~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:description="@string/description_number"
@@ -232,15 +246,19 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:restrictionType="choice"
                                 android:title="@string/title_number"/>
                         </restrictions>"""
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testMissingRequiredAttributesForHidden() {
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+  fun testMissingRequiredAttributesForHidden() {
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                 <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                     <restriction
                         android:description="@string/description_number"
@@ -249,29 +267,33 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         android:title="@string/title_number"/>
                 </restrictions>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/xml/app_restrictions.xml:2: Error: Missing required attribute android:defaultValue [ValidRestrictions]
                 <restriction
                  ~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testValidNumber() {
-        val expected =
-            """
+  fun testValidNumber() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:3: Error: Invalid number [ValidRestrictions]
                     android:defaultValue="abc"
                                           ~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:defaultValue="abc"
@@ -292,43 +314,51 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:restrictionType="integer"
                                 android:title="@string/title_number3"/>
                         </restrictions>"""
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testUnexpectedTag() {
-        val expected =
-            """
+  fun testUnexpectedTag() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:3: Error: Unexpected tag <wrongtag>, expected <restriction> [ValidRestrictions]
                 <wrongtag />
                  ~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <!-- Comments are okay -->
                             <wrongtag />
                         </restrictions>
                         """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testLocalizedKey() {
-        val expected =
-            """
+  fun testLocalizedKey() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:5: Error: Keys cannot be localized, they should be specified with a string literal [ValidRestrictions]
                     android:key="@string/can_say_hello"
                                  ~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:defaultValue="@bool/default_can_say_hello"
@@ -338,13 +368,16 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:title="@string/title_can_say_hello"/>
                         </restrictions>
                         """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testDuplicateKeys() {
-        val expected =
-            """
+  fun testDuplicateKeys() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:19: Error: Duplicate key can_say_hello [ValidRestrictions]
                     android:key="can_say_hello"
                                  ~~~~~~~~~~~~~
@@ -353,10 +386,11 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                  ~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:defaultValue="@bool/default_can_say_hello"
@@ -380,22 +414,26 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:title="@string/title_number"/>
                         </restrictions>
                         """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testNoDefaultValueForBundles() {
-        val expected =
-            """
+  fun testNoDefaultValueForBundles() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:3: Error: Restriction type bundle_array should not have a default value [ValidRestrictions]
                     android:defaultValue="@string/default_message"
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:defaultValue="@string/default_message"
@@ -412,22 +450,26 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                             </restriction>
                         </restrictions>
                     """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testNoChildrenForBundle() {
-        val expected =
-            """
+  fun testNoChildrenForBundle() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:2: Error: Restriction type bundle should have at least one nested restriction [ValidRestrictions]
                 <restriction
                  ~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:description="@string/description_message"
@@ -436,22 +478,26 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:title="@string/title_message"/>
                         </restrictions>
                         """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testNoChildrenForBundleArray() {
-        val expected =
-            """
+  fun testNoChildrenForBundleArray() {
+    val expected =
+      """
             res/xml/app_restrictions.xml:2: Error: Expected exactly one child for restriction of type bundle_array [ValidRestrictions]
                 <restriction
                  ~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction
                                 android:description="@string/description_message"
@@ -460,16 +506,19 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:title="@string/title_message"/>
                         </restrictions>
                         """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testTooManyChildren() {
-        val sb = StringBuilder()
-        for (i in 0 until MAX_NUMBER_OF_NESTED_RESTRICTIONS + 2) {
+  fun testTooManyChildren() {
+    val sb = StringBuilder()
+    for (i in 0 until MAX_NUMBER_OF_NESTED_RESTRICTIONS + 2) {
 
-            sb.append(
-                """
+      sb.append(
+        """
                 <restriction
                         android:defaultValue="@bool/default_can_say_hello$i"
                         android:description="@string/description_can_say_hello$i"
@@ -477,47 +526,53 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         android:restrictionType="bool"
                         android:title="@string/title_can_say_hello$i"/>
 
-                """.trimIndent()
-            )
-        }
-
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
                 """
+          .trimIndent()
+      )
+    }
+
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                         $sb
                         </restrictions>
                     """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/xml/app_restrictions.xml:1: Error: Invalid nested restriction: too many nested restrictions (was 1002, max 1000) [ValidRestrictions]
                                     <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                                      ~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNestingTooDeep() {
-        val sb = StringBuilder()
-        val maxDepth = MAX_NESTING_DEPTH + 1
-        for (i in 0 until maxDepth) {
+  fun testNestingTooDeep() {
+    val sb = StringBuilder()
+    val maxDepth = MAX_NESTING_DEPTH + 1
+    for (i in 0 until maxDepth) {
 
-            sb.append(
-                """
+      sb.append(
+        """
                     <restriction
                             android:description="@string/description_can_say_hello$i"
                             android:key="can_say_hello$i"
                             android:restrictionType="bundle"
                             android:title="@string/title_can_say_hello$i">
 
-                """.trimIndent()
-            )
-        }
-        sb.append(
-            """
+                """
+          .trimIndent()
+      )
+    }
+    sb.append(
+      """
                 <restriction
                         android:defaultValue="@string/default_message"
                         android:description="@string/description_message"
@@ -525,28 +580,32 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         android:restrictionType="string"
                         android:title="@string/title_message"/>
 
-            """.trimIndent()
-        )
-        for (i in 0 until maxDepth) {
-            sb.append("    </restriction>\n")
-        }
+            """
+        .trimIndent()
+    )
+    for (i in 0 until maxDepth) {
+      sb.append("    </restriction>\n")
+    }
 
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+    lint()
+      .files(
+        xml(
+          "res/xml/app_restrictions.xml",
+          """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                         $sb
                         </restrictions>
                     """
-            )
-        ).run().expect(
-            """
+        )
+      )
+      .run()
+      .expect(
+        """
                 res/xml/app_restrictions.xml:103: Error: Invalid nested restriction: nesting depth 21 too large (max 20 [ValidRestrictions]
                 <restriction
                  ~~~~~~~~~~~
                 1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

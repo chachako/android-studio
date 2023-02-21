@@ -21,16 +21,17 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
 class CharacterDataTestModeTest {
-    private fun transform(testFile: TestFile): String {
-        val contents = testFile.contents
-        return CharacterDataTestMode().transform(contents)
-    }
+  private fun transform(testFile: TestFile): String {
+    val contents = testFile.contents
+    return CharacterDataTestMode().transform(contents)
+  }
 
-    @Test
-    fun testBasic() {
-        val before = xml(
-            "res/values/strings.xml",
-            """
+  @Test
+  fun testBasic() {
+    val before =
+      xml(
+          "res/values/strings.xml",
+          """
             <resources>
                 <dimen name="something">42dp</dimen>
                 <string-array>
@@ -44,11 +45,13 @@ class CharacterDataTestModeTest {
                 </string>
             </resources>
             """
-        ).indented()
+        )
+        .indented()
 
-        val after = xml(
-            "res/values/strings.xml",
-            """
+    val after =
+      xml(
+          "res/values/strings.xml",
+          """
             <resources>
                 <dimen name="something">42dp</dimen>
                 <string-array>
@@ -62,34 +65,39 @@ class CharacterDataTestModeTest {
                 ]]></string>
             </resources>
             """
-        ).indented()
+        )
+        .indented()
 
-        val modified = transform(before)
-        assertEquals(after.contents, modified)
-    }
+    val modified = transform(before)
+    assertEquals(after.contents, modified)
+  }
 
-    @Suppress("CheckTagEmptyBody")
-    @Test
-    fun testEmpty() {
-        val before = xml(
-            "res/values/strings.xml",
-            """
+  @Suppress("CheckTagEmptyBody")
+  @Test
+  fun testEmpty() {
+    val before =
+      xml(
+          "res/values/strings.xml",
+          """
               <resources>
                 <string name="test"></string>
               </resources>
             """
-        ).indented()
+        )
+        .indented()
 
-        val after = xml(
-            "res/values/strings.xml",
-            """
+    val after =
+      xml(
+          "res/values/strings.xml",
+          """
             <resources>
               <string name="test"><![CDATA[]]></string>
             </resources>
             """
-        ).indented()
+        )
+        .indented()
 
-        val modified = transform(before)
-        assertEquals(after.contents, modified)
-    }
+    val modified = transform(before)
+    assertEquals(after.contents, modified)
+  }
 }

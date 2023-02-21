@@ -21,12 +21,12 @@ import org.junit.Test
 
 class FileComparisonDetectorTest {
 
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import java.io.File;
                     import java.util.Objects;
@@ -43,12 +43,13 @@ class FileComparisonDetectorTest {
                         }
                     }
                     """
-                ).indented()
-            )
-            .issues(FileComparisonDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(FileComparisonDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.java:10: Error: Do not compare java.io.File with equals or ==: will not work correctly on case insensitive file systems! See go/files-howto. [FileComparisons]
                         boolean b4 = file1.equals(file2); // WARN
                                      ~~~~~~~~~~~~~~~~~~~
@@ -63,6 +64,6 @@ class FileComparisonDetectorTest {
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 4 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

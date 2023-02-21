@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class StringAuthLeakDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return StringAuthLeakDetector()
-    }
+  override fun getDetector(): Detector {
+    return StringAuthLeakDetector()
+  }
 
-    fun testStringAuthLeak() {
-        lint().files(
-            java(
-                """
+  fun testStringAuthLeak() {
+    lint()
+      .files(
+        java(
+            """
                 public class AuthDemo {
                   private static final String AUTH_IP = "scheme://user:pwd@127.0.0.1:8000"; // WARN 1
                   private static final String AUTH_NO_LEAK = "scheme://user:%s@www.google.com"; // OK 1
@@ -33,9 +34,12 @@ class StringAuthLeakDetectorTest : AbstractCheckTest() {
                   private static final String URL = "http://%-05s@example.com"; // OK 2
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/AuthDemo.java:2: Warning: Possible credential leak [AuthLeak]
               private static final String AUTH_IP = "scheme://user:pwd@127.0.0.1:8000"; // WARN 1
                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,6 +48,6 @@ class StringAuthLeakDetectorTest : AbstractCheckTest() {
                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 }

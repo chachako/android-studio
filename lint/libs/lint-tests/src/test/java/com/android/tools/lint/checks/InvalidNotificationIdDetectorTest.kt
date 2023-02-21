@@ -19,14 +19,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class InvalidNotificationIdDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return InvalidNotificationIdDetector()
-    }
+  override fun getDetector(): Detector {
+    return InvalidNotificationIdDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Notification
@@ -44,9 +45,12 @@ class InvalidNotificationIdDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/ServiceTest.kt:13: Error: The notification id cannot be 0 [NotificationId0]
                     service.startForeground(0, notification) // ERROR 1: cannot be zero
                                             ~
@@ -55,6 +59,6 @@ class InvalidNotificationIdDetectorTest : AbstractCheckTest() {
                                             ~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

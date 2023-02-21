@@ -21,12 +21,12 @@ import org.junit.Test
 
 class RegexpPathDetectorTest {
 
-    @Test
-    fun testPaths() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testPaths() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import java.io.File;
                     import java.util.regex.Pattern;
@@ -49,12 +49,13 @@ class RegexpPathDetectorTest {
                         }
                     }
                     """
-                ).indented()
-            )
-            .issues(RegexpPathDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(RegexpPathDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.java:6: Error: Passing a path to a parameter which expects a regular expression is dangerous; on Windows path separators will look like escapes. Wrap path with Pattern.quote. [RegexPath]
                         s.split(myPath); // WARN: path likely based on name
                         ~~~~~~~~~~~~~~~
@@ -78,6 +79,6 @@ class RegexpPathDetectorTest {
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 7 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

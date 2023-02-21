@@ -18,45 +18,47 @@ package com.android.tools.lint.client.api
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.getErrorLines
+import java.io.File
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNull
 import org.intellij.lang.annotations.Language
 import org.junit.Test
-import java.io.File
 
 class LintTomlParserTest {
-    @Test
-    fun testSimple() {
-        // Test case from https://toml.io/en/v1.0.0#comment
-        val source =
-            //language=toml
-            """
+  @Test
+  fun testSimple() {
+    // Test case from https://toml.io/en/v1.0.0#comment
+    val source =
+      // language=toml
+      """
             # This is a full-line comment
             key = "value"  # This is a comment at the end of a line
             another = "# This is not a comment"
-            """.trimIndent()
-        checkToml(source) {
-            val document = it.describe()
-            assertEquals(
-                """
+            """
+        .trimIndent()
+    checkToml(source) {
+      val document = it.describe()
+      assertEquals(
+        """
                 key="value", String = value
                   key = "value"  # This is a comment at the end of a line
                   ~~~   ~~~~~~~
                 another="# This is not a comment", String = # This is not a comment
                   another = "# This is not a comment"
                   ~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~
-                """.trimIndent(),
-                document.trim()
-            )
-        }
+                """
+          .trimIndent(),
+        document.trim()
+      )
     }
+  }
 
-    @Test
-    fun testKeys() {
-        // Test case from https://toml.io/en/v1.0.0#keys
-        val source =
-            //language=toml
-            """
+  @Test
+  fun testKeys() {
+    // Test case from https://toml.io/en/v1.0.0#keys
+    val source =
+      // language=toml
+      """
             key = "value"
             bare_key = "value"
             bare-key = "value"
@@ -73,11 +75,12 @@ class LintTomlParserTest {
             site."google.com" = true
             site."with \"quoted\"" = false
             fruit . flavor = "banana"   # same as fruit.flavor
-            """.trimIndent()
-        checkToml(source) { result ->
-            val described = result.describe()
-            assertEquals(
-                """
+            """
+        .trimIndent()
+    checkToml(source) { result ->
+      val described = result.describe()
+      assertEquals(
+        """
                 key="value", String = value
                   key = "value"
                   ~~~   ~~~~~~~
@@ -126,25 +129,27 @@ class LintTomlParserTest {
                 fruit.flavor="banana", String = banana
                   fruit . flavor = "banana"   # same as fruit.flavor
                   ~~~~~~~~~~~~~~   ~~~~~~~~
-                """.trimIndent(),
-                described.trim()
-            )
-            // Here above we've flattened site."google.com" into site.google.com when pretty printing the key,
-            // but in the model result's treated properly; check that
-            val document = result.document
-            assertNull(document.getValue("site.google.com"))
-            assertEquals(true, document.getValue(listOf("site", "google.com"))?.getActualValue())
-            assertEquals(true, document.getValue("site.\"google.com\"")?.getActualValue())
-            assertEquals(false, document.getValue("site.\"with \\\"quoted\\\"\"")?.getActualValue())
-        }
+                """
+          .trimIndent(),
+        described.trim()
+      )
+      // Here above we've flattened site."google.com" into site.google.com when pretty printing the
+      // key,
+      // but in the model result's treated properly; check that
+      val document = result.document
+      assertNull(document.getValue("site.google.com"))
+      assertEquals(true, document.getValue(listOf("site", "google.com"))?.getActualValue())
+      assertEquals(true, document.getValue("site.\"google.com\"")?.getActualValue())
+      assertEquals(false, document.getValue("site.\"with \\\"quoted\\\"\"")?.getActualValue())
     }
+  }
 
-    @Test
-    fun testStrings() {
-        // Test cases from https://toml.io/en/v1.0.0#string
-        val source =
-            //language=toml
-            """
+  @Test
+  fun testStrings() {
+    // Test cases from https://toml.io/en/v1.0.0#string
+    val source =
+      // language=toml
+      """
             str1 = ""${'"'}
             Roses are red
             Violets are blue""${'"'}
@@ -177,80 +182,82 @@ class LintTomlParserTest {
 
             # 'That,' she said, 'is still pointless.'
             str = ''''That,' she said, 'is still pointless.''''
-            """.trimIndent()
-        checkToml(source) {
-            val document = it.describe()
-            assertEquals(
-                // not using raw string since we have trailing whitespace
-                "" +
-                    "str1=\"\"\"\n" +
-                    "Roses are red\n" +
-                    "Violets are blue\"\"\", String = Roses are red\n" +
-                    "Violets are blue\n" +
-                    "  str1 = \"\"\"\n" +
-                    "  ~~~~   ^\n" +
-                    "str3=\"Roses are red\\r\\nViolets are blue\", String = Roses are red\r\n" +
-                    "Violets are blue\n" +
-                    "  str3 = \"Roses are red\\r\\nViolets are blue\"\n" +
-                    "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "str2=\"\"\"\n" +
-                    "The quick brown \\\n" +
-                    "\n" +
-                    "\n" +
-                    "  fox jumps over \\\n" +
-                    "    the lazy dog.\"\"\", String = The quick brown fox jumps over the lazy dog.\n" +
-                    "  str2 = \"\"\"\n" +
-                    "  ~~~~   ^\n" +
-                    "str4=\"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\", String = Here are two quotation marks: \"\". Simple enough.\n" +
-                    "  str4 = \"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\"\n" +
-                    "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "winpath='C:\\Users\\nodejs\\templates', String = C:\\Users\\nodejs\\templates\n" +
-                    "  winpath  = 'C:\\Users\\nodejs\\templates'\n" +
-                    "  ~~~~~~~    ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "winpath2='\\\\ServerX\\admin\$\\system32\\', String = \\\\ServerX\\admin\$\\system32\\\n" +
-                    "  winpath2 = '\\\\ServerX\\admin\$\\system32\\'\n" +
-                    "  ~~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "quoted='Tom \"Dubs\" Preston-Werner', String = Tom \"Dubs\" Preston-Werner\n" +
-                    "  quoted   = 'Tom \"Dubs\" Preston-Werner'\n" +
-                    "  ~~~~~~     ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "regex='<\\i\\c*\\s*>', String = <\\i\\c*\\s*>\n" +
-                    "  regex    = '<\\i\\c*\\s*>'\n" +
-                    "  ~~~~~      ~~~~~~~~~~~~\n" +
-                    "regex2='''I [dw]on't need \\d{2} apples''', String = I [dw]on't need \\d{2} apples\n" +
-                    "  regex2 = '''I [dw]on't need \\d{2} apples'''\n" +
-                    "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "lines='''\n" +
-                    "The first newline is\n" +
-                    "trimmed in raw strings.\n" +
-                    "   All other whitespace\n" +
-                    "   is preserved.\n" +
-                    "''', String = The first newline is\n" +
-                    "trimmed in raw strings.\n" +
-                    "   All other whitespace\n" +
-                    "   is preserved.\n" +
-                    "\n" +
-                    "  lines  = '''\n" +
-                    "  ~~~~~    ^\n" +
-                    "quot15='''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"''', String = Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\n" +
-                    "  quot15 = '''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"'''\n" +
-                    "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "apos15=\"Here are fifteen apostrophes: '''''''''''''''\", String = Here are fifteen apostrophes: '''''''''''''''\n" +
-                    "  apos15 = \"Here are fifteen apostrophes: '''''''''''''''\"\n" +
-                    "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                    "str=''''That,' she said, 'is still pointless.'''', String = 'That,' she said, 'is still pointless.'\n" +
-                    "  str = ''''That,' she said, 'is still pointless.''''\n" +
-                    "  ~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-                document.trim()
-            )
-        }
-    }
-
-    @Test
-    fun testNumbersAndDates() {
-        // Test cases from https://toml.io/en/v1.0.0#integer and https://toml.io/en/v1.0.0#float and https://toml.io/en/v1.0.0#boolean
-        val source =
-            //language=toml
             """
+        .trimIndent()
+    checkToml(source) {
+      val document = it.describe()
+      assertEquals(
+        // not using raw string since we have trailing whitespace
+        "" +
+          "str1=\"\"\"\n" +
+          "Roses are red\n" +
+          "Violets are blue\"\"\", String = Roses are red\n" +
+          "Violets are blue\n" +
+          "  str1 = \"\"\"\n" +
+          "  ~~~~   ^\n" +
+          "str3=\"Roses are red\\r\\nViolets are blue\", String = Roses are red\r\n" +
+          "Violets are blue\n" +
+          "  str3 = \"Roses are red\\r\\nViolets are blue\"\n" +
+          "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "str2=\"\"\"\n" +
+          "The quick brown \\\n" +
+          "\n" +
+          "\n" +
+          "  fox jumps over \\\n" +
+          "    the lazy dog.\"\"\", String = The quick brown fox jumps over the lazy dog.\n" +
+          "  str2 = \"\"\"\n" +
+          "  ~~~~   ^\n" +
+          "str4=\"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\", String = Here are two quotation marks: \"\". Simple enough.\n" +
+          "  str4 = \"\"\"Here are two quotation marks: \"\". Simple enough.\"\"\"\n" +
+          "  ~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "winpath='C:\\Users\\nodejs\\templates', String = C:\\Users\\nodejs\\templates\n" +
+          "  winpath  = 'C:\\Users\\nodejs\\templates'\n" +
+          "  ~~~~~~~    ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "winpath2='\\\\ServerX\\admin\$\\system32\\', String = \\\\ServerX\\admin\$\\system32\\\n" +
+          "  winpath2 = '\\\\ServerX\\admin\$\\system32\\'\n" +
+          "  ~~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "quoted='Tom \"Dubs\" Preston-Werner', String = Tom \"Dubs\" Preston-Werner\n" +
+          "  quoted   = 'Tom \"Dubs\" Preston-Werner'\n" +
+          "  ~~~~~~     ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "regex='<\\i\\c*\\s*>', String = <\\i\\c*\\s*>\n" +
+          "  regex    = '<\\i\\c*\\s*>'\n" +
+          "  ~~~~~      ~~~~~~~~~~~~\n" +
+          "regex2='''I [dw]on't need \\d{2} apples''', String = I [dw]on't need \\d{2} apples\n" +
+          "  regex2 = '''I [dw]on't need \\d{2} apples'''\n" +
+          "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "lines='''\n" +
+          "The first newline is\n" +
+          "trimmed in raw strings.\n" +
+          "   All other whitespace\n" +
+          "   is preserved.\n" +
+          "''', String = The first newline is\n" +
+          "trimmed in raw strings.\n" +
+          "   All other whitespace\n" +
+          "   is preserved.\n" +
+          "\n" +
+          "  lines  = '''\n" +
+          "  ~~~~~    ^\n" +
+          "quot15='''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"''', String = Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\n" +
+          "  quot15 = '''Here are fifteen quotation marks: \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"'''\n" +
+          "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "apos15=\"Here are fifteen apostrophes: '''''''''''''''\", String = Here are fifteen apostrophes: '''''''''''''''\n" +
+          "  apos15 = \"Here are fifteen apostrophes: '''''''''''''''\"\n" +
+          "  ~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "str=''''That,' she said, 'is still pointless.'''', String = 'That,' she said, 'is still pointless.'\n" +
+          "  str = ''''That,' she said, 'is still pointless.''''\n" +
+          "  ~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+        document.trim()
+      )
+    }
+  }
+
+  @Test
+  fun testNumbersAndDates() {
+    // Test cases from https://toml.io/en/v1.0.0#integer and https://toml.io/en/v1.0.0#float and
+    // https://toml.io/en/v1.0.0#boolean
+    val source =
+      // language=toml
+      """
             int1 = +99
             int2 = 42
             int3 = 0
@@ -304,11 +311,12 @@ class LintTomlParserTest {
             ldt2 = 1979-05-27T00:32:00.999999
             lt1 = 07:32:00
             lt2 = 00:32:00.999999
-            """.trimIndent()
-        checkToml(source) {
-            val document = it.describe(includeSources = false)
-            assertEquals(
-                """
+            """
+        .trimIndent()
+    checkToml(source) {
+      val document = it.describe(includeSources = false)
+      assertEquals(
+        """
                 int1=+99, Integer = 99
                 int2=42, Integer = 42
                 int3=0, Integer = 0
@@ -347,24 +355,26 @@ class LintTomlParserTest {
                 ldt2=1979-05-27T00:32:00.999999, LocalDateTime = 1979-05-27T00:32:00.999999
                 lt1=07:32:00, LocalTime = 07:32
                 lt2=00:32:00.999999, LocalTime = 00:32:00.999999
-                """.trimIndent(),
-                document.trim()
-            )
-        }
+                """
+          .trimIndent(),
+        document.trim()
+      )
     }
+  }
 
-    @Test
-    fun testArrayWithInlineTableToString() {
-        val source =
-            //language=toml
-            """
+  @Test
+  fun testArrayWithInlineTableToString() {
+    val source =
+      // language=toml
+      """
             [bundles]
             groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
-            """.trimIndent()
-        checkToml(source) {
-            val document = it.describe()
-            assertEquals(
-                """
+            """
+        .trimIndent()
+    checkToml(source) {
+      val document = it.describe()
+      assertEquals(
+        """
                 bundles.groovy[0]="groovy-core", String = groovy-core
                   groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
                             ~~~~~~~~~~~~~
@@ -377,26 +387,28 @@ class LintTomlParserTest {
                 bundles.groovy[2].version="3.14", String = 3.14
                   groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
                                                                                  ~~~~~~~   ~~~~~~
-                """.trimIndent(),
-                document.trim()
-            )
-        }
+                """
+          .trimIndent(),
+        document.trim()
+      )
     }
+  }
 
-    @Test
-    fun testInlineTables() {
-        // Test case from https://toml.io/en/v1.0.0#inline-table
-        val source =
-            //language=toml
-            """
+  @Test
+  fun testInlineTables() {
+    // Test case from https://toml.io/en/v1.0.0#inline-table
+    val source =
+      // language=toml
+      """
             name = { first = "Tom", last = "Preston-Werner" }
             point = { x = 1, y = 2 }
             animal = { type.name = "pug" }
-            """.trimIndent()
-        checkToml(source) { result ->
-            val dump = result.describe()
-            assertEquals(
-                """
+            """
+        .trimIndent()
+    checkToml(source) { result ->
+      val dump = result.describe()
+      assertEquals(
+        """
                 name.first="Tom", String = Tom
                   name = { first = "Tom", last = "Preston-Werner" }
                            ~~~~~   ~~~~~
@@ -412,26 +424,33 @@ class LintTomlParserTest {
                 animal.type.name="pug", String = pug
                   animal = { type.name = "pug" }
                              ~~~~~~~~~   ~~~~~
-                """.trimIndent(),
-                dump.trim()
-            )
-            val document = result.document
-            assertEquals(2, document.getValue(listOf("point", "y"))?.getActualValue())
-            assertEquals("pug", document.getValue("animal.type.name")?.getActualValue())
-            val value = document.getValue(listOf("animal", "type", "name"))!!
-            assertEquals("pug", value.getActualValue())
-            // spot check ranges too
-            assertEquals("type.name", document.getSource().substring(value.getKeyStartOffset(), value.getKeyEndOffset()))
-            assertEquals("\"pug\"", document.getSource().substring(value.getStartOffset(), value.getEndOffset()))
-        }
+                """
+          .trimIndent(),
+        dump.trim()
+      )
+      val document = result.document
+      assertEquals(2, document.getValue(listOf("point", "y"))?.getActualValue())
+      assertEquals("pug", document.getValue("animal.type.name")?.getActualValue())
+      val value = document.getValue(listOf("animal", "type", "name"))!!
+      assertEquals("pug", value.getActualValue())
+      // spot check ranges too
+      assertEquals(
+        "type.name",
+        document.getSource().substring(value.getKeyStartOffset(), value.getKeyEndOffset())
+      )
+      assertEquals(
+        "\"pug\"",
+        document.getSource().substring(value.getStartOffset(), value.getEndOffset())
+      )
     }
+  }
 
-    @Test
-    fun testArrayOfTables() {
-        // Test case from https://toml.io/en/v1.0.0#array-of-tables
-        val source =
-            //language=toml
-            """
+  @Test
+  fun testArrayOfTables() {
+    // Test case from https://toml.io/en/v1.0.0#array-of-tables
+    val source =
+      // language=toml
+      """
             [[products]]
             name = "Hammer"
             sku = 738594937
@@ -443,32 +462,35 @@ class LintTomlParserTest {
             sku = 284758393
 
             color = "gray"
-            """.trimIndent()
-
-        /* From https://toml.io/en/v1.0.0#array-of-tables
-            {
-              "products": [
-                { "name": "Hammer", "sku": 738594937 },
-                { },
-                { "name": "Nail", "sku": 284758393, "color": "gray" }
-              ]
-            }
-         */
-        val expected = mapOf(
-            "products" to listOf(
-                mapOf("name" to "Hammer", "sku" to 738594937),
-                mutableMapOf(),
-                mapOf("name" to "Nail", "sku" to 284758393, "color" to "gray")
-            )
-        )
-        doTest(source, expected)
-    }
-
-    @Test
-    fun testGradleVersionCatalog() {
-        val source =
-            //language=toml
             """
+        .trimIndent()
+
+    /* From https://toml.io/en/v1.0.0#array-of-tables
+       {
+         "products": [
+           { "name": "Hammer", "sku": 738594937 },
+           { },
+           { "name": "Nail", "sku": 284758393, "color": "gray" }
+         ]
+       }
+    */
+    val expected =
+      mapOf(
+        "products" to
+          listOf(
+            mapOf("name" to "Hammer", "sku" to 738594937),
+            mutableMapOf(),
+            mapOf("name" to "Nail", "sku" to 284758393, "color" to "gray")
+          )
+      )
+    doTest(source, expected)
+  }
+
+  @Test
+  fun testGradleVersionCatalog() {
+    val source =
+      // language=toml
+      """
             [versions]
             activityCompose = "1.7.0-alpha02"
             appCompat = "1.5.1"
@@ -484,11 +506,12 @@ class LintTomlParserTest {
                 "androidx-activity-activityCompose",
                 "androidx-appCompat",
             ]
-            """.trimIndent()
-        checkToml(source) {
-            val dump = it.describe()
-            assertEquals(
-                """
+            """
+        .trimIndent()
+    checkToml(source) {
+      val dump = it.describe()
+      assertEquals(
+        """
                 versions.activityCompose="1.7.0-alpha02", String = 1.7.0-alpha02
                   activityCompose = "1.7.0-alpha02"
                   ~~~~~~~~~~~~~~~   ~~~~~~~~~~~~~~~
@@ -522,556 +545,711 @@ class LintTomlParserTest {
                 bundles.androidx[1]="androidx-appCompat", String = androidx-appCompat
                   "androidx-appCompat",
                   ~~~~~~~~~~~~~~~~~~~~
-                """.trimIndent(),
-                dump.trim()
-            )
+                """
+          .trimIndent(),
+        dump.trim()
+      )
+    }
+  }
+
+  @Test
+  fun testErrorHandling() {
+    // We're generally fault tolerant
+    class Case(
+      /* Not annotated since we're passing in broken code -- @Language("toml")*/
+      val toml: String,
+      val errors: String = "",
+      val dump: String? = null,
+    )
+
+    fun verify(vararg cases: Case) {
+      for (case in cases) {
+        val document = parseToml(File("test.toml"), case.toml)
+        val errors = document.describeProblems(includeSources = false)
+        assertEquals(case.errors, errors)
+        if (case.dump != null) {
+          val dump = document.describe(includeSources = false, includeProblems = false)
+          assertEquals(case.toml, case.dump.trimIndent().trim(), dump.trim())
         }
+      }
     }
 
-    @Test
-    fun testErrorHandling() {
-        // We're generally fault tolerant
-        class Case(
-            /* Not annotated since we're passing in broken code -- @Language("toml")*/
-            val toml: String,
-            val errors: String = "",
-            val dump: String? = null,
-        )
+    @Suppress("ALL")
+    verify(
+      Case("key = # INVALID", "test.toml: 0:15: Warning: Value missing after ="),
+      Case(
+        "= \"no key name\" # INVALID\nkey=value",
+        "test.toml: 0:1: Warning: Bare key must be non-empty",
+        "key=value, String = value"
+      ),
+      Case(
+        "\"\"\"key\"\"\" = \"not allowed\" # INVALID",
+        "test.toml: 0:0: Warning: Multi-line strings not allowed in keys"
+      ),
+      Case("foo", "test.toml: 0:3: Warning: = missing after key `foo`"),
+      Case("foo=", "test.toml: 0:4: Warning: Value missing after ="),
+      Case("foo=\"", "test.toml: 0:4: Warning: Unterminated string"),
+      Case("foo=\"\"\"", "test.toml: 0:4: Warning: Unterminated string"),
+      Case("foo=\"\"\"\n\"\"", "test.toml: 0:4: Warning: Unterminated string"),
+      Case("foo='", "test.toml: 0:4: Warning: Unterminated string"),
+      Case("foo='''", "test.toml: 0:4: Warning: Unterminated string"),
+      Case("foo=\"\"\"\n", "test.toml: 0:4: Warning: Unterminated string"),
+      Case("[fo", "test.toml: 0:3: Warning: = missing ]`"),
+      Case("[[fo]", "test.toml: 0:4: Warning: = missing ]]`"),
+      Case(
+        "foo=bar\nfoobar",
+        "test.toml: 1:6: Warning: = missing after key `foobar`",
+        "foo=bar, String = bar"
+      ),
+      // Recover from (and ignore) key without value in the middle
+      Case(
+        "foo=bar\nfoobar\nbar=baz",
+        "test.toml: 1:6: Warning: Key cannot be alone on a line",
+        "foo=bar, String = bar\nbar=baz, String = baz"
+      ),
+      Case(
+        "first = \"Tom\" last = \"Preston-Werner\" # INVALID\n",
+        "test.toml: 0:14: Warning: There must be a newline (or EOF) after a key/value pair"
+      ),
+      Case(
+        "name = \"Tom\"\nname = \"Pradyun\"",
+        "test.toml: 1:16: Warning: Defining a key (`name`) multiple times is invalid"
+      ),
+      Case(
+        "spelling = \"favorite\"\n\"spelling\" = \"favourite\"\n",
+        "test.toml: 1:24: Warning: Defining a key (`spelling`) multiple times is invalid"
+      ),
+      Case(
+        "# This defines the value of fruit.apple to be an integer.\n" +
+          "fruit.apple = 1\n" +
+          "\n" +
+          "# But then this treats fruit.apple like it's a table.\n" +
+          "# You can't turn an integer into a table.\n" +
+          "fruit.apple.smooth = true",
+        "test.toml: 5:25: Warning: Table `fruit` already specified as a value"
+      ),
+      Case(
+        "str5 = \"\"\"Here are three quotation marks: \"\"\".\"\"\"  # INVALID",
+        "test.toml: 0:45: Warning: Unexpected content after string terminator"
+      ),
+      Case(
+        "apos15 = '''Here are fifteen apostrophes: ''''''''''''''''''  # INVALID",
+        "test.toml: 0:47: Warning: Unexpected content after string terminator"
+      ),
+      Case(
+        "invalid_float_1 = .7",
+        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+      ),
+      Case(
+        "invalid_float_2 = 7.\n",
+        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+      ),
+      Case(
+        "invalid_float_2 = [7.]\n",
+        "test.toml: 0:19: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+      ),
+      Case(
+        "invalid_float_3 = 3.e+20",
+        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+      ),
+      Case(
+        "[fruit]\n" + "apple = \"red\"\n" + "\n" + "[fruit]\n" + "orange = \"orange\"",
+        "test.toml: 3:0: Warning: You cannot define a table (`fruit`) more than once"
+      ),
+      Case(
+        "type.name = \"Nail\"\n" + "type = { edible = false }  # INVALID",
+        "test.toml: 1:7: Warning: Inline tables cannot be used to add keys or sub-tables to an already-defined table"
+      ),
+      /* Not yet validated:
+      Case("# INVALID TOML DOC\n" +
+              "fruits = []\n" +
+              "\n" +
+              "[[fruits]] # Not allowed",
+          "test.toml: 3:1: Warning: Attempting to append to a statically defined array is not allowed"
+      ),
+      Case("# INVALID TOML DOC\n" +
+              "[[fruits]]\n" +
+              "name = \"apple\"\n" +
+              "\n" +
+              "[[fruits.varieties]]\n" +
+              "name = \"red delicious\"\n" +
+              "\n" +
+              "# INVALID: This table conflicts with the previous array of tables\n" +
+              "[fruits.varieties]", "This table conflicts with the previous array of tables",
+          "test.toml: 8:0: Warning: You cannot define a table (`fruits.varieties`) more than once\n" +
+                  "test.toml: 2:0: Warning: Table `fruits` already specified as a value"
+      ),
+       */
+    )
+  }
 
-        fun verify(vararg cases: Case) {
-            for (case in cases) {
-                val document = parseToml(File("test.toml"), case.toml)
-                val errors = document.describeProblems(includeSources = false)
-                assertEquals(case.errors, errors)
-                if (case.dump != null) {
-                    val dump = document.describe(includeSources = false, includeProblems = false)
-                    assertEquals(case.toml, case.dump.trimIndent().trim(), dump.trim())
-                }
-            }
-        }
+  // Tests adapted from the test cases in
+  // com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest
 
-        @Suppress("ALL")
-        verify(
-            Case("key = # INVALID", "test.toml: 0:15: Warning: Value missing after ="),
-            Case("= \"no key name\" # INVALID\nkey=value", "test.toml: 0:1: Warning: Bare key must be non-empty", "key=value, String = value"),
-            Case("\"\"\"key\"\"\" = \"not allowed\" # INVALID", "test.toml: 0:0: Warning: Multi-line strings not allowed in keys"),
-            Case("foo", "test.toml: 0:3: Warning: = missing after key `foo`"),
-            Case("foo=", "test.toml: 0:4: Warning: Value missing after ="),
-            Case("foo=\"", "test.toml: 0:4: Warning: Unterminated string"),
-            Case("foo=\"\"\"", "test.toml: 0:4: Warning: Unterminated string"),
-            Case("foo=\"\"\"\n\"\"", "test.toml: 0:4: Warning: Unterminated string"),
-            Case("foo='", "test.toml: 0:4: Warning: Unterminated string"),
-            Case("foo='''", "test.toml: 0:4: Warning: Unterminated string"),
-            Case("foo=\"\"\"\n", "test.toml: 0:4: Warning: Unterminated string"),
-            Case("[fo", "test.toml: 0:3: Warning: = missing ]`"),
-            Case("[[fo]", "test.toml: 0:4: Warning: = missing ]]`"),
-            Case("foo=bar\nfoobar", "test.toml: 1:6: Warning: = missing after key `foobar`", "foo=bar, String = bar"),
-            // Recover from (and ignore) key without value in the middle
-            Case("foo=bar\nfoobar\nbar=baz", "test.toml: 1:6: Warning: Key cannot be alone on a line", "foo=bar, String = bar\nbar=baz, String = baz"),
-            Case("first = \"Tom\" last = \"Preston-Werner\" # INVALID\n", "test.toml: 0:14: Warning: There must be a newline (or EOF) after a key/value pair"),
-            Case("name = \"Tom\"\nname = \"Pradyun\"", "test.toml: 1:16: Warning: Defining a key (`name`) multiple times is invalid"),
-            Case("spelling = \"favorite\"\n\"spelling\" = \"favourite\"\n", "test.toml: 1:24: Warning: Defining a key (`spelling`) multiple times is invalid"),
-            Case(
-                "# This defines the value of fruit.apple to be an integer.\n" +
-                    "fruit.apple = 1\n" +
-                    "\n" +
-                    "# But then this treats fruit.apple like it's a table.\n" +
-                    "# You can't turn an integer into a table.\n" +
-                    "fruit.apple.smooth = true",
-                "test.toml: 5:25: Warning: Table `fruit` already specified as a value"
-            ),
-            Case("str5 = \"\"\"Here are three quotation marks: \"\"\".\"\"\"  # INVALID", "test.toml: 0:45: Warning: Unexpected content after string terminator"),
-            Case("apos15 = '''Here are fifteen apostrophes: ''''''''''''''''''  # INVALID", "test.toml: 0:47: Warning: Unexpected content after string terminator"),
-            Case("invalid_float_1 = .7", "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"),
-            Case("invalid_float_2 = 7.\n", "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"),
-            Case("invalid_float_2 = [7.]\n", "test.toml: 0:19: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"),
-            Case("invalid_float_3 = 3.e+20", "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"),
-            Case(
-                "[fruit]\n" +
-                    "apple = \"red\"\n" +
-                    "\n" +
-                    "[fruit]\n" +
-                    "orange = \"orange\"",
-                "test.toml: 3:0: Warning: You cannot define a table (`fruit`) more than once"
-            ),
-            Case(
-                "type.name = \"Nail\"\n" +
-                    "type = { edible = false }  # INVALID",
-                "test.toml: 1:7: Warning: Inline tables cannot be used to add keys or sub-tables to an already-defined table"
-            ),
-            /* Not yet validated:
-            Case("# INVALID TOML DOC\n" +
-                    "fruits = []\n" +
-                    "\n" +
-                    "[[fruits]] # Not allowed",
-                "test.toml: 3:1: Warning: Attempting to append to a statically defined array is not allowed"
-            ),
-            Case("# INVALID TOML DOC\n" +
-                    "[[fruits]]\n" +
-                    "name = \"apple\"\n" +
-                    "\n" +
-                    "[[fruits.varieties]]\n" +
-                    "name = \"red delicious\"\n" +
-                    "\n" +
-                    "# INVALID: This table conflicts with the previous array of tables\n" +
-                    "[fruits.varieties]", "This table conflicts with the previous array of tables",
-                "test.toml: 8:0: Warning: You cannot define a table (`fruits.varieties`) more than once\n" +
-                        "test.toml: 2:0: Warning: Table `fruits` already specified as a value"
-            ),
-             */
-        )
+  private fun parseTomlToMap(
+    file: File,
+    s: String,
+    source: Boolean,
+    validate: Boolean
+  ): Map<String, Any> {
+    val result = parseToml(file, s, validate)
+    return if (source) {
+      result.getSourceValueMap()
+    } else {
+      result.getValueMap()
     }
+  }
 
-    // Tests adapted from the test cases in com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest
-
-    private fun parseTomlToMap(
-        file: File,
-        s: String,
-        source: Boolean,
-        validate: Boolean
-    ): Map<String, Any> {
-        val result = parseToml(file, s, validate)
-        return if (source) {
-            result.getSourceValueMap()
-        } else {
-            result.getValueMap()
-        }
+  private fun doTest(@Language("TOML") toml: String, expected: Map<String, Any>) {
+    val source = false
+    for (validate in listOf(false, true)) {
+      val map = parseTomlToMap(File("test.toml"), toml.trimIndent(), source, validate)
+      assertEquals(expected, map)
     }
+  }
 
-    private fun doTest(
-        @Language("TOML") toml: String,
-        expected: Map<String, Any>
-    ) {
-        val source = false
-        for (validate in listOf(false, true)) {
-            val map = parseTomlToMap(File("test.toml"), toml.trimIndent(), source, validate)
-            assertEquals(expected, map)
-        }
-    }
-
-    @Test
-    fun testSingleLibraryLiteralString() {
-        val toml = """
+  @Test
+  fun testSingleLibraryLiteralString() {
+    val toml =
+      """
           [libraries]
           junit = 'junit:junit:4.13'
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testSingleLibraryMultiLineLiteralString() {
-        val toml = """
+  @Test
+  fun testSingleLibraryMultiLineLiteralString() {
+    val toml =
+      """
           [libraries]
           junit = '''junit:junit:4.13'''
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testSingleLibraryBasicString() {
-        val singleQuote = "\""
-        val singleQuotedJunitWithEscapes = "junit:junit:4.13"
-            .mapIndexed { i, c -> if ((i % 2) == 0) c.toString() else String.format("\\u%04x", c.toInt()) }
-            .joinToString(separator = "", prefix = singleQuote, postfix = singleQuote)
-        val toml = """
+  @Test
+  fun testSingleLibraryBasicString() {
+    val singleQuote = "\""
+    val singleQuotedJunitWithEscapes =
+      "junit:junit:4.13"
+        .mapIndexed { i, c ->
+          if ((i % 2) == 0) c.toString() else String.format("\\u%04x", c.toInt())
+        }
+        .joinToString(separator = "", prefix = singleQuote, postfix = singleQuote)
+    val toml =
+      """
           [libraries]
           junit = $singleQuotedJunitWithEscapes
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testSingleLibraryMultiLineBasicString() {
-        val tripleQuote = "\""
-        val tripleQuotedJunitWithEscapes = "junit:junit:4.13"
-            .mapIndexed { i, c -> if ((i % 2) == 1) c.toString() else String.format("\\u%04x", c.toInt()) }
-            .joinToString(separator = "", prefix = tripleQuote, postfix = tripleQuote)
-        val toml = """
+  @Test
+  fun testSingleLibraryMultiLineBasicString() {
+    val tripleQuote = "\""
+    val tripleQuotedJunitWithEscapes =
+      "junit:junit:4.13"
+        .mapIndexed { i, c ->
+          if ((i % 2) == 1) c.toString() else String.format("\\u%04x", c.toInt())
+        }
+        .joinToString(separator = "", prefix = tripleQuote, postfix = tripleQuote)
+    val toml =
+      """
           [libraries]
           junit = $tripleQuotedJunitWithEscapes
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testSingleLibraryMultiLineLiteralStringInitialNewline() {
-        // In com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest's _testSingleLibraryMultiLineLiteralStringInitialNewline
-        // this is disabled because the TOML unescaper does not handle removal of initial newline
-        val toml = """
+  @Test
+  fun testSingleLibraryMultiLineLiteralStringInitialNewline() {
+    // In com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest's
+    // _testSingleLibraryMultiLineLiteralStringInitialNewline
+    // this is disabled because the TOML unescaper does not handle removal of initial newline
+    val toml =
+      """
           [libraries]
           junit = '''
           junit:junit:4.13'''
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testSingleLibraryMultiLineBasicStringInitialNewline() {
-        // In com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest's _testSingleLibraryMultiLineBasicStringInitialNewline
-        // this is disabled because the TOML unescaper does not handle removal of initial newline
-        val tripleQuote = "\"\"\""
-        val junitWithEscapes = "junit:junit:4.13"
-            .mapIndexed { i, c -> if ((i % 2) == 1) c.toString() else String.format("\\u%04x", c.toInt()) }
-            .joinToString(separator = "")
-        val toml = """
+  @Test
+  fun testSingleLibraryMultiLineBasicStringInitialNewline() {
+    // In com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest's
+    // _testSingleLibraryMultiLineBasicStringInitialNewline
+    // this is disabled because the TOML unescaper does not handle removal of initial newline
+    val tripleQuote = "\"\"\""
+    val junitWithEscapes =
+      "junit:junit:4.13"
+        .mapIndexed { i, c ->
+          if ((i % 2) == 1) c.toString() else String.format("\\u%04x", c.toInt())
+        }
+        .joinToString(separator = "")
+    val toml =
+      """
           [libraries]
           junit = $tripleQuote
           $junitWithEscapes$tripleQuote
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testLiteralStringKey() {
-        val toml = """
+  @Test
+  fun testLiteralStringKey() {
+    val toml =
+      """
           [libraries]
           'junit' = "junit:junit:4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testBasicStringKey() {
-        val toml = """
+  @Test
+  fun testBasicStringKey() {
+    val toml =
+      """
           [libraries]
           "junit" = "junit:junit:4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testBasicStringEscapesKey() {
-        // In com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest's _testBasicStringEscapesKey
-        // this is disabled because the TOML unescaper does not handle removal of initial newline
-        val toml = """
+  @Test
+  fun testBasicStringEscapesKey() {
+    // In com.android.tools.idea.gradle.dsl.parser.toml.TomlDslParserTest's
+    // _testBasicStringEscapesKey
+    // this is disabled because the TOML unescaper does not handle removal of initial newline
+    val toml =
+      """
           [libraries]
           "\u006au\u006ei\u0074" = "junit:junit:4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("junit" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testEmptyBasicStringKey() {
-        val toml = """
+  @Test
+  fun testEmptyBasicStringKey() {
+    val toml =
+      """
           [libraries]
           "" = "junit:junit:4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testEmptyLiteralStringKey() {
-        val toml = """
+  @Test
+  fun testEmptyLiteralStringKey() {
+    val toml =
+      """
           [libraries]
           '' = "junit:junit:4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("" to "junit:junit:4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries" to mapOf("" to "junit:junit:4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testImplicitMap() {
-        val toml = """
+  @Test
+  fun testImplicitMap() {
+    val toml =
+      """
           [libraries]
           junit.module = "junit:junit"
           junit.version = "4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testImplicitMapWithQuotedKeys() {
-        val toml = """
+  @Test
+  fun testImplicitMapWithQuotedKeys() {
+    val toml =
+      """
           [libraries]
           'junit'.module = "junit:junit"
           junit."version" = "4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testQuotedDottedKeys() {
-        val toml = """
+  @Test
+  fun testQuotedDottedKeys() {
+    val toml =
+      """
           [libraries]
           'junit.module' = "junit:junit"
           "junit.version" = "4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit.module" to "junit:junit", "junit.version" to "4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("junit.module" to "junit:junit", "junit.version" to "4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testImplicitTable() {
-        val toml = """
+  @Test
+  fun testImplicitTable() {
+    val toml =
+      """
           [libraries.junit]
           module = "junit:junit"
           version = "4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testImplicitTableQuoted() {
-        val toml = """
+  @Test
+  fun testImplicitTableQuoted() {
+    val toml =
+      """
           ['libraries'."junit"]
           module = "junit:junit"
           version = "4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testQuotedDottedTable() {
-        val toml = """
+  @Test
+  fun testQuotedDottedTable() {
+    val toml =
+      """
           ["libraries.junit"]
           module = "junit:junit"
           version = "4.13"
-        """.trimIndent()
-        val expected = mapOf("libraries.junit" to mapOf("module" to "junit:junit", "version" to "4.13"))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected = mapOf("libraries.junit" to mapOf("module" to "junit:junit", "version" to "4.13"))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testInlineTable() {
-        val toml = """
+  @Test
+  fun testInlineTable() {
+    val toml =
+      """
           [libraries]
           junit = { module = "junit:junit", version = "4.13" }
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to "4.13")))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testInlineTableWithImplicitTables() {
-        val toml = """
+  @Test
+  fun testInlineTableWithImplicitTables() {
+    val toml =
+      """
           [libraries]
           junit = { module = "junit:junit", version.ref = "junit" }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to "junit:junit", "version" to mapOf("ref" to "junit"))))
-        doTest(toml, expected)
-    }
+    val expected =
+      mapOf(
+        "libraries" to
+          mapOf("junit" to mapOf("module" to "junit:junit", "version" to mapOf("ref" to "junit")))
+      )
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testArray() {
-        val toml = """
+  @Test
+  fun testArray() {
+    val toml =
+      """
           [bundles]
           groovy = ["groovy-core", "groovy-json", "groovy-nio"]
-        """.trimIndent()
-        val expected = mapOf("bundles" to mapOf("groovy" to listOf("groovy-core", "groovy-json", "groovy-nio")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf("bundles" to mapOf("groovy" to listOf("groovy-core", "groovy-json", "groovy-nio")))
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testArrayWithInlineTable() {
-        val toml = """
+  @Test
+  fun testArrayWithInlineTable() {
+    val toml =
+      """
           [bundles]
           groovy = ["groovy-core", "groovy-json", { name = "groovy-nio", version = "3.14" } ]
-        """.trimIndent()
-        val expected = mapOf(
-            "bundles" to mapOf(
-                "groovy" to listOf(
-                    "groovy-core",
-                    "groovy-json",
-                    mapOf("name" to "groovy-nio", "version" to "3.14")
-                )
-            )
-        )
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf(
+        "bundles" to
+          mapOf(
+            "groovy" to
+              listOf(
+                "groovy-core",
+                "groovy-json",
+                mapOf("name" to "groovy-nio", "version" to "3.14")
+              )
+          )
+      )
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testInlineTableWithArray() {
-        val toml = """
+  @Test
+  fun testInlineTableWithArray() {
+    val toml =
+      """
           [libraries]
           junit = { module = ["junit", "junit"], version = "4.13" }
-        """.trimIndent()
-        val expected = mapOf("libraries" to mapOf("junit" to mapOf("module" to listOf("junit", "junit"), "version" to "4.13")))
-        doTest(toml, expected)
-    }
+        """
+        .trimIndent()
+    val expected =
+      mapOf(
+        "libraries" to
+          mapOf("junit" to mapOf("module" to listOf("junit", "junit"), "version" to "4.13"))
+      )
+    doTest(toml, expected)
+  }
 
-    @Test
-    fun testInvalidResynchronization() {
-        // Deliberate TOML error below; not showing as TOML since there isn't a way
-        // to turn off this error in nested highlighting for TOML here
-        @Language("TEXT")
-        val toml = """
+  @Test
+  fun testInvalidResynchronization() {
+    // Deliberate TOML error below; not showing as TOML since there isn't a way
+    // to turn off this error in nested highlighting for TOML here
+    @Language("TEXT")
+    val toml =
+      """
             [libraries]
             junit = { module = "junit:junit", version = "4.13" } a
             junit5 = { module = "junit:junit", version = "5.14" }
-        """.trimIndent()
-        val expected = mapOf(
-            "libraries" to mapOf(
-                "junit" to mapOf("module" to "junit:junit", "version" to "4.13"),
-                "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
-            )
-        )
-        doTest(toml, expected)
+        """
+        .trimIndent()
+    val expected =
+      mapOf(
+        "libraries" to
+          mapOf(
+            "junit" to mapOf("module" to "junit:junit", "version" to "4.13"),
+            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+          )
+      )
+    doTest(toml, expected)
+  }
+
+  // ------------------------------------------------
+  // Test fixtures only below
+  // ------------------------------------------------
+
+  private fun checkToml(@Language("TOML") source: String, check: (ParseResult) -> Unit) {
+    for (validate in listOf(false, true)) {
+      val parseResult = parseToml(File("test.toml"), source, validate)
+      check(parseResult)
     }
+  }
 
-    // ------------------------------------------------
-    // Test fixtures only below
-    // ------------------------------------------------
+  private fun parseToml(file: File, contents: String, validate: Boolean = true): ParseResult {
+    val problems = mutableListOf<Triple<Severity, Location, String>>()
 
-    private fun checkToml(@Language("TOML") source: String, check: (ParseResult) -> Unit) {
-        for (validate in listOf(false, true)) {
-            val parseResult = parseToml(File("test.toml"), source, validate)
-            check(parseResult)
-        }
-    }
-
-    private fun parseToml(file: File, contents: String, validate: Boolean = true): ParseResult {
-        val problems = mutableListOf<Triple<Severity, Location, String>>()
-
-        val document = LintTomlParser().run {
-            when (validate) {
-                true -> parse(file, contents) { severity, location, message ->
-                    problems.add(Triple(severity, location, message))
-                }
-                false -> parse(file, contents)
+    val document =
+      LintTomlParser().run {
+        when (validate) {
+          true ->
+            parse(file, contents) { severity, location, message ->
+              problems.add(Triple(severity, location, message))
             }
+          false -> parse(file, contents)
         }
+      }
 
-        return ParseResult(document, problems, validate)
+    return ParseResult(document, problems, validate)
+  }
+
+  private class ParseResult(
+    val document: LintTomlDocument,
+    val problems: List<Triple<Severity, Location, String>>,
+    val validated: Boolean
+  ) {
+    fun describe(includeSources: Boolean = true, includeProblems: Boolean = false): String {
+      val sb = StringBuilder()
+      for ((key, value) in document.getRoot().getMappedValues()) {
+        describe(sb, value, key, 0, includeSources)
+      }
+      if (includeProblems) {
+        sb.append(describeProblems(includeSources))
+      }
+      return sb.toString()
     }
 
-    private class ParseResult(
-        val document: LintTomlDocument,
-        val problems: List<Triple<Severity, Location, String>>,
-        val validated: Boolean
+    private fun describe(
+      sb: StringBuilder,
+      v: Any,
+      fullKey: String,
+      indent: Int,
+      includeSources: Boolean
     ) {
-        fun describe(includeSources: Boolean = true, includeProblems: Boolean = false): String {
-            val sb = StringBuilder()
-            for ((key, value) in document.getRoot().getMappedValues()) {
-                describe(sb, value, key, 0, includeSources)
-            }
-            if (includeProblems) {
-                sb.append(describeProblems(includeSources))
-            }
-            return sb.toString()
+      when (v) {
+        is LintTomlArrayValue -> {
+          val elements = v.getArrayElements()
+          for (i in elements.indices) {
+            val c = elements[i]
+            describe(sb, c, "$fullKey[$i]", indent + 1, includeSources)
+          }
         }
-
-        private fun describe(sb: StringBuilder, v: Any, fullKey: String, indent: Int, includeSources: Boolean) {
-            when (v) {
-                is LintTomlArrayValue -> {
-                    val elements = v.getArrayElements()
-                    for (i in elements.indices) {
-                        val c = elements[i]
-                        describe(sb, c, "$fullKey[$i]", indent + 1, includeSources)
-                    }
-                }
-                is LintTomlLiteralValue -> {
-                    val value = v.getActualValue()
-                    val valueClass = value?.javaClass?.simpleName
-                    sb.append("${v.getFullKey()}=${v.getText()}, $valueClass = $value\n")
-                    if (includeSources) {
-                        val desc = describeLocation(v)
-                        if (desc != null) {
-                            for (line in desc.trimEnd().split("\n")) {
-                                sb.append("  ").append(line.trimEnd()).append('\n')
-                            }
-                        }
-                    }
-                }
-                is LintTomlMapValue -> {
-                    for ((k, v2) in v.getMappedValues()) {
-                        describe(sb, v2, if (fullKey.isEmpty()) k else "$fullKey.$k", indent + 1, includeSources)
-                    }
-                }
-                else -> error("Unexpected map member $v of type ${v.javaClass.name}")
+        is LintTomlLiteralValue -> {
+          val value = v.getActualValue()
+          val valueClass = value?.javaClass?.simpleName
+          sb.append("${v.getFullKey()}=${v.getText()}, $valueClass = $value\n")
+          if (includeSources) {
+            val desc = describeLocation(v)
+            if (desc != null) {
+              for (line in desc.trimEnd().split("\n")) {
+                sb.append("  ").append(line.trimEnd()).append('\n')
+              }
             }
+          }
         }
-
-        private fun describeProblem(severity: Severity, location: Location, message: String, includeSources: Boolean, source: String): String {
-            val start = location.start
-            val path = location.file.name
-            val errorLine = path + ": " + start?.line + ":" + start?.column + ": " + severity.description + ": " + message
-            return if (includeSources) {
-                errorLine + ("\n" + (location.getErrorLines { source } ?: "")).trimEnd()
-            } else {
-                errorLine
-            }
+        is LintTomlMapValue -> {
+          for ((k, v2) in v.getMappedValues()) {
+            describe(
+              sb,
+              v2,
+              if (fullKey.isEmpty()) k else "$fullKey.$k",
+              indent + 1,
+              includeSources
+            )
+          }
         }
-
-        fun describeProblems(includeSources: Boolean = true): String {
-            return problems.joinToString("\n") { (severity, location, message) ->
-                describeProblem(severity, location, message, includeSources, document.getSource().toString())
-            }
-        }
-
-        private fun copy(map: LintTomlMapValue, transformValue: (LintTomlValue) -> Any): Map<String, Any> {
-            val copy = mutableMapOf<String, Any>()
-            for ((key, value) in map.getMappedValues()) {
-                copy[key] = copy(value, transformValue)
-            }
-            return copy
-        }
-
-        private fun copy(value: Any, transformValue: (LintTomlValue) -> Any): Any {
-            return when (value) {
-                is LintTomlMapValue -> {
-                    copy(value, transformValue)
-                }
-
-                is LintTomlArrayValue -> {
-                    val list = mutableListOf<Any>()
-                    for (item in value.getArrayElements()) {
-                        list.add(copy(item, transformValue))
-                    }
-                    list
-                }
-
-                is LintTomlLiteralValue -> transformValue(value)
-                else -> error("Unexpected map content: $value of type ${value.javaClass}")
-            }
-        }
-
-        fun getSourceValueMap(): Map<String, Any> {
-            return copy(document.getRoot()) { it.getText() }
-        }
-
-        fun getValueMap(): Map<String, Any> {
-            return copy(document.getRoot()) { if (it is LintTomlLiteralValue) it.getActualValue() ?: it.getText() else it.getText() }
-        }
-
-        private fun describeLocation(v: LintTomlValue): String? {
-            val keyLocation = v.getKeyLocation()
-            val valueLocation = v.getLocation()
-            val valueString = valueLocation.getErrorLines { v.getDocument().getSource() }?.trimIndent() ?: return null
-            val keyString = keyLocation?.getErrorLines { v.getDocument().getSource() }?.trimIndent() ?: return valueString
-            val keyLines = keyString.split('\n')
-            val valueLines = valueString.split('\n')
-
-            if (keyLines[0] != valueLines[0]) {
-                return keyString + valueString
-            }
-            val sb = StringBuilder()
-            sb.append(keyLines[0]).append('\n')
-            val keyRange = keyLines[1]
-            val valueRange = valueLines[1]
-            for (i in valueRange.indices) {
-                if (i < keyRange.length && !keyRange[i].isWhitespace()) {
-                    sb.append(keyRange[i])
-                } else {
-                    sb.append(valueRange[i])
-                }
-            }
-            sb.append('\n')
-            return sb.toString()
-        }
+        else -> error("Unexpected map member $v of type ${v.javaClass.name}")
+      }
     }
+
+    private fun describeProblem(
+      severity: Severity,
+      location: Location,
+      message: String,
+      includeSources: Boolean,
+      source: String
+    ): String {
+      val start = location.start
+      val path = location.file.name
+      val errorLine =
+        path +
+          ": " +
+          start?.line +
+          ":" +
+          start?.column +
+          ": " +
+          severity.description +
+          ": " +
+          message
+      return if (includeSources) {
+        errorLine + ("\n" + (location.getErrorLines { source } ?: "")).trimEnd()
+      } else {
+        errorLine
+      }
+    }
+
+    fun describeProblems(includeSources: Boolean = true): String {
+      return problems.joinToString("\n") { (severity, location, message) ->
+        describeProblem(
+          severity,
+          location,
+          message,
+          includeSources,
+          document.getSource().toString()
+        )
+      }
+    }
+
+    private fun copy(
+      map: LintTomlMapValue,
+      transformValue: (LintTomlValue) -> Any
+    ): Map<String, Any> {
+      val copy = mutableMapOf<String, Any>()
+      for ((key, value) in map.getMappedValues()) {
+        copy[key] = copy(value, transformValue)
+      }
+      return copy
+    }
+
+    private fun copy(value: Any, transformValue: (LintTomlValue) -> Any): Any {
+      return when (value) {
+        is LintTomlMapValue -> {
+          copy(value, transformValue)
+        }
+        is LintTomlArrayValue -> {
+          val list = mutableListOf<Any>()
+          for (item in value.getArrayElements()) {
+            list.add(copy(item, transformValue))
+          }
+          list
+        }
+        is LintTomlLiteralValue -> transformValue(value)
+        else -> error("Unexpected map content: $value of type ${value.javaClass}")
+      }
+    }
+
+    fun getSourceValueMap(): Map<String, Any> {
+      return copy(document.getRoot()) { it.getText() }
+    }
+
+    fun getValueMap(): Map<String, Any> {
+      return copy(document.getRoot()) {
+        if (it is LintTomlLiteralValue) it.getActualValue() ?: it.getText() else it.getText()
+      }
+    }
+
+    private fun describeLocation(v: LintTomlValue): String? {
+      val keyLocation = v.getKeyLocation()
+      val valueLocation = v.getLocation()
+      val valueString =
+        valueLocation.getErrorLines { v.getDocument().getSource() }?.trimIndent() ?: return null
+      val keyString =
+        keyLocation?.getErrorLines { v.getDocument().getSource() }?.trimIndent()
+          ?: return valueString
+      val keyLines = keyString.split('\n')
+      val valueLines = valueString.split('\n')
+
+      if (keyLines[0] != valueLines[0]) {
+        return keyString + valueString
+      }
+      val sb = StringBuilder()
+      sb.append(keyLines[0]).append('\n')
+      val keyRange = keyLines[1]
+      val valueRange = valueLines[1]
+      for (i in valueRange.indices) {
+        if (i < keyRange.length && !keyRange[i].isWhitespace()) {
+          sb.append(keyRange[i])
+        } else {
+          sb.append(valueRange[i])
+        }
+      }
+      sb.append('\n')
+      return sb.toString()
+    }
+  }
 }

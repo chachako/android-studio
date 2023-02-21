@@ -22,47 +22,49 @@ import java.net.URI
 import java.util.jar.JarFile
 
 fun findKotlinStdlibPath(): List<File> =
-    findFromRuntimeClassPath(::isKotlinStdLib).ifEmpty {
-        // kotlin-stdlib might be in another jar, so use that.
-        PathManager.getJarForClass(KotlinVersion::class.java)?.let { listOf(it.toFile()) }
-            ?: error("Did not find kotlin-stdlib-jdk8 in classpath: ${System.getProperty("java.class.path")}")
-    }
+  findFromRuntimeClassPath(::isKotlinStdLib).ifEmpty {
+    // kotlin-stdlib might be in another jar, so use that.
+    PathManager.getJarForClass(KotlinVersion::class.java)?.let { listOf(it.toFile()) }
+      ?: error(
+        "Did not find kotlin-stdlib-jdk8 in classpath: ${System.getProperty("java.class.path")}"
+      )
+  }
 
 fun findFromRuntimeClassPath(accept: (File) -> Boolean): List<File> {
-    val classPath: String = System.getProperty("java.class.path")
-    val paths = mutableListOf<File>()
-    for (path in classPath.split(File.pathSeparatorChar)) {
-        val file = File(path)
-        if (accept(file)) {
-            paths.add(file.absoluteFile)
-        }
+  val classPath: String = System.getProperty("java.class.path")
+  val paths = mutableListOf<File>()
+  for (path in classPath.split(File.pathSeparatorChar)) {
+    val file = File(path)
+    if (accept(file)) {
+      paths.add(file.absoluteFile)
     }
-    // Handle running from the IDE in jar-manifest mode.
-    if (paths.isEmpty()) {
-        for (jar in classPath.split(File.pathSeparatorChar)) {
-            try {
-                val jarFile = File(jar)
-                JarFile(jarFile).use {
-                    for (path in it.manifest.mainAttributes.getValue("Class-Path").split(" ")) {
-                        val file = File(URI(path).path)
-                        if (accept(file)) {
-                            if (!file.isAbsolute) {
-                                paths.add(File(jarFile.parentFile, file.path))
-                            } else {
-                                paths.add(file)
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                System.err.println("Could not load jar $jar: $e")
+  }
+  // Handle running from the IDE in jar-manifest mode.
+  if (paths.isEmpty()) {
+    for (jar in classPath.split(File.pathSeparatorChar)) {
+      try {
+        val jarFile = File(jar)
+        JarFile(jarFile).use {
+          for (path in it.manifest.mainAttributes.getValue("Class-Path").split(" ")) {
+            val file = File(URI(path).path)
+            if (accept(file)) {
+              if (!file.isAbsolute) {
+                paths.add(File(jarFile.parentFile, file.path))
+              } else {
+                paths.add(file)
+              }
             }
+          }
         }
+      } catch (e: Exception) {
+        System.err.println("Could not load jar $jar: $e")
+      }
     }
-    return paths
+  }
+  return paths
 }
 
 private fun isKotlinStdLib(file: File): Boolean {
-    val name = file.name
-    return name.startsWith("kotlin-stdlib") || name.startsWith("kotlin-reflect")
+  val name = file.name
+  return name.startsWith("kotlin-stdlib") || name.startsWith("kotlin-reflect")
 }

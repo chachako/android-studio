@@ -15,8 +15,12 @@
  */
 
 @file:Suppress(
-    "CastCanBeRemovedNarrowingVariableType", "RemoveRedundantQualifierName", "RemoveExplicitTypeArguments",
-    "HasPlatformType", "ConstantConditions", "MemberVisibilityCanBePrivate"
+  "CastCanBeRemovedNarrowingVariableType",
+  "RemoveRedundantQualifierName",
+  "RemoveExplicitTypeArguments",
+  "HasPlatformType",
+  "ConstantConditions",
+  "MemberVisibilityCanBePrivate"
 )
 
 package com.android.tools.lint.checks.infrastructure
@@ -32,21 +36,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ImportAliasTestModeTest {
-    private fun alias(@Language("kotlin") source: String): String {
-        return alias(kotlin(source))
-    }
+  private fun alias(@Language("kotlin") source: String): String {
+    return alias(kotlin(source))
+  }
 
-    private fun alias(testFile: TestFile): String {
-        val sdkHome = TestUtils.getSdk().toFile()
-        var source = testFile.contents
-        ImportAliasTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
-        return source
-    }
+  private fun alias(testFile: TestFile): String {
+    val sdkHome = TestUtils.getSdk().toFile()
+    var source = testFile.contents
+    ImportAliasTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
+    return source
+  }
 
-    @Test
-    fun testImportAlias() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testImportAlias() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
             import java.io.File
 
@@ -64,10 +69,13 @@ class ImportAliasTestModeTest {
 
                 var files: Array<File> = emptyArray()
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
             import java.io.File
             import java.io.File as IMPORT_ALIAS_1_FILE
@@ -86,16 +94,19 @@ class ImportAliasTestModeTest {
 
                 var files: Array<IMPORT_ALIAS_1_FILE> = emptyArray()
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val aliased = alias(kotlin)
-        assertEquals(expected, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
 
-    @Test
-    fun testConstructorCalls() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testConstructorCalls() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
             import android.widget.RemoteViews
 
@@ -103,10 +114,13 @@ class ImportAliasTestModeTest {
                 val rv = RemoteViews(packageName, R.layout.test)
                 val ov = other as RemoteViews
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
             import android.widget.RemoteViews
             import android.widget.RemoteViews as IMPORT_ALIAS_1_REMOTEVIEWS
@@ -115,16 +129,19 @@ class ImportAliasTestModeTest {
                 val rv = IMPORT_ALIAS_1_REMOTEVIEWS(packageName, R.layout.test)
                 val ov = other as IMPORT_ALIAS_1_REMOTEVIEWS
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val aliased = alias(kotlin)
-        assertEquals(expected, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testBasic() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
 
             import java.util.concurrent.LinkedBlockingQueue
@@ -139,10 +156,13 @@ class ImportAliasTestModeTest {
                 val typeClz: Class<Int> = Integer.TYPE
                 val typeClz2 = typeClz
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
 
             import java.util.concurrent.LinkedBlockingQueue
@@ -159,16 +179,19 @@ class ImportAliasTestModeTest {
                 val typeClz: Class<Int> = Integer.TYPE
                 val typeClz2 = typeClz
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val aliased = alias(kotlin)
-        assertEquals(expected, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
 
-    @Test
-    fun testConstructInner() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testConstructInner() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package com.google.android.play.core.splitinstall
 
             import android.content.res.Configuration as IMPORT_ALIAS_1
@@ -187,10 +210,13 @@ class ImportAliasTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package com.google.android.play.core.splitinstall
 
             import android.content.res.Configuration as IMPORT_ALIAS_1
@@ -209,16 +235,19 @@ class ImportAliasTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val aliased = alias(kotlin)
-        assertEquals(expected, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
 
-    @Test
-    fun testTypeExpressions() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testTypeExpressions() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg.application
             import android.content.res.AssetManager
 
@@ -228,10 +257,13 @@ class ImportAliasTestModeTest {
                     val m3 = assetManager.javaClass.getDeclaredMethod("invalidateCachesLocked", AssetManager::class.java)
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg.application
             import android.content.res.AssetManager
             import android.content.res.AssetManager as IMPORT_ALIAS_1_ASSETMANAGER
@@ -242,90 +274,108 @@ class ImportAliasTestModeTest {
                     val m3 = assetManager.javaClass.getDeclaredMethod("invalidateCachesLocked", IMPORT_ALIAS_1_ASSETMANAGER::class.java)
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val aliased = alias(kotlin)
-        assertEquals(expected, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
 
-    @Test
-    fun testMultipleFiles() {
-        // Make sure that when we process multiple files, we don't reuse import aliases per package
-        // the way we do for type aliases
-        val testFile1 = kotlin(
-            """
+  @Test
+  fun testMultipleFiles() {
+    // Make sure that when we process multiple files, we don't reuse import aliases per package
+    // the way we do for type aliases
+    val testFile1 =
+      kotlin(
+          """
             package test.pkg
             import java.io.File
             class Test1(val activity: android.app.Activity) {
                 var file: File? = null
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        val testFile2 = kotlin(
-            """
+    val testFile2 =
+      kotlin(
+          """
             package test.pkg
             import java.io.File
             class Test2(val file1: File, val file2: File)
             """
-        ).indented()
+        )
+        .indented()
 
-        val testFile3 = kotlin(
-            """
+    val testFile3 =
+      kotlin(
+          """
             package test.pkg.sub
             import java.io.File
             class Test3 {
                 var file: File? = null
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        val sdkHome = TestUtils.getSdk().toFile()
-        val testFiles = listOf(testFile1, testFile2, testFile3)
-        val map = mutableMapOf<String, String>()
-        ImportAliasTestMode().processTestFiles(testFiles, sdkHome) { c: JavaContext, s: String ->
-            val name = c.uastFile?.classes?.firstOrNull()?.qualifiedName
-            assertNotNull(name)
-            map[name!!] = s
-        }
-        assertEquals("[test.pkg.Test1, test.pkg.Test2, test.pkg.sub.Test3]", map.keys.sorted().toString())
-        assertEquals(
-            """
+    val sdkHome = TestUtils.getSdk().toFile()
+    val testFiles = listOf(testFile1, testFile2, testFile3)
+    val map = mutableMapOf<String, String>()
+    ImportAliasTestMode().processTestFiles(testFiles, sdkHome) { c: JavaContext, s: String ->
+      val name = c.uastFile?.classes?.firstOrNull()?.qualifiedName
+      assertNotNull(name)
+      map[name!!] = s
+    }
+    assertEquals(
+      "[test.pkg.Test1, test.pkg.Test2, test.pkg.sub.Test3]",
+      map.keys.sorted().toString()
+    )
+    assertEquals(
+      """
             package test.pkg
             import java.io.File
             import java.io.File as IMPORT_ALIAS_1_FILE
             class Test1(val activity: android.app.Activity) {
                 var file: IMPORT_ALIAS_1_FILE? = null
             }
-            """.trimIndent().trim(),
-            map["test.pkg.Test1"]!!.trim()
-        )
-        assertEquals(
             """
+        .trimIndent()
+        .trim(),
+      map["test.pkg.Test1"]!!.trim()
+    )
+    assertEquals(
+      """
             package test.pkg
             import java.io.File
             import java.io.File as IMPORT_ALIAS_1_FILE
             class Test2(val file1: IMPORT_ALIAS_1_FILE, val file2: IMPORT_ALIAS_1_FILE)
-            """.trimIndent().trim(),
-            map["test.pkg.Test2"]!!.trim()
-        )
-        assertEquals(
             """
+        .trimIndent()
+        .trim(),
+      map["test.pkg.Test2"]!!.trim()
+    )
+    assertEquals(
+      """
             package test.pkg.sub
             import java.io.File
             import java.io.File as IMPORT_ALIAS_1_FILE
             class Test3 {
                 var file: IMPORT_ALIAS_1_FILE? = null
             }
-            """.trimIndent().trim(),
-            map["test.pkg.sub.Test3"]!!.trim()
-        )
-    }
+            """
+        .trimIndent()
+        .trim(),
+      map["test.pkg.sub.Test3"]!!.trim()
+    )
+  }
 
-    @Test
-    fun testAlertDialog() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testAlertDialog() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
 
             import android.app.Activity
@@ -337,10 +387,12 @@ class ImportAliasTestModeTest {
                     val theme = AlertDialog.THEME_TRADITIONAL
                 }
             }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
 
             import android.app.Activity
@@ -354,45 +406,49 @@ class ImportAliasTestModeTest {
                     val theme = IMPORT_ALIAS_2_ALERTDIALOG.THEME_TRADITIONAL
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val aliased = alias(kotlin)
-        assertEquals(expected, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(expected, aliased)
+  }
 
-    @Test
-    fun testVarArgs() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testVarArgs() {
+    @Language("kotlin")
+    val kotlin =
+      """
             import android.animation.Animator.AnimatorPauseListener
 
             fun addListeners(vararg listeners: AnimatorPauseListener) {}
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        val aliased = alias(kotlin)
-        assertEquals(kotlin, aliased)
-    }
+    val aliased = alias(kotlin)
+    assertEquals(kotlin, aliased)
+  }
 
-    @Test
-    fun testTransformMessage() {
-        val mode = ImportAliasTestMode()
-        assertTrue(
-            mode.messagesMatch(
-                "This method should be annotated with @ChecksSdkIntAtLeast(api=BUILD.VERSION_CODES.GINGERBREAD)",
-                "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.GINGERBREAD)"
-            )
-        )
-        assertTrue(
-            mode.messagesMatch(
-                "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
-                "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.O, lambda=1)"
-            )
-        )
-        assertFalse(
-            mode.messagesMatch(
-                "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
-                "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.P, lambda=1)"
-            )
-        )
-    }
+  @Test
+  fun testTransformMessage() {
+    val mode = ImportAliasTestMode()
+    assertTrue(
+      mode.messagesMatch(
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=BUILD.VERSION_CODES.GINGERBREAD)",
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.GINGERBREAD)"
+      )
+    )
+    assertTrue(
+      mode.messagesMatch(
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.O, lambda=1)"
+      )
+    )
+    assertFalse(
+      mode.messagesMatch(
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.P, lambda=1)"
+      )
+    )
+  }
 }

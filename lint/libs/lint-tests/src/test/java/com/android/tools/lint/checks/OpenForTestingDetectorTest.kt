@@ -20,14 +20,15 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.detector.api.Detector
 
 class OpenForTestingDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return OpenForTestingDetector()
-    }
+  override fun getDetector(): Detector {
+    return OpenForTestingDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import androidx.annotation.OpenForTesting
 
@@ -53,37 +54,43 @@ class OpenForTestingDetectorTest : AbstractCheckTest() {
                     override fun someOtherMethod(arg: Int) { }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 class MyBuilder3 extends Builder1 { // ERROR 3
                     @Override void someMethod(int arg) { }
                 }
                 """
-            ).indented(),
-            // test/ prefix makes it a test folder entry:
-            java(
-                "test/test/pkg/MyBuilder4.java",
-                """
+          )
+          .indented(),
+        // test/ prefix makes it a test folder entry:
+        java(
+            "test/test/pkg/MyBuilder4.java",
+            """
                 package test.pkg;
                 class MyBuilder4 extends Builder1 { // OK: In unit test
                     @Override void someMethod(int arg) { }
                 }
                 """
-            ).indented(),
-            java(
-                "test/test/pkg/MyBuilder5.java",
-                """
+          )
+          .indented(),
+        java(
+            "test/test/pkg/MyBuilder5.java",
+            """
                 package test.pkg;
                 class MyBuilder5 extends Builder2 { // OK: In unit test
                     @Override void someMethod(int arg) { }
                 }
                 """
-            ).indented(),
-            openForTestingStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        openForTestingStub
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Builder1.kt:10: Error: Builder1 should only be subclassed from tests [OpenForTesting]
             class MyBuilder1 : Builder1() {  // ERROR 1
                                ~~~~~~~~
@@ -95,12 +102,13 @@ class OpenForTestingDetectorTest : AbstractCheckTest() {
                                      ~~~~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }
 
-val openForTestingStub: TestFile = kotlin(
-    """
+val openForTestingStub: TestFile =
+  kotlin(
+      """
     package androidx.annotation
     import kotlin.annotation.AnnotationRetention.BINARY
     import kotlin.annotation.AnnotationTarget.CLASS
@@ -112,4 +120,5 @@ val openForTestingStub: TestFile = kotlin(
     @Target(FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, CLASS)
     annotation class OpenForTesting
     """
-).indented()
+    )
+    .indented()

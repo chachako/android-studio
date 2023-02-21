@@ -38,53 +38,50 @@ import org.jetbrains.uast.isNullLiteral
  */
 class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
 
-    override fun getApplicableMethodNames() = BROADCAST_RECEIVER_METHOD_NAMES
+  override fun getApplicableMethodNames() = BROADCAST_RECEIVER_METHOD_NAMES
 
-    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-        if (!context.evaluator.isMemberInSubClassOf(method, "android.content.Context")) return
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    if (!context.evaluator.isMemberInSubClassOf(method, "android.content.Context")) return
 
-        // The parameter positions vary across the various registerReceiver*() methods, so rather
-        // than hardcode them we simply look them up based on the parameter type.
-        val receiverArg =
-            findArgument(node, "android.content.BroadcastReceiver") ?: return
-        if (receiverArg.isNullLiteral()) return
-        val filterArg = findArgument(node, "android.content.IntentFilter") ?: return
+    // The parameter positions vary across the various registerReceiver*() methods, so rather
+    // than hardcode them we simply look them up based on the parameter type.
+    val receiverArg = findArgument(node, "android.content.BroadcastReceiver") ?: return
+    if (receiverArg.isNullLiteral()) return
+    val filterArg = findArgument(node, "android.content.IntentFilter") ?: return
 
-        val flagsArg = findArgument(node, TYPE_INT)
+    val flagsArg = findArgument(node, TYPE_INT)
 
-        val evaluator = ConstantEvaluator().allowFieldInitializers()
+    val evaluator = ConstantEvaluator().allowFieldInitializers()
 
-        val (isProtected, unprotectedActionsList) =
-            checkIsProtectedReceiverAndReturnUnprotectedActions(filterArg, node, evaluator)
+    val (isProtected, unprotectedActionsList) =
+      checkIsProtectedReceiverAndReturnUnprotectedActions(filterArg, node, evaluator)
 
-        if (!isProtected) {
-            val flags = evaluator.evaluate(flagsArg) as? Int
-            val actionsList = unprotectedActionsList.joinToString(", ", "", "", -1, "")
-            val registeredFor = actionsList.ifEmpty { "an IntentFilter that cannot be inspected by lint" }
-            val message =
-                """`${receiverArg.sourcePsi?.text ?: receiverArg.asSourceString()}` \
+    if (!isProtected) {
+      val flags = evaluator.evaluate(flagsArg) as? Int
+      val actionsList = unprotectedActionsList.joinToString(", ", "", "", -1, "")
+      val registeredFor = actionsList.ifEmpty { "an IntentFilter that cannot be inspected by lint" }
+      val message =
+        """`${receiverArg.sourcePsi?.text ?: receiverArg.asSourceString()}` \
                 |is missing `RECEIVER_EXPORTED` or `RECEIVER_NOT_EXPORTED` flag for unprotected \
-                |broadcasts registered for $registeredFor""".trimMargin()
+                |broadcasts registered for $registeredFor"""
+          .trimMargin()
 
-            if (flagsArg == null) {
-                context.report(
-                    RECEIVER_EXPORTED_FLAG, node, context.getLocation(node), message
-                )
-            } else if (flags != null && (flags and RECEIVER_EXPORTED_FLAG_PRESENT_MASK) == 0) {
-                context.report(
-                    RECEIVER_EXPORTED_FLAG, node, context.getLocation(flagsArg), message
-                )
-            }
-        }
+      if (flagsArg == null) {
+        context.report(RECEIVER_EXPORTED_FLAG, node, context.getLocation(node), message)
+      } else if (flags != null && (flags and RECEIVER_EXPORTED_FLAG_PRESENT_MASK) == 0) {
+        context.report(RECEIVER_EXPORTED_FLAG, node, context.getLocation(flagsArg), message)
+      }
     }
+  }
 
-    companion object {
-        private const val RECEIVER_EXPORTED = 0x2
-        private const val RECEIVER_NOT_EXPORTED = 0x4
-        private const val RECEIVER_EXPORTED_FLAG_PRESENT_MASK =
-            RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED
+  companion object {
+    private const val RECEIVER_EXPORTED = 0x2
+    private const val RECEIVER_NOT_EXPORTED = 0x4
+    private const val RECEIVER_EXPORTED_FLAG_PRESENT_MASK =
+      RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED
 
-        private const val EXPLANATION = """
+    private const val EXPLANATION =
+      """
             A future platform release will require all receivers registering for non-system broadcasts \
             to include a flag indicating the receiver's exported state. Apps registering for non-system \
             broadcasts should use the `ContextCompat#registerReceiver` APIs with flags set to either \
@@ -94,21 +91,20 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
             register your receiver with `RECEIVER_NOT_EXPORTED` to protect your receiver on all platform releases.
         """
 
-        @JvmField
-        val RECEIVER_EXPORTED_FLAG: Issue = Issue.create(
-            id = "UnspecifiedRegisterReceiverFlag",
-            briefDescription = "Missing `registerReceiver()` exported flag",
-            explanation = EXPLANATION,
-            moreInfo =
-            "https://developer.android.com/reference/androidx/core/content/ContextCompat#registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,int)",
-            category = Category.SECURITY,
-            priority = 5,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = Implementation(
-                RegisterReceiverFlagDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
-        )
-    }
+    @JvmField
+    val RECEIVER_EXPORTED_FLAG: Issue =
+      Issue.create(
+        id = "UnspecifiedRegisterReceiverFlag",
+        briefDescription = "Missing `registerReceiver()` exported flag",
+        explanation = EXPLANATION,
+        moreInfo =
+          "https://developer.android.com/reference/androidx/core/content/ContextCompat#registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,int)",
+        category = Category.SECURITY,
+        priority = 5,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation =
+          Implementation(RegisterReceiverFlagDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
+  }
 }

@@ -19,5 +19,5 @@ package com.android.tools.lint.checks.infrastructure
 import java.io.InputStream
 
 interface TestResourceProvider {
-    fun getTestResource(relativePath: String, expectExists: Boolean): InputStream
+  fun getTestResource(relativePath: String, expectExists: Boolean): InputStream
 }

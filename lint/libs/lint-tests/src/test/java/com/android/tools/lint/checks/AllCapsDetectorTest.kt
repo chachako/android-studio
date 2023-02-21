@@ -19,15 +19,16 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class AllCapsDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return AllCapsDetector()
-    }
+  override fun getDetector(): Detector {
+    return AllCapsDetector()
+  }
 
-    fun testAllCaps() {
-        lint().files(
-            xml(
-                "res/layout/constraint.xml",
-                """
+  fun testAllCaps() {
+    lint()
+      .files(
+        xml(
+            "res/layout/constraint.xml",
+            """
                 <?xml version="1.0" encoding="utf-8"?>
                 <merge xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -55,25 +56,28 @@ class AllCapsDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content" />
                 </merge>
                 """
-            ).indented(),
-            xml(
-                "res/values/strings.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/strings.xml",
+            """
                 <resources>
                     <string name="plain">Home Sample</string>
                     <string name="has_markup">This is <b>bold</b></string>
                 </resources>
                 """
-            ).indented()
-        )
-            .skipTestModes(TestMode.CDATA)
-            .run().expect(
-                """
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.CDATA)
+      .run()
+      .expect(
+        """
                 res/layout/constraint.xml:12: Warning: Using textAllCaps with a string (has_markup) that contains markup; the markup will be dropped by the caps conversion [AllCaps]
                         android:textAllCaps="true"
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 }

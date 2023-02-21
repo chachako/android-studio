@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class GetContentDescriptionOverrideTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return GetContentDescriptionOverrideDetector()
-    }
+  override fun getDetector(): Detector {
+    return GetContentDescriptionOverrideDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            java(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -43,21 +44,25 @@ class GetContentDescriptionOverrideTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyView.java:13: Error: Overriding getContentDescription() on a View is not recommended [GetContentDescriptionOverride]
                 public CharSequence getContentDescription() {
                                     ~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testGetContentDescriptionOverrideViewHierarchy() {
-        lint().files(
-            java(
-                """
+  fun testGetContentDescriptionOverrideViewHierarchy() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -74,9 +79,10 @@ class GetContentDescriptionOverrideTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -89,21 +95,25 @@ class GetContentDescriptionOverrideTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/ParentView.java:12: Error: Overriding getContentDescription() on a View is not recommended [GetContentDescriptionOverride]
                 public CharSequence getContentDescription() {
                                     ~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testGetContentDescriptionOverrideExtendingViewWithArg() {
-        lint().files(
-            java(
-                """
+  fun testGetContentDescriptionOverrideExtendingViewWithArg() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -120,14 +130,18 @@ class GetContentDescriptionOverrideTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testGetContentDescriptionOverrideNotExtendingView() {
-        lint().files(
-            java(
-                """
+  fun testGetContentDescriptionOverrideNotExtendingView() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 public class MyPojo {
@@ -136,7 +150,10 @@ class GetContentDescriptionOverrideTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

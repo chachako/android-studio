@@ -24,21 +24,22 @@ import com.android.tools.lint.detector.api.Detector
 import java.io.File
 
 class IndentationDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return IndentationDetector()
-    }
+  override fun getDetector(): Detector {
+    return IndentationDetector()
+  }
 
-    override fun lint(): TestLintTask {
-        // The body removal test mode does not apply here; we're deliberately
-        // testing for brace-blocks
-        return super.lint().skipTestModes(TestMode.BODY_REMOVAL, TestMode.IF_TO_WHEN)
-    }
+  override fun lint(): TestLintTask {
+    // The body removal test mode does not apply here; we're deliberately
+    // testing for brace-blocks
+    return super.lint().skipTestModes(TestMode.BODY_REMOVAL, TestMode.IF_TO_WHEN)
+  }
 
-    fun testDocumentationExample() {
-        @Suppress("UseWithIndex", "ControlFlowWithEmptyBody", "SuspiciousIndentAfterControlStatement")
-        lint().files(
-            java(
-                """
+  fun testDocumentationExample() {
+    @Suppress("UseWithIndex", "ControlFlowWithEmptyBody", "SuspiciousIndentAfterControlStatement")
+    lint()
+      .files(
+        java(
+            """
                 class Java {
                   public void test(Object context) {
                     if (context == null)
@@ -49,10 +50,11 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/Kotlin.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/Kotlin.kt",
+            """
                 fun String.getLineAndColumn(offset: Int): Pair<Int,Int> {
                     var line = 1
                     var column = 1
@@ -130,9 +132,13 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     return Pair(line, column)
                 }
                 """
-            ).indented()
-        ).skipTestModes(TestMode.PARENTHESIZED, TestMode.WHITESPACE).run().expect(
-            """
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.PARENTHESIZED, TestMode.WHITESPACE)
+      .run()
+      .expect(
+        """
             src/Java.java:4: Error: Suspicious indentation: This is conditionally executed; expected it to be indented [SuspiciousIndentation]
                 System.out.println("test"); // WARN 1
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -201,29 +207,33 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~
             11 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testWarnMixedIndentation() {
-        @Suppress("UnusedAssignment", "ConstantConditions")
-        lint().files(
-            java(
-                "" +
-                    "class Java {\n" +
-                    "    int x;\n" +
-                    "        int y;\n" +
-                    "    public void test() {\n" +
-                    // We don't flag adjacent statements that probably don't
-                    // matter
-                    "        int x = 0;\n" +
-                    "        int y = 0;\n" +
-                    "        x = 0;\n" +
-                    "    \t   y = 1;\n" +
-                    "    }\n" +
-                    "}"
-            ).indented()
-        ).run().expect(
-            """
+  fun testWarnMixedIndentation() {
+    @Suppress("UnusedAssignment", "ConstantConditions")
+    lint()
+      .files(
+        java(
+            "" +
+              "class Java {\n" +
+              "    int x;\n" +
+              "        int y;\n" +
+              "    public void test() {\n" +
+              // We don't flag adjacent statements that probably don't
+              // matter
+              "        int x = 0;\n" +
+              "        int y = 0;\n" +
+              "        x = 0;\n" +
+              "    \t   y = 1;\n" +
+              "    }\n" +
+              "}"
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Java.java:8: Warning: The indentation string here is different from on the previous line (" " vs \t) [SuspiciousIndentation]
                     y = 1;
                 ~~~~
@@ -232,17 +242,21 @@ class IndentationDetectorTest : AbstractCheckTest() {
                 ~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNoFalsePositives() {
-        @Suppress(
-            "ResultOfMethodCallIgnored", "UnusedAssignment", "RedundantIfStatement", "ConstantConditions",
-            "SuspiciousIndentAfterControlStatement"
-        )
-        lint().files(
-            kotlin(
-                """
+  fun testNoFalsePositives() {
+    @Suppress(
+      "ResultOfMethodCallIgnored",
+      "UnusedAssignment",
+      "RedundantIfStatement",
+      "ConstantConditions",
+      "SuspiciousIndentAfterControlStatement"
+    )
+    lint()
+      .files(
+        kotlin(
+            """
                 fun String.getLineAndColumn(offset: Int): Pair<Int,Int> {
                     var line = 1
                     var column = 1
@@ -269,48 +283,51 @@ class IndentationDetectorTest : AbstractCheckTest() {
                         "."
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/test.kt",
-                "" +
-                    "  @Test\n" +
-                    "  fun failToParseDuplicates() {\n" +
-                    "    val input = \"\"\"\n" +
-                    "    <attr name=\"foo\">\n" +
-                    "        <enum name=\"bar\" value=\"0\"/>\n" +
-                    "        <enum name=\"bar\" value=\"1\"/>\n" +
-                    "    </attr>\n" +
-                    "    \"\"\".trimIndent()\n" +
-                    "\n" +
-                    "      val mockLogger = BlameLoggerTest.MockLogger()\n" +
-                    "      assertThat(testParse(input, mockLogger = mockLogger)).isFalse()\n" +
-                    "      assertThat(mockLogger.errors).hasSize(1)\n" +
-                    "      val errorMsg = mockLogger.errors.single().first\n" +
-                    "\n" +
-                    "      assertThat(errorMsg).contains(\n" +
-                    "          \"test.xml.rewritten:7:1: Duplicate symbol 'id/bar' defined here:\")\n" +
-                    "      assertThat(errorMsg).contains(\n" +
-                    "          \"test.xml.rewritten:7:1:  and here:\")\n" +
-                    "      assertThat(errorMsg)\n" +
-                    "          .contains(\"test.xml.rewritten:6:1\")\n" +
-                    "  }"
-            ).indented(),
-            kotlin(
-                "" +
-                    "fun manifestStrings(activityClass: String, isNewModule: Boolean, generateActivityTitle: Boolean): String {\n" +
-                    "  val innerBlock = renderIf(!isNewModule && generateActivityTitle) {\n" +
-                    "    \"\"\"<string name=\"title_\${activityToLayout(activityClass)}\">\$activityClass</string>\"\"\"\n" +
-                    "  }\n" +
-                    "\n" +
-                    "    return \"\"\"\n" +
-                    "<resources>\n" +
-                    "    \$innerBlock\n" +
-                    "</resources>\n" +
-                    "\"\"\"\n" +
-                    "}"
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/test.kt",
+            "" +
+              "  @Test\n" +
+              "  fun failToParseDuplicates() {\n" +
+              "    val input = \"\"\"\n" +
+              "    <attr name=\"foo\">\n" +
+              "        <enum name=\"bar\" value=\"0\"/>\n" +
+              "        <enum name=\"bar\" value=\"1\"/>\n" +
+              "    </attr>\n" +
+              "    \"\"\".trimIndent()\n" +
+              "\n" +
+              "      val mockLogger = BlameLoggerTest.MockLogger()\n" +
+              "      assertThat(testParse(input, mockLogger = mockLogger)).isFalse()\n" +
+              "      assertThat(mockLogger.errors).hasSize(1)\n" +
+              "      val errorMsg = mockLogger.errors.single().first\n" +
+              "\n" +
+              "      assertThat(errorMsg).contains(\n" +
+              "          \"test.xml.rewritten:7:1: Duplicate symbol 'id/bar' defined here:\")\n" +
+              "      assertThat(errorMsg).contains(\n" +
+              "          \"test.xml.rewritten:7:1:  and here:\")\n" +
+              "      assertThat(errorMsg)\n" +
+              "          .contains(\"test.xml.rewritten:6:1\")\n" +
+              "  }"
+          )
+          .indented(),
+        kotlin(
+            "" +
+              "fun manifestStrings(activityClass: String, isNewModule: Boolean, generateActivityTitle: Boolean): String {\n" +
+              "  val innerBlock = renderIf(!isNewModule && generateActivityTitle) {\n" +
+              "    \"\"\"<string name=\"title_\${activityToLayout(activityClass)}\">\$activityClass</string>\"\"\"\n" +
+              "  }\n" +
+              "\n" +
+              "    return \"\"\"\n" +
+              "<resources>\n" +
+              "    \$innerBlock\n" +
+              "</resources>\n" +
+              "\"\"\"\n" +
+              "}"
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 public class JavaTest {
                     public void test(int x) {
@@ -354,9 +371,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 // From tools/idea/plugins/kotlin/idea/tests/test/org/jetbrains/kotlin/idea/perf/UltraLightChecker.kt
                 fun checkByJavaFile(testDataPath: String, lightClasses: List<KtLightClass>) {
                     val expectedTextFile = getJavaFileForTest(testDataPath)
@@ -364,9 +382,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                         KotlinTestUtils.assertEqualsToFile(expectedTextFile, renderedResult)
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 // From tools/idea/plugins/gradle/java/testSources/execution/test/GradleJavaTestEventsIntegrationTest.kt
               private fun `call task for specific test overrides existing filters`() {
                 val settings: Integer = createSettings {
@@ -382,9 +401,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                                                    testListener)
               }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 // From tools/idea/platform/util-ex/src/org/jetbrains/mvstore/MVStore.java
                 class MVStore {
                   int nonLeafPageSplitSize;
@@ -401,9 +421,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 // From tools/idea/jps/jps-builders/gen/org/jetbrains/jps/api/CmdlineRemoteProto.java
                 import java.util.concurrent.Future;
                 class CmdlineRemoteProto {
@@ -419,9 +440,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                       }
               }
               """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 // From tools/idea/java/debugger/impl/src/com/intellij/debugger/memory/ui/InstancesView.java
                 import java.util.concurrent.Future;
                 class InstancesView {
@@ -440,9 +462,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 // From CidrGoogleOutputToGeneralTestEventsConverter.java
                 public class CidrGoogleOutputToGeneralTestEventsConverter {
                   private void ensureOpen(@NotNull GeneralTestEventsProcessor processor,
@@ -459,9 +482,10 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
               """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 // From StandardConversionSequence.java
                 class StandardConversionSequence {
                   boolean isPointerConversionToBool(@NotNull OCResolveContext context) {
@@ -474,15 +498,20 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented()
-        ).skipTestModes(TestMode.PARENTHESIZED).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.PARENTHESIZED)
+      .run()
+      .expectClean()
+  }
 
-    fun testCommentedOut() {
-        @Suppress("SuspiciousIndentAfterControlStatement")
-        lint().files(
-            java(
-                """
+  fun testCommentedOut() {
+    @Suppress("SuspiciousIndentAfterControlStatement")
+    lint()
+      .files(
+        java(
+            """
                 class Test {
                   public void test() {
                    // Prevent updates while the list shows one of the state messages
@@ -494,19 +523,23 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testBrokenTestModeOffsets() {
-        // Multi-file classes create a single UAST file which points into separate
-        // source files (see UFile.acceptSameFile); this would trip up the source test
-        // mode transformers. Here's a test case which threw exceptions in that scenario
-        // before it was fixed.
-        lint().files(
-            kotlin(
-                "src/file1.kt",
-                """
+  fun testBrokenTestModeOffsets() {
+    // Multi-file classes create a single UAST file which points into separate
+    // source files (see UFile.acceptSameFile); this would trip up the source test
+    // mode transformers. Here's a test case which threw exceptions in that scenario
+    // before it was fixed.
+    lint()
+      .files(
+        kotlin(
+            "src/file1.kt",
+            """
                 @file:JvmMultifileClass
                 @file:JvmName("FlowKt")
                 package test.pkg
@@ -516,10 +549,11 @@ class IndentationDetectorTest : AbstractCheckTest() {
                         println("test")
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/file2.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/file2.kt",
+            """
                 @file:JvmMultifileClass
                 @file:JvmName("FlowKt")
                 package test.pkg
@@ -529,33 +563,37 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     println("test")
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMultiPart() {
-        // This is a carefully constructed test case to reproduce a bug similar to the one observed in
-        // https://issuetracker.google.com/215741972
-        // Basically, we create a single class ("Test") from two separate .kt files. In test2, we have
-        // an if statement followed by a second statement; the indentation checker looks to see if that
-        // second statement (which is not nested) is also indented, which would be an error. However,
-        // because UAST constructs a single AST file for these two functions, if we just visit the
-        // functions, we might actually be looking at source PSI elements in a different file than the
-        // one we intended to analyze. And in this case, when we visit file1 (and use the source code
-        // for file1), we'll also come across file2, and we'll get to the if statement there. When we
-        // get to the statement following the if statement, and we look up its offsets, if we looked at
-        // the right file, we'd see that it's not indented. However, because the sources we consult
-        // is actually for file 1, we'll look at the offsets there, so we'll look at the indentation of
-        // the corresponding region in file1, and we'll see an indent and report it as an error, even
-        // though those sources are totally unrelated (and the indentation is fine because in that case
-        // we've placed braces around the statements).
-        //
-        // The fix here is actually in UElementVisitor; we should only be visiting the AST parts
-        // related to the current source file.
-        lint().files(
-            kotlin(
-                "src/file1.kt",
-                """
+  fun testMultiPart() {
+    // This is a carefully constructed test case to reproduce a bug similar to the one observed in
+    // https://issuetracker.google.com/215741972
+    // Basically, we create a single class ("Test") from two separate .kt files. In test2, we have
+    // an if statement followed by a second statement; the indentation checker looks to see if that
+    // second statement (which is not nested) is also indented, which would be an error. However,
+    // because UAST constructs a single AST file for these two functions, if we just visit the
+    // functions, we might actually be looking at source PSI elements in a different file than the
+    // one we intended to analyze. And in this case, when we visit file1 (and use the source code
+    // for file1), we'll also come across file2, and we'll get to the if statement there. When we
+    // get to the statement following the if statement, and we look up its offsets, if we looked at
+    // the right file, we'd see that it's not indented. However, because the sources we consult
+    // is actually for file 1, we'll look at the offsets there, so we'll look at the indentation of
+    // the corresponding region in file1, and we'll see an indent and report it as an error, even
+    // though those sources are totally unrelated (and the indentation is fine because in that case
+    // we've placed braces around the statements).
+    //
+    // The fix here is actually in UElementVisitor; we should only be visiting the AST parts
+    // related to the current source file.
+    lint()
+      .files(
+        kotlin(
+            "src/file1.kt",
+            """
                 @file:JvmMultifileClass
                 @file:JvmName("Test")
                 package test.pkg
@@ -567,10 +605,11 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/file2.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/file2.kt",
+            """
                 @file:JvmMultifileClass
                 @file:JvmName("Test")
                 package test.pkg
@@ -581,16 +620,20 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     println("test2b")
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    @Suppress("SuspiciousIndentAfterControlStatement")
-    fun testIdeHandling() {
-        val clientFactory = { TestLintClient(CLIENT_STUDIO) }
+  @Suppress("SuspiciousIndentAfterControlStatement")
+  fun testIdeHandling() {
+    val clientFactory = { TestLintClient(CLIENT_STUDIO) }
 
-        val testFile = java(
-            """
+    val testFile =
+      java(
+          """
                 class Java {
                   public void test(Object context) {
                     if (context == null)
@@ -598,16 +641,20 @@ class IndentationDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-        ).indented()
+        )
+        .indented()
 
-        // Option off, IDE, incremental/on the fly mode: no warnings
-        lint().files(testFile)
-            .clientFactory(clientFactory)
-            .incremental()
-            .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, false)
-            .run().expectClean()
+    // Option off, IDE, incremental/on the fly mode: no warnings
+    lint()
+      .files(testFile)
+      .clientFactory(clientFactory)
+      .incremental()
+      .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, false)
+      .run()
+      .expectClean()
 
-        val warnings = """
+    val warnings =
+      """
                 src/Java.java:4: Error: Suspicious indentation: This is conditionally executed; expected it to be indented [SuspiciousIndentation]
                     System.out.println("test"); // WARN
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -617,29 +664,39 @@ class IndentationDetectorTest : AbstractCheckTest() {
                 1 errors, 0 warnings
                 """
 
-        // Option off, IDE, batch mode: warn
-        lint().files(testFile)
-            .clientFactory(clientFactory)
-            .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, false)
-            .run().expect(warnings)
+    // Option off, IDE, batch mode: warn
+    lint()
+      .files(testFile)
+      .clientFactory(clientFactory)
+      .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, false)
+      .run()
+      .expect(warnings)
 
-        // Option on, IDE, incremental/on the fly mode: warn
-        lint().files(testFile)
-            .incremental()
-            .clientFactory(clientFactory)
-            .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, true)
-            .run().expect(warnings)
+    // Option on, IDE, incremental/on the fly mode: warn
+    lint()
+      .files(testFile)
+      .incremental()
+      .clientFactory(clientFactory)
+      .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, true)
+      .run()
+      .expect(warnings)
 
-        // Option off, IDE, incremental/on the fly mode but with the file not having been edited: warn
-        lint().files(testFile)
-            .clientFactory {
-                object : com.android.tools.lint.checks.infrastructure.TestLintClient(CLIENT_STUDIO) {
-                    override fun isEdited(file: File, returnIfUnknown: Boolean, savedSinceMsAgo: Long): Boolean {
-                        return false
-                    }
-                }
-            }
-            .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, false)
-            .run().expect(warnings)
-    }
+    // Option off, IDE, incremental/on the fly mode but with the file not having been edited: warn
+    lint()
+      .files(testFile)
+      .clientFactory {
+        object : com.android.tools.lint.checks.infrastructure.TestLintClient(CLIENT_STUDIO) {
+          override fun isEdited(
+            file: File,
+            returnIfUnknown: Boolean,
+            savedSinceMsAgo: Long
+          ): Boolean {
+            return false
+          }
+        }
+      }
+      .configureOption(IndentationDetector.ALWAYS_RUN_OPTION, false)
+      .run()
+      .expect(warnings)
+  }
 }

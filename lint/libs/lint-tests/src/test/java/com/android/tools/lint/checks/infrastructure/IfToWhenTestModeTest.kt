@@ -24,25 +24,26 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class IfToWhenTestModeTest {
-    private fun convertToWhen(@Language("kotlin") source: String): String {
-        return convert(kotlin(source))
-    }
+  private fun convertToWhen(@Language("kotlin") source: String): String {
+    return convert(kotlin(source))
+  }
 
-    private fun convertToSwitch(@Language("java") source: String): String {
-        return convert(java(source))
-    }
+  private fun convertToSwitch(@Language("java") source: String): String {
+    return convert(java(source))
+  }
 
-    private fun convert(testFile: TestFile): String {
-        val sdkHome = TestUtils.getSdk().toFile()
-        var source = testFile.contents
-        IfToWhenTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
-        return source
-    }
+  private fun convert(testFile: TestFile): String {
+    val sdkHome = TestUtils.getSdk().toFile()
+    var source = testFile.contents
+    IfToWhenTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
+    return source
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testBasic() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             fun test(owner: String, name: String, desc: String): Int {
                 if (owner == "foo") {
@@ -65,10 +66,13 @@ class IfToWhenTestModeTest {
                     owner.length
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @file:Suppress("ALL")
             fun test(owner: String, name: String, desc: String): Int {
                 when {
@@ -98,16 +102,19 @@ class IfToWhenTestModeTest {
                 }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val modified = convertToWhen(kotlin)
-        assertEquals(expected, modified)
-    }
+    val modified = convertToWhen(kotlin)
+    assertEquals(expected, modified)
+  }
 
-    @Test
-    fun testJava() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testJava() {
+    @Language("java")
+    val java =
+      """
             package test.pkg;
             import android.util.List;
             @SuppressWarnings("ALL")
@@ -122,11 +129,14 @@ class IfToWhenTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Suppress("DanglingJavadoc", "PointlessBooleanExpression", "ConstantConditions")
-        @Language("java")
-        val expected = """
+    @Suppress("DanglingJavadoc", "PointlessBooleanExpression", "ConstantConditions")
+    @Language("java")
+    val expected =
+      """
             package test.pkg;
             import android.util.List;
             @SuppressWarnings("ALL")
@@ -141,16 +151,18 @@ class IfToWhenTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
-        val modified = convertToSwitch(java)
-        assertEquals(expected, modified)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val modified = convertToSwitch(java)
+    assertEquals(expected, modified)
+  }
 
-    @Test
-    fun testKotlin2() {
-        @Language("kotlin")
-        val kotlin =
-            """
+  @Test
+  fun testKotlin2() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             package test.pkg
 
@@ -163,10 +175,13 @@ class IfToWhenTestModeTest {
                     error("Unexpected")
                 }
             }
-            """.trimIndent().trim()
+            """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @file:Suppress("ALL")
             package test.pkg
 
@@ -182,9 +197,11 @@ class IfToWhenTestModeTest {
                 }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val modified = convertToWhen(kotlin)
-        assertEquals(expected, modified)
-    }
+    val modified = convertToWhen(kotlin)
+    assertEquals(expected, modified)
+  }
 }

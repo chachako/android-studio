@@ -20,16 +20,16 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.detector.api.Detector
 
 class EmptySuperDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return EmptySuperDetector()
-    }
+  override fun getDetector(): Detector {
+    return EmptySuperDetector()
+  }
 
-    fun testDocumentationExample() {
-        @Suppress("RedundantOverride")
-        lint().files(
-            kotlin(
-
-                """
+  fun testDocumentationExample() {
+    @Suppress("RedundantOverride")
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.EmptySuper
 
                 open class ParentClass {
@@ -55,21 +55,25 @@ class EmptySuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            emptySuperStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        emptySuperStub
+      )
+      .run()
+      .expect(
+        """
             src/ParentClass.kt:22: Warning: No need to call super.someOtherMethod; the super method is defined to be empty [EmptySuperCall]
                     super.someOtherMethod(arg) // ERROR
                           ~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }
 
-val emptySuperStub: TestFile = kotlin(
-    """
+val emptySuperStub: TestFile =
+  kotlin(
+      """
     package androidx.annotation
     import kotlin.annotation.AnnotationTarget.FUNCTION
     @MustBeDocumented
@@ -77,4 +81,5 @@ val emptySuperStub: TestFile = kotlin(
     @Target(FUNCTION)
     annotation class EmptySuper
     """
-).indented()
+    )
+    .indented()

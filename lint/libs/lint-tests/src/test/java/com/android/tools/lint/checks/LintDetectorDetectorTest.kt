@@ -40,32 +40,33 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.findFromRuntimeClassPath
 import com.android.tools.lint.checks.infrastructure.portablePath
-import org.junit.Test
 import java.io.File
+import org.junit.Test
 
 class LintDetectorDetectorTest {
-    private val issues = arrayOf(
-        ID,
-        USE_UAST,
-        PSI_COMPARE,
-        TRIM_INDENT,
-        USE_KOTLIN,
-        CHECK_URL,
-        TEXT_FORMAT,
-        EXISTING_LINT_CONSTANTS,
-        UNEXPECTED_DOMAIN,
-        DOLLAR_STRINGS,
-        MISSING_VENDOR,
-        MISSING_DOC_EXAMPLE
+  private val issues =
+    arrayOf(
+      ID,
+      USE_UAST,
+      PSI_COMPARE,
+      TRIM_INDENT,
+      USE_KOTLIN,
+      CHECK_URL,
+      TEXT_FORMAT,
+      EXISTING_LINT_CONSTANTS,
+      UNEXPECTED_DOMAIN,
+      DOLLAR_STRINGS,
+      MISSING_VENDOR,
+      MISSING_DOC_EXAMPLE
     )
 
-    @Test
-    @Suppress("LintImplDollarEscapes")
-    fun testProblems() {
-        lint()
-            .files(
-                java(
-                    """
+  @Test
+  @Suppress("LintImplDollarEscapes")
+  fun testProblems() {
+    lint()
+      .files(
+        java(
+            """
                     /* Copyright (C) 2020 The Android Open Source Project */
                     package test.pkg;
                     import com.intellij.psi.PsiClass;
@@ -147,9 +148,10 @@ class LintDetectorDetectorTest {
                         }
                     }
                 """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     /* Copyright (C) 2020 The Android Open Source Project */
                     package test.pkg
                     import com.intellij.psi.PsiCallExpression
@@ -244,9 +246,10 @@ class LintDetectorDetectorTest {
                         }
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import com.android.tools.lint.client.api.IssueRegistry
                     class MyIssueRegistry : IssueRegistry() {
@@ -256,9 +259,10 @@ class LintDetectorDetectorTest {
                         )
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import com.android.tools.lint.client.api.IssueRegistry
                     import com.android.tools.lint.client.api.Vendor
@@ -271,9 +275,10 @@ class LintDetectorDetectorTest {
                         )
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import com.android.tools.lint.client.api.IssueRegistry
                     import com.android.tools.lint.client.api.Vendor
@@ -285,9 +290,10 @@ class LintDetectorDetectorTest {
                         )
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                         // Copyright (C) 2021 The Android Open Source Project
                         package test.pkg
                         import com.android.tools.lint.checks.infrastructure.LintDetectorTest
@@ -339,16 +345,15 @@ class LintDetectorDetectorTest {
                             }
                         }
                     """
-                ).indented(),
-                *getLintClassPath()
-            )
-            .issues(
-                *issues
-            )
-            .allowMissingSdk()
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+        *getLintClassPath()
+      )
+      .issues(*issues)
+      .allowMissingSdk()
+      .run()
+      .expect(
+        """
                 src/test/pkg/MyKotlinLintDetectorTest.kt:10: Warning: Expected to also find a documentation example test (testDocumentationExample) which shows a simple, typical scenario which triggers the test, and which will be extracted into lint's per-issue documentation pages [LintDocExample]
                     fun testBasic() {
                     ^
@@ -480,9 +485,9 @@ class LintDetectorDetectorTest {
                       ~~~~~~~~~~~~~~~
                 27 errors, 16 warnings
                 """
-            )
-            .expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Autofix for src/test/pkg/MyJavaLintDetector.java line 70: Surround with backtics:
                 @@ -70 +70
                 -             "Wrong use of LinearLayout.");
@@ -516,76 +521,79 @@ class LintDetectorDetectorTest {
                 -                     ""${'"'}.trimIndent(),
                 +                     ""${'"'}.,
                 """
-            )
+      )
+  }
+
+  @Test
+  fun testOnSources() {
+    // Attempt to run lint on its own source code, if we can find it. It will already
+    // be run on the lint source code as part of our continuous build with the bazel
+    // wrappers, so this is just for convenience when developing the rules
+    val root = TestUtils.getWorkspaceRoot().toFile()
+    val srcFiles =
+      getTestSources(root, "tools/base/lint/libs/lint-checks/src/main/java") +
+        getTestSources(root, "tools/base/lint/libs/lint-tests/src/main/java") +
+        getTestSources(root, "tools/base/lint/libs/lint-tests/src/test/java") +
+        getTestSources(root, "tools/base/lint/studio-checks/src/main/java") +
+        getTestSources(root, "tools/base/lint/studio-checks/src/test/java")
+    if (srcFiles.isEmpty()) {
+      // This test doesn't work in Bazel; we don't ship all the source files of lint
+      // as a dependency. Note however than in Bazel we actually run the lint checks
+      // directly on the sources via StudioIssueRegistry and the bazel integration of it.
+      return
     }
 
-    @Test
-    fun testOnSources() {
-        // Attempt to run lint on its own source code, if we can find it. It will already
-        // be run on the lint source code as part of our continuous build with the bazel
-        // wrappers, so this is just for convenience when developing the rules
-        val root = TestUtils.getWorkspaceRoot().toFile()
-        val srcFiles =
-            getTestSources(root, "tools/base/lint/libs/lint-checks/src/main/java") +
-                getTestSources(root, "tools/base/lint/libs/lint-tests/src/main/java") +
-                getTestSources(root, "tools/base/lint/libs/lint-tests/src/test/java") +
-                getTestSources(root, "tools/base/lint/studio-checks/src/main/java") +
-                getTestSources(root, "tools/base/lint/studio-checks/src/test/java")
-        if (srcFiles.isEmpty()) {
-            // This test doesn't work in Bazel; we don't ship all the source files of lint
-            // as a dependency. Note however than in Bazel we actually run the lint checks
-            // directly on the sources via StudioIssueRegistry and the bazel integration of it.
-            return
-        }
+    val libs = mutableListOf<File>()
+    findFromRuntimeClassPath { file ->
+        val name = file.name
+        val path = file.path
+        name.endsWith(DOT_JAR) ||
+          (!path.endsWith("android.sdktools.base.lint.checks-base") &&
+            !path.endsWith("android.sdktools.base.lint.studio-checks") &&
+            !path.contains("lint-tests"))
+      }
+      .forEach { libs.add(it) }
 
-        val libs = mutableListOf<File>()
-        findFromRuntimeClassPath { file ->
-            val name = file.name
-            val path = file.path
-            name.endsWith(DOT_JAR) || (
-                !path.endsWith("android.sdktools.base.lint.checks-base") &&
-                    !path.endsWith("android.sdktools.base.lint.studio-checks") &&
-                    !path.contains("lint-tests")
-                )
-        }.forEach {
-            libs.add(it)
-        }
+    // Symlink to all the jars on the classpath and insert a src/ link
+    lint()
+      .issues(*(issues.filter { it != PSI_COMPARE }.toTypedArray()))
+      .files(
+        gradle("// placeholder"), // such that it's seen as a project by lint
+        *srcFiles.toTypedArray(),
+        *libs
+          .mapIndexed { index, file ->
+            // Include unique index at the end to prevent conflicts
+            LibraryReferenceTestFile("libs/${file.name}_$index", file)
+          }
+          .toTypedArray()
+      )
+      .checkUInjectionHost(false)
+      .testModes(TestMode.DEFAULT)
+      .allowMissingSdk()
+      .allowCompilationErrors()
+      .allowDuplicates()
+      .run()
+      .expectClean()
+  }
 
-        // Symlink to all the jars on the classpath and insert a src/ link
-        lint()
-            .issues(*(issues.filter { it != PSI_COMPARE }.toTypedArray()))
-            .files(
-                gradle("// placeholder"), // such that it's seen as a project by lint
-                *srcFiles.toTypedArray(),
-                *libs.mapIndexed { index, file ->
-                    // Include unique index at the end to prevent conflicts
-                    LibraryReferenceTestFile("libs/${file.name}_$index", file)
-                }.toTypedArray()
-            )
-            .checkUInjectionHost(false)
-            .testModes(TestMode.DEFAULT)
-            .allowMissingSdk()
-            .allowCompilationErrors()
-            .allowDuplicates()
-            .run()
-            .expectClean()
+  private fun getTestSources(root: File, relative: String): List<TestFile> {
+    val src = File(root, relative)
+    // In Bazel these source files don't exist
+    if (!src.isDirectory) {
+      return emptyList()
     }
-
-    private fun getTestSources(root: File, relative: String): List<TestFile> {
-        val src = File(root, relative)
-        // In Bazel these source files don't exist
-        if (!src.isDirectory) {
-            return emptyList()
+    val srcPath = src.path
+    return src
+      .walkTopDown()
+      .mapNotNull {
+        if (it.isFile) {
+          val target = "src/main/java/" + it.path.substring(srcPath.length + 1).portablePath()
+          val contents = it.readText()
+          source(target, contents)
+        } else {
+          null
         }
-        val srcPath = src.path
-        return src.walkTopDown().mapNotNull {
-            if (it.isFile) {
-                val target = "src/main/java/" + it.path.substring(srcPath.length + 1).portablePath()
-                val contents = it.readText()
-                source(target, contents)
-            } else {
-                null
-            }
-        }.toList()
-    }
+      }
+      .toList()
+  }
 }

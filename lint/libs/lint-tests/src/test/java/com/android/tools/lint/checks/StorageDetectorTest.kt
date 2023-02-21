@@ -20,13 +20,13 @@ import com.android.tools.lint.detector.api.Detector
 
 class StorageDetectorTest : AbstractCheckTest() {
 
-    override fun getDetector(): Detector {
-        return StorageDetector()
-    }
+  override fun getDetector(): Detector {
+    return StorageDetector()
+  }
 
-    fun testWrong() {
-        val expected =
-            """
+  fun testWrong() {
+    val expected =
+      """
             src/test/pkg/StorageTest.java:8: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
                     return file.getUsableSpace();
                                 ~~~~~~~~~~~~~~
@@ -36,9 +36,10 @@ class StorageDetectorTest : AbstractCheckTest() {
             0 errors, 2 warnings
             """
 
-        lint().files(
-            kotlin(
-                """
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.os.Build
@@ -50,9 +51,10 @@ class StorageDetectorTest : AbstractCheckTest() {
                 }
 
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import java.io.File;
@@ -64,14 +66,18 @@ class StorageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testOk() {
-        lint().files(
-            kotlin(
-                """
+  fun testOk() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.os.Build
@@ -87,9 +93,10 @@ class StorageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.os.Build;
@@ -111,7 +118,10 @@ class StorageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

@@ -19,26 +19,24 @@ package com.android.tools.lint.detector.api
 import com.android.resources.ResourceFolderType
 
 /**
- * Specialized interface for detectors that scan binary resource files
- * (typically bitmaps but also files in res/raw)
+ * Specialized interface for detectors that scan binary resource files (typically bitmaps but also
+ * files in res/raw)
  */
 interface BinaryResourceScanner : FileScanner {
-    /**
-     * Called for each resource folder
-     *
-     * @param context the context for the resource file
-     */
-    fun checkBinaryResource(context: ResourceContext)
+  /**
+   * Called for each resource folder
+   *
+   * @param context the context for the resource file
+   */
+  fun checkBinaryResource(context: ResourceContext)
 
-    /**
-     * Returns whether this detector applies to the given folder type.
-     * This allows the detectors to be pruned from iteration, so for
-     * example when we are analyzing a string value file we don't need
-     * to look up detectors related to layout.
-     *
-     * @param folderType the folder type to be visited
-     * @return true if this detector can apply to resources in folders
-     *     of the given type
-     */
-    fun appliesTo(folderType: ResourceFolderType): Boolean
+  /**
+   * Returns whether this detector applies to the given folder type. This allows the detectors to be
+   * pruned from iteration, so for example when we are analyzing a string value file we don't need
+   * to look up detectors related to layout.
+   *
+   * @param folderType the folder type to be visited
+   * @return true if this detector can apply to resources in folders of the given type
+   */
+  fun appliesTo(folderType: ResourceFolderType): Boolean
 }

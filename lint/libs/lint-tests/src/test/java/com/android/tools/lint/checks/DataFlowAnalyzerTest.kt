@@ -28,6 +28,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.LintUtilsTest
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
+import java.io.File
 import junit.framework.TestCase
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
@@ -37,18 +38,17 @@ import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.util.isConstructorCall
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 import org.junit.Assert.assertNotEquals
-import java.io.File
 
 /**
- * Unit tests for the data flow analyzer. Note that there are
- * also a number of additional unit tests in CleanupDetectorTest,
- * ToastDetectorTest, SliceDetectorTest and WorkManagerDetectorTest, and
+ * Unit tests for the data flow analyzer. Note that there are also a number of additional unit tests
+ * in CleanupDetectorTest, ToastDetectorTest, SliceDetectorTest and WorkManagerDetectorTest, and
  * over time possibly others.
  */
 class DataFlowAnalyzerTest : TestCase() {
-    fun testJava() {
-        val parsed = LintUtilsTest.parse(
-            """
+  fun testJava() {
+    val parsed =
+      LintUtilsTest.parse(
+        """
                 package test.pkg;
 
                 @SuppressWarnings("all")
@@ -72,31 +72,33 @@ class DataFlowAnalyzerTest : TestCase() {
                     public Test other() { return this; }
                 }
             """,
-            File("test/pkg/Test.java")
-        )
+        File("test/pkg/Test.java")
+      )
 
-        val target = findMethodCall(parsed, "d")
+    val target = findMethodCall(parsed, "d")
 
-        val receivers = mutableListOf<String>()
-        val analyzer = object : DataFlowAnalyzer(listOf(target)) {
-            override fun receiver(call: UCallExpression) {
-                val name = call.methodName ?: "?"
-                assertNotEquals(name, "hashCode")
-                receivers.add(name)
-                super.receiver(call)
-            }
+    val receivers = mutableListOf<String>()
+    val analyzer =
+      object : DataFlowAnalyzer(listOf(target)) {
+        override fun receiver(call: UCallExpression) {
+          val name = call.methodName ?: "?"
+          assertNotEquals(name, "hashCode")
+          receivers.add(name)
+          super.receiver(call)
         }
-        val method = target.getParentOfType(UMethod::class.java)
-        method?.accept(analyzer)
+      }
+    val method = target.getParentOfType(UMethod::class.java)
+    method?.accept(analyzer)
 
-        assertEquals("e, f, g, toString", receivers.joinToString { it })
+    assertEquals("e, f, g, toString", receivers.joinToString { it })
 
-        Disposer.dispose(parsed.second)
-    }
+    Disposer.dispose(parsed.second)
+  }
 
-    fun testParameter() {
-        val parsed = LintUtilsTest.parse(
-            """
+  fun testParameter() {
+    val parsed =
+      LintUtilsTest.parse(
+        """
                 package test.pkg;
 
                 @SuppressWarnings("all")
@@ -114,30 +116,32 @@ class DataFlowAnalyzerTest : TestCase() {
                     public void m(int x) { }
                 }
             """,
-            File("test/pkg/Test.java")
-        )
+        File("test/pkg/Test.java")
+      )
 
-        val variable = findVariableDeclaration(parsed, "c")
-        val method = variable.getParentOfType(UMethod::class.java)!!
-        val parameter = method.uastParameters.last()
+    val variable = findVariableDeclaration(parsed, "c")
+    val method = variable.getParentOfType(UMethod::class.java)!!
+    val parameter = method.uastParameters.last()
 
-        val arguments = mutableListOf<String>()
-        val analyzer = object : DataFlowAnalyzer(listOf(parameter, variable)) {
-            override fun argument(call: UCallExpression, reference: UElement) {
-                val name = call.methodName ?: "?"
-                arguments.add(name + "(" + reference.sourcePsi?.text + ")")
-            }
+    val arguments = mutableListOf<String>()
+    val analyzer =
+      object : DataFlowAnalyzer(listOf(parameter, variable)) {
+        override fun argument(call: UCallExpression, reference: UElement) {
+          val name = call.methodName ?: "?"
+          arguments.add(name + "(" + reference.sourcePsi?.text + ")")
         }
-        method.accept(analyzer)
+      }
+    method.accept(analyzer)
 
-        assertEquals("m(b), m(c), m(d)", arguments.joinToString { it })
+    assertEquals("m(b), m(c), m(d)", arguments.joinToString { it })
 
-        Disposer.dispose(parsed.second)
-    }
+    Disposer.dispose(parsed.second)
+  }
 
-    fun testKotlin() {
-        val parsed = LintUtilsTest.parseKotlin(
-            """
+  fun testKotlin() {
+    val parsed =
+      LintUtilsTest.parseKotlin(
+        """
                 package test.pkg
 
                 class Test {
@@ -164,72 +168,78 @@ class DataFlowAnalyzerTest : TestCase() {
                     fun other(): Test = this
                 }
             """,
-            File("test/pkg/Test.kt")
-        )
+        File("test/pkg/Test.kt")
+      )
 
-        val target = findMethodCall(parsed, "d")
+    val target = findMethodCall(parsed, "d")
 
-        val receivers = mutableListOf<String>()
-        val analyzer = object : DataFlowAnalyzer(listOf(target)) {
-            override fun receiver(call: UCallExpression) {
-                val name = call.methodName ?: "?"
-                assertNotEquals(name, "hashCode")
-                receivers.add(name)
-                super.receiver(call)
-            }
+    val receivers = mutableListOf<String>()
+    val analyzer =
+      object : DataFlowAnalyzer(listOf(target)) {
+        override fun receiver(call: UCallExpression) {
+          val name = call.methodName ?: "?"
+          assertNotEquals(name, "hashCode")
+          receivers.add(name)
+          super.receiver(call)
         }
-        val method = target.getParentOfType(UMethod::class.java)
-        method?.accept(analyzer)
+      }
+    val method = target.getParentOfType(UMethod::class.java)
+    method?.accept(analyzer)
 
-        assertEquals("e, f, g, toString, apply, h", receivers.joinToString { it })
+    assertEquals("e, f, g, toString, apply, h", receivers.joinToString { it })
 
-        Disposer.dispose(parsed.second)
-    }
+    Disposer.dispose(parsed.second)
+  }
 
-    private fun findMethodCall(
-        parsed: com.android.utils.Pair<JavaContext, Disposable>,
-        targetName: String
-    ): UCallExpression {
-        var target: UCallExpression? = null
-        val file = parsed.first.uastFile!!
-        file.accept(object : AbstractUastVisitor() {
-            override fun visitCallExpression(node: UCallExpression): Boolean {
-                if (node.methodName == targetName) {
-                    target = node
-                } else if (node.isConstructorCall() && node.classReference?.resolvedName == targetName) {
-                    target = node
-                }
-                return super.visitCallExpression(node)
-            }
-        })
-        assertNotNull(target)
-        return target!!
-    }
+  private fun findMethodCall(
+    parsed: com.android.utils.Pair<JavaContext, Disposable>,
+    targetName: String
+  ): UCallExpression {
+    var target: UCallExpression? = null
+    val file = parsed.first.uastFile!!
+    file.accept(
+      object : AbstractUastVisitor() {
+        override fun visitCallExpression(node: UCallExpression): Boolean {
+          if (node.methodName == targetName) {
+            target = node
+          } else if (node.isConstructorCall() && node.classReference?.resolvedName == targetName) {
+            target = node
+          }
+          return super.visitCallExpression(node)
+        }
+      }
+    )
+    assertNotNull(target)
+    return target!!
+  }
 
-    private fun findVariableDeclaration(
-        parsed: com.android.utils.Pair<JavaContext, Disposable>,
-        targetName: String
-    ): UVariable {
-        var target: UVariable? = null
-        val file = parsed.first.uastFile!!
-        file.accept(object : AbstractUastVisitor() {
-            override fun visitVariable(node: UVariable): Boolean {
-                if (node.name == targetName) {
-                    target = node
-                }
-                return super.visitVariable(node)
-            }
-        })
-        assertNotNull(target)
-        return target!!
-    }
+  private fun findVariableDeclaration(
+    parsed: com.android.utils.Pair<JavaContext, Disposable>,
+    targetName: String
+  ): UVariable {
+    var target: UVariable? = null
+    val file = parsed.first.uastFile!!
+    file.accept(
+      object : AbstractUastVisitor() {
+        override fun visitVariable(node: UVariable): Boolean {
+          if (node.name == targetName) {
+            target = node
+          }
+          return super.visitVariable(node)
+        }
+      }
+    )
+    assertNotNull(target)
+    return target!!
+  }
 
-    fun testKotlinStandardFunctions() {
-        // Makes sure the semantics of let, apply, also, with and run are handled correctly.
-        // Regression test for https://issuetracker.google.com/187437289.
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinStandardFunctions() {
+    // Makes sure the semantics of let, apply, also, with and run are handled correctly.
+    // Regression test for https://issuetracker.google.com/187437289.
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -344,10 +354,15 @@ class DataFlowAnalyzerTest : TestCase() {
                         }
                 }
                 """
-            ).indented(),
-            rClass
-        ).testModes(TestMode.DEFAULT).issues(ToastDetector.ISSUE).run().expect(
-            """
+          )
+          .indented(),
+        rClass
+      )
+      .testModes(TestMode.DEFAULT)
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expect(
+        """
             src/test/pkg/StandardTest.kt:16: Warning: Toast created but not shown: did you forget to call show()? [ShowToast]
                     val toast = Toast.makeText(context, R.string.app_name, Toast.LENGTH_LONG) // ERROR 1
                                 ~~~~~~~~~~~~~~
@@ -365,13 +380,14 @@ class DataFlowAnalyzerTest : TestCase() {
                                 ~~~~~~~~~~~~~~
             0 errors, 5 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNestedExtensionMethods() {
-        lint().files(
-            kotlin(
-                """
+  fun testNestedExtensionMethods() {
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -433,15 +449,21 @@ class DataFlowAnalyzerTest : TestCase() {
                 }
                 private fun Toast.extension(): Toast = this
                 """
-            ).indented(),
-            rClass
-        ).testModes(TestMode.DEFAULT).issues(ToastDetector.ISSUE).run().expectClean()
-    }
+          )
+          .indented(),
+        rClass
+      )
+      .testModes(TestMode.DEFAULT)
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    fun testBlocksAndReturns() {
-        lint().files(
-            kotlin(
-                """
+  fun testBlocksAndReturns() {
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -494,10 +516,15 @@ class DataFlowAnalyzerTest : TestCase() {
 
                 private fun Toast.extension(): Toast = this
                 """
-            ).indented(),
-            rClass
-        ).testModes(TestMode.DEFAULT).issues(ToastDetector.ISSUE).run().expect(
-            """
+          )
+          .indented(),
+        rClass
+      )
+      .testModes(TestMode.DEFAULT)
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expect(
+        """
             src/test/pkg/ExtensionAndNesting.kt:36: Warning: Toast created but not shown: did you forget to call show()? [ShowToast]
                         Toast.makeText(c, r, d) // ERROR 1
                         ~~~~~~~~~~~~~~
@@ -506,14 +533,15 @@ class DataFlowAnalyzerTest : TestCase() {
                         ~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNonTopLevelReferences() {
-        // References to this are not direct children inside the lambda
-        lint().files(
-            kotlin(
-                """
+  fun testNonTopLevelReferences() {
+    // References to this are not direct children inside the lambda
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.view.View
                 import com.google.android.material.snackbar.Snackbar
 
@@ -525,15 +553,20 @@ class DataFlowAnalyzerTest : TestCase() {
                     }
                 }
                 """
-            ).indented(),
-            *snackbarStubs
-        ).issues(ToastDetector.ISSUE).run().expectClean()
-    }
+          )
+          .indented(),
+        *snackbarStubs
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    fun testNestedLambdas() {
-        lint().files(
-            kotlin(
-                """
+  fun testNestedLambdas() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.view.View
                 import com.google.android.material.snackbar.BaseTransientBottomBar
                 import com.google.android.material.snackbar.Snackbar
@@ -574,10 +607,14 @@ class DataFlowAnalyzerTest : TestCase() {
                 }
 
                 """
-            ).indented(),
-            *snackbarStubs
-        ).issues(ToastDetector.ISSUE).run().expect(
-            """
+          )
+          .indented(),
+        *snackbarStubs
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expect(
+        """
             src/test.kt:6: Warning: Snackbar created but not shown: did you forget to call show()? [ShowToast]
                 Snackbar.make(parent, msg, duration).apply { // ERROR 1
                 ~~~~~~~~~~~~~
@@ -586,13 +623,14 @@ class DataFlowAnalyzerTest : TestCase() {
                 ~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNestedScopes() {
-        lint().files(
-            kotlin(
-                """
+  fun testNestedScopes() {
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -640,12 +678,16 @@ class DataFlowAnalyzerTest : TestCase() {
 
                 private fun Toast.extension(): Toast = this
                 """
-            ).indented(),
-            rClass,
-            *snackbarStubs
-        ).testModes(TestMode.DEFAULT).issues(ToastDetector.ISSUE).run()
-            .expect(
-                """
+          )
+          .indented(),
+        rClass,
+        *snackbarStubs
+      )
+      .testModes(TestMode.DEFAULT)
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/test.kt:11: Warning: Toast created but not shown: did you forget to call show()? [ShowToast]
                     val toast = Toast.makeText(context, R.string.app_name, Toast.LENGTH_LONG) // ERROR 1
                                 ~~~~~~~~~~~~~~
@@ -654,13 +696,14 @@ class DataFlowAnalyzerTest : TestCase() {
                     ~~~~~~~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testIgnoredArguments() {
-        lint().files(
-            kotlin(
-                """
+  fun testIgnoredArguments() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.content.Context
                 import android.util.Log
                 import android.widget.Toast
@@ -672,24 +715,29 @@ class DataFlowAnalyzerTest : TestCase() {
                     Log.d("tag", toast.toString())
                 }
                 """
-            ).indented(),
-            *snackbarStubs
-        ).issues(ToastDetector.ISSUE).run().expect(
-            """
+          )
+          .indented(),
+        *snackbarStubs
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expect(
+        """
             src/test.kt:6: Warning: Toast created but not shown: did you forget to call show()? [ShowToast]
                 val toast = Toast.makeText(c, r, d) // ERROR
                             ~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testClone() {
-        // Methods that are named clone (& similar) should not be treated as transferring
-        // the value even though their types match the expectation
-        lint().files(
-            kotlin(
-                """
+  fun testClone() {
+    // Methods that are named clone (& similar) should not be treated as transferring
+    // the value even though their types match the expectation
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.view.View
                 import com.google.android.material.snackbar.Snackbar
 
@@ -697,11 +745,13 @@ class DataFlowAnalyzerTest : TestCase() {
                     Snackbar.make(parent, msg, duration).clone().toDebug().show() // ERROR
                 }
                 """
-            ).indented(),
-            // Note: using a different stub here since we're adding methods that don't exist in a real snackbar
-            // to simulate this scenario
-            java(
-                """
+          )
+          .indented(),
+        // Note: using a different stub here since we're adding methods that don't exist in a real
+        // snackbar
+        // to simulate this scenario
+        java(
+          """
                 package com.google.android.material.snackbar;
                 import android.view.View;
                 public class Snackbar {
@@ -713,21 +763,25 @@ class DataFlowAnalyzerTest : TestCase() {
                     public Snackbar toDebug() { return new Snackbar(); }
                 }
                 """
-            )
-        ).issues(ToastDetector.ISSUE).run().expect(
-            """
+        )
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expect(
+        """
             src/test.kt:5: Warning: Snackbar created but not shown: did you forget to call show()? [ShowToast]
                 Snackbar.make(parent, msg, duration).clone().toDebug().show() // ERROR
                 ~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testCasts() {
-        lint().files(
-            kotlin(
-                """
+  fun testCasts() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.content.Context
                 import android.widget.Toast
 
@@ -752,15 +806,20 @@ class DataFlowAnalyzerTest : TestCase() {
                     toast.intermediate().show()
                 }
                 """
-            ).indented(),
-        ).issues(ToastDetector.ISSUE).run().expectClean()
-    }
+          )
+          .indented(),
+      )
+      .issues(ToastDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    fun testArgumentCalls() {
-        // Make sure we visit the registerReceiver call exactly once
-        val parsed = LintUtilsTest.parse(
-            kotlin(
-                """
+  fun testArgumentCalls() {
+    // Make sure we visit the registerReceiver call exactly once
+    val parsed =
+      LintUtilsTest.parse(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.BroadcastReceiver
@@ -773,24 +832,27 @@ class DataFlowAnalyzerTest : TestCase() {
                     }
                 }
                 """,
-            ).indented()
-        )
+          )
+          .indented()
+      )
 
-        val target = findMethodCall(parsed, "IntentFilter")
+    val target = findMethodCall(parsed, "IntentFilter")
 
-        val calls = mutableListOf<UCallExpression>()
-        val method = target.getParentOfType(UMethod::class.java)
-        method?.accept(object : DataFlowAnalyzer(listOf(target)) {
-            override fun argument(call: UCallExpression, reference: UElement) {
-                assertTrue(calls.add(call))
-            }
-        })
-        assertEquals(1, calls.size)
-        assertSame(calls[0], target.getParentOfType(UCallExpression::class.java, strict = true))
-        Disposer.dispose(parsed.second)
-    }
+    val calls = mutableListOf<UCallExpression>()
+    val method = target.getParentOfType(UMethod::class.java)
+    method?.accept(
+      object : DataFlowAnalyzer(listOf(target)) {
+        override fun argument(call: UCallExpression, reference: UElement) {
+          assertTrue(calls.add(call))
+        }
+      }
+    )
+    assertEquals(1, calls.size)
+    assertSame(calls[0], target.getParentOfType(UCallExpression::class.java, strict = true))
+    Disposer.dispose(parsed.second)
+  }
 
-    private fun lint() = TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
+  private fun lint() = TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
 
-    private val rClass: TestFile = rClass("test.pkg", "@string/app_name")
+  private val rClass: TestFile = rClass("test.pkg", "@string/app_name")
 }

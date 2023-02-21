@@ -36,119 +36,113 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.stripIdPrefix
+import java.io.IOException
 import org.w3c.dom.Element
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
 
-/**
- * Check to make sure the startDestination attribute on navigation
- * elements is set and valid.
- */
+/** Check to make sure the startDestination attribute on navigation elements is set and valid. */
 class StartDestinationDetector : ResourceXmlDetector() {
-    companion object Issues {
+  companion object Issues {
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "InvalidNavigation",
-            briefDescription = "No start destination specified",
-
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "InvalidNavigation",
+        briefDescription = "No start destination specified",
+        explanation =
+          """
             All `<navigation>` elements must have a start destination specified, and it must \
             be a direct child of that `<navigation>`.
             """,
-            category = Category.CORRECTNESS,
-            priority = 3,
-            severity = Severity.WARNING,
-            implementation = Implementation(
-                StartDestinationDetector::class.java,
-                Scope.RESOURCE_FILE_SCOPE
-            )
+        category = Category.CORRECTNESS,
+        priority = 3,
+        severity = Severity.WARNING,
+        implementation =
+          Implementation(StartDestinationDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+      )
+  }
+
+  override fun appliesTo(folderType: ResourceFolderType): Boolean =
+    folderType == ResourceFolderType.NAVIGATION
+
+  override fun getApplicableElements() = listOf(TAG_NAVIGATION)
+
+  override fun visitElement(context: XmlContext, element: Element) {
+    val children = element.childNodes
+    // If there are no children, don't show the warning yet.
+    if ((0 until children.length).none { children.item(it) is Element }) return
+
+    val destinationAttr = element.getAttributeNodeNS(AUTO_URI, ATTR_START_DESTINATION)
+    val destinationAttrValue = destinationAttr?.value
+    // smart cast to non-null doesn't seem to work with isNullOrBlank
+    if (destinationAttrValue == null || destinationAttrValue.isBlank()) {
+      context.report(
+        ISSUE,
+        element,
+        context.getNameLocation(element),
+        "No start destination specified"
+      )
+    } else {
+      // TODO(namespaces): Support namespaces in ids
+      val url = ResourceUrl.parse(destinationAttrValue)
+      if (url == null || url.type != ResourceType.ID) {
+        context.report(
+          ISSUE,
+          element,
+          context.getNameLocation(element),
+          "`startDestination` must be an id"
         )
-    }
-
-    override fun appliesTo(folderType: ResourceFolderType): Boolean =
-        folderType == ResourceFolderType.NAVIGATION
-
-    override fun getApplicableElements() = listOf(TAG_NAVIGATION)
-
-    override fun visitElement(context: XmlContext, element: Element) {
-        val children = element.childNodes
-        // If there are no children, don't show the warning yet.
-        if ((0 until children.length).none { children.item(it) is Element }) return
-
-        val destinationAttr = element.getAttributeNodeNS(AUTO_URI, ATTR_START_DESTINATION)
-        val destinationAttrValue = destinationAttr?.value
-        // smart cast to non-null doesn't seem to work with isNullOrBlank
-        if (destinationAttrValue == null || destinationAttrValue.isBlank()) {
-            context.report(
-                ISSUE,
-                element,
-                context.getNameLocation(element),
-                "No start destination specified"
-            )
-        } else {
-            // TODO(namespaces): Support namespaces in ids
-            val url = ResourceUrl.parse(destinationAttrValue)
-            if (url == null || url.type != ResourceType.ID) {
-                context.report(
-                    ISSUE,
-                    element,
-                    context.getNameLocation(element),
-                    "`startDestination` must be an id"
-                )
+        return
+      }
+      for (i in 0 until children.length) {
+        val child = children.item(i) as? Element ?: continue
+        if (child.tagName == TAG_INCLUDE) {
+          val includedGraph = child.getAttributeNS(AUTO_URI, ATTR_GRAPH)
+          val includedUrl = ResourceUrl.parse(includedGraph) ?: continue
+          val client = context.client
+          val project = context.project
+          val repository = client.getResources(project, LOCAL_DEPENDENCIES)
+          val items =
+            repository.getResources(ResourceNamespace.TODO(), includedUrl.type, includedUrl.name)
+          for (item in items) {
+            val source = item.source ?: continue
+            try {
+              val parser = client.createXmlPullParser(source)
+              if (parser != null && checkId(parser, url.name)) {
                 return
+              }
+            } catch (ignore: XmlPullParserException) {
+              // Users might be editing these files in the IDE; don't flag
+            } catch (ignore: IOException) {
+              // Users might be editing these files in the IDE; don't flag
             }
-            for (i in 0 until children.length) {
-                val child = children.item(i) as? Element ?: continue
-                if (child.tagName == TAG_INCLUDE) {
-                    val includedGraph = child.getAttributeNS(AUTO_URI, ATTR_GRAPH)
-                    val includedUrl = ResourceUrl.parse(includedGraph) ?: continue
-                    val client = context.client
-                    val project = context.project
-                    val repository = client.getResources(project, LOCAL_DEPENDENCIES)
-                    val items = repository.getResources(
-                        ResourceNamespace.TODO(),
-                        includedUrl.type,
-                        includedUrl.name
-                    )
-                    for (item in items) {
-                        val source = item.source ?: continue
-                        try {
-                            val parser = client.createXmlPullParser(source)
-                            if (parser != null && checkId(parser, url.name)) {
-                                return
-                            }
-                        } catch (ignore: XmlPullParserException) {
-                            // Users might be editing these files in the IDE; don't flag
-                        } catch (ignore: IOException) {
-                            // Users might be editing these files in the IDE; don't flag
-                        }
-                    }
-                } else {
-                    val childId = child.getAttributeNS(ANDROID_URI, ATTR_ID)
-                    val childUrl = ResourceUrl.parse(childId) ?: continue
-                    if (url.name == childUrl.name) {
-                        return
-                    }
-                }
-            }
-            context.report(
-                ISSUE,
-                element,
-                context.getValueLocation(destinationAttr),
-                "Invalid start destination $destinationAttrValue"
-            )
+          }
+        } else {
+          val childId = child.getAttributeNS(ANDROID_URI, ATTR_ID)
+          val childUrl = ResourceUrl.parse(childId) ?: continue
+          if (url.name == childUrl.name) {
+            return
+          }
         }
+      }
+      context.report(
+        ISSUE,
+        element,
+        context.getValueLocation(destinationAttr),
+        "Invalid start destination $destinationAttrValue"
+      )
     }
+  }
 
-    private fun checkId(parser: XmlPullParser, target: String): Boolean {
-        while (true) {
-            when (parser.next()) {
-                XmlPullParser.START_TAG ->
-                    return stripIdPrefix(parser.getAttributeValue(ANDROID_URI, ATTR_ID)) == target
-                XmlPullParser.END_TAG, XmlPullParser.END_DOCUMENT -> return false
-            }
-        }
+  private fun checkId(parser: XmlPullParser, target: String): Boolean {
+    while (true) {
+      when (parser.next()) {
+        XmlPullParser.START_TAG ->
+          return stripIdPrefix(parser.getAttributeValue(ANDROID_URI, ATTR_ID)) == target
+        XmlPullParser.END_TAG,
+        XmlPullParser.END_DOCUMENT -> return false
+      }
     }
+  }
 }

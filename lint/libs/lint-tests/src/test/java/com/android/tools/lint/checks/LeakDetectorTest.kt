@@ -20,13 +20,13 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class LeakDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return LeakDetector()
-    }
+  override fun getDetector(): Detector {
+    return LeakDetector()
+  }
 
-    fun testStaticFields() {
-        val expected =
-            """
+  fun testStaticFields() {
+    val expected =
+      """
             src/test/pkg/LeakTest.java:18: Warning: Do not place Android context classes in static fields; this is a memory leak [StaticFieldLeak]
                 private static Activity sField7; // LEAK!
                         ~~~~~~
@@ -45,10 +45,11 @@ class LeakDetectorTest : AbstractCheckTest() {
             0 errors, 5 warnings
             """
 
-        lint().files(
-            java(
-                "src/test/pkg/LeakTest.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/LeakTest.java",
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -83,14 +84,18 @@ class LeakDetectorTest : AbstractCheckTest() {
                     private static Context applicationCtx; // Probably app context leak
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testLoader() {
-        lint().files(
-            java(
-                """
+  fun testLoader() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -117,9 +122,12 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/LoaderTest.java:12: Warning: This Loader class should be static or leaks might occur (test.pkg.LoaderTest.MyLoader2) [StaticFieldLeak]
                 public class MyLoader2 extends Loader { // Leak
                              ~~~~~~~~~
@@ -131,13 +139,14 @@ class LeakDetectorTest : AbstractCheckTest() {
                            ^
             0 errors, 3 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testSupportLoader() {
-        lint().files(
-            java(
-                """
+  fun testSupportLoader() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -164,17 +173,21 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            // Stub since support library isn't in SDK
-            java(
-                """
+          )
+          .indented(),
+        // Stub since support library isn't in SDK
+        java(
+            """
                 package android.support.v4.content;
                 public class Loader {
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/SupportLoaderTest.java:12: Warning: This Loader class should be static or leaks might occur (test.pkg.SupportLoaderTest.MyLoader2) [StaticFieldLeak]
                 public class MyLoader2 extends Loader { // Leak
                              ~~~~~~~~~
@@ -186,13 +199,14 @@ class LeakDetectorTest : AbstractCheckTest() {
                            ^
             0 errors, 3 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testTopLevelLoader() {
-        lint().files(
-            java(
-                """
+  fun testTopLevelLoader() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -204,21 +218,25 @@ class LeakDetectorTest : AbstractCheckTest() {
                     public SupportLoaderTest(Context context) { super(context); }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/SupportLoaderTest.java:8: Warning: This field leaks a context object [StaticFieldLeak]
                 private Activity activity; // Leak
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testAsyncTask() {
-        lint().files(
-            java(
-                """
+  fun testAsyncTask() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.os.AsyncTask;
@@ -240,9 +258,12 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/AsyncTaskTest.java:10: Warning: This AsyncTask class should be static or leaks might occur (test.pkg.AsyncTaskTest.MyAsyncTask2) [StaticFieldLeak]
                 public class MyAsyncTask2 extends AsyncTask { // Leak
                              ~~~~~~~~~~~~
@@ -254,13 +275,14 @@ class LeakDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 3 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testAssignAppContext() {
-        lint().files(
-            java(
-                """
+  fun testAssignAppContext() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -277,16 +299,20 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNoAssignAppContext() {
-        // Regression test for 62318813; prior to this fix this code would trigger
-        // an NPE in lint
-        lint().files(
-            java(
-                """
+  fun testNoAssignAppContext() {
+    // Regression test for 62318813; prior to this fix this code would trigger
+    // an NPE in lint
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -302,21 +328,25 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/StaticFieldTest.java:6: Warning: Do not place Android context classes in static fields; this is a memory leak [StaticFieldLeak]
                 public static Context context;
                        ~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testLifeCycle() {
-        lint().files(
-            java(
-                """
+  fun testLifeCycle() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.arch.lifecycle.ViewModel;
@@ -339,15 +369,19 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package android.arch.lifecycle;
                 public class ViewModel { }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyModel.java:10: Warning: This field leaks a context object [StaticFieldLeak]
                 private LinearLayout myLayout; // ERROR
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -356,13 +390,14 @@ class LeakDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testApplicationOk() {
-        lint().files(
-            java(
-                """
+  fun testApplicationOk() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Application;
@@ -377,15 +412,19 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testClassesInStaticMethods() {
-        // Regression test for https://issuetracker.google.com/70496601
-        lint().files(
-            java(
-                """
+  fun testClassesInStaticMethods() {
+    // Regression test for https://issuetracker.google.com/70496601
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.os.AsyncTask;
@@ -409,16 +448,20 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlinPropertySuppress() {
-        // Regression test for https://issuetracker.google.com/112191486
+  fun testKotlinPropertySuppress() {
+    // Regression test for https://issuetracker.google.com/112191486
 
-        lint().files(
-            kotlin(
-                """
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.annotation.SuppressLint
@@ -431,16 +474,20 @@ class LeakDetectorTest : AbstractCheckTest() {
                 @Suppress("ObjectPropertyName")
                 lateinit var _globalContext: Context
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAppContextReference() {
-        // Regression test for 119440194
-        lint().files(
-            java(
-                "src/test/pkg/LeakTest.java",
-                """
+  fun testAppContextReference() {
+    // Regression test for 119440194
+    lint()
+      .files(
+        java(
+            "src/test/pkg/LeakTest.java",
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -460,15 +507,19 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAppContextInitialization() {
-        // Regression test for 70510835
-        lint().files(
-            java(
-                """
+  fun testAppContextInitialization() {
+    // Regression test for 70510835
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -491,14 +542,18 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlin() {
-        lint().files(
-            kotlin(
-                """
+  fun testKotlin() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.annotation.SuppressLint
@@ -534,9 +589,12 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/LeakTest.kt:24: Warning: Do not place Android context classes in static fields; this is a memory leak [StaticFieldLeak]
                     private val sField7: Activity? = null // LEAK!
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -554,14 +612,15 @@ class LeakDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 5 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testCompanionObject() {
-        // 200174290: StaticFieldLeak false positive for anonymous object in a companion object
-        lint().files(
-            kotlin(
-                """
+  fun testCompanionObject() {
+    // 200174290: StaticFieldLeak false positive for anonymous object in a companion object
+    lint()
+      .files(
+        kotlin(
+          """
                 import android.content.Context
                 class Foo {
                     companion object {
@@ -574,16 +633,19 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            )
-        ).run().expectClean()
-    }
+        )
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testHilt() {
-        // Regression test for
-        // 206207283: StaticFieldLeak should not report usage of hilt annotated @ApplicationContext
-        lint().files(
-            kotlin(
-                """
+  fun testHilt() {
+    // Regression test for
+    // 206207283: StaticFieldLeak should not report usage of hilt annotated @ApplicationContext
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -605,26 +667,32 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                // Stub
-                """
+          )
+          .indented(),
+        java(
+            // Stub
+            """
                 package dagger.hilt.android.qualifiers;
                 import java.lang.annotation.ElementType;
                 import java.lang.annotation.Target;
                 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
                 public @interface ApplicationContext {}
                 """
-            ).indented()
-        ).skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS)
+      .run()
+      .expectClean()
+  }
 
-    fun testCustomAnnotationContextAnnotation() {
-        // Regression test for
-        // 159130139: Context leak checker isn't @ApplicationContext-aware
-        lint().files(
-            kotlin(
-                """
+  fun testCustomAnnotationContextAnnotation() {
+    // Regression test for
+    // 159130139: Context leak checker isn't @ApplicationContext-aware
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -645,17 +713,22 @@ class LeakDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                // Stub
-                """
+          )
+          .indented(),
+        java(
+            // Stub
+            """
                 package my.custom.annotation;
                 import java.lang.annotation.ElementType;
                 import java.lang.annotation.Target;
                 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
                 public @interface ApplicationContext {}
                 """
-            ).indented()
-        ).skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS)
+      .run()
+      .expectClean()
+  }
 }

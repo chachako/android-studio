@@ -23,104 +23,120 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class NotificationPermissionDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return NotificationPermissionDetector()
-    }
+  override fun getDetector(): Detector {
+    return NotificationPermissionDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            manifest(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg.permissiontest">
                     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="33" />
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
                 </manifest>
                 """
-            ).indented(),
-            javaNotificationUsage,
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaNotificationUsage,
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTestAndroidx.java:21: Error: When targeting Android 13 or higher, posting a permission requires holding the POST_NOTIFICATIONS permission [NotificationPermission]
                     notificationManager.notify(id, notification);
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testNoWarningWhenPermissionIsDeclared() {
-        lint().files(
-            manifest(
-                """
+  fun testNoWarningWhenPermissionIsDeclared() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg.permissiontest">
                     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="33" />
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
                     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
                 </manifest>
                 """
-            ).indented(),
-            javaNotificationUsage,
-            *notificationStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        javaNotificationUsage,
+        *notificationStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNoWarningPreAndroid13() {
-        lint().files(
-            manifest(
-                """
+  fun testNoWarningPreAndroid13() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg.permissiontest">
                     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="32" />
                 </manifest>
                 """
-            ).indented(),
-            javaNotificationUsage,
-            *notificationStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        javaNotificationUsage,
+        *notificationStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testClassFileUsage() {
-        lint().files(
-            manifestTarget33LocationPermission,
-            bytecodeUsage,
-            *notificationStubs
-        ).run().expect(
-            """
+  fun testClassFileUsage() {
+    lint()
+      .files(manifestTarget33LocationPermission, bytecodeUsage, *notificationStubs)
+      .run()
+      .expect(
+        """
             AndroidManifest.xml: Error: When targeting Android 13 or higher, posting a permission requires holding the POST_NOTIFICATIONS permission (usage from test.pkg.NotificationTestAndroidx) [NotificationPermission]
             1 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Data for AndroidManifest.xml line 0:   missing : android.permission.POST_NOTIFICATIONS
             """
-        )
-    }
+      )
+  }
 
-    fun testClassFileUsageFromAndroidX() {
-        // Just depending on AndroidX doesn't mean you're using notifications
-        lint().files(
-            manifestTarget33LocationPermission,
-            bytecodeUsageInAndroidX,
-            *notificationStubs
-        ).run().expectClean()
-    }
+  fun testClassFileUsageFromAndroidX() {
+    // Just depending on AndroidX doesn't mean you're using notifications
+    lint()
+      .files(manifestTarget33LocationPermission, bytecodeUsageInAndroidX, *notificationStubs)
+      .run()
+      .expectClean()
+  }
 
-    fun testSuppressedViaRequiresPermission() {
-        lint().files(
-            manifestTarget33LocationPermission,
-            notificationUsageWithRequiresPermissionAnnotation,
-            SUPPORT_ANNOTATIONS_JAR
-        ).skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE).run().expectClean()
-    }
+  fun testSuppressedViaRequiresPermission() {
+    lint()
+      .files(
+        manifestTarget33LocationPermission,
+        notificationUsageWithRequiresPermissionAnnotation,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
+      .run()
+      .expectClean()
+  }
 
-    fun testSuppressedViaRequiresPermissionInBytecode() {
-        lint().files(
-            manifestTarget33LocationPermission,
-            bytecode(
-                "libs/usage.jar",
-                notificationUsageWithRequiresPermissionAnnotation,
-                0x8e4261c0,
-                """
+  fun testSuppressedViaRequiresPermissionInBytecode() {
+    lint()
+      .files(
+        manifestTarget33LocationPermission,
+        bytecode(
+          "libs/usage.jar",
+          notificationUsageWithRequiresPermissionAnnotation,
+          0x8e4261c0,
+          """
                 com/example/myapplication/TestNotification.class:
                 H4sIAAAAAAAAAIVR22rbQBA949hW4jrNre4lISmhlDgXvI99cGkxxgaBK5lI
                 5CUPZm1vwgZp5UhySD4rLy30oR/QjwqZdY1bSkMXdmb2zJmZnZmfD99/APiA
@@ -133,87 +149,101 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
                 GbjCcgUVDrHUd/MUzsnu8VcUfpMtAahy0CqesbXBeJXv6jkKGZ5nWOPH+qz0
                 xiOQVjv9dQIAAA==
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
+      .run()
+      .expectClean()
+  }
 
-    fun testClassAndSourceFileUsage() {
-        // When we also have source file usages, only flag the source file usage, not the bytecode usage
-        lint().files(
-            manifestTarget33LocationPermission,
-            bytecodeUsage,
-            javaNotificationUsage,
-            *notificationStubs
-        ).run().expect(
-            """
+  fun testClassAndSourceFileUsage() {
+    // When we also have source file usages, only flag the source file usage, not the bytecode usage
+    lint()
+      .files(
+        manifestTarget33LocationPermission,
+        bytecodeUsage,
+        javaNotificationUsage,
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTestAndroidx.java:21: Error: When targeting Android 13 or higher, posting a permission requires holding the POST_NOTIFICATIONS permission [NotificationPermission]
                     notificationManager.notify(id, notification);
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Data for src/test/pkg/NotificationTestAndroidx.java line 21:   missing : android.permission.POST_NOTIFICATIONS
             """
-        )
-    }
+      )
+  }
 
-    fun testClassFileUsageHasPermission() {
-        lint().files(
-            manifest(
-                """
+  fun testClassFileUsageHasPermission() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg.permissiontest">
                     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="33" />
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
                     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
                 </manifest>
                 """
-            ).indented(),
-            bytecodeUsage,
-            *notificationStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        bytecodeUsage,
+        *notificationStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testClassFileUsageLowTargetSdkVersion() {
-        lint().files(
-            manifest(
-                """
+  fun testClassFileUsageLowTargetSdkVersion() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg.permissiontest">
                     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="28" />
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
                 </manifest>
                 """
-            ).indented(),
-            bytecodeUsage,
-            *notificationStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        bytecodeUsage,
+        *notificationStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNotificationInLibrary() {
-        val library = project().files(
-            manifest().minSdk(29).targetSdk(33),
-            javaNotificationUsage,
-            *notificationStubs
-        ).type(LIBRARY)
+  fun testNotificationInLibrary() {
+    val library =
+      project()
+        .files(manifest().minSdk(29).targetSdk(33), javaNotificationUsage, *notificationStubs)
+        .type(LIBRARY)
 
-        lint().projects(library).testModes(TestMode.PARTIAL).run().expectClean()
-    }
+    lint().projects(library).testModes(TestMode.PARTIAL).run().expectClean()
+  }
 
-    fun testNotificationViaBytecodeInLibrary() {
-        val library = project().files(
-            manifest().minSdk(29).targetSdk(33),
-            bytecodeUsage,
-            *notificationStubs
-        ).type(LIBRARY)
+  fun testNotificationViaBytecodeInLibrary() {
+    val library =
+      project()
+        .files(manifest().minSdk(29).targetSdk(33), bytecodeUsage, *notificationStubs)
+        .type(LIBRARY)
 
-        lint().projects(library).run().expectClean()
-    }
+    lint().projects(library).run().expectClean()
+  }
 
-    fun testSuppressedBytecodeViaLibraryInManifest() {
-        lint().files(
-            manifest(
-                """
+  fun testSuppressedBytecodeViaLibraryInManifest() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
                     package="test.pkg.permissiontest"
@@ -221,13 +251,17 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
                     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="33" />
                 </manifest>
                 """
-            ).indented(),
-            bytecodeUsage,
-            *notificationStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        bytecodeUsage,
+        *notificationStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    private val javaNotificationUsage: TestFile = java(
+  private val javaNotificationUsage: TestFile =
+    java(
         """
         package test.pkg;
 
@@ -253,18 +287,22 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val manifestTarget33LocationPermission: TestFile = manifest(
-"""
+  private val manifestTarget33LocationPermission: TestFile =
+    manifest(
+        """
         <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="test.pkg.permissiontest">
             <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="33" />
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
         </manifest>
         """
-    ).indented()
+      )
+      .indented()
 
-    private val notificationUsageWithRequiresPermissionAnnotation: TestFile = java(
+  private val notificationUsageWithRequiresPermissionAnnotation: TestFile =
+    java(
         """
         package com.example.myapplication;
 
@@ -281,13 +319,15 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val bytecodeUsage: TestFile = bytecode(
-        "libs/usage.jar",
-        javaNotificationUsage,
-        0xb08c0789,
-        """
+  private val bytecodeUsage: TestFile =
+    bytecode(
+      "libs/usage.jar",
+      javaNotificationUsage,
+      0xb08c0789,
+      """
         test/pkg/NotificationTestAndroidx.class:
         H4sIAAAAAAAAAJVUW28SURD+DlCW0m2heEVLu61UoUXWaq0KrdpimpBgNUIa
         9e2wHOnWZZcsh14e/FG+0EQT47M/yjiH3ki1iewmM3POzuWb+QZ+/f72A8AT
@@ -308,12 +348,13 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
         """
     )
 
-    // Like bytecodeUsage, but with the package replaced with an androidx usage
-    private val bytecodeUsageInAndroidX: TestFile = bytecode(
-        "libs/usage.jar",
-        java(javaNotificationUsage.contents.replace("package test.pkg;", "package androidx.core;")),
-        0x54470941,
-        """
+  // Like bytecodeUsage, but with the package replaced with an androidx usage
+  private val bytecodeUsageInAndroidX: TestFile =
+    bytecode(
+      "libs/usage.jar",
+      java(javaNotificationUsage.contents.replace("package test.pkg;", "package androidx.core;")),
+      0x54470941,
+      """
             androidx/core/NotificationTestAndroidx.class:
             H4sIAAAAAAAAAJVUW28SQRT+BihL6bZQvKKlXSut0CJYrVWhVVtMExKsRkij
             vg0w0mmWXbIMvTz4o3yhiSbGZ3+U8Qy9YbWJ7CbnnJk953zfucDPX1+/A3iC

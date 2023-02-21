@@ -18,25 +18,31 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class NegativeMarginDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return NegativeMarginDetector()
-    }
+  override fun getDetector(): Detector {
+    return NegativeMarginDetector()
+  }
 
-    fun testLayoutWithoutRepositorySupport() {
-        lint().files(mNegative_margins).run().expect(
-            """
+  fun testLayoutWithoutRepositorySupport() {
+    lint()
+      .files(mNegative_margins)
+      .run()
+      .expect(
+        """
             res/layout/negative_margins.xml:11: Warning: Margin values should not be negative [NegativeMargin]
                 <TextView android:layout_marginTop="-1dp"/> <!-- WARNING -->
                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testIncrementalInLayout() {
-        lint().files(mNegative_margins2, mNegative_margins)
-            .incremental("res/layout/negative_margins.xml").run().expect(
-                """
+  fun testIncrementalInLayout() {
+    lint()
+      .files(mNegative_margins2, mNegative_margins)
+      .incremental("res/layout/negative_margins.xml")
+      .run()
+      .expect(
+        """
                 res/layout/negative_margins.xml:11: Warning: Margin values should not be negative [NegativeMargin]
                     <TextView android:layout_marginTop="-1dp"/> <!-- WARNING -->
                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,13 +51,16 @@ class NegativeMarginDetectorTest : AbstractCheckTest() {
                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testIncrementalInValues() {
-        lint().files(mNegative_margins2, mNegative_margins)
-            .incremental("res/values/negative_margins.xml").run().expect(
-                """
+  fun testIncrementalInValues() {
+    lint()
+      .files(mNegative_margins2, mNegative_margins)
+      .incremental("res/values/negative_margins.xml")
+      .run()
+      .expect(
+        """
                 res/values/negative_margins.xml:10: Warning: Margin values should not be negative (@dimen/negative is defined as -16dp in values/negative_margins.xml [NegativeMargin]
                         <item name="android:layout_marginTop">@dimen/negative</item> <!-- WARNING -->
                                                               ~~~~~~~~~~~~~~~
@@ -60,11 +69,12 @@ class NegativeMarginDetectorTest : AbstractCheckTest() {
                                                                  ~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    // Sample code
-    private val mNegative_margins = xml(
+  // Sample code
+  private val mNegative_margins =
+    xml(
         "res/layout/negative_margins.xml",
         """
 
@@ -85,10 +95,12 @@ class NegativeMarginDetectorTest : AbstractCheckTest() {
 
         </GridLayout>
         """
-    ).indented()
+      )
+      .indented()
 
-    // Sample code
-    private val mNegative_margins2 = xml(
+  // Sample code
+  private val mNegative_margins2 =
+    xml(
         "res/values/negative_margins.xml",
         """
 
@@ -105,5 +117,6 @@ class NegativeMarginDetectorTest : AbstractCheckTest() {
             </style>
         </resources>
         """
-    ).indented()
+      )
+      .indented()
 }

@@ -34,23 +34,22 @@ import org.jetbrains.uast.isInjectionHost
 import org.jetbrains.uast.skipParenthesizedExprDown
 
 /**
- * Kotlin's "by lazy" looks like an easy replacement for lazy
- * initialization in Java, but it's actually much more involved than it
- * looks. This detector flags some cases where we should avoid it.
+ * Kotlin's "by lazy" looks like an easy replacement for lazy initialization in Java, but it's
+ * actually much more involved than it looks. This detector flags some cases where we should avoid
+ * it.
  */
 class ByLazyDetector : Detector(), SourceCodeScanner {
 
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            ByLazyDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION = Implementation(ByLazyDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "AvoidByLazy",
-            briefDescription = "Avoid using `by lazy` for simple lazy initialization",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "AvoidByLazy",
+        briefDescription = "Avoid using `by lazy` for simple lazy initialization",
+        explanation =
+          """
                 Kotlin's `by lazy` feature looks like an easy and convenient replacement \
                 for code ported from Java where a field was lazily initialized through a \
                 getter. However, it's much more involved than it looks; try the \
@@ -88,51 +87,52 @@ class ByLazyDetector : Detector(), SourceCodeScanner {
                 as a parameter to the `lazy` call; in that case, this lint check will ignore it.
                 ```
             """,
-            category = CORRECTNESS,
-            severity = ERROR,
-            platforms = STUDIO_PLATFORMS,
-            implementation = IMPLEMENTATION
-        )
+        category = CORRECTNESS,
+        severity = ERROR,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION
+      )
+  }
+
+  override fun getApplicableMethodNames(): List<String> = listOf("lazy")
+
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    if (!context.evaluator.isMemberInClass(node.resolve(), "kotlin.LazyKt__LazyJVMKt")) {
+      return
     }
 
-    override fun getApplicableMethodNames(): List<String> = listOf("lazy")
-
-    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-        if (!context.evaluator.isMemberInClass(node.resolve(), "kotlin.LazyKt__LazyJVMKt")) {
-            return
-        }
-
-        if (context.isTestSource) {
-            return
-        }
-
-        // If you specify an explicit threading mode, the first argument will be the mode instead;
-        // we don't want to flag these since they appear to be more deliberate lazy usages.
-        val lambda = node.valueArguments.firstOrNull() as? ULambdaExpression ?: return
-        if (onlyInitializes(lambda)) {
-            val location = context.getLocation(node.methodIdentifier)
-            context.report(ISSUE, node, location, "Avoid `by lazy` for simple lazy initialization")
-        }
+    if (context.isTestSource) {
+      return
     }
 
-    private fun onlyInitializes(lambda: ULambdaExpression): Boolean {
-        val body = lambda.body
-        if (body is UBlockExpression) {
-            val expressions = body.expressions
-            if (expressions.size == 1) {
-                val expression = expressions[0]
-                if (expression is UReturnExpression) {
-                    val returnExpression = expression.returnExpression?.skipParenthesizedExprDown() ?: return false
-                    val selector = returnExpression.findSelector()
-                    return if (selector is UCallExpression) {
-                        val name = selector.methodName ?: selector.methodIdentifier?.name
-                        !(name == "apply" || name == "let" || name == "also")
-                    } else {
-                        selector.isInjectionHost()
-                    }
-                }
-            }
-        }
-        return false
+    // If you specify an explicit threading mode, the first argument will be the mode instead;
+    // we don't want to flag these since they appear to be more deliberate lazy usages.
+    val lambda = node.valueArguments.firstOrNull() as? ULambdaExpression ?: return
+    if (onlyInitializes(lambda)) {
+      val location = context.getLocation(node.methodIdentifier)
+      context.report(ISSUE, node, location, "Avoid `by lazy` for simple lazy initialization")
     }
+  }
+
+  private fun onlyInitializes(lambda: ULambdaExpression): Boolean {
+    val body = lambda.body
+    if (body is UBlockExpression) {
+      val expressions = body.expressions
+      if (expressions.size == 1) {
+        val expression = expressions[0]
+        if (expression is UReturnExpression) {
+          val returnExpression =
+            expression.returnExpression?.skipParenthesizedExprDown() ?: return false
+          val selector = returnExpression.findSelector()
+          return if (selector is UCallExpression) {
+            val name = selector.methodName ?: selector.methodIdentifier?.name
+            !(name == "apply" || name == "let" || name == "also")
+          } else {
+            selector.isInjectionHost()
+          }
+        }
+      }
+    }
+    return false
+  }
 }

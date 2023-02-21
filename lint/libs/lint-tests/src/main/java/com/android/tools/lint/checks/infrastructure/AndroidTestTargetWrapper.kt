@@ -20,24 +20,22 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.IAndroidTarget
 
 /**
- * Test utility which wraps a real [IAndroidTarget] but presents itself
- * as having an alternative [version]. Used to test preview releases or
- * specific releases (identified by `compileSdkVersion` in test files)
- * that present themselves as that specific build hash but is using
- * whatever platform is actually available to the test (unless the
- * actual target one is available).
+ * Test utility which wraps a real [IAndroidTarget] but presents itself as having an alternative
+ * [version]. Used to test preview releases or specific releases (identified by `compileSdkVersion`
+ * in test files) that present themselves as that specific build hash but is using whatever platform
+ * is actually available to the test (unless the actual target one is available).
  */
 internal class AndroidTestTargetWrapper(
-    private val target: IAndroidTarget,
-    private val version: AndroidVersion
+  private val target: IAndroidTarget,
+  private val version: AndroidVersion
 ) : IAndroidTarget by target {
-    override fun getVersion(): AndroidVersion = version
+  override fun getVersion(): AndroidVersion = version
 
-    override fun getVersionName(): String {
-        return version.apiString
-    }
+  override fun getVersionName(): String {
+    return version.apiString
+  }
 
-    override fun hashString(): String {
-        return AndroidTargetHash.PLATFORM_HASH_PREFIX + version.apiString
-    }
+  override fun hashString(): String {
+    return AndroidTargetHash.PLATFORM_HASH_PREFIX + version.apiString
+  }
 }

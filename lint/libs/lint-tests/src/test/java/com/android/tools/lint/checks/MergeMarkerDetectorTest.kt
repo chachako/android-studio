@@ -18,16 +18,17 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class MergeMarkerDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return MergeMarkerDetector()
-    }
+  override fun getDetector(): Detector {
+    return MergeMarkerDetector()
+  }
 
-    fun testMergeMarker() {
-        // Make sure we don't try to read binary contents
-        lint().files(
-            source( // instead of xml: not valid XML below
-                "res/values/strings.xml",
-                """
+  fun testMergeMarker() {
+    // Make sure we don't try to read binary contents
+    lint()
+      .files(
+        source( // instead of xml: not valid XML below
+            "res/values/strings.xml",
+            """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources>
 
@@ -41,19 +42,23 @@ class MergeMarkerDetectorTest : AbstractCheckTest() {
 
                 </resources>
                 """
-            ).indented(),
-            // Make sure we don't try to read binary contents
-            source(
-                "res/drawable-mdpi/my_icon.png",
-                """
+          )
+          .indented(),
+        // Make sure we don't try to read binary contents
+        source(
+            "res/drawable-mdpi/my_icon.png",
+            """
                 <<<<<<< HEAD
                 =======
                 >>>>>>> branch-a
                 </resources>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/values/strings.xml:5: Error: Missing merge marker? [MergeMarker]
             <<<<<<< HEAD
             ~~~~~~~
@@ -65,6 +70,6 @@ class MergeMarkerDetectorTest : AbstractCheckTest() {
             ~~~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

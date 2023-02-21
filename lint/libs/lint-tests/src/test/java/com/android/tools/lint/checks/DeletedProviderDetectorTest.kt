@@ -19,14 +19,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class DeletedProviderDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return DeletedProviderDetector()
-    }
+  override fun getDetector(): Detector {
+    return DeletedProviderDetector()
+  }
 
-    fun testScenario() {
-        lint().files(
-            java(
-                """
+  fun testScenario() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import javax.crypto.Cipher;
@@ -65,14 +66,17 @@ class DeletedProviderDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/RemovedGeneratorTest.java:24: Error: The Crypto provider has been deleted in Android P (and was deprecated in Android N), so the code will crash [DeletedProvider]
                             SecureRandom instance2 = SecureRandom.getInstance("SHA1PRNG", "Crypto");
                                                                                           ~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

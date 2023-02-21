@@ -35,96 +35,86 @@ import org.jetbrains.uast.tryResolve
 /** Checks for hardcoded seeds with random numbers. */
 class SecureRandomDetector : Detector(), SourceCodeScanner {
 
-    override fun getApplicableMethodNames(): List<String> {
-        return listOf(SET_SEED)
-    }
+  override fun getApplicableMethodNames(): List<String> {
+    return listOf(SET_SEED)
+  }
 
-    override fun visitMethodCall(
-        context: JavaContext,
-        node: UCallExpression,
-        method: PsiMethod
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    val arguments = node.valueArguments
+    if (arguments.isEmpty()) {
+      return
+    }
+    val seedArgument = arguments[0].skipParenthesizedExprDown() ?: return
+    val evaluator = context.evaluator
+    if (
+      evaluator.isMemberInClass(method, JAVA_SECURITY_SECURE_RANDOM) ||
+        evaluator.isMemberInSubClassOf(method, JAVA_UTIL_RANDOM, false) &&
+          isSecureRandomReceiver(node)
     ) {
-        val arguments = node.valueArguments
-        if (arguments.isEmpty()) {
-            return
+      // Called with a fixed seed?
+      val seed = ConstantEvaluator.evaluate(context, seedArgument)
+      if (seed != null) {
+        context.report(
+          ISSUE,
+          node,
+          context.getLocation(node),
+          "Do not call `setSeed()` on a `SecureRandom` with a fixed seed: " +
+            "it is not secure. Use `getSeed()`."
+        )
+      } else {
+        // Called with a simple System.currentTimeMillis() seed or something like that?
+        val seedMethod = seedArgument.tryResolve()
+        if (seedMethod is PsiMethod) {
+          val methodName = seedMethod.name
+          if (methodName == "currentTimeMillis" || methodName == "nanoTime") {
+            context.report(
+              ISSUE,
+              node,
+              context.getLocation(node),
+              "It is dangerous to seed `SecureRandom` with the current " +
+                "time because that value is more predictable to " +
+                "an attacker than the default seed"
+            )
+          }
         }
-        val seedArgument = arguments[0].skipParenthesizedExprDown() ?: return
-        val evaluator = context.evaluator
-        if (evaluator.isMemberInClass(method, JAVA_SECURITY_SECURE_RANDOM) ||
-            evaluator.isMemberInSubClassOf(method, JAVA_UTIL_RANDOM, false) &&
-            isSecureRandomReceiver(node)
-        ) {
-            // Called with a fixed seed?
-            val seed = ConstantEvaluator.evaluate(context, seedArgument)
-            if (seed != null) {
-                context.report(
-                    ISSUE, node, context.getLocation(node),
-                    "Do not call `setSeed()` on a `SecureRandom` with a fixed seed: " +
-                        "it is not secure. Use `getSeed()`."
-                )
-            } else {
-                // Called with a simple System.currentTimeMillis() seed or something like that?
-                val seedMethod = seedArgument.tryResolve()
-                if (seedMethod is PsiMethod) {
-                    val methodName = seedMethod.name
-                    if (methodName == "currentTimeMillis" || methodName == "nanoTime") {
-                        context.report(
-                            ISSUE, node, context.getLocation(node),
-                            "It is dangerous to seed `SecureRandom` with the current " +
-                                "time because that value is more predictable to " +
-                                "an attacker than the default seed"
-                        )
-                    }
-                }
-            }
-        }
+      }
     }
+  }
 
-    /**
-     * Returns true if the given invocation is assigned a SecureRandom
-     * type.
-     */
-    private fun isSecureRandomReceiver(
-        call: UCallExpression
-    ): Boolean {
-        val operand = call.receiver?.skipParenthesizedExprDown()
-        return operand != null && isSecureRandomType(operand)
-    }
+  /** Returns true if the given invocation is assigned a SecureRandom type. */
+  private fun isSecureRandomReceiver(call: UCallExpression): Boolean {
+    val operand = call.receiver?.skipParenthesizedExprDown()
+    return operand != null && isSecureRandomType(operand)
+  }
 
-    /**
-     * Returns true if the node evaluates to an instance of type
-     * SecureRandom.
-     */
-    private fun isSecureRandomType(
-        node: UElement
-    ): Boolean {
-        return JAVA_SECURITY_SECURE_RANDOM == TypeEvaluator.evaluate(node)?.canonicalText
-    }
+  /** Returns true if the node evaluates to an instance of type SecureRandom. */
+  private fun isSecureRandomType(node: UElement): Boolean {
+    return JAVA_SECURITY_SECURE_RANDOM == TypeEvaluator.evaluate(node)?.canonicalText
+  }
 
-    companion object {
-        /** Unregistered activities and services. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "SecureRandom",
-            briefDescription = "Using a fixed seed with `SecureRandom`",
-            explanation = """
+  companion object {
+    /** Unregistered activities and services. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+          id = "SecureRandom",
+          briefDescription = "Using a fixed seed with `SecureRandom`",
+          explanation =
+            """
                 Specifying a fixed seed will cause the instance to return a predictable \
                 sequence of numbers. This may be useful for testing but it is not appropriate \
                 for secure use.
                 """,
-            moreInfo = "https://goo.gle/SecureRandom",
-            category = Category.SECURITY,
-            priority = 9,
-            severity = Severity.WARNING,
-            implementation = Implementation(
-                SecureRandomDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
+          moreInfo = "https://goo.gle/SecureRandom",
+          category = Category.SECURITY,
+          priority = 9,
+          severity = Severity.WARNING,
+          implementation = Implementation(SecureRandomDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
-            .addMoreInfo("https://developer.android.com/reference/java/security/SecureRandom.html")
+        .addMoreInfo("https://developer.android.com/reference/java/security/SecureRandom.html")
 
-        const val JAVA_SECURITY_SECURE_RANDOM = "java.security.SecureRandom"
-        const val JAVA_UTIL_RANDOM = "java.util.Random"
-        private const val SET_SEED = "setSeed"
-    }
+    const val JAVA_SECURITY_SECURE_RANDOM = "java.security.SecureRandom"
+    const val JAVA_UTIL_RANDOM = "java.util.Random"
+    private const val SET_SEED = "setSeed"
+  }
 }

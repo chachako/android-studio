@@ -20,15 +20,16 @@ import com.android.tools.lint.detector.api.Detector
 
 class PrivateApiDetectorTest : AbstractCheckTest() {
 
-    override fun getDetector(): Detector {
-        return PrivateApiDetector()
-    }
+  override fun getDetector(): Detector {
+    return PrivateApiDetector()
+  }
 
-    fun testFields() {
-        lint().files(
-            manifest().minSdk(20).targetSdk(28),
-            java(
-                """
+  fun testFields() {
+    lint()
+      .files(
+        manifest().minSdk(20).targetSdk(28),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -52,9 +53,12 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
                """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/TestReflection.java:12: Error: Reflective access to NETWORK_TYPES is forbidden when targeting API 28 and above [BlockedPrivateApi]
                         Field deniedField = TelephonyManager.class.getDeclaredField("NETWORK_TYPES"); // ERROR 1
                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,12 +67,12 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testForNameOnInternalClass() {
-        val expected =
-            """
+  fun testForNameOnInternalClass() {
+    val expected =
+      """
             src/test/pkg/myapplication/ReflectionTest1.java:8: Warning: Accessing internal APIs via reflection is not supported and may not work on all devices or in the future [PrivateApi]
                     Class<?> c = Class.forName("com.android.internal.widget.LockPatternUtils"); // ERROR
                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,9 +85,10 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
             0 errors, 3 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -98,14 +103,18 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testForNameOnSdkClass() {
-        lint().files(
-            java(
-                """
+  fun testForNameOnSdkClass() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -116,22 +125,26 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testLoadClass() {
-        val expected =
-            """
+  fun testLoadClass() {
+    val expected =
+      """
                 src/test/pkg/myapplication/ReflectionTest2.java:9: Warning: Accessing internal APIs via reflection is not supported and may not work on all devices or in the future [PrivateApi]
                         classLoader.loadClass("com.android.internal.widget.LockPatternUtils"); // ERROR
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -144,13 +157,16 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testGetDeclaredMethod1() {
-        val expected =
-            """
+  fun testGetDeclaredMethod1() {
+    val expected =
+      """
             src/test/pkg/myapplication/ReflectionTest3.java:7: Warning: Accessing internal APIs via reflection is not supported and may not work on all devices or in the future [PrivateApi]
                     Class<?> c = Class.forName("com.android.internal.widget.LockPatternUtils"); // ERROR
                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,9 +176,10 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
             0 errors, 2 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -174,13 +191,16 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testReflectionWithoutClassLoad() {
-        val expected =
-            """
+  fun testReflectionWithoutClassLoad() {
+    val expected =
+      """
             src/test/pkg/myapplication/ReflectionTest4.java:12: Warning: Accessing internal APIs via reflection is not supported and may not work on all devices or in the future [PrivateApi]
                     Method m1 = tm.getClass().getDeclaredMethod("getITelephony"); // ERROR
                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -190,9 +210,10 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
             0 errors, 2 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -212,13 +233,16 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testLoadingClassesViaDexFile() {
-        val expected =
-            """
+  fun testLoadingClassesViaDexFile() {
+    val expected =
+      """
             src/test/pkg/myapplication/ReflectionTest.java:15: Warning: Accessing internal APIs via reflection is not supported and may not work on all devices or in the future [PrivateApi]
                     Class LocalePicker = df.loadClass(name, cl);
                                          ~~~~~~~~~~~~~~~~~~~~~~
@@ -231,9 +255,10 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
             0 errors, 3 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -256,23 +281,27 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testCaseFromIssue78420() {
-        // Testcase from https://code.google.com/p/android/issues/detail?id=78420
-        val expected =
-            """
+  fun testCaseFromIssue78420() {
+    // Testcase from https://code.google.com/p/android/issues/detail?id=78420
+    val expected =
+      """
             src/test/pkg/myapplication/ReflectionTest.java:9: Warning: Accessing internal APIs via reflection is not supported and may not work on all devices or in the future [PrivateApi]
                     Class<?> loadedStringsClass = Class.forName("com.android.internal.R{$}styleable");
                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg.myapplication;
 
                 import android.app.Activity;
@@ -289,13 +318,16 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testJavaReflection() {
-        val expected =
-            """
+  fun testJavaReflection() {
+    val expected =
+      """
             src/test/pkg/application/ReflectionTestJava.java:20: Error: Reflective access to dispatchActivityPostCreated is forbidden when targeting API 28 and above [BlockedPrivateApi]
                                     Method m7 = activityClass.getDeclaredMethod("dispatchActivityPostCreated", bundleClass);
                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -329,10 +361,11 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
             5 errors, 5 warnings
             """
 
-        lint().files(
-            manifest().targetSdk(28),
-            java(
-                """
+    lint()
+      .files(
+        manifest().targetSdk(28),
+        java(
+          """
                 package test.pkg.application;
 
                 import android.content.res.AssetManager;
@@ -355,9 +388,9 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+            """
                 package test.pkg.application;
 
                 import android.content.res.AssetManager
@@ -377,13 +410,16 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testMaybeListJavaCall() {
-        val expected =
-            """
+  fun testMaybeListJavaCall() {
+    val expected =
+      """
             src/test/pkg/application/ReflectionTest.java:11: Error: Reflective access to getContentCaptureManager is forbidden when targeting API 28 and above [BlockedPrivateApi]
                         Method m2 = Activity.class.getDeclaredMethod("getContentCaptureManager");
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -400,11 +436,13 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     Method m5 = Activity.class.getDeclaredMethod("restoreManagedDialogs", android.os.Bundle.class); // MAYBE_MAX_O
                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 3 warnings
-            """.trimIndent()
-        lint().files(
-            manifest().targetSdk(28),
-            java(
-                """
+            """
+        .trimIndent()
+    lint()
+      .files(
+        manifest().targetSdk(28),
+        java(
+            """
                 package test.pkg.application;
 
                 import android.app.Activity;
@@ -423,15 +461,19 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testCornerCaseHandling() {
-        lint().files(
-            manifest().targetSdk(28),
-            java(
-                """
+  fun testCornerCaseHandling() {
+    lint()
+      .files(
+        manifest().targetSdk(28),
+        java(
+            """
                 package test.pkg.application;
                 import android.app.Activity;
                 import java.lang.reflect.Method;
@@ -511,9 +553,12 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/application/ReflectionTest.java:15: Warning: Reflective access to restoreManagedDialogs, which is not part of the public SDK and therefore likely to change in future Android releases [DiscouragedPrivateApi]
                         clz.getDeclaredMethod(name, Bundle.class); // warn 1
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -573,12 +618,12 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             13 errors, 6 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMaybeListKotlinCall() {
-        val expected =
-            """
+  fun testMaybeListKotlinCall() {
+    val expected =
+      """
             src/test/pkg/application/ReflectionTest.kt:10: Error: Reflective access to getContentCaptureManager is forbidden when targeting API 28 and above [BlockedPrivateApi]
                         25 -> clazz.getDeclaredMethod("getContentCaptureManager") // DENY
                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -595,11 +640,13 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                         else -> clazz.getDeclaredMethod("restoreManagedDialogs", android.os.Bundle::class.java) // MAYBE_MAX_O
                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 3 warnings
-            """.trimIndent()
-        lint().files(
-            manifest().targetSdk(28),
-            kotlin(
-                """
+            """
+        .trimIndent()
+    lint()
+      .files(
+        manifest().targetSdk(28),
+        kotlin(
+            """
                 package test.pkg.application;
 
                 import android.app.Activity
@@ -621,15 +668,19 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test140895401() {
-        lint().files(
-            manifest().minSdk(20).targetSdk(28),
-            java(
-                """
+  fun test140895401() {
+    lint()
+      .files(
+        manifest().minSdk(20).targetSdk(28),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -657,9 +708,12 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                     }
                 }
                """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/TestReflection.java:18: Error: Reflective access to getAvailableNetworks is forbidden when targeting API 28 and above [BlockedPrivateApi]
                         Method getNetworkSelectionMode = TelephonyManager.class.getDeclaredMethod("getAvailableNetworks"); // Error 2
                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -668,6 +722,6 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

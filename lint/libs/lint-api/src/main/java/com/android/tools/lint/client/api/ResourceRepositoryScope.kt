@@ -18,42 +18,34 @@ package com.android.tools.lint.client.api
 
 import com.android.ide.common.resources.ResourceRepository
 
-/**
- * The various types or scopes of a [ResourceRepository] return from
- * [LintClient.getResources]
- */
+/** The various types or scopes of a [ResourceRepository] return from [LintClient.getResources] */
 enum class ResourceRepositoryScope {
-    /**
-     * Resources in the Android SDK (e.g. in the android: namespace)
-     */
-    ANDROID,
+  /** Resources in the Android SDK (e.g. in the android: namespace) */
+  ANDROID,
 
-    /** Only resources in the current project. */
-    PROJECT_ONLY,
+  /** Only resources in the current project. */
+  PROJECT_ONLY,
 
-    /**
-     * Resources in the current project as well as resources in local
-     * projects this project depends on (e.g. project + projects it
-     * depends on)
-     */
-    LOCAL_DEPENDENCIES,
+  /**
+   * Resources in the current project as well as resources in local projects this project depends on
+   * (e.g. project + projects it depends on)
+   */
+  LOCAL_DEPENDENCIES,
 
-    /**
-     * Like [LOCAL_DEPENDENCIES], but also includes resources from
-     * remote libraries, e.g. in AAR files (e.g. project + projects it
-     * depends on + any libraries these projects depend on). (Note that
-     * the Android SDK resources are not included since these are in a
-     * different namespace.)
-     */
-    ALL_DEPENDENCIES;
+  /**
+   * Like [LOCAL_DEPENDENCIES], but also includes resources from remote libraries, e.g. in AAR files
+   * (e.g. project + projects it depends on + any libraries these projects depend on). (Note that
+   * the Android SDK resources are not included since these are in a different namespace.)
+   */
+  ALL_DEPENDENCIES;
 
-    /** Whether this scope includes local project dependencies. */
-    fun includesDependencies(): Boolean {
-        return this >= LOCAL_DEPENDENCIES
-    }
+  /** Whether this scope includes local project dependencies. */
+  fun includesDependencies(): Boolean {
+    return this >= LOCAL_DEPENDENCIES
+  }
 
-    /** Whether this scope includes remote/AAR libraries. */
-    fun includesLibraries(): Boolean {
-        return this >= ALL_DEPENDENCIES
-    }
+  /** Whether this scope includes remote/AAR libraries. */
+  fun includesLibraries(): Boolean {
+    return this >= ALL_DEPENDENCIES
+  }
 }

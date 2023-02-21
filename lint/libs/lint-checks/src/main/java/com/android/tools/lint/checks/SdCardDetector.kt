@@ -32,59 +32,58 @@ import org.jetbrains.uast.evaluateString
 
 /** Looks for hardcoded references to /sdcard/. */
 class SdCardDetector : Detector(), SourceCodeScanner {
-    companion object Issues {
-        /** Hardcoded /sdcard/ references. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "SdCardPath",
-            briefDescription = "Hardcoded reference to `/sdcard`",
-
-            explanation = """
+  companion object Issues {
+    /** Hardcoded /sdcard/ references. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "SdCardPath",
+        briefDescription = "Hardcoded reference to `/sdcard`",
+        explanation =
+          """
             Your code should not reference the `/sdcard` path directly; instead use \
             `Environment.getExternalStorageDirectory().getPath()`.
 
             Similarly, do not reference the `/data/data/` path directly; it can vary in multi-user scenarios. \
             Instead, use `Context.getFilesDir().getPath()`.""",
-            moreInfo = "https://developer.android.com/training/data-storage#filesExternal",
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = Implementation(
-                SdCardDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
-        )
-    }
+        moreInfo = "https://developer.android.com/training/data-storage#filesExternal",
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation = Implementation(SdCardDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
+  }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>>? =
-        listOf(ULiteralExpression::class.java)
+  override fun getApplicableUastTypes(): List<Class<out UElement>>? =
+    listOf(ULiteralExpression::class.java)
 
-    override fun createUastHandler(context: JavaContext): UElementHandler? =
-        object : UElementHandler() {
-            override fun visitLiteralExpression(node: ULiteralExpression) {
-                val s = node.evaluateString()
-                if (s != null && s.isNotEmpty()) {
-                    val c = s[0]
-                    if (c != '/' && c != 'f') {
-                        return
-                    }
+  override fun createUastHandler(context: JavaContext): UElementHandler? =
+    object : UElementHandler() {
+      override fun visitLiteralExpression(node: ULiteralExpression) {
+        val s = node.evaluateString()
+        if (s != null && s.isNotEmpty()) {
+          val c = s[0]
+          if (c != '/' && c != 'f') {
+            return
+          }
 
-                    if (s.startsWith("/sdcard") ||
-                        s.startsWith("/mnt/sdcard/") ||
-                        s.startsWith("/system/media/sdcard") ||
-                        s.startsWith("file://sdcard/") ||
-                        s.startsWith("file:///sdcard/")
-                    ) {
-                        val message =
-                            """Do not hardcode "/sdcard/"; use `Environment.getExternalStorageDirectory().getPath()` instead"""
-                        Incident(context).issue(ISSUE).at(node).message(message).report()
-                    } else if (s.startsWith("/data/data/") || s.startsWith("/data/user/")) {
-                        val message =
-                            """Do not hardcode "`/data/`"; use `Context.getFilesDir().getPath()` instead"""
-                        Incident(context).issue(ISSUE).at(node).message(message).report()
-                    }
-                }
-            }
+          if (
+            s.startsWith("/sdcard") ||
+              s.startsWith("/mnt/sdcard/") ||
+              s.startsWith("/system/media/sdcard") ||
+              s.startsWith("file://sdcard/") ||
+              s.startsWith("file:///sdcard/")
+          ) {
+            val message =
+              """Do not hardcode "/sdcard/"; use `Environment.getExternalStorageDirectory().getPath()` instead"""
+            Incident(context).issue(ISSUE).at(node).message(message).report()
+          } else if (s.startsWith("/data/data/") || s.startsWith("/data/user/")) {
+            val message =
+              """Do not hardcode "`/data/`"; use `Context.getFilesDir().getPath()` instead"""
+            Incident(context).issue(ISSUE).at(node).message(message).report()
+          }
         }
+      }
+    }
 }

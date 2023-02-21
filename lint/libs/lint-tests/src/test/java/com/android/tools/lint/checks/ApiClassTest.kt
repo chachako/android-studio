@@ -20,41 +20,38 @@ import com.android.SdkConstants
 import com.android.testutils.TestUtils
 import com.android.tools.lint.checks.infrastructure.TestLintClient
 import com.android.tools.lint.checks.infrastructure.checkTransitiveComparator
-import org.junit.Test
 import java.io.File
 import java.util.Random
+import org.junit.Test
 
 class ApiClassTest {
-    @Test
-    fun checkComparator() {
-        val client = object : TestLintClient() {
-            override fun getSdkHome(): File? {
-                return TestUtils.getSdk().toFile()
-            }
+  @Test
+  fun checkComparator() {
+    val client =
+      object : TestLintClient() {
+        override fun getSdkHome(): File? {
+          return TestUtils.getSdk().toFile()
         }
-        val target = client.getLatestSdkTarget(
-            ApiLookup.SDK_DATABASE_MIN_VERSION,
-            true
-        ) ?: return
-        val folder = File(target.location)
-        val database =
-            File(folder, SdkConstants.FD_DATA + File.separator + ApiLookup.XML_FILE_PATH)
-        if (database.isFile) {
-            val api = Api.parseApi(database)
-            val classes = api.classes.values.toMutableList()
-            // The classes list is WAY too large for this (>5K items, with an n^3 algorithm).
-            // So instead, pick out 100 randomly chosen items (varying over time) and
-            // check those (and include the seed in the test error be able to reproduce
-            // an error if it should happen
-            val seed = System.currentTimeMillis()
-            val generator = Random(seed)
-            classes.shuffle(generator)
-            val sublist = classes.subList(0, 99)
-            try {
-                checkTransitiveComparator(sublist)
-            } catch (error: Throwable) {
-                throw RuntimeException("Seed was $seed", error)
-            }
-        }
+      }
+    val target = client.getLatestSdkTarget(ApiLookup.SDK_DATABASE_MIN_VERSION, true) ?: return
+    val folder = File(target.location)
+    val database = File(folder, SdkConstants.FD_DATA + File.separator + ApiLookup.XML_FILE_PATH)
+    if (database.isFile) {
+      val api = Api.parseApi(database)
+      val classes = api.classes.values.toMutableList()
+      // The classes list is WAY too large for this (>5K items, with an n^3 algorithm).
+      // So instead, pick out 100 randomly chosen items (varying over time) and
+      // check those (and include the seed in the test error be able to reproduce
+      // an error if it should happen
+      val seed = System.currentTimeMillis()
+      val generator = Random(seed)
+      classes.shuffle(generator)
+      val sublist = classes.subList(0, 99)
+      try {
+        checkTransitiveComparator(sublist)
+      } catch (error: Throwable) {
+        throw RuntimeException("Seed was $seed", error)
+      }
     }
+  }
 }

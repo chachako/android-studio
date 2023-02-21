@@ -23,11 +23,12 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import org.junit.Test
 
 class DefaultEncodingDetectorTest {
-    @Test
-    fun testDocumentationExample() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import java.io.BufferedWriter;
                 import java.io.File;
@@ -70,12 +71,13 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(DefaultEncodingDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(DefaultEncodingDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.java:14: Error: This file will be written with the default system encoding instead of a specific charset which is usually a mistake; add StandardCharsets.UTF_8? [DefaultEncoding]
                         new FileWriter("/path");                      // ERROR 1
                         ~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,15 +104,16 @@ class DefaultEncodingDetectorTest {
                         ~~~~~~~~~~~~~~~~~
                 8 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testJava() {
-        // From errorprone's `positive` and `reader` unit tests
-        lint().files(
-            java(
-                """
+  @Test
+  fun testJava() {
+    // From errorprone's `positive` and `reader` unit tests
+    lint()
+      .files(
+        java(
+            """
                 import java.io.*;
                 class Test {
                   void f(String s, byte[] b, OutputStream out, InputStream in, File f) throws Exception {
@@ -124,9 +127,12 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:4: Error: This string will be interpreted with the default system encoding instead of a specific charset which is usually a mistake; add charset argument, getBytes(UTF_8)? [DefaultEncoding]
                 byte[] bs = s.getBytes();    // WARN 1
                             ~~~~~~~~~~~~
@@ -150,14 +156,15 @@ class DefaultEncodingDetectorTest {
                 ~~~~~~~~~~~~~~~~~
             7 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testKotlin() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testKotlin() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import java.io.*
                 class Test {
                     fun f(f: File, s: String, flag: Boolean) {
@@ -171,9 +178,12 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.kt:4: Error: This file will be written with the default system encoding instead of a specific charset which is usually a mistake; add Charsets.UTF_8? [DefaultEncoding]
                     FileWriter(s)        // WARN 1
                     ~~~~~~~~~~~~~
@@ -185,35 +195,38 @@ class DefaultEncodingDetectorTest {
                     ~~~~~~~~~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testAndroid() {
-        // No warnings: the system encoding is always UTF-8
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testAndroid() {
+    // No warnings: the system encoding is always UTF-8
+    lint()
+      .files(
+        kotlin(
+            """
                 import java.io.FileWriter
                 fun f(s: String) {
                     FileWriter(s)
                 }
                 """
-            ).indented(),
-            gradle(
-                """
+          )
+          .indented(),
+        gradle("""
                 apply plugin: 'com.android.application'
-                """
-            )
-        ).run().expectClean()
-    }
+                """)
+      )
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testWriters() {
-        // From errorprone's `writer` unit test
-        lint().files(
-            java(
-                """
+  @Test
+  fun testWriters() {
+    // From errorprone's `writer` unit test
+    lint()
+      .files(
+        java(
+            """
                 import java.io.*;
                 class Test {
                   static final boolean CONST = true;
@@ -228,9 +241,12 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:5: Error: This file will be written with the default system encoding instead of a specific charset which is usually a mistake; add StandardCharsets.UTF_8? [DefaultEncoding]
                 new FileWriter(s);        // WARN 1
                 ~~~~~~~~~~~~~~~~~
@@ -254,16 +270,17 @@ class DefaultEncodingDetectorTest {
                 ~~~~~~~~~~~~~~~~~~~~~~~
             7 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun buffered() {
-        // From errorprone's `buffered` unit test
-        @Suppress("EmptyTryBlock")
-        lint().files(
-            java(
-                """
+  @Test
+  fun buffered() {
+    // From errorprone's `buffered` unit test
+    @Suppress("EmptyTryBlock")
+    lint()
+      .files(
+        java(
+            """
                 import java.io.*;
                 class Test {
                   void f(String s) throws Exception {
@@ -272,9 +289,12 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:4: Error: This file will be read with the default system encoding instead of a specific charset which is usually a mistake; add StandardCharsets.UTF_8? [DefaultEncoding]
                 try (BufferedReader reader = new BufferedReader(new FileReader(s))) {} // WARN 1
                                                                 ~~~~~~~~~~~~~~~~~
@@ -283,16 +303,22 @@ class DefaultEncodingDetectorTest {
                                                                 ~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun negative() {
-        // From errorprone's `negative` and `ignoreFileDescriptor` unit tests
-        @Suppress("ResultOfMethodCallIgnored", "RedundantThrows", "EmptyTryBlock", "CharsetObjectCanBeUsed")
-        lint().files(
-            java(
-                """
+  @Test
+  fun negative() {
+    // From errorprone's `negative` and `ignoreFileDescriptor` unit tests
+    @Suppress(
+      "ResultOfMethodCallIgnored",
+      "RedundantThrows",
+      "EmptyTryBlock",
+      "CharsetObjectCanBeUsed"
+    )
+    lint()
+      .files(
+        java(
+            """
                 import static java.nio.charset.StandardCharsets.UTF_8;
                 import java.io.*;
                 import java.nio.charset.CharsetDecoder;
@@ -317,17 +343,21 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testScanner() {
-        // From errorprone's `scannerDefaultCharset` unit test
-        @Suppress("ConstantConditions")
-        lint().files(
-            java(
-                """
+  @Test
+  fun testScanner() {
+    // From errorprone's `scannerDefaultCharset` unit test
+    @Suppress("ConstantConditions")
+    lint()
+      .files(
+        java(
+            """
                 import java.util.Scanner;
                 import java.io.File;
                 import java.io.InputStream;
@@ -347,9 +377,12 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:10: Error: This Scanner will use the default system encoding instead of a specific charset which is usually a mistake; add charset argument, Scanner(..., UTF_8)? [DefaultEncoding]
                 new Scanner((InputStream) null);         // WARN 1
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -364,15 +397,16 @@ class DefaultEncodingDetectorTest {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testAsciiConstants() {
-        @Suppress("ResultOfMethodCallIgnored")
-        lint().files(
-            java(
-                """
+  @Test
+  fun testAsciiConstants() {
+    @Suppress("ResultOfMethodCallIgnored")
+    lint()
+      .files(
+        java(
+            """
                 class Test {
                     final String S1 = "2 >= 1";
                     final String S2 = "2 ≥ 1";
@@ -384,9 +418,12 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:7: Error: This string will be interpreted with the default system encoding instead of a specific charset which is usually a mistake; add charset argument, getBytes(UTF_8)? [DefaultEncoding]
                     "2 ≥ 1".getBytes();               // WARN 1
                     ~~~~~~~~~~~~~~~~~~
@@ -395,16 +432,17 @@ class DefaultEncodingDetectorTest {
                     ~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testByteArrayOutputStream() {
-        // From errorprone's `byteArrayOutputStream` unit test
-        @Suppress("Since15")
-        lint().files(
-            java(
-                """
+  @Test
+  fun testByteArrayOutputStream() {
+    // From errorprone's `byteArrayOutputStream` unit test
+    @Suppress("Since15")
+    lint()
+      .files(
+        java(
+            """
                 import java.io.ByteArrayOutputStream;
                 import java.nio.charset.Charset;
                 class Test {
@@ -415,22 +453,26 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:7: Error: This string will be decoded with the default system encoding instead of a specific charset which is usually a mistake; add StandardCharsets.UTF_8? [DefaultEncoding]
                 return b.toString(); // WARN
                        ~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFixGetBytes() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testFixGetBytes() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import kotlin.text.Charsets
                 import java.nio.charset.Charset.*
                 class TestKotlin {
@@ -445,9 +487,10 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 import java.nio.charset.StandardCharsets;
                 import static java.nio.charset.Charset.defaultCharset;
                 class TestJava {
@@ -457,9 +500,12 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expectFixDiffs(
+        """
             Fix for src/TestJava.java line 5: Add charset argument, `getBytes(UTF_8)`:
             @@ -5 +5
             -         byte[] bs = s.getBytes();
@@ -509,14 +555,15 @@ class DefaultEncodingDetectorTest {
             -         val s2 = java.lang.String(b)
             +         val s2 = java.lang.String(b, defaultCharset())
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFixFileReaderWriter() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testFixFileReaderWriter() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import java.io.*
                 class TestKotlin {
                   fun f(file: File) {
@@ -528,9 +575,10 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 import java.io.*;
                 class TestJava {
                   void f(File file) throws Exception {
@@ -541,9 +589,12 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expectFixDiffs(
+        """
             Fix for src/TestJava.java line 4: Add charset argument, `FileReader(..., UTF_8)`:
             @@ -4 +4
             -     new FileReader(file);
@@ -609,14 +660,15 @@ class DefaultEncodingDetectorTest {
             -     BufferedWriter(FileWriter(file))
             +     file.bufferedWriter(java.nio.charset.StandardCharsets.UTF_8)
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFixFileReaderWriterPreJava11() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testFixFileReaderWriterPreJava11() {
+    lint()
+      .files(
+        java(
+            """
                 import java.io.*;
                 import java.nio.charset.*;
                 class TestJava {
@@ -626,11 +678,13 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented(),
-            // Set Java language level to 1.8; quickfixes for FileReader/FileWriter in Java depend on the language
-            // level since the best replacement isn't available before Java 11
-            gradle(
-                """
+          )
+          .indented(),
+        // Set Java language level to 1.8; quickfixes for FileReader/FileWriter in Java depend on
+        // the language
+        // level since the best replacement isn't available before Java 11
+        gradle(
+            """
                 apply plugin: 'java'
                 android {
                     compileOptions {
@@ -639,9 +693,12 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expectFixDiffs(
+        """
             Fix for src/main/java/TestJava.java line 5: Replace with `InputStreamReader(FileInputStream(..., UTF8)`:
             @@ -5 +5
             -     new FileReader(file);
@@ -659,14 +716,15 @@ class DefaultEncodingDetectorTest {
             -     new FileWriter(file);
             +     new OutputStreamWriter(new FileOutputStream(file), Charset.defaultCharset());
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFixPrintWriter() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testFixPrintWriter() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import java.io.File
                 import java.io.FileWriter
@@ -680,9 +738,10 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import java.io.File;
                 import java.io.IOException;
@@ -696,9 +755,12 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/TestJava.java line 8: Add charset argument, `PrintWriter(..., UTF_8)`:
             @@ -8 +8
             -         new PrintWriter(System.out, true);
@@ -748,14 +810,15 @@ class DefaultEncodingDetectorTest {
             -     PrintWriter(file)
             +     PrintWriter(file, java.nio.charset.Charset.defaultCharset())
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFixInputStreamReader() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testFixInputStreamReader() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import java.io.BufferedReader
                 import java.io.BufferedWriter
@@ -773,9 +836,10 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import java.io.File;
                 import java.io.IOException;
@@ -792,9 +856,12 @@ class DefaultEncodingDetectorTest {
                   }
                 }
                 """
-            ).indented()
-        ).run().expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/TestKotlin.kt line 11: Replace with `out.writer()` (uses UTF-8):
             @@ -11 +11
             -         OutputStreamWriter(out)
@@ -828,14 +895,15 @@ class DefaultEncodingDetectorTest {
             -         BufferedReader(InputStreamReader(input))
             +         input.bufferedReader(java.nio.charset.StandardCharsets.UTF_8)
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFixScanner() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testFixScanner() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import java.util.Scanner;
                 import java.nio.charset.StandardCharsets;
@@ -847,9 +915,12 @@ class DefaultEncodingDetectorTest {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/TestJava.java line 7: Add charset argument, `Scanner(..., UTF_8)`:
             @@ -7 +7
             -         new Scanner((java.io.InputStream) null);
@@ -867,10 +938,10 @@ class DefaultEncodingDetectorTest {
             -         new Scanner((java.io.File) null);
             +         new Scanner((java.io.File) null, Charset.defaultCharset());
             """
-        )
-    }
+      )
+  }
 
-    private fun lint(): TestLintTask {
-        return TestLintTask.lint().allowMissingSdk().issues(DefaultEncodingDetector.ISSUE)
-    }
+  private fun lint(): TestLintTask {
+    return TestLintTask.lint().allowMissingSdk().issues(DefaultEncodingDetector.ISSUE)
+  }
 }

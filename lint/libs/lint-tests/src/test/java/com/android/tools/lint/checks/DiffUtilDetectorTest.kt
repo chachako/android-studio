@@ -20,11 +20,12 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.mavenLibrary
 import com.android.tools.lint.detector.api.Detector
 
 class DiffUtilDetectorTest : AbstractCheckTest() {
-    private val diffUtilStubs = arrayOf(
-        mavenLibrary(
-            "androidx.recyclerview:recyclerview:1.0.0",
-            java(
-                """
+  private val diffUtilStubs =
+    arrayOf(
+      mavenLibrary(
+        "androidx.recyclerview:recyclerview:1.0.0",
+        java(
+            """
                     package androidx.recyclerview.widget;
                     public class DiffUtil {
                         public abstract static class ItemCallback<T> {
@@ -33,16 +34,18 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                         }
                     }
                     """
-            ).indented(),
-            byteOnly = false
-        )
+          )
+          .indented(),
+        byteOnly = false
+      )
     )
 
-    fun testIdentityEqualsOkay() {
-        // Regression test for b/132234925
-        lint().files(
-            kotlin(
-                """
+  fun testIdentityEqualsOkay() {
+    // Regression test for b/132234925
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -55,25 +58,30 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                             oldItem.id === newItem.id
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public class Cheese {
                     public int id;
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlinDataClasses() {
-        // Regression test for https://issuetracker.google.com/122928037
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinDataClasses() {
+    // Regression test for https://issuetracker.google.com/122928037
+    lint()
+      .files(
+        kotlin(
+          """
                 package com.squareup.cash.diffutil
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -97,9 +105,9 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+            """
                 package com.squareup.cash.lib
 
                 interface Foo {
@@ -111,15 +119,19 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     ) : Foo
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testEqualsOkay() {
-        lint().files(
-            kotlin(
-                """
+  fun testEqualsOkay() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -132,9 +144,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                             oldItem == newItem
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public class Cheese {
@@ -154,15 +167,19 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDataClassEqualsOkay() {
-        lint().files(
-            kotlin(
-                """
+  fun testDataClassEqualsOkay() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -175,21 +192,26 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                             oldItem == newItem
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 data class Cheese(var id: String? = null)
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testIdentityOperator() {
-        lint().files(
-            kotlin(
-                """
+  fun testIdentityOperator() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -202,9 +224,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                             oldItem === newItem // ERROR
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import androidx.recyclerview.widget.DiffUtil;
@@ -221,19 +244,23 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public class Cheese {
                     public String id;
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyCallback.java:13: Error: Suspicious equality check: Did you mean .equals() instead of == ? [DiffUtilEquals]
                     return oldItem == newItem;
                                    ~~
@@ -242,13 +269,14 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                                 ~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testEqualsOperator() {
-        lint().files(
-            kotlin(
-                """
+  fun testEqualsOperator() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -261,9 +289,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                             oldItem == newItem // ERROR
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import androidx.recyclerview.widget.DiffUtil;
@@ -280,19 +309,23 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public class Cheese {
                     public String id;
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyCallback.java:13: Error: Suspicious equality check: equals() is not implemented in test.pkg.Cheese [DiffUtilEquals]
                     return oldItem.equals(newItem); // ERROR
                                    ~~~~~~~~~~~~~~~
@@ -301,14 +334,15 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                                 ~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testSealedClasses() {
-        // Regression test for issue 132234925
-        lint().files(
-            kotlin(
-                """
+  fun testSealedClasses() {
+    // Regression test for issue 132234925
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -329,17 +363,21 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKnownInstance() {
-        // Regression test for https://issuetracker.google.com/161584622
-        // [lint] DiffUtilEquals false positive when type is exactly known
-        lint().files(
-            kotlin(
-                """
+  fun testKnownInstance() {
+    // Regression test for https://issuetracker.google.com/161584622
+    // [lint] DiffUtilEquals false positive when type is exactly known
+    lint()
+      .files(
+        kotlin(
+            """
                 package com.example
 
                 data class Model(
@@ -347,9 +385,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     val content: String
                 ) : IModel
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package com.example
 
                 interface IModel {
@@ -357,9 +396,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     //override fun equals(other: Any?): Boolean
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package com.example;
 
                 import androidx.annotation.NonNull;
@@ -383,17 +423,21 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                         }
                 }
                 """
-            ).indented(),
-            *diffUtilStubs,
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test161584622() {
-        // Regression test for https://issuetracker.google.com/issues/161584622
-        lint().files(
-            kotlin(
-                """
+  fun test161584622() {
+    // Regression test for https://issuetracker.google.com/issues/161584622
+    lint()
+      .files(
+        kotlin(
+            """
                 package com.example
 
                 interface IModel {
@@ -401,9 +445,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     //override fun equals(other: Any?): Boolean
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package com.example
 
                 data class Model(
@@ -411,9 +456,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     val content: String
                 ) : IModel
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package com.example
 
                 import androidx.recyclerview.widget.DiffUtil
@@ -433,9 +479,10 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                         oldItem is Model && newItem is Model && oldItem == newItem
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package com.example;
 
                 import androidx.recyclerview.widget.DiffUtil;
@@ -455,12 +502,15 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *diffUtilStubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *diffUtilStubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    override fun getDetector(): Detector {
-        return DiffUtilDetector()
-    }
+  override fun getDetector(): Detector {
+    return DiffUtilDetector()
+  }
 }

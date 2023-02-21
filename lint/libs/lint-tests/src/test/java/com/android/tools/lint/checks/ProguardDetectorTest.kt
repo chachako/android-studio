@@ -18,46 +18,55 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ProguardDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ProguardDetector()
-    }
+  override fun getDetector(): Detector {
+    return ProguardDetector()
+  }
 
-    fun testProguard() {
-        lint().files(mProguard).run().expect(
-            """
+  fun testProguard() {
+    lint()
+      .files(mProguard)
+      .run()
+      .expect(
+        """
             proguard.cfg:21: Error: Obsolete ProGuard file; use -keepclasseswithmembers instead of -keepclasseswithmembernames [Proguard]
             -keepclasseswithmembernames class * {
             ^
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testProguardNewPath() {
-        lint().files(mProguard2).run().expect(
-            """
+  fun testProguardNewPath() {
+    lint()
+      .files(mProguard2)
+      .run()
+      .expect(
+        """
             proguard-project.txt:21: Error: Obsolete ProGuard file; use -keepclasseswithmembers instead of -keepclasseswithmembernames [Proguard]
             -keepclasseswithmembernames class * {
             ^
             1 errors, 0 warnings
 
             """
-        )
-    }
+      )
+  }
 
-    fun testProguardRandomName() {
-        lint().files(
-            mProguard3,
-            source(
-                "project.properties",
-                """
+  fun testProguardRandomName() {
+    lint()
+      .files(
+        mProguard3,
+        source(
+          "project.properties",
+          """
                         target=android-14
                         proguard.config=${"$"}{sdk.dir}/foo.cfg:${"$"}{user.home}/bar.pro;myfile.txt
 
                         """
-            )
-        ).run().expect(
-            """
+        )
+      )
+      .run()
+      .expect(
+        """
             myfile.txt:21: Error: Obsolete ProGuard file; use -keepclasseswithmembers instead of -keepclasseswithmembernames [Proguard]
             -keepclasseswithmembernames class * {
             ^
@@ -67,33 +76,34 @@ class ProguardDetectorTest : AbstractCheckTest() {
             1 errors, 1 warnings
 
             """
-        )
-    }
+      )
+  }
 
-    fun testSilent() {
-        lint().files(mProguard4).run().expectClean()
-    }
+  fun testSilent() {
+    lint().files(mProguard4).run().expectClean()
+  }
 
-    fun testSilent2() {
-        lint().files(mProguard4).run().expectClean()
-    }
+  fun testSilent2() {
+    lint().files(mProguard4).run().expectClean()
+  }
 
-    fun testSplit() {
-        lint().files(
-            mProguard4,
-            projectProperties().property("proguard.config", "proguard.cfg")
-        ).run().expect(
-            """
+  fun testSplit() {
+    lint()
+      .files(mProguard4, projectProperties().property("proguard.config", "proguard.cfg"))
+      .run()
+      .expect(
+        """
             proguard.cfg:14: Warning: Local ProGuard configuration contains general Android configuration: Inherit these settings instead? Modify project.properties to define proguard.config=${"$"}{sdk.dir}/tools/proguard/proguard-android.txt:proguard.cfg and then keep only project-specific configuration here [ProguardSplit]
             -keep public class * extends android.app.Activity
             ^
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    // Sample code
-    private val mProguard = source(
+  // Sample code
+  private val mProguard =
+    source(
         "proguard.cfg",
         """
         -optimizationpasses 5
@@ -133,10 +143,12 @@ class ProguardDetectorTest : AbstractCheckTest() {
           public static final android.os.Parcelable${"$"}Creator *;
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    // Sample code
-    private val mProguard2 = source(
+  // Sample code
+  private val mProguard2 =
+    source(
         "proguard-project.txt",
         """
         -optimizationpasses 5
@@ -176,10 +188,12 @@ class ProguardDetectorTest : AbstractCheckTest() {
           public static final android.os.Parcelable${"$"}Creator *;
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    // Sample code
-    private val mProguard3 = source(
+  // Sample code
+  private val mProguard3 =
+    source(
         "myfile.txt",
         """
         -optimizationpasses 5
@@ -219,10 +233,12 @@ class ProguardDetectorTest : AbstractCheckTest() {
           public static final android.os.Parcelable${"$"}Creator *;
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    // Sample code
-    private val mProguard4 = source(
+  // Sample code
+  private val mProguard4 =
+    source(
         "proguard.cfg",
         """
         -optimizationpasses 5
@@ -290,5 +306,6 @@ class ProguardDetectorTest : AbstractCheckTest() {
         # platform version.  We know about them, and they are safe.
         -dontwarn android.support.**
         """
-    ).indented()
+      )
+      .indented()
 }

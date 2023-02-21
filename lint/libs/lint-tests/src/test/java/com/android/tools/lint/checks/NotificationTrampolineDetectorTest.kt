@@ -19,12 +19,13 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class NotificationTrampolineDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return NotificationTrampolineDetector()
-    }
+  override fun getDetector(): Detector {
+    return NotificationTrampolineDetector()
+  }
 
-    // A broadcast receiver which launches another activity
-    private val broadcastReceiver = java(
+  // A broadcast receiver which launches another activity
+  private val broadcastReceiver =
+    java(
         """
         package test.pkg;
 
@@ -43,13 +44,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    fun testBroadcastTrampolineJava() {
-        lint().files(
-            broadcastReceiver,
-            java(
-                """
+  fun testBroadcastTrampolineJava() {
+    lint()
+      .files(
+        broadcastReceiver,
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Notification;
@@ -96,10 +99,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.java:36: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
                                     .setContentIntent(notificationPendingIntent)
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,14 +120,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test4ArgIntentBroadcastTrampolineJava() {
-        lint().files(
-            broadcastReceiver,
-            java(
-                """
+  fun test4ArgIntentBroadcastTrampolineJava() {
+    lint()
+      .files(
+        broadcastReceiver,
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Notification;
@@ -168,10 +175,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.java:36: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
                                     .setContentIntent(notificationPendingIntent)
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,14 +196,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testBroadcastTrampolineKotlin() {
-        lint().files(
-            broadcastReceiver,
-            kotlin(
-                """
+  fun testBroadcastTrampolineKotlin() {
+    lint()
+      .files(
+        broadcastReceiver,
+        kotlin(
+            """
                 package test.pkg
 
                 import android.R
@@ -234,10 +245,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.kt:27: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
                         .setContentIntent(notificationPendingIntent)
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -252,14 +266,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test4ArgIntentBroadcastTrampolineKotlin() {
-        lint().files(
-            broadcastReceiver,
-            kotlin(
-                """
+  fun test4ArgIntentBroadcastTrampolineKotlin() {
+    lint()
+      .files(
+        broadcastReceiver,
+        kotlin(
+            """
                 package test.pkg
 
                 import android.R
@@ -300,10 +315,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.kt:27: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
                         .setContentIntent(notificationPendingIntent)
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -318,13 +336,14 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testServiceTrampolineJava() {
-        lint().files(
-            java(
-                """
+  fun testServiceTrampolineJava() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import android.app.Notification;
                 import android.app.NotificationManager;
@@ -352,9 +371,10 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import android.app.Service;
                 import android.content.Intent;
@@ -377,10 +397,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.java:21: Error: This intent launches a Service (ServiceTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
                                     .setContentIntent(serviceIntent)
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -389,14 +412,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testLaunchUnknownService() {
-        lint().files(
-            broadcastReceiver,
-            java(
-                """
+  fun testLaunchUnknownService() {
+    lint()
+      .files(
+        broadcastReceiver,
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Notification;
@@ -425,10 +449,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.java:22: Warning: Notifications should only launch a Service from notification actions (addAction) [LaunchActivityFromNotification]
                                     .setContentIntent(serviceIntent)
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -437,18 +464,19 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testTrampolineKotlinQualifiedNames() {
-        // Similar to test1, but with a slightly different AST shape which requires
-        // handling (such as a qualified name in a class literal, as well as
-        // making sure we treat separated declarations and assignments the same
-        // as a local variable with initializer).
-        lint().files(
-            broadcastReceiver,
-            kotlin(
-                """
+  fun testTrampolineKotlinQualifiedNames() {
+    // Similar to test1, but with a slightly different AST shape which requires
+    // handling (such as a qualified name in a class literal, as well as
+    // making sure we treat separated declarations and assignments the same
+    // as a local variable with initializer).
+    lint()
+      .files(
+        broadcastReceiver,
+        kotlin(
+            """
                 package test.pkg
 
                 import android.R
@@ -490,10 +518,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.kt:28: Error: This intent launches a BroadcastReceiver (BroadcastTrampoline) which launches activities; this indirection is bad for performance, and activities should be launched directly from the notification [NotificationTrampoline]
                         .setContentIntent(notificationPendingIntent)
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -508,14 +539,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testBroadcastUsage() {
-        lint().files(
-            broadcastReceiver,
-            java(
-                """
+  fun testBroadcastUsage() {
+    lint()
+      .files(
+        broadcastReceiver,
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Notification;
@@ -547,10 +579,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.java:25: Warning: Notifications should only launch a BroadcastReceiver from notification actions (addAction) [LaunchActivityFromNotification]
                                     .setContentIntent(notificationPendingIntent) // WARN
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -559,13 +594,14 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testPendingIntentFromMethod() {
-        lint().files(
-            java(
-                """
+  fun testPendingIntentFromMethod() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Notification;
@@ -596,10 +632,13 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *notificationStubs
-        ).run().expect(
-            """
+          )
+          .indented(),
+        *notificationStubs
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/NotificationTest.java:24: Warning: Notifications should only launch a Service from notification actions (addAction) [LaunchActivityFromNotification]
                                     .setContentIntent(createIntent())
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -608,14 +647,15 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    companion object {
-        val notificationStubs = arrayOf(
-            // NotificationCompat & Builder Stubs
-            java(
-                """
+  companion object {
+    val notificationStubs =
+      arrayOf(
+        // NotificationCompat & Builder Stubs
+        java(
+            """
                 package androidx.core.app;
                 import android.app.Notification;
                 import android.app.PendingIntent;
@@ -638,16 +678,18 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package androidx.core.app;
                 import android.app.Notification;
                 public final class NotificationManagerCompat {
                     public void notify(int id, Notification notification) { }
                 }
                 """
-            ).indented()
-        )
-    }
+          )
+          .indented()
+      )
+  }
 }

@@ -24,26 +24,26 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.getSeverity
 
 /**
- * Consult the lint.xml file, but override with the --enable and
- * --disable flags supplied on the command line (as well as any other
- * applicable [LintCliFlags])
+ * Consult the lint.xml file, but override with the --enable and --disable flags supplied on the
+ * command line (as well as any other applicable [LintCliFlags])
  */
 open class CliConfiguration(
-    configurations: ConfigurationHierarchy,
-    private val flags: LintCliFlags,
-    private val fatalOnly: Boolean
+  configurations: ConfigurationHierarchy,
+  private val flags: LintCliFlags,
+  private val fatalOnly: Boolean
 ) : FlagConfiguration(configurations) {
-    override fun fatalOnly(): Boolean = fatalOnly
-    override fun isWarningsAsErrors(): Boolean = flags.isWarningsAsErrors
-    override fun isIgnoreWarnings(): Boolean = flags.isIgnoreWarnings
-    override fun isCheckAllWarnings(): Boolean = flags.isCheckAllWarnings
-    override fun enabledIds(): Set<String> = flags.enabledIds
-    override fun disabledIds(): Set<String> = flags.suppressedIds
-    override fun exactCheckedIds(): Set<String>? = flags.exactCheckedIds
-    override fun disabledCategories(): Set<Category>? = flags.disabledCategories
-    override fun enabledCategories(): Set<Category>? = flags.enabledCategories
-    override fun exactCategories(): Set<Category>? = flags.exactCategories
-    override fun severityOverride(issue: Issue): Severity? = flags.severityOverrides[issue.id]?.getSeverity(issue)
-    override fun allowSuppress(): Boolean = flags.allowSuppress
-    override fun severityOverrides(): Set<String> = flags.severityOverrides.keys
+  override fun fatalOnly(): Boolean = fatalOnly
+  override fun isWarningsAsErrors(): Boolean = flags.isWarningsAsErrors
+  override fun isIgnoreWarnings(): Boolean = flags.isIgnoreWarnings
+  override fun isCheckAllWarnings(): Boolean = flags.isCheckAllWarnings
+  override fun enabledIds(): Set<String> = flags.enabledIds
+  override fun disabledIds(): Set<String> = flags.suppressedIds
+  override fun exactCheckedIds(): Set<String>? = flags.exactCheckedIds
+  override fun disabledCategories(): Set<Category>? = flags.disabledCategories
+  override fun enabledCategories(): Set<Category>? = flags.enabledCategories
+  override fun exactCategories(): Set<Category>? = flags.exactCategories
+  override fun severityOverride(issue: Issue): Severity? =
+    flags.severityOverrides[issue.id]?.getSeverity(issue)
+  override fun allowSuppress(): Boolean = flags.allowSuppress
+  override fun severityOverrides(): Set<String> = flags.severityOverrides.keys
 }

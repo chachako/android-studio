@@ -32,36 +32,38 @@ import com.google.wireless.android.sdk.stats.LintIssueId.LintSeverity.IGNORE_SEV
 import com.google.wireless.android.sdk.stats.LintSession.AnalysisType.BUILD
 
 class LintBatchAnalyticsTest : AbstractCheckTest() {
-    // Used to test the scheduling of usage tracking.
-    private lateinit var scheduler: VirtualTimeScheduler
-    // A UsageTracker implementation that allows introspection of logged metrics in tests.
-    private lateinit var usageTracker: TestUsageTracker
+  // Used to test the scheduling of usage tracking.
+  private lateinit var scheduler: VirtualTimeScheduler
+  // A UsageTracker implementation that allows introspection of logged metrics in tests.
+  private lateinit var usageTracker: TestUsageTracker
 
-    override fun setUp() {
-        super.setUp()
-        scheduler = VirtualTimeScheduler()
-        val analyticsSettings = AnalyticsSettingsData()
-        analyticsSettings.optedIn = true
-        AnalyticsSettings.setInstanceForTest(analyticsSettings)
-        usageTracker = TestUsageTracker(scheduler)
-        UsageTracker.setWriterForTest(usageTracker)
-    }
+  override fun setUp() {
+    super.setUp()
+    scheduler = VirtualTimeScheduler()
+    val analyticsSettings = AnalyticsSettingsData()
+    analyticsSettings.optedIn = true
+    AnalyticsSettings.setInstanceForTest(analyticsSettings)
+    usageTracker = TestUsageTracker(scheduler)
+    UsageTracker.setWriterForTest(usageTracker)
+  }
 
-    override fun tearDown() {
-        usageTracker.close()
-        UsageTracker.cleanAfterTesting()
-        super.tearDown()
-    }
+  override fun tearDown() {
+    usageTracker.close()
+    UsageTracker.cleanAfterTesting()
+    super.tearDown()
+  }
 
-    override fun getDetector(): Detector {
-        return SecureRandomDetector()
-    }
+  override fun getDetector(): Detector {
+    return SecureRandomDetector()
+  }
 
-    fun testAnalytics() {
-        val project = getProjectDir(
-            null, manifest().minSdk(1),
-            java(
-                """
+  fun testAnalytics() {
+    val project =
+      getProjectDir(
+        null,
+        manifest().minSdk(1),
+        java(
+            """
                 package test.pkg;
                 @SuppressWarnings("ClassNameDiffersFromFileName")
                 public class MyTest {
@@ -69,69 +71,70 @@ class LintBatchAnalyticsTest : AbstractCheckTest() {
                     String s2 = "/sdcard/mydir";
                 }
                 """
-            ).indented()
-        )
-        MainTest.checkDriver(
-            null,
-            null,
+          )
+          .indented()
+      )
+    MainTest.checkDriver(
+      null,
+      null,
 
-            // Expected exit code
-            LintCliFlags.ERRNO_SUCCESS,
+      // Expected exit code
+      LintCliFlags.ERRNO_SUCCESS,
 
-            // Args
-            arrayOf(
-                "--check",
-                "SdCardPath",
-                "--sdk-home", // SDK is needed to get version number for the baseline
-                TestUtils.getSdk().toString(),
-                "--disable",
-                "LintError",
-                "-Werror",
-                project.path
-            ),
-            null,
-            null
-        )
+      // Args
+      arrayOf(
+        "--check",
+        "SdCardPath",
+        "--sdk-home", // SDK is needed to get version number for the baseline
+        TestUtils.getSdk().toString(),
+        "--disable",
+        "LintError",
+        "-Werror",
+        project.path
+      ),
+      null,
+      null
+    )
 
-        val usages = usageTracker.usages
-        assertEquals(1, usages.size)
-        assertThat(usages).hasSize(1)
-        val usage = usages[0]
-        val event = usage.studioEvent
-        assertThat(event.kind).isEqualTo(LINT_SESSION)
-        val session = event.lintSession
-        with(session) {
-            assertThat(analysisType).isEqualTo(BUILD)
-            assertThat(baselineEnabled).isFalse()
-            assertThat(warningsAsErrors).isTrue()
-        }
-
-        val issues = session.issueIdsList
-        assertEquals(2, issues.size)
-        with(issues[0]) {
-            assertThat(issueId).isEqualTo("SdCardPath")
-            assertThat(count).isEqualTo(2)
-            assertThat(severity).isEqualTo(ERROR_SEVERITY)
-        }
-        // Just disabled: count is 0 but communicated since it differs from default
-        with(issues[1]) {
-            assertThat(issueId).isEqualTo("LintError")
-            assertThat(count).isEqualTo(0)
-            assertThat(severity).isEqualTo(IGNORE_SEVERITY)
-        }
-
-        val performance = session.lintPerformance
-        with(performance) {
-            assertThat(fileCount).isEqualTo(1)
-            assertThat(moduleCount).isEqualTo(1)
-            assertThat(javaSourceCount).isEqualTo(1)
-            assertThat(kotlinSourceCount).isEqualTo(0)
-            assertThat(testSourceCount).isEqualTo(0)
-            assertThat(resourceFileCount).isEqualTo(0)
-        }
+    val usages = usageTracker.usages
+    assertEquals(1, usages.size)
+    assertThat(usages).hasSize(1)
+    val usage = usages[0]
+    val event = usage.studioEvent
+    assertThat(event.kind).isEqualTo(LINT_SESSION)
+    val session = event.lintSession
+    with(session) {
+      assertThat(analysisType).isEqualTo(BUILD)
+      assertThat(baselineEnabled).isFalse()
+      assertThat(warningsAsErrors).isTrue()
     }
 
-    // All the unit tests that are run via MainTest#checkDriver will test the
-    // usage tracker initialization scenario from issue 194525628, where we
-    // don't initialize a specific version of the analytics settings
+    val issues = session.issueIdsList
+    assertEquals(2, issues.size)
+    with(issues[0]) {
+      assertThat(issueId).isEqualTo("SdCardPath")
+      assertThat(count).isEqualTo(2)
+      assertThat(severity).isEqualTo(ERROR_SEVERITY)
+    }
+    // Just disabled: count is 0 but communicated since it differs from default
+    with(issues[1]) {
+      assertThat(issueId).isEqualTo("LintError")
+      assertThat(count).isEqualTo(0)
+      assertThat(severity).isEqualTo(IGNORE_SEVERITY)
+    }
+
+    val performance = session.lintPerformance
+    with(performance) {
+      assertThat(fileCount).isEqualTo(1)
+      assertThat(moduleCount).isEqualTo(1)
+      assertThat(javaSourceCount).isEqualTo(1)
+      assertThat(kotlinSourceCount).isEqualTo(0)
+      assertThat(testSourceCount).isEqualTo(0)
+      assertThat(resourceFileCount).isEqualTo(0)
+    }
+  }
+
+  // All the unit tests that are run via MainTest#checkDriver will test the
+  // usage tracker initialization scenario from issue 194525628, where we
+  // don't initialize a specific version of the analytics settings
 }

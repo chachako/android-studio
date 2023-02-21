@@ -20,13 +20,13 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.detector.api.Detector
 
 class CleanupDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return CleanupDetector()
-    }
+  override fun getDetector(): Detector {
+    return CleanupDetector()
+  }
 
-    fun testRecycle() {
-        val expected =
-            """
+  fun testRecycle() {
+    val expected =
+      """
             src/test/pkg/RecycleTest.java:56: Warning: This TypedArray should be recycled after use with #recycle() [Recycle]
                     final TypedArray a = getContext().obtainStyledAttributes(attrs,
                                                       ~~~~~~~~~~~~~~~~~~~~~~
@@ -56,11 +56,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                                       ~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 9 warnings
             """
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
 
 
@@ -258,13 +259,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testCommit() {
-        val expected =
-            """
+  fun testCommit() {
+    val expected =
+      """
             src/test/pkg/CommitTest.java:25: Warning: This transaction should be completed with a commit() call [CommitTransaction]
                     getFragmentManager().beginTransaction(); // ERROR 1
                                          ~~~~~~~~~~~~~~~~
@@ -286,11 +290,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
             0 errors, 6 warnings
             """
 
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -429,21 +434,25 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            // Stubs just to be able to do type resolution without needing the full appcompat jar
-            fragment,
-            dialogFragment,
-            fragmentTransaction,
-            fragmentManager
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        // Stubs just to be able to do type resolution without needing the full appcompat jar
+        fragment,
+        dialogFragment,
+        fragmentTransaction,
+        fragmentManager
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testElvis() {
-        // Regression test for https://issuetracker.google.com/72581487
-        // Elvis operator on cursor initialization -> "Missing recycle() calls" warning
-        lint().files(
-            kotlin(
-                """
+  fun testElvis() {
+    // Regression test for https://issuetracker.google.com/72581487
+    // Elvis operator on cursor initialization -> "Missing recycle() calls" warning
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import android.app.FragmentManager
 
@@ -452,28 +461,35 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     transaction.commitAllowingStateLoss()
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCommit2() {
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            // Stubs just to be able to do type resolution without needing the full appcompat jar
-            fragment,
-            dialogFragment,
-            fragmentTransaction,
-            fragmentManager
-        ).run().expectClean()
-    }
+  fun testCommit2() {
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        // Stubs just to be able to do type resolution without needing the full appcompat jar
+        fragment,
+        dialogFragment,
+        fragmentTransaction,
+        fragmentManager
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCommit3() {
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+  fun testCommit3() {
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
 
                 import android.support.v4.app.DialogFragment;
@@ -504,28 +520,32 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            // Stubs just to be able to do type resolution without needing the full appcompat jar
-            fragment,
-            dialogFragment,
-            fragmentTransaction,
-            fragmentManager
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        // Stubs just to be able to do type resolution without needing the full appcompat jar
+        fragment,
+        dialogFragment,
+        fragmentTransaction,
+        fragmentManager
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCommit4() {
-        val expected =
-            """
+  fun testCommit4() {
+    val expected =
+      """
             src/test/pkg/CommitTest3.java:35: Warning: This transaction should be completed with a commit() call [CommitTransaction]
                             getCompatFragmentManager().beginTransaction();
                                                        ~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
 
                 import android.support.v4.app.DialogFragment;
@@ -594,29 +614,33 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            // Stubs just to be able to do type resolution without needing the full appcompat jar
-            fragment,
-            dialogFragment,
-            fragmentTransaction,
-            fragmentManager
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        // Stubs just to be able to do type resolution without needing the full appcompat jar
+        fragment,
+        dialogFragment,
+        fragmentTransaction,
+        fragmentManager
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testCommitChainedCalls() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=135204
-        val expected =
-            """
+  fun testCommitChainedCalls() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=135204
+    val expected =
+      """
             src/test/pkg/TransactionTest.java:8: Warning: This transaction should be completed with a commit() call [CommitTransaction]
                     android.app.FragmentTransaction transaction2 = getFragmentManager().beginTransaction();
                                                                                         ~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
                 import android.app.Activity;
 
@@ -629,18 +653,21 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            // Stubs just to be able to do type resolution without needing the full appcompat jar
-            fragment,
-            dialogFragment,
-            fragmentTransaction,
-            fragmentManager
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        // Stubs just to be able to do type resolution without needing the full appcompat jar
+        fragment,
+        dialogFragment,
+        fragmentTransaction,
+        fragmentManager
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testSurfaceTexture() {
-        val expected =
-            """
+  fun testSurfaceTexture() {
+    val expected =
+      """
             src/test/pkg/SurfaceTextureTest.java:18: Warning: This SurfaceTexture should be freed up after use with #release() [Recycle]
                     SurfaceTexture texture = new SurfaceTexture(1); // Warn: texture not released
                                              ~~~~~~~~~~~~~~~~~~~~~
@@ -653,11 +680,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
             0 errors, 3 warnings
             """
 
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
                 import android.graphics.SurfaceTexture;
                 import android.view.Surface;
@@ -694,22 +722,27 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testSurfaceTextureSubclass() {
-        lint().files(
-            kotlin(
-                """
+  fun testSurfaceTextureSubclass() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import android.graphics.SurfaceTexture
 
                 class SafeSurfaceTexture(texName: Int) : SurfaceTexture(texName)
             """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import android.graphics.SurfaceTexture;
                 import android.view.Surface;
@@ -721,14 +754,17 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testContentProviderClient() {
+  fun testContentProviderClient() {
 
-        val expected =
-            """
+    val expected =
+      """
             src/test/pkg/ContentProviderClientTest.java:10: Warning: This ContentProviderClient should be freed up after use with #release() [Recycle]
                     ContentProviderClient client = resolver.acquireContentProviderClient("test"); // Warn
                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -737,11 +773,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentProviderClient;
@@ -799,9 +836,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.ContentResolver
@@ -816,14 +854,17 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testDatabaseCursor() {
+  fun testDatabaseCursor() {
 
-        val expected =
-            """
+    val expected =
+      """
             src/test/pkg/CursorTest.java:14: Warning: This Cursor should be freed up after use with #close() [Recycle]
                     Cursor cursor = db.query("TABLE_TRIPS",
                                        ~~~~~
@@ -841,11 +882,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                            ~~~~~
             0 errors, 5 warnings
             """
-        lint().files(
-            classpath(),
-            manifest().minSdk(4),
-            java(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(4),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentProvider;
@@ -935,17 +977,21 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testDatabaseCleanupKotlinAssignments() {
-        // Regression test for
-        // https://issuetracker.google.com/141889131
-        // "false positive warning about cursor that doesn't get closed"
-        lint().files(
-            kotlin(
-                """
+  fun testDatabaseCleanupKotlinAssignments() {
+    // Regression test for
+    // https://issuetracker.google.com/141889131
+    // "false positive warning about cursor that doesn't get closed"
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -989,15 +1035,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDatabaseCursorReassignment() {
-        lint().files(
-            java(
-                "src/test/pkg/CursorTest.java",
-                """
+  fun testDatabaseCursorReassignment() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CursorTest.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -1021,15 +1071,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    // Shared preference tests
+  // Shared preference tests
 
-    fun testSharedPrefs() {
-        val expected =
-            """
+  fun testSharedPrefs() {
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest.java:16: Warning: Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background [ApplySharedPref]
                     editor.commit();
                            ~~~~~~~~
@@ -1041,9 +1094,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                                       ~~~~~~~~~~~~~~~~~~
             0 errors, 3 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import android.app.Activity;
                 import android.content.Context;
@@ -1122,14 +1176,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                  }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testSharedPrefsApplyLocation() {
-        lint().files(
-            kotlin(
-                """
+  fun testSharedPrefsApplyLocation() {
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import android.content.SharedPreferences
@@ -1143,22 +1201,24 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            )
-        ).run().expect(
-            """
+        )
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/AuthenticatedWebViewActivity.kt:11: Warning: Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background [ApplySharedPref]
                                         .commit()
                                          ~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test2() {
-        // Regression test 1 for http://code.google.com/p/android/issues/detail?id=34322
+  fun test2() {
+    // Regression test 1 for http://code.google.com/p/android/issues/detail?id=34322
 
-        val expected =
-            """
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest2.java:13: Warning: SharedPreferences.edit() without a corresponding commit() or apply() call [CommitPrefEdits]
                     SharedPreferences.Editor editor = preferences.edit();
                                                       ~~~~~~~~~~~~~~~~~~
@@ -1167,9 +1227,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                     ~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -1190,22 +1251,26 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test3() {
-        // Regression test 2 for http://code.google.com/p/android/issues/detail?id=34322
-        val expected =
-            """
+  fun test3() {
+    // Regression test 2 for http://code.google.com/p/android/issues/detail?id=34322
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest3.java:13: Warning: SharedPreferences.edit() without a corresponding commit() or apply() call [CommitPrefEdits]
                     Editor editor = preferences.edit();
                                     ~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -1222,22 +1287,26 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test4() {
-        // Regression test 3 for http://code.google.com/p/android/issues/detail?id=34322
+  fun test4() {
+    // Regression test 3 for http://code.google.com/p/android/issues/detail?id=34322
 
-        val expected =
-            """
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest4.java:13: Warning: SharedPreferences.edit() without a corresponding commit() or apply() call [CommitPrefEdits]
                     Editor editor = preferences.edit();
                                     ~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings"""
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -1254,14 +1323,17 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test5() {
-        // Check fields too: http://code.google.com/p/android/issues/detail?id=39134
-        val expected =
-            """
+  fun test5() {
+    // Check fields too: http://code.google.com/p/android/issues/detail?id=39134
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest5.java:16: Warning: SharedPreferences.edit() without a corresponding commit() or apply() call [CommitPrefEdits]
                     mPreferences.edit().putString(PREF_FOO, "bar");
                     ~~~~~~~~~~~~~~~~~~~
@@ -1286,9 +1358,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
             0 errors, 7 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -1344,23 +1417,28 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).issues(CleanupDetector.SHARED_PREF).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .issues(CleanupDetector.SHARED_PREF)
+      .run()
+      .expect(expected)
+  }
 
-    fun test6() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=68692
-        val expected =
-            """
+  fun test6() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=68692
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest7.java:13: Warning: SharedPreferences.edit() without a corresponding commit() or apply() call [CommitPrefEdits]
                     settings.edit().putString(MY_PREF_KEY, myPrefValue);
                     ~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.SharedPreferences;
@@ -1377,32 +1455,38 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test8() {
-        val expected =
-            """
+  fun test8() {
+    val expected =
+      """
             src/test/pkg/SharedPrefsTest8.java:11: Warning: Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background [ApplySharedPref]
                     editor.commit();
                            ~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(manifest().minSdk(11), sharedPrefsTest8).run().expect(expected)
-            .expectFixDiffs(
-                """
+    lint()
+      .files(manifest().minSdk(11), sharedPrefsTest8)
+      .run()
+      .expect(expected)
+      .expectFixDiffs(
+        """
                 Fix for src/test/pkg/SharedPrefsTest8.java line 10: Replace commit() with apply():
                 @@ -11 +11
                 -         editor.commit();
                 +         editor.apply();
                 """
-            )
-    }
+      )
+  }
 
-    fun testChainedCalls() {
-        val expected =
-            """
+  fun testChainedCalls() {
+    val expected =
+      """
             src/test/pkg/Chained.java:12: Warning: Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background [ApplySharedPref]
                             .commit();
                              ~~~~~~~~
@@ -1411,10 +1495,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     ^
             0 errors, 2 warnings
             """
-        lint().files(
-            java(
-                "src/test/pkg/Chained.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/Chained.java",
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -1445,16 +1530,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    // sample code with warnings
-    fun testCommitDetector() {
-        lint().files(
-            java(
-                "src/test/pkg/CommitTest.java",
-                """
+  // sample code with warnings
+  fun testCommitDetector() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CommitTest.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -1482,17 +1571,21 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    // sample code with warnings
-    fun testCommitDetectorOnParameters() {
-        // Handle transactions assigned to parameters (this used to not work)
-        lint().files(
-            java(
-                "src/test/pkg/CommitTest2.java",
-                """
+  // sample code with warnings
+  fun testCommitDetectorOnParameters() {
+    // Handle transactions assigned to parameters (this used to not work)
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CommitTest2.java",
+            """
                 package test.pkg;
 
                 import android.app.FragmentManager;
@@ -1510,18 +1603,22 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    // sample code with warnings
-    fun testReturn() {
-        // If you return the object to be cleaned up, it doesn'st have to be cleaned up (caller
-        // may do that)
-        lint().files(
-            java(
-                "src/test/pkg/SharedPrefsTest.java",
-                """
+  // sample code with warnings
+  fun testReturn() {
+    // If you return the object to be cleaned up, it doesn'st have to be cleaned up (caller
+    // may do that)
+    lint()
+      .files(
+        java(
+            "src/test/pkg/SharedPrefsTest.java",
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -1543,16 +1640,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    // sample code with warnings
-    fun testCommitNow() {
-        lint().files(
-            java(
-                "src/test/pkg/CommitTest.java",
-                """
+  // sample code with warnings
+  fun testCommitNow() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CommitTest.java",
+            """
                 package test.pkg;
 
                 import android.app.FragmentManager;
@@ -1565,21 +1666,25 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAutoCloseable() {
-        // Regression test for:
-        //   https://code.google.com/p/android/issues/detail?id=214086
-        //   https://issuetracker.google.com/239504900
-        //
-        // Queries assigned to try/catch resource variables are automatically
-        // closed.
-        lint().files(
-            java(
-                "src/test/pkg/TryWithResources.java",
-                """
+  fun testAutoCloseable() {
+    // Regression test for:
+    //   https://code.google.com/p/android/issues/detail?id=214086
+    //   https://issuetracker.google.com/239504900
+    //
+    // Queries assigned to try/catch resource variables are automatically
+    // closed.
+    lint()
+      .files(
+        java(
+            "src/test/pkg/TryWithResources.java",
+            """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -1609,15 +1714,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAutoCloseableKotlin() {
-        lint().files(
-            kotlin(
-                "src/test/pkg/AutoCloseableKotlin.kt",
-                """
+  fun testAutoCloseableKotlin() {
+    lint()
+      .files(
+        kotlin(
+            "src/test/pkg/AutoCloseableKotlin.kt",
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -1630,21 +1739,25 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testApplyOnPutMethod() {
-        // Regression test for
-        //    https://code.google.com/p/android/issues/detail?id=214196
-        //
-        // Ensure that if you call commit/apply on a put* call
-        // (not the edit field itself, but put passes it through)
-        // we correctly consider the editor operation finished.
-        lint().files(
-            java(
-                "src/test/pkg/CommitPrefTest.java",
-                """
+  fun testApplyOnPutMethod() {
+    // Regression test for
+    //    https://code.google.com/p/android/issues/detail?id=214196
+    //
+    // Ensure that if you call commit/apply on a put* call
+    // (not the edit field itself, but put passes it through)
+    // we correctly consider the editor operation finished.
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CommitPrefTest.java",
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -1659,17 +1772,21 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    // sample code with warnings
-    fun testCommitNowAllowingStateLoss() {
-        // Handle transactions assigned to parameters (this used to not work)
-        lint().files(
-            java(
-                "src/test/pkg/CommitTest2.java",
-                """
+  // sample code with warnings
+  fun testCommitNowAllowingStateLoss() {
+    // Handle transactions assigned to parameters (this used to not work)
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CommitTest2.java",
+            """
                 package test.pkg;
 
                 import android.app.FragmentManager;
@@ -1683,15 +1800,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testFields() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=224435
-        lint().files(
-            java(
-                """
+  fun testFields() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=224435
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Service;
@@ -1714,15 +1835,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUnrelatedSharedPrefEdit() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=234868
-        lint().files(
-            java(
-                """
+  fun testUnrelatedSharedPrefEdit() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=234868
+    lint()
+      .files(
+        java(
+          """
                 package test.pkg;
 
                 import android.content.SharedPreferences;
@@ -1737,15 +1862,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            )
-        ).issues(CleanupDetector.SHARED_PREF).run().expectClean()
-    }
+        )
+      )
+      .issues(CleanupDetector.SHARED_PREF)
+      .run()
+      .expectClean()
+  }
 
-    fun testCommitVariable() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=237776
-        lint().files(
-            java(
-                """
+  fun testCommitVariable() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=237776
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -1760,15 +1889,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlinCommitViaLambda() {
-        // Regression test for 69407565: commit/apply warnings when using with, apply, let etc
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinCommitViaLambda() {
+    // Regression test for 69407565: commit/apply warnings when using with, apply, let etc
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -1785,15 +1918,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlinEditViaLambda() {
-        // Regression test for 70036345: Lint doesn't understand Kotlin standard functions
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinEditViaLambda() {
+    // Regression test for 70036345: Lint doesn't understand Kotlin standard functions
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.SharedPreferences
@@ -1810,16 +1947,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                             apply()
                         }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAndroidKtxSharedPrefs() {
-        // Regression for
-        // 74388337: False "SharedPreferences.edit() without a corresponding commit() call"
-        lint().files(
-            kotlin(
-                """
+  fun testAndroidKtxSharedPrefs() {
+    // Regression for
+    // 74388337: False "SharedPreferences.edit() without a corresponding commit() call"
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.SharedPreferences
@@ -1831,10 +1972,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/androidx/core/content/SharedPreferences.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/androidx/core/content/SharedPreferences.kt",
+            """
                 package androidx.core.content
 
                 import android.annotation.SuppressLint
@@ -1854,15 +1996,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testParcelableKotlin() {
-        // Regression for https://issuetracker.google.com/79716779
-        lint().files(
-            kotlin(
-                """
+  fun testParcelableKotlin() {
+    // Regression for https://issuetracker.google.com/79716779
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.os.Parcel
@@ -1878,15 +2024,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlinRunStatements() {
-        // Regression test for 79905342: recycle() lint warning not detecting call
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinRunStatements() {
+    // Regression test for 79905342: recycle() lint warning not detecting call
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -1902,16 +2052,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
 
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKotlinAlsoStatements() {
-        // Regression test for
-        // 139566120: Lint check showing incorrect warning with TypedArray recycle call
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinAlsoStatements() {
+    // Regression test for
+    // 139566120: Lint check showing incorrect warning with TypedArray recycle call
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -1928,17 +2082,21 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }.recycle()
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testKtxUseStatement() {
-        // Regression test for
-        //  140344435 Lint does not realize that TypedArray.recycle() will be done by
-        //    KTX function of TypedArray.use
-        lint().files(
-            kotlin(
-                """
+  fun testKtxUseStatement() {
+    // Regression test for
+    //  140344435 Lint does not realize that TypedArray.recycle() will be done by
+    //    KTX function of TypedArray.use
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -1951,9 +2109,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         .use { text = it.getString(0) }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+          """
                 package androidx.core.content.res
                 import android.content.res.TypedArray
 
@@ -1963,15 +2122,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            )
-        ).run().expectClean()
-    }
+        )
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUse1() {
-        // Regression test from 62377185
-        lint().files(
-            kotlin(
-                """
+  fun testUse1() {
+    // Regression test from 62377185
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import android.content.ContentResolver
 
@@ -2000,9 +2162,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
             """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyTest.kt:6: Warning: This Cursor should be freed up after use with #close() [Recycle]
                     val cursorOpened = resolver.query(null, null, null, null, null) // ERROR
                                                 ~~~~~
@@ -2011,14 +2176,15 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                  ~~~~~
             0 errors, 2 warnings
         """
-        )
-    }
+      )
+  }
 
-    fun testUse2() {
-        // Regression test from 79936228
-        lint().files(
-            kotlin(
-                """
+  fun testUse2() {
+    // Regression test from 79936228
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import android.content.ContentProviderClient
                 import android.database.Cursor
@@ -2060,14 +2226,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     } ?: emptyList()
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUseHasLambdaParameter() {
-        lint().files(
-            kotlin(
-                """
+  fun testUseHasLambdaParameter() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -2091,9 +2261,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 fun Cursor.use(n: Int) {
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:12: Warning: This Cursor should be freed up after use with #close() [Recycle]
                 resolver.query(uri, projection, null, null, null).use() // ERROR
                          ~~~~~
@@ -2102,14 +2275,15 @@ class CleanupDetectorTest : AbstractCheckTest() {
                          ~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test117794883() {
-        // Regression test for 117794883
-        lint().files(
-            kotlin(
-                """
+  fun test117794883() {
+    // Regression test for 117794883
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("UNUSED_VARIABLE")
 
                 import android.app.Activity
@@ -2132,15 +2306,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectInlinedMessages(true)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectInlinedMessages(true)
+  }
 
-    fun test117792318() {
-        // Regression test for 117792318
-        lint().files(
-            kotlin(
-                """
+  fun test117792318() {
+    // Regression test for 117792318
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("UNUSED_VARIABLE")
 
                 import android.app.Activity
@@ -2181,18 +2359,22 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectInlinedMessages(true)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectInlinedMessages(true)
+  }
 
-    fun testAnimation() {
-        // 36991569: Lint warning for animation created but not .start()ed
-        // (ViewPropertyAnimator itself is no longer flagged because of b/169690812,
-        // but continuing to report ValueAnimators, ObjectAnimators, etc.
-        lint().files(
-            kotlin(
-                "src/test/pkg/test.kt",
-                """
+  fun testAnimation() {
+    // 36991569: Lint warning for animation created but not .start()ed
+    // (ViewPropertyAnimator itself is no longer flagged because of b/169690812,
+    // but continuing to report ValueAnimators, ObjectAnimators, etc.
+    lint()
+      .files(
+        kotlin(
+            "src/test/pkg/test.kt",
+            """
                 package test.pkg
 
                 import android.animation.AnimatorSet
@@ -2269,9 +2451,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     val proto = Proto.ofInt(1000)
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:23: Warning: This animation should be started with #start() [Recycle]
                 ValueAnimator.ofFloat(0f, 100f).apply { // ERROR
                               ~~~~~~~
@@ -2286,13 +2471,14 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                   ~~~~~~~~~~~
             0 errors, 4 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testAnimatorApply() {
-        lint().files(
-            kotlin(
-                """
+  fun testAnimatorApply() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.animation.AnimatorSet
                 import android.animation.ValueAnimator
 
@@ -2304,15 +2490,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                   }.start()
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNotNullAssertionOperator() {
-        // 165534909: Recycle for Cursor closed with `use` in Kotlin
-        lint().files(
-            kotlin(
-                """
+  fun testNotNullAssertionOperator() {
+    // 165534909: Recycle for Cursor closed with `use` in Kotlin
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.content.ContentResolver
 
                 /** Get the count of existing call logs. */
@@ -2329,16 +2519,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testValueAnimator() {
-        // Repro scenario from false positive scenario in
-        // frameworks/base/core/java/com/android/internal/app/ChooserActivity.java
-        lint().files(
-            java(
-                """
+  fun testValueAnimator() {
+    // Repro scenario from false positive scenario in
+    // frameworks/base/core/java/com/android/internal/app/ChooserActivity.java
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import static android.animation.ObjectAnimator.ofFloat;
@@ -2366,9 +2560,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.animation.ValueAnimator
@@ -2394,13 +2589,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAssetFileDescriptor() {
-        val expected =
-            """
+  fun testAssetFileDescriptor() {
+    val expected =
+      """
             src/test/pkg/AssetFileDescriptorTest.java:15: Warning: This AssetFileDescriptor should be freed up after use with #close() [Recycle]
                     client.openAssetFile(uri, "mode", null); // Warn
                            ~~~~~~~~~~~~~
@@ -2424,9 +2622,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 7 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentProviderClient;
@@ -2557,14 +2756,17 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testParcelFileDescriptor() {
+  fun testParcelFileDescriptor() {
 
-        val expected =
-            """
+    val expected =
+      """
             src/test/pkg/ParcelFileDescriptorTest.java:15: Warning: This ParcelFileDescriptor should be freed up after use with #close() [Recycle]
                     client.openFile(uri, "mode", null); // Warn
                            ~~~~~~~~
@@ -2576,9 +2778,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                              ~~~~~~~~~~~~~~~~~~
             0 errors, 3 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentProviderClient;
@@ -2662,13 +2865,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testOpenStreams() {
-        val expected =
-            """
+  fun testOpenStreams() {
+    val expected =
+      """
             src/test/pkg/OpenStreamsTest.java:15: Warning: This InputStream should be freed up after use with #close() [Recycle]
                     resolver.openInputStream(uri); // Warn
                              ~~~~~~~~~~~~~~~
@@ -2677,9 +2883,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                              ~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -2743,14 +2950,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test225936245() {
-        lint().files(
-            java(
-                """
+  fun test225936245() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.animation.Animator;
@@ -2772,15 +2983,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test224869924() {
-        // Regression test for 224869924: CommitTransaction Lint False Positive
-        lint().files(
-            java(
-                """
+  fun test224869924() {
+    // Regression test for 224869924: CommitTransaction Lint False Positive
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.pm.PackageManager;
@@ -2813,14 +3028,15 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            rClass("test.pkg", "@id/content_frame"),
-            fragment,
-            fragmentManager,
-            fragmentTransaction,
-            // Stubs
-            java(
-                """
+          )
+          .indented(),
+        rClass("test.pkg", "@id/content_frame"),
+        fragment,
+        fragmentManager,
+        fragmentTransaction,
+        // Stubs
+        java(
+            """
                 package android.support.v7.app;
                 import android.support.v4.app.FragmentManager;
                 public class AppCompatActivity extends android.app.Activity {
@@ -2829,11 +3045,15 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    private val dialogFragment = java(
+  private val dialogFragment =
+    java(
         """
         package android.support.v4.app;
 
@@ -2846,9 +3066,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
             public void dismiss() { }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val fragment = java(
+  private val fragment =
+    java(
         """
         package android.support.v4.app;
 
@@ -2858,9 +3080,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
         public class Fragment {
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val fragmentManager = java(
+  private val fragmentManager =
+    java(
         """
         package android.support.v4.app;
 
@@ -2871,9 +3095,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
             public abstract FragmentTransaction beginTransaction();
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val fragmentTransaction = java(
+  private val fragmentTransaction =
+    java(
         """
         package android.support.v4.app;
 
@@ -2896,9 +3122,11 @@ class CleanupDetectorTest : AbstractCheckTest() {
             public abstract FragmentTransaction replace(int containerViewId, Fragment fragment, String tag);
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val sharedPrefsTest8 = java(
+  private val sharedPrefsTest8 =
+    java(
         """
         package test.pkg;
 
@@ -2957,12 +3185,14 @@ class CleanupDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    fun testUnresolvableFragmentTransactions() {
-        lint().files(
-            kotlin(
-                """
+  fun testUnresolvableFragmentTransactions() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.FragmentManager
@@ -3017,9 +3247,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 //private fun FragmentTransaction.unknown(): FragmentTransaction = error("not yet implemented")
                 //private fun FragmentTransaction.something(): Unit = error("not yet implemented")
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:30: Warning: This transaction should be completed with a commit() call [CommitTransaction]
                 fragmentManager.beginTransaction().unknown() // ERROR 1
                                 ~~~~~~~~~~~~~~~~
@@ -3028,14 +3261,15 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                                   ~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testUnresolvableSharedPrefsEditors() {
-        // Like testUnresolvableFragmentTransactions but for SharedPreference editors
-        lint().files(
-            kotlin(
-                """
+  fun testUnresolvableSharedPrefsEditors() {
+    // Like testUnresolvableFragmentTransactions but for SharedPreference editors
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.SharedPreferences
@@ -3083,9 +3317,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 //private fun SharedPreferences.Editor.unknown(): SharedPreferences.Editor = error("not yet implemented")
                 //private fun SharedPreferences.Editor.something(): Unit = error("not yet implemented")
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:23: Warning: SharedPreferences.edit() without a corresponding commit() or apply() call [CommitPrefEdits]
                 webViewUrlSharedPrefs.edit().unknown() // ERROR 1
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3094,14 +3331,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testUnresolvableRecycle() {
-        // Like testUnresolvableFragmentTransactions but for the recycle scenarios (animations/typed arrays/cursors, etc)
-        lint().files(
-            kotlin(
-                """
+  fun testUnresolvableRecycle() {
+    // Like testUnresolvableFragmentTransactions but for the recycle scenarios (animations/typed
+    // arrays/cursors, etc)
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.animation.AnimatorSet
@@ -3150,9 +3389,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 //private fun AnimatorSet.unknown(): AnimatorSet = error("not yet implemented")
                 //private fun AnimatorSet.something(): Unit = error("not yet implemented")
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:24: Warning: This animation should be started with #start() [Recycle]
                 AnimatorSet().unknown() // ERROR 1
                 ~~~~~~~~~~~
@@ -3161,15 +3403,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                  ~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOkio() {
-        // Regression test for
-        // 248675800: Lint false positive Recycle regarding openInputStream
-        lint().files(
-            kotlin(
-                """
+  fun testOkio() {
+    // Regression test for
+    // 248675800: Lint false positive Recycle regarding openInputStream
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.ContentResolver
@@ -3183,9 +3426,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     inputStream.source().buffer().use { input -> }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.ContentResolver
@@ -3200,9 +3444,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 // Okio stubs
                 @file:JvmName("Okio")
                 package okio
@@ -3231,15 +3476,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 fun Source.buffer(): BufferedSource = RealBufferedSource(this)
                 fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test254222461() {
-        // Regression test for https://issuetracker.google.com/254222461
-        lint().files(
-            kotlin(
-                """
+  fun test254222461() {
+    // Regression test for https://issuetracker.google.com/254222461
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.animation.ObjectAnimator
@@ -3259,14 +3508,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test267308328() {
-        lint().files(
-            java(
-                """
+  fun test267308328() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.os.Parcel;
@@ -3291,14 +3544,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test267439692() {
-        lint().files(
-            java(
-                """
+  fun test267439692() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -3315,9 +3572,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -3331,16 +3589,19 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            )
-        ).run().expectClean()
-    }
+        )
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test267597964() {
-        // Regression test for
-        // 267597964: "Recycle" rule false positive for resource returned in ?: operator
-        lint().files(
-            java(
-                """
+  fun test267597964() {
+    // Regression test for
+    // 267597964: "Recycle" rule false positive for resource returned in ?: operator
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -3358,14 +3619,18 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     abstract Cursor createEmptyCursor(String[] projection);
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test267597120() {
-        lint().files(
-            java(
-                """
+  fun test267597120() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.animation.AnimatorSet;
@@ -3399,23 +3664,27 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     abstract void postDelayed(Runnable runnable);
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MethodReferenceTest.java:27: Warning: This animation should be started with #start() [Recycle]
                     AnimatorSet anim = new AnimatorSet(); // ERROR: We get a start() reference, but we don't actually call/pass it!
                                        ~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test267592743() {
-        // Regression test for
-        // 267592743: "Recycle" rule false positive when calling this() constructor from resource code
-        lint().files(
-            java(
-                """
+  fun test267592743() {
+    // Regression test for
+    // 267592743: "Recycle" rule false positive when calling this() constructor from resource code
+    lint()
+      .files(
+        java(
+            """
                 package android.graphics;
 
                 public class SurfaceTexture {
@@ -3426,18 +3695,22 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testTryWithResources() {
-        // Regression test for
-        // 267743930: "Recycle" rule false positive for resource created right before try-with-resources
-        lint().files(
-            gradle(
-                // For `try (cursor)` (without declaration) we'll need level 9
-                // or PSI/UAST will return an empty variable list
-                """
+  fun testTryWithResources() {
+    // Regression test for
+    // 267743930: "Recycle" rule false positive for resource created right before try-with-resources
+    lint()
+      .files(
+        gradle(
+            // For `try (cursor)` (without declaration) we'll need level 9
+            // or PSI/UAST will return an empty variable list
+            """
                 android {
                     compileOptions {
                         sourceCompatibility JavaVersion.VERSION_1_9
@@ -3445,9 +3718,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -3466,9 +3740,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+          """
                 package test.pkg
 
                 import android.content.Context
@@ -3485,16 +3760,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            )
-        ).run().expectClean()
-    }
+        )
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCasts() {
-        // Regression test for
-        //  267743132: "Recycle" rule false positive for resource assigned to a variable after type casting
-        lint().files(
-            java(
-                """
+  fun testCasts() {
+    // Regression test for
+    //  267743132: "Recycle" rule false positive for resource assigned to a variable after type
+    // casting
+    lint()
+      .files(
+        java(
+          """
                 package test.pkg;
 
                 import android.content.ContentResolver;
@@ -3522,14 +3801,17 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     abstract void copyFile(FileInputStream fileInputStream, FileOutputStream fileOutputStream);
                 }
                 """
-            )
-        ).run().expectClean()
-    }
+        )
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMethodReferences() {
-        lint().files(
-            java(
-                """
+  fun testMethodReferences() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.FragmentManager;
@@ -3610,9 +3892,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 @file:Suppress("DEPRECATION", "unused", "UNUSED_VARIABLE", "UNUSED_PARAMETER")
                 package test.pkg
 
@@ -3691,9 +3974,12 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MethodRefTestJava.java:18: Warning: This transaction should be completed with a commit() call [CommitTransaction]
                     FragmentTransaction fragmentTransaction = manager.beginTransaction(); // ERROR 1
                                                                       ~~~~~~~~~~~~~~~~
@@ -3702,15 +3988,16 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                                       ~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test269431232() {
-        // Regression test for
-        // 269431232: "Recycle" rule false positive for labeled expression as use() argument
-        lint().files(
-            kotlin(
-                """
+  fun test269431232() {
+    // Regression test for
+    // 269431232: "Recycle" rule false positive for labeled expression as use() argument
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.animation.ValueAnimator
@@ -3726,9 +4013,10 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -3747,16 +4035,20 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test269431736() {
-        // Regression test for
-        // 269431736: "Recycle" rule false positive for resource set to property in primary constructor
-        lint().files(
-            kotlin(
-                """
+  fun test269431736() {
+    // Regression test for
+    // 269431736: "Recycle" rule false positive for resource set to property in primary constructor
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.animation.ValueAnimator
@@ -3787,14 +4079,17 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     fun animate() = rotateAnimator.start()
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Builder.kt:25: Warning: This animation should be started with #start() [Recycle]
                     val rotateAnimator3 = ValueAnimator() // ERROR 1
                                           ~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class SetJavaScriptEnabledDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return SetJavaScriptEnabledDetector()
-    }
+  override fun getDetector(): Detector {
+    return SetJavaScriptEnabledDetector()
+  }
 
-    fun test() {
-        //noinspection all // Sample code
-        lint().files(
-            java(
-                """
+  fun test() {
+    //noinspection all // Sample code
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -65,14 +66,17 @@ class SetJavaScriptEnabledDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/SetJavaScriptEnabled.java:14: Warning: Using setJavaScriptEnabled can introduce XSS vulnerabilities into your application, review carefully [SetJavaScriptEnabled]
                     webView.getSettings().setJavaScriptEnabled(true); // bad
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

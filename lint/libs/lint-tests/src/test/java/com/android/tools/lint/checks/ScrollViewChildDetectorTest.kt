@@ -19,15 +19,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ScrollViewChildDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ScrollViewChildDetector()
-    }
+  override fun getDetector(): Detector {
+    return ScrollViewChildDetector()
+  }
 
-    fun testScrollView() {
-        lint().files(
-            xml(
-                "res/layout/wrong_dimension.xml",
-                """
+  fun testScrollView() {
+    lint()
+      .files(
+        xml(
+            "res/layout/wrong_dimension.xml",
+            """
                 <HorizontalScrollView
                     xmlns:android="http://schemas.android.com/apk/res/android"
 
@@ -40,14 +41,17 @@ class ScrollViewChildDetectorTest : AbstractCheckTest() {
 
                 </HorizontalScrollView>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/wrong_dimension.xml:8: Warning: This LinearLayout should use android:layout_width="wrap_content" [ScrollViewSize]
                     android:layout_width="match_parent"
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

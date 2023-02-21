@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class TooLintFixGroupViewsDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return TooManyViewsDetector()
-    }
+  override fun getDetector(): Detector {
+    return TooManyViewsDetector()
+  }
 
-    fun testTooMany() {
-        lint().files(
-            xml(
-                "res/layout/too_many.xml",
-                """
+  fun testTooMany() {
+    lint()
+      .files(
+        xml(
+            "res/layout/too_many.xml",
+            """
                 <FrameLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
 
@@ -439,22 +440,26 @@ class TooLintFixGroupViewsDetectorTest : AbstractCheckTest() {
 
                 </FrameLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/too_many.xml:397: Warning: too_many.xml has more than 80 views, bad for performance [TooManyViews]
                             <Button
                              ~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testTooDeep() {
-        lint().files(
-            xml(
-                "res/layout/too_deep.xml",
-                """
+  fun testTooDeep() {
+    lint()
+      .files(
+        xml(
+            "res/layout/too_deep.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
 
@@ -528,14 +533,17 @@ class TooLintFixGroupViewsDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/too_deep.xml:44: Warning: too_deep.xml has more than 10 levels, bad for performance [TooDeepLayout]
                                                 <LinearLayout
                                                  ~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

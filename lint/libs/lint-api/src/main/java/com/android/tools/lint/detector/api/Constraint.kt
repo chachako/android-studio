@@ -20,61 +20,61 @@ package com.android.tools.lint.detector.api
 
 import com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID
 
-fun minSdkAtLeast(minSdkVersion: Int): Constraint = MinSdkAtLeast(ApiConstraint.atLeast(minSdkVersion, ANDROID_SDK_ID))
-fun minSdkLessThan(minSdkVersion: Int): Constraint = MinSdkLessThan(ApiConstraint.atLeast(minSdkVersion, ANDROID_SDK_ID))
+fun minSdkAtLeast(minSdkVersion: Int): Constraint =
+  MinSdkAtLeast(ApiConstraint.atLeast(minSdkVersion, ANDROID_SDK_ID))
+
+fun minSdkLessThan(minSdkVersion: Int): Constraint =
+  MinSdkLessThan(ApiConstraint.atLeast(minSdkVersion, ANDROID_SDK_ID))
+
 fun minSdkAtLeast(minSdkVersion: ApiConstraint): Constraint = MinSdkAtLeast(minSdkVersion)
+
 fun minSdkLessThan(minSdkVersion: ApiConstraint): Constraint = MinSdkLessThan(minSdkVersion)
+
 fun targetSdkAtLeast(targetSdkVersion: Int): Constraint = TargetSdkAtLeast(targetSdkVersion)
+
 fun targetSdkLessThan(targetSdkVersion: Int): Constraint = TargetSdkLessThan(targetSdkVersion)
+
 fun isLibraryProject(): Constraint = IsLibraryProject()
+
 fun isAndroidProject(): Constraint = IsAndroidProject()
+
 fun notLibraryProject(): Constraint = NotLibraryProject()
+
 fun notAndroidProject(): Constraint = NotAndroidProject()
 
 /**
- * An optional condition to attach to an [Incident] to indicate that
- * whether the incident is valid depends on some conditions which cannot
- * be evaluated in the current project context.
+ * An optional condition to attach to an [Incident] to indicate that whether the incident is valid
+ * depends on some conditions which cannot be evaluated in the current project context.
  *
- * A very common condition is a minimumSdkVersion requirement. This
- * cannot be evaluated when for example a library is being analyzed,
- * because the actual minSdkVersion depends on the consuming app, which
- * is not available when the library is analyzed (and if the library is
- * consumed by more than one app the answers can be different in each
- * context).
+ * A very common condition is a minimumSdkVersion requirement. This cannot be evaluated when for
+ * example a library is being analyzed, because the actual minSdkVersion depends on the consuming
+ * app, which is not available when the library is analyzed (and if the library is consumed by more
+ * than one app the answers can be different in each context).
  *
  * There are various built-in conditions for common operations.
  *
- * Note that this class is sealed such that only the specifically
- * enumerated conditions here are allowed. This is done because these
- * conditions must all be persisted, and to avoid having to introduce
- * a whole general serialization mechanism which can work with any
- * arbitrary class, instead we define a specific set of conditions, with
- * a general fallback mechanism.
+ * Note that this class is sealed such that only the specifically enumerated conditions here are
+ * allowed. This is done because these conditions must all be persisted, and to avoid having to
+ * introduce a whole general serialization mechanism which can work with any arbitrary class,
+ * instead we define a specific set of conditions, with a general fallback mechanism.
  */
 sealed class Constraint {
-    /**
-     * Returns true if the given incident should be reported. If the
-     * answer is true, the condition implementation is allowed to mutate
-     * state in the [Incident], such as updating the error message.
-     */
-    abstract fun accept(context: Context, incident: Incident): Boolean
+  /**
+   * Returns true if the given incident should be reported. If the answer is true, the condition
+   * implementation is allowed to mutate state in the [Incident], such as updating the error
+   * message.
+   */
+  abstract fun accept(context: Context, incident: Incident): Boolean
 
-    /**
-     * Returns a condition where this condition *and* the given [other]
-     * condition must be met.
-     */
-    infix fun and(other: Constraint): Constraint {
-        return AllOfConstraint(this, other)
-    }
+  /** Returns a condition where this condition *and* the given [other] condition must be met. */
+  infix fun and(other: Constraint): Constraint {
+    return AllOfConstraint(this, other)
+  }
 
-    /**
-     * Returns a condition where this condition *or* the given [other]
-     * condition must be met.
-     */
-    infix fun or(other: Constraint): Constraint {
-        return AnyOfConstraint(this, other)
-    }
+  /** Returns a condition where this condition *or* the given [other] condition must be met. */
+  infix fun or(other: Constraint): Constraint {
+    return AnyOfConstraint(this, other)
+  }
 }
 
 /**
@@ -83,9 +83,9 @@ sealed class Constraint {
  * Don't use this method directly; use [minSdkAtLeast] instead.
  */
 class MinSdkAtLeast internal constructor(val minSdkVersion: ApiConstraint) : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.minSdkVersions.isAtLeast(minSdkVersion)
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return context.mainProject.minSdkVersions.isAtLeast(minSdkVersion)
+  }
 }
 
 /**
@@ -94,9 +94,9 @@ class MinSdkAtLeast internal constructor(val minSdkVersion: ApiConstraint) : Con
  * Don't use this method directly; use [minSdkLessThan] instead.
  */
 class MinSdkLessThan internal constructor(val minSdkVersion: ApiConstraint) : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return !context.mainProject.minSdkVersions.isAtLeast(minSdkVersion)
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return !context.mainProject.minSdkVersions.isAtLeast(minSdkVersion)
+  }
 }
 
 /**
@@ -105,9 +105,9 @@ class MinSdkLessThan internal constructor(val minSdkVersion: ApiConstraint) : Co
  * Don't use this method directly; use [targetSdkAtLeast] instead.
  */
 class TargetSdkAtLeast internal constructor(val targetSdkVersion: Int) : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.targetSdk >= targetSdkVersion
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return context.mainProject.targetSdk >= targetSdkVersion
+  }
 }
 
 /**
@@ -116,9 +116,9 @@ class TargetSdkAtLeast internal constructor(val targetSdkVersion: Int) : Constra
  * Don't use this method directly; use [targetSdkLessThan] instead.
  */
 class TargetSdkLessThan internal constructor(val targetSdkVersion: Int) : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.targetSdk < targetSdkVersion
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return context.mainProject.targetSdk < targetSdkVersion
+  }
 }
 
 /**
@@ -127,10 +127,10 @@ class TargetSdkLessThan internal constructor(val targetSdkVersion: Int) : Constr
  * Don't use this method directly; use [Constraint.and] instead.
  */
 class AllOfConstraint internal constructor(val left: Constraint, val right: Constraint) :
-    Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return left.accept(context, incident) || right.accept(context, incident)
-    }
+  Constraint() {
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return left.accept(context, incident) || right.accept(context, incident)
+  }
 }
 
 /**
@@ -139,10 +139,10 @@ class AllOfConstraint internal constructor(val left: Constraint, val right: Cons
  * Don't use this method directly; use [Constraint.or] instead.
  */
 class AnyOfConstraint internal constructor(val left: Constraint, val right: Constraint) :
-    Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return left.accept(context, incident) && right.accept(context, incident)
-    }
+  Constraint() {
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return left.accept(context, incident) && right.accept(context, incident)
+  }
 }
 
 /**
@@ -152,9 +152,9 @@ class AnyOfConstraint internal constructor(val left: Constraint, val right: Cons
  */
 @Suppress("CanSealedSubClassBeObject")
 class IsLibraryProject internal constructor() : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.isLibrary
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return context.mainProject.isLibrary
+  }
 }
 
 /**
@@ -164,33 +164,31 @@ class IsLibraryProject internal constructor() : Constraint() {
  */
 @Suppress("CanSealedSubClassBeObject")
 class NotLibraryProject internal constructor() : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return !context.mainProject.isLibrary
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return !context.mainProject.isLibrary
+  }
 }
 
 /**
- * Constraint checking that the main module is an Android project (app
- * or library).
+ * Constraint checking that the main module is an Android project (app or library).
  *
  * Don't use this method directly; use [isAndroidProject] instead.
  */
 @Suppress("CanSealedSubClassBeObject")
 class IsAndroidProject internal constructor() : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return context.mainProject.isAndroidProject
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return context.mainProject.isAndroidProject
+  }
 }
 
 /**
- * Constraint checking that the main module is **not** an Android
- * project (app or library).
+ * Constraint checking that the main module is **not** an Android project (app or library).
  *
  * Don't use this method directly; use [notAndroidProject] instead.
  */
 @Suppress("CanSealedSubClassBeObject")
 class NotAndroidProject internal constructor() : Constraint() {
-    override fun accept(context: Context, incident: Incident): Boolean {
-        return !context.mainProject.isAndroidProject
-    }
+  override fun accept(context: Context, incident: Incident): Boolean {
+    return !context.mainProject.isAndroidProject
+  }
 }

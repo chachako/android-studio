@@ -33,81 +33,73 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.getContainingUMethod
 
-/**
- * Detects Lint code that doesn't handle external annotations correctly.
- */
+/** Detects Lint code that doesn't handle external annotations correctly. */
 class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
 
-    companion object Issues {
+  companion object Issues {
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "ExternalAnnotations",
-            briefDescription = "External annotations not considered",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "ExternalAnnotations",
+        briefDescription = "External annotations not considered",
+        explanation =
+          """
                 Lint supports XML files with "external annotations", which means any detectors that \
                 recognize certain annotations should get them from `JavaEvaluator.getAllAnnotations` \
                 and not by calling `uAnnotations` directly on UAST or PSI elements.
             """,
-            severity = Severity.ERROR,
-            implementation = Implementation(
-                ExternalAnnotationsDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
-        )
+        severity = Severity.ERROR,
+        implementation =
+          Implementation(ExternalAnnotationsDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
 
-        private val relevantClasses = listOf(
-            "com.intellij.psi.PsiModifierListOwner",
-            "com.intellij.psi.PsiAnnotationOwner",
-            "org.jetbrains.uast.UAnnotated",
-            "com.intellij.lang.jvm.JvmAnnotatedElement"
-        )
+    private val relevantClasses =
+      listOf(
+        "com.intellij.psi.PsiModifierListOwner",
+        "com.intellij.psi.PsiAnnotationOwner",
+        "org.jetbrains.uast.UAnnotated",
+        "com.intellij.lang.jvm.JvmAnnotatedElement"
+      )
+  }
+
+  override fun getApplicableMethodNames() = listOf("getAnnotations", "getUAnnotations")
+  override fun getApplicableReferenceNames() = listOf("annotations", "uAnnotations")
+
+  // For references to Java/Kotlin methods.
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    check(node, method, context)
+  }
+
+  // For references to Kotlin properties.
+  override fun visitReference(
+    context: JavaContext,
+    reference: UReferenceExpression,
+    referenced: PsiElement
+  ) {
+    if (isKotlin(referenced)) {
+      check(reference, referenced as? PsiMember ?: return, context)
     }
+  }
 
-    override fun getApplicableMethodNames() = listOf("getAnnotations", "getUAnnotations")
-    override fun getApplicableReferenceNames() = listOf("annotations", "uAnnotations")
-
-    // For references to Java/Kotlin methods.
-    override fun visitMethodCall(
-        context: JavaContext,
-        node: UCallExpression,
-        method: PsiMethod
+  private fun check(expression: UExpression, member: PsiMember, context: JavaContext) {
+    val evaluator = context.evaluator
+    if (
+      relevantClasses.any { evaluator.isMemberInClass(member, it) } &&
+        isRelevantCaller(expression, evaluator)
     ) {
-        check(node, method, context)
+      context.report(
+        ISSUE,
+        expression,
+        context.getLocation(expression),
+        "${member.name} used instead of `JavaEvaluator.getAllAnnotations`."
+      )
     }
+  }
 
-    // For references to Kotlin properties.
-    override fun visitReference(
-        context: JavaContext,
-        reference: UReferenceExpression,
-        referenced: PsiElement
-    ) {
-        if (isKotlin(referenced)) {
-            check(reference, referenced as? PsiMember ?: return, context)
-        }
-    }
-
-    private fun check(
-        expression: UExpression,
-        member: PsiMember,
-        context: JavaContext
-    ) {
-        val evaluator = context.evaluator
-        if (relevantClasses.any { evaluator.isMemberInClass(member, it) } &&
-            isRelevantCaller(expression, evaluator)
-        ) {
-            context.report(
-                ISSUE,
-                expression,
-                context.getLocation(expression),
-                "${member.name} used instead of `JavaEvaluator.getAllAnnotations`."
-            )
-        }
-    }
-
-    private fun isRelevantCaller(node: UExpression, evaluator: JavaEvaluator): Boolean {
-        val callerClass = node.getContainingUMethod()?.containingClass ?: return false
-        return evaluator.inheritsFrom(callerClass, Detector::class.java.name, false) ||
-            callerClass.qualifiedName.orEmpty().startsWith("com.android.tools.lint.")
-    }
+  private fun isRelevantCaller(node: UExpression, evaluator: JavaEvaluator): Boolean {
+    val callerClass = node.getContainingUMethod()?.containingClass ?: return false
+    return evaluator.inheritsFrom(callerClass, Detector::class.java.name, false) ||
+      callerClass.qualifiedName.orEmpty().startsWith("com.android.tools.lint.")
+  }
 }

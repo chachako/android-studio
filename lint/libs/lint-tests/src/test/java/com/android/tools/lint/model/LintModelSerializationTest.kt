@@ -26,6 +26,13 @@ import com.android.tools.lint.model.LintModelSerialization.TargetFile
 import com.android.utils.XmlUtils
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import java.io.File
+import java.io.IOException
+import java.io.Reader
+import java.io.StringReader
+import java.io.StringWriter
+import java.io.Writer
+import java.nio.file.Files
 import org.intellij.lang.annotations.Language
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -37,22 +44,15 @@ import org.junit.rules.TemporaryFolder
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.xml.sax.SAXException
-import java.io.File
-import java.io.IOException
-import java.io.Reader
-import java.io.StringReader
-import java.io.StringWriter
-import java.io.Writer
-import java.nio.file.Files
 
 class LintModelSerializationTest {
-    @get:Rule
-    var temporaryFolder = TemporaryFolder()
+  @get:Rule var temporaryFolder = TemporaryFolder()
 
-    @Test
-    fun testFlavors() {
-        val mocker: GradleModelMocker = GradleModelMockerTest.createMocker(
-            """
+  @Test
+  fun testFlavors() {
+    val mocker: GradleModelMocker =
+      GradleModelMockerTest.createMocker(
+        """
             buildscript {
                 repositories {
                     jcenter()
@@ -140,14 +140,16 @@ class LintModelSerializationTest {
                 // Java libraries
                 implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0"
             }
-            """.trimIndent(),
-            temporaryFolder
-        )
+            """
+          .trimIndent(),
+        temporaryFolder
+      )
 
-        checkSerialization(
-            mocker,
-            mapOf(
-                "module" to """
+    checkSerialization(
+      mocker,
+      mapOf(
+        "module" to
+          """
                 <lint-module
                     format="1"
                     dir="＄ROOT"
@@ -204,7 +206,8 @@ class LintModelSerializationTest {
                   <variant name="paidNormalRelease"/>
                 </lint-module>
                 """,
-                "variant-freeBetaDebug" to """
+        "variant-freeBetaDebug" to
+          """
                 <variant
                     name="freeBetaDebug"
                     minSdkVersion="5"
@@ -352,8 +355,8 @@ class LintModelSerializationTest {
                   </testArtifact>
                 </variant>
               """,
-
-                "dependencies-freeBetaDebug-mainArtifact" to """
+        "dependencies-freeBetaDebug-mainArtifact" to
+          """
                     <dependencies>
                       <compile
                           roots="com.android.support:appcompat-v7:25.0.1,com.android.support:support-v4:25.0.1,com.android.support:support-compat:25.0.1,com.android.support:support-media-compat:25.0.1,com.android.support:support-core-utils:25.0.1,com.android.support:support-core-ui:25.0.1,com.android.support:support-fragment:25.0.1,com.android.support:support-vector-drawable:25.0.1,com.android.support:animated-vector-drawable:25.0.1,com.android.support.constraint:constraint-layout:1.0.0-beta3,com.android.support:support-annotations:25.0.1,com.android.support.constraint:constraint-layout-solver:1.0.0-beta3,org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0,org.jetbrains.kotlin:kotlin-stdlib:1.3.0,org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0,org.jetbrains:annotations:13.0">
@@ -459,16 +462,18 @@ class LintModelSerializationTest {
                       </package>
                     </dependencies>
                 """,
-                "dependencies-freeBetaDebug-testArtifact" to """
+        "dependencies-freeBetaDebug-testArtifact" to
+          """
                 <dependencies>
                 </dependencies>
                 """,
-                "dependencies-freeBetaDebug-androidTestArtifact" to """
+        "dependencies-freeBetaDebug-androidTestArtifact" to
+          """
                 <dependencies>
                 </dependencies>
                 """,
-
-                "library_table-freeBetaDebug-mainArtifact" to """
+        "library_table-freeBetaDebug-mainArtifact" to
+          """
                 <libraries>
                   <library
                       name="com.android.support:appcompat-v7:25.0.1"
@@ -626,16 +631,18 @@ class LintModelSerializationTest {
                       resolved="org.jetbrains:annotations:13.0"/>
                 </libraries>
                 """,
-                "library_table-freeBetaDebug-testArtifact" to """
+        "library_table-freeBetaDebug-testArtifact" to
+          """
                 <libraries>
                 </libraries>
                 """,
-                "library_table-freeBetaDebug-androidTestArtifact" to """
+        "library_table-freeBetaDebug-androidTestArtifact" to
+          """
                 <libraries>
                 </libraries>
                 """,
-
-                "variant-paidNormalRelease" to """
+        "variant-paidNormalRelease" to
+          """
                     <variant
                         name="paidNormalRelease"
                         minSdkVersion="5"
@@ -769,8 +776,8 @@ class LintModelSerializationTest {
                       </testArtifact>
                     </variant>
                 """,
-
-                "dependencies-paidNormalRelease-mainArtifact" to """
+        "dependencies-paidNormalRelease-mainArtifact" to
+          """
                     <dependencies>
                       <compile
                           roots="com.android.support:appcompat-v7:25.0.1,com.android.support:support-v4:25.0.1,com.android.support:support-compat:25.0.1,com.android.support:support-media-compat:25.0.1,com.android.support:support-core-utils:25.0.1,com.android.support:support-core-ui:25.0.1,com.android.support:support-fragment:25.0.1,com.android.support:support-vector-drawable:25.0.1,com.android.support:animated-vector-drawable:25.0.1,com.android.support.constraint:constraint-layout:1.0.0-beta3,com.android.support:support-annotations:25.0.1,com.android.support.constraint:constraint-layout-solver:1.0.0-beta3,org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.0,org.jetbrains.kotlin:kotlin-stdlib:1.3.0,org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0,org.jetbrains:annotations:13.0">
@@ -876,16 +883,18 @@ class LintModelSerializationTest {
                       </package>
                     </dependencies>
                 """,
-                "dependencies-paidNormalRelease-testArtifact" to """
+        "dependencies-paidNormalRelease-testArtifact" to
+          """
                 <dependencies>
                 </dependencies>
                 """,
-                "dependencies-paidNormalRelease-androidTestArtifact" to """
+        "dependencies-paidNormalRelease-androidTestArtifact" to
+          """
                 <dependencies>
                 </dependencies>
                 """,
-
-                "library_table-paidNormalRelease-mainArtifact" to """
+        "library_table-paidNormalRelease-mainArtifact" to
+          """
                 <libraries>
                   <library
                       name="com.android.support:appcompat-v7:25.0.1"
@@ -1043,22 +1052,24 @@ class LintModelSerializationTest {
                       resolved="org.jetbrains:annotations:13.0"/>
                 </libraries>
                 """,
-                "library_table-paidNormalRelease-testArtifact" to """
+        "library_table-paidNormalRelease-testArtifact" to
+          """
                 <libraries>
                 </libraries>
                 """,
-                "library_table-paidNormalRelease-androidTestArtifact" to """
+        "library_table-paidNormalRelease-androidTestArtifact" to
+          """
                 <libraries>
                 </libraries>
                 """,
-            )
-        )
-    }
+      )
+    )
+  }
 
-    @Test
-    fun testMissingTags() {
-        tryParse(
-            """
+  @Test
+  fun testMissingTags() {
+    tryParse(
+      """
             <lint-module
                 dir="root"
                 name="test_project-build"
@@ -1069,27 +1080,27 @@ class LintModelSerializationTest {
                 compileTarget="android-25">
             </lint-module>
             """,
-            "Missing data at testfile.xml:11"
-        )
-    }
+      "Missing data at testfile.xml:11"
+    )
+  }
 
-    @Test
-    fun testMissingAttribute() {
-        tryParse(
-            """
+  @Test
+  fun testMissingAttribute() {
+    tryParse(
+      """
             <lint-module
                 dir="root"
                 compileTarget="android-25">
             </lint-module>
             """,
-            "Expected `name` attribute in <lint-module> tag at testfile.xml:4"
-        )
-    }
+      "Expected `name` attribute in <lint-module> tag at testfile.xml:4"
+    )
+  }
 
-    @Test
-    fun testUnexpectedTag() {
-        tryParse(
-            """
+  @Test
+  fun testUnexpectedTag() {
+    tryParse(
+      """
             <lint-module
                 dir="root"
                 name="test_project-build"
@@ -1101,52 +1112,53 @@ class LintModelSerializationTest {
                 <foobar />
             </lint-module>
             """,
-            "Unexpected tag `<foobar>` at testfile.xml:10"
-        )
+      "Unexpected tag `<foobar>` at testfile.xml:10"
+    )
+  }
+
+  @Test
+  fun testPathVariables() {
+    val root = temporaryFolder.root
+    fun String.cleanup() = replace(root.path, "＄ROOT").trim()
+    val moduleFile = File(root, "module.xml")
+    val folder1 = temporaryFolder.newFolder()
+    val folder2 = temporaryFolder.newFolder()
+    val file1 = File(folder1, "file1")
+    file1.createNewFile()
+    val file2 = File(folder2, "file2")
+    file2.createNewFile()
+
+    val pathVariables = PathVariables()
+    pathVariables.add("SDK", folder1)
+    pathVariables.add("GRADLE", folder2)
+
+    LintModelSerializationFileAdapter(root, pathVariables).use { adapter ->
+      assertEquals("module.xml", adapter.toPathString(moduleFile, root).cleanup())
+      assertEquals("\$SDK/file1", adapter.toPathString(file1, root).portablePath())
+      assertEquals("\$GRADLE/file2", adapter.toPathString(file2, root).portablePath())
+
+      assertEquals(moduleFile, adapter.fromPathString("module.xml", root))
+      assertEquals(file1, adapter.fromPathString("\$SDK/file1", root))
+      assertEquals(file2, adapter.fromPathString("\$GRADLE/file2", root))
     }
+  }
 
-    @Test
-    fun testPathVariables() {
-        val root = temporaryFolder.root
-        fun String.cleanup() = replace(root.path, "＄ROOT").trim()
-        val moduleFile = File(root, "module.xml")
-        val folder1 = temporaryFolder.newFolder()
-        val folder2 = temporaryFolder.newFolder()
-        val file1 = File(folder1, "file1")
-        file1.createNewFile()
-        val file2 = File(folder2, "file2")
-        file2.createNewFile()
-
-        val pathVariables = PathVariables()
-        pathVariables.add("SDK", folder1)
-        pathVariables.add("GRADLE", folder2)
-
-        LintModelSerializationFileAdapter(root, pathVariables).use { adapter ->
-            assertEquals("module.xml", adapter.toPathString(moduleFile, root).cleanup())
-            assertEquals("\$SDK/file1", adapter.toPathString(file1, root).portablePath())
-            assertEquals("\$GRADLE/file2", adapter.toPathString(file2, root).portablePath())
-
-            assertEquals(moduleFile, adapter.fromPathString("module.xml", root))
-            assertEquals(file1, adapter.fromPathString("\$SDK/file1", root))
-            assertEquals(file2, adapter.fromPathString("\$GRADLE/file2", root))
-        }
-    }
-
-    /**
-     * Check that the relative paths in variants are resolved against
-     * the project directory.
-     */
-    @Test
-    fun testLintModelSerializationFileAdapterRootHandling() {
-        val temp = temporaryFolder.newFolder()
-        val projectDirectory = temp.resolve("projectDir").createDirectories()
-        projectDirectory.resolve("src/main/").createDirectories()
-            .resolve("AndroidManifest.xml").writeText("Fake Android manifest")
-        val buildDirectory = temp.resolve("buildDir").createDirectories()
-        val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
-        modelsDir.resolve("module.xml")
-            .writeText(
-                """<lint-module
+  /** Check that the relative paths in variants are resolved against the project directory. */
+  @Test
+  fun testLintModelSerializationFileAdapterRootHandling() {
+    val temp = temporaryFolder.newFolder()
+    val projectDirectory = temp.resolve("projectDir").createDirectories()
+    projectDirectory
+      .resolve("src/main/")
+      .createDirectories()
+      .resolve("AndroidManifest.xml")
+      .writeText("Fake Android manifest")
+    val buildDirectory = temp.resolve("buildDir").createDirectories()
+    val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
+    modelsDir
+      .resolve("module.xml")
+      .writeText(
+        """<lint-module
                     format="1"
                     dir="${projectDirectory.absolutePath}"
                     name="test_project-build"
@@ -1160,10 +1172,11 @@ class LintModelSerializationTest {
                   <lintOptions />
                   <variant name="debug"/>
                 </lint-module>"""
-            )
-        modelsDir.resolve("debug.xml")
-            .writeText(
-                """<variant
+      )
+    modelsDir
+      .resolve("debug.xml")
+      .writeText(
+        """<variant
                     name="debug"
                     minSdkVersion="5"
                     targetSdkVersion="16"
@@ -1181,33 +1194,41 @@ class LintModelSerializationTest {
                       applicationId="com.android.tools.test">
                   </mainArtifact>
                 </variant>"""
-            )
+      )
 
-        val module = LintModelSerialization.readModule(
-            source = modelsDir,
-            readDependencies = false
-        )
+    val module = LintModelSerialization.readModule(source = modelsDir, readDependencies = false)
 
-        val manifestFile = module.defaultVariant()!!.sourceProviders.first().manifestFiles.first()
-        assertWithMessage("Source file should be resolved relative to the project directory, not the source directory")
-            .about(PathSubject.paths())
-            .that(manifestFile.toPath())
-            .hasContents("Fake Android manifest")
-    }
+    val manifestFile = module.defaultVariant()!!.sourceProviders.first().manifestFiles.first()
+    assertWithMessage(
+        "Source file should be resolved relative to the project directory, not the source directory"
+      )
+      .about(PathSubject.paths())
+      .that(manifestFile.toPath())
+      .hasContents("Fake Android manifest")
+  }
 
-    @Test
-    fun testLintModelSerializationManifest() {
-        val temp = temporaryFolder.newFolder()
-        val projectDirectory = temp.resolve("projectDir").createDirectories()
-        val buildDirectory = temp.resolve("buildDir").createDirectories()
-        val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
-        val mergedManifest = buildDirectory.resolve("intermediates/merged_manifest/debug").createDirectories()
-            .resolve("AndroidManifest.xml").apply { writeText("Merged manifest") }
-        val mergeReport = buildDirectory.resolve("outputs/reports/manifest/debug").createDirectories()
-            .resolve("ManifestMergeReport.xml").apply { writeText("Manifest merge report") }
-        modelsDir.resolve("module.xml")
-            .writeText(
-                """<lint-module
+  @Test
+  fun testLintModelSerializationManifest() {
+    val temp = temporaryFolder.newFolder()
+    val projectDirectory = temp.resolve("projectDir").createDirectories()
+    val buildDirectory = temp.resolve("buildDir").createDirectories()
+    val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
+    val mergedManifest =
+      buildDirectory
+        .resolve("intermediates/merged_manifest/debug")
+        .createDirectories()
+        .resolve("AndroidManifest.xml")
+        .apply { writeText("Merged manifest") }
+    val mergeReport =
+      buildDirectory
+        .resolve("outputs/reports/manifest/debug")
+        .createDirectories()
+        .resolve("ManifestMergeReport.xml")
+        .apply { writeText("Manifest merge report") }
+    modelsDir
+      .resolve("module.xml")
+      .writeText(
+        """<lint-module
                     format="1"
                     dir="${projectDirectory.absolutePath}"
                     name="test_project-build"
@@ -1221,9 +1242,9 @@ class LintModelSerializationTest {
                   <lintOptions />
                   <variant name="debug"/>
                 </lint-module>"""
-            )
-        val debugXml =
-            """<variant
+      )
+    val debugXml =
+      """<variant
                     name="debug"
                     minSdkVersion="5"
                     targetSdkVersion="16"
@@ -1234,40 +1255,37 @@ class LintModelSerializationTest {
                   <mainArtifact applicationId="com.android.tools.test">
                   </mainArtifact>
                 </variant>"""
-        modelsDir.resolve("debug.xml").writeText(debugXml)
+    modelsDir.resolve("debug.xml").writeText(debugXml)
 
-        val module = LintModelSerialization.readModule(
-            source = modelsDir,
-            readDependencies = false
-        )
+    val module = LintModelSerialization.readModule(source = modelsDir, readDependencies = false)
 
-        val debugVariant = module.defaultVariant()!!
+    val debugVariant = module.defaultVariant()!!
 
-        assertWithMessage("Merged manifest is read correctly")
-            .about(PathSubject.paths())
-            .that(debugVariant.mergedManifest?.toPath())
-            .hasContents("Merged manifest")
+    assertWithMessage("Merged manifest is read correctly")
+      .about(PathSubject.paths())
+      .that(debugVariant.mergedManifest?.toPath())
+      .hasContents("Merged manifest")
 
-        assertWithMessage("Merged manifest is read correctly")
-            .about(PathSubject.paths())
-            .that(debugVariant.manifestMergeReport?.toPath())
-            .hasContents("Manifest merge report")
-    }
+    assertWithMessage("Merged manifest is read correctly")
+      .about(PathSubject.paths())
+      .that(debugVariant.manifestMergeReport?.toPath())
+      .hasContents("Manifest merge report")
+  }
 
-    /**
-     * Check that special references to output files "stderr" and
-     * "stdout" are not turned into actual files. Regression test for
-     * https://issuetracker.google.com/174480831.
-     */
-    @Test
-    fun testSpecialHandlingOfStderrAndStdout() {
-        val temp = temporaryFolder.newFolder()
-        val projectDirectory = temp.resolve("projectDir").createDirectories()
-        val buildDirectory = temp.resolve("buildDir").createDirectories()
-        val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
-        modelsDir.resolve("module.xml")
-            .writeText(
-                """
+  /**
+   * Check that special references to output files "stderr" and "stdout" are not turned into actual
+   * files. Regression test for https://issuetracker.google.com/174480831.
+   */
+  @Test
+  fun testSpecialHandlingOfStderrAndStdout() {
+    val temp = temporaryFolder.newFolder()
+    val projectDirectory = temp.resolve("projectDir").createDirectories()
+    val buildDirectory = temp.resolve("buildDir").createDirectories()
+    val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
+    modelsDir
+      .resolve("module.xml")
+      .writeText(
+        """
                 <lint-module
                     format="1"
                     dir="${projectDirectory.absolutePath}"
@@ -1292,11 +1310,13 @@ class LintModelSerializationTest {
                       xmlReport="true"/>
                     <variant name="debug"/>
                 </lint-module>
-                """.trimIndent()
-            )
-        modelsDir.resolve("debug.xml")
-            .writeText(
                 """
+          .trimIndent()
+      )
+    modelsDir
+      .resolve("debug.xml")
+      .writeText(
+        """
                 <variant
                     name="debug"
                     minSdkVersion="5"
@@ -1315,32 +1335,31 @@ class LintModelSerializationTest {
                       applicationId="com.android.tools.test">
                   </mainArtifact>
                 </variant>
-                """.trimIndent()
-            )
+                """
+          .trimIndent()
+      )
 
-        val module = LintModelSerialization.readModule(
-            source = modelsDir,
-            readDependencies = false
-        )
+    val module = LintModelSerialization.readModule(source = modelsDir, readDependencies = false)
 
-        val lintOptions = module.lintOptions
-        val textOutput = lintOptions.textOutput
-        assertEquals("stderr", textOutput!!.path)
-        assertEquals("stdout", lintOptions.xmlOutput!!.path)
-        assertEquals("relative", lintOptions.htmlOutput!!.name)
-        assertTrue(lintOptions.htmlOutput!!.isAbsolute)
-    }
+    val lintOptions = module.lintOptions
+    val textOutput = lintOptions.textOutput
+    assertEquals("stderr", textOutput!!.path)
+    assertEquals("stdout", lintOptions.xmlOutput!!.path)
+    assertEquals("relative", lintOptions.htmlOutput!!.name)
+    assertTrue(lintOptions.htmlOutput!!.isAbsolute)
+  }
 
-    @Test
-    fun testLintModelSerializationWithPartialResultsDir() {
-        val temp = temporaryFolder.newFolder()
-        val projectDirectory = temp.resolve("projectDir").createDirectories()
-        val buildDirectory = temp.resolve("buildDir").createDirectories()
-        val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
-        val partialResultsDir = buildDirectory.resolve("intermediates/lint_partial_results/debug/out")
-        modelsDir.resolve("module.xml")
-            .writeText(
-                """<lint-module
+  @Test
+  fun testLintModelSerializationWithPartialResultsDir() {
+    val temp = temporaryFolder.newFolder()
+    val projectDirectory = temp.resolve("projectDir").createDirectories()
+    val buildDirectory = temp.resolve("buildDir").createDirectories()
+    val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
+    val partialResultsDir = buildDirectory.resolve("intermediates/lint_partial_results/debug/out")
+    modelsDir
+      .resolve("module.xml")
+      .writeText(
+        """<lint-module
                     format="1"
                     dir="${projectDirectory.absolutePath}"
                     name="test_project-build"
@@ -1354,10 +1373,11 @@ class LintModelSerializationTest {
                   <lintOptions />
                   <variant name="debug"/>
                 </lint-module>"""
-            )
-        modelsDir.resolve("debug.xml")
-            .writeText(
-                """<variant
+      )
+    modelsDir
+      .resolve("debug.xml")
+      .writeText(
+        """<variant
                     name="debug"
                     minSdkVersion="5"
                     targetSdkVersion="16"
@@ -1367,44 +1387,60 @@ class LintModelSerializationTest {
                   <mainArtifact applicationId="com.android.tools.test">
                   </mainArtifact>
                 </variant>"""
-            )
+      )
 
-        val module = LintModelSerialization.readModule(modelsDir, readDependencies = false)
+    val module = LintModelSerialization.readModule(modelsDir, readDependencies = false)
 
-        val debugVariant1 = module.defaultVariant()!!
+    val debugVariant1 = module.defaultVariant()!!
 
-        assertWithMessage("partialResultsDir is read correctly")
-            .about(PathSubject.paths())
-            .that(debugVariant1.partialResultsDir?.toPath())
-            .isEqualTo(partialResultsDir)
+    assertWithMessage("partialResultsDir is read correctly")
+      .about(PathSubject.paths())
+      .that(debugVariant1.partialResultsDir?.toPath())
+      .isEqualTo(partialResultsDir)
 
-        // Now delete the original model files, serialize the model, and read it back to check that partialResultsDir
-        // is written correctly.
-        modelsDir.listFiles()?.forEach { Files.delete(it.toPath()) }
+    // Now delete the original model files, serialize the model, and read it back to check that
+    // partialResultsDir
+    // is written correctly.
+    modelsDir.listFiles()?.forEach { Files.delete(it.toPath()) }
 
-        LintModelSerialization.writeModule(module, modelsDir, listOf(debugVariant1), writeDependencies = false)
+    LintModelSerialization.writeModule(
+      module,
+      modelsDir,
+      listOf(debugVariant1),
+      writeDependencies = false
+    )
 
-        val debugVariant2 = LintModelSerialization.readModule(modelsDir, readDependencies = false).defaultVariant()!!
+    val debugVariant2 =
+      LintModelSerialization.readModule(modelsDir, readDependencies = false).defaultVariant()!!
 
-        assertWithMessage("partialResultsDir is written and read correctly")
-            .about(PathSubject.paths())
-            .that(debugVariant2.partialResultsDir?.toPath())
-            .isEqualTo(partialResultsDir)
-    }
+    assertWithMessage("partialResultsDir is written and read correctly")
+      .about(PathSubject.paths())
+      .that(debugVariant2.partialResultsDir?.toPath())
+      .isEqualTo(partialResultsDir)
+  }
 
-    @Test
-    fun testCodenameApiLevelWithHeuristics() {
-        val temp = temporaryFolder.newFolder()
-        val projectDirectory = temp.resolve("projectDir").createDirectories()
-        val buildDirectory = temp.resolve("buildDir").createDirectories()
-        val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
-        val mergedManifest = buildDirectory.resolve("intermediates/merged_manifest/debug").createDirectories()
-            .resolve("AndroidManifest.xml").apply { writeText("Merged manifest") }
-        val mergeReport = buildDirectory.resolve("outputs/reports/manifest/debug").createDirectories()
-            .resolve("ManifestMergeReport.xml").apply { writeText("Manifest merge report") }
-        modelsDir.resolve("module.xml")
-            .writeText(
-                """<lint-module
+  @Test
+  fun testCodenameApiLevelWithHeuristics() {
+    val temp = temporaryFolder.newFolder()
+    val projectDirectory = temp.resolve("projectDir").createDirectories()
+    val buildDirectory = temp.resolve("buildDir").createDirectories()
+    val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
+    val mergedManifest =
+      buildDirectory
+        .resolve("intermediates/merged_manifest/debug")
+        .createDirectories()
+        .resolve("AndroidManifest.xml")
+        .apply { writeText("Merged manifest") }
+    val mergeReport =
+      buildDirectory
+        .resolve("outputs/reports/manifest/debug")
+        .createDirectories()
+        .resolve("ManifestMergeReport.xml")
+        .apply { writeText("Manifest merge report") }
+    modelsDir
+      .resolve("module.xml")
+      .writeText(
+        """<lint-module
                     format="1"
                     dir="${projectDirectory.absolutePath}"
                     name="test_project-build"
@@ -1418,9 +1454,9 @@ class LintModelSerializationTest {
                   <lintOptions />
                   <variant name="debug"/>
                 </lint-module>"""
-            )
-        val debugXml =
-            """<variant
+      )
+    val debugXml =
+      """<variant
                     name="debug"
                     minSdkVersion="TheCodeNameStartsWithT"
                     targetSdkVersion="UKnowTheTargetStartsWithU"
@@ -1431,39 +1467,45 @@ class LintModelSerializationTest {
                   <mainArtifact applicationId="com.android.tools.test">
                   </mainArtifact>
                 </variant>"""
-        modelsDir.resolve("debug.xml").writeText(debugXml)
+    modelsDir.resolve("debug.xml").writeText(debugXml)
 
-        val module = LintModelSerialization.readModule(
-            source = modelsDir,
-            readDependencies = false
-        )
+    val module = LintModelSerialization.readModule(source = modelsDir, readDependencies = false)
 
-        val debugVariant = module.defaultVariant()!!
+    val debugVariant = module.defaultVariant()!!
 
-        val minSdkVersion = debugVariant.minSdkVersion!!
-        assertEquals("API 32, TheCodeNameStartsWithT preview", minSdkVersion.toString())
-        assertEquals(33, minSdkVersion.featureLevel)
-        val targetSdkVersion = debugVariant.targetSdkVersion!!
-        assertEquals("API 33, UKnowTheTargetStartsWithU preview", targetSdkVersion.toString())
-        assertEquals(34, targetSdkVersion.featureLevel)
-    }
+    val minSdkVersion = debugVariant.minSdkVersion!!
+    assertEquals("API 32, TheCodeNameStartsWithT preview", minSdkVersion.toString())
+    assertEquals(33, minSdkVersion.featureLevel)
+    val targetSdkVersion = debugVariant.targetSdkVersion!!
+    assertEquals("API 33, UKnowTheTargetStartsWithU preview", targetSdkVersion.toString())
+    assertEquals(34, targetSdkVersion.featureLevel)
+  }
 
-    @Test
-    fun testCodenameApiLevelWithAndroidSdk() {
-        val codename = "Whatever"
-        val apiLevel = 42
+  @Test
+  fun testCodenameApiLevelWithAndroidSdk() {
+    val codename = "Whatever"
+    val apiLevel = 42
 
-        val temp = temporaryFolder.newFolder()
-        val projectDirectory = temp.resolve("projectDir").createDirectories()
-        val buildDirectory = temp.resolve("buildDir").createDirectories()
-        val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
-        val mergedManifest = buildDirectory.resolve("intermediates/merged_manifest/debug").createDirectories()
-            .resolve("AndroidManifest.xml").apply { writeText("Merged manifest") }
-        val mergeReport = buildDirectory.resolve("outputs/reports/manifest/debug").createDirectories()
-            .resolve("ManifestMergeReport.xml").apply { writeText("Manifest merge report") }
-        modelsDir.resolve("module.xml")
-            .writeText(
-                """<lint-module
+    val temp = temporaryFolder.newFolder()
+    val projectDirectory = temp.resolve("projectDir").createDirectories()
+    val buildDirectory = temp.resolve("buildDir").createDirectories()
+    val modelsDir = buildDirectory.resolve("intermediates/lint-models").createDirectories()
+    val mergedManifest =
+      buildDirectory
+        .resolve("intermediates/merged_manifest/debug")
+        .createDirectories()
+        .resolve("AndroidManifest.xml")
+        .apply { writeText("Merged manifest") }
+    val mergeReport =
+      buildDirectory
+        .resolve("outputs/reports/manifest/debug")
+        .createDirectories()
+        .resolve("ManifestMergeReport.xml")
+        .apply { writeText("Manifest merge report") }
+    modelsDir
+      .resolve("module.xml")
+      .writeText(
+        """<lint-module
                     format="1"
                     dir="${projectDirectory.absolutePath}"
                     name="test_project-build"
@@ -1477,9 +1519,9 @@ class LintModelSerializationTest {
                   <lintOptions />
                   <variant name="debug"/>
                 </lint-module>"""
-            )
-        val debugXml =
-            """<variant
+      )
+    val debugXml =
+      """<variant
                     name="debug"
                     minSdkVersion="$codename"
                     targetSdkVersion="$codename"
@@ -1490,14 +1532,14 @@ class LintModelSerializationTest {
                   <mainArtifact applicationId="com.android.tools.test">
                   </mainArtifact>
                 </variant>"""
-        modelsDir.resolve("debug.xml").writeText(debugXml)
+    modelsDir.resolve("debug.xml").writeText(debugXml)
 
-        val sdkHome = temporaryFolder.newFolder("sdk")
-        val pkg = File(sdkHome, "platforms/android-$codename/package.xml")
-        pkg.parentFile.mkdirs()
-        pkg.writeText(
-            //language=XML
-            """
+    val sdkHome = temporaryFolder.newFolder("sdk")
+    val pkg = File(sdkHome, "platforms/android-$codename/package.xml")
+    pkg.parentFile.mkdirs()
+    pkg.writeText(
+      // language=XML
+      """
             <ns2:repository xmlns:ns2="http://schemas.android.com/repository/android/common/02" xmlns:ns11="http://schemas.android.com/sdk/android/repo/repository2/03">
                 <license id="license-CF56B611" type="text"/>
                 <localPackage path="platforms;android-$codename" obsolete="false">
@@ -1514,206 +1556,193 @@ class LintModelSerializationTest {
                     <uses-license ref="license-CF56B611"/>
                 </localPackage>
             </ns2:repository>
-            """.trimIndent()
+            """
+        .trimIndent()
+    )
+
+    val module =
+      LintModelSerialization.readModule(
+        source = modelsDir,
+        pathVariables = PathVariables().apply { add("ANDROID_HOME", sdkHome) },
+        readDependencies = false
+      )
+
+    val debugVariant = module.defaultVariant()
+    val minSdkVersion = debugVariant?.minSdkVersion!!
+    assertEquals("API $apiLevel, $codename preview", minSdkVersion.toString())
+  }
+
+  // ----------------------------------------------------------------------------------
+  // Test infrastructure below this line
+  // ----------------------------------------------------------------------------------
+
+  private fun tryParse(@Language("XML") xml: String, expectedErrors: String? = null) {
+    try {
+      val reader = StringReader(xml)
+      LintModelSerialization.readModule(
+        LintModelSerializationStringAdapter(reader = { _, _, _ -> reader })
+      )
+      if (expectedErrors != null) {
+        fail("Expected failure, got valid module instead")
+      }
+    } catch (error: Throwable) {
+      val message = error.message ?: error.toString()
+      if (expectedErrors != null) {
+        assertThat(expectedErrors).isEqualTo(message)
+      } else {
+        fail(message)
+      }
+    }
+  }
+
+  private fun checkSerialization(mocker: GradleModelMocker, expectedXml: Map<String, String>) {
+    val path = mocker.projectDir.path
+    fun String.cleanup() = replace(path, "＄ROOT").dos2unix().trim()
+
+    // Test lint model stuff
+    val module = mocker.getLintModule()
+    val xml = writeModule(module)
+
+    // Make sure all the generated XML is valid
+    for ((_, s) in xml) {
+      assertValidXml(s)
+    }
+    val remainingExpectedXml = expectedXml.toMutableMap()
+
+    for (fileType in TargetFile.values()) {
+      for (variant in module.variants) {
+        for (artifactName in
+          listOf("mainArtifact", "testArtifact", "androidTestArtifact", "testFixturesArtifact")) {
+          val mapKey = getMapKey(fileType, variant.name, artifactName)
+          val writtenXml: String = xml[mapKey] ?: continue
+          assertValidXml(writtenXml)
+          val expected = remainingExpectedXml.remove(mapKey) ?: continue
+          try {
+            assertEquals(expected.trimIndent().trim(), writtenXml.cleanup())
+            assertThat(writtenXml.cleanup()).isEqualTo(expected.trimIndent().trim())
+          } catch (e: Exception) {
+            println("FAIL: ${e.message}")
+            throw e
+          }
+        }
+      }
+    }
+    assertThat(remainingExpectedXml).isEmpty()
+
+    val newModule =
+      LintModelSerialization.readModule(
+        LintModelSerializationStringAdapter(
+          reader = { target, variantName, artifact ->
+            val contents = xml[getMapKey(target, variantName, artifact)]!!
+            StringReader(contents)
+          }
         )
+      )
+    val newXml = writeModule(newModule)
+    for ((key, contents) in xml) {
+      assertEquals(
+        "XML parsed and written back out does not match original for file " + key,
+        contents,
+        newXml[key]
+      )
+    }
+  }
 
-        val module = LintModelSerialization.readModule(
-            source = modelsDir,
-            pathVariables = PathVariables().apply { add("ANDROID_HOME", sdkHome) },
-            readDependencies = false
-        )
+  private fun assertValidXml(xml: String) {
+    try {
+      val document = XmlUtils.parseDocument(xml, false)
+      assertNotNull(document)
+      assertNoTextNodes(document.documentElement)
+    } catch (e: IOException) {
+      fail(e.message)
+    } catch (e: SAXException) {
+      fail(e.message)
+    }
+  }
 
-        val debugVariant = module.defaultVariant()
-        val minSdkVersion = debugVariant?.minSdkVersion!!
-        assertEquals("API $apiLevel, $codename preview", minSdkVersion.toString())
+  private fun getMapKey(
+    target: TargetFile,
+    variantName: String = "",
+    artifactName: String = ""
+  ): String {
+    //noinspection DefaultLocale
+    val key = StringBuilder(target.name.toLowerCase())
+    if (variantName.isNotEmpty() && target != TargetFile.MODULE) {
+      key.append("-")
+      key.append(variantName)
+      if (
+        artifactName.isNotEmpty() &&
+          (target == TargetFile.DEPENDENCIES || target == TargetFile.LIBRARY_TABLE)
+      ) {
+        key.append("-")
+        key.append(artifactName)
+      }
     }
 
-    // ----------------------------------------------------------------------------------
-    // Test infrastructure below this line
-    // ----------------------------------------------------------------------------------
+    return key.toString()
+  }
 
-    private fun tryParse(
-        @Language("XML") xml: String,
-        expectedErrors: String? = null
-    ) {
-        try {
-            val reader = StringReader(xml)
-            LintModelSerialization.readModule(LintModelSerializationStringAdapter(reader = { _, _, _ -> reader }))
-            if (expectedErrors != null) {
-                fail("Expected failure, got valid module instead")
-            }
-        } catch (error: Throwable) {
-            val message = error.message ?: error.toString()
-            if (expectedErrors != null) {
-                assertThat(expectedErrors).isEqualTo(message)
-            } else {
-                fail(message)
-            }
+  private fun writeModule(module: LintModelModule): Map<String, String> {
+    val map = mutableMapOf<String, StringWriter>()
+    LintModelSerialization.writeModule(
+      module,
+      LintModelSerializationStringAdapter(
+        writer = { target, variantName, artifactName ->
+          val key = getMapKey(target, variantName, artifactName)
+          map[key] ?: StringWriter().also { map[key] = it }
         }
+      )
+    )
+    return map.mapValues { it.value.toString() }
+  }
+
+  private fun writeVariant(variant: LintModelVariant): String {
+    val writer = StringWriter()
+    LintModelSerialization.writeVariant(
+      variant,
+      LintModelSerializationStringAdapter(writer = { _, _, _ -> writer })
+    )
+    return writer.toString()
+  }
+
+  private class LintModelSerializationStringAdapter(
+    override val root: File? = null,
+    private val reader: (TargetFile, String, String) -> Reader = { _, _, _ ->
+      StringReader("<error>")
+    },
+    private val writer: (TargetFile, String, String) -> Writer = { _, _, _ -> StringWriter() },
+    override val pathVariables: PathVariables = PathVariables()
+  ) : LintModelSerialization.LintModelSerializationAdapter {
+    override fun file(target: TargetFile, variantName: String, artifactName: String): File {
+      return if (variantName.isNotEmpty()) File("variant-$variantName.xml")
+      else File("testfile.xml")
     }
 
-    private fun checkSerialization(
-        mocker: GradleModelMocker,
-        expectedXml: Map<String, String>
-    ) {
-        val path = mocker.projectDir.path
-        fun String.cleanup() = replace(path, "＄ROOT").dos2unix().trim()
+    override fun getReader(target: TargetFile, variantName: String, artifactName: String) =
+      reader(target, variantName, artifactName)
 
-        // Test lint model stuff
-        val module = mocker.getLintModule()
-        val xml = writeModule(module)
+    override fun getWriter(target: TargetFile, variantName: String, artifactName: String) =
+      writer(target, variantName, artifactName)
+  }
 
-        // Make sure all the generated XML is valid
-        for ((_, s) in xml) {
-            assertValidXml(s)
+  private fun assertNoTextNodes(element: Element) {
+    var curr = element.firstChild
+    while (curr != null) {
+      val nodeType = curr.nodeType
+      if (nodeType == Node.ELEMENT_NODE) {
+        assertNoTextNodes(curr as Element)
+      } else if (nodeType == Node.TEXT_NODE) {
+        val text = curr.nodeValue
+        if (text.isNotBlank()) {
+          fail("Found unexpected text " + text.trim { it <= ' ' } + " in the document")
         }
-        val remainingExpectedXml = expectedXml.toMutableMap()
-
-        for (fileType in TargetFile.values()) {
-            for (variant in module.variants) {
-                for (
-                    artifactName in listOf(
-                        "mainArtifact",
-                        "testArtifact",
-                        "androidTestArtifact",
-                        "testFixturesArtifact"
-                    )
-                ) {
-                    val mapKey = getMapKey(fileType, variant.name, artifactName)
-                    val writtenXml: String = xml[mapKey] ?: continue
-                    assertValidXml(writtenXml)
-                    val expected = remainingExpectedXml.remove(mapKey) ?: continue
-                    try {
-                        assertEquals(expected.trimIndent().trim(), writtenXml.cleanup())
-                        assertThat(writtenXml.cleanup()).isEqualTo(expected.trimIndent().trim())
-                    } catch (e: Exception) {
-                        println("FAIL: ${e.message}")
-                        throw e
-                    }
-                }
-            }
-        }
-        assertThat(remainingExpectedXml).isEmpty()
-
-        val newModule =
-            LintModelSerialization.readModule(
-                LintModelSerializationStringAdapter(
-                    reader = { target, variantName, artifact ->
-                        val contents = xml[getMapKey(target, variantName, artifact)]!!
-                        StringReader(contents)
-                    }
-                )
-            )
-        val newXml = writeModule(newModule)
-        for ((key, contents) in xml) {
-            assertEquals(
-                "XML parsed and written back out does not match original for file " + key,
-                contents, newXml[key]
-            )
-        }
+      }
+      curr = curr.nextSibling
     }
+  }
 
-    private fun assertValidXml(xml: String) {
-        try {
-            val document =
-                XmlUtils.parseDocument(xml, false)
-            assertNotNull(document)
-            assertNoTextNodes(document.documentElement)
-        } catch (e: IOException) {
-            fail(e.message)
-        } catch (e: SAXException) {
-            fail(e.message)
-        }
-    }
-
-    private fun getMapKey(
-        target: TargetFile,
-        variantName: String = "",
-        artifactName: String = ""
-    ): String {
-        //noinspection DefaultLocale
-        val key = StringBuilder(target.name.toLowerCase())
-        if (variantName.isNotEmpty() && target != TargetFile.MODULE) {
-            key.append("-")
-            key.append(variantName)
-            if (artifactName.isNotEmpty() &&
-                (target == TargetFile.DEPENDENCIES || target == TargetFile.LIBRARY_TABLE)
-            ) {
-                key.append("-")
-                key.append(artifactName)
-            }
-        }
-
-        return key.toString()
-    }
-
-    private fun writeModule(module: LintModelModule): Map<String, String> {
-        val map = mutableMapOf<String, StringWriter>()
-        LintModelSerialization.writeModule(
-            module,
-            LintModelSerializationStringAdapter(
-                writer = { target, variantName, artifactName ->
-                    val key = getMapKey(target, variantName, artifactName)
-                    map[key] ?: StringWriter().also { map[key] = it }
-                }
-            )
-        )
-        return map.mapValues {
-            it.value.toString()
-        }
-    }
-
-    private fun writeVariant(variant: LintModelVariant): String {
-        val writer = StringWriter()
-        LintModelSerialization.writeVariant(
-            variant,
-            LintModelSerializationStringAdapter(
-                writer = { _, _, _ ->
-                    writer
-                }
-            )
-        )
-        return writer.toString()
-    }
-
-    private class LintModelSerializationStringAdapter(
-        override val root: File? = null,
-        private val reader: (TargetFile, String, String) -> Reader = { _, _, _ -> StringReader("<error>") },
-        private val writer: (TargetFile, String, String) -> Writer = { _, _, _ -> StringWriter() },
-        override val pathVariables: PathVariables = PathVariables()
-    ) : LintModelSerialization.LintModelSerializationAdapter {
-        override fun file(target: TargetFile, variantName: String, artifactName: String): File {
-            return if (variantName.isNotEmpty())
-                File("variant-$variantName.xml")
-            else
-                File("testfile.xml")
-        }
-
-        override fun getReader(target: TargetFile, variantName: String, artifactName: String) =
-            reader(target, variantName, artifactName)
-
-        override fun getWriter(target: TargetFile, variantName: String, artifactName: String) =
-            writer(target, variantName, artifactName)
-    }
-
-    private fun assertNoTextNodes(element: Element) {
-        var curr = element.firstChild
-        while (curr != null) {
-            val nodeType = curr.nodeType
-            if (nodeType == Node.ELEMENT_NODE) {
-                assertNoTextNodes(curr as Element)
-            } else if (nodeType == Node.TEXT_NODE) {
-                val text = curr.nodeValue
-                if (text.isNotBlank()) {
-                    fail("Found unexpected text " + text.trim { it <= ' ' } + " in the document")
-                }
-            }
-            curr = curr.nextSibling
-        }
-    }
-
-    private fun File.createDirectories(): File {
-        Files.createDirectories(toPath())
-        return this
-    }
+  private fun File.createDirectories(): File {
+    Files.createDirectories(toPath())
+    return this
+  }
 }

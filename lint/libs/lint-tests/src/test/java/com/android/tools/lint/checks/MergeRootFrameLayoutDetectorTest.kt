@@ -18,21 +18,23 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return MergeRootFrameLayoutDetector()
-    }
+  override fun getDetector(): Detector {
+    return MergeRootFrameLayoutDetector()
+  }
 
-    fun testMergeRefFromJava() {
-        val expected = """
+  fun testMergeRefFromJava() {
+    val expected =
+      """
                res/layout/simple.xml:1: Warning: This <FrameLayout> can be replaced with a <merge> tag [MergeRootFrame]
                <FrameLayout
                ^
                0 errors, 1 warnings
                """
-        lint().files(
-            simple,
-            java(
-                """
+    lint()
+      .files(
+        simple,
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -46,9 +48,10 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public final class R {
@@ -57,25 +60,30 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testMergeRefFromInclude() {
-        val expected = """
+  fun testMergeRefFromInclude() {
+    val expected =
+      """
                res/layout/simple.xml:1: Warning: This <FrameLayout> can be replaced with a <merge> tag [MergeRootFrame]
                <FrameLayout
                ^
                0 errors, 1 warnings
                """
-        lint().files(simple, simpleInclude).run().expect(expected)
-    }
+    lint().files(simple, simpleInclude).run().expect(expected)
+  }
 
-    fun testMergeRefFromIncludeSuppressed() {
-        lint().files(
-            xml(
-                "res/layout/simple.xml",
-                """
+  fun testMergeRefFromIncludeSuppressed() {
+    lint()
+      .files(
+        xml(
+            "res/layout/simple.xml",
+            """
                 <FrameLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -83,20 +91,24 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_height="match_parent"
                     tools:ignore="MergeRootFrame" />
                 """
-            ).indented(),
-            simpleInclude
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        simpleInclude
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNotIncluded() {
-        lint().files(simple).run().expectClean()
-    }
+  fun testNotIncluded() {
+    lint().files(simple).run().expectClean()
+  }
 
-    fun testFitsSystemWindow() {
-        lint().files(
-            xml(
-                "res/layout/simple.xml",
-                """
+  fun testFitsSystemWindow() {
+    lint()
+      .files(
+        xml(
+            "res/layout/simple.xml",
+            """
                 <FrameLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
@@ -106,16 +118,20 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     <View />
                 </FrameLayout>
                 """
-            ).indented(),
-            simpleInclude
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        simpleInclude
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testFitsSystemWindowViaTheme() {
-        lint().files(
-            xml(
-                "res/layout/simple.xml",
-                """
+  fun testFitsSystemWindowViaTheme() {
+    lint()
+      .files(
+        xml(
+            "res/layout/simple.xml",
+            """
                 <FrameLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
@@ -124,11 +140,12 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     <View />
                 </FrameLayout>
                 """
-            ).indented(),
-            simpleInclude,
-            xml(
-                "res/values/styles.xml",
-                """
+          )
+          .indented(),
+        simpleInclude,
+        xml(
+            "res/values/styles.xml",
+            """
                 <resources>
                     <style name="Widget.Design.NavigationView" parent="">
                         <item name="android:background">?android:windowBackground</item>
@@ -138,15 +155,19 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     </style>
                 </resources>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testFitsSystemWindowViaManifestTheme() {
-        lint().files(
-            xml(
-                "res/layout/simple.xml",
-                """
+  fun testFitsSystemWindowViaManifestTheme() {
+    lint()
+      .files(
+        xml(
+            "res/layout/simple.xml",
+            """
                 <FrameLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
@@ -155,11 +176,12 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     <View />
                 </FrameLayout>
                 """
-            ).indented(),
-            simpleInclude,
-            xml(
-                "res/values/styles.xml",
-                """
+          )
+          .indented(),
+        simpleInclude,
+        xml(
+            "res/values/styles.xml",
+            """
                 <resources>
                     <style name="Widget.Design.NavigationView" parent="">
                         <item name="android:background">?android:windowBackground</item>
@@ -169,11 +191,15 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     </style>
                 </resources>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    private val simple = xml(
+  private val simple =
+    xml(
         "res/layout/simple.xml",
         """
         <FrameLayout
@@ -181,9 +207,11 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
         """
-    ).indented()
+      )
+      .indented()
 
-    private val simpleInclude = xml(
+  private val simpleInclude =
+    xml(
         "res/layout/simpleinclude.xml",
         """
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -210,5 +238,6 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
 
         </LinearLayout>
         """
-    ).indented()
+      )
+      .indented()
 }

@@ -15,8 +15,12 @@
  */
 
 @file:Suppress(
-    "CastCanBeRemovedNarrowingVariableType", "RemoveRedundantQualifierName", "RemoveExplicitTypeArguments",
-    "HasPlatformType", "ConstantConditions", "MemberVisibilityCanBePrivate"
+  "CastCanBeRemovedNarrowingVariableType",
+  "RemoveRedundantQualifierName",
+  "RemoveExplicitTypeArguments",
+  "HasPlatformType",
+  "ConstantConditions",
+  "MemberVisibilityCanBePrivate"
 )
 
 package com.android.tools.lint.checks.infrastructure
@@ -29,25 +33,26 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class FullyQualifyNamesTestModeTest {
-    private fun expandKotlin(@Language("kotlin") source: String): String {
-        return expand(kotlin(source))
-    }
+  private fun expandKotlin(@Language("kotlin") source: String): String {
+    return expand(kotlin(source))
+  }
 
-    private fun expandJava(@Language("java") source: String): String {
-        return expand(java(source))
-    }
+  private fun expandJava(@Language("java") source: String): String {
+    return expand(java(source))
+  }
 
-    private fun expand(testFile: TestFile): String {
-        val sdkHome = TestUtils.getSdk().toFile()
-        var source = testFile.contents
-        FullyQualifyNamesTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
-        return source
-    }
+  private fun expand(testFile: TestFile): String {
+    val sdkHome = TestUtils.getSdk().toFile()
+    var source = testFile.contents
+    FullyQualifyNamesTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
+    return source
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testBasic() {
+    @Language("java")
+    val java =
+      """
             package test.pkg;
             import java.io.File;
             import java.util.Collection;
@@ -66,10 +71,13 @@ class FullyQualifyNamesTestModeTest {
                 }
                 File[] files;
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             package test.pkg;
             import java.io.File;
             import java.util.Collection;
@@ -88,16 +96,19 @@ class FullyQualifyNamesTestModeTest {
                 }
                 java.io.File[] files;
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandJava(java)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandJava(java)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testConstructorCalls() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testConstructorCalls() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
             import android.widget.RemoteViews
 
@@ -105,10 +116,13 @@ class FullyQualifyNamesTestModeTest {
                 val rv = RemoteViews(packageName, R.layout.test)
                 val ov = other as RemoteViews
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
             import android.widget.RemoteViews
 
@@ -116,16 +130,19 @@ class FullyQualifyNamesTestModeTest {
                 val rv = android.widget.RemoteViews(packageName, R.layout.test)
                 val ov = other as android.widget.RemoteViews
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testCornerCase() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testCornerCase() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
 
             import java.util.concurrent.LinkedBlockingQueue
@@ -140,10 +157,13 @@ class FullyQualifyNamesTestModeTest {
                 val typeClz: Class<Int> = Integer.TYPE
                 val typeClz2 = typeClz
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
 
             import java.util.concurrent.LinkedBlockingQueue
@@ -158,18 +178,21 @@ class FullyQualifyNamesTestModeTest {
                 val typeClz: java.lang.Class<Int> = Integer.TYPE
                 val typeClz2 = typeClz
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testCornerCase2() {
-        // Visiting types in this AST results in a type reference that has a null
-        // containingFile; regression test to make sure we handle this gracefully
-        @Language("java")
-        val java = """
+  @Test
+  fun testCornerCase2() {
+    // Visiting types in this AST results in a type reference that has a null
+    // containingFile; regression test to make sure we handle this gracefully
+    @Language("java")
+    val java =
+      """
             package test.pkg;
 
             import android.location.LocationManager;
@@ -185,10 +208,13 @@ class FullyQualifyNamesTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             package test.pkg;
 
             import android.location.LocationManager;
@@ -204,16 +230,19 @@ class FullyQualifyNamesTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(java)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(java)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testUnionTypes() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testUnionTypes() {
+    @Language("java")
+    val java =
+      """
             package test.pkg;
             import android.hardware.camera2.CameraAccessException;
             import android.media.MediaDrmResetException;
@@ -236,10 +265,13 @@ class FullyQualifyNamesTestModeTest {
                     throw new CameraAccessException(CameraAccessException.CAMERA_ERROR);
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             package test.pkg;
             import android.hardware.camera2.CameraAccessException;
             import android.media.MediaDrmResetException;
@@ -262,16 +294,19 @@ class FullyQualifyNamesTestModeTest {
                     throw new CameraAccessException(android.hardware.camera2.CameraAccessException.CAMERA_ERROR);
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(java)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(java)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testConstructInner() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testConstructInner() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package com.google.android.play.core.splitinstall
 
             import android.content.res.Configuration
@@ -290,10 +325,13 @@ class FullyQualifyNamesTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package com.google.android.play.core.splitinstall
 
             import android.content.res.Configuration
@@ -312,16 +350,19 @@ class FullyQualifyNamesTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testImportAlias() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testImportAlias() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
 
             import android.app.Activity
@@ -345,10 +386,13 @@ class FullyQualifyNamesTestModeTest {
             }
             class LongerName
             class ShortName
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
 
             import android.app.Activity
@@ -372,34 +416,43 @@ class FullyQualifyNamesTestModeTest {
             }
             class LongerName
             class ShortName
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testExtends() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testExtends() {
+    @Language("kotlin")
+    val kotlin =
+      """
             package test.pkg
             abstract class NotFragment : android.view.View(null)
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
             abstract class NotFragment : android.view.View(null)
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testAnnotationKotlin() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testAnnotationKotlin() {
+    @Language("kotlin")
+    val kotlin =
+      """
             import android.annotation.SuppressLint
 
             @SuppressLint("test")
@@ -407,10 +460,13 @@ class FullyQualifyNamesTestModeTest {
 
             @android.annotation.SuppressLint("test")
             class Name2
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             import android.annotation.SuppressLint
 
             @android.annotation.SuppressLint("test")
@@ -418,16 +474,19 @@ class FullyQualifyNamesTestModeTest {
 
             @android.annotation.SuppressLint("test")
             class Name2
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expandKotlin(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandKotlin(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testAnnotationsJava() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testAnnotationsJava() {
+    @Language("java")
+    val java =
+      """
             package test.pkg;
 
             import android.view.MenuItem;
@@ -438,10 +497,12 @@ class FullyQualifyNamesTestModeTest {
                     System.out.println(MenuItem.SHOW_AS_ACTION_ALWAYS);
                 }
             }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             package test.pkg;
 
             import android.view.MenuItem;
@@ -452,17 +513,19 @@ class FullyQualifyNamesTestModeTest {
                     java.lang.System.out.println(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS);
                 }
             }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        val expanded = expandJava(java)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expandJava(java)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testAlertDialog() {
-        @Language("kotlin")
-        val kotlin = kotlin(
-            """
+  @Test
+  fun testAlertDialog() {
+    @Language("kotlin")
+    val kotlin =
+      kotlin(
+          """
             package test.pkg
 
             import android.app.Activity
@@ -475,10 +538,12 @@ class FullyQualifyNamesTestModeTest {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
 
             import android.app.Activity
@@ -490,19 +555,22 @@ class FullyQualifyNamesTestModeTest {
                     val theme = android.app.AlertDialog.THEME_TRADITIONAL
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expand(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expand(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testVariableConflict() {
-        // Makes sure that if there's a local variable which is the same as the imported symbol's
-        // first name segment, we don't expand, since the local variable "wins"
-        @Language("kotlin")
-        val kotlin = kotlin(
-            """
+  @Test
+  fun testVariableConflict() {
+    // Makes sure that if there's a local variable which is the same as the imported symbol's
+    // first name segment, we don't expand, since the local variable "wins"
+    @Language("kotlin")
+    val kotlin =
+      kotlin(
+          """
             package test.pkg
 
             class Test {
@@ -517,10 +585,12 @@ class FullyQualifyNamesTestModeTest {
                 test[color, b]
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             package test.pkg
 
             class Test {
@@ -534,26 +604,36 @@ class FullyQualifyNamesTestModeTest {
                 val b = B()
                 test[color, b]
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = expand(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = expand(kotlin)
+    assertEquals(expected, expanded)
+  }
 
-    @Test
-    fun testTransformMessage() {
-        val mode = FullyQualifyNamesTestMode()
-        assertEquals(
-            "This field should be annotated with ChecksSdkIntAtLeast(api=LOLLIPOP)",
-            mode.transformMessage("This field should be annotated with ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.LOLLIPOP)")
-        )
-        assertEquals(
-            "The id duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]",
-            mode.transformMessage("The id test.pkg.R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]")
-        )
-        assertEquals(
-            mode.transformMessage("The id test.pkg.R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]"),
-            mode.transformMessage("The id R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]")
-        )
-    }
+  @Test
+  fun testTransformMessage() {
+    val mode = FullyQualifyNamesTestMode()
+    assertEquals(
+      "This field should be annotated with ChecksSdkIntAtLeast(api=LOLLIPOP)",
+      mode.transformMessage(
+        "This field should be annotated with ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.LOLLIPOP)"
+      )
+    )
+    assertEquals(
+      "The id duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]",
+      mode.transformMessage(
+        "The id test.pkg.R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]"
+      )
+    )
+    assertEquals(
+      mode.transformMessage(
+        "The id test.pkg.R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]"
+      ),
+      mode.transformMessage(
+        "The id R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]"
+      )
+    )
+  }
 }

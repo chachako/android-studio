@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ManifestPermissionAttributeDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ManifestPermissionAttributeDetector()
-    }
+  override fun getDetector(): Detector {
+    return ManifestPermissionAttributeDetector()
+  }
 
-    fun testWrongTagPermissions1() {
-        lint().files(
-            manifest(
-                """
+  fun testWrongTagPermissions1() {
+    lint()
+      .files(
+        manifest(
+            """
 
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                           package="foo.bar2"
@@ -55,9 +56,12 @@ class ManifestPermissionAttributeDetectorTest : AbstractCheckTest() {
                 </manifest>
 
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:19: Error: Protecting an unsupported element with a permission is a no-op and potentially dangerous [InvalidPermission]
                                     android:permission="android.permission.READ_CONTACTS"/>
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,13 +70,14 @@ class ManifestPermissionAttributeDetectorTest : AbstractCheckTest() {
                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testWrongTagPermissions2() {
-        lint().files(
-            manifest(
-                """
+  fun testWrongTagPermissions2() {
+    lint()
+      .files(
+        manifest(
+            """
 
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                           package="foo.bar2"
@@ -103,7 +108,10 @@ class ManifestPermissionAttributeDetectorTest : AbstractCheckTest() {
                 </manifest>
 
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

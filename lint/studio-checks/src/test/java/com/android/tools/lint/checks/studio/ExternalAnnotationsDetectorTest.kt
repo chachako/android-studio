@@ -21,63 +21,63 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import org.junit.Test
 
 class ExternalAnnotationsDetectorTest {
-    @Test
-    fun forbiddenMethods() {
-        @Suppress("ClassNameDiffersFromFileName") // For language injection below.
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun forbiddenMethods() {
+    @Suppress("ClassNameDiffersFromFileName") // For language injection below.
+    studioLint()
+      .files(
+        java(
+          """
                     package com.intellij.psi;
 
                     public interface PsiAnnotation {
                         String getQualifiedName();
                     }
                     """
-                ),
-                java(
-                    """
+        ),
+        java(
+          """
                     package com.intellij.psi;
 
                     public interface PsiModifierListOwner {
                         PsiAnnotation[] getAnnotations();
                     }
                     """
-                ),
-                java(
-                    """
+        ),
+        java(
+          """
                     package com.intellij.psi;
 
                     public interface PsiMethod extends PsiModifierListOwner {}
                     """
-                ),
-                kotlin(
-                    """
+        ),
+        kotlin(
+          """
                     package org.jetbrains.uast
 
                     interface UAnnotation {
                         val qualifiedName: String?
                     }
                     """
-                ),
-                kotlin(
-                    """
+        ),
+        kotlin(
+          """
                     package org.jetbrains.uast
 
                     interface UAnnotated {
                         val annotations: List<UAnnotation>
                     }
                     """
-                ),
-                kotlin(
-                    """
+        ),
+        kotlin(
+          """
                     package org.jetbrains.uast
 
                     interface UMethod : UAnnotated, PsiMethod
                     """
-                ),
-                java(
-                    """
+        ),
+        java(
+          """
                         package com.android.tools.lint.checks;
 
                         import com.intellij.psi.PsiAnnotation;
@@ -107,9 +107,9 @@ class ExternalAnnotationsDetectorTest {
                             }
                         }
                     """
-                ),
-                kotlin(
-                    """
+        ),
+        kotlin(
+          """
                         package com.android.tools.lint.checks
 
                         import com.intellij.psi.PsiAnnotation
@@ -127,12 +127,12 @@ class ExternalAnnotationsDetectorTest {
                             }
                         }
                     """
-                )
-            )
-            .issues(ExternalAnnotationsDetector.ISSUE)
-            .run()
-            .expect(
-                """
+        )
+      )
+      .issues(ExternalAnnotationsDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/com/android/tools/lint/checks/SomeDetectorInJava.java:13: Error: getAnnotations used instead of JavaEvaluator.getAllAnnotations. [ExternalAnnotations]
                                                 for (PsiAnnotation ann : method.getAnnotations()) {
                                                                          ~~~~~~~~~~~~~~~~~~~~~~~
@@ -147,6 +147,6 @@ class ExternalAnnotationsDetectorTest {
                                                               ~~~~~~~~~~~
                 4 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

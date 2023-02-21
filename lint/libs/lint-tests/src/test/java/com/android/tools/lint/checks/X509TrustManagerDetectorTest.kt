@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class X509TrustManagerDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return X509TrustManagerDetector()
-    }
+  override fun getDetector(): Detector {
+    return X509TrustManagerDetector()
+  }
 
-    fun testTrustsAll() {
-        lint().files(
-            manifest(
-                """
+  fun testTrustsAll() {
+    lint()
+      .files(
+        manifest(
+            """
 
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg"
@@ -45,9 +46,10 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
                 </manifest>
 
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.app.IntentService;
@@ -93,9 +95,12 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/InsecureTLSIntentService.java:22: Warning: checkClientTrusted is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers [TrustAllX509TrustManager]
                     public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
                                 ~~~~~~~~~~~~~~~~~~
@@ -107,18 +112,19 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
                                                                        ~~~~~~~~~~~~~~~~
             0 errors, 3 warnings
             """
-        )
+      )
 
-        // TODO: Test bytecode check via library jar?
-        // "bytecode/InsecureTLSIntentService.java.txt=>src/test/pkg/InsecureTLSIntentService.java",
-        // "bytecode/InsecureTLSIntentService.class.data=>bin/classes/test/pkg/InsecureTLSIntentService.class",
-        // "bytecode/InsecureTLSIntentService$1.class.data=>bin/classes/test/pkg/InsecureTLSIntentService$1.class"));
-    }
+    // TODO: Test bytecode check via library jar?
+    // "bytecode/InsecureTLSIntentService.java.txt=>src/test/pkg/InsecureTLSIntentService.java",
+    // "bytecode/InsecureTLSIntentService.class.data=>bin/classes/test/pkg/InsecureTLSIntentService.class",
+    // "bytecode/InsecureTLSIntentService$1.class.data=>bin/classes/test/pkg/InsecureTLSIntentService$1.class"));
+  }
 
-    fun testCustom() {
-        lint().files(
-            manifest(
-                """
+  fun testCustom() {
+    lint()
+      .files(
+        manifest(
+            """
 
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg"
@@ -137,9 +143,10 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.app.IntentService;
@@ -203,14 +210,17 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/ExampleTLSIntentService.java:22: Warning: Implementing a custom X509TrustManager is error-prone and likely to be insecure. It is likely to disable certificate validation altogether, and is non-trivial to implement correctly without calling Android's default implementation. [CustomX509TrustManager]
                     trustManagerExample = new TrustManager[]{new X509TrustManager() {
                                                                  ~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

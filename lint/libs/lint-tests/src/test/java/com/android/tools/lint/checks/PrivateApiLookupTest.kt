@@ -25,183 +25,161 @@ import java.io.RandomAccessFile
 import java.io.StringWriter
 
 public class PrivateApiLookupTest : AbstractCheckTest() {
-    private var cacheDir = File(BaseLintDetectorTest.getTempDir(), "lint-private-test-cache")
-    private val db = PrivateApiLookup.get(createClient())!!
-    private val logBuffer = StringBuilder()
+  private var cacheDir = File(BaseLintDetectorTest.getTempDir(), "lint-private-test-cache")
+  private val db = PrivateApiLookup.get(createClient())!!
+  private val logBuffer = StringBuilder()
 
-    override fun createClient(): TestLintClient {
+  override fun createClient(): TestLintClient {
+    cacheDir.mkdirs()
+    return LookupTestClient()
+  }
+
+  private inner class LookupTestClient : AbstractCheckTest.ToolsBaseTestLintClient() {
+    override fun getCacheDir(name: String?, create: Boolean): File? {
+      assertNotNull(cacheDir)
+      if (create && !cacheDir.exists()) {
         cacheDir.mkdirs()
-        return LookupTestClient()
+      }
+      return cacheDir
     }
 
-    private inner class LookupTestClient : AbstractCheckTest.ToolsBaseTestLintClient() {
-        override fun getCacheDir(name: String?, create: Boolean): File? {
-            assertNotNull(cacheDir)
-            if (create && !cacheDir.exists()) {
-                cacheDir.mkdirs()
-            }
-            return cacheDir
-        }
-
-        override fun log(
-            severity: Severity,
-            exception: Throwable?,
-            format: String?,
-            vararg args: Any
-        ) {
-            if (format != null) {
-                logBuffer.append(String.format(format, *args))
-                logBuffer.append('\n')
-            }
-            if (exception != null) {
-                val writer = StringWriter()
-                exception.printStackTrace(PrintWriter(writer))
-                logBuffer.append(writer.toString())
-                logBuffer.append('\n')
-            }
-        }
-
-        override fun log(exception: Throwable?, format: String?, vararg args: Any) {
-            log(Severity.WARNING, exception, format, *args)
-        }
+    override fun log(severity: Severity, exception: Throwable?, format: String?, vararg args: Any) {
+      if (format != null) {
+        logBuffer.append(String.format(format, *args))
+        logBuffer.append('\n')
+      }
+      if (exception != null) {
+        val writer = StringWriter()
+        exception.printStackTrace(PrintWriter(writer))
+        logBuffer.append(writer.toString())
+        logBuffer.append('\n')
+      }
     }
 
-    override fun getDetector(): Detector? {
-        fail("This is not used in the PrivateApiLookup test")
-        return null
+    override fun log(exception: Throwable?, format: String?, vararg args: Any) {
+      log(Severity.WARNING, exception, format, *args)
     }
+  }
 
-    fun testClassAndContainerEntries() {
-        assertTrue(db.findClass("android.app.Activity") > 0)
-    }
+  override fun getDetector(): Detector? {
+    fail("This is not used in the PrivateApiLookup test")
+    return null
+  }
 
-    fun testMethodEntries() {
-        assertEquals(
-            Restriction.MAYBE_MAX_O,
-            db.getMethodRestriction(
-                "android/app/Activity",
-                "dispatchPictureInPictureModeChanged",
-                "(ZLandroid/content/res/Configuration;)"
-            )
-        )
-        assertEquals(
-            Restriction.MAYBE_MAX_P,
-            db.getMethodRestriction(
-                "android.animation.LayoutTransition",
-                "cancel",
-                "()"
-            )
-        )
-        assertEquals(
-            Restriction.DENY,
-            db.getMethodRestriction(
-                "android/app/Notification",
-                "dumpDebug",
-                "(Landroid/util/proto/ProtoOutputStream;J)V"
-            )
-        )
-        assertEquals(
-            Restriction.UNKNOWN,
-            db.getMethodRestriction(
-                "android/graphics/drawable/BitmapDrawable",
-                "setTargetDensity",
-                "(Landroid/util/DisplayMetrics;)V"
-            )
-        )
-    }
+  fun testClassAndContainerEntries() {
+    assertTrue(db.findClass("android.app.Activity") > 0)
+  }
 
-    fun testFieldEntries() {
-        assertEquals(
-            Restriction.DENY,
-            db.getFieldRestriction(
-                "android/Manifest\$permission",
-                "INSTALL_EXISTING_PACKAGES"
-            )
-        )
-        assertEquals(
-            Restriction.MAYBE,
-            db.getFieldRestriction(
-                "android/content/ContentProviderOperation",
-                "mUri"
-            )
-        )
-        assertEquals(
-            Restriction.MAYBE_MAX_P,
-            db.getFieldRestriction(
-                "android.animation.ValueAnimator",
-                "sDurationScale"
-            )
-        )
-        assertEquals(
-            Restriction.MAYBE_MAX_R,
-            db.getFieldRestriction(
-                "android.app.StatusBarManager",
-                "DISABLE_NOTIFICATION_TICKER"
-            )
-        )
-    }
+  fun testMethodEntries() {
+    assertEquals(
+      Restriction.MAYBE_MAX_O,
+      db.getMethodRestriction(
+        "android/app/Activity",
+        "dispatchPictureInPictureModeChanged",
+        "(ZLandroid/content/res/Configuration;)"
+      )
+    )
+    assertEquals(
+      Restriction.MAYBE_MAX_P,
+      db.getMethodRestriction("android.animation.LayoutTransition", "cancel", "()")
+    )
+    assertEquals(
+      Restriction.DENY,
+      db.getMethodRestriction(
+        "android/app/Notification",
+        "dumpDebug",
+        "(Landroid/util/proto/ProtoOutputStream;J)V"
+      )
+    )
+    assertEquals(
+      Restriction.UNKNOWN,
+      db.getMethodRestriction(
+        "android/graphics/drawable/BitmapDrawable",
+        "setTargetDensity",
+        "(Landroid/util/DisplayMetrics;)V"
+      )
+    )
+  }
 
-    fun testCorruptedCacheHandling() {
-        var lookup: PrivateApiLookup
+  fun testFieldEntries() {
+    assertEquals(
+      Restriction.DENY,
+      db.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
+    )
+    assertEquals(
+      Restriction.MAYBE,
+      db.getFieldRestriction("android/content/ContentProviderOperation", "mUri")
+    )
+    assertEquals(
+      Restriction.MAYBE_MAX_P,
+      db.getFieldRestriction("android.animation.ValueAnimator", "sDurationScale")
+    )
+    assertEquals(
+      Restriction.MAYBE_MAX_R,
+      db.getFieldRestriction("android.app.StatusBarManager", "DISABLE_NOTIFICATION_TICKER")
+    )
+  }
 
-        // Real cache:
-        cacheDir = createClient().getCacheDir(null, true)!!
-        logBuffer.setLength(0)
-        lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
-        assertEquals(
-            Restriction.DENY,
-            lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
-        )
-        assertEquals("", logBuffer.toString()) // No warnings
+  fun testCorruptedCacheHandling() {
+    var lookup: PrivateApiLookup
 
-        // Custom cache dir: should also work
-        cacheDir = File(BaseLintDetectorTest.getTempDir(), "test-cache")
-        cacheDir.mkdirs()
-        logBuffer.setLength(0)
-        lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
-        assertEquals(
-            Restriction.DENY,
-            lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
-        )
-        assertEquals("", logBuffer.toString()) // No warnings
+    // Real cache:
+    cacheDir = createClient().getCacheDir(null, true)!!
+    logBuffer.setLength(0)
+    lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
+    assertEquals(
+      Restriction.DENY,
+      lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
+    )
+    assertEquals("", logBuffer.toString()) // No warnings
 
-        // Now truncate cache file
-        val cacheFile =
-            cacheDir.listFiles { it -> it.name.startsWith("private-apis") }[0]
-        logBuffer.setLength(0)
-        assertTrue(cacheFile.exists())
-        var raf = RandomAccessFile(cacheFile, "rw")
-        // Truncate file in half
-        raf.setLength(100) // Broken header
-        raf.close()
-        PrivateApiLookup.get(LookupTestClient())
-        val message = logBuffer.toString()
-        assertTrue(message.contains("Please delete the file and restart the IDE/lint:"))
-        assertTrue(message.contains(cacheDir.path))
+    // Custom cache dir: should also work
+    cacheDir = File(BaseLintDetectorTest.getTempDir(), "test-cache")
+    cacheDir.mkdirs()
+    logBuffer.setLength(0)
+    lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
+    assertEquals(
+      Restriction.DENY,
+      lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
+    )
+    assertEquals("", logBuffer.toString()) // No warnings
 
-        logBuffer.setLength(0)
-        assertTrue(cacheFile.exists())
-        raf = RandomAccessFile(cacheFile, "rw")
-        // Truncate file in half in the data portion
-        raf.setLength(raf.length() / 2)
-        raf.close()
-        lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
-        // This data is now truncated: lookup returns the wrong size.
-        lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
-        assertTrue(message.contains("Please delete the file and restart the IDE/lint:"))
-        assertTrue(message.contains(cacheDir.path))
+    // Now truncate cache file
+    val cacheFile = cacheDir.listFiles { it -> it.name.startsWith("private-apis") }[0]
+    logBuffer.setLength(0)
+    assertTrue(cacheFile.exists())
+    var raf = RandomAccessFile(cacheFile, "rw")
+    // Truncate file in half
+    raf.setLength(100) // Broken header
+    raf.close()
+    PrivateApiLookup.get(LookupTestClient())
+    val message = logBuffer.toString()
+    assertTrue(message.contains("Please delete the file and restart the IDE/lint:"))
+    assertTrue(message.contains(cacheDir.path))
 
-        logBuffer.setLength(0)
-        assertTrue(cacheFile.exists())
-        raf = RandomAccessFile(cacheFile, "rw")
-        // Truncate file to 0 bytes
-        raf.setLength(0)
-        raf.close()
-        lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
-        assertEquals(
-            Restriction.DENY,
-            lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
-        )
-        assertEquals("", logBuffer.toString()) // No warnings
-    }
+    logBuffer.setLength(0)
+    assertTrue(cacheFile.exists())
+    raf = RandomAccessFile(cacheFile, "rw")
+    // Truncate file in half in the data portion
+    raf.setLength(raf.length() / 2)
+    raf.close()
+    lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
+    // This data is now truncated: lookup returns the wrong size.
+    lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
+    assertTrue(message.contains("Please delete the file and restart the IDE/lint:"))
+    assertTrue(message.contains(cacheDir.path))
+
+    logBuffer.setLength(0)
+    assertTrue(cacheFile.exists())
+    raf = RandomAccessFile(cacheFile, "rw")
+    // Truncate file to 0 bytes
+    raf.setLength(0)
+    raf.close()
+    lookup = PrivateApiLookup.Companion.get(LookupTestClient())!!
+    assertEquals(
+      Restriction.DENY,
+      lookup.getFieldRestriction("android/Manifest\$permission", "INSTALL_EXISTING_PACKAGES")
+    )
+    assertEquals("", logBuffer.toString()) // No warnings
+  }
 }

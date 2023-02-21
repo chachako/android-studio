@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class RelativeOverlapDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return RelativeOverlapDetector()
-    }
+  override fun getDetector(): Detector {
+    return RelativeOverlapDetector()
+  }
 
-    fun testOneOverlap() {
-        lint().files(
-            xml(
-                "res/layout/relative_overlap.xml",
-                """
+  fun testOneOverlap() {
+    lint()
+      .files(
+        xml(
+            "res/layout/relative_overlap.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/container"
                     android:layout_width="match_parent"
@@ -119,22 +120,26 @@ class RelativeOverlapDetectorTest : AbstractCheckTest() {
                     </RelativeLayout>
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/relative_overlap.xml:16: Warning: @id/label2 can overlap @id/label1 if @string/label1_text, @string/label2_text grow due to localized text expansion [RelativeOverlap]
                     <TextView
                      ~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOneOverlapPercent() {
-        lint().files(
-            xml(
-                "res/layout/relative_percent_overlap.xml",
-                """
+  fun testOneOverlapPercent() {
+    lint()
+      .files(
+        xml(
+            "res/layout/relative_percent_overlap.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/container"
                     android:layout_width="match_parent"
@@ -184,14 +189,17 @@ class RelativeOverlapDetectorTest : AbstractCheckTest() {
                     </android.support.percent.PercentRelativeLayout>
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/relative_percent_overlap.xml:16: Warning: @id/label2 can overlap @id/label1 if @string/label1_text, @string/label2_text grow due to localized text expansion [RelativeOverlap]
                     <TextView
                      ~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

@@ -19,12 +19,13 @@ import com.android.tools.lint.detector.api.Detector
 
 /** Unit tests for [SdkIntDetector] */
 class SdkIntDetectorTest : AbstractCheckTest() {
-    fun testDocumentationExample() {
-        lint().files(
-            manifest().minSdk(4),
-            projectProperties().library(true),
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        manifest().minSdk(4),
+        projectProperties().library(true),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.os.Build
@@ -47,9 +48,12 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     return this
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:8: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES.N) [AnnotateVersionCheck]
             fun isNougat(): Boolean {
                 ~~~~~~~~
@@ -61,15 +65,16 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                              ~~~~~~~~~~~~~~~~~~~
             0 errors, 3 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testChecksSdkIntAtLeast() {
-        lint().files(
-            manifest().minSdk(4),
-            projectProperties().library(true),
-            kotlin(
-                """
+  fun testChecksSdkIntAtLeast() {
+    lint()
+      .files(
+        manifest().minSdk(4),
+        projectProperties().library(true),
+        kotlin(
+            """
                 @file:Suppress("unused", "RemoveRedundantQualifierName")
 
                 package test.pkg
@@ -167,9 +172,10 @@ class SdkIntDetectorTest : AbstractCheckTest() {
 
                 fun isAtLeastN2(): Boolean = BuildCompat.isAtLeastN() // 16: Could annotate in the future
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import android.os.Build;
                 import androidx.core.os.BuildCompat;
@@ -241,9 +247,10 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import static android.os.Build.VERSION.SDK_INT;
                 import static android.os.Build.VERSION_CODES.N;
@@ -254,13 +261,15 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            // Allow BuildCompat to not resolve since we recognize it by name
-            .allowCompilationErrors()
-            .run().expect(
-                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      // Allow BuildCompat to not resolve since we recognize it by name
+      .allowCompilationErrors()
+      .run()
+      .expect(
+        """
                 src/test/pkg/JavaVersionChecks.java:13: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=N) [AnnotateVersionCheck]
                     public static boolean isNougat1() { // 1: Should annotate
                                           ~~~~~~~~~
@@ -344,8 +353,9 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~
                 0 errors, 27 warnings
                 """
-            ).expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Fix for src/test/pkg/JavaVersionChecks.java line 13: Annotate with @ChecksSdkIntAtLeast:
                 @@ -13 +13
                 +     @ChecksSdkIntAtLeast(api=N)
@@ -428,16 +438,17 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 @@ -79 +79
                 + @ChecksSdkIntAtLeast(api=VERSION_CODES.N_MR1)
                 """
-            )
-    }
+      )
+  }
 
-    fun test189154435() {
-        // Regression test for
-        // 189154435: AnnotateVersionCheck considers "Context" a lambda
-        lint().files(
-            projectProperties().library(true),
-            java(
-                """
+  fun test189154435() {
+    // Regression test for
+    // 189154435: AnnotateVersionCheck considers "Context" a lambda
+    lint()
+      .files(
+        projectProperties().library(true),
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -456,15 +467,19 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testFunctions() {
-        lint().files(
-            projectProperties().library(true),
-            kotlin(
-                """
+  fun testFunctions() {
+    lint()
+      .files(
+        projectProperties().library(true),
+        kotlin(
+            """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -492,9 +507,10 @@ class SdkIntDetectorTest : AbstractCheckTest() {
 
                 // TODO: What about androidx.arch.core.util ?
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.os.Build;
@@ -513,10 +529,13 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/FunctionTest.java:7: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.O_MR1, lambda=0) [AnnotateVersionCheck]
                 void test(Function<String, Integer> function, String arg) {
                      ~~~~
@@ -528,16 +547,17 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 ~~~~~
             0 errors, 3 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test197966892() {
-        // 197966892: LintFix's annotate function misplaces annotations on functions
-        lint().files(
-            manifest().minSdk(4),
-            projectProperties().library(true),
-            kotlin(
-                """
+  fun test197966892() {
+    // 197966892: LintFix's annotate function misplaces annotations on functions
+    lint()
+      .files(
+        manifest().minSdk(4),
+        projectProperties().library(true),
+        kotlin(
+            """
                 @file:Suppress("unused", "RemoveRedundantQualifierName")
 
                 package test.pkg
@@ -548,33 +568,38 @@ class SdkIntDetectorTest : AbstractCheckTest() {
 
                 private fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:9: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES.N) [AnnotateVersionCheck]
             private fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
                         ~~~~~~~~
             0 errors, 1 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/test.kt line 9: Annotate with @ChecksSdkIntAtLeast:
             @@ -9 +9
             + @ChecksSdkIntAtLeast(api=VERSION_CODES.N)
             """
-        )
-    }
+      )
+  }
 
-    fun testExtensionMethods() {
-        // This test checks that we suggest inserting @ChecksSdkIntAtLeast annotations.
-        // Once annotated, the same example (with annotations applied) is checked in
-        // VersionChecksTest#testExtensionWithChecksSdkIntAtLeast
-        lint().files(
-            manifest().minSdk(1),
-            projectProperties().library(true),
-            java(
-                """
+  fun testExtensionMethods() {
+    // This test checks that we suggest inserting @ChecksSdkIntAtLeast annotations.
+    // Once annotated, the same example (with annotations applied) is checked in
+    // VersionChecksTest#testExtensionWithChecksSdkIntAtLeast
+    lint()
+      .files(
+        manifest().minSdk(1),
+        projectProperties().library(true),
+        java(
+            """
                 package test.pkg;
 
                 import android.os.Build;
@@ -621,10 +646,13 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/SdkExtensionsTest.java:12: Warning: This field should be annotated with ChecksSdkIntAtLeast(api=4, extension=android.os.Build.VERSION_CODES.R) [AnnotateVersionCheck]
                 public static final boolean HAS_R_4 = SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 4; // WARN 1
                                             ~~~~~~~
@@ -651,8 +679,9 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                                    ~~~~~~~
             0 errors, 8 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/SdkExtensionsTest.java line 12: Annotate with @ChecksSdkIntAtLeast:
             @@ -11 +11
             +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, extension=Build.VERSION_CODES.R)
@@ -678,10 +707,10 @@ class SdkIntDetectorTest : AbstractCheckTest() {
             @@ -39 +39
             +     @androidx.annotation.ChecksSdkIntAtLeast(api=4, lambda=0, extension=Build.VERSION_CODES.R)
             """
-        )
-    }
+      )
+  }
 
-    override fun getDetector(): Detector {
-        return SdkIntDetector()
-    }
+  override fun getDetector(): Detector {
+    return SdkIntDetector()
+  }
 }

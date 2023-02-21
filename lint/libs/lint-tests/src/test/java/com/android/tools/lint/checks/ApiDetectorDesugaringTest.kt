@@ -22,10 +22,10 @@ import com.android.tools.lint.detector.api.Detector
 
 @Suppress("PrivatePropertyName")
 class ApiDetectorDesugaringTest : AbstractCheckTest() {
-    fun testTryWithResources() {
-        // No desugaring
-        val expected =
-            """
+  fun testTryWithResources() {
+    // No desugaring
+    val expected =
+      """
             src/main/java/test/pkg/MultiCatch.java:10: Error: Multi-catch with these reflection exceptions requires API level 19 (current min is 1) because they get compiled to the common but new super type ReflectiveOperationException. As a workaround either create individual catch statements, or catch Exception. [NewApi]
                     } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,89 +34,76 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        lint().files(
-            manifest().minSdk(1),
-            tryWithResources,
-            multiCatch,
-            gradleVersion231
-        ).run().expect(expected)
-    }
+    lint()
+      .files(manifest().minSdk(1), tryWithResources, multiCatch, gradleVersion231)
+      .run()
+      .expect(expected)
+  }
 
-    fun testTryWithResourcesOkDueToCompileSdk() {
-        lint().files(
-            manifest().minSdk(19),
-            tryWithResources,
-            multiCatch,
-            gradleVersion231
-        ).run().expectClean()
-    }
+  fun testTryWithResourcesOkDueToCompileSdk() {
+    lint()
+      .files(manifest().minSdk(19), tryWithResources, multiCatch, gradleVersion231)
+      .run()
+      .expectClean()
+  }
 
-    fun testTryWithResourcesOkDueToDesugar() {
-        lint().files(
-            manifest().minSdk(19),
-            tryWithResources,
-            multiCatch,
-            gradleVersion24_language18
-        ).run().expectClean()
-    }
+  fun testTryWithResourcesOkDueToDesugar() {
+    lint()
+      .files(manifest().minSdk(19), tryWithResources, multiCatch, gradleVersion24_language18)
+      .run()
+      .expectClean()
+  }
 
-    fun testTryWithResourcesOutsideAndroid() {
-        lint().files(
-            manifest().minSdk(1),
-            tryWithResources,
-            multiCatch,
-            gradle("apply plugin: 'java'\n")
-        ).run().expectClean()
-    }
+  fun testTryWithResourcesOutsideAndroid() {
+    lint()
+      .files(manifest().minSdk(1), tryWithResources, multiCatch, gradle("apply plugin: 'java'\n"))
+      .run()
+      .expectClean()
+  }
 
-    fun testTryWithResourcesOldGradlePlugin() {
-        val expected =
-            """
+  fun testTryWithResourcesOldGradlePlugin() {
+    val expected =
+      """
             src/main/java/test/pkg/TryWithResources.java:9: Error: Try-with-resources requires API level 19 (current min is 1) [NewApi]
                     try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            manifest().minSdk(1),
-            gradleVersion231,
-            tryWithResources
-        ).run().expect(expected)
-    }
+    lint().files(manifest().minSdk(1), gradleVersion231, tryWithResources).run().expect(expected)
+  }
 
-    fun testTryWithResourcesNewPluginLanguage17() {
-        val expected =
-            """
+  fun testTryWithResourcesNewPluginLanguage17() {
+    val expected =
+      """
             src/main/java/test/pkg/TryWithResources.java:9: Error: Try-with-resources requires API level 19 (current min is 1) [NewApi]
                     try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            manifest().minSdk(1),
-            gradleVersion24_language17,
-            tryWithResources
-        )
-            // Can't easily test 1.7 desugaring in partial mode (and minor corner case since AGP has default to 1.8 f
-            .skipTestModes(TestMode.PARTIAL)
-            .run().expect(expected)
-    }
+    lint()
+      .files(manifest().minSdk(1), gradleVersion24_language17, tryWithResources)
+      // Can't easily test 1.7 desugaring in partial mode (and minor corner case since AGP has
+      // default to 1.8 f
+      .skipTestModes(TestMode.PARTIAL)
+      .run()
+      .expect(expected)
+  }
 
-    fun testTryWithResourcesDesugar() {
-        lint().files(
-            manifest().minSdk(1),
-            gradleVersion24_language18,
-            tryWithResources
-        ).run().expectClean()
-    }
+  fun testTryWithResourcesDesugar() {
+    lint()
+      .files(manifest().minSdk(1), gradleVersion24_language18, tryWithResources)
+      .run()
+      .expectClean()
+  }
 
-    fun testDesugarMethods() {
-        // Desugar inlines Objects.requireNonNull(foo) so don't flag this if using Desugar
-        // Ditto for Throwable.addSuppressed.
+  fun testDesugarMethods() {
+    // Desugar inlines Objects.requireNonNull(foo) so don't flag this if using Desugar
+    // Ditto for Throwable.addSuppressed.
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import java.util.Objects;
@@ -135,19 +122,23 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            gradleVersion24_language18
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        gradleVersion24_language18
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDefaultMethodsDesugar() {
-        // Default methods require minSdkVersion=N
+  fun testDefaultMethodsDesugar() {
+    // Default methods require minSdkVersion=N
 
-        lint().files(
-            manifest().minSdk(15),
-            java(
-                "src/test/pkg/InterfaceMethodTest.java",
-                """
+    lint()
+      .files(
+        manifest().minSdk(15),
+        java(
+            "src/test/pkg/InterfaceMethodTest.java",
+            """
                 package test.pkg;
 
                 @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -160,16 +151,20 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                         System.out.println("test");
                     }
                 }"""
-            ).indented(),
-            gradleVersion24_language18
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        gradleVersion24_language18
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDesugarCompare() {
-        lint().files(
-            manifest().minSdk(1),
-            java(
-                """
+  fun testDesugarCompare() {
+    lint()
+      .files(
+        manifest().minSdk(1),
+        java(
+            """
                 package test.pkg;
 
                 // Desugar rewrites these
@@ -208,16 +203,20 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            gradleVersion24_language18
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        gradleVersion24_language18
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDesugarJava8LibsKotlin() {
-        lint().files(
-            manifest().minSdk(1),
-            kotlin(
-                """
+  fun testDesugarJava8LibsKotlin() {
+    lint()
+      .files(
+        manifest().minSdk(1),
+        kotlin(
+            """
                 @file:Suppress("unused", "UNUSED_VARIABLE")
 
                 package test.pkg
@@ -247,15 +246,20 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                     annotation class MyTypeUse
                 }
                 """
-            ).indented()
-        ).desugaring(Desugaring.FULL).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .desugaring(Desugaring.FULL)
+      .run()
+      .expectClean()
+  }
 
-    fun testDesugarJava8LibsJavaAndroid() {
-        lint().files(
-            manifest().minSdk(1),
-            java(
-                """
+  fun testDesugarJava8LibsJavaAndroid() {
+    lint()
+      .files(
+        manifest().minSdk(1),
+        java(
+            """
                 package test.pkg;
 
                 import java.lang.annotation.ElementType;
@@ -314,9 +318,13 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).desugaring(Desugaring.FULL).run().expect(
-            """
+          )
+          .indented()
+      )
+      .desugaring(Desugaring.FULL)
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:35: Error: Call requires API level 24 (current min is 1): java.util.Collection#parallelStream [NewApi]
                     Stream stream = collection.parallelStream();
                                                ~~~~~~~~~~~~~~
@@ -325,13 +333,14 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                                                ~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testDesugarJava8LibsJavaLib() {
-        val lib = project(
-            java(
-                """
+  fun testDesugarJava8LibsJavaLib() {
+    val lib =
+      project(
+        java(
+            """
                 package test.pkg.lib;
 
                 import java.util.ArrayList;
@@ -354,23 +363,21 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            // Make sure it's treated as a plain library
-            gradle(
-                """
+          )
+          .indented(),
+        // Make sure it's treated as a plain library
+        gradle("""
                 apply plugin: 'java'
-                """
-            ).indented()
-        )
+                """).indented()
+      )
 
-        val main = project(
-            manifest().minSdk(1)
-        ).dependsOn(lib)
+    val main = project(manifest().minSdk(1)).dependsOn(lib)
 
-        lint().projects(lib, main).desugaring(Desugaring.FULL).run().expectClean()
-    }
+    lint().projects(lib, main).desugaring(Desugaring.FULL).run().expectClean()
+  }
 
-    private val gradleVersion24_language18 = gradle(
+  private val gradleVersion24_language18 =
+    gradle(
         """
         buildscript {
             repositories {
@@ -386,9 +393,11 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 targetCompatibility JavaVersion.VERSION_1_8
             }
         }"""
-    ).indented()
+      )
+      .indented()
 
-    private val gradleVersion24_language17 = gradle(
+  private val gradleVersion24_language17 =
+    gradle(
         """
         buildscript {
             repositories {
@@ -404,9 +413,11 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 targetCompatibility JavaVersion.VERSION_1_7
             }
         }"""
-    ).indented()
+      )
+      .indented()
 
-    private val gradleVersion231 = gradle(
+  private val gradleVersion231 =
+    gradle(
         """
         buildscript {
             repositories {
@@ -416,9 +427,11 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 classpath 'com.android.tools.build:gradle:2.3.1'
             }
         }"""
-    ).indented()
+      )
+      .indented()
 
-    private val tryWithResources = java(
+  private val tryWithResources =
+    java(
         """
         package test.pkg;
 
@@ -434,9 +447,11 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val multiCatch = java(
+  private val multiCatch =
+    java(
         """
         package test.pkg;
 
@@ -455,7 +470,8 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    override fun getDetector(): Detector = ApiDetector()
+  override fun getDetector(): Detector = ApiDetector()
 }

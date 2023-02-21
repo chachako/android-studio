@@ -15,9 +15,14 @@
  */
 
 @file:Suppress(
-    "CastCanBeRemovedNarrowingVariableType", "RemoveRedundantQualifierName", "RemoveExplicitTypeArguments",
-    "HasPlatformType", "ConstantConditions", "MemberVisibilityCanBePrivate"
+  "CastCanBeRemovedNarrowingVariableType",
+  "RemoveRedundantQualifierName",
+  "RemoveExplicitTypeArguments",
+  "HasPlatformType",
+  "ConstantConditions",
+  "MemberVisibilityCanBePrivate"
 )
+
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.testutils.TestUtils
@@ -27,18 +32,21 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class ArgumentReorderingTestModeTest {
-    private fun reorder(@Language("kotlin") source: String): String {
-        val testFile = kotlin(source)
-        val sdkHome = TestUtils.getSdk().toFile()
-        var modified = testFile.contents
-        ArgumentReorderingTestMode().processTestFiles(listOf(testFile), sdkHome = sdkHome) { _, s -> modified = s }
-        return modified
+  private fun reorder(@Language("kotlin") source: String): String {
+    val testFile = kotlin(source)
+    val sdkHome = TestUtils.getSdk().toFile()
+    var modified = testFile.contents
+    ArgumentReorderingTestMode().processTestFiles(listOf(testFile), sdkHome = sdkHome) { _, s ->
+      modified = s
     }
+    return modified
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testBasic() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("MoveLambdaOutsideParentheses", "UNUSED_PARAMETER", "unused",
                 "UNUSED_ANONYMOUS_PARAMETER", "BooleanLiteralArgument"
             )
@@ -77,10 +85,13 @@ class ArgumentReorderingTestModeTest {
                     mutableMapOf()
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @file:Suppress("MoveLambdaOutsideParentheses", "UNUSED_PARAMETER", "unused",
                 "UNUSED_ANONYMOUS_PARAMETER", "BooleanLiteralArgument"
             )
@@ -119,9 +130,11 @@ class ArgumentReorderingTestModeTest {
                     mutableMapOf()
                 }, s = "hello")
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val expanded = reorder(kotlin)
-        assertEquals(expected, expanded)
-    }
+    val expanded = reorder(kotlin)
+    assertEquals(expected, expanded)
+  }
 }

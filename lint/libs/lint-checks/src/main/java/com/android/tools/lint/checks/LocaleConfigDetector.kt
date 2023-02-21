@@ -38,142 +38,148 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.android.utils.XmlUtils
+import java.io.IOException
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
 
-/**
- * Checks for problems related to the LocaleConfig definitions in
- * Android 13.
- */
+/** Checks for problems related to the LocaleConfig definitions in Android 13. */
 class LocaleConfigDetector : Detector(), XmlScanner, ResourceFolderScanner {
-    override fun appliesTo(folderType: ResourceFolderType): Boolean {
-        return folderType == ResourceFolderType.XML
+  override fun appliesTo(folderType: ResourceFolderType): Boolean {
+    return folderType == ResourceFolderType.XML
+  }
+
+  // When processing a manifest file, validate that the locale config attribute corresponds to al
+  // the locales
+  override fun getApplicableAttributes(): Collection<String> = listOf("localeConfig")
+
+  override fun visitAttribute(context: XmlContext, attribute: Attr) {
+    if (attribute.namespaceURI != ANDROID_URI) return
+    val url = ResourceUrl.parse(attribute.value) ?: return
+    if (url.type != ResourceType.XML || url.isFramework || url.isTheme) return
+
+    val client = context.client
+    val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
+    val resources = client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
+    val namespace = context.project.resourceNamespace
+    val configs: List<ResourceItem> = resources.getResources(namespace, url.type, url.name)
+    for (config in configs) {
+      val path = config.source ?: continue
+      val configLanguages = getConfigLanguages(client, path) ?: continue
+      if (configLanguages.isEmpty()) {
+        // No locales? Unlikely config file; probably an error in parsing or format
+        continue
+      }
+      val actualLocales = resources.getStringLocales()
+      for (actualLocale in actualLocales) {
+        val language = actualLocale.language ?: continue
+        if (!configLanguages.contains(language)) {
+          val desc = LocaleManager.getLanguageName(language)?.let { "$language ($it)" } ?: language
+          val message =
+            "The language `$desc` is present in this project, but not declared in the `localeConfig` resource"
+          context.report(
+            ISSUE,
+            attribute,
+            context.getValueLocation(attribute),
+            message,
+            createFix(context, path, language)
+          )
+        }
+      }
+    }
+  }
+
+  private fun createFix(context: XmlContext, path: PathString, language: String): LintFix? {
+    val file = path.toFile() ?: return null
+    val parser = context.parser
+    val contents = context.client.readFile(file)
+    val document = parser.parseXml(contents, file) ?: return null
+    val prefix = document.lookupPrefix(ANDROID_URI) ?: ANDROID_NS_NAME
+    var curr = document.documentElement?.firstChild ?: return null
+    var location: Location? = null
+    while (true) {
+      if (curr is Element && curr.getAttributeNS(ANDROID_URI, ATTR_NAME) > language) {
+        location = parser.getLocation(file, curr)
+        break
+      }
+
+      curr = curr.nextSibling ?: break
     }
 
-    // When processing a manifest file, validate that the locale config attribute corresponds to al the locales
-    override fun getApplicableAttributes(): Collection<String> = listOf("localeConfig")
-
-    override fun visitAttribute(context: XmlContext, attribute: Attr) {
-        if (attribute.namespaceURI != ANDROID_URI) return
-        val url = ResourceUrl.parse(attribute.value) ?: return
-        if (url.type != ResourceType.XML || url.isFramework || url.isTheme) return
-
-        val client = context.client
-        val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
-        val resources = client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
-        val namespace = context.project.resourceNamespace
-        val configs: List<ResourceItem> = resources.getResources(namespace, url.type, url.name)
-        for (config in configs) {
-            val path = config.source ?: continue
-            val configLanguages = getConfigLanguages(client, path) ?: continue
-            if (configLanguages.isEmpty()) {
-                // No locales? Unlikely config file; probably an error in parsing or format
-                continue
-            }
-            val actualLocales = resources.getStringLocales()
-            for (actualLocale in actualLocales) {
-                val language = actualLocale.language ?: continue
-                if (!configLanguages.contains(language)) {
-                    val desc = LocaleManager.getLanguageName(language)?.let { "$language ($it)" } ?: language
-                    val message = "The language `$desc` is present in this project, but not declared in the `localeConfig` resource"
-                    context.report(ISSUE, attribute, context.getValueLocation(attribute), message, createFix(context, path, language))
-                }
-            }
+    val replacement = "<locale $prefix:name=\"$language\"/>"
+    val fix = fix().name("Add $language to ${file.name}").replace()
+    if (location == null) {
+      fix
+        .range(parser.getLocation(file, XmlUtils.getSubTags(document.documentElement).last()))
+        .end()
+        .with("\n    $replacement")
+    } else {
+      val start = location.start!!.offset
+      var offset = start - 1
+      while (offset > 0) {
+        if (contents[offset] == '\n') {
+          break
         }
+        offset--
+      }
+      val indent = contents.substring(offset, start)
+      fix.beginning().with(replacement + indent).range(location)
     }
 
-    private fun createFix(context: XmlContext, path: PathString, language: String): LintFix? {
-        val file = path.toFile() ?: return null
-        val parser = context.parser
-        val contents = context.client.readFile(file)
-        val document = parser.parseXml(contents, file) ?: return null
-        val prefix = document.lookupPrefix(ANDROID_URI) ?: ANDROID_NS_NAME
-        var curr = document.documentElement?.firstChild ?: return null
-        var location: Location? = null
-        while (true) {
-            if (curr is Element && curr.getAttributeNS(ANDROID_URI, ATTR_NAME) > language) {
-                location = parser.getLocation(file, curr)
-                break
-            }
+    return fix.build()
+  }
 
-            curr = curr.nextSibling ?: break
+  private fun getConfigLanguages(client: LintClient, file: PathString?): Set<String>? {
+    file ?: return null
+    try {
+      val parser = client.createXmlPullParser(file) ?: return null
+      val languages = mutableSetOf<String>()
+      while (true) {
+        val event = parser.next()
+        if (event == XmlPullParser.START_TAG) {
+          val language: String? = parser.getAttributeValue(ANDROID_URI, ATTR_NAME)
+          if (!language.isNullOrEmpty()) {
+            languages.add(language.substringBefore('-'))
+          }
+        } else if (event == XmlPullParser.END_DOCUMENT) {
+          return languages
         }
-
-        val replacement = "<locale $prefix:name=\"$language\"/>"
-        val fix = fix()
-            .name("Add $language to ${file.name}")
-            .replace()
-        if (location == null) {
-            fix
-                .range(parser.getLocation(file, XmlUtils.getSubTags(document.documentElement).last()))
-                .end()
-                .with("\n    $replacement")
-        } else {
-            val start = location.start!!.offset
-            var offset = start - 1
-            while (offset > 0) {
-                if (contents[offset] == '\n') {
-                    break
-                }
-                offset--
-            }
-            val indent = contents.substring(offset, start)
-            fix.beginning().with(replacement + indent).range(location)
-        }
-
-        return fix.build()
+      }
+    } catch (ignore: XmlPullParserException) {
+      // Users might be editing these files in the IDE; don't flag
+    } catch (ignore: IOException) {
+      // Users might be editing these files in the IDE; don't flag
     }
+    return null
+  }
 
-    private fun getConfigLanguages(client: LintClient, file: PathString?): Set<String>? {
-        file ?: return null
-        try {
-            val parser = client.createXmlPullParser(file) ?: return null
-            val languages = mutableSetOf<String>()
-            while (true) {
-                val event = parser.next()
-                if (event == XmlPullParser.START_TAG) {
-                    val language: String? = parser.getAttributeValue(ANDROID_URI, ATTR_NAME)
-                    if (!language.isNullOrEmpty()) {
-                        languages.add(language.substringBefore('-'))
-                    }
-                } else if (event == XmlPullParser.END_DOCUMENT) {
-                    return languages
-                }
-            }
-        } catch (ignore: XmlPullParserException) {
-            // Users might be editing these files in the IDE; don't flag
-        } catch (ignore: IOException) {
-            // Users might be editing these files in the IDE; don't flag
-        }
-        return null
-    }
+  companion object {
+    private val IMPLEMENTATION =
+      Implementation(
+        LocaleConfigDetector::class.java,
+        Scope.MANIFEST_AND_RESOURCE_SCOPE,
+        Scope.RESOURCE_FILE_SCOPE
+      )
 
-    companion object {
-        private val IMPLEMENTATION = Implementation(
-            LocaleConfigDetector::class.java,
-            Scope.MANIFEST_AND_RESOURCE_SCOPE,
-            Scope.RESOURCE_FILE_SCOPE
-        )
-
-        /** Are all translations included in the localeConfig? */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "UnusedTranslation",
-            briefDescription = "Unused Translation",
-            explanation = """
+    /** Are all translations included in the localeConfig? */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "UnusedTranslation",
+        briefDescription = "Unused Translation",
+        explanation =
+          """
               If an application defines a translation for a language which is not included in \
               the app's `localeConfig` file (when declared in the manifest), that language will \
               be "unused"; it will not be presented to the user. Usually this means you have \
               forgotten to include it in the locale config file.
               """,
-            category = Category.MESSAGES,
-            priority = 2,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION,
-            moreInfo = "https://developer.android.com/about/versions/13/features/app-languages"
-        )
-    }
+        category = Category.MESSAGES,
+        priority = 2,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION,
+        moreInfo = "https://developer.android.com/about/versions/13/features/app-languages"
+      )
+  }
 }

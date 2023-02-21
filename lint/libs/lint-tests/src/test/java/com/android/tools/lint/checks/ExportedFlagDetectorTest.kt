@@ -19,14 +19,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ExportedFlagDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ExportedFlagDetector()
-    }
+  override fun getDetector(): Detector {
+    return ExportedFlagDetector()
+  }
 
-    fun testNoExportReceiver() {
-        lint().files(
-            manifest(
-                """
+  fun testNoExportReceiver() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
                     <uses-sdk android:minSdkVersion="30"/>
@@ -42,16 +43,20 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:7: Warning: As of Android 12, android:exported must be set; use true to make the activity available to other apps, and false otherwise. [IntentFilterExportedReceiver]
                     <receiver android:name="com.google.android.c2dm.C2DMBroadcastReceiver">
                      ~~~~~~~~
             0 errors, 1 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for AndroidManifest.xml line 7: Set exported="true":
             @@ -10 +10
             -         <receiver android:name="com.google.android.c2dm.C2DMBroadcastReceiver" >
@@ -65,14 +70,15 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
             +             android:name="com.google.android.c2dm.C2DMBroadcastReceiver"
             +             android:exported="false" >
             """
-        )
-    }
+      )
+  }
 
-    fun testNoExportActivityPreS() {
-        lint().files(
-            xml(
-                "AndroidManifest.xml",
-                """
+  fun testNoExportActivityPreS() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
                     <uses-sdk android:minSdkVersion="30"/>
@@ -88,16 +94,20 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:7: Warning: As of Android 12, android:exported must be set; use true to make the activity available to other apps, and false otherwise. [IntentFilterExportedReceiver]
                     <activity android:name="com.example.MainActivity">
                      ~~~~~~~~
             0 errors, 1 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for AndroidManifest.xml line 7: Set exported="true":
             @@ -10 +10
             -         <activity android:name="com.example.MainActivity" >
@@ -111,14 +121,15 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
             +             android:name="com.example.MainActivity"
             +             android:exported="false" >
             """
-        )
-    }
+      )
+  }
 
-    fun testNoExportActivityPostS() {
-        lint().files(
-            xml(
-                "AndroidManifest.xml",
-                """
+  fun testNoExportActivityPostS() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -135,16 +146,20 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:8: Error: As of Android 12, android:exported must be set; use true to make the activity available to other apps, and false otherwise. [IntentFilterExportedReceiver]
                     <activity android:name="com.example.MainActivity">
                      ~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for AndroidManifest.xml line 8: Set exported="true":
             @@ -10 +10
             -         <activity android:name="com.example.MainActivity" >
@@ -158,13 +173,14 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
             +             android:name="com.example.MainActivity"
             +             android:exported="false" >
             """
-        )
-    }
+      )
+  }
 
-    fun testExport() {
-        lint().files(
-            manifest(
-                """
+  fun testExport() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -181,15 +197,19 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNonExportedActivityPostS() {
-        lint().files(
-            xml(
-                "AndroidManifest.xml",
-                """
+  fun testNonExportedActivityPostS() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -204,16 +224,20 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:8: Error: As of Android 12, android:exported must be set; use true to make the activity available to other apps, and false otherwise. [IntentFilterExportedReceiver]
                     <activity
                      ~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for AndroidManifest.xml line 8: Set exported="true":
             @@ -10 +10
             -         <activity android:name="MyActivity" >
@@ -227,13 +251,14 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
             +             android:name="MyActivity"
             +             android:exported="false" >
             """
-        )
-    }
+      )
+  }
 
-    fun testExportedActivity() {
-        lint().files(
-            manifest(
-                """
+  fun testExportedActivity() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -248,14 +273,18 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testProvider() {
-        lint().files(
-            manifest(
-                """
+  fun testProvider() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -272,14 +301,18 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testLauncherActivity() {
-        lint().files(
-            manifest(
-                """
+  fun testLauncherActivity() {
+    lint()
+      .files(
+        manifest(
+          """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -295,17 +328,19 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            )
-        ).run().expect(
-            """
+        )
+      )
+      .run()
+      .expect(
+        """
         AndroidManifest.xml:8: Warning: As of Android 12, android:exported must be set; use true to make the activity available to other apps, and false otherwise. For launcher activities, this should be set to true. [IntentFilterExportedReceiver]
                                 <activity android:name="MyActivity">
                                  ~~~~~~~~
         0 errors, 1 warnings
         """
-        )
-            .expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Fix for AndroidManifest.xml line 8: Set exported="true":
                 @@ -8 +8
                 -         <activity android:name="MyActivity" >
@@ -313,13 +348,14 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                 +             android:name="MyActivity"
                 +             android:exported="true" >
             """
-            )
-    }
+      )
+  }
 
-    fun testNonExportedLauncherActivity() {
-        lint().files(
-            manifest(
-                """
+  fun testNonExportedLauncherActivity() {
+    lint()
+      .files(
+        manifest(
+          """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -337,28 +373,32 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            )
-        ).run().expect(
-            """
+        )
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:10: Error: A launchable activity must be exported as of Android 12, which also makes it available to other apps. [IntentFilterExportedReceiver]
                                         android:exported="false">
                                         ~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for AndroidManifest.xml line 10: Set exported="true":
             @@ -10 +10
             -             android:exported="false" >
             +             android:exported="true" >
         """
-        )
-    }
+      )
+  }
 
-    fun testNonLaunchable() {
-        lint().files(
-            manifest(
-                """
+  fun testNonLaunchable() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="foo.bar2"
                     android:versionCode="1"
@@ -382,7 +422,10 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

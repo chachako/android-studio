@@ -19,12 +19,13 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class GestureBackNavDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return GestureBackNavDetector()
-    }
+  override fun getDetector(): Detector {
+    return GestureBackNavDetector()
+  }
 
-    private val manifestBackInvokeEnabled = manifest(
-        """
+  private val manifestBackInvokeEnabled =
+    manifest(
+      """
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
             package="test.pkg">
 
@@ -49,19 +50,20 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
         """
     )
 
-    fun testDocumentationExample() {
-        val expected =
-            """
+  fun testDocumentationExample() {
+    val expected =
+      """
             src/test/pkg/KeyEventKeyCodeBackTest.java:11: Warning: If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture [GestureBackNavigation]
                     if (KeyEvent.KEYCODE_BACK == keyCode) {
                         ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            manifestBackInvokeEnabled,
-            java(
-                "src/test/pkg/KeyEventKeyCodeBackTest.java",
-                """
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        java(
+            "src/test/pkg/KeyEventKeyCodeBackTest.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -78,27 +80,32 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected).expectFixDiffs(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+      .expectFixDiffs(
+        """
             Show URL for src/test/pkg/KeyEventKeyCodeBackTest.java line 11: https://developer.android.com/about/versions/13/features/predictive-back-gesture
             """
-        )
-    }
+      )
+  }
 
-    fun testKeyCodeBackSwitchJava() {
-        val expected =
-            """
+  fun testKeyCodeBackSwitchJava() {
+    val expected =
+      """
             src/test/pkg/KeyEventKeyCodeBackTest.java:12: Warning: If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture [GestureBackNavigation]
                       case KeyEvent.KEYCODE_BACK:
                            ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            manifestBackInvokeEnabled,
-            java(
-                "src/test/pkg/KeyEventKeyCodeBackTest.java",
-                """
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        java(
+            "src/test/pkg/KeyEventKeyCodeBackTest.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -118,23 +125,27 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testKeyCodeIfStatementKotlin() {
-        val expected =
-            """
+  fun testKeyCodeIfStatementKotlin() {
+    val expected =
+      """
             src/test/pkg/KeyEventKeyCodeBackTest.kt:10: Warning: If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture [GestureBackNavigation]
                     if (KeyEvent.KEYCODE_BACK == keyCode) {
                         ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            manifestBackInvokeEnabled,
-            kotlin(
-                "src/test/pkg/KeyEventKeyCodeBackTest.kt",
-                """
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        kotlin(
+            "src/test/pkg/KeyEventKeyCodeBackTest.kt",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -150,23 +161,27 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testKeyCodeBackSwitchKotlin() {
-        val expected =
-            """
+  fun testKeyCodeBackSwitchKotlin() {
+    val expected =
+      """
             src/test/pkg/KeyEventKeyCodeBackTest.kt:10: Warning: If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture [GestureBackNavigation]
                       KeyEvent.KEYCODE_BACK -> println("keycode back")
                       ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            manifestBackInvokeEnabled,
-            kotlin(
-                "src/test/pkg/KeyEventKeyCodeBackTest.kt",
-                """
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        kotlin(
+            "src/test/pkg/KeyEventKeyCodeBackTest.kt",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -182,23 +197,27 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testDialogOnKeyListenerSwitchKotlin() {
-        val expected =
-            """
+  fun testDialogOnKeyListenerSwitchKotlin() {
+    val expected =
+      """
             src/test/pkg/KeyEventKeyCodeBackTest.kt:11: Warning: If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture [GestureBackNavigation]
                       KeyEvent.KEYCODE_BACK -> println("keycode back")
                       ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            manifestBackInvokeEnabled,
-            kotlin(
-                "src/test/pkg/KeyEventKeyCodeBackTest.kt",
-                """
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        kotlin(
+            "src/test/pkg/KeyEventKeyCodeBackTest.kt",
+            """
                 package test.pkg;
 
                 import android.view.KeyEvent;
@@ -215,23 +234,27 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testKeyCodeCheckInUtil() {
-        val expected =
-            """
+  fun testKeyCodeCheckInUtil() {
+    val expected =
+      """
             src/test/pkg/KeyEventKeyCodeBackTest.kt:16: Warning: If intercepting back events, this should be handled through the registration of callbacks on the window level; Please see https://developer.android.com/about/versions/13/features/predictive-back-gesture [GestureBackNavigation]
                       KeyEvent.KEYCODE_BACK -> println("keycode back")
                       ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            manifestBackInvokeEnabled,
-            kotlin(
-                "src/test/pkg/KeyEventKeyCodeBackTest.kt",
-                """
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        kotlin(
+            "src/test/pkg/KeyEventKeyCodeBackTest.kt",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -253,16 +276,20 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                      }
                  }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testKeyUpCleanKotlin() {
-        lint().files(
-            manifestBackInvokeEnabled,
-            kotlin(
-                "src/test/pkg/KeyEventKeyCodeBackTest.kt",
-                """
+  fun testKeyUpCleanKotlin() {
+    lint()
+      .files(
+        manifestBackInvokeEnabled,
+        kotlin(
+            "src/test/pkg/KeyEventKeyCodeBackTest.kt",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -276,14 +303,18 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                    }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testEnableBackInvokeDisabled() {
-        lint().files(
-            manifest(
-                """
+  fun testEnableBackInvokeDisabled() {
+    lint()
+      .files(
+        manifest(
+          """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
 
@@ -305,10 +336,10 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
 
                 </manifest>
             """
-            ),
-            kotlin(
-                "src/test/pkg/KeyEventKeyCodeBackTest.kt",
-                """
+        ),
+        kotlin(
+            "src/test/pkg/KeyEventKeyCodeBackTest.kt",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -330,7 +361,10 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                      }
                  }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

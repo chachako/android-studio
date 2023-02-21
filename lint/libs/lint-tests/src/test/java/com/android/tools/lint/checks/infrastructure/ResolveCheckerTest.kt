@@ -27,30 +27,31 @@ import org.junit.Test
 
 @Suppress("LintDocExample")
 class ResolveCheckerTest {
-    private fun lint(): TestLintTask {
-        return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
-    }
+  private fun lint(): TestLintTask {
+    return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
+  }
 
-    @Test
-    fun testInvalidImport() {
-        try {
-            lint().files(
-                kotlin(
-                    """
+  @Test
+  fun testInvalidImport() {
+    try {
+      lint()
+        .files(
+          kotlin(
+            """
                     package test.pkg
                     import java.io.File // OK
                     import invalid.Cls // ERROR
                     class Test
                     """
-                )
-            )
-                .testModes(TestMode.DEFAULT)
-                .issues(AlwaysShowActionDetector.ISSUE)
-                .run()
-                .expectErrorCount(1)
-        } catch (e: Throwable) {
-            assertEquals(
-                """
+          )
+        )
+        .testModes(TestMode.DEFAULT)
+        .issues(AlwaysShowActionDetector.ISSUE)
+        .run()
+        .expectErrorCount(1)
+    } catch (e: Throwable) {
+      assertEquals(
+        """
                 src/test/pkg/Test.kt:4: Error:
                 Couldn't resolve this import [LintError]
                                     import invalid.Cls // ERROR
@@ -69,18 +70,20 @@ class ResolveCheckerTest {
 
                 For more information, see the "Library Dependencies and Stubs" section in
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
-                """.trimIndent(),
-                e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
-            )
-        }
+                """
+          .trimIndent(),
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+      )
     }
+  }
 
-    @Test
-    fun testInvalidReference() {
-        try {
-            lint().files(
-                java(
-                    """
+  @Test
+  fun testInvalidReference() {
+    try {
+      lint()
+        .files(
+          java(
+            """
                     package test.pkg;
                     public class Test {
                         public void test() {
@@ -89,15 +92,15 @@ class ResolveCheckerTest {
                         }
                     }
                     """
-                )
-            )
-                .testModes(TestMode.DEFAULT)
-                .issues(AlwaysShowActionDetector.ISSUE)
-                .run()
-                .expectErrorCount(1)
-        } catch (e: Throwable) {
-            assertEquals(
-                """
+          )
+        )
+        .testModes(TestMode.DEFAULT)
+        .issues(AlwaysShowActionDetector.ISSUE)
+        .run()
+        .expectErrorCount(1)
+    } catch (e: Throwable) {
+      assertEquals(
+        """
                 src/test/pkg/Test.java:6: Error:
                 Couldn't resolve this reference [LintError]
                                             Object o2 = MenuItem.SHOW_AS_ACTION_ALWAYS; // ERROR
@@ -115,18 +118,20 @@ class ResolveCheckerTest {
 
                 For more information, see the "Library Dependencies and Stubs" section in
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
-                """.trimIndent(),
-                e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
-            )
-        }
+                """
+          .trimIndent(),
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+      )
     }
+  }
 
-    @Test
-    fun testInvalidCall() {
-        try {
-            lint().files(
-                kotlin(
-                    """
+  @Test
+  fun testInvalidCall() {
+    try {
+      lint()
+        .files(
+          kotlin(
+            """
                     package test.pkg
                     fun test() {
                         unrelatedCallsOk()
@@ -134,15 +139,15 @@ class ResolveCheckerTest {
                         invalid.makeText() // ERROR
                     }
                     """
-                )
-            )
-                .testModes(TestMode.DEFAULT)
-                .issues(ToastDetector.ISSUE)
-                .run()
-                .expectErrorCount(1)
-        } catch (e: Throwable) {
-            assertEquals(
-                """
+          )
+        )
+        .testModes(TestMode.DEFAULT)
+        .issues(ToastDetector.ISSUE)
+        .run()
+        .expectErrorCount(1)
+    } catch (e: Throwable) {
+      assertEquals(
+        """
                 src/test/pkg/test.kt:5: Error:
                 Couldn't resolve this call [LintError]
                                         android.widget.Toast.makeText() // OK
@@ -160,17 +165,19 @@ class ResolveCheckerTest {
 
                 For more information, see the "Library Dependencies and Stubs" section in
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
-                """.trimIndent(),
-                e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
-            )
-        }
-    }
-
-    @Test
-    fun testValidImports() {
-        lint().files(
-            java(
                 """
+          .trimIndent(),
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+      )
+    }
+  }
+
+  @Test
+  fun testValidImports() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 public interface JavaApi {
                     final int MY_CONSTANT = 5;
@@ -178,42 +185,46 @@ class ResolveCheckerTest {
 
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+          """
                 package test.api;
                 const val foo1 = 42
                 val foo2 = 43
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+            """
                 package test.pkg;
                 import static test.api.JavaApi.MY_CONSTANT;
                 import static test.api.JavaApi.test;
                 public class Test { }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import test.api.foo1
                 import test.api.foo2
                 fun test() { }
                 """
-            ).indented()
-        )
-            .testModes(TestMode.DEFAULT)
-            .issues(AlwaysShowActionDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .testModes(TestMode.DEFAULT)
+      .issues(AlwaysShowActionDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testResolveTopLevelFunctionImport() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testResolveTopLevelFunctionImport() {
+    lint()
+      .files(
+        kotlin(
+          """
                 package test
 
                 import androidx.compose.runtime.remember
@@ -222,12 +233,12 @@ class ResolveCheckerTest {
                     val foo = remember { true }
                 }
             """
-            ),
-            compiled(
-                "libs/remember.jar",
-                kotlin(
-                    "src/androidx/compose/runtime/Remember.kt",
-                    """
+        ),
+        compiled(
+          "libs/remember.jar",
+          kotlin(
+              "src/androidx/compose/runtime/Remember.kt",
+              """
                     package androidx.compose.runtime
 
                     inline fun <T> remember(calculation: () -> T): T = calculation()
@@ -255,15 +266,16 @@ class ResolveCheckerTest {
                         calculation: () -> V
                     ): V = calculation()
                     """
-                ).indented(),
-                0x8c16884e,
-                """
+            )
+            .indented(),
+          0x8c16884e,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM3ApcYlkZiXUpSfmVKhl5yfW5BfnKpX
                 VJpXkpmbKsQVlJqbmpuUWuRdwsXHxVKSWlwixBYCJL1LlBi0GADwe0pKUAAA
                 AA==
                 """,
-                """
+          """
                 androidx/compose/runtime/RememberKt.class:
                 H4sIAAAAAAAAAK1WW1PbVhD+juSLfMEWJlDippSAQ8BAZBuatjHQUmZoPCEk
                 EzxqpzzJtkIFtpTRkT15ZPrQp/6BvvYX9DHtQ4ehb/1Rna4uYAOKCU089u5q
@@ -290,7 +302,10 @@ class ResolveCheckerTest {
                 1RT3IdawWMMSSSzX8ABKDSWU98E4KljZxxhHlGOVI8HxGUeM4yHHHY48x+cc
                 0xxTHF9wzHLc5fiSY47jkfct/AfDBOqMsAoAAA==
                 """
-            )
-        ).issues(AlwaysShowActionDetector.ISSUE).run().expectClean()
-    }
+        )
+      )
+      .issues(AlwaysShowActionDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 }

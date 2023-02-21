@@ -31,14 +31,15 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.TestResultChecker
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.utils.PathUtils
+import java.nio.file.Files
 import org.intellij.lang.annotations.Language
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.nio.file.Files
 
 class XmlReporterTest {
-    private val xmlPrologue = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    private val sampleManifest = manifest(
+  private val xmlPrologue = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+  private val sampleManifest =
+    manifest(
         """
             <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                 package="test.pkg" android:versionName="1.0">
@@ -46,22 +47,25 @@ class XmlReporterTest {
                 <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
             </manifest>
             """
-    ).indented()
+      )
+      .indented()
 
-    private val sampleLayout = xml(
+  private val sampleLayout =
+    xml(
         "res/layout/main.xml",
         """
             <Button xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/button1"
                     android:text="Fooo" />
             """
-    ).indented()
+      )
+      .indented()
 
-    @Test
-    fun testBasic() {
-        @Language("XML")
-        val expected =
-            """
+  @Test
+  fun testBasic() {
+    @Language("XML")
+    val expected =
+      """
                 <issues format="6" by="lint unittest">
 
                     <issue
@@ -106,18 +110,19 @@ class XmlReporterTest {
                 </issues>
                 """
 
-        lint().files(sampleManifest, sampleLayout)
-            .issues(ManifestDetector.MULTIPLE_USES_SDK, HardcodedValuesDetector.ISSUE)
-            .run()
-            .expectXml(xmlPrologue + expected.trimIndent())
-    }
+    lint()
+      .files(sampleManifest, sampleLayout)
+      .issues(ManifestDetector.MULTIPLE_USES_SDK, HardcodedValuesDetector.ISSUE)
+      .run()
+      .expectXml(xmlPrologue + expected.trimIndent())
+  }
 
-    @Test
-    fun testFullPaths() {
-        checkFullPaths(
-            describeSuggestions = false,
-            expected =
-            """
+  @Test
+  fun testFullPaths() {
+    checkFullPaths(
+      describeSuggestions = false,
+      expected =
+        """
             <issues format="6" by="lint unittest">
 
                 <issue
@@ -156,15 +161,15 @@ class XmlReporterTest {
 
             </issues>
             """
-        )
-    }
+    )
+  }
 
-    @Test
-    fun testFullPathsWithDescriptions() {
-        checkFullPaths(
-            describeSuggestions = true,
-            expected =
-            """
+  @Test
+  fun testFullPathsWithDescriptions() {
+    checkFullPaths(
+      describeSuggestions = true,
+      expected =
+        """
             <issues format="6" by="lint unittest" type="report_with_fixes">
 
                 <issue
@@ -214,51 +219,51 @@ class XmlReporterTest {
 
             </issues>
             """
-        )
+    )
+  }
+
+  private fun checkFullPaths(describeSuggestions: Boolean, @Language("XML") expected: String) {
+    val tempDir = Files.createTempDirectory("testFullPaths")
+    val rootDirectory = tempDir.toFile().canonicalFile
+
+    val lint = lint()
+    val factory: () -> com.android.tools.lint.checks.infrastructure.TestLintClient = {
+      val client = com.android.tools.lint.checks.infrastructure.TestLintClient()
+      client.setLintTask(lint)
+      client.flags.isFullPath = true
+      client.pathVariables.clear()
+      client.pathVariables.add("TEST_ROOT", rootDirectory)
+      client.pathVariables.normalize()
+      client.flags.isIncludeXmlFixes = describeSuggestions
+      client
     }
 
-    private fun checkFullPaths(describeSuggestions: Boolean, @Language("XML") expected: String) {
-        val tempDir = Files.createTempDirectory("testFullPaths")
-        val rootDirectory = tempDir.toFile().canonicalFile
+    lint
+      .files(sampleManifest, sampleLayout)
+      .issues(HardcodedValuesDetector.ISSUE, ManifestDetector.SET_VERSION)
+      .clientFactory(factory)
+      .testModes(TestMode.PARTIAL)
+      .rootDirectory(rootDirectory)
+      .stripRoot(false)
+      .run()
+      .checkXmlReport(
+        TestResultChecker { xml ->
+          assertEquals(xmlPrologue + expected.trimIndent() + "\n", xml.dos2unix())
+        },
+        fullPaths = true,
+        reportType = if (describeSuggestions) XmlFileType.REPORT_WITH_FIXES else XmlFileType.REPORT
+      )
 
-        val lint = lint()
-        val factory: () -> com.android.tools.lint.checks.infrastructure.TestLintClient =
-            {
-                val client = com.android.tools.lint.checks.infrastructure.TestLintClient()
-                client.setLintTask(lint)
-                client.flags.isFullPath = true
-                client.pathVariables.clear()
-                client.pathVariables.add("TEST_ROOT", rootDirectory)
-                client.pathVariables.normalize()
-                client.flags.isIncludeXmlFixes = describeSuggestions
-                client
-            }
+    PathUtils.deleteRecursivelyIfExists(tempDir)
+  }
 
-        lint.files(sampleManifest, sampleLayout)
-            .issues(HardcodedValuesDetector.ISSUE, ManifestDetector.SET_VERSION)
-            .clientFactory(factory)
-            .testModes(TestMode.PARTIAL)
-            .rootDirectory(rootDirectory)
-            .stripRoot(false)
-            .run()
-            .checkXmlReport(
-                TestResultChecker { xml ->
-                    assertEquals(xmlPrologue + expected.trimIndent() + "\n", xml.dos2unix())
-                },
-                fullPaths = true,
-                reportType = if (describeSuggestions) XmlFileType.REPORT_WITH_FIXES else XmlFileType.REPORT
-            )
+  @Test
+  fun testNonPrintableChars() {
+    // See https://code.google.com/p/android/issues/detail?id=56205
 
-        PathUtils.deleteRecursivelyIfExists(tempDir)
-    }
-
-    @Test
-    fun testNonPrintableChars() {
-        // See https://code.google.com/p/android/issues/detail?id=56205
-
-        @Language("XML")
-        val expected =
-            """
+    @Language("XML")
+    val expected =
+      """
             <issues format="6" by="lint unittest">
 
                 <issue
@@ -282,27 +287,28 @@ class XmlReporterTest {
             </issues>
             """
 
-        lint().files(
-            xml(
-                "res/values/typography.xml",
-                "" +
-                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                    "<resources>\n" +
-                    "    <string name=\"user_registration_name1_4\">Register 1/4</string>\n" +
-                    "</resources>\n" +
-                    "\n"
-            )
+    lint()
+      .files(
+        xml(
+          "res/values/typography.xml",
+          "" +
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<resources>\n" +
+            "    <string name=\"user_registration_name1_4\">Register 1/4</string>\n" +
+            "</resources>\n" +
+            "\n"
         )
-            .issues(TypographyDetector.FRACTIONS)
-            .run()
-            .expectXml(xmlPrologue + expected.trimIndent())
-    }
+      )
+      .issues(TypographyDetector.FRACTIONS)
+      .run()
+      .expectXml(xmlPrologue + expected.trimIndent())
+  }
 
-    @Test
-    fun testBaselineFile() {
-        @Language("XML")
-        val expected =
-            """
+  @Test
+  fun testBaselineFile() {
+    @Language("XML")
+    val expected =
+      """
             <issues format="6" by="lint unittest" type="baseline">
 
                 <issue
@@ -335,20 +341,18 @@ class XmlReporterTest {
             </issues>
             """
 
-        lint().files(sampleManifest, sampleLayout)
-            .issues(ManifestDetector.MULTIPLE_USES_SDK, HardcodedValuesDetector.ISSUE)
-            .run()
-            .expectXml(
-                xmlPrologue + expected.trimIndent() + "\n",
-                reportType = XmlFileType.BASELINE
-            )
-    }
+    lint()
+      .files(sampleManifest, sampleLayout)
+      .issues(ManifestDetector.MULTIPLE_USES_SDK, HardcodedValuesDetector.ISSUE)
+      .run()
+      .expectXml(xmlPrologue + expected.trimIndent() + "\n", reportType = XmlFileType.BASELINE)
+  }
 
-    @Test
-    fun testFixData() {
-        @Language("XML")
-        val expected =
-            """
+  @Test
+  fun testFixData() {
+    @Language("XML")
+    val expected =
+      """
             <issues format="6" by="lint unittest" type="report_with_fixes">
 
                 <issue
@@ -381,42 +385,40 @@ class XmlReporterTest {
             </issues>
             """
 
-        lint().files(
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "import android.content.Context;\n" +
-                    "import android.os.PowerManager;\n" +
-                    "\n" +
-                    "import static android.os.PowerManager.PARTIAL_WAKE_LOCK;\n" +
-                    "\n" +
-                    "/** @noinspection ClassNameDiffersFromFileName*/ " +
-                    "public abstract class WakelockTest extends Context {\n" +
-                    "    public PowerManager.WakeLock createWakelock() {\n" +
-                    "        PowerManager manager = (PowerManager) getSystemService(POWER_SERVICE);\n" +
-                    "        PowerManager.WakeLock wakeLock = manager.newWakeLock(PARTIAL_WAKE_LOCK, \"Test\");\n" +
-                    "        wakeLock.acquire(); // ERROR\n" +
-                    "        return wakeLock;\n" +
-                    "    }\n" +
-                    "}\n"
-            )
+    lint()
+      .files(
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "import android.content.Context;\n" +
+            "import android.os.PowerManager;\n" +
+            "\n" +
+            "import static android.os.PowerManager.PARTIAL_WAKE_LOCK;\n" +
+            "\n" +
+            "/** @noinspection ClassNameDiffersFromFileName*/ " +
+            "public abstract class WakelockTest extends Context {\n" +
+            "    public PowerManager.WakeLock createWakelock() {\n" +
+            "        PowerManager manager = (PowerManager) getSystemService(POWER_SERVICE);\n" +
+            "        PowerManager.WakeLock wakeLock = manager.newWakeLock(PARTIAL_WAKE_LOCK, \"Test\");\n" +
+            "        wakeLock.acquire(); // ERROR\n" +
+            "        return wakeLock;\n" +
+            "    }\n" +
+            "}\n"
         )
-            .issues(WakelockDetector.TIMEOUT)
-            .run()
-            .expectXml(
-                xmlPrologue + expected.trimIndent(),
-                reportType = XmlFileType.REPORT_WITH_FIXES
-            )
-    }
+      )
+      .issues(WakelockDetector.TIMEOUT)
+      .run()
+      .expectXml(xmlPrologue + expected.trimIndent(), reportType = XmlFileType.REPORT_WITH_FIXES)
+  }
 
-    @Test
-    fun testMultipleAlternativeFixes() {
-        // Typo "unsed": suggest replacements used, unused, unsaid
-        // Check that XML report contains all three fixes
+  @Test
+  fun testMultipleAlternativeFixes() {
+    // Typo "unsed": suggest replacements used, unused, unsaid
+    // Check that XML report contains all three fixes
 
-        @Language("XML")
-        val expected =
-            """
+    @Language("XML")
+    val expected =
+      """
             <issues format="6" by="lint unittest" type="report_with_fixes">
 
                 <issue
@@ -472,31 +474,29 @@ class XmlReporterTest {
             </issues>
             """
 
-        lint().files(
-            xml(
-                "res/values/strings.xml",
-                "" +
-                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                    "<resources>\n" +
-                    "    <string name=\"message\">%d unsed resources</string>\n" +
-                    "</resources>\n"
-            )
+    lint()
+      .files(
+        xml(
+          "res/values/strings.xml",
+          "" +
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<resources>\n" +
+            "    <string name=\"message\">%d unsed resources</string>\n" +
+            "</resources>\n"
         )
-            .issues(TypoDetector.ISSUE)
-            .run()
-            .expectXml(
-                xmlPrologue + expected.trimIndent(),
-                reportType = XmlFileType.REPORT_WITH_FIXES
-            )
-    }
+      )
+      .issues(TypoDetector.ISSUE)
+      .run()
+      .expectXml(xmlPrologue + expected.trimIndent(), reportType = XmlFileType.REPORT_WITH_FIXES)
+  }
 
-    @Test
-    fun testMultipleEditsForSingleFix() {
-        // Check that XML report contains all three fixes
+  @Test
+  fun testMultipleEditsForSingleFix() {
+    // Check that XML report contains all three fixes
 
-        @Language("XML")
-        val expected =
-            """
+    @Language("XML")
+    val expected =
+      """
             <issues format="6" by="lint unittest" type="report_with_fixes">
 
                 <issue
@@ -541,34 +541,31 @@ class XmlReporterTest {
 
             </issues>
             """
-        lint().files(
-            xml(
-                "res/layout/sample.xml",
-                "" +
-                    "<RelativeLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-                    "    android:layout_width=\"wrap_content\"\n" +
-                    "    android:layout_height=\"wrap_content\" >\n" +
-                    "\n" +
-                    "    <TextView\n" +
-                    "        android:layout_width=\"wrap_content\"\n" +
-                    "        android:layout_height=\"wrap_content\"\n" +
-                    "        android:ellipsize=\"start\"\n" + // ERROR
-
-                    "        android:lines=\"1\"\n" +
-                    "        android:text=\"Really long text that needs to be ellipsized here - 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\" />\n" +
-                    "\n" +
-                    "</RelativeLayout>\n"
-            )
+    lint()
+      .files(
+        xml(
+          "res/layout/sample.xml",
+          "" +
+            "<RelativeLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "    android:layout_width=\"wrap_content\"\n" +
+            "    android:layout_height=\"wrap_content\" >\n" +
+            "\n" +
+            "    <TextView\n" +
+            "        android:layout_width=\"wrap_content\"\n" +
+            "        android:layout_height=\"wrap_content\"\n" +
+            "        android:ellipsize=\"start\"\n" + // ERROR
+            "        android:lines=\"1\"\n" +
+            "        android:text=\"Really long text that needs to be ellipsized here - 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\" />\n" +
+            "\n" +
+            "</RelativeLayout>\n"
         )
-            .issues(EllipsizeMaxLinesDetector.ISSUE)
-            .run()
-            .expectXml(
-                xmlPrologue + expected.trimIndent(),
-                reportType = XmlFileType.REPORT_WITH_FIXES
-            )
-    }
+      )
+      .issues(EllipsizeMaxLinesDetector.ISSUE)
+      .run()
+      .expectXml(xmlPrologue + expected.trimIndent(), reportType = XmlFileType.REPORT_WITH_FIXES)
+  }
 
-    private fun lint(): TestLintTask {
-        return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
-    }
+  private fun lint(): TestLintTask {
+    return TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
+  }
 }

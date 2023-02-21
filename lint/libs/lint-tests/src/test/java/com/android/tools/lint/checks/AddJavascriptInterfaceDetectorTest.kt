@@ -20,9 +20,9 @@ import com.android.tools.lint.detector.api.Detector
 
 class AddJavascriptInterfaceDetectorTest : AbstractCheckTest() {
 
-    fun test() {
-        val expected =
-            """
+  fun test() {
+    val expected =
+      """
             src/test/pkg/AddJavascriptInterfaceTest.java:16: Warning: WebView.addJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: JavaScript can use reflection to manipulate application [AddJavascriptInterface]
                         webView.addJavascriptInterface(object, string);
                                 ~~~~~~~~~~~~~~~~~~~~~~
@@ -32,38 +32,29 @@ class AddJavascriptInterfaceDetectorTest : AbstractCheckTest() {
             0 errors, 2 warnings
             """
 
-        lint().files(manifest().minSdk(10), testFile).run().expect(expected)
-    }
+    lint().files(manifest().minSdk(10), testFile).run().expect(expected)
+  }
 
-    fun testNoWarningWhenMinSdkAt17() {
-        lint().files(manifest().minSdk(17), testFile).run().expectClean()
-    }
+  fun testNoWarningWhenMinSdkAt17() {
+    lint().files(manifest().minSdk(17), testFile).run().expectClean()
+  }
 
-    fun testNoWarningWithTargetApi17() {
-        var source = testFile.getContents()!!
-        source = source.replace(
-            "public class ",
-            "@android.annotation.TargetApi(17)\npublic class "
-        )
-        val file = java(source)
-        lint().files(manifest().minSdk(10), file).run().expectClean()
-    }
+  fun testNoWarningWithTargetApi17() {
+    var source = testFile.getContents()!!
+    source = source.replace("public class ", "@android.annotation.TargetApi(17)\npublic class ")
+    val file = java(source)
+    lint().files(manifest().minSdk(10), file).run().expectClean()
+  }
 
-    fun testNoWarningWithRequiresApi17() {
-        var source = testFile.getContents()!!
-        source = source.replace(
-            "public class ",
-            "@androidx.annotation.RequiresApi(17)\npublic class "
-        )
-        val file = java(source)
-        lint().files(
-            manifest().minSdk(10),
-            file,
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+  fun testNoWarningWithRequiresApi17() {
+    var source = testFile.getContents()!!
+    source = source.replace("public class ", "@androidx.annotation.RequiresApi(17)\npublic class ")
+    val file = java(source)
+    lint().files(manifest().minSdk(10), file, SUPPORT_ANNOTATIONS_JAR).run().expectClean()
+  }
 
-    private val testFile = java(
+  private val testFile =
+    java(
         "src/test/pkg/AddJavascriptInterfaceTest.java",
         """
         package test.pkg;
@@ -103,9 +94,10 @@ class AddJavascriptInterfaceDetectorTest : AbstractCheckTest() {
                 }
             }
         }"""
-    ).indented()
+      )
+      .indented()
 
-    override fun getDetector(): Detector {
-        return AddJavascriptInterfaceDetector()
-    }
+  override fun getDetector(): Detector {
+    return AddJavascriptInterfaceDetector()
+  }
 }

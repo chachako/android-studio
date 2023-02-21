@@ -22,25 +22,25 @@ import java.util.ArrayList
 
 class NonAndroidIssueRegistry : BuiltinIssueRegistry() {
 
-    override val issues: List<Issue>
-        get() {
-            if (ourFilteredIssues == null) {
-                val sIssues = super.issues
-                val result = ArrayList<Issue>(sIssues.size)
-                for (issue in sIssues) {
-                    if (!issue.isAndroidSpecific()) {
-                        result.add(issue)
-                    }
-                }
-
-                ourFilteredIssues = result
-            }
-            return ourFilteredIssues!!
+  override val issues: List<Issue>
+    get() {
+      if (ourFilteredIssues == null) {
+        val sIssues = super.issues
+        val result = ArrayList<Issue>(sIssues.size)
+        for (issue in sIssues) {
+          if (!issue.isAndroidSpecific()) {
+            result.add(issue)
+          }
         }
 
-    override val api: Int = CURRENT_API
-
-    companion object {
-        private var ourFilteredIssues: List<Issue>? = null
+        ourFilteredIssues = result
+      }
+      return ourFilteredIssues!!
     }
+
+  override val api: Int = CURRENT_API
+
+  companion object {
+    private var ourFilteredIssues: List<Issue>? = null
+  }
 }

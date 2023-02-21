@@ -24,25 +24,34 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class ParenthesisTestModeTest {
-    private fun parenthesizeKotlin(@Language("kotlin") source: String, includeUnlikely: Boolean = false): String {
-        return parenthesize(kotlin(source), includeUnlikely)
-    }
+  private fun parenthesizeKotlin(
+    @Language("kotlin") source: String,
+    includeUnlikely: Boolean = false
+  ): String {
+    return parenthesize(kotlin(source), includeUnlikely)
+  }
 
-    private fun parenthesizeJava(@Language("java") source: String, includeUnlikely: Boolean = false): String {
-        return parenthesize(java(source), includeUnlikely)
-    }
+  private fun parenthesizeJava(
+    @Language("java") source: String,
+    includeUnlikely: Boolean = false
+  ): String {
+    return parenthesize(java(source), includeUnlikely)
+  }
 
-    private fun parenthesize(testFile: TestFile, includeUnlikely: Boolean = false): String {
-        val sdkHome = TestUtils.getSdk().toFile()
-        var source = testFile.contents
-        ParenthesisTestMode(includeUnlikely).processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
-        return source
+  private fun parenthesize(testFile: TestFile, includeUnlikely: Boolean = false): String {
+    val sdkHome = TestUtils.getSdk().toFile()
+    var source = testFile.contents
+    ParenthesisTestMode(includeUnlikely).processTestFiles(listOf(testFile), sdkHome) { _, s ->
+      source = s
     }
+    return source
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testBasic() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             fun test(i1: Int, i2: Int, s1: String, s2: String, a: Any, b1: Boolean, b2: Boolean) {
                 val x = i1 + i2 + s1.length + s2.length
@@ -58,10 +67,13 @@ class ParenthesisTestModeTest {
                 (t as? String)?.plus("other")?.get(0)?.dec()?.inc()
                 "foo".chars().allMatch { it.dec() > 0 }.toString()
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @file:Suppress("ALL")
             fun test(i1: Int, i2: Int, s1: String, s2: String, a: Any, b1: Boolean, b2: Boolean) {
                 val x = (((i1 + i2) + s1.length) + s2.length)
@@ -77,13 +89,16 @@ class ParenthesisTestModeTest {
                 (((((t as? String))?.plus("other"))?.get(0))?.dec())?.inc()
                 (("foo".chars()).allMatch { ((it).dec() > 0) }).toString()
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val parenthesized = parenthesizeKotlin(kotlin)
-        assertEquals(expected, parenthesized)
+    val parenthesized = parenthesizeKotlin(kotlin)
+    assertEquals(expected, parenthesized)
 
-        @Language("kotlin")
-        val expectedWithUnlikelyParens = """
+    @Language("kotlin")
+    val expectedWithUnlikelyParens =
+      """
             @file:Suppress(("ALL"))
             fun test(i1: Int, i2: Int, s1: String, s2: String, a: Any, b1: Boolean, b2: Boolean) {
                 val x = (((i1 + i2) + s1.length) + s2.length)
@@ -99,16 +114,19 @@ class ParenthesisTestModeTest {
                 ((((((t as? String)))?.plus(("other")))?.get((0)))?.dec())?.inc()
                 ((("foo").chars()).allMatch { ((it).dec() > (0)) }).toString()
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val parenthesized2 = parenthesizeKotlin(kotlin, includeUnlikely = true)
-        assertEquals(expectedWithUnlikelyParens, parenthesized2)
-    }
+    val parenthesized2 = parenthesizeKotlin(kotlin, includeUnlikely = true)
+    assertEquals(expectedWithUnlikelyParens, parenthesized2)
+  }
 
-    @Test
-    fun testNoParensOnFqn() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testNoParensOnFqn() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             @Suppress("RemoveRedundantQualifierName")
             fun test() {
@@ -117,10 +135,13 @@ class ParenthesisTestModeTest {
                 java.lang.System.loadLibrary("test")
             }
 
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @file:Suppress("ALL")
             @Suppress("RemoveRedundantQualifierName")
             fun test() {
@@ -128,92 +149,119 @@ class ParenthesisTestModeTest {
                 System.loadLibrary("test")
                 java.lang.System.loadLibrary("test")
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val parenthesized = parenthesizeKotlin(kotlin)
-        assertEquals(expected, parenthesized)
-    }
+    val parenthesized = parenthesizeKotlin(kotlin)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testEndWithParen() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testEndWithParen() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @CheckResult fun checkBoolean(): Boolean = true
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @CheckResult fun checkBoolean(): Boolean = (true)
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeKotlin(kotlin, includeUnlikely = true)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeKotlin(kotlin, includeUnlikely = true)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testStringTemplate() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testStringTemplate() {
+    @Language("kotlin")
+    val kotlin =
+      """
             val t: Any = "test"
             fun label(a: Any): String = "value: ${'$'}a"
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             val t: Any = ("test")
             fun label(a: Any): String = "value: ${'$'}a"
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeKotlin(kotlin, includeUnlikely = true)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeKotlin(kotlin, includeUnlikely = true)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testJavaTernary() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testJavaTernary() {
+    @Language("java")
+    val java =
+      """
             @SuppressWarnings("ALL")
             public class Test {
                 void test(int i) {
                     boolean x = i > 5 ? !true : i % 2 == 0;
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             @SuppressWarnings("ALL")
             public class Test {
                 void test(int i) {
                     boolean x = ((i > 5)) ? (!(true)) : (((i % 2) == 0));
                 }
             }
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeJava(java)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeJava(java)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testSuperClass() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testSuperClass() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @Suppress("RemoveEmptyClassBody")
             abstract class MyNumber : Number() {
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @Suppress("RemoveEmptyClassBody")
             abstract class MyNumber : Number() {
             }
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeKotlin(kotlin)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeKotlin(kotlin)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testThisKotlin() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testThisKotlin() {
+    @Language("kotlin")
+    val kotlin =
+      """
             class Foo(val foo: String) {
                 constructor(b: Int) : this("")
                 fun test() {
@@ -221,10 +269,13 @@ class ParenthesisTestModeTest {
                     super.toString()
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             class Foo(val foo: String) {
                 constructor(b: Int) : this((""))
                 fun test() {
@@ -232,15 +283,18 @@ class ParenthesisTestModeTest {
                     (super).toString()
                 }
             }
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeKotlin(kotlin, includeUnlikely = true)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeKotlin(kotlin, includeUnlikely = true)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testThisJava() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testThisJava() {
+    @Language("java")
+    val java =
+      """
             public class CheckResultTest1 {
                 CheckResultTest1() {
                     this(null);
@@ -255,10 +309,13 @@ class ParenthesisTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             public class CheckResultTest1 {
                 CheckResultTest1() {
                     this(null);
@@ -273,15 +330,18 @@ class ParenthesisTestModeTest {
                     }
                 }
             }
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeJava(java)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeJava(java)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testAssertionsAndAnnotations() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testAssertionsAndAnnotations() {
+    @Language("java")
+    val java =
+      """
             import android.view.View;
             import android.net.Uri;
             import androidx.annotation.RequiresPermission;
@@ -296,10 +356,13 @@ class ParenthesisTestModeTest {
                     String s = new String("test");
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             import android.view.View;
             import android.net.Uri;
             import androidx.annotation.RequiresPermission;
@@ -314,15 +377,18 @@ class ParenthesisTestModeTest {
                     String s = (new String("test"));
                 }
             }
-        """.trimIndent().trim()
-        val parenthesized = parenthesizeJava(java)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val parenthesized = parenthesizeJava(java)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testSkipCase() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testSkipCase() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             package test.pkg
             fun testWhen(sdk: Int) {
@@ -331,10 +397,13 @@ class ParenthesisTestModeTest {
                 }
                 loop@ for (i in 1..100) { }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = """
+    @Language("kotlin")
+    val expected =
+      """
             @file:Suppress("ALL")
             package test.pkg
             fun testWhen(sdk: Int) {
@@ -343,16 +412,19 @@ class ParenthesisTestModeTest {
                 }
                 loop@ for (i in (1..100)) { }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        val parenthesized = parenthesizeKotlin(kotlin)
-        assertEquals(expected, parenthesized)
-    }
+    val parenthesized = parenthesizeKotlin(kotlin)
+    assertEquals(expected, parenthesized)
+  }
 
-    @Test
-    fun testArrays() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testArrays() {
+    @Language("java")
+    val java =
+      """
             public class Test {
                 private static final int VALUE_A = 5;
                 private static final int VALUE_B = 5;
@@ -360,10 +432,12 @@ class ParenthesisTestModeTest {
                 private static final int[] VALID_ARRAY2 = new int[] {VALUE_A, VALUE_B};
                 private static final int[] VALID_ARRAY3 = new int[5];
             }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        @Language("java")
-        val expected = """
+    @Language("java")
+    val expected =
+      """
             public class Test {
                 private static final int VALUE_A = 5;
                 private static final int VALUE_B = 5;
@@ -371,8 +445,9 @@ class ParenthesisTestModeTest {
                 private static final int[] VALID_ARRAY2 = (new int[] {VALUE_A, VALUE_B});
                 private static final int[] VALID_ARRAY3 = (new int[5]);
             }
-        """.trimIndent()
-        val parenthesized = parenthesizeJava(java)
-        assertEquals(expected, parenthesized)
-    }
+        """
+        .trimIndent()
+    val parenthesized = parenthesizeJava(java)
+    assertEquals(expected, parenthesized)
+  }
 }

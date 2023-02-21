@@ -20,11 +20,12 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.detector.api.Detector
 
 class RemoteViewDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return RemoteViewDetector()
-    }
+  override fun getDetector(): Detector {
+    return RemoteViewDetector()
+  }
 
-    private val kotlinSample = kotlin(
+  private val kotlinSample =
+    kotlin(
         """
         package test.pkg
         import android.widget.RemoteViews
@@ -33,15 +34,16 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
             val remoteView = RemoteViews(packageName, R.layout.test)
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    fun testBasic() {
-        lint()
-            .files(
-                kotlinSample,
-                xml(
-                    "res/layout/test.xml",
-                    """
+  fun testBasic() {
+    lint()
+      .files(
+        kotlinSample,
+        xml(
+            "res/layout/test.xml",
+            """
                     <merge>
                         <Button />
                         <AdapterViewFlipper />
@@ -69,26 +71,30 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                         <androidx.appcompat.widget.AppCompatTextView />
                     </merge>
                     """
-                ).indented(),
-                rClass("test.pkg", "@layout/test")
-            ).run().expect(
-                """
+          )
+          .indented(),
+        rClass("test.pkg", "@layout/test")
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/test.kt:5: Error: @layout/test includes views not allowed in a RemoteView: CheckBox, DatePicker, RadioButton, RadioGroup, Switch, androidx.appcompat.widget.AppCompatTextView [RemoteViewLayout]
                     val remoteView = RemoteViews(packageName, R.layout.test)
                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testLayoutFolder31() {
-        // http://b/200165599 Update RemoteViewDetector for new @RemoteViews added in API 31
-        lint().files(
-            manifest().minSdk(31),
-            kotlinSample,
-            xml(
-                "res/layout-v31/test.xml",
-                """
+  fun testLayoutFolder31() {
+    // http://b/200165599 Update RemoteViewDetector for new @RemoteViews added in API 31
+    lint()
+      .files(
+        manifest().minSdk(31),
+        kotlinSample,
+        xml(
+            "res/layout-v31/test.xml",
+            """
                 <merge>
                     <CheckBox />
                     <Switch />
@@ -96,17 +102,21 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                     <RadioGroup />
                 </merge>
                 """
-            ).indented(),
-            rClass("test.pkg", "@layout/test")
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        rClass("test.pkg", "@layout/test")
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMin31() {
-        lint().files(
-            kotlinSample,
-            xml(
-                "res/layout-v31/test.xml",
-                """
+  fun testMin31() {
+    lint()
+      .files(
+        kotlinSample,
+        xml(
+            "res/layout-v31/test.xml",
+            """
                 <merge>
                     <CheckBox />
                     <Switch />
@@ -114,17 +124,21 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                     <RadioGroup />
                 </merge>
                 """
-            ).indented(),
-            rClass("test.pkg", "@layout/test")
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        rClass("test.pkg", "@layout/test")
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testFullyQualifiedBuiltinViews() {
-        // Regression test for 233226291
-        lint().files(
-            rClass("test.pkg", "@layout/cct_article_toolbar"),
-            java(
-                """
+  fun testFullyQualifiedBuiltinViews() {
+    // Regression test for 233226291
+    lint()
+      .files(
+        rClass("test.pkg", "@layout/cct_article_toolbar"),
+        java(
+          """
                 package test.pkg;
 
                 import android.content.Context;
@@ -139,10 +153,10 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            xml(
-                "res/layout/cct_article_toolbar.xml",
-                """
+        ),
+        xml(
+            "res/layout/cct_article_toolbar.xml",
+            """
                 <android.widget.RelativeLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -157,8 +171,10 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                   </android.widget.LinearLayout>
                 </android.widget.RelativeLayout>
                 """
-            ).indented()
-
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

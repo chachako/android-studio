@@ -16,14 +16,15 @@
 package com.android.tools.lint.checks
 
 class ViewBindingTypeDetectorTest : AbstractCheckTest() {
-    override fun getDetector() = ViewBindingTypeDetector()
+  override fun getDetector() = ViewBindingTypeDetector()
 
-    // This example will be extracted into issue documentation
-    fun testDocumentationExample() {
-        lint().files(
-            xml(
-                "res/layout/db.xml",
-                """
+  // This example will be extracted into issue documentation
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        xml(
+            "res/layout/db.xml",
+            """
                 <layout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -31,10 +32,11 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/test_view" tools:viewBindingType="TextView" />
                 </layout>
                 """
-            ).indented(),
-            xml(
-                "res/layout/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -44,10 +46,11 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/inconsistent" tools:viewBindingType="TextView" />
                 </LinearLayout>
                 """
-            ).indented(),
-            xml(
-                "res/layout-land/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout-land/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -55,9 +58,12 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <SurfaceView android:id="@+id/inconsistent" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/db.xml:5: Error: tools:viewBindingType is not applicable in data binding layouts. [ViewBindingType]
                 <EditText android:id="@+id/test_view" tools:viewBindingType="TextView" />
                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,14 +79,15 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                 res/layout-land/vb.xml: Using viewBindingType SurfaceView here
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testViewBindingTypeHappyPath() {
-        lint().files(
-            xml(
-                "res/layout/vb.xml",
-                """
+  fun testViewBindingTypeHappyPath() {
+    lint()
+      .files(
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -95,10 +102,11 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <TextView android:id="@+id/text_view7" tools:viewBindingType="android.widget.TextView" />
                 </LinearLayout>
                 """
-            ).indented(),
-            xml(
-                "res/layout-land/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout-land/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -109,15 +117,19 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <view android:id="@+id/text_view2" class="TextView"/>
                 </LinearLayout>
                 """
-            ).indented(),
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testViewBindingTypeNotApplicableInDataBindingLayouts() {
-        lint().files(
-            xml(
-                "res/layout/db.xml",
-                """
+  fun testViewBindingTypeNotApplicableInDataBindingLayouts() {
+    lint()
+      .files(
+        xml(
+            "res/layout/db.xml",
+            """
                 <layout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -125,32 +137,37 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/test_view" tools:viewBindingType="TextView" />
                 </layout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/db.xml:5: Error: tools:viewBindingType is not applicable in data binding layouts. [ViewBindingType]
                 <EditText android:id="@+id/test_view" tools:viewBindingType="TextView" />
                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testViewBindingTypeNotApplicableOnIncludeTags() {
-        lint().files(
-            xml(
-                "res/layout/included.xml",
-                """
+  fun testViewBindingTypeNotApplicableOnIncludeTags() {
+    lint()
+      .files(
+        xml(
+            "res/layout/included.xml",
+            """
                 <merge
                     xmlns:tools="http://schemas.android.com/tools"
                     tools:keep="@layout/included">
                     <Button />
                 </merge>
                 """
-            ).indented(),
-            xml(
-                "res/layout/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -158,44 +175,52 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <include android:id="@+id/included" layout="@layout/included" tools:viewBindingType="TextView" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/vb.xml:5: Error: tools:viewBindingType is not applicable on <include> tags. [ViewBindingType]
                 <include android:id="@+id/included" layout="@layout/included" tools:viewBindingType="TextView" />
                                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testViewBindingTypeRequiresIdBeSet() {
-        lint().files(
-            xml(
-                "res/layout/vb.xml",
-                """
+  fun testViewBindingTypeRequiresIdBeSet() {
+    lint()
+      .files(
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:tools="http://schemas.android.com/tools"
                     tools:keep="@layout/vb">
                     <EditText tools:viewBindingType="TextView" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/vb.xml:4: Error: tools:viewBindingType should be defined on a tag that also defines an android:id. Otherwise, its value won't have any effect. [ViewBindingType]
                 <EditText tools:viewBindingType="TextView" />
                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testViewBindingTypeMustBeDefinedConsistentlyAcrossLayouts() {
-        lint().files(
-            xml(
-                "res/layout/vb.xml",
-                """
+  fun testViewBindingTypeMustBeDefinedConsistentlyAcrossLayouts() {
+    lint()
+      .files(
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -204,10 +229,11 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/inconsistent2" tools:viewBindingType="TextView" />
                 </LinearLayout>
                 """
-            ).indented(),
-            xml(
-                "res/layout-land/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout-land/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -216,11 +242,12 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/inconsistent2" />
                 </LinearLayout>
                 """
-            ).indented(),
-            // Make sure IDs don't leak across layouts - these should be reported as separate errors
-            xml(
-                "res/layout/vb_alt.xml",
-                """
+          )
+          .indented(),
+        // Make sure IDs don't leak across layouts - these should be reported as separate errors
+        xml(
+            "res/layout/vb_alt.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -228,10 +255,11 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <CheckBox android:id="@+id/inconsistent" tools:viewBindingType="Button" />
                 </LinearLayout>
                 """
-            ).indented(),
-            xml(
-                "res/layout-land/vb_alt.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout-land/vb_alt.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -239,9 +267,12 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <RadioButton android:id="@+id/inconsistent" tools:viewBindingType="CompoundButton" />
                 </LinearLayout>
                 """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             res/layout-land/vb.xml:5: Error: tools:viewBindingType is not defined consistently, with the following types resolved across layouts: android.widget.EditText, android.widget.TextView [ViewBindingType]
                 <ExtractEditText android:id="@+id/inconsistent" tools:viewBindingType="EditText" />
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -264,14 +295,15 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                 res/layout-land/vb_alt.xml: Using viewBindingType CompoundButton here
             5 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testConsistencyWhenIsolated() {
-        lint().files(
-            xml(
-                "res/layout/vb.xml",
-                """
+  fun testConsistencyWhenIsolated() {
+    lint()
+      .files(
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -280,10 +312,11 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/inconsistent2" tools:viewBindingType="TextView" />
                 </LinearLayout>
                 """
-            ).indented(),
-            xml(
-                "res/layout-land/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout-land/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -292,9 +325,13 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <SurfaceView android:id="@+id/inconsistent2" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).isolated("res/layout/vb.xml").run().expect(
-            """
+          )
+          .indented()
+      )
+      .isolated("res/layout/vb.xml")
+      .run()
+      .expect(
+        """
             res/layout/vb.xml:5: Error: tools:viewBindingType is not defined consistently, with the following types resolved across layouts: android.widget.EditText, android.widget.TextView [ViewBindingType]
                 <EditText android:id="@+id/inconsistent" tools:viewBindingType="TextView" />
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -303,14 +340,15 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testViewBindingTypeMustMatchTag() {
-        lint().files(
-            xml(
-                "res/layout/vb.xml",
-                """
+  fun testViewBindingTypeMustMatchTag() {
+    lint()
+      .files(
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -321,9 +359,12 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <TextView android:id="@+id/incompatible3" tools:viewBindingType="EditText" />
                 </LinearLayout>
                 """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             res/layout/vb.xml:5: Error: tools:viewBindingType (Button) is not compatible (i.e. a match or superclass) with its tag (EditText). [ViewBindingType]
                 <EditText android:id="@+id/incompatible" tools:viewBindingType="Button" />
                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -335,13 +376,14 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testViewBindingTypeMustSubclassView() {
-        lint().files(
-            kotlin(
-                """
+  fun testViewBindingTypeMustSubclassView() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -349,26 +391,29 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
 
                 class CustomViewBase(ctx: Context) : View(ctx)
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
 
                 class CustomViewChild(ctx: Context) : CustomViewBase(ctx)
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 class NonView
                 """
-            ).indented(),
-            xml(
-                "res/layout/vb.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout/vb.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -379,9 +424,12 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <CustomViewChild android:id="@+id/good_type2" tools:viewBindingType="android.view.View" />
                 </LinearLayout>
                 """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             res/layout/vb.xml:5: Error: tools:viewBindingType (String) must refer to a class that inherits from android.view.View [ViewBindingType]
                 <CustomViewChild android:id="@+id/bad_type" tools:viewBindingType="String" />
                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -390,6 +438,6 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

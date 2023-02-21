@@ -21,6 +21,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFileSetFactory
 import com.intellij.pom.java.LanguageLevel
+import java.io.File
+import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.lifetime.KtAlwaysAccessibleLifetimeTokenFactory
@@ -34,121 +36,123 @@ import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
-import java.io.File
-import kotlin.concurrent.withLock
 
 /**
  * This class is FIR (or K2) version of [UastEnvironment]
  *
- * K2 is a new compiler name that uses FIR as a frontend. Kotlin UAST is
- * rewritten to use that new frontend via Analysis APIs (backed by FIR),
- * and named as FIR UAST. We may use K2 UAST interchangeably.
+ * K2 is a new compiler name that uses FIR as a frontend. Kotlin UAST is rewritten to use that new
+ * frontend via Analysis APIs (backed by FIR), and named as FIR UAST. We may use K2 UAST
+ * interchangeably.
  */
-class FirUastEnvironment private constructor(
-    override val coreAppEnv: CoreApplicationEnvironment,
-    override val ideaProject: MockProject,
-    override val kotlinCompilerConfig: CompilerConfiguration,
-    override val projectDisposable: Disposable
+class FirUastEnvironment
+private constructor(
+  override val coreAppEnv: CoreApplicationEnvironment,
+  override val ideaProject: MockProject,
+  override val kotlinCompilerConfig: CompilerConfiguration,
+  override val projectDisposable: Disposable
 ) : UastEnvironment {
 
-    class Configuration private constructor(
-        override val kotlinCompilerConfig: CompilerConfiguration
-    ) : UastEnvironment.Configuration {
-        override var javaLanguageLevel: LanguageLevel? = null
-
-        companion object {
-            @JvmStatic
-            fun create(enableKotlinScripting: Boolean): Configuration =
-                Configuration(createKotlinCompilerConfig(enableKotlinScripting))
-        }
-    }
-
-    /** In FIR UAST, even Kotlin files are analyzed lazily. */
-    override fun analyzeFiles(ktFiles: List<File>) {
-        // TODO: addKtFilesFromSrcJars ?
-    }
+  class Configuration
+  private constructor(override val kotlinCompilerConfig: CompilerConfiguration) :
+    UastEnvironment.Configuration {
+    override var javaLanguageLevel: LanguageLevel? = null
 
     companion object {
-        @JvmStatic
-        fun create(config: UastEnvironment.Configuration): FirUastEnvironment {
-            val parentDisposable = Disposer.newDisposable("FirUastEnvironment.create")
-            val analysisSession = createAnalysisSession(parentDisposable, config)
-            return FirUastEnvironment(
-                analysisSession.coreApplicationEnvironment,
-                analysisSession.mockProject,
-                config.kotlinCompilerConfig,
-                parentDisposable
-            )
-        }
+      @JvmStatic
+      fun create(enableKotlinScripting: Boolean): Configuration =
+        Configuration(createKotlinCompilerConfig(enableKotlinScripting))
     }
+  }
+
+  /** In FIR UAST, even Kotlin files are analyzed lazily. */
+  override fun analyzeFiles(ktFiles: List<File>) {
+    // TODO: addKtFilesFromSrcJars ?
+  }
+
+  companion object {
+    @JvmStatic
+    fun create(config: UastEnvironment.Configuration): FirUastEnvironment {
+      val parentDisposable = Disposer.newDisposable("FirUastEnvironment.create")
+      val analysisSession = createAnalysisSession(parentDisposable, config)
+      return FirUastEnvironment(
+        analysisSession.coreApplicationEnvironment,
+        analysisSession.mockProject,
+        config.kotlinCompilerConfig,
+        parentDisposable
+      )
+    }
+  }
 }
 
 private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): CompilerConfiguration {
-    val config = createCommonKotlinCompilerConfig()
+  val config = createCommonKotlinCompilerConfig()
 
-    System.setProperty("psi.sleep.in.validity.check", "false")
+  System.setProperty("psi.sleep.in.validity.check", "false")
 
-    // TODO: if [enableKotlinScripting], register FIR version of scripting compiler plugin if any
+  // TODO: if [enableKotlinScripting], register FIR version of scripting compiler plugin if any
 
-    return config
+  return config
 }
 
 private fun createAnalysisSession(
-    parentDisposable: Disposable,
-    config: UastEnvironment.Configuration
+  parentDisposable: Disposable,
+  config: UastEnvironment.Configuration
 ): StandaloneAnalysisAPISession {
-    // [configureApplicationEnvironment] will register app disposable and dispose it at [UastEnvironment#disposeApplicationEnvironment].
-    // I.e., we manage the application lifecycle manually.
-    CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
+  // [configureApplicationEnvironment] will register app disposable and dispose it at
+  // [UastEnvironment#disposeApplicationEnvironment].
+  // I.e., we manage the application lifecycle manually.
+  CompilerSystemProperties.KOTLIN_COMPILER_ENVIRONMENT_KEEPALIVE_PROPERTY.value = "true"
 
-    val analysisSession = buildStandaloneAnalysisAPISession(
-        applicationDisposable = parentDisposable,
-        projectDisposable = parentDisposable,
-        withPsiDeclarationFromBinaryModuleProvider = true
+  val analysisSession =
+    buildStandaloneAnalysisAPISession(
+      applicationDisposable = parentDisposable,
+      projectDisposable = parentDisposable,
+      withPsiDeclarationFromBinaryModuleProvider = true
     ) {
-        // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
-        //  which led to duplicate app-level service registration.
-        if (application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
-            // Note that this app-level service should be initialized before any other entities attempt to instantiate [FilesScope]
-            // For FIR UAST, the first attempt will be made while building the module structure below.
-            registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
-        }
-        buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig)
+      // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
+      //  which led to duplicate app-level service registration.
+      if (application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
+        // Note that this app-level service should be initialized before any other entities attempt
+        // to instantiate [FilesScope]
+        // For FIR UAST, the first attempt will be made while building the module structure below.
+        registerApplicationService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+      }
+      buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig)
     }
-    appLock.withLock { configureFirApplicationEnvironment(analysisSession.coreApplicationEnvironment) }
-    configureFirProjectEnvironment(analysisSession, config)
+  appLock.withLock {
+    configureFirApplicationEnvironment(analysisSession.coreApplicationEnvironment)
+  }
+  configureFirProjectEnvironment(analysisSession, config)
 
-    return analysisSession
+  return analysisSession
 }
 
 private fun configureFirProjectEnvironment(
-    analysisAPISession: StandaloneAnalysisAPISession,
-    config: UastEnvironment.Configuration
+  analysisAPISession: StandaloneAnalysisAPISession,
+  config: UastEnvironment.Configuration
 ) {
-    val project = analysisAPISession.mockProject
+  val project = analysisAPISession.mockProject
 
-    project.registerService(
-        FirKotlinUastResolveProviderService::class.java,
-        FirCliKotlinUastResolveProviderService::class.java
-    )
+  project.registerService(
+    FirKotlinUastResolveProviderService::class.java,
+    FirCliKotlinUastResolveProviderService::class.java
+  )
 
-    configureProjectEnvironment(project, config)
+  configureProjectEnvironment(project, config)
 }
 
 private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
-    configureApplicationEnvironment(appEnv) {
-        it.addExtension(UastLanguagePlugin.extensionPointName, FirKotlinUastLanguagePlugin())
+  configureApplicationEnvironment(appEnv) {
+    it.addExtension(UastLanguagePlugin.extensionPointName, FirKotlinUastLanguagePlugin())
 
-        it.application.registerService(
-            BaseKotlinUastResolveProviderService::class.java,
-            FirCliKotlinUastResolveProviderService::class.java
-        )
-    }
+    it.application.registerService(
+      BaseKotlinUastResolveProviderService::class.java,
+      FirCliKotlinUastResolveProviderService::class.java
+    )
+  }
 }
 
-// Lint version of `analyzeForUast` in `org.jetbrains.uast.kotlin.internal.firKotlinInternalUastUtils`
-inline fun <R> analyzeForLint(
-    useSiteKtElement: KtElement,
-    action: KtAnalysisSession.() -> R
-): R =
-    analyze(useSiteKtElement, KtAlwaysAccessibleLifetimeTokenFactory, action)
+// Lint version of `analyzeForUast` in
+// `org.jetbrains.uast.kotlin.internal.firKotlinInternalUastUtils`
+inline fun <R> analyzeForLint(useSiteKtElement: KtElement, action: KtAnalysisSession.() -> R): R =
+  analyze(useSiteKtElement, KtAlwaysAccessibleLifetimeTokenFactory, action)

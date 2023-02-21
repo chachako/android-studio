@@ -48,38 +48,40 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 /**
- * Most of the evaluator is tested indirectly via all the lint unit
- * tests; this covers some additional specific scenarios.
+ * Most of the evaluator is tested indirectly via all the lint unit tests; this covers some
+ * additional specific scenarios.
  */
 class DefaultJavaEvaluatorTest {
-    @get:Rule
-    val temporaryFolder = TemporaryFolder()
+  @get:Rule val temporaryFolder = TemporaryFolder()
 
-    // Regression test for https://groups.google.com/d/msg/lint-dev/BaRimyf40tI/DpkOjMMEAQAJ
-    @Test
-    fun lookUpAnnotationsOnUastModifierLists() {
-        lint().files(
-            java(
-                """
+  // Regression test for https://groups.google.com/d/msg/lint-dev/BaRimyf40tI/DpkOjMMEAQAJ
+  @Test
+  fun lookUpAnnotationsOnUastModifierLists() {
+    lint()
+      .files(
+        java(
+            """
                     package foo;
                     @SuppressWarnings("ClassNameDiffersFromFileName")
                     public class MyTest {
                         public void myTest(@Override int something) { }
                     }"""
-            ).indented()
-        )
-            .sdkHome(TestUtils.getSdk().toFile())
-            .issues(TestAnnotationLookupDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .sdkHome(TestUtils.getSdk().toFile())
+      .issues(TestAnnotationLookupDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testCallAssignmentRanges() {
-        @Suppress("RemoveRedundantCallsOfConversionMethods")
-        lint().files(
-            java(
-                """
+  @Test
+  fun testCallAssignmentRanges() {
+    @Suppress("RemoveRedundantCallsOfConversionMethods")
+    lint()
+      .files(
+        java(
+            """
                 package foo;
                 public class Bean {
                     public String getFoo() { return ""; }
@@ -87,9 +89,10 @@ class DefaultJavaEvaluatorTest {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package foo
                 fun test(s: String) {
                     val bean = Bean()
@@ -101,13 +104,14 @@ class DefaultJavaEvaluatorTest {
                     bean.foo = s
                 }
                 """
-            ).indented()
-        )
-            .sdkHome(TestUtils.getSdk().toFile())
-            .issues(TestAnnotationLookupDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .sdkHome(TestUtils.getSdk().toFile())
+      .issues(TestAnnotationLookupDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/foo/test.kt:4: Warning: Error with arguments but no receiver [_Order]
                     bean.setFoo("value")
                          ~~~~~~~~~~~~~~~
@@ -164,34 +168,38 @@ class DefaultJavaEvaluatorTest {
                     ~~~~~~~~
                 0 errors, 18 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testStatic() {
-        val (contexts, disposable) = parse(
-            temporaryFolder = temporaryFolder,
-            sdkHome = TestUtils.getSdk().toFile(),
-            testFiles = arrayOf(
-                java(
-                    """
+  @Test
+  fun testStatic() {
+    val (contexts, disposable) =
+      parse(
+        temporaryFolder = temporaryFolder,
+        sdkHome = TestUtils.getSdk().toFile(),
+        testFiles =
+          arrayOf(
+            java(
+                """
                     package foo;
                     public class Foo {
                         public static String staticMethodJava() { return ""; }
                         public String instanceMethodJava() { return ""; }
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+              )
+              .indented(),
+            kotlin(
+                """
                     @file:JvmName("Tedt")
                     package foo
                     fun staticMethodTopLevel() {
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+              )
+              .indented(),
+            kotlin(
+                """
                     package foo
                     class Bar {
                         fun instanceMethodKotlin(): String { return "" }
@@ -202,164 +210,177 @@ class DefaultJavaEvaluatorTest {
                         }
                     }
                     """
-                ).indented()
-            )
+              )
+              .indented()
+          )
+      )
+
+    var methodCount = 0
+    for (context in contexts) {
+      val file = context.uastFile ?: continue
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            methodCount++
+            if (node.isConstructor) {
+              assertFalse(context.evaluator.isStatic(node))
+            } else {
+              val name = node.name
+              assertTrue(name, name.startsWith("instance") || name.startsWith("static"))
+              val expectStatic = name.startsWith("static")
+              val isStatic = context.evaluator.isStatic(node)
+              assertEquals("Incorrect isStatic value for method $name", expectStatic, isStatic)
+            }
+            return super.visitMethod(node)
+          }
+        }
+      )
+    }
+    assertEquals(9, methodCount)
+    Disposer.dispose(disposable)
+  }
+
+  class TestAnnotationLookupDetector : Detector(), SourceCodeScanner {
+    companion object Issues {
+      val ISSUE =
+        Issue.create(
+          "_Order",
+          "Sample test detector summary",
+          "Sample test detector explanation",
+          Category.CORRECTNESS,
+          6,
+          Severity.WARNING,
+          Implementation(TestAnnotationLookupDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
-
-        var methodCount = 0
-        for (context in contexts) {
-            val file = context.uastFile ?: continue
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitMethod(node: UMethod): Boolean {
-                    methodCount++
-                    if (node.isConstructor) {
-                        assertFalse(context.evaluator.isStatic(node))
-                    } else {
-                        val name = node.name
-                        assertTrue(name, name.startsWith("instance") || name.startsWith("static"))
-                        val expectStatic = name.startsWith("static")
-                        val isStatic = context.evaluator.isStatic(node)
-                        assertEquals("Incorrect isStatic value for method $name", expectStatic, isStatic)
-                    }
-                    return super.visitMethod(node)
-                }
-            })
-        }
-        assertEquals(9, methodCount)
-        Disposer.dispose(disposable)
     }
 
-    class TestAnnotationLookupDetector : Detector(), SourceCodeScanner {
-        companion object Issues {
-            val ISSUE = Issue.create(
-                "_Order",
-                "Sample test detector summary",
-                "Sample test detector explanation",
+    override fun getApplicableUastTypes(): List<Class<out UElement>> =
+      listOf(UMethod::class.java, UVariable::class.java, UCallExpression::class.java)
 
-                Category.CORRECTNESS, 6, Severity.WARNING,
-                Implementation(
-                    TestAnnotationLookupDetector::class.java,
-                    Scope.JAVA_FILE_SCOPE
-                )
-            )
+    class AnnotationOrderVisitor(private val context: JavaContext) : UElementHandler() {
+      override fun visitVariable(node: UVariable) {
+        processAnnotations(node)
+      }
+
+      override fun visitMethod(node: UMethod) {
+        processAnnotations(node)
+      }
+
+      override fun visitCallExpression(node: UCallExpression) {
+        // Also test location ranges for assignments here
+        val methodName = node.methodName ?: node.methodIdentifier?.name
+        if (methodName == "setFoo") {
+          context.report(
+            ISSUE,
+            node,
+            context.getCallLocation(node, false, true),
+            "Error with arguments but no receiver"
+          )
+          context.report(
+            ISSUE,
+            node,
+            context.getCallLocation(node, true, true),
+            "Error with receiver and arguments"
+          )
+          context.report(
+            ISSUE,
+            node,
+            context.getCallLocation(node, true, false),
+            "Error with receiver and no arguments"
+          )
         }
+      }
 
-        override fun getApplicableUastTypes(): List<Class<out UElement>> =
-            listOf(UMethod::class.java, UVariable::class.java, UCallExpression::class.java)
-
-        class AnnotationOrderVisitor(private val context: JavaContext) : UElementHandler() {
-            override fun visitVariable(node: UVariable) {
-                processAnnotations(node)
-            }
-
-            override fun visitMethod(node: UMethod) {
-                processAnnotations(node)
-            }
-
-            override fun visitCallExpression(node: UCallExpression) {
-                // Also test location ranges for assignments here
-                val methodName = node.methodName ?: node.methodIdentifier?.name
-                if (methodName == "setFoo") {
-                    context.report(ISSUE, node, context.getCallLocation(node, false, true), "Error with arguments but no receiver")
-                    context.report(ISSUE, node, context.getCallLocation(node, true, true), "Error with receiver and arguments")
-                    context.report(ISSUE, node, context.getCallLocation(node, true, false), "Error with receiver and no arguments")
-                }
-            }
-
-            @Suppress("DEPRECATION")
-            private fun processAnnotations(modifierListOwner: PsiModifierListOwner) {
-                context.evaluator.findAnnotationInHierarchy(modifierListOwner, "org.foo.bar")
-                context.evaluator.findAnnotation(modifierListOwner, "org.foo.bar")
-                context.evaluator.getAnnotation(modifierListOwner, "org.foo.bar")
-                context.evaluator.getAllAnnotations(
-                    modifierListOwner,
-                    true
-                ).mapNotNull { it.qualifiedName?.split(".")?.lastOrNull() }
-                // This detector doesn't actually report anything; the regression test
-                // ensures that the above calls don't crash
-                context.evaluator.getAnnotations(
-                    modifierListOwner,
-                    true
-                ).mapNotNull { it.qualifiedName?.split(".")?.lastOrNull() }
-            }
+      @Suppress("DEPRECATION")
+      private fun processAnnotations(modifierListOwner: PsiModifierListOwner) {
+        context.evaluator.findAnnotationInHierarchy(modifierListOwner, "org.foo.bar")
+        context.evaluator.findAnnotation(modifierListOwner, "org.foo.bar")
+        context.evaluator.getAnnotation(modifierListOwner, "org.foo.bar")
+        context.evaluator.getAllAnnotations(modifierListOwner, true).mapNotNull {
+          it.qualifiedName?.split(".")?.lastOrNull()
         }
-
-        override fun createUastHandler(context: JavaContext): UElementHandler {
-            return AnnotationOrderVisitor(context)
+        // This detector doesn't actually report anything; the regression test
+        // ensures that the above calls don't crash
+        context.evaluator.getAnnotations(modifierListOwner, true).mapNotNull {
+          it.qualifiedName?.split(".")?.lastOrNull()
         }
+      }
     }
 
-    @Test
-    fun testFieldPosition() {
-        // Regression test for https://groups.google.com/g/lint-dev/c/yWcp7gv83_8
-        lint().files(
-            kotlin(
-                """
+    override fun createUastHandler(context: JavaContext): UElementHandler {
+      return AnnotationOrderVisitor(context)
+    }
+  }
+
+  @Test
+  fun testFieldPosition() {
+    // Regression test for https://groups.google.com/g/lint-dev/c/yWcp7gv83_8
+    lint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
                     class FakeDetectorProofKT {
                         val myTestString = ""
                     }
                 """
-            ).indented()
-        )
-            .sdkHome(TestUtils.getSdk().toFile())
-            .issues(RangeTestDetector.ISSUE).run().expect(
-                """
+          )
+          .indented()
+      )
+      .sdkHome(TestUtils.getSdk().toFile())
+      .issues(RangeTestDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/FakeDetectorProofKT.kt:3: Error: Fake issue [_MyFakeIssueId]
                     val myTestString = ""
                     ~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 0 warnings
                 """
-            )
+      )
+  }
+
+  @Suppress("UnstableApiUsage")
+  class RangeTestDetector : Detector(), Detector.UastScanner {
+
+    override fun getApplicableUastTypes(): List<Class<out UElement>> {
+      return listOf<Class<out UElement>>(UClass::class.java)
     }
 
-    @Suppress("UnstableApiUsage")
-    class RangeTestDetector : Detector(), Detector.UastScanner {
-
-        override fun getApplicableUastTypes(): List<Class<out UElement>> {
-            return listOf<Class<out UElement>>(UClass::class.java)
-        }
-
-        override fun createUastHandler(context: JavaContext): UElementHandler {
-            return object : UElementHandler() {
-                override fun visitClass(node: UClass) {
-                    for (field in node.fields) {
-                        if (field.name.contains("test", ignoreCase = true)) {
-                            context.report(
-                                ISSUE,
-                                node,
-                                context.getLocation(field),
-                                "Fake issue"
-                            )
-                        }
-                    }
-                }
+    override fun createUastHandler(context: JavaContext): UElementHandler {
+      return object : UElementHandler() {
+        override fun visitClass(node: UClass) {
+          for (field in node.fields) {
+            if (field.name.contains("test", ignoreCase = true)) {
+              context.report(ISSUE, node, context.getLocation(field), "Fake issue")
             }
+          }
         }
-
-        companion object {
-            @JvmField
-            val ISSUE = Issue.create(
-                "_MyFakeIssueId",
-                "Fake issue description",
-                "Fake issue explanation",
-                Category.CORRECTNESS,
-                6,
-                Severity.ERROR,
-                Implementation(
-                    RangeTestDetector::class.java,
-                    Scope.JAVA_FILE_SCOPE
-                )
-            )
-        }
+      }
     }
 
-    @Test
-    fun test200186871() {
-        // Regression test for http://b/200186871
-        lint().files(
-            kotlin(
-                """
+    companion object {
+      @JvmField
+      val ISSUE =
+        Issue.create(
+          "_MyFakeIssueId",
+          "Fake issue description",
+          "Fake issue explanation",
+          Category.CORRECTNESS,
+          6,
+          Severity.ERROR,
+          Implementation(RangeTestDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        )
+    }
+  }
+
+  @Test
+  fun test200186871() {
+    // Regression test for http://b/200186871
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 object Test {
@@ -377,26 +398,28 @@ class DefaultJavaEvaluatorTest {
                     fun foo() {}
                 }
                 """
-            ).indented()
-        )
-            .sdkHome(TestUtils.getSdk().toFile())
-            .issues(MethodMatchesDetector.ISSUE)
-            .run().expect(
-                """
+          )
+          .indented()
+      )
+      .sdkHome(TestUtils.getSdk().toFile())
+      .issues(MethodMatchesDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.kt:11: Error: Found reference to test.pkg.TargetClass.foo [_FakeIssueId]
                     fun foo() {}
                         ~~~
                 1 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testGetMethodDescriptor() {
-        val sb = StringBuilder()
-        listOf(
-            java(
-                """
+  @Test
+  fun testGetMethodDescriptor() {
+    val sb = StringBuilder()
+    listOf(
+        java(
+            """
             import java.util.List;
             class Test {
               void test() { }
@@ -408,30 +431,50 @@ class DefaultJavaEvaluatorTest {
               }
             }
             """
-            ).indented()
-        ).use(temporaryFolder, TestUtils.getSdk().toFile()) { context ->
-            val evaluator = context.evaluator
-            context.uastFile?.accept(object : AbstractUastVisitor() {
-                private fun addMethod(node: PsiMethod) {
-                    val text = node.text
-                    sb.append(text.substringBefore('{').trim()).append(":\n")
-                    sb.append("simple: ")
-                    sb.append(evaluator.getMethodDescription(method = node, includeName = false, includeReturn = false)).append("\n")
-                    sb.append("full:   ")
-                    sb.append(evaluator.getMethodDescription(method = node, includeName = true, includeReturn = true)).append("\n\n")
-                }
-                override fun visitMethod(node: UMethod): Boolean {
-                    addMethod(node.javaPsi)
-                    return super.visitMethod(node)
-                }
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    node.resolve()?.let { addMethod(it) }
-                    return super.visitCallExpression(node)
-                }
-            })
-        }
-        assertEquals(
-            """
+          )
+          .indented()
+      )
+      .use(temporaryFolder, TestUtils.getSdk().toFile()) { context ->
+        val evaluator = context.evaluator
+        context.uastFile?.accept(
+          object : AbstractUastVisitor() {
+            private fun addMethod(node: PsiMethod) {
+              val text = node.text
+              sb.append(text.substringBefore('{').trim()).append(":\n")
+              sb.append("simple: ")
+              sb
+                .append(
+                  evaluator.getMethodDescription(
+                    method = node,
+                    includeName = false,
+                    includeReturn = false
+                  )
+                )
+                .append("\n")
+              sb.append("full:   ")
+              sb
+                .append(
+                  evaluator.getMethodDescription(
+                    method = node,
+                    includeName = true,
+                    includeReturn = true
+                  )
+                )
+                .append("\n\n")
+            }
+            override fun visitMethod(node: UMethod): Boolean {
+              addMethod(node.javaPsi)
+              return super.visitMethod(node)
+            }
+            override fun visitCallExpression(node: UCallExpression): Boolean {
+              node.resolve()?.let { addMethod(it) }
+              return super.visitCallExpression(node)
+            }
+          }
+        )
+      }
+    assertEquals(
+      """
             void test():
             simple: ()
             full:   test()V
@@ -451,39 +494,39 @@ class DefaultJavaEvaluatorTest {
             void inner():
             simple: ()
             full:   inner()V
-            """.trimIndent().trim(),
-            sb.toString().trim()
+            """
+        .trimIndent()
+        .trim(),
+      sb.toString().trim()
+    )
+  }
+
+  class MethodMatchesDetector : Detector(), Detector.UastScanner {
+
+    override fun getApplicableMethodNames(): List<String> = listOf("foo")
+
+    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      if (context.evaluator.methodMatches(method, "test.pkg.TargetClass", false)) {
+        context.report(
+          ISSUE,
+          context.getNameLocation(method),
+          "Found reference to `test.pkg.TargetClass.foo`"
+        )
+      }
+    }
+
+    companion object {
+      @JvmField
+      val ISSUE =
+        Issue.create(
+          "_FakeIssueId",
+          "Fake description",
+          "Fake explanation",
+          Category.CORRECTNESS,
+          6,
+          Severity.ERROR,
+          Implementation(MethodMatchesDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
     }
-
-    class MethodMatchesDetector : Detector(), Detector.UastScanner {
-
-        override fun getApplicableMethodNames(): List<String> = listOf("foo")
-
-        override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-            if (context.evaluator.methodMatches(method, "test.pkg.TargetClass", false)) {
-                context.report(
-                    ISSUE,
-                    context.getNameLocation(method),
-                    "Found reference to `test.pkg.TargetClass.foo`"
-                )
-            }
-        }
-
-        companion object {
-            @JvmField
-            val ISSUE = Issue.create(
-                "_FakeIssueId",
-                "Fake description",
-                "Fake explanation",
-                Category.CORRECTNESS,
-                6,
-                Severity.ERROR,
-                Implementation(
-                    MethodMatchesDetector::class.java,
-                    Scope.JAVA_FILE_SCOPE
-                )
-            )
-        }
-    }
+  }
 }

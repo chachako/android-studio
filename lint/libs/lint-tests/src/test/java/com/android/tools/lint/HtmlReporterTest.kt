@@ -45,156 +45,160 @@ import org.junit.rules.TemporaryFolder
 import org.junit.rules.TestName
 
 class HtmlReporterTest {
-    @get:Rule
-    val testName = TestName()
+  @get:Rule val testName = TestName()
 
-    @get:Rule
-    var temporaryFolder = TemporaryFolder()
+  @get:Rule var temporaryFolder = TemporaryFolder()
 
-    private fun checkReportOutput(expected: String) {
-        val rootDirectory = temporaryFolder.newFolder().canonicalFile
-        val lint = TestLintTask.lint()
-        val factory: () -> TestLintClient = {
-            val client = object : TestLintClient() {
-                override fun createDriver(
-                    registry: IssueRegistry,
-                    request: LintRequest
-                ): LintDriver {
-                    // Temporarily switch HardcodedValuesDetector.ISSUE to a custom
-                    // registry with an example vendor to test output of vendor info
-                    // (which we normally omit for built-in checks).
-                    // This also tests that it's listed in the "included additional" section.
-                    val testVendor = createTestVendor()
-                    HardcodedValuesDetector.ISSUE.vendor = testVendor
-                    // Also include a *disabled* extra issue, to make sure we don't
-                    // include these in the extra list (and that we *do* include
-                    // them in the disabled list.)
-                    SdCardDetector.ISSUE.vendor = testVendor
-                    SdCardDetector.ISSUE.setEnabledByDefault(false)
+  private fun checkReportOutput(expected: String) {
+    val rootDirectory = temporaryFolder.newFolder().canonicalFile
+    val lint = TestLintTask.lint()
+    val factory: () -> TestLintClient = {
+      val client =
+        object : TestLintClient() {
+          override fun createDriver(registry: IssueRegistry, request: LintRequest): LintDriver {
+            // Temporarily switch HardcodedValuesDetector.ISSUE to a custom
+            // registry with an example vendor to test output of vendor info
+            // (which we normally omit for built-in checks).
+            // This also tests that it's listed in the "included additional" section.
+            val testVendor = createTestVendor()
+            HardcodedValuesDetector.ISSUE.vendor = testVendor
+            // Also include a *disabled* extra issue, to make sure we don't
+            // include these in the extra list (and that we *do* include
+            // them in the disabled list.)
+            SdCardDetector.ISSUE.vendor = testVendor
+            SdCardDetector.ISSUE.setEnabledByDefault(false)
 
-                    return super.createDriver(registry, request)
-                }
-            }
-            client.setLintTask(lint)
-            client.flags.enabledIds.add(LogDetector.CONDITIONAL.id)
-            client.flags.suppressedIds.add(ManifestDetector.MOCK_LOCATION.id)
-            client.flags.isFullPath = false
-            client.pathVariables.clear()
-            client.pathVariables.add("TEST_ROOT", rootDirectory)
-            client
+            return super.createDriver(registry, request)
+          }
         }
+      client.setLintTask(lint)
+      client.flags.enabledIds.add(LogDetector.CONDITIONAL.id)
+      client.flags.suppressedIds.add(ManifestDetector.MOCK_LOCATION.id)
+      client.flags.isFullPath = false
+      client.pathVariables.clear()
+      client.pathVariables.add("TEST_ROOT", rootDirectory)
+      client
+    }
 
-        val transformer = TestResultTransformer { output ->
-            var report: String
-            // Replace the timestamp to make golden file comparison work
-            val timestampPrefix = "Check performed at "
-            var begin = output.indexOf(timestampPrefix)
-            assertTrue(begin != -1)
-            begin += timestampPrefix.length
-            val end = output.indexOf(" by ", begin)
-            assertTrue(end != -1)
-            report = output.substring(0, begin) + "\$DATE" + output.substring(end)
+    val transformer = TestResultTransformer { output ->
+      var report: String
+      // Replace the timestamp to make golden file comparison work
+      val timestampPrefix = "Check performed at "
+      var begin = output.indexOf(timestampPrefix)
+      assertTrue(begin != -1)
+      begin += timestampPrefix.length
+      val end = output.indexOf(" by ", begin)
+      assertTrue(end != -1)
+      report = output.substring(0, begin) + "\$DATE" + output.substring(end)
 
-            report = report.dos2unix()
+      report = report.dos2unix()
 
-            // There's some (single) trailing space in the output, but
-            // the IDE strips it out of the expected output's raw string literal:
-            report = report.replace(" \n", "\n")
+      // There's some (single) trailing space in the output, but
+      // the IDE strips it out of the expected output's raw string literal:
+      report = report.replace(" \n", "\n")
 
-            report
-        }
+      report
+    }
 
-        val testName = javaClass.simpleName + "_" + testName.methodName
-        lint
-            // Set a custom directory such that lint doesn't delete the source directory after a run;
-            // we need to access it after the test run for syntax highlighting in the reporting pass.
-            .rootDirectory(rootDirectory)
-            .testName(testName).sdkHome(TestUtils.getSdk().toFile()).files(
-                manifest(
-                    """
+    val testName = javaClass.simpleName + "_" + testName.methodName
+    lint
+      // Set a custom directory such that lint doesn't delete the source directory after a run;
+      // we need to access it after the test run for syntax highlighting in the reporting pass.
+      .rootDirectory(rootDirectory)
+      .testName(testName)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .files(
+        manifest(
+            """
                     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                         package="test.pkg">
                         <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
                         <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
                     </manifest>
                     """
-                ).indented(),
-                xml(
-                    "res/layout/main.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "res/layout/main.xml",
+            """
                     <Button xmlns:android="http://schemas.android.com/apk/res/android"
                         android:id="@+id/button1"
                         android:text="Fooo" />
                     """
-                ).indented(),
-                xml(
-                    "res/layout/main2.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "res/layout/main2.xml",
+            """
                     <Button xmlns:android="http://schemas.android.com/apk/res/android"
                         android:id="@+id/button1"
                         android:text="Bar" />
                     """
-                ).indented(),
-                xml(
-                    "res/values/strings.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "res/values/strings.xml",
+            """
                     <resources>
                         <string name="app_name">App Name</string>
                     </resources>
                     """
-                ).indented(),
-                xml(
-                    "res/values/strings2.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "res/values/strings2.xml",
+            """
                     <resources>
                         <string name="app_name">App Name</string>
                     </resources>
                     """
-                ).indented(),
-                image("res/drawable-hdpi/icon1.png", 48, 48).fill(-0xff00d7),
-                image("res/drawable-hdpi/icon2.png", 49, 49).fill(-0xff00d7),
-                image("res/drawable-hdpi/icon3.png", 49, 49).fill(-0xff00d7),
-                image("res/drawable-hdpi/icon4.png", 49, 49).fill(-0xff00d7),
-                java(
-                    """
+          )
+          .indented(),
+        image("res/drawable-hdpi/icon1.png", 48, 48).fill(-0xff00d7),
+        image("res/drawable-hdpi/icon2.png", 49, 49).fill(-0xff00d7),
+        image("res/drawable-hdpi/icon3.png", 49, 49).fill(-0xff00d7),
+        image("res/drawable-hdpi/icon4.png", 49, 49).fill(-0xff00d7),
+        java(
+            """
                     package other.pkg;
                     public class AnnotationTest {
                         public Float error4;
                     }
                     """
-                ).indented(),
-            )
-            .issues(
-                ManifestDetector.MULTIPLE_USES_SDK,
-                HardcodedValuesDetector.ISSUE,
-                SdCardDetector.ISSUE,
-                IconDetector.DUPLICATES_NAMES,
-                // Not reported, but for the disabled-list
-                ManifestDetector.MOCK_LOCATION,
-                // Not reported, but disabled by default and enabled via flags (b/111035260)
-                LogDetector.CONDITIONAL,
-                // Issue which reports multiple linked locations to test the nested display
-                // and secondary location offsets
-                DuplicateResourceDetector.ISSUE,
-                InteroperabilityDetector.PLATFORM_NULLNESS
-            )
-            .clientFactory(factory)
-            .testModes(TestMode.DEFAULT)
-            .run()
-            .expectHtml(expected, transformer)
-        HardcodedValuesDetector.ISSUE.vendor = BuiltinIssueRegistry().vendor
-        SdCardDetector.ISSUE.vendor = BuiltinIssueRegistry().vendor
-        SdCardDetector.ISSUE.setEnabledByDefault(true)
-    }
+          )
+          .indented(),
+      )
+      .issues(
+        ManifestDetector.MULTIPLE_USES_SDK,
+        HardcodedValuesDetector.ISSUE,
+        SdCardDetector.ISSUE,
+        IconDetector.DUPLICATES_NAMES,
+        // Not reported, but for the disabled-list
+        ManifestDetector.MOCK_LOCATION,
+        // Not reported, but disabled by default and enabled via flags (b/111035260)
+        LogDetector.CONDITIONAL,
+        // Issue which reports multiple linked locations to test the nested display
+        // and secondary location offsets
+        DuplicateResourceDetector.ISSUE,
+        InteroperabilityDetector.PLATFORM_NULLNESS
+      )
+      .clientFactory(factory)
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .expectHtml(expected, transformer)
+    HardcodedValuesDetector.ISSUE.vendor = BuiltinIssueRegistry().vendor
+    SdCardDetector.ISSUE.vendor = BuiltinIssueRegistry().vendor
+    SdCardDetector.ISSUE.setEnabledByDefault(true)
+  }
 
-    @Test
-    fun testBasic() {
-        // NOTE: If you change the output, please validate it manually in
-        //  http://validator.w3.org/#validate_by_input
-        // before updating the following
+  @Test
+  fun testBasic() {
+    // NOTE: If you change the output, please validate it manually in
+    //  http://validator.w3.org/#validate_by_input
+    // before updating the following
 
-        checkReportOutput(
-"""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    checkReportOutput(
+      """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -714,24 +718,24 @@ For more information, see <a href="https://developer.android.com/studio/write/li
 </div>
 </body>
 </html>"""
-        )
-    }
+    )
+  }
 
-    @Test
-    fun testCustomizations() {
-        // NOTE: If you change the output, please validate it manually in
-        //  http://validator.w3.org/#validate_by_input
-        // before updating the following
+  @Test
+  fun testCustomizations() {
+    // NOTE: If you change the output, please validate it manually in
+    //  http://validator.w3.org/#validate_by_input
+    // before updating the following
 
-        val prev = System.getProperty(REPORT_PREFERENCE_PROPERTY)
-        try {
-            System.setProperty(
-                REPORT_PREFERENCE_PROPERTY,
-                "maxIncidents=1,theme=darcula,window=1,underlineErrors=false"
-            )
-            HtmlReporter.initializePreferences()
-            checkReportOutput(
-                """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    val prev = System.getProperty(REPORT_PREFERENCE_PROPERTY)
+    try {
+      System.setProperty(
+        REPORT_PREFERENCE_PROPERTY,
+        "maxIncidents=1,theme=darcula,window=1,underlineErrors=false"
+      )
+      HtmlReporter.initializePreferences()
+      checkReportOutput(
+        """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -1238,14 +1242,14 @@ For more information, see <a href="https://developer.android.com/studio/write/li
 </div>
 </body>
 </html>"""
-            )
-        } finally {
-            if (prev != null) {
-                System.setProperty(REPORT_PREFERENCE_PROPERTY, prev)
-            } else {
-                System.clearProperty(REPORT_PREFERENCE_PROPERTY)
-            }
-            HtmlReporter.initializePreferences()
-        }
+      )
+    } finally {
+      if (prev != null) {
+        System.setProperty(REPORT_PREFERENCE_PROPERTY, prev)
+      } else {
+        System.clearProperty(REPORT_PREFERENCE_PROPERTY)
+      }
+      HtmlReporter.initializePreferences()
     }
+  }
 }

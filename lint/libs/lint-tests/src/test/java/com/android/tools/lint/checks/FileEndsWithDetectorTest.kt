@@ -20,14 +20,15 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class FileEndsWithDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return FileEndsWithDetector()
-    }
+  override fun getDetector(): Detector {
+    return FileEndsWithDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import java.io.File
 
                 // This does not work -- it will return false for "foo/bar.xml", but true for "foo/.xml"
@@ -40,9 +41,13 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                 fun File.isText() = path.endsWith(".txt") // OK
                 fun File.isPng() = extension == "png" // OK
                 """
-            ).indented()
-        ).testModes(TestMode.DEFAULT).run().expect(
-            """
+          )
+          .indented()
+      )
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .expect(
+        """
             src/test.kt:4: Warning: File.endsWith compares whole filenames, not just file extensions; did you mean file.path.endsWith(".xml") ? [FileEndsWithExt]
             fun File.isXml() = endsWith(".xml")
                                ~~~~~~~~~~~~~~~~
@@ -54,15 +59,17 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                                                                 ~~~~~
             0 errors, 3 warnings
             """
-        )
-    }
+      )
+  }
 
-    // Also test having a different variable name (not file extension) and some false positives for non-extension strings, long strings, strings that contain spaces, etc
+  // Also test having a different variable name (not file extension) and some false positives for
+  // non-extension strings, long strings, strings that contain spaces, etc
 
-    fun testFalsePositives() {
-        lint().files(
-            kotlin(
-                """
+  fun testFalsePositives() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import java.io.File
 
                 fun File.isXml1() = endsWith("xml") // OK 1
@@ -71,14 +78,19 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                 fun File.isJson() = extension == "json" // OK 4
                 fun isWebp(path: File) = path.extension.startsWith("webp") // OK 5
                 """
-            ).indented()
-        ).testModes(TestMode.DEFAULT).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .expectClean()
+  }
 
-    fun testFalseNegatives() {
-        lint().files(
-            kotlin(
-                """
+  fun testFalseNegatives() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import java.io.File
 
                 val EXT = ".xml"
@@ -89,9 +101,13 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                 fun isWebp2(path: File) = path.parentFile.parentFile.extension.startsWith(".webp") // ERROR 5
                 fun isWebp3(path: File) = path.parentFile!!.extension.startsWith(".webp") // ERROR 6
                 """
-            ).indented()
-        ).testModes(TestMode.DEFAULT).run().expect(
-            """
+          )
+          .indented()
+      )
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .expect(
+        """
             src/test.kt:4: Warning: File.endsWith compares whole filenames, not just file extensions; did you mean file.path.endsWith(".xml") ? [FileEndsWithExt]
             fun File.isXml1() = endsWith(EXT) // ERROR 1
                                 ~~~~~~~~~~~~~
@@ -112,6 +128,6 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                                                                               ~~~~~
             0 errors, 6 warnings
             """
-        )
-    }
+      )
+  }
 }

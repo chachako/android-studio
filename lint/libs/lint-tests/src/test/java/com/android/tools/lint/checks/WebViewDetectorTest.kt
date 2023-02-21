@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class WebViewDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return WebViewDetector()
-    }
+  override fun getDetector(): Detector {
+    return WebViewDetector()
+  }
 
-    fun testMatchParentWidth() {
-        lint().files(
-            xml(
-                "res/layout/webview.xml",
-                """
+  fun testMatchParentWidth() {
+    lint()
+      .files(
+        xml(
+            "res/layout/webview.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
                     android:orientation="vertical"
@@ -57,9 +58,12 @@ class WebViewDetectorTest : AbstractCheckTest() {
 
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/webview.xml:18: Error: Placing a <WebView> in a parent element that uses a wrap_content layout_height can lead to subtle bugs; use match_parent instead [WebViewLayout]
                     <WebView
                      ~~~~~~~
@@ -68,14 +72,15 @@ class WebViewDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMatchParentHeight() {
-        lint().files(
-            xml(
-                "res/layout/webview2.xml",
-                """
+  fun testMatchParentHeight() {
+    lint()
+      .files(
+        xml(
+            "res/layout/webview2.xml",
+            """
                 <!-- Like webview.xml, but with a wrap on the height instead -->
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                               xmlns:tools="http://schemas.android.com/tools"
@@ -107,9 +112,12 @@ class WebViewDetectorTest : AbstractCheckTest() {
 
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/webview2.xml:19: Error: Placing a <WebView> in a parent element that uses a wrap_content layout_width can lead to subtle bugs; use match_parent instead [WebViewLayout]
                     <WebView
                      ~~~~~~~
@@ -118,16 +126,17 @@ class WebViewDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMissingLayoutHeight() {
-        // Regression test for
-        //   https://code.google.com/p/android/issues/detail?id=74646
-        lint().files(
-            xml(
-                "res/layout/webview3.xml",
-                """
+  fun testMissingLayoutHeight() {
+    // Regression test for
+    //   https://code.google.com/p/android/issues/detail?id=74646
+    lint()
+      .files(
+        xml(
+            "res/layout/webview3.xml",
+            """
                 <!-- Note the lack of explicit 'layout_height' on root layout; it comes from the app's theme -->
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="match_parent"
@@ -142,7 +151,10 @@ class WebViewDetectorTest : AbstractCheckTest() {
 
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

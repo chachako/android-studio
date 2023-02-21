@@ -23,12 +23,12 @@ import org.junit.Test
 
 class ShortNameCacheDetectorTest {
 
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     import com.intellij.psi.search.PsiShortNamesCache;
@@ -76,10 +76,11 @@ class ShortNameCacheDetectorTest {
                         }
                     }
                 """
-                ).indented(),
-                // Stubs
-                java(
-                    """
+          )
+          .indented(),
+        // Stubs
+        java(
+          """
                     package com.intellij.psi.search;
 
                     @SuppressWarnings("all")
@@ -137,12 +138,12 @@ class ShortNameCacheDetectorTest {
                       public interface PsiField { }
                     }
                     """
-                )
-            )
-            .issues(ShortNameCacheDetector.ISSUE)
-            .run()
-            .expect(
-                """
+        )
+      )
+      .issues(ShortNameCacheDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/MlShortNamesCache.java:13: Error: Do not return false; this will mark processing as consumed for this element and other cache processors will not run. This can lead to bugs like b/152432842. [ShortNamesCache]
                         return false; // ERROR
                         ~~~~~~~~~~~~~~~~~~~~~~
@@ -151,6 +152,6 @@ class ShortNameCacheDetectorTest {
                         ~~~~~~~~~~~~~~~~~~~~~~~~~
                 2 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

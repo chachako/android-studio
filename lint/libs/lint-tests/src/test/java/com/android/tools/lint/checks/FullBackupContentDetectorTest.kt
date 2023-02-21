@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class FullBackupContentDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return FullBackupContentDetector()
-    }
+  override fun getDetector(): Detector {
+    return FullBackupContentDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            manifest(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="my.pkg" >
                     <application
                         android:fullBackupContent="@xml/full_backup_content">
@@ -35,10 +36,11 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/xml/data_extraction_rules.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml/data_extraction_rules.xml",
+            """
                 <data-extraction-rules>
                     <cloud-backup>
                         <include domain="file" path="dd"/>
@@ -53,10 +55,11 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                     </device-transfer>
                 </data-extraction-rules>
                 """
-            ).indented(),
-            xml(
-                "res/xml/full_backup_content.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml/full_backup_content.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="dd"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
@@ -64,9 +67,12 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="sharedpref" path="foo.xml"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/xml/data_extraction_rules.xml:6: Error: foo.xml is not in an included path [FullBackupContent]
                     <exclude domain="sharedpref" path="foo.xml"/>
                                                        ~~~~~~~
@@ -75,35 +81,41 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                                                     ~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOk() {
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+  fun testOk() {
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="dd"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test20890435() {
-        val expected = """
+  fun test20890435() {
+    val expected =
+      """
             res/xml/backup.xml:5: Error: foo.xml is not in an included path [FullBackupContent]
                  <exclude domain="sharedpref" path="foo.xml"/>
                                                     ~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="dd"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
@@ -111,49 +123,61 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="sharedpref" path="foo.xml"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testImplicitInclude() {
-        // If there is no include, then everything is considered included
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+  fun testImplicitInclude() {
+    // If there is no include, then everything is considered included
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <exclude domain="file" path="dd/fo3o.txt"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testImplicitPath() {
-        // If you specify an include, but no path attribute, that's defined to mean include
-        // everything
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+  fun testImplicitPath() {
+    // If you specify an include, but no path attribute, that's defined to mean include
+    // everything
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <include domain="sharedpref" path="something"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    // Regression test for b/118866569
-    fun testCurrentDirectoryPath() {
-        // You can use "." in the path to reference the current directory; see
-        // https://developer.android.com/guide/topics/data/autobackup#XMLSyntax
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+  // Regression test for b/118866569
+  fun testCurrentDirectoryPath() {
+    // You can use "." in the path to reference the current directory; see
+    // https://developer.android.com/guide/topics/data/autobackup#XMLSyntax
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="."/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
@@ -161,15 +185,19 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="sharedpref" path="device.xml"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testSuppressed() {
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+  fun testSuppressed() {
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content xmlns:tools="http://schemas.android.com/tools">
                      <include domain="file" path="dd"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
@@ -177,13 +205,17 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="sharedpref" path="foo.xml" tools:ignore="FullBackupContent"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testIncludeWrongDomain() {
-        // Ensure that the path prefix check is done independently for each domain
-        val expected = """
+  fun testIncludeWrongDomain() {
+    // Ensure that the path prefix check is done independently for each domain
+    val expected =
+      """
             res/xml/backup.xml:3: Error: abc/def.txt is not in an included path [FullBackupContent]
                  <exclude domain="external" path="abc/def.txt"/>
                                                   ~~~~~~~~~~~
@@ -192,10 +224,11 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                                                   ~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="abc"/>
                      <exclude domain="external" path="abc/def.txt"/>
@@ -203,13 +236,16 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="external" path="def/ghi.txt"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testValidation() {
-        val expected =
-            """
+  fun testValidation() {
+    val expected =
+      """
             res/xml/backup.xml:6: Error: Subdirectories are not allowed for domain sharedpref [FullBackupContent]
                  <include domain="sharedpref" path="dd/subdir"/>
                                                     ~~~~~~~~~
@@ -239,10 +275,11 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                   ~~~~~~~~
             8 errors, 0 warnings
             """
-        lint().files(
-            xml(
-                "res/xml/backup.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="root" path="dd"/>
                      <include domain="file" path="dd"/>
@@ -259,7 +296,10 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <wrongtag />
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 }

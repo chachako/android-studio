@@ -32,68 +32,69 @@ import com.android.tools.lint.detector.api.CURRENT_API
 
 class StudioIssueRegistry : IssueRegistry() {
 
-    override val api = CURRENT_API
+  override val api = CURRENT_API
 
-    override val vendor: Vendor = AOSP_VENDOR
+  override val vendor: Vendor = AOSP_VENDOR
 
-    init {
-        // Turn on some checks that are off by default but which we want run in Studio:
-        LintDetectorDetector.UNEXPECTED_DOMAIN.setEnabledByDefault(true)
-        LintDetectorDetector.MISSING_DOC_EXAMPLE.setEnabledByDefault(true)
-        if (isStudio) {
-            LintDetectorDetector.PSI_COMPARE.setEnabledByDefault(true)
-        }
-
-        // A few other standard lint checks disabled by default which we want enforced
-        // in our codebase
-        SamDetector.ISSUE.setEnabledByDefault(true)
-        CommentDetector.EASTER_EGG.setEnabledByDefault(true)
-        CommentDetector.STOP_SHIP.setEnabledByDefault(true)
-        DateFormatDetector.WEEK_YEAR.setEnabledByDefault(true)
-        NoOpDetector.ASSUME_PURE_GETTERS.defaultValue = true
-        NoOpDetector.ISSUE.setEnabledByDefault(true)
-        if (isStudio) { // not enforced in PSQ but give guidance in the IDE
-            AssertDetector.EXPENSIVE.setEnabledByDefault(true)
-            InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS.setEnabledByDefault(true)
-            InteroperabilityDetector.LAMBDA_LAST.setEnabledByDefault(true)
-            InteroperabilityDetector.KOTLIN_PROPERTY.setEnabledByDefault(true)
-            DefaultEncodingDetector.ISSUE.setEnabledByDefault(true)
-        }
+  init {
+    // Turn on some checks that are off by default but which we want run in Studio:
+    LintDetectorDetector.UNEXPECTED_DOMAIN.setEnabledByDefault(true)
+    LintDetectorDetector.MISSING_DOC_EXAMPLE.setEnabledByDefault(true)
+    if (isStudio) {
+      LintDetectorDetector.PSI_COMPARE.setEnabledByDefault(true)
     }
 
-    override val issues = listOf(
-        ByLazyDetector.ISSUE,
-        CheckResultDetector.CHECK_RESULT,
-        ExternalAnnotationsDetector.ISSUE,
-        FileComparisonDetector.ISSUE,
-        ForbiddenStudioCallDetector.INTERN,
-        ForbiddenStudioCallDetector.FILES_COPY,
-        ForbiddenStudioCallDetector.MOCKITO_WHEN,
-        ForkJoinPoolDetector.COMMON_FJ_POOL,
-        ForkJoinPoolDetector.NEW_FJ_POOL,
-        GradleApiUsageDetector.ISSUE,
-        HdpiDetector.ISSUE,
-        HtmlPaneDetector.ISSUE,
-        ImplicitExecutorDetector.ISSUE,
-        IntellijThreadDetector.ISSUE,
-        LintDetectorDetector.CHECK_URL,
-        LintDetectorDetector.DOLLAR_STRINGS,
-        LintDetectorDetector.ID,
-        LintDetectorDetector.MISSING_DOC_EXAMPLE,
-        // We're not including this check here;
-        // a vendor is not required for built-in checks
-        // LintDetectorDetector.MISSING_VENDOR,
-        LintDetectorDetector.PSI_COMPARE,
-        LintDetectorDetector.TEXT_FORMAT,
-        LintDetectorDetector.TRIM_INDENT,
-        LintDetectorDetector.UNEXPECTED_DOMAIN,
-        LintDetectorDetector.USE_KOTLIN,
-        LintDetectorDetector.USE_UAST,
-        PathAsIterableDetector.ISSUE,
-        RegexpPathDetector.ISSUE,
-        ShortNameCacheDetector.ISSUE,
-        SwingWorkerDetector.ISSUE,
-        TerminologyDetector.ISSUE,
-        InconsistentThreadingAnnotationDetector.ISSUE,
+    // A few other standard lint checks disabled by default which we want enforced
+    // in our codebase
+    SamDetector.ISSUE.setEnabledByDefault(true)
+    CommentDetector.EASTER_EGG.setEnabledByDefault(true)
+    CommentDetector.STOP_SHIP.setEnabledByDefault(true)
+    DateFormatDetector.WEEK_YEAR.setEnabledByDefault(true)
+    NoOpDetector.ASSUME_PURE_GETTERS.defaultValue = true
+    NoOpDetector.ISSUE.setEnabledByDefault(true)
+    if (isStudio) { // not enforced in PSQ but give guidance in the IDE
+      AssertDetector.EXPENSIVE.setEnabledByDefault(true)
+      InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS.setEnabledByDefault(true)
+      InteroperabilityDetector.LAMBDA_LAST.setEnabledByDefault(true)
+      InteroperabilityDetector.KOTLIN_PROPERTY.setEnabledByDefault(true)
+      DefaultEncodingDetector.ISSUE.setEnabledByDefault(true)
+    }
+  }
+
+  override val issues =
+    listOf(
+      ByLazyDetector.ISSUE,
+      CheckResultDetector.CHECK_RESULT,
+      ExternalAnnotationsDetector.ISSUE,
+      FileComparisonDetector.ISSUE,
+      ForbiddenStudioCallDetector.INTERN,
+      ForbiddenStudioCallDetector.FILES_COPY,
+      ForbiddenStudioCallDetector.MOCKITO_WHEN,
+      ForkJoinPoolDetector.COMMON_FJ_POOL,
+      ForkJoinPoolDetector.NEW_FJ_POOL,
+      GradleApiUsageDetector.ISSUE,
+      HdpiDetector.ISSUE,
+      HtmlPaneDetector.ISSUE,
+      ImplicitExecutorDetector.ISSUE,
+      IntellijThreadDetector.ISSUE,
+      LintDetectorDetector.CHECK_URL,
+      LintDetectorDetector.DOLLAR_STRINGS,
+      LintDetectorDetector.ID,
+      LintDetectorDetector.MISSING_DOC_EXAMPLE,
+      // We're not including this check here;
+      // a vendor is not required for built-in checks
+      // LintDetectorDetector.MISSING_VENDOR,
+      LintDetectorDetector.PSI_COMPARE,
+      LintDetectorDetector.TEXT_FORMAT,
+      LintDetectorDetector.TRIM_INDENT,
+      LintDetectorDetector.UNEXPECTED_DOMAIN,
+      LintDetectorDetector.USE_KOTLIN,
+      LintDetectorDetector.USE_UAST,
+      PathAsIterableDetector.ISSUE,
+      RegexpPathDetector.ISSUE,
+      ShortNameCacheDetector.ISSUE,
+      SwingWorkerDetector.ISSUE,
+      TerminologyDetector.ISSUE,
+      InconsistentThreadingAnnotationDetector.ISSUE,
     )
 }

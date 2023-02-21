@@ -24,12 +24,12 @@ import org.junit.Test
 
 class ForbiddenStudioCallDetectorTest {
 
-    @Test
-    fun testStringIntern() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testStringIntern() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     @SuppressWarnings({
@@ -54,12 +54,13 @@ class ForbiddenStudioCallDetectorTest {
                         }
                     }
                    """
-                ).indented()
-            )
-            .issues(ForbiddenStudioCallDetector.INTERN)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(ForbiddenStudioCallDetector.INTERN)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.java:13: Error: Do not intern strings; if reusing strings is truly necessary build a local cache [NoInterning]
                         String s2 = "foo".intern(); // ERROR
                                           ~~~~~~~~
@@ -68,15 +69,15 @@ class ForbiddenStudioCallDetectorTest {
                                       ~~~~~~~~
                 2 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testFilesCopy() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testFilesCopy() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import java.io.IOException;
                     import java.io.InputStream;
@@ -89,26 +90,27 @@ class ForbiddenStudioCallDetectorTest {
                         }
                     }
                     """
-                ).indented(),
-            )
-            .issues(ForbiddenStudioCallDetector.FILES_COPY)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+      )
+      .issues(ForbiddenStudioCallDetector.FILES_COPY)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.java:9: Error: Do not use java.nio.file.Files.copy(Path, Path). Instead, use FileUtils.copyFile(Path, Path) or Kotlin's File#copyTo(File) [NoNioFilesCopy]
                         Files.copy(p1, p2); // ERROR
                               ~~~~~~~~~~~~
                 1 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testWhen() {
-        studioLint()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun testWhen() {
+    studioLint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
                     import org.mockito.Mockito
                     import org.mockito.stubbing.OngoingStubbing
@@ -119,9 +121,10 @@ class ForbiddenStudioCallDetectorTest {
                     }
                     fun `when`(arg: OngoingStubbing<String>) {}
                     """
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
                     import org.mockito.Mockito;
                     import org.mockito.stubbing.OngoingStubbing;
@@ -132,10 +135,11 @@ class ForbiddenStudioCallDetectorTest {
                         }
                     }
                     """
-                ).indented(),
-                // Stubs
-                java(
-                    """
+          )
+          .indented(),
+        // Stubs
+        java(
+            """
                     package org.mockito;
                     import org.mockito.stubbing.OngoingStubbing;
                     public class Mockito {
@@ -144,27 +148,29 @@ class ForbiddenStudioCallDetectorTest {
                         }
                     }
                     """
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     package org.mockito.stubbing;
                     public interface OngoingStubbing<T> {
                     }
                     """
-                ).indented(),
-            )
-            .issues(ForbiddenStudioCallDetector.MOCKITO_WHEN)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+      )
+      .issues(ForbiddenStudioCallDetector.MOCKITO_WHEN)
+      .run()
+      .expect(
+        """
                 src/test/pkg/test.kt:7: Error: Do not use Mockito.when from Kotlin; use MocktioKt.whenever instead [MockitoWhen]
                     Mockito.`when`(args) // WARN
                             ~~~~~~~~~~~~
                 1 errors, 0 warnings
                 """
-            )
-            .expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Fix for src/test/pkg/test.kt line 7: Use `whenever`:
                 @@ -2 +2
                 + import com.android.testutils.MockitoKt.whenever
@@ -172,6 +178,6 @@ class ForbiddenStudioCallDetectorTest {
                 -     Mockito.`when`(args) // WARN
                 +     whenever(args) // WARN
                 """
-            )
-    }
+      )
+  }
 }

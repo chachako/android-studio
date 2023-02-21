@@ -33,25 +33,24 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UastBinaryOperator
 
 /**
- * Makes sure we compare files properly to handle cross platform issues
- * like case insensitive file systems
+ * Makes sure we compare files properly to handle cross platform issues like case insensitive file
+ * systems
  *
- * TODO: Check for calling file.toURL or file.toURI.toURL: use our sdk
- *     utils instead.
+ * TODO: Check for calling file.toURL or file.toURI.toURL: use our sdk utils instead.
  */
 class FileComparisonDetector : Detector(), SourceCodeScanner {
 
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            FileComparisonDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION =
+      Implementation(FileComparisonDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "FileComparisons",
-            briefDescription = "Invalid File Comparisons",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "FileComparisons",
+        briefDescription = "Invalid File Comparisons",
+        explanation =
+          """
                 Never call `equals` (or worse, `==`) on a `java.io.File`: \
                 this will not do the right thing on case insensitive file systems.
 
@@ -59,61 +58,59 @@ class FileComparisonDetector : Detector(), SourceCodeScanner {
 
                 For more info, see `go/files-howto`.
             """,
-            category = CROSS_PLATFORM,
-            priority = 3,
-            severity = Severity.ERROR,
-            platforms = STUDIO_PLATFORMS,
-            implementation = IMPLEMENTATION
-        )
-    }
+        category = CROSS_PLATFORM,
+        priority = 3,
+        severity = Severity.ERROR,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION
+      )
+  }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>> =
-        listOf(UBinaryExpression::class.java, UCallExpression::class.java)
+  override fun getApplicableUastTypes(): List<Class<out UElement>> =
+    listOf(UBinaryExpression::class.java, UCallExpression::class.java)
 
-    override fun createUastHandler(context: JavaContext): UElementHandler {
-        return object : UElementHandler() {
-            override fun visitCallExpression(node: UCallExpression) {
-                if (node.methodName == "equals")
-                    if (node.valueArgumentCount == 1) {
-                        val lhs = node.receiver ?: return
-                        check(context, node, lhs, node.valueArguments.first())
-                    } else if (node.valueArgumentCount == 2) {
-                        if (!context.evaluator.isMemberInClass(node.resolve(), JAVA_UTIL_OBJECTS)) {
-                            return
-                        }
-                        check(context, node, node.valueArguments[0], node.valueArguments[1])
-                    }
+  override fun createUastHandler(context: JavaContext): UElementHandler {
+    return object : UElementHandler() {
+      override fun visitCallExpression(node: UCallExpression) {
+        if (node.methodName == "equals")
+          if (node.valueArgumentCount == 1) {
+            val lhs = node.receiver ?: return
+            check(context, node, lhs, node.valueArguments.first())
+          } else if (node.valueArgumentCount == 2) {
+            if (!context.evaluator.isMemberInClass(node.resolve(), JAVA_UTIL_OBJECTS)) {
+              return
             }
+            check(context, node, node.valueArguments[0], node.valueArguments[1])
+          }
+      }
 
-            override fun visitBinaryExpression(node: UBinaryExpression) {
-                val operator = node.operator
-                if (operator == UastBinaryOperator.EQUALS ||
-                    operator == UastBinaryOperator.IDENTITY_EQUALS ||
-                    operator == UastBinaryOperator.NOT_EQUALS ||
-                    operator == UastBinaryOperator.IDENTITY_NOT_EQUALS
-                ) {
-                    check(context, node, node.leftOperand, node.rightOperand)
-                }
-            }
+      override fun visitBinaryExpression(node: UBinaryExpression) {
+        val operator = node.operator
+        if (
+          operator == UastBinaryOperator.EQUALS ||
+            operator == UastBinaryOperator.IDENTITY_EQUALS ||
+            operator == UastBinaryOperator.NOT_EQUALS ||
+            operator == UastBinaryOperator.IDENTITY_NOT_EQUALS
+        ) {
+          check(context, node, node.leftOperand, node.rightOperand)
         }
+      }
     }
+  }
 
-    private fun check(
-        context: JavaContext,
-        node: UExpression,
-        lhs: UExpression,
-        rhs: UExpression
-    ) {
-        val evaluator = context.evaluator
-        if (!evaluator.typeMatches(lhs.getExpressionType(), JAVA_IO_FILE)) {
-            return
-        }
-        if (!evaluator.typeMatches(rhs.getExpressionType(), JAVA_IO_FILE)) {
-            return
-        }
-        context.report(
-            ISSUE, node, context.getLocation(node),
-            "Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
-        )
+  private fun check(context: JavaContext, node: UExpression, lhs: UExpression, rhs: UExpression) {
+    val evaluator = context.evaluator
+    if (!evaluator.typeMatches(lhs.getExpressionType(), JAVA_IO_FILE)) {
+      return
     }
+    if (!evaluator.typeMatches(rhs.getExpressionType(), JAVA_IO_FILE)) {
+      return
+    }
+    context.report(
+      ISSUE,
+      node,
+      context.getLocation(node),
+      "Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+    )
+  }
 }

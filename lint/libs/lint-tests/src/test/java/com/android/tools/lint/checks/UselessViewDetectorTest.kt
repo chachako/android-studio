@@ -18,13 +18,13 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class UselessViewDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return UselessViewDetector()
-    }
+  override fun getDetector(): Detector {
+    return UselessViewDetector()
+  }
 
-    fun testUseless() {
-        val expected =
-            """
+  fun testUseless() {
+    val expected =
+      """
             res/layout/useless.xml:85: Warning: This FrameLayout view is unnecessary (no children, no background, no id, no style) [UselessLeaf]
                 <FrameLayout
                  ~~~~~~~~~~~
@@ -39,10 +39,11 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                      ~~~~~~~~~~~~
             0 errors, 4 warnings
             """
-        lint().files(
-            xml(
-                "res/layout/useless.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/layout/useless.xml",
+            """
 
                 <merge xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
@@ -133,15 +134,19 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     </FrameLayout>
                 </merge>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testTabHost() {
-        lint().files(
-            xml(
-                "res/layout/useless2.xml",
-                """
+  fun testTabHost() {
+    lint()
+      .files(
+        xml(
+            "res/layout/useless2.xml",
+            """
                 <TabHost xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
@@ -168,44 +173,56 @@ class UselessViewDetectorTest : AbstractCheckTest() {
 
                 </TabHost>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testStyleAttribute() {
-        lint().files(
-            xml(
-                "res/layout/useless3.xml",
-                """
+  fun testStyleAttribute() {
+    lint()
+      .files(
+        xml(
+            "res/layout/useless3.xml",
+            """
                 <TableRow
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     style="@style/keyboard_table_row">
                 </TableRow>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUselessLeafRoot() {
-        lint().files(
-            xml(
-                "res/layout/breadcrumbs_in_fragment.xml",
-                """
+  fun testUselessLeafRoot() {
+    lint()
+      .files(
+        xml(
+            "res/layout/breadcrumbs_in_fragment.xml",
+            """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="0dip"
                     android:layout_height="0dip"
                     android:visibility="gone" />
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUseless65519() {
-        // https://code.google.com/p/android/issues/detail?id=65519
-        lint().files(
-            xml(
-                "res/layout/useless4.xml",
-                """
+  fun testUseless65519() {
+    // https://code.google.com/p/android/issues/detail?id=65519
+    lint()
+      .files(
+        xml(
+            "res/layout/useless4.xml",
+            """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                              android:layout_width="match_parent"
                              android:layout_height="match_parent"
@@ -226,23 +243,27 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
                 </FrameLayout>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testUselessWithPaddingAttrs() {
-        // https://code.google.com/p/android/issues/detail?id=205250
-        val expected =
-            """
+  fun testUselessWithPaddingAttrs() {
+    // https://code.google.com/p/android/issues/detail?id=205250
+    val expected =
+      """
             res/layout/useless5.xml:5: Warning: This RelativeLayout layout or its FrameLayout parent is unnecessary [UselessParent]
                 <RelativeLayout
                  ~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            xml(
-                "res/layout/useless5.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/layout/useless5.xml",
+            """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                              android:layout_width="match_parent"
                              android:layout_height="wrap_content">
@@ -261,15 +282,19 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     </RelativeLayout>
                 </FrameLayout>
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testUselessParentWithStyleAttribute() {
-        lint().files(
-            xml(
-                "res/layout/my_layout.xml",
-                """
+  fun testUselessParentWithStyleAttribute() {
+    lint()
+      .files(
+        xml(
+            "res/layout/my_layout.xml",
+            """
                 <LinearLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -299,16 +324,20 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                   </FrameLayout>
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDataBinding() {
-        // Regression test for 37140356
-        lint().files(
-            xml(
-                "res/layout/layout.xml",
-                """
+  fun testDataBinding() {
+    // Regression test for 37140356
+    lint()
+      .files(
+        xml(
+            "res/layout/layout.xml",
+            """
                 <FrameLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:app="http://schemas.android.com/apk/res/foo.bar.baz"
@@ -321,16 +350,20 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                             app:viewModel="@{viewModel}" />
                 </FrameLayout>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testTags() {
-        // Regression test for 263416987
-        lint().files(
-            xml(
-                "res/layout/layout.xml",
-                """
+  fun testTags() {
+    // Regression test for 263416987
+    lint()
+      .files(
+        xml(
+            "res/layout/layout.xml",
+            """
                 <test.pkg.CardContainerView
                   xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="match_parent"
@@ -352,7 +385,10 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                   </FrameLayout>
                 </test.pkg.CardContainerView>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

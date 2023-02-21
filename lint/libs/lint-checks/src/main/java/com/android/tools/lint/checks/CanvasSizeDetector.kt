@@ -38,162 +38,173 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 /** Warns about using the wrong canvas size in custom views. */
 class CanvasSizeDetector : Detector(), SourceCodeScanner {
 
-    override fun applicableSuperClasses(): List<String> {
-        return listOf(CLASS_VIEW, CLASS_DRAWABLE)
-    }
+  override fun applicableSuperClasses(): List<String> {
+    return listOf(CLASS_VIEW, CLASS_DRAWABLE)
+  }
 
-    override fun visitClass(context: JavaContext, declaration: UClass) {
-        val evaluator = context.evaluator
-        val drawMethods = declaration.methods.filter {
-            it.name == ON_DRAW || it.name == DRAW && evaluator.parametersMatch(it, CLASS_CANVAS)
-        }
-        for (method in drawMethods) {
-            method.accept(object : AbstractUastVisitor() {
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    val name = getMethodName(node)
-                    if (name == GET_WIDTH || name == GET_HEIGHT) {
-                        val sizeMethod = node.resolve()
-                        if (sizeMethod != null &&
-                            context.evaluator.isMemberInClass(sizeMethod, CLASS_CANVAS)
-                        ) {
-                            reportWarning(context, node, name, declaration)
-                        }
-                    }
+  override fun visitClass(context: JavaContext, declaration: UClass) {
+    val evaluator = context.evaluator
+    val drawMethods =
+      declaration.methods.filter {
+        it.name == ON_DRAW || it.name == DRAW && evaluator.parametersMatch(it, CLASS_CANVAS)
+      }
+    for (method in drawMethods) {
+      method.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val name = getMethodName(node)
+            if (name == GET_WIDTH || name == GET_HEIGHT) {
+              val sizeMethod = node.resolve()
+              if (
+                sizeMethod != null && context.evaluator.isMemberInClass(sizeMethod, CLASS_CANVAS)
+              ) {
+                reportWarning(context, node, name, declaration)
+              }
+            }
 
-                    return super.visitCallExpression(node)
+            return super.visitCallExpression(node)
+          }
+
+          override fun visitQualifiedReferenceExpression(
+            node: UQualifiedReferenceExpression
+          ): Boolean {
+            // Look for Kotlin property-access of the canvas size methods
+            val selector = node.selector
+            if (selector is USimpleNameReferenceExpression) {
+              val name = selector.identifier
+              if (name == WIDTH || name == HEIGHT) {
+                val receiver = node.receiver
+                val type = receiver.getExpressionType()
+                if (type?.canonicalText == CLASS_CANVAS) {
+                  reportWarning(context, node, name, declaration)
                 }
-
-                override fun visitQualifiedReferenceExpression(node: UQualifiedReferenceExpression): Boolean {
-                    // Look for Kotlin property-access of the canvas size methods
-                    val selector = node.selector
-                    if (selector is USimpleNameReferenceExpression) {
-                        val name = selector.identifier
-                        if (name == WIDTH || name == HEIGHT) {
-                            val receiver = node.receiver
-                            val type = receiver.getExpressionType()
-                            if (type?.canonicalText == CLASS_CANVAS) {
-                                reportWarning(context, node, name, declaration)
-                            }
-                        }
-                    }
-                    return super.visitQualifiedReferenceExpression(node)
-                }
-            })
+              }
+            }
+            return super.visitQualifiedReferenceExpression(node)
+          }
         }
+      )
     }
+  }
 
-    private fun reportWarning(
-        context: JavaContext,
-        node: UElement,
-        name: String,
-        containingClass: UClass
-    ) {
-        val drawable = context.evaluator.extendsClass(containingClass, CLASS_DRAWABLE, false)
-        val calling = node is UCallExpression
-        val verb = if (calling) "Calling" else "Referencing"
-        val kotlin = isKotlin(node.sourcePsi)
-        val replacement = if (drawable) {
-            if (kotlin) "bounds.$name" else "getBounds().$name"
+  private fun reportWarning(
+    context: JavaContext,
+    node: UElement,
+    name: String,
+    containingClass: UClass
+  ) {
+    val drawable = context.evaluator.extendsClass(containingClass, CLASS_DRAWABLE, false)
+    val calling = node is UCallExpression
+    val verb = if (calling) "Calling" else "Referencing"
+    val kotlin = isKotlin(node.sourcePsi)
+    val replacement =
+      if (drawable) {
+        if (kotlin) "bounds.$name" else "getBounds().$name"
+      } else {
+        name
+      }
+    val message = computeErrorMessage(verb, name, calling, replacement)
+    val range = context.getLocation(node)
+    val fix =
+      fix()
+        .name(computeQuickfixMessage(kotlin, calling, drawable, name))
+        .replace()
+        .range(range)
+        .pattern(if (drawable) "(.*)" else "(.*)$name")
+        .with(computeQuickfixReplacementString(kotlin, drawable, name))
+        .build()
+    context.report(ISSUE, node, context.getLocation(node), message, fix)
+  }
+
+  private fun computeQuickfixReplacementString(
+    kotlin: Boolean,
+    drawable: Boolean,
+    name: String
+  ): String {
+    return if (drawable) {
+      with(StringBuilder()) {
+          if (kotlin) {
+            append("bounds.")
+          } else {
+            append("getBounds().")
+          }
+          append(if (name == GET_WIDTH) WIDTH else if (name == GET_HEIGHT) HEIGHT else name)
+          append("()")
+        }
+        .toString()
+    } else {
+      ""
+    }
+  }
+
+  private fun computeErrorMessage(
+    verb: String,
+    name: String,
+    calling: Boolean,
+    replacement: String
+  ): String {
+    return with(StringBuilder()) {
+        append(verb)
+        append(" `Canvas.").append(name)
+        if (calling) {
+          append("()")
+        }
+        append("` is usually wrong; you should be ")
+        append(verb.usLocaleDecapitalize())
+        append(" `")
+        append(replacement)
+        if (calling) {
+          append("()")
+        }
+        append("` instead")
+      }
+      .toString()
+  }
+
+  private fun computeQuickfixMessage(
+    kotlin: Boolean,
+    calling: Boolean,
+    drawable: Boolean,
+    name: String
+  ): String {
+    return with(StringBuilder()) {
+        if (calling || drawable) {
+          append("Call")
         } else {
-            name
+          append("Reference")
         }
-        val message = computeErrorMessage(verb, name, calling, replacement)
-        val range = context.getLocation(node)
-        val fix =
-            fix()
-                .name(computeQuickfixMessage(kotlin, calling, drawable, name))
-                .replace()
-                .range(range)
-                .pattern(if (drawable) "(.*)" else "(.*)$name")
-                .with(computeQuickfixReplacementString(kotlin, drawable, name))
-                .build()
-        context.report(ISSUE, node, context.getLocation(node), message, fix)
-    }
-
-    private fun computeQuickfixReplacementString(
-        kotlin: Boolean,
-        drawable: Boolean,
-        name: String
-    ): String {
-        return if (drawable) {
-            with(StringBuilder()) {
-                if (kotlin) {
-                    append("bounds.")
-                } else {
-                    append("getBounds().")
-                }
-                append(if (name == GET_WIDTH) WIDTH else if (name == GET_HEIGHT) HEIGHT else name)
-                append("()")
-            }.toString()
+        append(" ")
+        if (drawable) {
+          if (kotlin) {
+            append("bounds")
+          } else {
+            append("getBounds()")
+          }
+          append(".")
+          append(if (name == GET_WIDTH) WIDTH else if (name == GET_HEIGHT) HEIGHT else name)
         } else {
-            ""
+          append(name)
         }
-    }
+        if (calling || drawable) {
+          append("()")
+        }
+        append(" instead")
+      }
+      .toString()
+  }
 
-    private fun computeErrorMessage(
-        verb: String,
-        name: String,
-        calling: Boolean,
-        replacement: String
-    ): String {
-        return with(StringBuilder()) {
-            append(verb)
-            append(" `Canvas.").append(name)
-            if (calling) {
-                append("()")
-            }
-            append("` is usually wrong; you should be ")
-            append(verb.usLocaleDecapitalize())
-            append(" `")
-            append(replacement)
-            if (calling) {
-                append("()")
-            }
-            append("` instead")
-        }.toString()
-    }
+  companion object {
+    private val IMPLEMENTATION =
+      Implementation(CanvasSizeDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-    private fun computeQuickfixMessage(
-        kotlin: Boolean,
-        calling: Boolean,
-        drawable: Boolean,
-        name: String
-    ): String {
-        return with(StringBuilder()) {
-            if (calling || drawable) {
-                append("Call")
-            } else {
-                append("Reference")
-            }
-            append(" ")
-            if (drawable) {
-                if (kotlin) {
-                    append("bounds")
-                } else {
-                    append("getBounds()")
-                }
-                append(".")
-                append(if (name == GET_WIDTH) WIDTH else if (name == GET_HEIGHT) HEIGHT else name)
-            } else {
-                append(name)
-            }
-            if (calling || drawable) {
-                append("()")
-            }
-            append(" instead")
-        }.toString()
-    }
-
-    companion object {
-        private val IMPLEMENTATION =
-            Implementation(CanvasSizeDetector::class.java, Scope.JAVA_FILE_SCOPE)
-
-        /** Wrong canvas size lookup. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "CanvasSize",
-            briefDescription = "Wrong Canvas Size",
-            explanation = """
+    /** Wrong canvas size lookup. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "CanvasSize",
+        briefDescription = "Wrong Canvas Size",
+        explanation =
+          """
                 In a custom view's draw implementation, you should normally call `getWidth` \
                 and `getHeight` on the custom view itself, not on the `canvas` instance.
 
@@ -210,20 +221,20 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
                 quick-reject for early work avoidance if it's going to be clipped away, but \
                 not what you draw.
                 """,
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = IMPLEMENTATION
-        )
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation = IMPLEMENTATION
+      )
 
-        private const val CLASS_CANVAS = "android.graphics.Canvas"
-        private const val CLASS_DRAWABLE = "android.graphics.drawable.Drawable"
-        private const val ON_DRAW = "onDraw"
-        private const val DRAW = "draw"
-        private const val GET_WIDTH = "getWidth"
-        private const val GET_HEIGHT = "getHeight"
-        private const val WIDTH = "width"
-        private const val HEIGHT = "height"
-    }
+    private const val CLASS_CANVAS = "android.graphics.Canvas"
+    private const val CLASS_DRAWABLE = "android.graphics.drawable.Drawable"
+    private const val ON_DRAW = "onDraw"
+    private const val DRAW = "draw"
+    private const val GET_WIDTH = "getWidth"
+    private const val GET_HEIGHT = "getHeight"
+    private const val WIDTH = "width"
+    private const val HEIGHT = "height"
+  }
 }

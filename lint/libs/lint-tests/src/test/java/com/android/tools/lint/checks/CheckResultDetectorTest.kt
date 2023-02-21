@@ -20,12 +20,13 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class CheckResultDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector = CheckResultDetector()
+  override fun getDetector(): Detector = CheckResultDetector()
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -39,23 +40,27 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     return score
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:10: Warning: The result of double is not used [CheckResult]
                 score.double()
                 ~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test191378558() {
-        // Regression test for https://issuetracker.google.com/191378558
-        lint().files(
-            kotlin(
-                """
+  fun test191378558() {
+    // Regression test for https://issuetracker.google.com/191378558
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -69,9 +74,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 @CheckResult
                 fun checkBoolean(): Boolean = true
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.CheckResult;
@@ -89,9 +95,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.Manifest
@@ -105,14 +112,17 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCheckResult() {
-        val expected =
-            """
+  fun testCheckResult() {
+    val expected =
+      """
             src/test/pkg/CheckPermissions.java:22: Warning: The result of extractAlpha is not used [CheckResult]
                     bitmap.extractAlpha(); // WARNING
                     ~~~~~~~~~~~~~~~~~~~~~
@@ -127,9 +137,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 4 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import android.Manifest;
                 import android.content.Context;
@@ -165,11 +176,11 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     private void call(Bitmap bitmap) {
                     }
                 }"""
-            ).indented(),
-
-            java(
-                "src/test/pkg/Intersect.java",
-                """
+          )
+          .indented(),
+        java(
+            "src/test/pkg/Intersect.java",
+            """
                 package test.pkg;
                 import android.graphics.Rect;
 
@@ -179,20 +190,22 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     rect.intersect(aLeft, aTop, aRight, aBottom);
                   }
                 }"""
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expect(expected)
+  }
 
-    fun testSubtract() {
-        // Regression test for https://issuetracker.google.com/69344103:
-        // @CanIgnoreReturnValue should let you *undo* a @CheckReturnValue on a class/package
-        lint().files(
-            java(
-                """
+  fun testSubtract() {
+    // Regression test for https://issuetracker.google.com/69344103:
+    // @CanIgnoreReturnValue should let you *undo* a @CheckReturnValue on a class/package
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import com.google.errorprone.annotations.CanIgnoreReturnValue;
                     import javax.annotation.CheckReturnValue;
@@ -219,30 +232,33 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                         }
                     }
                 """
-            ).indented(),
-            errorProneCanIgnoreReturnValueSource,
-            javaxCheckReturnValueSource,
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+        errorProneCanIgnoreReturnValueSource,
+        javaxCheckReturnValueSource,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expect(
+        """
                 src/test/pkg/IgnoreTest.java:21: Warning: The result of method1 is not used [CheckResult]
                         method1(); // ERROR: should check
                         ~~~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testSubtract2() {
-        // Regression test for 196984792: Incomplete handling of @CheckReturnValue annotations on scopes
-        // Make sure we properly handle scopes on @CheckReturnValue and @CanIgnoreReturnValue; the closest
-        // one should win (and should be inherited all the way down from package annotations)
-        lint().files(
-            java(
-                """
+  fun testSubtract2() {
+    // Regression test for 196984792: Incomplete handling of @CheckReturnValue annotations on scopes
+    // Make sure we properly handle scopes on @CheckReturnValue and @CanIgnoreReturnValue; the
+    // closest
+    // one should win (and should be inherited all the way down from package annotations)
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import static test.pkg.IgnoreTest.MyClass.MyClass1.ignoredFromOuterClassAnnotation;
                 import static test.pkg.IgnoreTest.MyClass.MyClass2.checkedFromOuterClassAnnotation;
@@ -288,22 +304,23 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                "" +
-                    "@CheckReturnValue\n" +
-                    "package test.pkg;\n" +
-                    "import javax.annotation.CheckReturnValue;\n"
-            ),
-            errorProneCanIgnoreReturnValueSource,
-            javaxCheckReturnValueSource,
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .allowDuplicates()
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+        java(
+          "" +
+            "@CheckReturnValue\n" +
+            "package test.pkg;\n" +
+            "import javax.annotation.CheckReturnValue;\n"
+        ),
+        errorProneCanIgnoreReturnValueSource,
+        javaxCheckReturnValueSource,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .allowDuplicates()
+      .run()
+      .expect(
+        """
                 src/test/pkg/IgnoreTest.java:12: Warning: The result of checkedFromPackageAnnotation is not used [CheckResult]
                         checkedFromPackageAnnotation(); // WARN 1
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -315,17 +332,18 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 3 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testCheckResultInTests() {
-        // Previously, this required turning on checkTestSources true (see b/148841320);
-        // now it's always on for tests (see b/196985792). checkTestSources behavior for
-        // checks in general is checked by for example SdCardDetectorTest#testMatchInTestIfEnabled.
-        lint().files(
-            kotlin(
-                "src/test/java/test/pkg/misc.kt",
-                """
+  fun testCheckResultInTests() {
+    // Previously, this required turning on checkTestSources true (see b/148841320);
+    // now it's always on for tests (see b/196985792). checkTestSources behavior for
+    // checks in general is checked by for example SdCardDetectorTest#testMatchInTestIfEnabled.
+    lint()
+      .files(
+        kotlin(
+            "src/test/java/test/pkg/misc.kt",
+            """
                 package test.pkg
                 import androidx.annotation.CheckResult
 
@@ -336,10 +354,11 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     assertThat(something()) // ERROR 1
                 }
                 """
-            ).indented(),
-            java(
-                "src/test/java/Foo.java",
-                """
+          )
+          .indented(),
+        java(
+            "src/test/java/Foo.java",
+            """
                 @javax.annotation.CheckReturnValue
                 public class Foo {
                   public int f() {
@@ -347,20 +366,22 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                "src/test/java/Lib.java",
-                """
+          )
+          .indented(),
+        java(
+            "src/test/java/Lib.java",
+            """
                 @javax.annotation.CheckReturnValue
                 public class Lib {
                   public static void consume(Object o) {}
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInTests
-            java(
-                "src/test/java/Test.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInTests
+        java(
+            "src/test/java/Test.java",
+            """
                 class Test {
                   void f(Foo foo) {
                     try {
@@ -378,11 +399,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInTestsWithRule
-            java(
-                "src/test/java/Test2.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInTestsWithRule
+        java(
+            "src/test/java/Test2.java",
+            """
                 class Test2 {
                   private org.junit.rules.ExpectedException exception;
                   void f(Foo foo) {
@@ -391,11 +413,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInTestsWithFailureMessage
-            java(
-                "src/test/java/Test3.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInTestsWithFailureMessage
+        java(
+            "src/test/java/Test3.java",
+            """
                 class Test3 {
                   void f(Foo foo) {
                     try {
@@ -413,11 +436,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInTestsWithRule
-            java(
-                "src/test/java/Test4.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInTestsWithRule
+        java(
+            "src/test/java/Test4.java",
+            """
                 class Test4 {
                   private org.junit.rules.ExpectedException exception;
                   void f(Foo foo) {
@@ -426,11 +450,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInTestsWithFailureMessage
-            java(
-                "src/test/java/Test5.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInTestsWithFailureMessage
+        java(
+            "src/test/java/Test5.java",
+            """
                 class Test5 {
                   void f(Foo foo) {
                     try {
@@ -448,11 +473,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInThrowingRunnables
-            java(
-                "src/test/java/Test6.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInThrowingRunnables
+        java(
+            "src/test/java/Test6.java",
+            """
                 class Test6 {
                   void f(Foo foo) {
                    org.junit.Assert.assertThrows(IllegalStateException.class,
@@ -481,11 +507,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   void bar(org.junit.function.ThrowingRunnable r) {}
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreTruthFailure
-            java(
-                "src/test/java/Test7.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreTruthFailure
+        java(
+            "src/test/java/Test7.java",
+            """
                 import static com.google.common.truth.Truth.assert_;
                 class Test7 {
                   void f(Foo foo) {
@@ -496,11 +523,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#onlyIgnoreWithEnclosingTryCatch
-            java(
-                "src/test/java/Test8.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#onlyIgnoreWithEnclosingTryCatch
+        java(
+            "src/test/java/Test8.java",
+            """
                 import static org.junit.Assert.fail;
                 class Test8 {
                   void f(Foo foo) {
@@ -513,11 +541,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreInOrderVerification
-            java(
-                "src/test/java/Test9.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreInOrderVerification
+        java(
+            "src/test/java/Test9.java",
+            """
                 import static org.mockito.Mockito.inOrder;
                 class Test9 {
                   void m() {
@@ -525,22 +554,24 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#ignoreVoidReturningMethodReferences
-            java(
-                "src/test/java/TestA.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#ignoreVoidReturningMethodReferences
+        java(
+            "src/test/java/TestA.java",
+            """
                 class TestB {
                   void m(java.util.List<Object> xs) {
                     xs.forEach(Lib::consume); // OK 22
                   }
                 }
                 """
-            ).indented(),
-            // From CheckReturnValueTest#testIgnoreCRVOnMockito() {
-            java(
-                "src/test/java/TestB.java",
-                """
+          )
+          .indented(),
+        // From CheckReturnValueTest#testIgnoreCRVOnMockito() {
+        java(
+            "src/test/java/TestB.java",
+            """
                 import static org.mockito.Mockito.verify;
                 import static org.mockito.Mockito.doReturn;
                 import org.mockito.Mockito;
@@ -554,10 +585,11 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                "src/test/java/TestC.java",
-                """
+          )
+          .indented(),
+        java(
+            "src/test/java/TestC.java",
+            """
                 import org.junit.Test;
                 class TestC {
                   @Test(expected = IllegalArgumentException.class)
@@ -567,23 +599,25 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR,
-            gradle("android { }"),
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+        gradle("android { }"),
 
-            // Stubs
+        // Stubs
 
-            java(
-                """
+        java(
+            """
                 package org.junit;
                 public @interface Test {
                     Class<? extends Throwable> expected() default None.class;
                     long timeout() default 0L;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.junit;
 
                 import org.junit.function.ThrowingRunnable;
@@ -594,59 +628,66 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     public static <T extends Throwable> T assertThrows(Class<T> expectedThrowable, ThrowingRunnable runnable) { return null; }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package junit.framework;
                 public class Assert {
                     public static void fail() { }
                     public static void fail(String message) { }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package junit.framework;
                 public class TestCase {
                     public static void fail() { }
                     public static void fail(String message) { }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.junit.rules;
                 public class ExpectedException {
                     public void expect(Class<? extends Throwable> type) { }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.junit.function;
                 public interface ThrowingRunnable {
                     void run() throws Throwable;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package com.google.common.truth;
                 public class Truth {
                     public static StandardSubjectBuilder assert_() { return null; }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package com.google.common.truth;
                 public class StandardSubjectBuilder {
                     public void fail() { }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.mockito;
                 import org.mockito.stubbing.Stubber;
                 public class Mockito {
@@ -655,29 +696,32 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     public static Stubber doReturn(Object toBeReturned) { return null; }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.mockito;
                 public interface InOrder {
                     <T> T verify(T mock);
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.mockito.stubbing;
                 public interface Stubber {
                     <T> T when(T mock);
                 }
                 """
-            ).indented(),
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .testModes(TestMode.DEFAULT)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .expect(
+        """
                 src/test/java/Test6.java:18: Warning: The result of f is not used [CheckResult]
                      foo.f();  // ERROR 2
                      ~~~~~~~
@@ -686,15 +730,16 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testNotIgnoredInBlock() {
-        // Regression test for
-        // 69534608: False positive for "The result of <method_name> is not used"
-        lint().files(
-            kotlin(
-                """
+  fun testNotIgnoredInBlock() {
+    // Regression test for
+    // 69534608: False positive for "The result of <method_name> is not used"
+    lint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
 
                     import androidx.annotation.CheckResult
@@ -705,20 +750,22 @@ class CheckResultDetectorTest : AbstractCheckTest() {
 
                     @CheckResult
                     fun fromNullable(a: Any?): Any? = a"""
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expectClean()
+  }
 
-    fun testNotIgnoredInBlock2() {
-        // Regression test for
-        // 69534608: False positive for "The result of <method_name> is not used"
-        lint().files(
-            kotlin(
-                """
+  fun testNotIgnoredInBlock2() {
+    // Regression test for
+    // 69534608: False positive for "The result of <method_name> is not used"
+    lint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
 
                     import androidx.annotation.CheckResult
@@ -756,20 +803,22 @@ class CheckResultDetectorTest : AbstractCheckTest() {
 
                     @CheckResult
                     fun label(a: Any?): Any? = a"""
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expectClean()
+  }
 
-    fun testCheckResultIf() {
-        // Regression test for
-        // 72258872: Lint is wrongly detecting "CheckResult" in Kotlin code
-        lint().files(
-            kotlin(
-                """
+  fun testCheckResultIf() {
+    // Regression test for
+    // 72258872: Lint is wrongly detecting "CheckResult" in Kotlin code
+    lint()
+      .files(
+        kotlin(
+          """
                     package test.pkg
 
                     import androidx.annotation.CheckResult
@@ -824,28 +873,29 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                         return 42
                     }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expect(
-                """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expect(
+        """
                 src/test/pkg/test.kt:8: Warning: The result of foo is not used [CheckResult]
                                             foo() // Unused
                                             ~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun test73563032() {
-        // Regression test for
-        //   https://issuetracker.google.com/73563032
-        //   73563032: Lint is detecting a "CheckResult" issue when using lambdas in Kotlin
-        lint().files(
-            kotlin(
-                """
+  fun test73563032() {
+    // Regression test for
+    //   https://issuetracker.google.com/73563032
+    //   73563032: Lint is detecting a "CheckResult" issue when using lambdas in Kotlin
+    lint()
+      .files(
+        kotlin(
+            """
                 @file:Suppress("unused", "RemoveExplicitTypeArguments", "UNUSED_PARAMETER", "ConstantConditionIf")
 
                 package test.pkg
@@ -876,18 +926,20 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expectClean()
+  }
 
-    fun testChainedCalls() {
-        lint().files(
-            java(
-                """
+  fun testChainedCalls() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.CheckResult;
@@ -912,13 +964,14 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expect(
+        """
                 src/test/pkg/CheckResultTest.java:8: Warning: The result of myMethod is not used [CheckResult]
                         myMethod(); // WARN
                         ~~~~~~~~~~
@@ -927,14 +980,15 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun test80234958() {
-        // 80234958: Lint check misses CheckResult inside kotlin class init blocks
-        lint().files(
-            kotlin(
-                """
+  fun test80234958() {
+    // 80234958: Lint check misses CheckResult inside kotlin class init blocks
+    lint()
+      .files(
+        kotlin(
+            """
                 package com.example
 
                 import io.reactivex.Observable
@@ -956,9 +1010,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                     // Stub
                     package io.reactivex;
 
@@ -979,13 +1034,14 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
 
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
+      .run()
+      .expect(
+        """
                 src/com/example/Foo.kt:10: Warning: The result of subscribe is not used [CheckResult]
                     someObservable.subscribe { }
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -997,15 +1053,16 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 3 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun test112602230() {
-        // Regression test for
-        // 112602230: Spurious lint error for unused result from AndroidFluentLogger#log
-        lint().files(
-            java(
-                """
+  fun test112602230() {
+    // Regression test for
+    // 112602230: Spurious lint error for unused result from AndroidFluentLogger#log
+    lint()
+      .files(
+        java(
+          """
                 package test.pkg;
 
                 import com.google.errorprone.annotations.CheckReturnValue;
@@ -1016,9 +1073,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     void log(String msg, Object p1);
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
 
                 @SuppressWarnings({"ClassNameDiffersFromFileName", "MethodMayBeStatic"})
@@ -1028,9 +1085,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+          """
                 package test.pkg
 
                 import com.google.errorprone.annotations.CheckReturnValue
@@ -1041,9 +1098,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     fun log(msg: String, p1: Any): Unit
                 }
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+          """
                 package test.pkg
 
                 class LoggingApiTestKotlin {
@@ -1052,16 +1109,19 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            errorProneCheckReturnValueSource
-        ).run().expectClean()
-    }
+        ),
+        errorProneCheckReturnValueSource
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test119270148() {
-        // Regression test for 119270148
-        lint().files(
-            java(
-                """
+  fun test119270148() {
+    // Regression test for 119270148
+    lint()
+      .files(
+        java(
+          """
                 package test.pkg;
 
                 public class Test {
@@ -1072,18 +1132,18 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
 
                 public interface Other {
                     void something(Object o);
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
 
                 public class Completable {
@@ -1092,9 +1152,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+          """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -1108,24 +1168,27 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     override fun clear(): Completable
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:7: Warning: The result of clear is not used [CheckResult]
                                         keyValueStore.clear();
                                         ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testIgnoreThisAndSuper() {
-        // Regression test for b/140616532: Lint was flagging this() and super() constructor
-        // calls
-        lint().files(
-            java(
-                """
+  fun testIgnoreThisAndSuper() {
+    // Regression test for b/140616532: Lint was flagging this() and super() constructor
+    // calls
+    lint()
+      .files(
+        java(
+          """
                 package test.pkg;
 
                 import com.google.errorprone.annotations.CheckReturnValue;
@@ -1146,9 +1209,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+          """
                 package test.pkg
 
                 import com.google.errorprone.annotations.CheckReturnValue
@@ -1159,16 +1222,19 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     inner class SubClass internal constructor(foo: String?) : CheckResultTest2(null)
                 }
                 """
-            ),
-            errorProneCheckReturnValueSource
-        ).run().expectClean()
-    }
+        ),
+        errorProneCheckReturnValueSource
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCheckResultInLambda() {
-        // 188436943: False negative in CheckResultDetector in Kotlin lambdas
-        lint().files(
-            kotlin(
-                """
+  fun testCheckResultInLambda() {
+    // 188436943: False negative in CheckResultDetector in Kotlin lambdas
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.CheckResult
                 import kotlin.random.Random
 
@@ -1205,10 +1271,13 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test.kt:11: Warning: The result of checkReturn is not used [CheckResult]
                 checkReturn()
                 ~~~~~~~~~~~~~
@@ -1226,24 +1295,26 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     ~~~
             0 errors, 5 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testIndirectSuperCallCompiled2() {
-        lint().files(
-            kotlin(
-                """
+  fun testIndirectSuperCallCompiled2() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg.sub
 
                 fun test() {
                     test.pkg.test()
                 }
                 """
-            ).indented(),
-            compiled(
-                "libs/lib.jar",
-                kotlin(
-                    """
+          )
+          .indented(),
+        compiled(
+          "libs/lib.jar",
+          kotlin(
+              """
                     package test.pkg
 
                     import androidx.annotation.CheckResult
@@ -1251,9 +1322,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     @CheckResult
                     fun test(): String = "hello"
                     """
-                ).indented(),
-                0x49daf5cf,
-                """
+            )
+            .indented(),
+          0x49daf5cf,
+          """
                 test/pkg/TestKt.class:
                 H4sIAAAAAAAAAGWQO0/DMBSFj9OWlvDoA8qjwIBYYMEtYmNCSIiIUCSoWDq5
                 jVXcpDZKnKpjfxIzA+rMj0JcIySQ8HDu43y27vXH59s7gHMcMFStzCx/iUe8
@@ -1265,28 +1337,31 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 k31ri9QnsEyx4vYj3Ok29il2iFqhp1b7KARYC7BOimqAGuoBGtjog2XYRLMP
                 L0Mpw9YXEogmIfMBAAA=
                 """,
-                """
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM3AJcTFUZJaXKJXkJ0uxBYCZHmXcIlx
                 8cDE9IpLk2DiSgxaDACCij4oRAAAAA==
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/sub/test.kt:4: Warning: The result of test is not used [CheckResult]
                 test.pkg.test()
                 ~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testBrackets() {
-        // Regression test for b/189970773
-        lint().files(
-            kotlin(
-                """
+  fun testBrackets() {
+    // Regression test for b/189970773
+    lint()
+      .files(
+        kotlin(
+          """
                 @file:Suppress(
                     "ConstantConditionIf", "ControlFlowWithEmptyBody",
                     "IMPLICIT_CAST_TO_ANY", "IntroduceWhenSubject"
@@ -1319,9 +1394,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+            """
                 @file:Suppress("RedundantNullableReturnType")
                 package test.pkg
 
@@ -1333,10 +1408,13 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 @CheckResult
                 fun checkReturn(): Any = "test"
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:10: Warning: The result of checkResult is not used [CheckResult]
                                 if (true) checkResult()     // ERROR 1
                                           ~~~~~~~~~~~~~
@@ -1366,14 +1444,15 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                                                     ~~~~~~~~~~~~~
             0 errors, 9 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test214582872() {
-        lint().files(
-            kotlin(
-                "src/test.kt",
-                """
+  fun test214582872() {
+    lint()
+      .files(
+        kotlin(
+            "src/test.kt",
+            """
                 import androidx.annotation.CheckResult
 
                 fun foo() {}
@@ -1390,21 +1469,27 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     baz
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 public class Foo {
                     public void test() {
                         TestKt.getBaz();
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).allowDuplicates().run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowDuplicates()
+      .run()
+      .expectClean()
+  }
 
-    private val javaxCheckReturnValueSource = java(
+  private val javaxCheckReturnValueSource =
+    java(
         """
         package javax.annotation;
         import static java.lang.annotation.RetentionPolicy.CLASS;
@@ -1414,9 +1499,11 @@ class CheckResultDetectorTest : AbstractCheckTest() {
         public @interface CheckReturnValue {
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val errorProneCheckReturnValueSource = java(
+  private val errorProneCheckReturnValueSource =
+    java(
         """
         package com.google.errorprone.annotations;
 
@@ -1436,9 +1523,11 @@ class CheckResultDetectorTest : AbstractCheckTest() {
         public @interface CheckReturnValue {
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val errorProneCanIgnoreReturnValueSource = java(
+  private val errorProneCanIgnoreReturnValueSource =
+    java(
         """
         package com.google.errorprone.annotations;
         import java.lang.annotation.Retention;
@@ -1447,13 +1536,15 @@ class CheckResultDetectorTest : AbstractCheckTest() {
         @Retention(CLASS)
         public @interface CanIgnoreReturnValue {}
         """
-    ).indented()
+      )
+      .indented()
 
-    fun testTernary() {
-        // Regression test for b/191788196
-        lint().files(
-            java(
-                """
+  fun testTernary() {
+    // Regression test for b/191788196
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.CheckResult;
@@ -1469,16 +1560,20 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     @CheckResult public String test2() { return ""; }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testReturnIfKotlin() {
-        // Regression test for b/189970773
-        lint().files(
-            kotlin(
-                """
+  fun testReturnIfKotlin() {
+    // Regression test for b/189970773
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -1506,10 +1601,12 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     @CheckResult fun test2(): String = ""
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/KotlinIgnore.kt:8: Warning: The result of test1 is not used [CheckResult]
                                     if (x) test1() else test2() // ERROR 1
                                            ~~~~~~~
@@ -1524,13 +1621,14 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                                                            ~~~~~~~
             0 errors, 4 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOperatorOverloads() {
-        lint().files(
-            kotlin(
-                """
+  fun testOperatorOverloads() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -1581,10 +1679,13 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     val counter4 = counter + counter2 + counter3 // OK 3
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Point.kt:16: Warning: The result of unaryMinus is not used [CheckResult]
                 -point // ERROR 1
                 ~~~~~~
@@ -1602,16 +1703,17 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 5 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOperatorOverloads2() {
-        // Complicated resolve scenario; there's an extension function instead; our resolve utility
-        // won't find this
+  fun testOperatorOverloads2() {
+    // Complicated resolve scenario; there's an extension function instead; our resolve utility
+    // won't find this
 
-        lint().files(
-            kotlin(
-                """
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg.other
 
                 import androidx.annotation.CheckResult
@@ -1622,9 +1724,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 operator fun <K1, K2, K3, V> DataRepository<Triple<K1, K2, K3>, V>.get(k1: K1, k2: K2, k3: K3): V =
                     get(Triple(k1, k2, k3))
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+            """
                 package test.pkg
 
                 import test.pkg.other.DataRepository
@@ -1641,15 +1743,19 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     AppOpLiveData[pkg, op, id] // ERROR
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean() // until KTIJ-18765 is fixed
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean() // until KTIJ-18765 is fixed
+  }
 
-    fun testSynchronized() {
-        lint().files(
-            java(
-                """
+  fun testSynchronized() {
+    lint()
+      .files(
+        java(
+            """
                 import androidx.annotation.CheckResult;
                 public class Api {
                     @CheckResult
@@ -1661,25 +1767,30 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 class Api2 : Api() {
                     fun test2() {
                         synchronized(getLock()) { println("test") }
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testSynchronizedUnused() {
-        // 242305422: CheckResultDetector allows unused results in Java synchronized expressions.
-        lint().files(
-            java(
-                """
+  fun testSynchronizedUnused() {
+    // 242305422: CheckResultDetector allows unused results in Java synchronized expressions.
+    lint()
+      .files(
+        java(
+            """
                 import androidx.annotation.CheckResult;
                 public class Api {
                     @CheckResult
@@ -1692,19 +1803,23 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 class Api2 : Api() {
                     fun test2() {
                         synchronized(getLock()) { getLock(); println("test") } // ERROR
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/Api.java:7: Warning: The result of getLock is not used [CheckResult]
                         getLock(); // ERROR
                         ~~~~~~~~~
@@ -1713,14 +1828,15 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                                               ~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testKotlinTest() {
-        lint().files(
-            kotlin(
-                "src/test/java/test/pkg/misc.kt",
-                """
+  fun testKotlinTest() {
+    lint()
+      .files(
+        kotlin(
+            "src/test/java/test/pkg/misc.kt",
+            """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -1752,22 +1868,26 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 @JvmName("assertFailsInline")
                 inline fun assertFails(message: String?, block: () -> Unit): Throwable = TODO()
                 """
-            ).indented(),
-            gradle("android { }"),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        gradle("android { }"),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCoroutines() {
-        // Regression test for
-        // 204595183: CheckResult lint false positives on Kotlin functions that
-        //            return Unit in a package with @CheckReturnValue
-        // as well as b/214582872
-        lint().files(
-            compiled(
-                "libs/my.jar",
-                kotlin(
-                    """
+  fun testCoroutines() {
+    // Regression test for
+    // 204595183: CheckResult lint false positives on Kotlin functions that
+    //            return Unit in a package with @CheckReturnValue
+    // as well as b/214582872
+    lint()
+      .files(
+        compiled(
+          "libs/my.jar",
+          kotlin(
+              """
                     @file:Suppress("RedundantSuspendModifier", "RedundantUnitReturnType", "UNUSED_PARAMETER", "unused")
                     package test.pkg
                     import javax.annotation.CheckReturnValue
@@ -1788,14 +1908,15 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                         }
                     }
                     """
-                ).indented(),
-                0x81cab355,
-                """
+            )
+            .indented(),
+          0x81cab355,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGI2BijgEuLiKEktLtEryE4XYgsBsrxLlBi0
                 GAAv8Yb6LAAAAA==
                 """,
-                """
+          """
                 test/pkg/TechFileCoroutineClient.class:
                 H4sIAAAAAAAAAK1V21IbRxA9s1rdVgIknGAuToJtbAscs9wcJ4FggwBbRFZS
                 hpBK8TRIE7FotUvtjgiPVB6S/8gXJHmxK6lKKPzmj0qld7QS4hZsKqrSTE93
@@ -1822,9 +1943,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 U8DDAj7BIxLxaQGf4fNNmpCYxdwmrvkwfHzhI+YjpYTrak37GFLCiFpv+Ljr
                 Y9THPR9jSnO/nQzd/b+7Id9YPwkAAA==
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+            """
                 @file:Suppress("RedundantSuspendModifier", "RedundantUnitReturnType", "UNUSED_PARAMETER", "unused")
                 package test.pkg
 
@@ -1839,24 +1960,28 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     assert(true)
                 }
                 """
-            ).indented(),
-            javaxCheckReturnValueSource
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaxCheckReturnValueSource
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:6: Warning: The result of method2 is not used [CheckResult]
                 client.method2('x') // ERROR 1
                 ~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test216101161() {
-        // Regression test for an overloaded operator expression referencing an annotated
-        // call
-        lint().files(
-            kotlin(
-                """
+  fun test216101161() {
+    // Regression test for an overloaded operator expression referencing an annotated
+    // call
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -1876,16 +2001,20 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCapitalVoid() {
-        // Regression test for issue 225204162
-        lint().files(
-            java(
-                """
+  fun testCapitalVoid() {
+    // Regression test for issue 225204162
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.CheckResult;
@@ -1901,9 +2030,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.CheckResult
@@ -1917,15 +2047,19 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     callback.apply("")
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testInheritance() {
-        lint().files(
-            kotlin(
-                """
+  fun testInheritance() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import javax.annotation.CheckReturnValue;
@@ -1947,24 +2081,29 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     myClass.method2() // OK - inherited annotation from outer context
                 }
                 """
-            ).indented(),
-            javaxCheckReturnValueSource,
-            SUPPORT_ANNOTATIONS_JAR
-        ).allowDuplicates().run().expect(
-            """
+          )
+          .indented(),
+        javaxCheckReturnValueSource,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowDuplicates()
+      .run()
+      .expect(
+        """
             src/test/pkg/MyInterface.kt:18: Warning: The result of method1 is not used [CheckResult]
                 myClass.method1() // WARN - annotation on method
                 ~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOtherAliases() {
-        // We now match ANY annotation named "CheckReturnValue" or "CheckResult"
-        lint().files(
-            java(
-                """
+  fun testOtherAliases() {
+    // We now match ANY annotation named "CheckReturnValue" or "CheckResult"
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 class JavaTest {
@@ -1980,9 +2119,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 class KotlinTest {
@@ -1998,9 +2138,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import test.pkg.CanIgnoreReturnValue
                 import com.google.protobuf.CheckReturnValue
@@ -2012,33 +2153,37 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   fun foo2(): String = foo1()
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/test/pkg/test.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/test/pkg/test.kt",
+            """
                 package test.pkg
                 @io.reactivex.annotations.CheckReturnValue fun test1(): String = "test1"
                 @io.reactivex.rxjava3.annotations.CheckReturnValue fun test2(): String = "test2"
                 @com.google.protobuf.CheckReturnValue fun test3(): String = "test3"
                 @org.mockito.CheckReturnValue fun test4(): String = "test4"
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package io.reactivex.annotations;
                 public @interface CheckReturnValue {
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package io.reactivex.rxjava3.annotations;
                 public @interface CheckReturnValue {
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package com.google.protobuf;
                 import static java.lang.annotation.ElementType.CONSTRUCTOR;
                 import static java.lang.annotation.ElementType.METHOD;
@@ -2053,9 +2198,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 @Retention(RUNTIME)
                 public @interface CheckReturnValue {}
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package org.mockito;
                 import java.lang.annotation.ElementType;
                 import java.lang.annotation.Retention;
@@ -2065,15 +2211,19 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 @Retention(RetentionPolicy.CLASS)
                 public @interface CheckReturnValue {}
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 public @interface CanIgnoreReturnValue {}
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/JavaTest.java:5: Warning: The result of test1 is not used [CheckResult]
                     TestKt.test1(); // ERROR 1
                     ~~~~~~~~~~~~~~
@@ -2106,14 +2256,15 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~
             0 errors, 10 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testExactNameMatch() {
-        // While we match on "@x.CheckResult", don't match "@xCheckResult" or "@CheckResultX"
-        lint().files(
-            kotlin(
-                """
+  fun testExactNameMatch() {
+    // While we match on "@x.CheckResult", don't match "@xCheckResult" or "@CheckResultX"
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 class KotlinTest {
@@ -2123,30 +2274,36 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                "src/test/pkg/test.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/test/pkg/test.kt",
+            """
                 package test.pkg
                 import foo.bar.*;
                 @XCheckResult fun test1(): String = "test1"
                 @CheckResultX fun test2(): String = "test2"
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package foo.bar;
                 public @interface XCheckResult {
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package foo.bar;
                 public @interface CheckResultX {
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

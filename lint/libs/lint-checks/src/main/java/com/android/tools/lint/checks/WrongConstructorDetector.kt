@@ -33,55 +33,58 @@ import org.jetbrains.uast.UMethod
 
 /** Finds methods which look like constructors but aren't */
 class WrongConstructorDetector : Detector(), SourceCodeScanner {
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            WrongConstructorDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION =
+      Implementation(WrongConstructorDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "NotConstructor",
-            briefDescription = "Not a Constructor",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+          id = "NotConstructor",
+          briefDescription = "Not a Constructor",
+          explanation =
+            """
                 This check catches methods that look like they were intended to be constructors, \
                 but aren't.
                 """,
-            category = Category.CORRECTNESS,
-            priority = 4,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION
-        ).setAliases(listOf("MethodNameSameAsClassName")) // IntelliJ inspection
-    }
+          category = Category.CORRECTNESS,
+          priority = 4,
+          severity = Severity.WARNING,
+          implementation = IMPLEMENTATION
+        )
+        .setAliases(listOf("MethodNameSameAsClassName")) // IntelliJ inspection
+  }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>> = listOf(UMethod::class.java)
+  override fun getApplicableUastTypes(): List<Class<out UElement>> = listOf(UMethod::class.java)
 
-    override fun createUastHandler(context: JavaContext): UElementHandler {
-        return object : UElementHandler() {
-            override fun visitMethod(node: UMethod) {
-                if (node.isConstructor || node.sourcePsi is KtConstructor<*>) {
-                    // KtConstructor<*> check is workaround for b/206982645
-                    return
-                }
-                val methodName = node.name
-                if (!methodName[0].isUpperCase() || context.evaluator.isStatic(node.javaPsi)) {
-                    return
-                }
-                val containingClass = node.uastParent as? UClass ?: return // direct parent classes only
-                val sourcePsi = containingClass.sourcePsi ?: return // skip package level functions
-                if (sourcePsi is KtObjectDeclaration) {
-                    return
-                }
-
-                @Suppress("UElementAsPsi") // UClass should get a name property
-                val className = containingClass.name ?: return
-                if (className == node.name) {
-                    context.report(
-                        ISSUE, node, context.getLocation(node),
-                        "Method ${node.name} looks like a constructor but is a normal method"
-                    )
-                }
-            }
+  override fun createUastHandler(context: JavaContext): UElementHandler {
+    return object : UElementHandler() {
+      override fun visitMethod(node: UMethod) {
+        if (node.isConstructor || node.sourcePsi is KtConstructor<*>) {
+          // KtConstructor<*> check is workaround for b/206982645
+          return
         }
+        val methodName = node.name
+        if (!methodName[0].isUpperCase() || context.evaluator.isStatic(node.javaPsi)) {
+          return
+        }
+        val containingClass = node.uastParent as? UClass ?: return // direct parent classes only
+        val sourcePsi = containingClass.sourcePsi ?: return // skip package level functions
+        if (sourcePsi is KtObjectDeclaration) {
+          return
+        }
+
+        @Suppress("UElementAsPsi") // UClass should get a name property
+        val className = containingClass.name ?: return
+        if (className == node.name) {
+          context.report(
+            ISSUE,
+            node,
+            context.getLocation(node),
+            "Method ${node.name} looks like a constructor but is a normal method"
+          )
+        }
+      }
     }
+  }
 }

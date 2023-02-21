@@ -40,6 +40,12 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiPlainTextFile
 import com.intellij.psi.impl.light.LightElement
 import com.intellij.psi.impl.source.tree.TreeElement
+import java.io.File
+import kotlin.math.ceil
+import kotlin.math.log10
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 import org.jetbrains.kotlin.asJava.elements.KtLightIdentifier
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -56,547 +62,529 @@ import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.getIoFile
 import org.jetbrains.uast.psi.UElementWithLocation
-import java.io.File
-import kotlin.math.ceil
-import kotlin.math.log10
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
 
 // Fully qualified names here:
 // class traffics in Project from both lint and openapi so be explicit
 @Suppress("RemoveRedundantQualifierName")
 open class DefaultUastParser(
-    project: com.android.tools.lint.detector.api.Project?,
-    val ideaProject: com.intellij.openapi.project.Project
+  project: com.android.tools.lint.detector.api.Project?,
+  val ideaProject: com.intellij.openapi.project.Project
 ) : UastParser() {
-    private val javaEvaluator: JavaEvaluator
+  private val javaEvaluator: JavaEvaluator
 
-    init {
-        @Suppress("LeakingThis")
-        javaEvaluator = createEvaluator(project, ideaProject)
+  init {
+    @Suppress("LeakingThis")
+    javaEvaluator = createEvaluator(project, ideaProject)
+  }
+
+  protected open fun createEvaluator(
+    project: Project?,
+    p: com.intellij.openapi.project.Project
+  ): DefaultJavaEvaluator = DefaultJavaEvaluator(p, project!!)
+
+  /**
+   * Returns an evaluator which can perform various resolution tasks, evaluate inheritance lookup
+   * etc.
+   *
+   * @return an evaluator
+   */
+  override val evaluator = javaEvaluator
+
+  /**
+   * Parse the file pointed to by the given context.
+   *
+   * @param context the context pointing to the file to be parsed, typically via
+   *   [Context.getContents] but the file handle ([Context.file]) can also be used to map to an
+   *   existing editor buffer in the surrounding tool, etc)
+   * @return the compilation unit node for the file
+   */
+  override fun parse(context: JavaContext): UFile? {
+    if (context.uastFile != null) {
+      return context.uastFile
     }
 
-    protected open fun createEvaluator(
-        project: Project?,
-        p: com.intellij.openapi.project.Project
-    ): DefaultJavaEvaluator =
-        DefaultJavaEvaluator(p, project!!)
-
-    /**
-     * Returns an evaluator which can perform various resolution tasks,
-     * evaluate inheritance lookup etc.
-     *
-     * @return an evaluator
-     */
-    override val evaluator = javaEvaluator
-
-    /**
-     * Parse the file pointed to by the given context.
-     *
-     * @param context the context pointing to the file to be parsed,
-     *     typically via [Context.getContents] but the file
-     *     handle ([Context.file]) can also be used to map to an
-     *     existing editor buffer in the surrounding tool, etc)
-     * @return the compilation unit node for the file
-     */
-    override fun parse(context: JavaContext): UFile? {
-        if (context.uastFile != null) {
-            return context.uastFile
-        }
-
-        if (ideaProject.isDisposed) {
-            return null
-        }
-
-        val file = context.file
-        val path = file.path.replace(File.separatorChar, '/')
-        val srcJarIndex = path.indexOf("srcjar!/")
-        val virtualFile =
-            if (srcJarIndex != -1) {
-                val jarFile = path.substring(0, srcJarIndex + 8)
-                val name = path.substring(srcJarIndex + 8)
-                val root = StandardFileSystems.jar().findFileByPath(jarFile) ?: return null
-                root.findFileByRelativePath(name) ?: return null
-            } else {
-                val absPath = file.absolutePath.replace(File.separatorChar, '/')
-                StandardFileSystems.local().findFileByPath(absPath) ?: return null
-            }
-
-        val psiFile = PsiManager.getInstance(ideaProject).findFile(virtualFile) ?: return null
-
-        if (psiFile.language == Language.ANY && file.path.endsWith(DOT_KT)) {
-            // Expected to get Kotlin language back here!
-            context.client.log(
-                Severity.ERROR, null,
-                "Could not process " +
-                    context.project.getRelativePath(file) +
-                    ": Kotlin not configured correctly"
-            )
-            return null
-        }
-
-        if (psiFile is PsiPlainTextFile) { // plain text: file too large to process with PSI
-            if (!warnedAboutLargeFiles) {
-                warnedAboutLargeFiles = true
-                // default user file size limit = 2500 KiB
-                // default user content load limit = 20000 KiB
-                val max = max(FileUtilRt.getUserFileSizeLimit(), FileUtilRt.getUserContentLoadLimit()) / 1024
-                val size = file.length() / 1024
-                val sizeRoundedUp = 2.0.pow(ceil(log10(size.toDouble()) / log10(2.0) + 0.2)).toInt()
-                context.report(
-                    issue = IssueRegistry.LINT_ERROR,
-                    location = Location.create(file),
-                    message = "Source file too large for lint to process (${size}KB); the " +
-                        "current max size is ${max}KB. You can increase the limit by " +
-                        "setting this system property: " +
-                        "`idea.max.intellisense.filesize=$sizeRoundedUp` (or even higher)"
-                )
-            }
-            return null
-        }
-
-        val skipAnnotations = context.driver.skipAnnotations
-        if (skipAnnotations != null && isAnnotatedWithSkipAnnotation(psiFile, skipAnnotations)) {
-            return null
-        }
-
-        return UastFacade.convertElementWithParent(psiFile, UFile::class.java) as? UFile
-            ?: return null
+    if (ideaProject.isDisposed) {
+      return null
     }
 
-    /**
-     * Checks whether this [psiFile] is annotated with any of the skip
-     * annotations. We do this at the PSI level instead of via UAST
-     * because these annotations are typically used to avoid processing
-     * large and costly generated classes, so it's worthwhile skipping
-     * the UAST conversion.
-     */
-    protected fun isAnnotatedWithSkipAnnotation(psiFile: PsiFile, skipAnnotations: List<String>): Boolean {
-        if (psiFile is PsiJavaFile) {
-            val topLevel = psiFile.classes.firstOrNull() ?: return false
-            //noinspection ExternalAnnotations
-            return topLevel.annotations.any { skipAnnotations.contains(it.qualifiedName) }
-        } else if (psiFile is KtFile) {
-            return containsAnnotation(skipAnnotations, psiFile.annotationEntries) ||
-                containsAnnotation(skipAnnotations, psiFile.declarations.firstOrNull()?.annotationEntries ?: emptyList())
-        }
-        return false
+    val file = context.file
+    val path = file.path.replace(File.separatorChar, '/')
+    val srcJarIndex = path.indexOf("srcjar!/")
+    val virtualFile =
+      if (srcJarIndex != -1) {
+        val jarFile = path.substring(0, srcJarIndex + 8)
+        val name = path.substring(srcJarIndex + 8)
+        val root = StandardFileSystems.jar().findFileByPath(jarFile) ?: return null
+        root.findFileByRelativePath(name) ?: return null
+      } else {
+        val absPath = file.absolutePath.replace(File.separatorChar, '/')
+        StandardFileSystems.local().findFileByPath(absPath) ?: return null
+      }
+
+    val psiFile = PsiManager.getInstance(ideaProject).findFile(virtualFile) ?: return null
+
+    if (psiFile.language == Language.ANY && file.path.endsWith(DOT_KT)) {
+      // Expected to get Kotlin language back here!
+      context.client.log(
+        Severity.ERROR,
+        null,
+        "Could not process " +
+          context.project.getRelativePath(file) +
+          ": Kotlin not configured correctly"
+      )
+      return null
     }
 
-    /**
-     * Returns true if any of the given Kotlin [annotations] are any of
-     * the fully qualified [names]
-     */
-    protected fun containsAnnotation(names: List<String>, annotations: List<KtAnnotationEntry>): Boolean {
-        for (annotation in annotations) {
-            if (names.any { it.endsWith(annotation.shortName?.identifier ?: "?") }) {
-                val uAnnotation = UastFacade.convertElement(annotation, null, UAnnotation::class.java) as? UAnnotation
-                    ?: continue
-                if (names.contains(uAnnotation.qualifiedName)) {
-                    return true
-                }
-            }
-        }
-
-        return false
-    }
-
-    /**
-     * Returns a [Location] for the given element
-     *
-     * @param context information about the file being parsed
-     * @param element the element to create a location for
-     * @return a location for the given node
-     */
-    override fun getLocation(context: JavaContext, element: PsiElement): Location {
-        var range: TextRange? = null
-
-        if (!element.hasValidSourceLocation) {
-            if (element is LightElement) {
-                range = (element as PsiElement).textRange
-            }
-            if (range == null || TextRange.EMPTY_RANGE == range) {
-                val containingFile = element.containingFile
-                if (containingFile != null) {
-                    val virtualFile = containingFile.virtualFile
-                    if (virtualFile != null) {
-                        return Location.create(VfsUtilCore.virtualToIoFile(virtualFile))
-                    }
-                }
-                return Location.create(context.file)
-            }
-        } else {
-            range = element.textRange
-        }
-
-        val containingFile = UastLintUtils.getContainingFile(context, element)
-        var file = context.file
-        var contents: CharSequence = context.getContents() ?: ""
-
-        if (containingFile != null && !containingFile.isEquivalentTo(context.psiFile) &&
-            containingFile.name == context.psiFile?.name &&
-            // createJavaFileStub$fakeFile$1
-            containingFile.javaClass.simpleName.contains("fakeFile")
-        ) {
-            // Consider these equal
-        } else if (containingFile != null && containingFile != context.psiFile) {
-            // Reporting an error in a different file.
-            if (context.driver.scope.size == 1) {
-                // Don't bother with this error if it's in a different file during single-file analysis
-                return Location.NONE
-            }
-            val ioFile = getFile(containingFile) ?: return Location.NONE
-            file = ioFile
-            contents = getFileContents(containingFile)
-        }
-
-        if (range == null) { // e.g. light elements
-            if (element is LightElement) {
-                val parent = element.getParent()
-                if (parent != null) {
-                    return getLocation(context, parent)
-                }
-            }
-            return Location.create(file)
-        }
-
-        return Location.create(file, contents, range.startOffset, range.endOffset)
-            .setSource(element)
-    }
-
-    private val PsiElement.hasValidSourceLocation: Boolean
-        get() {
-            if (this is PsiCompiledElement) return false
-            // [KtLightIdentifier] is no longer a subtype of [PsiCompiledElement] after fixing KTIJ-21412
-            // An identifier that can't tell its origin does not have a valid source location.
-            if (this is KtLightIdentifier && this.origin == null) return false
-            return textOffset >= 0
-        }
-
-    override fun getLocation(context: JavaContext, element: UElement): Location {
-        if (element is UElementWithLocation) {
-            val file = element.getContainingUFile() ?: return Location.NONE
-            val ioFile = file.getIoFile() ?: return Location.NONE
-            val text = file.sourcePsi.text ?: file.javaPsi?.text ?: ""
-            val location = Location.create(ioFile, text, element.startOffset, element.endOffset)
-            location.setSource(element)
-            return location
-        } else if (isPolyadicFromStringTemplate(element) &&
-            element.operands.size == 1
-        ) {
-            val literal = element.operands[0]
-            return getLocation(context, literal).withSource(literal)
-        } else {
-            val psiElement = element.sourcePsi
-            if (psiElement != null) {
-                return getLocation(context, psiElement).withSource(element)
-            }
-            // UDeclarationsExpression has a null sourcePsi.
-            // Handle it explicitly here, as returning the parent can produce strange results
-            // if that parent is, for example, a UBlockExpression.
-            if (element is UDeclarationsExpression) {
-                element.declarations.firstOrNull()?.sourcePsi?.let { firstDeclarationPsi ->
-                    return getLocation(context, firstDeclarationPsi).withSource(element)
-                }
-            }
-            val parent = element.uastParent
-            if (parent != null) {
-                return getLocation(context, parent)
-            }
-        }
-
-        return Location.NONE
-    }
-
-    override fun getCallLocation(
-        context: JavaContext,
-        call: UCallExpression,
-        includeReceiver: Boolean,
-        includeArguments: Boolean
-    ): Location {
-        if (includeArguments) {
-            call.valueArguments.lastOrNull()?.let { lastArgument ->
-                val argumentsEnd = lastArgument.sourcePsi?.endOffset
-                val callEnds = call.sourcePsi?.endOffset
-                if (argumentsEnd != null && callEnds != null && argumentsEnd > callEnds) {
-                    // The call element has arguments that are outside of its own range.
-                    // This typically means users are making a function call using
-                    // assignment syntax, e.g. key = value instead of setKey(value);
-                    // here the call range is just "key" and the arguments range is "value".
-                    // Create a range which merges these two.
-                    val startElement = if (includeReceiver) call.receiver ?: call else call
-                    // Work around UAST bug where the value argument list points directly to the
-                    // string content node instead of a node containing the opening and closing
-                    // tokens as well. We need to include the closing tags in the range as well!
-                    val next = (lastArgument.sourcePsi as? KtLiteralStringTemplateEntry)?.nextSibling as? TreeElement
-                    val delta = if (next != null && next.elementType == KtTokens.CLOSING_QUOTE) {
-                        next.textLength
-                    } else {
-                        0
-                    }
-                    return getRangeLocation(context, startElement, 0, lastArgument, delta)
-                }
-            }
-        }
-
-        val receiver = call.receiver
-        if (!includeReceiver || receiver == null) {
-            if (includeArguments) {
-                // Method with arguments but no receiver is the default range for UCallExpressions
-                // modulo the scenario with arguments outside the call, handled at the beginning
-                // of this method
-                return getLocation(context, call)
-            }
-            // Just the method name
-            val methodIdentifier = call.methodIdentifier
-            if (methodIdentifier != null) {
-                return getLocation(context, methodIdentifier)
-            }
-        } else {
-            if (!includeArguments) {
-                val methodIdentifier = call.methodIdentifier
-                if (methodIdentifier != null) {
-                    return getRangeLocation(context, receiver, 0, methodIdentifier, 0)
-                }
-            }
-            return getRangeLocation(context, receiver, 0, call, 0)
-        }
-
-        return getLocation(context, call)
-    }
-
-    override fun getFile(file: PsiFile): File? {
-        val virtualFile = file.virtualFile
-        return if (virtualFile != null) VfsUtilCore.virtualToIoFile(virtualFile) else null
-    }
-
-    override fun getFileContents(file: PsiFile): CharSequence = file.text
-
-    override fun createLocation(element: PsiElement): Location {
-        val range = element.textRange
-        val containingFile = element.containingFile
-        val file = getFile(containingFile) ?: return Location.NONE
-        val contents = getFileContents(containingFile)
-        return Location.create(file, contents, range.startOffset, range.endOffset)
-            .setSource(element)
-    }
-
-    override fun createLocation(element: UElement): Location {
-        if (element is UElementWithLocation) {
-            val file = element.getContainingUFile() ?: return Location.NONE
-            val ioFile = file.getIoFile() ?: return Location.NONE
-            val text = file.sourcePsi.text
-            val location = Location.create(
-                ioFile, text, element.startOffset,
-                element.endOffset
-            )
-            location.setSource(element)
-            return location
-        } else {
-            val psiElement = element.sourcePsi
-            if (psiElement != null) {
-                return createLocation(psiElement).withSource(element)
-            }
-            val parent = element.uastParent
-            if (parent != null) {
-                return createLocation(parent)
-            }
-        }
-
-        return Location.NONE
-    }
-
-    /**
-     * Returns a [Location] for the given node range (from the starting
-     * offset of the first node to the ending offset of the second
-     * node).
-     *
-     * @param context information about the file being parsed
-     * @param from the AST node to get a starting location from
-     * @param fromDelta Offset delta to apply to the starting offset
-     * @param to the AST node to get a ending location from
-     * @param toDelta Offset delta to apply to the ending offset
-     * @return a location for the given node
-     */
-    override fun getRangeLocation(
-        context: JavaContext,
-        from: PsiElement,
-        fromDelta: Int,
-        to: PsiElement,
-        toDelta: Int
-    ): Location {
-        val contents = context.getContents()
-        val fromRange = from.textRange
-        val start = max(0, fromRange.startOffset + fromDelta)
-        val end = min(
-            contents?.length ?: Integer.MAX_VALUE,
-            to.textRange.endOffset + toDelta
+    if (psiFile is PsiPlainTextFile) { // plain text: file too large to process with PSI
+      if (!warnedAboutLargeFiles) {
+        warnedAboutLargeFiles = true
+        // default user file size limit = 2500 KiB
+        // default user content load limit = 20000 KiB
+        val max =
+          max(FileUtilRt.getUserFileSizeLimit(), FileUtilRt.getUserContentLoadLimit()) / 1024
+        val size = file.length() / 1024
+        val sizeRoundedUp = 2.0.pow(ceil(log10(size.toDouble()) / log10(2.0) + 0.2)).toInt()
+        context.report(
+          issue = IssueRegistry.LINT_ERROR,
+          location = Location.create(file),
+          message =
+            "Source file too large for lint to process (${size}KB); the " +
+              "current max size is ${max}KB. You can increase the limit by " +
+              "setting this system property: " +
+              "`idea.max.intellisense.filesize=$sizeRoundedUp` (or even higher)"
         )
-        if (end <= start) {
-            // Some AST nodes don't have proper bounds, such as empty parameter lists
-            return Location.create(context.file, contents, start, fromRange.endOffset)
-                .setSource(from)
-        }
-        return Location.create(context.file, contents, start, end).setSource(from)
+      }
+      return null
     }
 
-    private fun getTextRange(element: UElement): TextRange? {
-        if (element is UElementWithLocation) {
-            return TextRange(element.startOffset, element.endOffset)
-        } else {
-            val psiElement = element.sourcePsi
-            if (psiElement != null) {
-                return psiElement.textRange
+    val skipAnnotations = context.driver.skipAnnotations
+    if (skipAnnotations != null && isAnnotatedWithSkipAnnotation(psiFile, skipAnnotations)) {
+      return null
+    }
+
+    return UastFacade.convertElementWithParent(psiFile, UFile::class.java) as? UFile ?: return null
+  }
+
+  /**
+   * Checks whether this [psiFile] is annotated with any of the skip annotations. We do this at the
+   * PSI level instead of via UAST because these annotations are typically used to avoid processing
+   * large and costly generated classes, so it's worthwhile skipping the UAST conversion.
+   */
+  protected fun isAnnotatedWithSkipAnnotation(
+    psiFile: PsiFile,
+    skipAnnotations: List<String>
+  ): Boolean {
+    if (psiFile is PsiJavaFile) {
+      val topLevel = psiFile.classes.firstOrNull() ?: return false
+      //noinspection ExternalAnnotations
+      return topLevel.annotations.any { skipAnnotations.contains(it.qualifiedName) }
+    } else if (psiFile is KtFile) {
+      return containsAnnotation(skipAnnotations, psiFile.annotationEntries) ||
+        containsAnnotation(
+          skipAnnotations,
+          psiFile.declarations.firstOrNull()?.annotationEntries ?: emptyList()
+        )
+    }
+    return false
+  }
+
+  /**
+   * Returns true if any of the given Kotlin [annotations] are any of the fully qualified [names]
+   */
+  protected fun containsAnnotation(
+    names: List<String>,
+    annotations: List<KtAnnotationEntry>
+  ): Boolean {
+    for (annotation in annotations) {
+      if (names.any { it.endsWith(annotation.shortName?.identifier ?: "?") }) {
+        val uAnnotation =
+          UastFacade.convertElement(annotation, null, UAnnotation::class.java) as? UAnnotation
+            ?: continue
+        if (names.contains(uAnnotation.qualifiedName)) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * Returns a [Location] for the given element
+   *
+   * @param context information about the file being parsed
+   * @param element the element to create a location for
+   * @return a location for the given node
+   */
+  override fun getLocation(context: JavaContext, element: PsiElement): Location {
+    var range: TextRange? = null
+
+    if (!element.hasValidSourceLocation) {
+      if (element is LightElement) {
+        range = (element as PsiElement).textRange
+      }
+      if (range == null || TextRange.EMPTY_RANGE == range) {
+        val containingFile = element.containingFile
+        if (containingFile != null) {
+          val virtualFile = containingFile.virtualFile
+          if (virtualFile != null) {
+            return Location.create(VfsUtilCore.virtualToIoFile(virtualFile))
+          }
+        }
+        return Location.create(context.file)
+      }
+    } else {
+      range = element.textRange
+    }
+
+    val containingFile = UastLintUtils.getContainingFile(context, element)
+    var file = context.file
+    var contents: CharSequence = context.getContents() ?: ""
+
+    if (
+      containingFile != null &&
+        !containingFile.isEquivalentTo(context.psiFile) &&
+        containingFile.name == context.psiFile?.name &&
+        // createJavaFileStub$fakeFile$1
+        containingFile.javaClass.simpleName.contains("fakeFile")
+    ) {
+      // Consider these equal
+    } else if (containingFile != null && containingFile != context.psiFile) {
+      // Reporting an error in a different file.
+      if (context.driver.scope.size == 1) {
+        // Don't bother with this error if it's in a different file during single-file analysis
+        return Location.NONE
+      }
+      val ioFile = getFile(containingFile) ?: return Location.NONE
+      file = ioFile
+      contents = getFileContents(containingFile)
+    }
+
+    if (range == null) { // e.g. light elements
+      if (element is LightElement) {
+        val parent = element.getParent()
+        if (parent != null) {
+          return getLocation(context, parent)
+        }
+      }
+      return Location.create(file)
+    }
+
+    return Location.create(file, contents, range.startOffset, range.endOffset).setSource(element)
+  }
+
+  private val PsiElement.hasValidSourceLocation: Boolean
+    get() {
+      if (this is PsiCompiledElement) return false
+      // [KtLightIdentifier] is no longer a subtype of [PsiCompiledElement] after fixing KTIJ-21412
+      // An identifier that can't tell its origin does not have a valid source location.
+      if (this is KtLightIdentifier && this.origin == null) return false
+      return textOffset >= 0
+    }
+
+  override fun getLocation(context: JavaContext, element: UElement): Location {
+    if (element is UElementWithLocation) {
+      val file = element.getContainingUFile() ?: return Location.NONE
+      val ioFile = file.getIoFile() ?: return Location.NONE
+      val text = file.sourcePsi.text ?: file.javaPsi?.text ?: ""
+      val location = Location.create(ioFile, text, element.startOffset, element.endOffset)
+      location.setSource(element)
+      return location
+    } else if (isPolyadicFromStringTemplate(element) && element.operands.size == 1) {
+      val literal = element.operands[0]
+      return getLocation(context, literal).withSource(literal)
+    } else {
+      val psiElement = element.sourcePsi
+      if (psiElement != null) {
+        return getLocation(context, psiElement).withSource(element)
+      }
+      // UDeclarationsExpression has a null sourcePsi.
+      // Handle it explicitly here, as returning the parent can produce strange results
+      // if that parent is, for example, a UBlockExpression.
+      if (element is UDeclarationsExpression) {
+        element.declarations.firstOrNull()?.sourcePsi?.let { firstDeclarationPsi ->
+          return getLocation(context, firstDeclarationPsi).withSource(element)
+        }
+      }
+      val parent = element.uastParent
+      if (parent != null) {
+        return getLocation(context, parent)
+      }
+    }
+
+    return Location.NONE
+  }
+
+  override fun getCallLocation(
+    context: JavaContext,
+    call: UCallExpression,
+    includeReceiver: Boolean,
+    includeArguments: Boolean
+  ): Location {
+    if (includeArguments) {
+      call.valueArguments.lastOrNull()?.let { lastArgument ->
+        val argumentsEnd = lastArgument.sourcePsi?.endOffset
+        val callEnds = call.sourcePsi?.endOffset
+        if (argumentsEnd != null && callEnds != null && argumentsEnd > callEnds) {
+          // The call element has arguments that are outside of its own range.
+          // This typically means users are making a function call using
+          // assignment syntax, e.g. key = value instead of setKey(value);
+          // here the call range is just "key" and the arguments range is "value".
+          // Create a range which merges these two.
+          val startElement = if (includeReceiver) call.receiver ?: call else call
+          // Work around UAST bug where the value argument list points directly to the
+          // string content node instead of a node containing the opening and closing
+          // tokens as well. We need to include the closing tags in the range as well!
+          val next =
+            (lastArgument.sourcePsi as? KtLiteralStringTemplateEntry)?.nextSibling as? TreeElement
+          val delta =
+            if (next != null && next.elementType == KtTokens.CLOSING_QUOTE) {
+              next.textLength
+            } else {
+              0
             }
+          return getRangeLocation(context, startElement, 0, lastArgument, delta)
         }
-
-        return null
+      }
     }
 
-    override fun getRangeLocation(
-        context: JavaContext,
-        from: UElement,
-        fromDelta: Int,
-        to: UElement,
-        toDelta: Int
-    ): Location {
-        var contents = context.getContents()
-        val fromRange = getTextRange(from)
-        val toRange = getTextRange(to)
-
-        if (fromRange != null && toRange != null && fromRange.startOffset > toRange.startOffset) {
-            // Not common, but for example for the "contains" operator whe receiver and
-            // argument are reversed
-            return getRangeLocation(context, to, toDelta, from, fromDelta)
+    val receiver = call.receiver
+    if (!includeReceiver || receiver == null) {
+      if (includeArguments) {
+        // Method with arguments but no receiver is the default range for UCallExpressions
+        // modulo the scenario with arguments outside the call, handled at the beginning
+        // of this method
+        return getLocation(context, call)
+      }
+      // Just the method name
+      val methodIdentifier = call.methodIdentifier
+      if (methodIdentifier != null) {
+        return getLocation(context, methodIdentifier)
+      }
+    } else {
+      if (!includeArguments) {
+        val methodIdentifier = call.methodIdentifier
+        if (methodIdentifier != null) {
+          return getRangeLocation(context, receiver, 0, methodIdentifier, 0)
         }
-        // Make sure this element is reported in the correct file
-        var file = context.file
-        val psi = findPsi(from)
-        if (psi != null) {
-            val containingFile = psi.containingFile
-            contents = context.getContents()
-            if (containingFile != context.psiFile) {
-                // Reporting an error in a different file.
-                if (context.driver.scope.size == 1) {
-                    // Don't bother with this error if it's in a different file during single-file analysis
-                    return Location.NONE
-                }
-                val ioFile = getFile(containingFile) ?: return Location.NONE
-                file = ioFile
-                contents = getFileContents(containingFile)
-            }
-        }
-
-        if (fromRange != null && toRange != null) {
-            val start = max(0, fromRange.startOffset + fromDelta)
-            val end = min(
-                contents?.length ?: Integer.MAX_VALUE,
-                toRange.endOffset + toDelta
-            )
-            if (end <= start) {
-                // Some AST nodes don't have proper bounds, such as empty parameter lists
-                return Location.create(file, contents, start, fromRange.endOffset)
-                    .setSource(from)
-            }
-            return Location.create(file, contents, start, end).setSource(from)
-        }
-
-        return Location.create(file).setSource(from)
+      }
+      return getRangeLocation(context, receiver, 0, call, 0)
     }
 
-    private fun findPsi(element: UElement?): PsiElement? {
-        var currentElement = element
-        while (currentElement != null) {
-            val psi = currentElement.sourcePsi
-            if (psi != null) {
-                return psi
-            }
-            currentElement = currentElement.uastParent
-        }
-        return null
+    return getLocation(context, call)
+  }
+
+  override fun getFile(file: PsiFile): File? {
+    val virtualFile = file.virtualFile
+    return if (virtualFile != null) VfsUtilCore.virtualToIoFile(virtualFile) else null
+  }
+
+  override fun getFileContents(file: PsiFile): CharSequence = file.text
+
+  override fun createLocation(element: PsiElement): Location {
+    val range = element.textRange
+    val containingFile = element.containingFile
+    val file = getFile(containingFile) ?: return Location.NONE
+    val contents = getFileContents(containingFile)
+    return Location.create(file, contents, range.startOffset, range.endOffset).setSource(element)
+  }
+
+  override fun createLocation(element: UElement): Location {
+    if (element is UElementWithLocation) {
+      val file = element.getContainingUFile() ?: return Location.NONE
+      val ioFile = file.getIoFile() ?: return Location.NONE
+      val text = file.sourcePsi.text
+      val location = Location.create(ioFile, text, element.startOffset, element.endOffset)
+      location.setSource(element)
+      return location
+    } else {
+      val psiElement = element.sourcePsi
+      if (psiElement != null) {
+        return createLocation(psiElement).withSource(element)
+      }
+      val parent = element.uastParent
+      if (parent != null) {
+        return createLocation(parent)
+      }
     }
 
-    /**
-     * Like [getRangeLocation] but both offsets are relative to the
-     * starting offset of the given node. This is sometimes more
-     * convenient than operating relative to the ending offset when you
-     * have a fixed range in mind.
-     *
-     * @param context information about the file being parsed
-     * @param from the AST node to get a starting location from
-     * @param fromDelta Offset delta to apply to the starting offset
-     * @param toDelta Offset delta to apply to the starting offset
-     * @return a location for the given node
-     */
-    override fun getRangeLocation(
-        context: JavaContext,
-        from: PsiElement,
-        fromDelta: Int,
-        toDelta: Int
-    ): Location =
-        getRangeLocation(context, from, fromDelta, from, -(from.textRange.length - toDelta))
+    return Location.NONE
+  }
 
-    override fun getRangeLocation(
-        context: JavaContext,
-        from: UElement,
-        fromDelta: Int,
-        toDelta: Int
-    ): Location {
-        val fromRange = getTextRange(from)
-        if (fromRange != null) {
-            return getRangeLocation(
-                context, from, fromDelta, from,
-                -(fromRange.length - toDelta)
-            )
-        }
-        return Location.create(context.file).setSource(from)
+  /**
+   * Returns a [Location] for the given node range (from the starting offset of the first node to
+   * the ending offset of the second node).
+   *
+   * @param context information about the file being parsed
+   * @param from the AST node to get a starting location from
+   * @param fromDelta Offset delta to apply to the starting offset
+   * @param to the AST node to get a ending location from
+   * @param toDelta Offset delta to apply to the ending offset
+   * @return a location for the given node
+   */
+  override fun getRangeLocation(
+    context: JavaContext,
+    from: PsiElement,
+    fromDelta: Int,
+    to: PsiElement,
+    toDelta: Int
+  ): Location {
+    val contents = context.getContents()
+    val fromRange = from.textRange
+    val start = max(0, fromRange.startOffset + fromDelta)
+    val end = min(contents?.length ?: Integer.MAX_VALUE, to.textRange.endOffset + toDelta)
+    if (end <= start) {
+      // Some AST nodes don't have proper bounds, such as empty parameter lists
+      return Location.create(context.file, contents, start, fromRange.endOffset).setSource(from)
+    }
+    return Location.create(context.file, contents, start, end).setSource(from)
+  }
+
+  private fun getTextRange(element: UElement): TextRange? {
+    if (element is UElementWithLocation) {
+      return TextRange(element.startOffset, element.endOffset)
+    } else {
+      val psiElement = element.sourcePsi
+      if (psiElement != null) {
+        return psiElement.textRange
+      }
     }
 
-    /**
-     * Returns a [Location] for the given node. This attempts to pick
-     * a shorter location range than the entire node; for a class or
-     * method for example, it picks the name node (if found). For
-     * statement constructs such as a `switch` statement it will
-     * highlight the keyword, etc.
-     *
-     * @param context information about the file being parsed
-     * @param element the node to create a location for
-     * @return a location for the given node
-     */
-    override fun getNameLocation(context: JavaContext, element: PsiElement): Location {
-        var namedElement = element
-        val nameNode = JavaContext.findNameElement(namedElement)
-        if (nameNode != null) {
-            namedElement = nameNode
-        }
+    return null
+  }
 
-        return getLocation(context, namedElement)
+  override fun getRangeLocation(
+    context: JavaContext,
+    from: UElement,
+    fromDelta: Int,
+    to: UElement,
+    toDelta: Int
+  ): Location {
+    var contents = context.getContents()
+    val fromRange = getTextRange(from)
+    val toRange = getTextRange(to)
+
+    if (fromRange != null && toRange != null && fromRange.startOffset > toRange.startOffset) {
+      // Not common, but for example for the "contains" operator whe receiver and
+      // argument are reversed
+      return getRangeLocation(context, to, toDelta, from, fromDelta)
+    }
+    // Make sure this element is reported in the correct file
+    var file = context.file
+    val psi = findPsi(from)
+    if (psi != null) {
+      val containingFile = psi.containingFile
+      contents = context.getContents()
+      if (containingFile != context.psiFile) {
+        // Reporting an error in a different file.
+        if (context.driver.scope.size == 1) {
+          // Don't bother with this error if it's in a different file during single-file analysis
+          return Location.NONE
+        }
+        val ioFile = getFile(containingFile) ?: return Location.NONE
+        file = ioFile
+        contents = getFileContents(containingFile)
+      }
     }
 
-    override fun getNameLocation(context: JavaContext, element: UElement): Location {
-        val sourcePsi = element.sourcePsi
-        if (sourcePsi is KtPropertyAccessor) {
-            // For properties make sure we use the property
-            // declaration instead of the accessor
-            return context.getNameLocation(sourcePsi.property)
-        }
-
-        var namedElement = element
-        val nameNode = JavaContext.findNameElement(namedElement)
-        if (nameNode != null) {
-            namedElement = nameNode
-        } else if (namedElement is PsiNameIdentifierOwner) {
-            val nameIdentifier = namedElement.nameIdentifier
-            if (nameIdentifier != null) {
-                return getLocation(context, nameIdentifier)
-            }
-        }
-
-        return getLocation(context, namedElement)
+    if (fromRange != null && toRange != null) {
+      val start = max(0, fromRange.startOffset + fromDelta)
+      val end = min(contents?.length ?: Integer.MAX_VALUE, toRange.endOffset + toDelta)
+      if (end <= start) {
+        // Some AST nodes don't have proper bounds, such as empty parameter lists
+        return Location.create(file, contents, start, fromRange.endOffset).setSource(from)
+      }
+      return Location.create(file, contents, start, end).setSource(from)
     }
 
-    companion object {
-        var warnedAboutLargeFiles = false
+    return Location.create(file).setSource(from)
+  }
+
+  private fun findPsi(element: UElement?): PsiElement? {
+    var currentElement = element
+    while (currentElement != null) {
+      val psi = currentElement.sourcePsi
+      if (psi != null) {
+        return psi
+      }
+      currentElement = currentElement.uastParent
     }
+    return null
+  }
+
+  /**
+   * Like [getRangeLocation] but both offsets are relative to the starting offset of the given node.
+   * This is sometimes more convenient than operating relative to the ending offset when you have a
+   * fixed range in mind.
+   *
+   * @param context information about the file being parsed
+   * @param from the AST node to get a starting location from
+   * @param fromDelta Offset delta to apply to the starting offset
+   * @param toDelta Offset delta to apply to the starting offset
+   * @return a location for the given node
+   */
+  override fun getRangeLocation(
+    context: JavaContext,
+    from: PsiElement,
+    fromDelta: Int,
+    toDelta: Int
+  ): Location = getRangeLocation(context, from, fromDelta, from, -(from.textRange.length - toDelta))
+
+  override fun getRangeLocation(
+    context: JavaContext,
+    from: UElement,
+    fromDelta: Int,
+    toDelta: Int
+  ): Location {
+    val fromRange = getTextRange(from)
+    if (fromRange != null) {
+      return getRangeLocation(context, from, fromDelta, from, -(fromRange.length - toDelta))
+    }
+    return Location.create(context.file).setSource(from)
+  }
+
+  /**
+   * Returns a [Location] for the given node. This attempts to pick a shorter location range than
+   * the entire node; for a class or method for example, it picks the name node (if found). For
+   * statement constructs such as a `switch` statement it will highlight the keyword, etc.
+   *
+   * @param context information about the file being parsed
+   * @param element the node to create a location for
+   * @return a location for the given node
+   */
+  override fun getNameLocation(context: JavaContext, element: PsiElement): Location {
+    var namedElement = element
+    val nameNode = JavaContext.findNameElement(namedElement)
+    if (nameNode != null) {
+      namedElement = nameNode
+    }
+
+    return getLocation(context, namedElement)
+  }
+
+  override fun getNameLocation(context: JavaContext, element: UElement): Location {
+    val sourcePsi = element.sourcePsi
+    if (sourcePsi is KtPropertyAccessor) {
+      // For properties make sure we use the property
+      // declaration instead of the accessor
+      return context.getNameLocation(sourcePsi.property)
+    }
+
+    var namedElement = element
+    val nameNode = JavaContext.findNameElement(namedElement)
+    if (nameNode != null) {
+      namedElement = nameNode
+    } else if (namedElement is PsiNameIdentifierOwner) {
+      val nameIdentifier = namedElement.nameIdentifier
+      if (nameIdentifier != null) {
+        return getLocation(context, nameIdentifier)
+      }
+    }
+
+    return getLocation(context, namedElement)
+  }
+
+  companion object {
+    var warnedAboutLargeFiles = false
+  }
 }

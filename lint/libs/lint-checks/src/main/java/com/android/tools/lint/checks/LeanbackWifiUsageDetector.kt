@@ -34,75 +34,79 @@ import com.android.utils.iterator
 import org.w3c.dom.Element
 
 class LeanbackWifiUsageDetector : Detector(), XmlScanner {
-    override fun checkMergedProject(context: Context) {
-        var wifiFeatureNode: Element? = null
-        val document = context.mainProject.mergedManifest?.documentElement ?: return
-        var wifiPermissionsNode: Element? = null
+  override fun checkMergedProject(context: Context) {
+    var wifiFeatureNode: Element? = null
+    val document = context.mainProject.mergedManifest?.documentElement ?: return
+    var wifiPermissionsNode: Element? = null
 
-        // Only applies if manifest has <uses-feature> which includes android.software.leanback
-        var hasLeanBack = false
-        for (element in document) {
-            when (element.tagName) {
-                TAG_USES_FEATURE -> {
-                    val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
-                    if (name == LEANBACK_ATTR_NAME) {
-                        hasLeanBack = true
-                    } else if (name == WIFI_FEATURE_NAME) {
-                        wifiFeatureNode = element
-                    }
-                }
-                TAG_USES_PERMISSION -> {
-                    val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
-                    if (isWifiStatePermission(name)) {
-                        wifiPermissionsNode = element
-                    }
-                }
-            }
+    // Only applies if manifest has <uses-feature> which includes android.software.leanback
+    var hasLeanBack = false
+    for (element in document) {
+      when (element.tagName) {
+        TAG_USES_FEATURE -> {
+          val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
+          if (name == LEANBACK_ATTR_NAME) {
+            hasLeanBack = true
+          } else if (name == WIFI_FEATURE_NAME) {
+            wifiFeatureNode = element
+          }
         }
-
-        if (!hasLeanBack) {
-            return
+        TAG_USES_PERMISSION -> {
+          val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
+          if (isWifiStatePermission(name)) {
+            wifiPermissionsNode = element
+          }
         }
-
-        val wifiFeatureNodeRequired = wifiFeatureNode?.let { wifiNode ->
-            wifiNode.getAttributeNS(ANDROID_URI, ATTR_REQUIRED) != VALUE_FALSE
-        } ?: false
-
-        if (wifiFeatureNode != null) {
-            if (wifiFeatureNodeRequired) {
-                context.report(
-                    ISSUE,
-                    context.getLocation(wifiFeatureNode),
-                    "Requiring `android.hardware.wifi` limits app availability on TVs that support only Ethernet"
-                )
-            }
-        } else if (wifiPermissionsNode != null) {
-            context.report(
-                ISSUE,
-                context.getLocation(wifiPermissionsNode),
-                "Requiring Wifi permissions limits app availability on TVs that support only Ethernet"
-            )
-        }
+      }
     }
 
-    companion object {
-        private const val LEANBACK_ATTR_NAME = "android.software.leanback"
-        private const val WIFI_FEATURE_NAME = "android.hardware.wifi"
+    if (!hasLeanBack) {
+      return
+    }
 
-        private fun isWifiStatePermission(s: String): Boolean {
-            return when (s) {
-                "android.permission.ACCESS_WIFI_STATE",
-                "android.permission.CHANGE_WIFI_STATE",
-                "android.permission.CHANGE_WIFI_MULTICAST_STATE" -> true
-                else -> false
-            }
-        }
+    val wifiFeatureNodeRequired =
+      wifiFeatureNode?.let { wifiNode ->
+        wifiNode.getAttributeNS(ANDROID_URI, ATTR_REQUIRED) != VALUE_FALSE
+      }
+        ?: false
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "LeanbackUsesWifi",
-            briefDescription = "Using android.hardware.wifi on TV",
-            explanation = """
+    if (wifiFeatureNode != null) {
+      if (wifiFeatureNodeRequired) {
+        context.report(
+          ISSUE,
+          context.getLocation(wifiFeatureNode),
+          "Requiring `android.hardware.wifi` limits app availability on TVs that support only Ethernet"
+        )
+      }
+    } else if (wifiPermissionsNode != null) {
+      context.report(
+        ISSUE,
+        context.getLocation(wifiPermissionsNode),
+        "Requiring Wifi permissions limits app availability on TVs that support only Ethernet"
+      )
+    }
+  }
+
+  companion object {
+    private const val LEANBACK_ATTR_NAME = "android.software.leanback"
+    private const val WIFI_FEATURE_NAME = "android.hardware.wifi"
+
+    private fun isWifiStatePermission(s: String): Boolean {
+      return when (s) {
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.CHANGE_WIFI_STATE",
+        "android.permission.CHANGE_WIFI_MULTICAST_STATE" -> true
+        else -> false
+      }
+    }
+
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "LeanbackUsesWifi",
+        briefDescription = "Using android.hardware.wifi on TV",
+        explanation =
+          """
                 WiFi is not required for Android TV and many devices connect to the internet via \
                 alternative methods e.g. Ethernet.
 
@@ -114,14 +118,12 @@ class LeanbackWifiUsageDetector : Detector(), XmlScanner {
                 `NetworkCapabilities#NET_CAPABILITY_NOT_METERED` and \
                 `NetworkCapabilities#NET_CAPABILITY_NOT_ROAMING.`
                 """,
-            category = Category.CORRECTNESS,
-            priority = 5,
-            severity = Severity.WARNING,
-            implementation = Implementation(
-                LeanbackWifiUsageDetector::class.java,
-                Scope.MANIFEST_SCOPE
-            ),
-            androidSpecific = true
-        )
-    }
+        category = Category.CORRECTNESS,
+        priority = 5,
+        severity = Severity.WARNING,
+        implementation =
+          Implementation(LeanbackWifiUsageDetector::class.java, Scope.MANIFEST_SCOPE),
+        androidSpecific = true
+      )
+  }
 }

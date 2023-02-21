@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ViewHolderDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ViewHolderDetector()
-    }
+  override fun getDetector(): Detector {
+    return ViewHolderDetector()
+  }
 
-    fun testBasic() {
-        //noinspection all // Sample code
-        lint().files(
-            java(
-                """
+  fun testBasic() {
+    //noinspection all // Sample code
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -196,14 +197,17 @@ class ViewHolderDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/ViewHolderTest.java:42: Warning: Unconditional layout inflation from view adapter: Should use View Holder pattern (use recycled view passed into this method as the second parameter) for smoother scrolling [ViewHolder]
                         convertView = mInflater.inflate(R.layout.your_layout, null);
                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

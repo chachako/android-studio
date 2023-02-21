@@ -33,19 +33,17 @@ import org.jetbrains.kotlin.psi.KtPackageDirective
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.uast.UFile
 
-/**
- * Test mode which inserts unnecessary whitespace characters into the
- * source code
- */
-class WhitespaceTestMode : UastSourceTransformationTestMode(
+/** Test mode which inserts unnecessary whitespace characters into the source code */
+class WhitespaceTestMode :
+  UastSourceTransformationTestMode(
     description = "Extra whitespace added",
     "TestMode.WHITESPACE",
     "whitespace"
-) {
-    override val diffExplanation: String =
-        // first line shorter: expecting to prefix that line with
-        // "org.junit.ComparisonFailure: "
-        """
+  ) {
+  override val diffExplanation: String =
+    // first line shorter: expecting to prefix that line with
+    // "org.junit.ComparisonFailure: "
+    """
         The user is allowed to add extra or
         unnecessary whitespace through their code. This test mode adds a lot of
         unnecessary whitespace to catch bugs where detectors are incorrectly
@@ -57,72 +55,73 @@ class WhitespaceTestMode : UastSourceTransformationTestMode(
         In the unlikely event that your lint check is actually doing something
         whitespace specific, you can turn off this test mode using
         `.skipTestModes($fieldName)`.
-        """.trimIndent()
+        """
+      .trimIndent()
 
-    override fun transform(
-        source: String,
-        context: JavaContext,
-        root: UFile,
-        clientData: MutableMap<String, Any>
-    ): MutableList<Edit> {
-        var ordinal = 0
+  override fun transform(
+    source: String,
+    context: JavaContext,
+    root: UFile,
+    clientData: MutableMap<String, Any>
+  ): MutableList<Edit> {
+    var ordinal = 0
 
-        val editMap = mutableMapOf<Int, Edit>()
+    val editMap = mutableMapOf<Int, Edit>()
 
-        fun insert(offset: Int) {
-            editMap[offset] = Edit(offset, offset, " ", true, ordinal++)
+    fun insert(offset: Int) {
+      editMap[offset] = Edit(offset, offset, " ", true, ordinal++)
+    }
+
+    root.sourcePsi.accept(
+      object : PsiRecursiveElementVisitor() {
+        override fun visitElement(element: PsiElement) {
+          val next = element.nextSibling
+          if (
+            element is KtContainerNode && element.node.elementType == KtNodeTypes.LABEL_QUALIFIER ||
+              next is KtContainerNode && next.node.elementType == KtNodeTypes.LABEL_QUALIFIER
+          ) {
+            // This covers the two adjacent parts of a label reference expression, which
+            // (for example) consists of "this" and "@label" or "continue" and "@label" etc. We
+            // want to make sure we don't add in a space between these.
+            return
+          }
+
+          checkElement(element)
+
+          when (element) {
+            is PsiComment,
+            is PsiWhiteSpace,
+            // Don't put spaces inside string literals:
+            is KtStringTemplateExpression,
+            // We cannot separate the "@" from the annotation name:
+            is KtAnnotationEntry,
+            is KtAnnotation,
+            is PsiAnnotation,
+            // Weirdly if there are spaces between tokens in the import list, PSI/UAST does not
+            // work properly:
+            is PsiImportList,
+            is KtImportList,
+            // And ditto for package names:
+            is PsiPackageStatement,
+            is KtPackageDirective -> return
+          }
+
+          super.visitElement(element)
         }
 
-        root.sourcePsi.accept(
-            object : PsiRecursiveElementVisitor() {
-                override fun visitElement(element: PsiElement) {
-                    val next = element.nextSibling
-                    if (element is KtContainerNode && element.node.elementType == KtNodeTypes.LABEL_QUALIFIER ||
-                        next is KtContainerNode && next.node.elementType == KtNodeTypes.LABEL_QUALIFIER
-                    ) {
-                        // This covers the two adjacent parts of a label reference expression, which
-                        // (for example) consists of "this" and "@label" or "continue" and "@label" etc. We
-                        // want to make sure we don't add in a space between these.
-                        return
-                    }
+        private fun checkElement(element: PsiElement) {
+          val range = element.textRange
+          insert(range.startOffset)
+          insert(range.endOffset)
+        }
+      }
+    )
 
-                    checkElement(element)
+    return editMap.values.sorted().toMutableList()
+  }
 
-                    when (element) {
-                        is PsiComment,
-                        is PsiWhiteSpace,
-                        // Don't put spaces inside string literals:
-                        is KtStringTemplateExpression,
-                        // We cannot separate the "@" from the annotation name:
-                        is KtAnnotationEntry,
-                        is KtAnnotation,
-                        is PsiAnnotation,
-                        // Weirdly if there are spaces between tokens in the import list, PSI/UAST does not
-                        // work properly:
-                        is PsiImportList,
-                        is KtImportList,
-                        // And ditto for package names:
-                        is PsiPackageStatement,
-                        is KtPackageDirective
-                        -> return
-                    }
-
-                    super.visitElement(element)
-                }
-
-                private fun checkElement(element: PsiElement) {
-                    val range = element.textRange
-                    insert(range.startOffset)
-                    insert(range.endOffset)
-                }
-            }
-        )
-
-        return editMap.values.sorted().toMutableList()
-    }
-
-    override fun transformMessage(message: String): String {
-        // Drop whitespace when comparing error messages
-        return message.replace(Regex("""\s+"""), "")
-    }
+  override fun transformMessage(message: String): String {
+    // Drop whitespace when comparing error messages
+    return message.replace(Regex("""\s+"""), "")
+  }
 }

@@ -22,12 +22,12 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import org.junit.Test
 
 class ByLazyDetectorTest {
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        kotlin(
+            """
                     @file:Suppress("unused")
                     package test.pkg
                     private class GradleVersion
@@ -53,12 +53,13 @@ class ByLazyDetectorTest {
                     private val properties by lazy { getInstance() } // ERROR 3
                     private fun getInstance(): String = "instance"
                 """
-                ).indented()
-            )
-            .issues(ByLazyDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(ByLazyDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/GradleVersion.kt:6: Error: Avoid by lazy for simple lazy initialization [AvoidByLazy]
                 private val dependencyInfo by lazy { HashMap<GradleVersion, List<GradleCoordinate>>() } // ERROR 1
                                               ~~~~
@@ -70,6 +71,6 @@ class ByLazyDetectorTest {
                                           ~~~~
                 3 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

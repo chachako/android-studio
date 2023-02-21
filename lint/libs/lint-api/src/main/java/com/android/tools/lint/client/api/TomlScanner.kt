@@ -23,18 +23,18 @@ import java.io.File
 
 /** Interface implemented by detectors interested in TOML files. */
 interface TomlScanner : FileScanner {
-    fun visitTomlDocument(context: TomlContext, document: LintTomlDocument)
+  fun visitTomlDocument(context: TomlContext, document: LintTomlDocument)
 }
 
 class TomlContext(
-    driver: LintDriver,
-    project: Project,
-    main: Project?,
-    file: File,
-    contents: CharSequence,
-    val document: LintTomlDocument
+  driver: LintDriver,
+  project: Project,
+  main: Project?,
+  file: File,
+  contents: CharSequence,
+  val document: LintTomlDocument
 ) : Context(driver, project, main, file, contents) {
-    override val suppressCommentPrefix: String = SUPPRESS_JAVA_COMMENT_PREFIX
+  override val suppressCommentPrefix: String = SUPPRESS_JAVA_COMMENT_PREFIX
 
-    fun getLocation(tomlValue: LintTomlValue): Location = tomlValue.getLocation()
+  fun getLocation(tomlValue: LintTomlValue): Location = tomlValue.getLocation()
 }

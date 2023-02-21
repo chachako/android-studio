@@ -24,57 +24,56 @@ import java.io.File
 import java.io.IOException
 
 /** A reporter which emits lint results into an XML report. */
-class XmlReporter constructor(
-    /** Client handling IO, path normalization and error reporting. */
-    client: LintCliClient,
-    /** File to write report to. */
-    output: File,
-    /**
-     * The type of XML file to create; this is used to control details
-     * like whether locations are annotated with the surrounding source
-     * contents.
-     */
-    var type: XmlFileType,
+class XmlReporter
+constructor(
+  /** Client handling IO, path normalization and error reporting. */
+  client: LintCliClient,
+  /** File to write report to. */
+  output: File,
+  /**
+   * The type of XML file to create; this is used to control details like whether locations are
+   * annotated with the surrounding source contents.
+   */
+  var type: XmlFileType,
 ) : Reporter(client, output) {
 
-    var pathVariables: PathVariables = client.pathVariables
+  var pathVariables: PathVariables = client.pathVariables
 
-    private var attributes: MutableMap<String, String>? = null
+  private var attributes: MutableMap<String, String>? = null
 
-    fun setBaselineAttributes(client: LintClient, variant: String?, includeDependencies: Boolean) {
-        setAttribute(ATTR_CLIENT, LintClient.clientName)
-        setAttribute(ATTR_CLIENT_NAME, client.getClientDisplayName())
-        val revision = client.getClientDisplayRevision()
-        if (revision != null) {
-            setAttribute(ATTR_VERSION, revision)
-        }
-        if (variant != null) {
-            setAttribute(ATTR_VARIANT, variant)
-        }
-        setAttribute(ATTR_CHECK_DEPS, includeDependencies.toString())
+  fun setBaselineAttributes(client: LintClient, variant: String?, includeDependencies: Boolean) {
+    setAttribute(ATTR_CLIENT, LintClient.clientName)
+    setAttribute(ATTR_CLIENT_NAME, client.getClientDisplayName())
+    val revision = client.getClientDisplayRevision()
+    if (revision != null) {
+      setAttribute(ATTR_VERSION, revision)
     }
+    if (variant != null) {
+      setAttribute(ATTR_VARIANT, variant)
+    }
+    setAttribute(ATTR_CHECK_DEPS, includeDependencies.toString())
+  }
 
-    /**
-     * Sets a custom attribute to be written out on the root element of
-     * the report.
-     */
-    fun setAttribute(name: String, value: String) {
-        val attributes = attributes ?: run {
-            val newMap = mutableMapOf<String, String>()
-            attributes = newMap
-            newMap
+  /** Sets a custom attribute to be written out on the root element of the report. */
+  fun setAttribute(name: String, value: String) {
+    val attributes =
+      attributes
+        ?: run {
+          val newMap = mutableMapOf<String, String>()
+          attributes = newMap
+          newMap
         }
-        attributes[name] = value
-    }
+    attributes[name] = value
+  }
 
-    @Throws(IOException::class)
-    override fun write(stats: LintStats, incidents: List<Incident>, registry: IssueRegistry) {
-        val writer = output?.bufferedWriter() ?: return
-        val xmlWriter = XmlWriter(client, type, writer, pathVariables)
+  @Throws(IOException::class)
+  override fun write(stats: LintStats, incidents: List<Incident>, registry: IssueRegistry) {
+    val writer = output?.bufferedWriter() ?: return
+    val xmlWriter = XmlWriter(client, type, writer, pathVariables)
 
-        val clientAttributes: List<Pair<String, String?>> =
-            attributes?.asSequence()?.sortedBy { it.key }?.map { Pair(it.key, it.value) }?.toList()
-                ?: emptyList()
-        xmlWriter.writeIncidents(incidents, clientAttributes)
-    }
+    val clientAttributes: List<Pair<String, String?>> =
+      attributes?.asSequence()?.sortedBy { it.key }?.map { Pair(it.key, it.value) }?.toList()
+        ?: emptyList()
+    xmlWriter.writeIncidents(incidents, clientAttributes)
+  }
 }

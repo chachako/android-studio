@@ -36,211 +36,202 @@ import java.util.EnumMap
 import java.util.EnumSet
 
 /**
- * Visitor for "other" files: files that aren't java sources, XML
- * sources, etc -- or which should have custom handling in some other
- * way.
+ * Visitor for "other" files: files that aren't java sources, XML sources, etc -- or which should
+ * have custom handling in some other way.
  */
 internal class OtherFileVisitor(private val detectors: List<Detector>) {
 
-    private val files = EnumMap<Scope, List<File>>(Scope::class.java)
+  private val files = EnumMap<Scope, List<File>>(Scope::class.java)
 
-    /** Analyze other files in the given project. */
-    fun scan(
-        driver: LintDriver,
-        project: Project,
-        main: Project?
-    ) {
-        // Collect all project files
-        val projectFolder = project.dir
+  /** Analyze other files in the given project. */
+  fun scan(driver: LintDriver, project: Project, main: Project?) {
+    // Collect all project files
+    val projectFolder = project.dir
 
-        var scopes = EnumSet.noneOf(Scope::class.java)
-        for (detector in detectors) {
-            val fileScanner = detector as OtherFileScanner
-            val applicable = fileScanner.getApplicableFiles()
-            if (applicable.contains(Scope.OTHER)) {
-                scopes = Scope.ALL
-                break
-            }
-            scopes.addAll(applicable)
-        }
-
-        val subset = project.subset
-
-        if (scopes.contains(Scope.RESOURCE_FILE)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (SdkUtils.endsWith(
-                            file.path,
-                            DOT_XML
-                        ) && file.name != ANDROID_MANIFEST_XML
-                    ) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.RESOURCE_FILE] = files
-                }
-            } else {
-                val files = Lists.newArrayListWithExpectedSize<File>(100)
-                for (res in project.resourceFolders) {
-                    collectFiles(files, res)
-                }
-                val assets = File(projectFolder, FD_ASSETS)
-                if (assets.exists()) {
-                    collectFiles(files, assets)
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.RESOURCE_FILE] = files
-                }
-            }
-        }
-
-        if (scopes.contains(Scope.JAVA_FILE)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (file.path.endsWith(DOT_JAVA) || file.path.endsWith(DOT_KT)) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.JAVA_FILE] = files
-                }
-            } else {
-                val files = Lists.newArrayListWithExpectedSize<File>(100)
-                for (srcFolder in project.javaSourceFolders) {
-                    collectFiles(files, srcFolder)
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.JAVA_FILE] = files
-                }
-            }
-        }
-
-        if (scopes.contains(Scope.CLASS_FILE)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (file.path.endsWith(DOT_CLASS)) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.CLASS_FILE] = files
-                }
-            } else {
-                val files = Lists.newArrayListWithExpectedSize<File>(100)
-                for (classFolder in project.javaClassFolders) {
-                    collectFiles(files, classFolder)
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.CLASS_FILE] = files
-                }
-            }
-        }
-
-        if (scopes.contains(Scope.MANIFEST)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (file.name == ANDROID_MANIFEST_XML) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.MANIFEST] = files
-                }
-            } else {
-                val manifestFiles = project.manifestFiles
-                files[Scope.MANIFEST] = manifestFiles
-            }
-        }
-
-        if (scopes.contains(Scope.GRADLE_FILE)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (file.name.endsWith(DOT_GRADLE) || file.name.endsWith(DOT_KTS)) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.GRADLE_FILE] = files
-                }
-            } else {
-                val manifestFiles = project.gradleBuildScripts
-                files[Scope.GRADLE_FILE] = manifestFiles
-            }
-        }
-
-        if (scopes.contains(Scope.PROGUARD_FILE)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (file.name.startsWith("proguard")) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.PROPERTY_FILE] = files
-                }
-            } else {
-                val manifestFiles = project.proguardFiles
-                files[Scope.PROGUARD_FILE] = manifestFiles
-            }
-        }
-
-        if (scopes.contains(Scope.PROPERTY_FILE)) {
-            if (subset != null && !subset.isEmpty()) {
-                val files = ArrayList<File>(subset.size)
-                for (file in subset) {
-                    if (file.name.endsWith(".properties")) {
-                        files.add(file)
-                    }
-                }
-                if (!files.isEmpty()) {
-                    this.files[Scope.PROPERTY_FILE] = files
-                }
-            } else {
-                val propertyFiles = project.propertyFiles
-                files[Scope.PROPERTY_FILE] = propertyFiles
-            }
-        }
-
-        for ((scope, files) in files) {
-            val applicable = ArrayList<Detector>(detectors.size)
-            for (detector in detectors) {
-                val fileScanner = detector as OtherFileScanner
-                val appliesTo = fileScanner.getApplicableFiles()
-                if (appliesTo.contains(Scope.OTHER) || appliesTo.contains(scope)) {
-                    applicable.add(detector)
-                }
-            }
-            if (!applicable.isEmpty()) {
-                for (file in files) {
-                    val context = Context(driver, project, main, file)
-                    for (detector in applicable) {
-                        detector.beforeCheckFile(context)
-                        detector.run(context)
-                        detector.afterCheckFile(context)
-                        driver.fileCount++
-                    }
-                }
-            }
-        }
+    var scopes = EnumSet.noneOf(Scope::class.java)
+    for (detector in detectors) {
+      val fileScanner = detector as OtherFileScanner
+      val applicable = fileScanner.getApplicableFiles()
+      if (applicable.contains(Scope.OTHER)) {
+        scopes = Scope.ALL
+        break
+      }
+      scopes.addAll(applicable)
     }
 
-    private fun collectFiles(files: MutableList<File>, file: File) {
-        if (file.isDirectory) {
-            val children = file.listFiles()
-            if (children != null) {
-                for (child in children) {
-                    collectFiles(files, child)
-                }
-            }
-        } else {
+    val subset = project.subset
+
+    if (scopes.contains(Scope.RESOURCE_FILE)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (SdkUtils.endsWith(file.path, DOT_XML) && file.name != ANDROID_MANIFEST_XML) {
             files.add(file)
+          }
         }
+        if (!files.isEmpty()) {
+          this.files[Scope.RESOURCE_FILE] = files
+        }
+      } else {
+        val files = Lists.newArrayListWithExpectedSize<File>(100)
+        for (res in project.resourceFolders) {
+          collectFiles(files, res)
+        }
+        val assets = File(projectFolder, FD_ASSETS)
+        if (assets.exists()) {
+          collectFiles(files, assets)
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.RESOURCE_FILE] = files
+        }
+      }
     }
+
+    if (scopes.contains(Scope.JAVA_FILE)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (file.path.endsWith(DOT_JAVA) || file.path.endsWith(DOT_KT)) {
+            files.add(file)
+          }
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.JAVA_FILE] = files
+        }
+      } else {
+        val files = Lists.newArrayListWithExpectedSize<File>(100)
+        for (srcFolder in project.javaSourceFolders) {
+          collectFiles(files, srcFolder)
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.JAVA_FILE] = files
+        }
+      }
+    }
+
+    if (scopes.contains(Scope.CLASS_FILE)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (file.path.endsWith(DOT_CLASS)) {
+            files.add(file)
+          }
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.CLASS_FILE] = files
+        }
+      } else {
+        val files = Lists.newArrayListWithExpectedSize<File>(100)
+        for (classFolder in project.javaClassFolders) {
+          collectFiles(files, classFolder)
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.CLASS_FILE] = files
+        }
+      }
+    }
+
+    if (scopes.contains(Scope.MANIFEST)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (file.name == ANDROID_MANIFEST_XML) {
+            files.add(file)
+          }
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.MANIFEST] = files
+        }
+      } else {
+        val manifestFiles = project.manifestFiles
+        files[Scope.MANIFEST] = manifestFiles
+      }
+    }
+
+    if (scopes.contains(Scope.GRADLE_FILE)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (file.name.endsWith(DOT_GRADLE) || file.name.endsWith(DOT_KTS)) {
+            files.add(file)
+          }
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.GRADLE_FILE] = files
+        }
+      } else {
+        val manifestFiles = project.gradleBuildScripts
+        files[Scope.GRADLE_FILE] = manifestFiles
+      }
+    }
+
+    if (scopes.contains(Scope.PROGUARD_FILE)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (file.name.startsWith("proguard")) {
+            files.add(file)
+          }
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.PROPERTY_FILE] = files
+        }
+      } else {
+        val manifestFiles = project.proguardFiles
+        files[Scope.PROGUARD_FILE] = manifestFiles
+      }
+    }
+
+    if (scopes.contains(Scope.PROPERTY_FILE)) {
+      if (subset != null && !subset.isEmpty()) {
+        val files = ArrayList<File>(subset.size)
+        for (file in subset) {
+          if (file.name.endsWith(".properties")) {
+            files.add(file)
+          }
+        }
+        if (!files.isEmpty()) {
+          this.files[Scope.PROPERTY_FILE] = files
+        }
+      } else {
+        val propertyFiles = project.propertyFiles
+        files[Scope.PROPERTY_FILE] = propertyFiles
+      }
+    }
+
+    for ((scope, files) in files) {
+      val applicable = ArrayList<Detector>(detectors.size)
+      for (detector in detectors) {
+        val fileScanner = detector as OtherFileScanner
+        val appliesTo = fileScanner.getApplicableFiles()
+        if (appliesTo.contains(Scope.OTHER) || appliesTo.contains(scope)) {
+          applicable.add(detector)
+        }
+      }
+      if (!applicable.isEmpty()) {
+        for (file in files) {
+          val context = Context(driver, project, main, file)
+          for (detector in applicable) {
+            detector.beforeCheckFile(context)
+            detector.run(context)
+            detector.afterCheckFile(context)
+            driver.fileCount++
+          }
+        }
+      }
+    }
+  }
+
+  private fun collectFiles(files: MutableList<File>, file: File) {
+    if (file.isDirectory) {
+      val children = file.listFiles()
+      if (children != null) {
+        for (child in children) {
+          collectFiles(files, child)
+        }
+      }
+    } else {
+      files.add(file)
+    }
+  }
 }

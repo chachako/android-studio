@@ -22,12 +22,13 @@ import com.android.tools.lint.detector.api.Detector
 import org.junit.Test
 
 class ResourceTypeDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector = ResourceTypeDetector()
+  override fun getDetector(): Detector = ResourceTypeDetector()
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.DrawableRes
                 import androidx.annotation.StringRes
 
@@ -39,22 +40,25 @@ class ResourceTypeDetectorTest : AbstractCheckTest() {
                     setLabels(iconId) // bug: should have passed descId. Both are ints but of wrong type.
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test.kt:9: Error: Expected resource of type string [ResourceType]
                 setLabels(iconId) // bug: should have passed descId. Both are ints but of wrong type.
                           ~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testColorInt() {
-        // Needs updated annotations!
-        val expected =
-            """
+  fun testColorInt() {
+    // Needs updated annotations!
+    val expected =
+      """
 src/test/pkg/WrongColor.java:9: Error: Should pass resolved color instead of resource id here: getResources().getColor(R.color.blue) [ResourceAsColor]
         paint2.setColor(R.color.blue);
                         ~~~~~~~~~~~~
@@ -78,10 +82,11 @@ src/test/pkg/WrongColor.java:20: Error: Expected resource of type color [Resourc
              ~~~~~~~~~~
 7 errors, 0 warnings
 """
-        lint().files(
-            java(
-                "src/test/pkg/WrongColor.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/WrongColor.java",
+            """
                 package test.pkg;
                 import android.app.Activity;
                 import android.graphics.Paint;
@@ -112,15 +117,18 @@ src/test/pkg/WrongColor.java:20: Error: Expected resource of type color [Resourc
                     }
                 }
                 """
-            ).indented(),
-            rClass("test.pkg", "@color/red", "@color/green", "@color/blue"),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        rClass("test.pkg", "@color/red", "@color/green", "@color/blue"),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testColorInt2() {
-        val expected =
-            """
+  fun testColorInt2() {
+    val expected =
+      """
 src/test/pkg/ColorTest.java:22: Error: Should pass resolved color instead of resource id here: getResources().getColor(actualColor) [ResourceAsColor]
         setColor2(actualColor); // ERROR
                   ~~~~~~~~~~~
@@ -135,10 +143,11 @@ src/test/pkg/ColorTest.java:17: Error: Expected a color resource id (R.color.) b
                   ~~~~~~~~~~~
 4 errors, 0 warnings
 """
-        lint().files(
-            java(
-                "src/test/pkg/ColorTest.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/ColorTest.java",
+            """
                 package test.pkg;
                 import androidx.annotation.ColorInt;
                 import androidx.annotation.ColorRes;
@@ -166,24 +175,28 @@ src/test/pkg/ColorTest.java:17: Error: Expected a color resource id (R.color.) b
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testColorInt3() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=176321
-        val expected =
-            """
+  fun testColorInt3() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=176321
+    val expected =
+      """
 src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) but received an RGB integer [ResourceType]
         setColor(actualColor);
                  ~~~~~~~~~~~
 1 errors, 0 warnings
 """
-        lint().files(
-            java(
-                "src/test/pkg/ColorTest.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/ColorTest.java",
+            """
                 package test.pkg;
                 import android.content.Context;
                 import android.content.res.Resources;
@@ -198,15 +211,19 @@ src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) b
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testPx() {
-        lint().files(
-            java(
-                """
+  fun testPx() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import static androidx.annotation.Dimension.DP;
@@ -264,10 +281,14 @@ src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) b
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).allowDuplicates().run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowDuplicates()
+      .run()
+      .expect(
+        """
             src/test/pkg/PxTest.java:27: Error: Expected a dimension resource id (R.dimen.) but received a pixel integer [ResourceType]
                     setDimensionId(actualSize);       // @Px to @DimenRes: ERROR 1
                                    ~~~~~~~~~~
@@ -300,54 +321,57 @@ src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) b
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~
             10 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testPx2() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=229189
+  fun testPx2() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=229189
 
-        lint().files(
-            java(
-                "" +
-                    "\n" +
-                    "package com.example;\n" +
-                    "\n" +
-                    "import android.app.Activity;\n" +
-                    "import android.content.Context;\n" +
-                    "import androidx.annotation.Dimension;\n" +
-                    "import androidx.annotation.Px;\n" +
-                    "import android.util.TypedValue;\n" +
-                    "import android.widget.TextView;\n" +
-                    "\n" +
-                    "public class X extends Activity {\n" +
-                    "    public void test(TextView someView, boolean condition) {\n" +
-                    "        someView.setPadding(0, 0, 0, condition ? (int) convertDpToPixels(8) : 0);\n" +
-                    "        someView.setPadding(0, 0, 0, condition ? (int) convertDpToPixelsNoAnnotation(8) : 0);\n" +
-                    "        setPadding(0, 0, 0, condition ? (int) convertDpToPixelsNoAnnotation(8) : 0);\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @Dimension(unit = Dimension.PX)\n" +
-                    "    public float convertDpToPixels(final float dp) {\n" +
-                    "        Context context = this;\n" +
-                    "        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public float convertDpToPixelsNoAnnotation(final float dp) {\n" +
-                    "        Context context = this;\n" +
-                    "        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    private void setPadding(@Px int a, @Px int b, @Px int c, @Px int d) {\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+    lint()
+      .files(
+        java(
+          "" +
+            "\n" +
+            "package com.example;\n" +
+            "\n" +
+            "import android.app.Activity;\n" +
+            "import android.content.Context;\n" +
+            "import androidx.annotation.Dimension;\n" +
+            "import androidx.annotation.Px;\n" +
+            "import android.util.TypedValue;\n" +
+            "import android.widget.TextView;\n" +
+            "\n" +
+            "public class X extends Activity {\n" +
+            "    public void test(TextView someView, boolean condition) {\n" +
+            "        someView.setPadding(0, 0, 0, condition ? (int) convertDpToPixels(8) : 0);\n" +
+            "        someView.setPadding(0, 0, 0, condition ? (int) convertDpToPixelsNoAnnotation(8) : 0);\n" +
+            "        setPadding(0, 0, 0, condition ? (int) convertDpToPixelsNoAnnotation(8) : 0);\n" +
+            "    }\n" +
+            "\n" +
+            "    @Dimension(unit = Dimension.PX)\n" +
+            "    public float convertDpToPixels(final float dp) {\n" +
+            "        Context context = this;\n" +
+            "        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());\n" +
+            "    }\n" +
+            "\n" +
+            "    public float convertDpToPixelsNoAnnotation(final float dp) {\n" +
+            "        Context context = this;\n" +
+            "        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());\n" +
+            "    }\n" +
+            "\n" +
+            "    private void setPadding(@Px int a, @Px int b, @Px int c, @Px int d) {\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testResourceType() {
-        val expected =
-            """
+  fun testResourceType() {
+    val expected =
+      """
 src/p1/p2/Flow.java:13: Error: Expected resource of type drawable [ResourceType]
         resources.getDrawable(10); // ERROR
                               ~~
@@ -383,10 +407,11 @@ src/p1/p2/Flow.java:120: Error: Expected resource of type font [ResourceType]
                             ~~~~~~~~~~~~~~~~~~~~~~
 11 errors, 0 warnings
 """
-        lint().files(
-            java(
-                "src/p1/p2/Flow.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/p1/p2/Flow.java",
+            """
                 import android.content.res.Resources;
                 import androidx.annotation.DrawableRes;
                 import androidx.annotation.FontRes;
@@ -520,14 +545,17 @@ src/p1/p2/Flow.java:120: Error: Expected resource of type font [ResourceType]
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testTypes2() {
-        val expected =
-            """
+  fun testTypes2() {
+    val expected =
+      """
 src/test/pkg/ActivityType.java:5: Error: Expected resource of type drawable [ResourceType]
     SKI(1),
         ~
@@ -536,10 +564,11 @@ src/test/pkg/ActivityType.java:6: Error: Expected resource of type drawable [Res
               ~
 2 errors, 0 warnings
 """
-        lint().files(
-            java(
-                "src/test/pkg/ActivityType.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/ActivityType.java",
+            """
                 import androidx.annotation.DrawableRes;
                 @SuppressWarnings({"ClassNameDiffersFromFileName","FieldCanBeLocal"})
                 enum ActivityType {
@@ -553,23 +582,27 @@ src/test/pkg/ActivityType.java:6: Error: Expected resource of type drawable [Res
                         mIconResId = iconResId;
                     }
                 }"""
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testConstructor() {
-        val expected =
-            """
+  fun testConstructor() {
+    val expected =
+      """
 src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable [ResourceType]
         new ConstructorTest(1, 3);
                             ~
 1 errors, 0 warnings
 """
-        lint().files(
-            java(
-                "src/test/pkg/ConstructorTest.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/ConstructorTest.java",
+            """
                 package test.pkg;
                 import androidx.annotation.DrawableRes;
                 import androidx.annotation.IntRange;
@@ -592,16 +625,20 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testColorAsDrawable() {
+  fun testColorAsDrawable() {
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package p1.p2;
                 import android.content.Context;
                 import android.view.View;
@@ -614,16 +651,20 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testIdResource() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=220612
-        lint().files(
-            java(
-                "src/com./example/myapplication/Test1.java",
-                """
+  fun testIdResource() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=220612
+    lint()
+      .files(
+        java(
+            "src/com./example/myapplication/Test1.java",
+            """
                 package com.example.myapplication;
                 import androidx.annotation.IdRes;
                 import androidx.annotation.LayoutRes;
@@ -641,10 +682,11 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         this.visible = true;
                     }
                 }"""
-            ).indented(),
-            java(
-                "src/com/example/myapplication/Test2.java",
-                """
+          )
+          .indented(),
+        java(
+            "src/com/example/myapplication/Test2.java",
+            """
                 package com.example.myapplication;
                 import androidx.annotation.IdRes;
                 import androidx.annotation.StringRes;
@@ -661,237 +703,257 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         }
                     }
                 }"""
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMultipleResourceTypes() {
-        // Regression test for
-        //   https://code.google.com/p/android/issues/detail?id=187181
-        // Make sure that parameters which specify multiple resource types are handled
-        // correctly.
-        val expected =
-            "src/test/pkg/ResourceTypeTest.java:14: Error: Expected resource of type drawable or string [ResourceType]\n" +
-                "        new ResourceTypeTest(res, R.raw.my_raw_file); // ERROR\n" +
-                "                                  ~~~~~~~~~~~~~~~~~\n" +
-                "1 errors, 0 warnings\n"
-        lint().files(
-            java(
-                "src/test/pkg/ResourceTypeTest.java",
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import android.content.res.Resources;\n" +
-                    "import androidx.annotation.DrawableRes;\n" +
-                    "import androidx.annotation.StringRes;\n" +
-                    "\n" +
-                    "public class ResourceTypeTest {\n" +
-                    "    public ResourceTypeTest(Resources res, @DrawableRes @StringRes int id) {\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static void test(Resources res) {\n" +
-                    "        new ResourceTypeTest(res, R.drawable.ic_announcement_24dp); // OK\n" +
-                    "        new ResourceTypeTest(res, R.string.action_settings); // OK\n" +
-                    "        new ResourceTypeTest(res, R.raw.my_raw_file); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static final class R {\n" +
-                    "        public static final class drawable {\n" +
-                    "            public static final int ic_announcement_24dp = 0x7f0a0000;\n" +
-                    "        }\n" +
-                    "        public static final class string {\n" +
-                    "            public static final int action_settings = 0x7f0a0001;\n" +
-                    "        }\n" +
-                    "        public static final class raw {\n" +
-                    "            public static final int my_raw_file = 0x7f0a0002;\n" +
-                    "        }\n" +
-                    "    }" +
-                    "}"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+  fun testMultipleResourceTypes() {
+    // Regression test for
+    //   https://code.google.com/p/android/issues/detail?id=187181
+    // Make sure that parameters which specify multiple resource types are handled
+    // correctly.
+    val expected =
+      "src/test/pkg/ResourceTypeTest.java:14: Error: Expected resource of type drawable or string [ResourceType]\n" +
+        "        new ResourceTypeTest(res, R.raw.my_raw_file); // ERROR\n" +
+        "                                  ~~~~~~~~~~~~~~~~~\n" +
+        "1 errors, 0 warnings\n"
+    lint()
+      .files(
+        java(
+          "src/test/pkg/ResourceTypeTest.java",
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.content.res.Resources;\n" +
+            "import androidx.annotation.DrawableRes;\n" +
+            "import androidx.annotation.StringRes;\n" +
+            "\n" +
+            "public class ResourceTypeTest {\n" +
+            "    public ResourceTypeTest(Resources res, @DrawableRes @StringRes int id) {\n" +
+            "    }\n" +
+            "\n" +
+            "    public static void test(Resources res) {\n" +
+            "        new ResourceTypeTest(res, R.drawable.ic_announcement_24dp); // OK\n" +
+            "        new ResourceTypeTest(res, R.string.action_settings); // OK\n" +
+            "        new ResourceTypeTest(res, R.raw.my_raw_file); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    public static final class R {\n" +
+            "        public static final class drawable {\n" +
+            "            public static final int ic_announcement_24dp = 0x7f0a0000;\n" +
+            "        }\n" +
+            "        public static final class string {\n" +
+            "            public static final int action_settings = 0x7f0a0001;\n" +
+            "        }\n" +
+            "        public static final class raw {\n" +
+            "            public static final int my_raw_file = 0x7f0a0002;\n" +
+            "        }\n" +
+            "    }" +
+            "}"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testComparingResourceTypesJava() {
-        val expected = "" +
-            "src/test/pkg/ResourceTypeTest.java:9: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+  fun testComparingResourceTypesJava() {
+    val expected =
+      "" +
+        "src/test/pkg/ResourceTypeTest.java:9: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+        "        if (id < 0) { // ERROR\n" +
+        "            ~~~~~~\n" +
+        "src/test/pkg/ResourceTypeTest.java:11: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+        "        if (0 >= id) { // ERROR\n" +
+        "            ~~~~~~~\n" +
+        "2 errors, 0 warnings\n"
+
+    lint()
+      .files(
+        java(
+          "src/test/pkg/ResourceTypeTest.java",
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.content.res.Resources;\n" +
+            "import androidx.annotation.DrawableRes;\n" +
+            "import androidx.annotation.StringRes;\n" +
+            "\n" +
+            "public class ResourceTypeTest {\n" +
+            "    public void test(Resources res, @DrawableRes @StringRes int id) {\n" +
             "        if (id < 0) { // ERROR\n" +
-            "            ~~~~~~\n" +
-            "src/test/pkg/ResourceTypeTest.java:11: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+            "        }\n" +
             "        if (0 >= id) { // ERROR\n" +
-            "            ~~~~~~~\n" +
-            "2 errors, 0 warnings\n"
+            "        }\n" +
+            "        if (id == 0) { // OK\n" +
+            "        }\n" +
+            "        if (id != 0) { // OK\n" +
+            "        }\n" +
+            "    }\n" +
+            "}"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowDuplicates()
+      .run()
+      .expect(expected)
+  }
 
-        lint().files(
-            java(
-                "src/test/pkg/ResourceTypeTest.java",
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import android.content.res.Resources;\n" +
-                    "import androidx.annotation.DrawableRes;\n" +
-                    "import androidx.annotation.StringRes;\n" +
-                    "\n" +
-                    "public class ResourceTypeTest {\n" +
-                    "    public void test(Resources res, @DrawableRes @StringRes int id) {\n" +
-                    "        if (id < 0) { // ERROR\n" +
-                    "        }\n" +
-                    "        if (0 >= id) { // ERROR\n" +
-                    "        }\n" +
-                    "        if (id == 0) { // OK\n" +
-                    "        }\n" +
-                    "        if (id != 0) { // OK\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).allowDuplicates().run().expect(expected)
-    }
+  fun testComparingResourceTypesKotlin() {
+    val expected =
+      "" +
+        "src/test/pkg/ResourceTypeTest.kt:9: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+        "        if (id < 0) { // ERROR\n" +
+        "            ~~~~~~\n" +
+        "src/test/pkg/ResourceTypeTest.kt:11: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+        "        if (0 >= id) { // ERROR\n" +
+        "            ~~~~~~~\n" +
+        "2 errors, 0 warnings\n"
 
-    fun testComparingResourceTypesKotlin() {
-        val expected = "" +
-            "src/test/pkg/ResourceTypeTest.kt:9: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+    lint()
+      .files(
+        kotlin(
+          "src/test/pkg/ResourceTypeTest.kt",
+          "" +
+            "package test.pkg\n" +
+            "\n" +
+            "import android.content.res.Resources\n" +
+            "import androidx.annotation.DrawableRes\n" +
+            "import androidx.annotation.StringRes\n" +
+            "\n" +
+            "class ResourceTypeTest {\n" +
+            "    fun test(res: Resources, @DrawableRes @StringRes id: Int) {\n" +
             "        if (id < 0) { // ERROR\n" +
-            "            ~~~~~~\n" +
-            "src/test/pkg/ResourceTypeTest.kt:11: Error: Comparing resource types (@DrawableRes) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative [ResourceType]\n" +
+            "        }\n" +
             "        if (0 >= id) { // ERROR\n" +
-            "            ~~~~~~~\n" +
-            "2 errors, 0 warnings\n"
+            "        }\n" +
+            "        if (id == 0) { // OK\n" +
+            "        }\n" +
+            "        if (id != 0) { // OK\n" +
+            "        }\n" +
+            "    }\n" +
+            "}"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowDuplicates()
+      .run()
+      .expect(expected)
+  }
 
-        lint().files(
-            kotlin(
-                "src/test/pkg/ResourceTypeTest.kt",
-                "" +
-                    "package test.pkg\n" +
-                    "\n" +
-                    "import android.content.res.Resources\n" +
-                    "import androidx.annotation.DrawableRes\n" +
-                    "import androidx.annotation.StringRes\n" +
-                    "\n" +
-                    "class ResourceTypeTest {\n" +
-                    "    fun test(res: Resources, @DrawableRes @StringRes id: Int) {\n" +
-                    "        if (id < 0) { // ERROR\n" +
-                    "        }\n" +
-                    "        if (0 >= id) { // ERROR\n" +
-                    "        }\n" +
-                    "        if (id == 0) { // OK\n" +
-                    "        }\n" +
-                    "        if (id != 0) { // OK\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).allowDuplicates().run().expect(expected)
-    }
+  fun testHalfFloats() {
+    lint()
+      .files(
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "\n" +
+            "import androidx.annotation.ColorInt;\n" +
+            "import androidx.annotation.DimenRes;\n" +
+            "import androidx.annotation.HalfFloat;\n" +
+            "import androidx.annotation.Px;\n" +
+            "import androidx.annotation.StringRes;\n" +
+            "\n" +
+            "@SuppressWarnings({\"UnnecessaryLocalVariable\", \"ResultOfMethodCallIgnored\", \"WeakerAccess\"})\n" +
+            "public class HalfFloatTest {\n" +
+            "    public void method1(@HalfFloat short foo) {\n" +
+            "    }\n" +
+            "\n" +
+            "    @HalfFloat\n" +
+            "    public short method2() {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testHalfFloat() {\n" +
+            "        int myFloat = method2(); // WARN: widening\n" +
+            "        short myFloat2 = method2();\n" +
+            "        boolean x1 = myFloat2 != 0; // implicit conversion\n" +
+            "        method1(getDimension1()); // ERROR\n" +
+            "        method1(getDimension2()); // ERROR\n" +
+            "        method1(getActualColor()); // ERROR\n" +
+            "        method1(getTextId()); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testConstants() {\n" +
+            "        // TODO: Look for constant usages\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testOperations(@HalfFloat short float1, short float2) {\n" +
+            "        boolean x1 = float1 < float2;\n" +
+            "        boolean x2 = float2 > float1;\n" +
+            "        // because implicit promotions to int\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testWidening(@HalfFloat short float1, short float2) {\n" +
+            "        short result1 = float1; // ok\n" +
+            "        int result2 = float2; // error: widening\n" +
+            "        Math.abs(float2); // error: widening\n" +
+            "        int result3 = float1 + 1; // error: widening\n" +
+            "        boolean result4 = float1 + 1 > 5; // error: widening\n" +
+            "        byte b = 1;\n" +
+            "        method1(b); // ERROR: widening\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testWrongMethod(@HalfFloat short float1) {\n" +
+            "        Math.round(float1); // Error: should use Half.round\n" +
+            "    }\n" +
+            "\n" +
+            "\n" +
+            "    @DimenRes\n" +
+            "    public abstract int getDimension1();\n" +
+            "    @ColorInt\n" +
+            "    public abstract int getActualColor();\n" +
+            "    @StringRes\n" +
+            "    public abstract int getTextId();\n" +
+            "    public abstract void setDimension1(@DimenRes int dimension);\n" +
+            "    @Px\n" +
+            "    public abstract int getDimension2();\n" +
+            "    public abstract void setDimension2(@Px int dimension);\n" +
+            "\n" +
+            "    // TODO: Arrays\n" +
+            "    // TODO: Add cast\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        "" +
+          "src/test/pkg/HalfFloatTest.java:23: Error: Expected a half float here, not a resource id [HalfFloat]\n" +
+          "        method1(getDimension1()); // ERROR\n" +
+          "                ~~~~~~~~~~~~~~~\n" +
+          "src/test/pkg/HalfFloatTest.java:24: Error: Expected a half float here, not a dimension [HalfFloat]\n" +
+          "        method1(getDimension2()); // ERROR\n" +
+          "                ~~~~~~~~~~~~~~~\n" +
+          "src/test/pkg/HalfFloatTest.java:25: Error: Expected a half float here, not a color [HalfFloat]\n" +
+          "        method1(getActualColor()); // ERROR\n" +
+          "                ~~~~~~~~~~~~~~~~\n" +
+          "src/test/pkg/HalfFloatTest.java:26: Error: Expected a half float here, not a resource id [HalfFloat]\n" +
+          "        method1(getTextId()); // ERROR\n" +
+          "                ~~~~~~~~~~~\n" +
+          "src/test/pkg/HalfFloatTest.java:43: Error: Half-float type in expression widened to int [HalfFloat]\n" +
+          "        int result3 = float1 + 1; // error: widening\n" +
+          "                      ~~~~~~\n" +
+          "src/test/pkg/HalfFloatTest.java:44: Error: Half-float type in expression widened to int [HalfFloat]\n" +
+          "        boolean result4 = float1 + 1 > 5; // error: widening\n" +
+          "                          ~~~~~~\n" +
+          "src/test/pkg/HalfFloatTest.java:50: Error: Half-float type in expression widened to int [HalfFloat]\n" +
+          "        Math.round(float1); // Error: should use Half.round\n" +
+          "                   ~~~~~~\n" +
+          "7 errors, 0 warnings\n"
+      )
+  }
 
-    fun testHalfFloats() {
-        lint().files(
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "\n" +
-                    "import androidx.annotation.ColorInt;\n" +
-                    "import androidx.annotation.DimenRes;\n" +
-                    "import androidx.annotation.HalfFloat;\n" +
-                    "import androidx.annotation.Px;\n" +
-                    "import androidx.annotation.StringRes;\n" +
-                    "\n" +
-                    "@SuppressWarnings({\"UnnecessaryLocalVariable\", \"ResultOfMethodCallIgnored\", \"WeakerAccess\"})\n" +
-                    "public class HalfFloatTest {\n" +
-                    "    public void method1(@HalfFloat short foo) {\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @HalfFloat\n" +
-                    "    public short method2() {\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testHalfFloat() {\n" +
-                    "        int myFloat = method2(); // WARN: widening\n" +
-                    "        short myFloat2 = method2();\n" +
-                    "        boolean x1 = myFloat2 != 0; // implicit conversion\n" +
-                    "        method1(getDimension1()); // ERROR\n" +
-                    "        method1(getDimension2()); // ERROR\n" +
-                    "        method1(getActualColor()); // ERROR\n" +
-                    "        method1(getTextId()); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testConstants() {\n" +
-                    "        // TODO: Look for constant usages\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testOperations(@HalfFloat short float1, short float2) {\n" +
-                    "        boolean x1 = float1 < float2;\n" +
-                    "        boolean x2 = float2 > float1;\n" +
-                    "        // because implicit promotions to int\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testWidening(@HalfFloat short float1, short float2) {\n" +
-                    "        short result1 = float1; // ok\n" +
-                    "        int result2 = float2; // error: widening\n" +
-                    "        Math.abs(float2); // error: widening\n" +
-                    "        int result3 = float1 + 1; // error: widening\n" +
-                    "        boolean result4 = float1 + 1 > 5; // error: widening\n" +
-                    "        byte b = 1;\n" +
-                    "        method1(b); // ERROR: widening\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testWrongMethod(@HalfFloat short float1) {\n" +
-                    "        Math.round(float1); // Error: should use Half.round\n" +
-                    "    }\n" +
-                    "\n" +
-                    "\n" +
-                    "    @DimenRes\n" +
-                    "    public abstract int getDimension1();\n" +
-                    "    @ColorInt\n" +
-                    "    public abstract int getActualColor();\n" +
-                    "    @StringRes\n" +
-                    "    public abstract int getTextId();\n" +
-                    "    public abstract void setDimension1(@DimenRes int dimension);\n" +
-                    "    @Px\n" +
-                    "    public abstract int getDimension2();\n" +
-                    "    public abstract void setDimension2(@Px int dimension);\n" +
-                    "\n" +
-                    "    // TODO: Arrays\n" +
-                    "    // TODO: Add cast\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            "" +
-                "src/test/pkg/HalfFloatTest.java:23: Error: Expected a half float here, not a resource id [HalfFloat]\n" +
-                "        method1(getDimension1()); // ERROR\n" +
-                "                ~~~~~~~~~~~~~~~\n" +
-                "src/test/pkg/HalfFloatTest.java:24: Error: Expected a half float here, not a dimension [HalfFloat]\n" +
-                "        method1(getDimension2()); // ERROR\n" +
-                "                ~~~~~~~~~~~~~~~\n" +
-                "src/test/pkg/HalfFloatTest.java:25: Error: Expected a half float here, not a color [HalfFloat]\n" +
-                "        method1(getActualColor()); // ERROR\n" +
-                "                ~~~~~~~~~~~~~~~~\n" +
-                "src/test/pkg/HalfFloatTest.java:26: Error: Expected a half float here, not a resource id [HalfFloat]\n" +
-                "        method1(getTextId()); // ERROR\n" +
-                "                ~~~~~~~~~~~\n" +
-                "src/test/pkg/HalfFloatTest.java:43: Error: Half-float type in expression widened to int [HalfFloat]\n" +
-                "        int result3 = float1 + 1; // error: widening\n" +
-                "                      ~~~~~~\n" +
-                "src/test/pkg/HalfFloatTest.java:44: Error: Half-float type in expression widened to int [HalfFloat]\n" +
-                "        boolean result4 = float1 + 1 > 5; // error: widening\n" +
-                "                          ~~~~~~\n" +
-                "src/test/pkg/HalfFloatTest.java:50: Error: Half-float type in expression widened to int [HalfFloat]\n" +
-                "        Math.round(float1); // Error: should use Half.round\n" +
-                "                   ~~~~~~\n" +
-                "7 errors, 0 warnings\n"
-        )
-    }
-
-    fun testHalfFloatConstruction() {
-        // Regression test for https://issuetracker.google.com/72509078
-        lint().files(
-            kotlin(
-                """
+  fun testHalfFloatConstruction() {
+    // Regression test for https://issuetracker.google.com/72509078
+    lint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
 
                     import android.os.Build
@@ -905,768 +967,799 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         val v2 = Half(x)
                     }
                     """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAnyRes() {
-        // Make sure error messages for @AnyRes are handled right since it's now an
-        // enum set containing all possible resource types
-        val expected =
-            "src/test/pkg/AnyResTest.java:14: Error: Expected resource identifier (R.type.name) [ResourceType]\n" +
-                "        new AnyResTest(res, 52); // ERROR\n" +
-                "                            ~~\n" +
-                "1 errors, 0 warnings\n"
-        lint().files(
-            java(
-                "src/test/pkg/AnyResTest.java",
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import android.content.res.Resources;\n" +
-                    "import androidx.annotation.AnyRes;\n" +
-                    "\n" +
-                    "public class AnyResTest {\n" +
-                    "    public AnyResTest(Resources res, @AnyRes int id) {\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static void test(Resources res) {\n" +
-                    "        new AnyResTest(res, R.drawable.ic_announcement_24dp); // OK\n" +
-                    "        new AnyResTest(res, R.string.action_settings); // OK\n" +
-                    "        new AnyResTest(res, R.raw.my_raw_file); // OK\n" +
-                    "        new AnyResTest(res, 52); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static final class R {\n" +
-                    "        public static final class drawable {\n" +
-                    "            public static final int ic_announcement_24dp = 0x7f0a0000;\n" +
-                    "        }\n" +
-                    "        public static final class string {\n" +
-                    "            public static final int action_settings = 0x7f0a0001;\n" +
-                    "        }\n" +
-                    "        public static final class raw {\n" +
-                    "            public static final int my_raw_file = 0x7f0a0002;\n" +
-                    "        }\n" +
-                    "    }" +
-                    "}"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+  fun testAnyRes() {
+    // Make sure error messages for @AnyRes are handled right since it's now an
+    // enum set containing all possible resource types
+    val expected =
+      "src/test/pkg/AnyResTest.java:14: Error: Expected resource identifier (R.type.name) [ResourceType]\n" +
+        "        new AnyResTest(res, 52); // ERROR\n" +
+        "                            ~~\n" +
+        "1 errors, 0 warnings\n"
+    lint()
+      .files(
+        java(
+          "src/test/pkg/AnyResTest.java",
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.content.res.Resources;\n" +
+            "import androidx.annotation.AnyRes;\n" +
+            "\n" +
+            "public class AnyResTest {\n" +
+            "    public AnyResTest(Resources res, @AnyRes int id) {\n" +
+            "    }\n" +
+            "\n" +
+            "    public static void test(Resources res) {\n" +
+            "        new AnyResTest(res, R.drawable.ic_announcement_24dp); // OK\n" +
+            "        new AnyResTest(res, R.string.action_settings); // OK\n" +
+            "        new AnyResTest(res, R.raw.my_raw_file); // OK\n" +
+            "        new AnyResTest(res, 52); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    public static final class R {\n" +
+            "        public static final class drawable {\n" +
+            "            public static final int ic_announcement_24dp = 0x7f0a0000;\n" +
+            "        }\n" +
+            "        public static final class string {\n" +
+            "            public static final int action_settings = 0x7f0a0001;\n" +
+            "        }\n" +
+            "        public static final class raw {\n" +
+            "            public static final int my_raw_file = 0x7f0a0002;\n" +
+            "        }\n" +
+            "    }" +
+            "}"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testObtainStyledAttributes() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=201882
-        // obtainStyledAttributes normally expects a styleable but you can also supply a
-        // custom int array
-        lint().files(
-            java(
-                "src/test/pkg/ObtainTest.java",
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import android.app.Activity;\n" +
-                    "import android.content.Context;\n" +
-                    "import android.content.res.TypedArray;\n" +
-                    "import android.graphics.Color;\n" +
-                    "import android.util.AttributeSet;\n" +
-                    "\n" +
-                    "public class ObtainTest {\n" +
-                    "    public static void test1(Activity activity, float[] foregroundHsv, float[] backgroundHsv) {\n" +
-                    "        TypedArray attributes = activity.obtainStyledAttributes(\n" +
-                    "                new int[] {\n" +
-                    "                        R.attr.setup_wizard_navbar_theme,\n" +
-                    "                        android.R.attr.colorForeground,\n" +
-                    "                        android.R.attr.colorBackground });\n" +
-                    "        Color.colorToHSV(attributes.getColor(1, 0), foregroundHsv);\n" +
-                    "        Color.colorToHSV(attributes.getColor(2, 0), backgroundHsv);\n" +
-                    "        attributes.recycle();\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static void test2(Context context, AttributeSet attrs, int defStyle) {\n" +
-                    "        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BezelImageView,\n" +
-                    "                defStyle, 0);\n" +
-                    "        a.getDrawable(R.styleable.BezelImageView_maskDrawable);\n" +
-                    "        a.recycle();\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void test(Context context, AttributeSet attrs) {\n" +
-                    "        int[] attrsArray = new int[] {\n" +
-                    "                android.R.attr.entries, // 0\n" +
-                    "                android.R.attr.labelFor\n" +
-                    "        };\n" +
-                    "        TypedArray ta = context.obtainStyledAttributes(attrs, attrsArray);\n" +
-                    "        if(null == ta) {\n" +
-                    "            return;\n" +
-                    "        }\n" +
-                    "        CharSequence[] entries = ta.getTextArray(0);\n" +
-                    "        CharSequence label = ta.getText(1);\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static class R {\n" +
-                    "        public static class attr {\n" +
-                    "            public static final int setup_wizard_navbar_theme = 0x7f01003b;\n" +
-                    "        }\n" +
-                    "        public static class styleable {\n" +
-                    "            public static final int[] BezelImageView = {\n" +
-                    "                    0x7f01005d, 0x7f01005e, 0x7f01005f\n" +
-                    "            };\n" +
-                    "            public static final int BezelImageView_maskDrawable = 0;\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+  fun testObtainStyledAttributes() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=201882
+    // obtainStyledAttributes normally expects a styleable but you can also supply a
+    // custom int array
+    lint()
+      .files(
+        java(
+          "src/test/pkg/ObtainTest.java",
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.app.Activity;\n" +
+            "import android.content.Context;\n" +
+            "import android.content.res.TypedArray;\n" +
+            "import android.graphics.Color;\n" +
+            "import android.util.AttributeSet;\n" +
+            "\n" +
+            "public class ObtainTest {\n" +
+            "    public static void test1(Activity activity, float[] foregroundHsv, float[] backgroundHsv) {\n" +
+            "        TypedArray attributes = activity.obtainStyledAttributes(\n" +
+            "                new int[] {\n" +
+            "                        R.attr.setup_wizard_navbar_theme,\n" +
+            "                        android.R.attr.colorForeground,\n" +
+            "                        android.R.attr.colorBackground });\n" +
+            "        Color.colorToHSV(attributes.getColor(1, 0), foregroundHsv);\n" +
+            "        Color.colorToHSV(attributes.getColor(2, 0), backgroundHsv);\n" +
+            "        attributes.recycle();\n" +
+            "    }\n" +
+            "\n" +
+            "    public static void test2(Context context, AttributeSet attrs, int defStyle) {\n" +
+            "        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BezelImageView,\n" +
+            "                defStyle, 0);\n" +
+            "        a.getDrawable(R.styleable.BezelImageView_maskDrawable);\n" +
+            "        a.recycle();\n" +
+            "    }\n" +
+            "\n" +
+            "    public void test(Context context, AttributeSet attrs) {\n" +
+            "        int[] attrsArray = new int[] {\n" +
+            "                android.R.attr.entries, // 0\n" +
+            "                android.R.attr.labelFor\n" +
+            "        };\n" +
+            "        TypedArray ta = context.obtainStyledAttributes(attrs, attrsArray);\n" +
+            "        if(null == ta) {\n" +
+            "            return;\n" +
+            "        }\n" +
+            "        CharSequence[] entries = ta.getTextArray(0);\n" +
+            "        CharSequence label = ta.getText(1);\n" +
+            "    }\n" +
+            "\n" +
+            "    public static class R {\n" +
+            "        public static class attr {\n" +
+            "            public static final int setup_wizard_navbar_theme = 0x7f01003b;\n" +
+            "        }\n" +
+            "        public static class styleable {\n" +
+            "            public static final int[] BezelImageView = {\n" +
+            "                    0x7f01005d, 0x7f01005e, 0x7f01005f\n" +
+            "            };\n" +
+            "            public static final int BezelImageView_maskDrawable = 0;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testExtensionMethods() {
-        // Regression test for https://issuetracker.google.com/65602862
-        lint().files(
-            kotlin(
-                "" +
-                    "package test.pkg\n" +
-                    "\n" +
-                    "import android.app.Activity\n" +
-                    "import android.content.Context\n" +
-                    "import android.content.res.Resources\n" +
-                    "import androidx.annotation.AttrRes\n" +
-                    "import androidx.annotation.ColorInt\n" +
-                    "\n" +
-                    "class TestActivity: Activity() {\n" +
-                    "\n" +
-                    "    @ColorInt\n" +
-                    "    fun Context.getColor1(@AttrRes attrId: Int, @ColorInt defaultColor: Int) = theme.getColor(attrId, defaultColor)\n" +
-                    "    @ColorInt\n" +
-                    "    fun Context.getColor2(@AttrRes attrId: Int, @ColorInt defaultColor: Int) { return theme.getColor(attrId, defaultColor) }\n" +
-                    "    @ColorInt\n" +
-                    "    fun Context.getColor3(@AttrRes attrId: Int, @ColorInt defaultColor: Int) { return theme.getColor(defaultColor = defaultColor, attrId = attrId) }\n" +
-                    "    fun Context.getColor4() { return theme.getColor(defaultColor = 0xFFFFFF00, attrId = 0) }\n" +
-                    "    @ColorInt\n" +
-                    "    fun Resources.Theme.getColor(@AttrRes attrId: Int, @ColorInt defaultColor: Int): Int {\n" +
-                    "        return 0;\n" +
-                    "    }\n" +
-                    "}"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .checkMessage({ context, issue, severity, location, message, fixData ->
-                this.checkReportedError(
-                    context,
-                    issue,
-                    severity,
-                    location,
-                    message,
-                    fixData
-                )
-            }).run().expectClean()
-    }
+  fun testExtensionMethods() {
+    // Regression test for https://issuetracker.google.com/65602862
+    lint()
+      .files(
+        kotlin(
+          "" +
+            "package test.pkg\n" +
+            "\n" +
+            "import android.app.Activity\n" +
+            "import android.content.Context\n" +
+            "import android.content.res.Resources\n" +
+            "import androidx.annotation.AttrRes\n" +
+            "import androidx.annotation.ColorInt\n" +
+            "\n" +
+            "class TestActivity: Activity() {\n" +
+            "\n" +
+            "    @ColorInt\n" +
+            "    fun Context.getColor1(@AttrRes attrId: Int, @ColorInt defaultColor: Int) = theme.getColor(attrId, defaultColor)\n" +
+            "    @ColorInt\n" +
+            "    fun Context.getColor2(@AttrRes attrId: Int, @ColorInt defaultColor: Int) { return theme.getColor(attrId, defaultColor) }\n" +
+            "    @ColorInt\n" +
+            "    fun Context.getColor3(@AttrRes attrId: Int, @ColorInt defaultColor: Int) { return theme.getColor(defaultColor = defaultColor, attrId = attrId) }\n" +
+            "    fun Context.getColor4() { return theme.getColor(defaultColor = 0xFFFFFF00, attrId = 0) }\n" +
+            "    @ColorInt\n" +
+            "    fun Resources.Theme.getColor(@AttrRes attrId: Int, @ColorInt defaultColor: Int): Int {\n" +
+            "        return 0;\n" +
+            "    }\n" +
+            "}"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .checkMessage({ context, issue, severity, location, message, fixData ->
+        this.checkReportedError(context, issue, severity, location, message, fixData)
+      })
+      .run()
+      .expectClean()
+  }
 
-    fun testArgumentMapping() {
-        // Check that the argument mapping (where parameters are not in the same order
-        // as arguments, thanks to named and default parameters as well as extension methods)
-        // works correctly.
-        lint().files(
-            kotlin(
-                "@file:Suppress(\"unused\", \"UNUSED_PARAMETER\")\n" +
-                    "\n" +
-                    "package test.pkg\n" +
-                    "\n" +
-                    "import androidx.annotation.DimenRes\n" +
-                    "import androidx.annotation.DrawableRes\n" +
-                    "import androidx.annotation.StringRes\n" +
-                    "\n" +
-                    "fun target(@DrawableRes icon: Int = 0,\n" +
-                    "           @StringRes string: Int = 0,\n" +
-                    "           vararg @DimenRes dimensions: Int = IntArray(0)) {\n" +
-                    "}\n" +
-                    "\n" +
-                    "fun String.handleResourceTypes(@DrawableRes icon: Int = 0,\n" +
-                    "                               @StringRes string: Int = 0,\n" +
-                    "                               vararg @DimenRes dimensions: Int = IntArray(0)) {\n" +
-                    "}\n" +
-                    "\n" +
-                    "fun testNamedParametersAndDefaults(@DrawableRes myIcon: Int,\n" +
-                    "                                   @StringRes myString: Int,\n" +
-                    "                                   @DimenRes myDimension1: Int,\n" +
-                    "                                   @DimenRes myDimension2: Int) {\n" +
-                    "    target(myIcon) // OK\n" +
-                    "    target(myIcon, myString, myDimension1) // OK\n" +
-                    "    target(myIcon, myString, myDimension1, myDimension1) // OK\n" +
-                    "    target(icon = myIcon, string = myString, dimensions = myDimension1) // OK\n" +
-                    "    target(string = myString, dimensions = myDimension1, icon = myIcon) // OK\n" +
-                    "    target(icon = myIcon) // OK\n" +
-                    "    target(string = myString) // OK\n" +
-                    "    target(dimensions = myDimension1) // OK\n" +
-                    "    target(myIcon, dimensions = myDimension1) // OK\n" +
-                    "\n" +
-                    "    target(myString) // ERROR\n" +
-                    "    target(dimensions = myIcon) // ERROR\n" +
-                    "    target(myIcon, dimensions = myString) // ERROR\n" +
-                    "}\n" +
-                    "\n" +
-                    "fun testExtensionMethods(\n" +
-                    "        string: String,\n" +
-                    "        @DrawableRes myIcon: Int,\n" +
-                    "        @StringRes myString: Int,\n" +
-                    "        @DimenRes myDimension1: Int,\n" +
-                    "        @DimenRes myDimension2: Int) {\n" +
-                    "    string.handleResourceTypes(myIcon) // OK\n" +
-                    "    string.handleResourceTypes(myIcon, myString, myDimension1) // OK\n" +
-                    "    string.handleResourceTypes(myIcon, myString, myDimension1, myDimension1) // OK\n" +
-                    "    string.handleResourceTypes(icon = myIcon, string = myString, dimensions = myDimension1) // OK\n" +
-                    "    string.handleResourceTypes(string = myString, dimensions = myDimension1, icon = myIcon) // OK\n" +
-                    "    string.handleResourceTypes(icon = myIcon) // OK\n" +
-                    "    string.handleResourceTypes(string = myString) // OK\n" +
-                    "    string.handleResourceTypes(dimensions = myDimension1) // OK\n" +
-                    "    string.handleResourceTypes(myIcon, dimensions = myDimension1) // OK\n" +
-                    "\n" +
-                    "    string.handleResourceTypes(myString) // ERROR\n" +
-                    "    string.handleResourceTypes(dimensions = myIcon) // ERROR\n" +
-                    "    string.handleResourceTypes(myIcon, dimensions = myString) // ERROR\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            "src/test/pkg/test.kt:33: Error: Expected resource of type drawable [ResourceType]\n" +
-                "    target(myString) // ERROR\n" +
-                "           ~~~~~~~~\n" +
-                "src/test/pkg/test.kt:34: Error: Expected resource of type dimen [ResourceType]\n" +
-                "    target(dimensions = myIcon) // ERROR\n" +
-                "                        ~~~~~~\n" +
-                "src/test/pkg/test.kt:35: Error: Expected resource of type dimen [ResourceType]\n" +
-                "    target(myIcon, dimensions = myString) // ERROR\n" +
-                "                                ~~~~~~~~\n" +
-                "src/test/pkg/test.kt:54: Error: Expected resource of type drawable [ResourceType]\n" +
-                "    string.handleResourceTypes(myString) // ERROR\n" +
-                "                               ~~~~~~~~\n" +
-                "src/test/pkg/test.kt:55: Error: Expected resource of type dimen [ResourceType]\n" +
-                "    string.handleResourceTypes(dimensions = myIcon) // ERROR\n" +
-                "                                            ~~~~~~\n" +
-                "src/test/pkg/test.kt:56: Error: Expected resource of type dimen [ResourceType]\n" +
-                "    string.handleResourceTypes(myIcon, dimensions = myString) // ERROR\n" +
-                "                                                    ~~~~~~~~\n" +
-                "6 errors, 0 warnings\n"
-        )
-    }
+  fun testArgumentMapping() {
+    // Check that the argument mapping (where parameters are not in the same order
+    // as arguments, thanks to named and default parameters as well as extension methods)
+    // works correctly.
+    lint()
+      .files(
+        kotlin(
+          "@file:Suppress(\"unused\", \"UNUSED_PARAMETER\")\n" +
+            "\n" +
+            "package test.pkg\n" +
+            "\n" +
+            "import androidx.annotation.DimenRes\n" +
+            "import androidx.annotation.DrawableRes\n" +
+            "import androidx.annotation.StringRes\n" +
+            "\n" +
+            "fun target(@DrawableRes icon: Int = 0,\n" +
+            "           @StringRes string: Int = 0,\n" +
+            "           vararg @DimenRes dimensions: Int = IntArray(0)) {\n" +
+            "}\n" +
+            "\n" +
+            "fun String.handleResourceTypes(@DrawableRes icon: Int = 0,\n" +
+            "                               @StringRes string: Int = 0,\n" +
+            "                               vararg @DimenRes dimensions: Int = IntArray(0)) {\n" +
+            "}\n" +
+            "\n" +
+            "fun testNamedParametersAndDefaults(@DrawableRes myIcon: Int,\n" +
+            "                                   @StringRes myString: Int,\n" +
+            "                                   @DimenRes myDimension1: Int,\n" +
+            "                                   @DimenRes myDimension2: Int) {\n" +
+            "    target(myIcon) // OK\n" +
+            "    target(myIcon, myString, myDimension1) // OK\n" +
+            "    target(myIcon, myString, myDimension1, myDimension1) // OK\n" +
+            "    target(icon = myIcon, string = myString, dimensions = myDimension1) // OK\n" +
+            "    target(string = myString, dimensions = myDimension1, icon = myIcon) // OK\n" +
+            "    target(icon = myIcon) // OK\n" +
+            "    target(string = myString) // OK\n" +
+            "    target(dimensions = myDimension1) // OK\n" +
+            "    target(myIcon, dimensions = myDimension1) // OK\n" +
+            "\n" +
+            "    target(myString) // ERROR\n" +
+            "    target(dimensions = myIcon) // ERROR\n" +
+            "    target(myIcon, dimensions = myString) // ERROR\n" +
+            "}\n" +
+            "\n" +
+            "fun testExtensionMethods(\n" +
+            "        string: String,\n" +
+            "        @DrawableRes myIcon: Int,\n" +
+            "        @StringRes myString: Int,\n" +
+            "        @DimenRes myDimension1: Int,\n" +
+            "        @DimenRes myDimension2: Int) {\n" +
+            "    string.handleResourceTypes(myIcon) // OK\n" +
+            "    string.handleResourceTypes(myIcon, myString, myDimension1) // OK\n" +
+            "    string.handleResourceTypes(myIcon, myString, myDimension1, myDimension1) // OK\n" +
+            "    string.handleResourceTypes(icon = myIcon, string = myString, dimensions = myDimension1) // OK\n" +
+            "    string.handleResourceTypes(string = myString, dimensions = myDimension1, icon = myIcon) // OK\n" +
+            "    string.handleResourceTypes(icon = myIcon) // OK\n" +
+            "    string.handleResourceTypes(string = myString) // OK\n" +
+            "    string.handleResourceTypes(dimensions = myDimension1) // OK\n" +
+            "    string.handleResourceTypes(myIcon, dimensions = myDimension1) // OK\n" +
+            "\n" +
+            "    string.handleResourceTypes(myString) // ERROR\n" +
+            "    string.handleResourceTypes(dimensions = myIcon) // ERROR\n" +
+            "    string.handleResourceTypes(myIcon, dimensions = myString) // ERROR\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        "src/test/pkg/test.kt:33: Error: Expected resource of type drawable [ResourceType]\n" +
+          "    target(myString) // ERROR\n" +
+          "           ~~~~~~~~\n" +
+          "src/test/pkg/test.kt:34: Error: Expected resource of type dimen [ResourceType]\n" +
+          "    target(dimensions = myIcon) // ERROR\n" +
+          "                        ~~~~~~\n" +
+          "src/test/pkg/test.kt:35: Error: Expected resource of type dimen [ResourceType]\n" +
+          "    target(myIcon, dimensions = myString) // ERROR\n" +
+          "                                ~~~~~~~~\n" +
+          "src/test/pkg/test.kt:54: Error: Expected resource of type drawable [ResourceType]\n" +
+          "    string.handleResourceTypes(myString) // ERROR\n" +
+          "                               ~~~~~~~~\n" +
+          "src/test/pkg/test.kt:55: Error: Expected resource of type dimen [ResourceType]\n" +
+          "    string.handleResourceTypes(dimensions = myIcon) // ERROR\n" +
+          "                                            ~~~~~~\n" +
+          "src/test/pkg/test.kt:56: Error: Expected resource of type dimen [ResourceType]\n" +
+          "    string.handleResourceTypes(myIcon, dimensions = myString) // ERROR\n" +
+          "                                                    ~~~~~~~~\n" +
+          "6 errors, 0 warnings\n"
+      )
+  }
 
-    fun testTypes() {
-        lint().files(
-            java(
-                "package p1.p2;\n" +
-                    "import android.annotation.SuppressLint;\n" +
-                    "import android.annotation.TargetApi;\n" +
-                    "import android.app.Notification;\n" +
-                    "import android.content.Context;\n" +
-                    "import android.content.Intent;\n" +
-                    "import android.content.ServiceConnection;\n" +
-                    "import android.content.res.Resources;\n" +
-                    "import android.os.Build;\n" +
-                    "import androidx.annotation.*;\n" +
-                    "import android.view.View;\n" +
-                    "\n" +
-                    "import static android.content.Context.CONNECTIVITY_SERVICE;\n" +
-                    "\n" +
-                    "@SuppressWarnings(\"UnusedDeclaration\")\n" +
-                    "public class X {\n" +
-                    "    public void testResourceTypeParameters(Context context, int unknown) {\n" +
-                    "        Resources resources = context.getResources();\n" +
-                    "        String ok1 = resources.getString(R.string.app_name);\n" +
-                    "        String ok2 = resources.getString(unknown);\n" +
-                    "        String ok3 = resources.getString(android.R.string.ok);\n" +
-                    "        int ok4 = resources.getColor(android.R.color.black);\n" +
-                    "        if (testResourceTypeReturnValues(context, true) == R.drawable.ic_launcher) { // ok\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        //String ok2 = resources.getString(R.string.app_name, 1, 2, 3);\n" +
-                    "        float error1 = resources.getDimension(/*Expected resource of type dimen*/R.string.app_name/**/);\n" +
-                    "        boolean error2 = resources.getBoolean(/*Expected resource of type bool*/R.string.app_name/**/);\n" +
-                    "        boolean error3 = resources.getBoolean(/*Expected resource of type bool*/android.R.drawable.btn_star/**/);\n" +
-                    "        if (testResourceTypeReturnValues(context, true) == /*Expected resource of type drawable*/R.string.app_name/**/) {\n" +
-                    "        }\n" +
-                    "        @SuppressWarnings(\"UnnecessaryLocalVariable\")\n" +
-                    "        int flow = R.string.app_name;\n" +
-                    "        @SuppressWarnings(\"UnnecessaryLocalVariable\")\n" +
-                    "        int flow2 = flow;\n" +
-                    "        boolean error4 = resources.getBoolean(/*Expected resource of type bool*/flow2/**/);\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @androidx.annotation.DrawableRes\n" +
-                    "    public int testResourceTypeReturnValues(Context context, boolean useString) {\n" +
-                    "        if (useString) {\n" +
-                    "            return /*Expected resource of type drawable*/R.string.app_name/**/; // error\n" +
-                    "        } else {\n" +
-                    "            return R.drawable.ic_launcher; // ok\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @ColorInt\n" +
-                    "    public int testResourceTypeReturnValues(Context context, @ColorRes int colorId, boolean useColor) {\n" +
-                    "        if (useColor) {\n" +
-                    "            return /*Should pass resolved color instead of resource id here: getResources().getColor(colorId)*/colorId/**/;\n" +
-                    "        } else {\n" +
-                    "            return /*Should pass resolved color instead of resource id here: getResources().getColor(R.color.my_color)*/R.color.my_color/**/;\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static final class R {\n" +
-                    "        public static final class drawable {\n" +
-                    "            public static final int ic_launcher=0x7f020057;\n" +
-                    "        }\n" +
-                    "        public static final class string {\n" +
-                    "            public static final int app_name=0x7f0a000e;\n" +
-                    "        }\n" +
-                    "        public static final class color {\n" +
-                    "            public static final int my_color=0x7f0a300e;\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectInlinedMessages()
-    }
+  fun testTypes() {
+    lint()
+      .files(
+        java(
+          "package p1.p2;\n" +
+            "import android.annotation.SuppressLint;\n" +
+            "import android.annotation.TargetApi;\n" +
+            "import android.app.Notification;\n" +
+            "import android.content.Context;\n" +
+            "import android.content.Intent;\n" +
+            "import android.content.ServiceConnection;\n" +
+            "import android.content.res.Resources;\n" +
+            "import android.os.Build;\n" +
+            "import androidx.annotation.*;\n" +
+            "import android.view.View;\n" +
+            "\n" +
+            "import static android.content.Context.CONNECTIVITY_SERVICE;\n" +
+            "\n" +
+            "@SuppressWarnings(\"UnusedDeclaration\")\n" +
+            "public class X {\n" +
+            "    public void testResourceTypeParameters(Context context, int unknown) {\n" +
+            "        Resources resources = context.getResources();\n" +
+            "        String ok1 = resources.getString(R.string.app_name);\n" +
+            "        String ok2 = resources.getString(unknown);\n" +
+            "        String ok3 = resources.getString(android.R.string.ok);\n" +
+            "        int ok4 = resources.getColor(android.R.color.black);\n" +
+            "        if (testResourceTypeReturnValues(context, true) == R.drawable.ic_launcher) { // ok\n" +
+            "        }\n" +
+            "\n" +
+            "        //String ok2 = resources.getString(R.string.app_name, 1, 2, 3);\n" +
+            "        float error1 = resources.getDimension(/*Expected resource of type dimen*/R.string.app_name/**/);\n" +
+            "        boolean error2 = resources.getBoolean(/*Expected resource of type bool*/R.string.app_name/**/);\n" +
+            "        boolean error3 = resources.getBoolean(/*Expected resource of type bool*/android.R.drawable.btn_star/**/);\n" +
+            "        if (testResourceTypeReturnValues(context, true) == /*Expected resource of type drawable*/R.string.app_name/**/) {\n" +
+            "        }\n" +
+            "        @SuppressWarnings(\"UnnecessaryLocalVariable\")\n" +
+            "        int flow = R.string.app_name;\n" +
+            "        @SuppressWarnings(\"UnnecessaryLocalVariable\")\n" +
+            "        int flow2 = flow;\n" +
+            "        boolean error4 = resources.getBoolean(/*Expected resource of type bool*/flow2/**/);\n" +
+            "    }\n" +
+            "\n" +
+            "    @androidx.annotation.DrawableRes\n" +
+            "    public int testResourceTypeReturnValues(Context context, boolean useString) {\n" +
+            "        if (useString) {\n" +
+            "            return /*Expected resource of type drawable*/R.string.app_name/**/; // error\n" +
+            "        } else {\n" +
+            "            return R.drawable.ic_launcher; // ok\n" +
+            "        }\n" +
+            "    }\n" +
+            "\n" +
+            "    @ColorInt\n" +
+            "    public int testResourceTypeReturnValues(Context context, @ColorRes int colorId, boolean useColor) {\n" +
+            "        if (useColor) {\n" +
+            "            return /*Should pass resolved color instead of resource id here: getResources().getColor(colorId)*/colorId/**/;\n" +
+            "        } else {\n" +
+            "            return /*Should pass resolved color instead of resource id here: getResources().getColor(R.color.my_color)*/R.color.my_color/**/;\n" +
+            "        }\n" +
+            "    }\n" +
+            "\n" +
+            "    public static final class R {\n" +
+            "        public static final class drawable {\n" +
+            "            public static final int ic_launcher=0x7f020057;\n" +
+            "        }\n" +
+            "        public static final class string {\n" +
+            "            public static final int app_name=0x7f0a000e;\n" +
+            "        }\n" +
+            "        public static final class color {\n" +
+            "            public static final int my_color=0x7f0a300e;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectInlinedMessages()
+  }
 
-    fun testFlow() {
+  fun testFlow() {
 
-        lint().files(
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "import android.content.res.Resources;\n" +
-                    "import androidx.annotation.DrawableRes;\n" +
-                    "import androidx.annotation.StringRes;\n" +
-                    "import androidx.annotation.StyleRes;\n" +
-                    "\n" +
-                    "import java.util.Random;\n" +
-                    "\n" +
-                    "@SuppressWarnings(\"UnusedDeclaration\")\n" +
-                    "public class X {\n" +
-                    "    public void testLiterals(Resources resources) {\n" +
-                    "        resources.getDrawable(0); // OK\n" +
-                    "        resources.getDrawable(-1); // OK\n" +
-                    "        resources.getDrawable(/*Expected resource of type drawable*/10/**/); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testConstants(Resources resources) {\n" +
-                    "        resources.getDrawable(R.drawable.my_drawable); // OK\n" +
-                    "        resources.getDrawable(/*Expected resource of type drawable*/R.string.my_string/**/); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testFields(String fileExt, Resources resources) {\n" +
-                    "        int mimeIconId = MimeTypes.styleAndDrawable;\n" +
-                    "        resources.getDrawable(mimeIconId); // OK\n" +
-                    "\n" +
-                    "        int s1 = MimeTypes.style;\n" +
-                    "        resources.getDrawable(/*Expected resource of type drawable*/s1/**/); // ERROR\n" +
-                    "        int s2 = MimeTypes.styleAndDrawable;\n" +
-                    "        resources.getDrawable(s2); // OK\n" +
-                    "        int w3 = MimeTypes.drawable;\n" +
-                    "        resources.getDrawable(w3); // OK\n" +
-                    "\n" +
-                    "        // Direct reference\n" +
-                    "        resources.getDrawable(/*Expected resource of type drawable*/MimeTypes.style/**/); // ERROR\n" +
-                    "        resources.getDrawable(MimeTypes.styleAndDrawable); // OK\n" +
-                    "        resources.getDrawable(MimeTypes.drawable); // OK\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void testCalls(String fileExt, Resources resources) {\n" +
-                    "        int mimeIconId = MimeTypes.getIconForExt(fileExt);\n" +
-                    "        resources.getDrawable(mimeIconId); // OK\n" +
-                    "        resources.getDrawable(MimeTypes.getInferredString()); // OK (wrong but can't infer type)\n" +
-                    "        resources.getDrawable(MimeTypes.getInferredDrawable()); // OK\n" +
-                    "        resources.getDrawable(/*Expected resource of type drawable*/MimeTypes.getAnnotatedString()/**/); // Error\n" +
-                    "        resources.getDrawable(MimeTypes.getAnnotatedDrawable()); // OK\n" +
-                    "        resources.getDrawable(MimeTypes.getUnknownType()); // OK (unknown/uncertain)\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    private static class MimeTypes {\n" +
-                    "        @androidx.annotation.StyleRes\n" +
-                    "        @androidx.annotation.DrawableRes\n" +
-                    "        public static int styleAndDrawable;\n" +
-                    "\n" +
-                    "        @androidx.annotation.StyleRes\n" +
-                    "        public static int style;\n" +
-                    "\n" +
-                    "        @androidx.annotation.DrawableRes\n" +
-                    "        public static int drawable;\n" +
-                    "\n" +
-                    "        @androidx.annotation.DrawableRes\n" +
-                    "        public static int getIconForExt(String ext) {\n" +
-                    "            return R.drawable.my_drawable;\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        public static int getInferredString() {\n" +
-                    "            // Implied string - can we handle this?\n" +
-                    "            return R.string.my_string;\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        public static int getInferredDrawable() {\n" +
-                    "            // Implied drawable - can we handle this?\n" +
-                    "            return R.drawable.my_drawable;\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        @androidx.annotation.StringRes\n" +
-                    "        public static int getAnnotatedString() {\n" +
-                    "            return R.string.my_string;\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        @androidx.annotation.DrawableRes\n" +
-                    "        public static int getAnnotatedDrawable() {\n" +
-                    "            return R.drawable.my_drawable;\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        public static int getUnknownType() {\n" +
-                    "            return new Random(1000).nextInt();\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static final class R {\n" +
-                    "        public static final class drawable {\n" +
-                    "            public static final int my_drawable =0x7f020057;\n" +
-                    "        }\n" +
-                    "        public static final class string {\n" +
-                    "            public static final int my_string =0x7f0a000e;\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectInlinedMessages()
-    }
+    lint()
+      .files(
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "import android.content.res.Resources;\n" +
+            "import androidx.annotation.DrawableRes;\n" +
+            "import androidx.annotation.StringRes;\n" +
+            "import androidx.annotation.StyleRes;\n" +
+            "\n" +
+            "import java.util.Random;\n" +
+            "\n" +
+            "@SuppressWarnings(\"UnusedDeclaration\")\n" +
+            "public class X {\n" +
+            "    public void testLiterals(Resources resources) {\n" +
+            "        resources.getDrawable(0); // OK\n" +
+            "        resources.getDrawable(-1); // OK\n" +
+            "        resources.getDrawable(/*Expected resource of type drawable*/10/**/); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testConstants(Resources resources) {\n" +
+            "        resources.getDrawable(R.drawable.my_drawable); // OK\n" +
+            "        resources.getDrawable(/*Expected resource of type drawable*/R.string.my_string/**/); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testFields(String fileExt, Resources resources) {\n" +
+            "        int mimeIconId = MimeTypes.styleAndDrawable;\n" +
+            "        resources.getDrawable(mimeIconId); // OK\n" +
+            "\n" +
+            "        int s1 = MimeTypes.style;\n" +
+            "        resources.getDrawable(/*Expected resource of type drawable*/s1/**/); // ERROR\n" +
+            "        int s2 = MimeTypes.styleAndDrawable;\n" +
+            "        resources.getDrawable(s2); // OK\n" +
+            "        int w3 = MimeTypes.drawable;\n" +
+            "        resources.getDrawable(w3); // OK\n" +
+            "\n" +
+            "        // Direct reference\n" +
+            "        resources.getDrawable(/*Expected resource of type drawable*/MimeTypes.style/**/); // ERROR\n" +
+            "        resources.getDrawable(MimeTypes.styleAndDrawable); // OK\n" +
+            "        resources.getDrawable(MimeTypes.drawable); // OK\n" +
+            "    }\n" +
+            "\n" +
+            "    public void testCalls(String fileExt, Resources resources) {\n" +
+            "        int mimeIconId = MimeTypes.getIconForExt(fileExt);\n" +
+            "        resources.getDrawable(mimeIconId); // OK\n" +
+            "        resources.getDrawable(MimeTypes.getInferredString()); // OK (wrong but can't infer type)\n" +
+            "        resources.getDrawable(MimeTypes.getInferredDrawable()); // OK\n" +
+            "        resources.getDrawable(/*Expected resource of type drawable*/MimeTypes.getAnnotatedString()/**/); // Error\n" +
+            "        resources.getDrawable(MimeTypes.getAnnotatedDrawable()); // OK\n" +
+            "        resources.getDrawable(MimeTypes.getUnknownType()); // OK (unknown/uncertain)\n" +
+            "    }\n" +
+            "\n" +
+            "    private static class MimeTypes {\n" +
+            "        @androidx.annotation.StyleRes\n" +
+            "        @androidx.annotation.DrawableRes\n" +
+            "        public static int styleAndDrawable;\n" +
+            "\n" +
+            "        @androidx.annotation.StyleRes\n" +
+            "        public static int style;\n" +
+            "\n" +
+            "        @androidx.annotation.DrawableRes\n" +
+            "        public static int drawable;\n" +
+            "\n" +
+            "        @androidx.annotation.DrawableRes\n" +
+            "        public static int getIconForExt(String ext) {\n" +
+            "            return R.drawable.my_drawable;\n" +
+            "        }\n" +
+            "\n" +
+            "        public static int getInferredString() {\n" +
+            "            // Implied string - can we handle this?\n" +
+            "            return R.string.my_string;\n" +
+            "        }\n" +
+            "\n" +
+            "        public static int getInferredDrawable() {\n" +
+            "            // Implied drawable - can we handle this?\n" +
+            "            return R.drawable.my_drawable;\n" +
+            "        }\n" +
+            "\n" +
+            "        @androidx.annotation.StringRes\n" +
+            "        public static int getAnnotatedString() {\n" +
+            "            return R.string.my_string;\n" +
+            "        }\n" +
+            "\n" +
+            "        @androidx.annotation.DrawableRes\n" +
+            "        public static int getAnnotatedDrawable() {\n" +
+            "            return R.drawable.my_drawable;\n" +
+            "        }\n" +
+            "\n" +
+            "        public static int getUnknownType() {\n" +
+            "            return new Random(1000).nextInt();\n" +
+            "        }\n" +
+            "    }\n" +
+            "\n" +
+            "    public static final class R {\n" +
+            "        public static final class drawable {\n" +
+            "            public static final int my_drawable =0x7f020057;\n" +
+            "        }\n" +
+            "        public static final class string {\n" +
+            "            public static final int my_string =0x7f0a000e;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectInlinedMessages()
+  }
 
-    fun testMipmap() {
-        lint().files(
-            java(
-                "" +
-                    "package p1.p2;\n" +
-                    "\n" +
-                    "import android.app.Activity;\n" +
-                    "\n" +
-                    "public class X extends Activity {\n" +
-                    "  public void test() {\n" +
-                    "    Object o = getResources().getDrawable(R.mipmap.ic_launcher);\n" +
-                    "  }\n" +
-                    "\n" +
-                    "  public static final class R {\n" +
-                    "    public static final class drawable {\n" +
-                    "      public static int icon=0x7f020000;\n" +
-                    "    }\n" +
-                    "    public static final class mipmap {\n" +
-                    "      public static int ic_launcher=0x7f020001;\n" +
-                    "    }\n" +
-                    "  }\n" +
-                    "}"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+  fun testMipmap() {
+    lint()
+      .files(
+        java(
+          "" +
+            "package p1.p2;\n" +
+            "\n" +
+            "import android.app.Activity;\n" +
+            "\n" +
+            "public class X extends Activity {\n" +
+            "  public void test() {\n" +
+            "    Object o = getResources().getDrawable(R.mipmap.ic_launcher);\n" +
+            "  }\n" +
+            "\n" +
+            "  public static final class R {\n" +
+            "    public static final class drawable {\n" +
+            "      public static int icon=0x7f020000;\n" +
+            "    }\n" +
+            "    public static final class mipmap {\n" +
+            "      public static int ic_launcher=0x7f020001;\n" +
+            "    }\n" +
+            "  }\n" +
+            "}"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testColorAndDrawable() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=197411
+  fun testColorAndDrawable() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=197411
 
-        lint().files(
-            java(
-                "" +
-                    "\n" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import android.app.Activity;\n" +
-                    "import androidx.annotation.ColorRes;\n" +
-                    "import androidx.annotation.DrawableRes;\n" +
-                    "import android.widget.TextView;\n" +
-                    "\n" +
-                    "public class X extends Activity {\n" +
-                    "    @ColorRes int getSwipeColor() {\n" +
-                    "        return android.R.color.black;\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @DrawableRes int getDrawableIcon() {\n" +
-                    "        return android.R.drawable.ic_delete;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    public void test(TextView view) {\n" +
-                    "        getResources().getColor(getSwipeColor()); // OK: color to color\n" +
-                    "        view.setBackgroundResource(getSwipeColor()); // OK: color promotes to drawable\n" +
-                    "        getResources().getColor(/*Expected resource of type color*/getDrawableIcon()/**/); // Not OK: drawable doesn't promote to color\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectInlinedMessages()
-    }
+    lint()
+      .files(
+        java(
+          "" +
+            "\n" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.app.Activity;\n" +
+            "import androidx.annotation.ColorRes;\n" +
+            "import androidx.annotation.DrawableRes;\n" +
+            "import android.widget.TextView;\n" +
+            "\n" +
+            "public class X extends Activity {\n" +
+            "    @ColorRes int getSwipeColor() {\n" +
+            "        return android.R.color.black;\n" +
+            "    }\n" +
+            "\n" +
+            "    @DrawableRes int getDrawableIcon() {\n" +
+            "        return android.R.drawable.ic_delete;\n" +
+            "    }\n" +
+            "    \n" +
+            "    public void test(TextView view) {\n" +
+            "        getResources().getColor(getSwipeColor()); // OK: color to color\n" +
+            "        view.setBackgroundResource(getSwipeColor()); // OK: color promotes to drawable\n" +
+            "        getResources().getColor(/*Expected resource of type color*/getDrawableIcon()/**/); // Not OK: drawable doesn't promote to color\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectInlinedMessages()
+  }
 
-    fun testObtainStyleablesFromArray() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=201882
-        // obtainStyledAttributes normally expects a styleable but you can also supply a
-        // custom int array
+  fun testObtainStyleablesFromArray() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=201882
+    // obtainStyledAttributes normally expects a styleable but you can also supply a
+    // custom int array
 
-        lint().files(
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import android.app.Activity;\n" +
-                    "import android.content.Context;\n" +
-                    "import android.content.res.TypedArray;\n" +
-                    "import android.graphics.Color;\n" +
-                    "import android.util.AttributeSet;\n" +
-                    "\n" +
-                    "@SuppressWarnings(\"unused\")\n" +
-                    "public class X {\n" +
-                    "    public void test1(Activity activity, float[] foregroundHsv, float[] backgroundHsv) {\n" +
-                    "        TypedArray attributes = activity.obtainStyledAttributes(\n" +
-                    "                new int[] {\n" +
-                    "                        R.attr.setup_wizard_navbar_theme,\n" +
-                    "                        android.R.attr.colorForeground,\n" +
-                    "                        android.R.attr.colorBackground });\n" +
-                    "        Color.colorToHSV(attributes.getColor(1, 0), foregroundHsv);\n" +
-                    "        Color.colorToHSV(attributes.getColor(2, 0), backgroundHsv);\n" +
-                    "        attributes.recycle();\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void test2(Context context, AttributeSet attrs, int defStyle) {\n" +
-                    "        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BezelImageView,\n" +
-                    "                defStyle, 0);\n" +
-                    "        a.getDrawable(R.styleable.BezelImageView_maskDrawable);\n" +
-                    "        a.recycle();\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public static class R {\n" +
-                    "        public static class attr {\n" +
-                    "            public static final int setup_wizard_navbar_theme = 0x7f01003b;\n" +
-                    "        }\n" +
-                    "        public static class styleable {\n" +
-                    "            public static final int[] BezelImageView = {\n" +
-                    "                    0x7f01005d, 0x7f01005e, 0x7f01005f\n" +
-                    "            };\n" +
-                    "            public static final int BezelImageView_maskDrawable = 0;\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+    lint()
+      .files(
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import android.app.Activity;\n" +
+            "import android.content.Context;\n" +
+            "import android.content.res.TypedArray;\n" +
+            "import android.graphics.Color;\n" +
+            "import android.util.AttributeSet;\n" +
+            "\n" +
+            "@SuppressWarnings(\"unused\")\n" +
+            "public class X {\n" +
+            "    public void test1(Activity activity, float[] foregroundHsv, float[] backgroundHsv) {\n" +
+            "        TypedArray attributes = activity.obtainStyledAttributes(\n" +
+            "                new int[] {\n" +
+            "                        R.attr.setup_wizard_navbar_theme,\n" +
+            "                        android.R.attr.colorForeground,\n" +
+            "                        android.R.attr.colorBackground });\n" +
+            "        Color.colorToHSV(attributes.getColor(1, 0), foregroundHsv);\n" +
+            "        Color.colorToHSV(attributes.getColor(2, 0), backgroundHsv);\n" +
+            "        attributes.recycle();\n" +
+            "    }\n" +
+            "\n" +
+            "    public void test2(Context context, AttributeSet attrs, int defStyle) {\n" +
+            "        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BezelImageView,\n" +
+            "                defStyle, 0);\n" +
+            "        a.getDrawable(R.styleable.BezelImageView_maskDrawable);\n" +
+            "        a.recycle();\n" +
+            "    }\n" +
+            "\n" +
+            "    public static class R {\n" +
+            "        public static class attr {\n" +
+            "            public static final int setup_wizard_navbar_theme = 0x7f01003b;\n" +
+            "        }\n" +
+            "        public static class styleable {\n" +
+            "            public static final int[] BezelImageView = {\n" +
+            "                    0x7f01005d, 0x7f01005e, 0x7f01005f\n" +
+            "            };\n" +
+            "            public static final int BezelImageView_maskDrawable = 0;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testSuppressNames() {
-        lint().files(
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "\n" +
-                    "import androidx.annotation.BinderThread;\n" +
-                    "import androidx.annotation.CheckResult;\n" +
-                    "import androidx.annotation.ColorInt;\n" +
-                    "import androidx.annotation.ColorRes;\n" +
-                    "import androidx.annotation.FloatRange;\n" +
-                    "import androidx.annotation.IntDef;\n" +
-                    "import androidx.annotation.IntRange;\n" +
-                    "import androidx.annotation.RequiresPermission;\n" +
-                    "import androidx.annotation.Size;\n" +
-                    "import androidx.annotation.StringRes;\n" +
-                    "import androidx.annotation.UiThread;\n" +
-                    "\n" +
-                    "import java.lang.annotation.Retention;\n" +
-                    "import java.lang.annotation.RetentionPolicy;\n" +
-                    "\n" +
-                    "import static android.Manifest.permission.ACCESS_COARSE_LOCATION;\n" +
-                    "import static android.Manifest.permission.ACCESS_FINE_LOCATION;\n" +
-                    "\n" +
-                    "@SuppressWarnings(\"unused\")\n" +
-                    "public class X {\n" +
-                    "\n" +
-                    "    @ColorInt private int colorInt;\n" +
-                    "    @ColorRes private int colorRes;\n" +
-                    "    @StringRes private int stringRes;\n" +
-                    "\n" +
-                    "    @BinderThread\n" +
-                    "    public void testOk() {\n" +
-                    "        setColor(colorRes); // OK\n" +
-                    "        setColorInt(colorInt); // OK\n" +
-                    "        printBetween(5); // OK\n" +
-                    "        printBetweenFromInclusiveToInclusive(3.0f); // OK\n" +
-                    "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }); // OK\n" +
-                    "        int result = checkMe(); // OK\n" +
-                    "        setDuration(LENGTH_LONG); // OK\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @BinderThread\n" +
-                    "    public void testErrors() {\n" +
-                    "        setColor(/*Expected a color resource id (R.color.) but received an RGB integer*/colorInt/**/); // ERROR\n" +
-                    "        setColorInt(/*Should pass resolved color instead of resource id here: getResources().getColor(colorRes)*/colorRes/**/); // ERROR\n" +
-                    "        printBetween(/*Value must be ≥ 4 (was 1)*/1/**/); // ERROR\n" +
-                    "        printBetweenFromInclusiveToInclusive(/*Value must be ≥ 2.5 (was 1.0)*/1.0f/**/); // ERROR\n" +
-                    "        printMinMultiple(/*Expected size to be a multiple of 3 (was 8 and should be either 6 or 9)*/new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }/**/); // ERROR\n" +
-                    "        /*The result of checkMe is not used*/checkMe()/**/; // ERROR\n" +
-                    "        /*Missing permissions required by X.requiresPermission: android.permission.ACCESS_FINE_LOCATION or android.permission.ACCESS_COARSE_LOCATION*/requiresPermission()/**/; // ERROR\n" +
-                    "        /*Method requiresUiThread must be called from the UI thread, currently inferred thread is binder thread*/requiresUiThread()/**/; // ERROR\n" +
-                    "        setDuration(/*Must be one of: X.LENGTH_INDEFINITE, X.LENGTH_SHORT, X.LENGTH_LONG*/5/**/); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @BinderThread\n" +
-                    "    public void testSuppressedViaComment() {\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        setColor(colorInt); // ERROR\n" +
-                    "        //noinspection ResourceAsColor\n" +
-                    "        setColorInt(colorRes); // ERROR\n" +
-                    "        //noinspection Range\n" +
-                    "        printBetween(1); // ERROR\n" +
-                    "        //noinspection Range\n" +
-                    "        printBetweenFromInclusiveToInclusive(1.0f); // ERROR\n" +
-                    "        //noinspection Range\n" +
-                    "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // ERROR\n" +
-                    "        //noinspection CheckResult\n" +
-                    "        checkMe(); // ERROR\n" +
-                    "        //noinspection MissingPermission\n" +
-                    "        requiresPermission(); // ERROR\n" +
-                    "        //noinspection WrongThread\n" +
-                    "        requiresUiThread(); // ERROR\n" +
-                    "        //noinspection WrongConstant\n" +
-                    "        setDuration(5); // ERROR\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @BinderThread\n" +
-                    "    public void testSuppressedViaOldInspectionName() {\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        setColor(colorInt); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        setColorInt(colorRes); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        printBetween(1); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        printBetweenFromInclusiveToInclusive(1.0f); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        checkMe(); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        requiresUiThread(); // SUPPRESSED\n" +
-                    "        //noinspection ResourceType\n" +
-                    "        setDuration(5); // SUPPRESSED\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @SuppressWarnings({\"ResourceAsColor\", \"Range\", \"CheckResult\", \"MissingPermission\", \"WrongThread\", \"WrongConstant\"})\n" +
-                    "    @BinderThread\n" +
-                    "    public void testSuppressedViaAnnotation() {\n" +
-                    "        setColorInt(colorRes); // SUPPRESSED\n" +
-                    "        printBetween(1); // SUPPRESSED\n" +
-                    "        printBetweenFromInclusiveToInclusive(1.0f); // SUPPRESSED\n" +
-                    "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // SUPPRESSED\n" +
-                    "        checkMe(); // SUPPRESSED\n" +
-                    "        requiresPermission(); // SUPPRESSED\n" +
-                    "        requiresUiThread(); // SUPPRESSED\n" +
-                    "        setDuration(5); // SUPPRESSED\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    @SuppressWarnings(\"ResourceType\")\n" +
-                    "    @BinderThread\n" +
-                    "    public void testSuppressedViaOldAnnotation() {\n" +
-                    "        setColorInt(colorRes); // SUPPRESSED\n" +
-                    "        printBetween(1); // SUPPRESSED\n" +
-                    "        printBetweenFromInclusiveToInclusive(1.0f); // SUPPRESSED\n" +
-                    "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // SUPPRESSED\n" +
-                    "        checkMe(); // SUPPRESSED\n" +
-                    "        requiresUiThread(); // SUPPRESSED\n" +
-                    "        setDuration(5); // SUPPRESSED\n" +
-                    "    }\n" +
-                    "\n" +
-                    "\n" +
-                    "    private void setColor(@ColorRes int color) { }\n" +
-                    "    private void setColorInt(@ColorInt int color) { }\n" +
-                    "    public void printBetween(@IntRange(from=4,to=7) int arg) { }\n" +
-                    "    public void printMinMultiple(@Size(min=4,multiple=3) int[] arg) { }\n" +
-                    "    public void printBetweenFromInclusiveToInclusive(@FloatRange(from=2.5,to=5.0) float arg) { }\n" +
-                    "    @CheckResult\n" +
-                    "    public int checkMe() { return 0; }\n" +
-                    "\n" +
-                    "    @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})\n" +
-                    "    public void requiresPermission() { }\n" +
-                    "\n" +
-                    "    @UiThread\n" +
-                    "    public void requiresUiThread() { }\n" +
-                    "\n" +
-                    "    @IntDef({LENGTH_INDEFINITE, LENGTH_SHORT, LENGTH_LONG})\n" +
-                    "    @Retention(RetentionPolicy.SOURCE)\n" +
-                    "    public @interface Duration {}\n" +
-                    "\n" +
-                    "    public static final int LENGTH_INDEFINITE = -2;\n" +
-                    "    public static final int LENGTH_SHORT = -1;\n" +
-                    "    public static final int LENGTH_LONG = 0;\n" +
-                    "    public void setDuration(@Duration int duration) {\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .issues(
-                ResourceTypeDetector.RESOURCE_TYPE,
-                ResourceTypeDetector.COLOR_USAGE,
-                RangeDetector.RANGE,
-                CheckResultDetector.CHECK_RESULT,
-                PermissionDetector.MISSING_PERMISSION,
-                ThreadDetector.THREAD,
-                TypedefDetector.TYPE_DEF
-            ).run().expectInlinedMessages()
-    }
+  fun testSuppressNames() {
+    lint()
+      .files(
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "\n" +
+            "import androidx.annotation.BinderThread;\n" +
+            "import androidx.annotation.CheckResult;\n" +
+            "import androidx.annotation.ColorInt;\n" +
+            "import androidx.annotation.ColorRes;\n" +
+            "import androidx.annotation.FloatRange;\n" +
+            "import androidx.annotation.IntDef;\n" +
+            "import androidx.annotation.IntRange;\n" +
+            "import androidx.annotation.RequiresPermission;\n" +
+            "import androidx.annotation.Size;\n" +
+            "import androidx.annotation.StringRes;\n" +
+            "import androidx.annotation.UiThread;\n" +
+            "\n" +
+            "import java.lang.annotation.Retention;\n" +
+            "import java.lang.annotation.RetentionPolicy;\n" +
+            "\n" +
+            "import static android.Manifest.permission.ACCESS_COARSE_LOCATION;\n" +
+            "import static android.Manifest.permission.ACCESS_FINE_LOCATION;\n" +
+            "\n" +
+            "@SuppressWarnings(\"unused\")\n" +
+            "public class X {\n" +
+            "\n" +
+            "    @ColorInt private int colorInt;\n" +
+            "    @ColorRes private int colorRes;\n" +
+            "    @StringRes private int stringRes;\n" +
+            "\n" +
+            "    @BinderThread\n" +
+            "    public void testOk() {\n" +
+            "        setColor(colorRes); // OK\n" +
+            "        setColorInt(colorInt); // OK\n" +
+            "        printBetween(5); // OK\n" +
+            "        printBetweenFromInclusiveToInclusive(3.0f); // OK\n" +
+            "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }); // OK\n" +
+            "        int result = checkMe(); // OK\n" +
+            "        setDuration(LENGTH_LONG); // OK\n" +
+            "    }\n" +
+            "\n" +
+            "    @BinderThread\n" +
+            "    public void testErrors() {\n" +
+            "        setColor(/*Expected a color resource id (R.color.) but received an RGB integer*/colorInt/**/); // ERROR\n" +
+            "        setColorInt(/*Should pass resolved color instead of resource id here: getResources().getColor(colorRes)*/colorRes/**/); // ERROR\n" +
+            "        printBetween(/*Value must be ≥ 4 (was 1)*/1/**/); // ERROR\n" +
+            "        printBetweenFromInclusiveToInclusive(/*Value must be ≥ 2.5 (was 1.0)*/1.0f/**/); // ERROR\n" +
+            "        printMinMultiple(/*Expected size to be a multiple of 3 (was 8 and should be either 6 or 9)*/new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }/**/); // ERROR\n" +
+            "        /*The result of checkMe is not used*/checkMe()/**/; // ERROR\n" +
+            "        /*Missing permissions required by X.requiresPermission: android.permission.ACCESS_FINE_LOCATION or android.permission.ACCESS_COARSE_LOCATION*/requiresPermission()/**/; // ERROR\n" +
+            "        /*Method requiresUiThread must be called from the UI thread, currently inferred thread is binder thread*/requiresUiThread()/**/; // ERROR\n" +
+            "        setDuration(/*Must be one of: X.LENGTH_INDEFINITE, X.LENGTH_SHORT, X.LENGTH_LONG*/5/**/); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    @BinderThread\n" +
+            "    public void testSuppressedViaComment() {\n" +
+            "        //noinspection ResourceType\n" +
+            "        setColor(colorInt); // ERROR\n" +
+            "        //noinspection ResourceAsColor\n" +
+            "        setColorInt(colorRes); // ERROR\n" +
+            "        //noinspection Range\n" +
+            "        printBetween(1); // ERROR\n" +
+            "        //noinspection Range\n" +
+            "        printBetweenFromInclusiveToInclusive(1.0f); // ERROR\n" +
+            "        //noinspection Range\n" +
+            "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // ERROR\n" +
+            "        //noinspection CheckResult\n" +
+            "        checkMe(); // ERROR\n" +
+            "        //noinspection MissingPermission\n" +
+            "        requiresPermission(); // ERROR\n" +
+            "        //noinspection WrongThread\n" +
+            "        requiresUiThread(); // ERROR\n" +
+            "        //noinspection WrongConstant\n" +
+            "        setDuration(5); // ERROR\n" +
+            "    }\n" +
+            "\n" +
+            "    @BinderThread\n" +
+            "    public void testSuppressedViaOldInspectionName() {\n" +
+            "        //noinspection ResourceType\n" +
+            "        setColor(colorInt); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        setColorInt(colorRes); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        printBetween(1); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        printBetweenFromInclusiveToInclusive(1.0f); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        checkMe(); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        requiresUiThread(); // SUPPRESSED\n" +
+            "        //noinspection ResourceType\n" +
+            "        setDuration(5); // SUPPRESSED\n" +
+            "    }\n" +
+            "\n" +
+            "    @SuppressWarnings({\"ResourceAsColor\", \"Range\", \"CheckResult\", \"MissingPermission\", \"WrongThread\", \"WrongConstant\"})\n" +
+            "    @BinderThread\n" +
+            "    public void testSuppressedViaAnnotation() {\n" +
+            "        setColorInt(colorRes); // SUPPRESSED\n" +
+            "        printBetween(1); // SUPPRESSED\n" +
+            "        printBetweenFromInclusiveToInclusive(1.0f); // SUPPRESSED\n" +
+            "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // SUPPRESSED\n" +
+            "        checkMe(); // SUPPRESSED\n" +
+            "        requiresPermission(); // SUPPRESSED\n" +
+            "        requiresUiThread(); // SUPPRESSED\n" +
+            "        setDuration(5); // SUPPRESSED\n" +
+            "    }\n" +
+            "\n" +
+            "    @SuppressWarnings(\"ResourceType\")\n" +
+            "    @BinderThread\n" +
+            "    public void testSuppressedViaOldAnnotation() {\n" +
+            "        setColorInt(colorRes); // SUPPRESSED\n" +
+            "        printBetween(1); // SUPPRESSED\n" +
+            "        printBetweenFromInclusiveToInclusive(1.0f); // SUPPRESSED\n" +
+            "        printMinMultiple(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }); // SUPPRESSED\n" +
+            "        checkMe(); // SUPPRESSED\n" +
+            "        requiresUiThread(); // SUPPRESSED\n" +
+            "        setDuration(5); // SUPPRESSED\n" +
+            "    }\n" +
+            "\n" +
+            "\n" +
+            "    private void setColor(@ColorRes int color) { }\n" +
+            "    private void setColorInt(@ColorInt int color) { }\n" +
+            "    public void printBetween(@IntRange(from=4,to=7) int arg) { }\n" +
+            "    public void printMinMultiple(@Size(min=4,multiple=3) int[] arg) { }\n" +
+            "    public void printBetweenFromInclusiveToInclusive(@FloatRange(from=2.5,to=5.0) float arg) { }\n" +
+            "    @CheckResult\n" +
+            "    public int checkMe() { return 0; }\n" +
+            "\n" +
+            "    @RequiresPermission(anyOf = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION})\n" +
+            "    public void requiresPermission() { }\n" +
+            "\n" +
+            "    @UiThread\n" +
+            "    public void requiresUiThread() { }\n" +
+            "\n" +
+            "    @IntDef({LENGTH_INDEFINITE, LENGTH_SHORT, LENGTH_LONG})\n" +
+            "    @Retention(RetentionPolicy.SOURCE)\n" +
+            "    public @interface Duration {}\n" +
+            "\n" +
+            "    public static final int LENGTH_INDEFINITE = -2;\n" +
+            "    public static final int LENGTH_SHORT = -1;\n" +
+            "    public static final int LENGTH_LONG = 0;\n" +
+            "    public void setDuration(@Duration int duration) {\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(
+        ResourceTypeDetector.RESOURCE_TYPE,
+        ResourceTypeDetector.COLOR_USAGE,
+        RangeDetector.RANGE,
+        CheckResultDetector.CHECK_RESULT,
+        PermissionDetector.MISSING_PERMISSION,
+        ThreadDetector.THREAD,
+        TypedefDetector.TYPE_DEF
+      )
+      .run()
+      .expectInlinedMessages()
+  }
 
-    fun testNavigationRes() {
-        val expected = "" +
-            "src/test/pkg/Flow.java:16: Error: Expected resource of type navigation [ResourceType]\n" +
+  fun testNavigationRes() {
+    val expected =
+      "" +
+        "src/test/pkg/Flow.java:16: Error: Expected resource of type navigation [ResourceType]\n" +
+        "        nav(string); // ERROR\n" +
+        "            ~~~~~~\n" +
+        "src/test/pkg/Flow.java:17: Error: Expected resource of type navigation [ResourceType]\n" +
+        "        nav(R.string.my_string); // ERROR\n" +
+        "            ~~~~~~~~~~~~~~~~~~\n" +
+        "src/test/pkg/Flow.java:18: Error: Expected resource of type string [ResourceType]\n" +
+        "        str(R.navigation.my_navigation); // ERROR\n" +
+        "            ~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+        "3 errors, 0 warnings\n"
+    lint()
+      .files(
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "import android.content.res.Resources;\n" +
+            "import androidx.annotation.NavigationRes;\n" +
+            "import androidx.annotation.StringRes;\n" +
+            "import androidx.annotation.StyleRes;\n" +
+            "\n" +
+            "import java.util.Random;\n" +
+            "\n" +
+            "@SuppressWarnings(\"UnusedDeclaration\")\n" +
+            "public class Flow {\n" +
+            // Fully qualified name because @NavigationRes is not yet
+            // in the support library bundled with this test
+            "    public void nav(@androidx.annotation.NavigationRes int id) { }\n" +
+            "    public void str(@StringRes int id) { }\n" +
+            "    public void test(@StringRes int string, @androidx.annotation.NavigationRes int navigation) {\n" +
+            "        nav(navigation); // OK\n" +
+            "        str(string); // OK\n" +
             "        nav(string); // ERROR\n" +
-            "            ~~~~~~\n" +
-            "src/test/pkg/Flow.java:17: Error: Expected resource of type navigation [ResourceType]\n" +
             "        nav(R.string.my_string); // ERROR\n" +
-            "            ~~~~~~~~~~~~~~~~~~\n" +
-            "src/test/pkg/Flow.java:18: Error: Expected resource of type string [ResourceType]\n" +
             "        str(R.navigation.my_navigation); // ERROR\n" +
-            "            ~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "3 errors, 0 warnings\n"
-        lint().files(
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "import android.content.res.Resources;\n" +
-                    "import androidx.annotation.NavigationRes;\n" +
-                    "import androidx.annotation.StringRes;\n" +
-                    "import androidx.annotation.StyleRes;\n" +
-                    "\n" +
-                    "import java.util.Random;\n" +
-                    "\n" +
-                    "@SuppressWarnings(\"UnusedDeclaration\")\n" +
-                    "public class Flow {\n" +
-                    // Fully qualified name because @NavigationRes is not yet
-                    // in the support library bundled with this test
-                    "    public void nav(@androidx.annotation.NavigationRes int id) { }\n" +
-                    "    public void str(@StringRes int id) { }\n" +
-                    "    public void test(@StringRes int string, @androidx.annotation.NavigationRes int navigation) {\n" +
-                    "        nav(navigation); // OK\n" +
-                    "        str(string); // OK\n" +
-                    "        nav(string); // ERROR\n" +
-                    "        nav(R.string.my_string); // ERROR\n" +
-                    "        str(R.navigation.my_navigation); // ERROR\n" +
-                    "    }\n" +
-                    "}"
-            ),
-            java(
-                "" +
-                    "package test.pkg;\n" +
-                    "public final class R {\n" +
-                    "    public static final class navigation {\n" +
-                    "        public static final int my_navigation = 0x7f020057;\n" +
-                    "    }\n" +
-                    "    public static final class string {\n" +
-                    "        public static final int my_string =0x7f0a000e;\n" +
-                    "    }\n" +
-                    "}\n"
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+            "    }\n" +
+            "}"
+        ),
+        java(
+          "" +
+            "package test.pkg;\n" +
+            "public final class R {\n" +
+            "    public static final class navigation {\n" +
+            "        public static final int my_navigation = 0x7f020057;\n" +
+            "    }\n" +
+            "    public static final class string {\n" +
+            "        public static final int my_string =0x7f0a000e;\n" +
+            "    }\n" +
+            "}\n"
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testKotlinImplicitReturn() {
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinImplicitReturn() {
+    lint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
 
                     import androidx.annotation.StringRes
@@ -1674,22 +1767,26 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     @StringRes
                     fun getResource(): Int = android.R.drawable.ic_delete
                     """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            "" +
-                "src/test/pkg/test.kt:6: Error: Expected resource of type string [ResourceType]\n" +
-                "fun getResource(): Int = android.R.drawable.ic_delete\n" +
-                "                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "1 errors, 0 warnings"
-        )
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        "" +
+          "src/test/pkg/test.kt:6: Error: Expected resource of type string [ResourceType]\n" +
+          "fun getResource(): Int = android.R.drawable.ic_delete\n" +
+          "                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+          "1 errors, 0 warnings"
+      )
+  }
 
-    fun testStyleable() {
-        // R.styleable is not like the other resource types
-        lint().files(
-            java(
-                """
+  fun testStyleable() {
+    // R.styleable is not like the other resource types
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     import androidx.annotation.StyleableRes;
@@ -1712,10 +1809,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         }
                     }
                 """
-            ).indented(),
-
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
 
                     @SuppressWarnings("ClassNameDiffersFromFileName")
@@ -1737,28 +1834,32 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
 
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            "" +
-                "src/test/pkg/TestStyleable.java:8: Error: Expected resource of type styleable [ResourceType]\n" +
-                "    public static final int MY_STYLE = 1;\n" +
-                "                                       ~\n" +
-                "src/test/pkg/TestStyleable.java:17: Error: Expected resource of type styleable [ResourceType]\n" +
-                "        process(R.string.my_string); // ERROR\n" +
-                "                ~~~~~~~~~~~~~~~~~~\n" +
-                "2 errors, 0 warnings"
-        )
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        "" +
+          "src/test/pkg/TestStyleable.java:8: Error: Expected resource of type styleable [ResourceType]\n" +
+          "    public static final int MY_STYLE = 1;\n" +
+          "                                       ~\n" +
+          "src/test/pkg/TestStyleable.java:17: Error: Expected resource of type styleable [ResourceType]\n" +
+          "        process(R.string.my_string); // ERROR\n" +
+          "                ~~~~~~~~~~~~~~~~~~\n" +
+          "2 errors, 0 warnings"
+      )
+  }
 
-    fun testKotlinExtensionsFromJava() {
-        // Regression test for
-        // 78283842: False positive lint errors when calling Kotlin extension method from Java
-        //    with Android resource annotations on parameters
-        lint().files(
-            rClass("test.pkg", "@drawable/some_img", "@string/some_string"),
-            java(
-                """
+  fun testKotlinExtensionsFromJava() {
+    // Regression test for
+    // 78283842: False positive lint errors when calling Kotlin extension method from Java
+    //    with Android resource annotations on parameters
+    lint()
+      .files(
+        rClass("test.pkg", "@drawable/some_img", "@string/some_string"),
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -1770,10 +1871,11 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                     """
-            ).indented(),
-            kotlin(
-                "src/test/pkg/Extensions.kt",
-                """
+          )
+          .indented(),
+        kotlin(
+            "src/test/pkg/Extensions.kt",
+            """
                     package test.pkg
 
                     import android.content.Context
@@ -1782,17 +1884,21 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
 
                     fun Context.foobar(@StringRes msgId: Int, @DrawableRes imgId: Int) {  }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun test127955232() {
-        // Regression test for https://issuetracker.google.com/127955232
-        // 127955232: Unexpected failure during lint analysis - NullPointerException
-        lint().files(
-            kotlin(
-                """
+  fun test127955232() {
+    // Regression test for https://issuetracker.google.com/127955232
+    // 127955232: Unexpected failure during lint analysis - NullPointerException
+    lint()
+      .files(
+        kotlin(
+            """
                 package com.example.myapplication
 
                 import android.content.Context
@@ -1801,9 +1907,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                                 val testInt: Int,
                                 val testString: String = context.getString(if (testInt == 0) R.string.test_string_1 else R.string.test_string_2))
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 public final class R {
@@ -1813,17 +1920,21 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAnnotationArrays() {
-        // Regression test for
-        // https://issuetracker.google.com/37065470
-        lint().files(
-            java(
-                """
+  fun testAnnotationArrays() {
+    // Regression test for
+    // https://issuetracker.google.com/37065470
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import androidx.annotation.IdRes;
                 public @interface MySweetAnnotation {
@@ -1831,9 +1942,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     int[] ids() default {};
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 public class AnnotationUsageJava {
                     @MySweetAnnotation() // OK
@@ -1856,9 +1968,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 class AnnotationUsageKotlin {
                     @MySweetAnnotation // OK
@@ -1878,9 +1991,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
                     @SuppressWarnings("ClassNameDiffersFromFileName")
                     public final class R {
@@ -1895,10 +2009,13 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         }
                     }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/AnnotationUsageJava.java:6: Error: Expected resource of type id [ResourceType]
                 @MySweetAnnotation(ids = R.string.app_name) // ERROR
                                          ~~~~~~~~~~~~~~~~~
@@ -1916,39 +2033,43 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             5 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testGenerated() {
-        // Regression test for
-        // https://issuetracker.google.com/140699627
-        lint().files(
-            kotlin(
-                "generated/java/test/pkg/TestFragmentArgs.kt",
-                """
+  fun testGenerated() {
+    // Regression test for
+    // https://issuetracker.google.com/140699627
+    lint()
+      .files(
+        kotlin(
+            "generated/java/test/pkg/TestFragmentArgs.kt",
+            """
                 package test.pkg
                 data class TestFragmentArgs(val myenum: MYENUM)
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import androidx.annotation.StringRes
                 enum class MYENUM(@StringRes val title: Int) {
                     FIRST(R.string.first_title)
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import android.app.Fragment
                 class TestFragment : Fragment() {
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import android.os.Bundle
                 import kotlinx.android.synthetic.main.activity_main.*
@@ -1969,9 +2090,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
                     @SuppressWarnings("ClassNameDiffersFromFileName")
                     public final class R {
@@ -1980,15 +2102,19 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         }
                     }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAosp() {
-        lint().files(
-            kotlin(
-                """
+  fun testAosp() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.annotation.DrawableRes
                 import android.annotation.StringRes
 
@@ -2000,9 +2126,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     setLabels(iconId) // bug: should have passed descId. Both are ints but of wrong type.
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package android.annotation;
                 import java.lang.annotation.*;
                 import static java.lang.annotation.ElementType.METHOD;
@@ -2011,9 +2138,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 public @interface StringRes {
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package android.annotation;
                 import java.lang.annotation.*;
                 import static java.lang.annotation.ElementType.METHOD;
@@ -2022,22 +2150,26 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 public @interface DrawableRes {
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test.kt:9: Error: Expected resource of type string [ResourceType]
                 setLabels(iconId) // bug: should have passed descId. Both are ints but of wrong type.
                           ~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testArrayAccessOverloading() {
-        // Regression test for https://issuetracker.google.com/173628041
-        lint().files(
-            kotlin(
-                """
+  fun testArrayAccessOverloading() {
+    // Regression test for https://issuetracker.google.com/173628041
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.ColorRes
                 import androidx.annotation.StringRes
 
@@ -2057,10 +2189,13 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     x[myString] // ERROR 2
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/X.kt:16: Error: Expected resource of type color [ResourceType]
                 x.get(myString) // ERROR 1
                       ~~~~~~~~
@@ -2069,13 +2204,14 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                   ~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOperatorOverloading() {
-        lint().files(
-            kotlin(
-                """
+  fun testOperatorOverloading() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.ColorRes
                 import androidx.annotation.StringRes
 
@@ -2095,10 +2231,13 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     println(resource..string) // ERROR 4
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/Resource.kt:12: Error: Expected resource of type color [ResourceType]
                 println(string in resource) // ERROR 1
                         ~~~~~~
@@ -2113,13 +2252,14 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                                   ~~~~~~
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testArrayOperatorResolution() {
-        lint().files(
-            kotlin(
-                """
+  fun testArrayOperatorResolution() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.ColorRes
@@ -2169,10 +2309,13 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     calendar[2016, 2, 4, 18, 52] = 58 // OK 7
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.kt:24: Error: Expected resource of type string [ResourceType]
                 test[color] // ERROR 1
                      ~~~~~
@@ -2199,14 +2342,15 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                      ~~~~~
             8 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testAnnotationReceiver() {
-        // Regression test for b/195014464
-        lint().files(
-            kotlin(
-                """
+  fun testAnnotationReceiver() {
+    // Regression test for b/195014464
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.ColorRes
@@ -2223,10 +2367,13 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     panel colorize2 c // ERROR 2
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:11: Error: Expected resource of type string [ResourceType]
                 panel.colorize1(c) // ERROR 1
                 ~~~~~
@@ -2235,14 +2382,15 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 ~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testCornerCase() {
-        // This test case was broken for parenthesis mode until the corresponding fix went in
-        lint().files(
-            java(
-                """
+  fun testCornerCase() {
+    // This test case was broken for parenthesis mode until the corresponding fix went in
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -2258,24 +2406,28 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     @DrawableRes abstract int testResourceTypeReturnValues(Context context, boolean useString);
                 }
                 """
-            ).indented(),
-            rClass("test.pkg", "@string/app_name"),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        rClass("test.pkg", "@string/app_name"),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/ResourceTypes.java:9: Error: Expected resource of type drawable [ResourceType]
                     if (testResourceTypeReturnValues(context, true) == R.string.app_name) {
                                                                        ~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testVarAnnotations() {
-        // Regression test for https://issuetracker.google.com/200048369
-        lint().files(
-            kotlin(
-                """
+  fun testVarAnnotations() {
+    // Regression test for https://issuetracker.google.com/200048369
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.ColorRes
@@ -2311,10 +2463,14 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     private fun checkString(@StringRes string: Int) { }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).testModes(TestMode.DEFAULT).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .testModes(TestMode.DEFAULT)
+      .run()
+      .expect(
+        """
             src/test/pkg/AnnotationTest.kt:8: Error: Expected resource of type string [ResourceType]
                     checkString(color0) // ERROR 1
                                 ~~~~~~
@@ -2338,13 +2494,14 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                                       ~~~~~~
             7 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testVarAnnotations2() {
-        lint().files(
-            java(
-                """
+  fun testVarAnnotations2() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import test.api.Simple;
                 import androidx.annotation.DrawableRes;
@@ -2360,9 +2517,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.api
 
                 import androidx.annotation.StringRes
@@ -2375,10 +2533,13 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     var bar: Int = 0
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/JavaTest.java:7: Error: Expected resource of type string [ResourceType]
                     simple.setFoo(drawable);                 // WARN 1
                                   ~~~~~~~~
@@ -2390,14 +2551,15 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                                                 ~~~~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testDimensions216139975() {
-        // Regression test for issue 216139975
-        lint().files(
-            java(
-                """
+  fun testDimensions216139975() {
+    // Regression test for issue 216139975
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import android.content.Context;
                 import androidx.annotation.Dimension;
@@ -2408,9 +2570,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import android.content.Context;
                 import android.content.res.Resources;
@@ -2426,17 +2589,21 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testBinaryDimension() {
-        // Regression test for https://issuetracker.google.com/231344506
-        lint().files(
-            java(
-                """
+  @Test
+  fun testBinaryDimension() {
+    // Regression test for https://issuetracker.google.com/231344506
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.Dimension;
@@ -2454,11 +2621,12 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     }
                 }
                 """
-            ).indented(),
-            bytecode(
-                "libs/api.jar",
-                java(
-                    """
+          )
+          .indented(),
+        bytecode(
+          "libs/api.jar",
+          java(
+              """
                     package test.pkg2;
 
                     import androidx.annotation.Dimension;
@@ -2470,9 +2638,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         }
                     }
                     """
-                ).indented(),
-                0x37117cd1,
-                """
+            )
+            .indented(),
+          0x37117cd1,
+          """
                 test/pkg2/Api.class:
                 H4sIAAAAAAAAAF1OTUvDQBB906RNG1tbvw4eRBQP1UMXvHhQhKAIgaKi4n3T
                 LGVrswnJpvi3PAke/AH+KHG2ggUP8+brvXnz9f3xCeAMOyE8bAbYCrBNaF1o
@@ -2482,10 +2651,12 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 l/gqyIkYW9ztcSbOzZN30JuzQsDY+h0yttFhiaPucviO8Z/WQch46HGzxtGN
                 0VuV66uyz2mw/GDjBxc+8B57AQAA
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:11: Error: Mismatched @Dimension units here; expected a scale-independent (sp) integer but received a pixel integer [ResourceType]
                     api.api(w,        // ERROR 1
                             ~
@@ -2497,6 +2668,6 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                             ~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

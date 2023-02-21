@@ -24,12 +24,12 @@ import org.junit.Test
 
 class HtmlPaneDetectorTest {
 
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import javax.swing.JEditorPane;
 
@@ -62,9 +62,10 @@ class HtmlPaneDetectorTest {
                         }
                     }
                    """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import javax.swing.JEditorPane
 
@@ -126,10 +127,11 @@ class HtmlPaneDetectorTest {
                         }
                 }
                 """
-                ).indented(),
-                // Stubs
-                java(
-                    """
+          )
+          .indented(),
+        // Stubs
+        java(
+          """
                     package javax.swing;
                     @SuppressWarnings("all")
                     public class JEditorPane {
@@ -143,21 +145,21 @@ class HtmlPaneDetectorTest {
                         public EditorKit getEditorKit() { return null; }
                     }
                     """
-                ),
-                java(
-                    """
+        ),
+        java(
+          """
                     package javax.swing;
                     @SuppressWarnings("all")
                     public class EditorKit {
                     }
                     """
-                )
-            )
-            .issues(HtmlPaneDetector.ISSUE)
-            .checkUInjectionHost(false)
-            .run()
-            .expect(
-                """
+        )
+      )
+      .issues(HtmlPaneDetector.ISSUE)
+      .checkUInjectionHost(false)
+      .run()
+      .expect(
+        """
                 src/test/pkg/EditorPaneTest.java:10: Error: Constructing an HTML JEditorPane directly can lead to subtle theming bugs; either set the editor kit directly (setEditorKit(UIUtil.getHTMLEditorKit())) or better yet use SwingHelper.createHtmlViewer [HtmlPaneColors]
                         pane.setContentType("text/html"); // ERROR
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -184,6 +186,6 @@ class HtmlPaneDetectorTest {
                              ~~~~~~~~~~~~~~~~~~~~~~~
                 8 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

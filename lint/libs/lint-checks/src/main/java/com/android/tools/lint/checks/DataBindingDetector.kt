@@ -24,73 +24,66 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.isDataBindingExpression
-import org.w3c.dom.Attr
 import java.lang.Integer.min
+import org.w3c.dom.Attr
 
 class DataBindingDetector : LayoutDetector() {
-    override fun getApplicableAttributes(): Collection<String> {
-        return ALL
-    }
+  override fun getApplicableAttributes(): Collection<String> {
+    return ALL
+  }
 
-    override fun visitAttribute(context: XmlContext, attribute: Attr) {
-        val elementName = attribute.ownerElement.tagName
-        val attributeName = attribute.name
+  override fun visitAttribute(context: XmlContext, attribute: Attr) {
+    val elementName = attribute.ownerElement.tagName
+    val attributeName = attribute.name
 
-        if (isDataBindingExpression(attribute.value) ||
-            isVariableType(elementName, attributeName)
-        ) {
-            val rawText = context.getContents() ?: return
-            val start = context.parser.getNodeStartOffset(context, attribute)
-            if (start == -1) {
-                return
-            }
-            val end = min(rawText.length, context.parser.getNodeEndOffset(context, attribute))
-            var isContained = false
-            for (index in start until end) {
-                if (rawText[index] == '<') {
-                    isContained = true
-                    break
-                }
-            }
-
-            if (isContained) {
-                val fix = fix().name("Change '<' to '&lt;'")
-                    .replace()
-                    .text("<")
-                    .with("&lt;")
-                    .build()
-                context.report(
-                    ESCAPE_XML,
-                    attribute,
-                    context.getValueLocation(attribute),
-                    "`<` must be escaped (as `&lt;`) in attribute values",
-                    fix
-                )
-            }
+    if (isDataBindingExpression(attribute.value) || isVariableType(elementName, attributeName)) {
+      val rawText = context.getContents() ?: return
+      val start = context.parser.getNodeStartOffset(context, attribute)
+      if (start == -1) {
+        return
+      }
+      val end = min(rawText.length, context.parser.getNodeEndOffset(context, attribute))
+      var isContained = false
+      for (index in start until end) {
+        if (rawText[index] == '<') {
+          isContained = true
+          break
         }
-    }
+      }
 
-    private fun isVariableType(elementName: String, attributeName: String): Boolean {
-        return elementName == SdkConstants.TAG_VARIABLE && attributeName == SdkConstants.ATTR_TYPE
+      if (isContained) {
+        val fix = fix().name("Change '<' to '&lt;'").replace().text("<").with("&lt;").build()
+        context.report(
+          ESCAPE_XML,
+          attribute,
+          context.getValueLocation(attribute),
+          "`<` must be escaped (as `&lt;`) in attribute values",
+          fix
+        )
+      }
     }
+  }
 
-    companion object {
-        /** The main issue discovered by this detector. */
-        @JvmField
-        val ESCAPE_XML = Issue.create(
-            id = "XmlEscapeNeeded",
-            briefDescription = "Missing XML Escape",
-            explanation = """
+  private fun isVariableType(elementName: String, attributeName: String): Boolean {
+    return elementName == SdkConstants.TAG_VARIABLE && attributeName == SdkConstants.ATTR_TYPE
+  }
+
+  companion object {
+    /** The main issue discovered by this detector. */
+    @JvmField
+    val ESCAPE_XML =
+      Issue.create(
+        id = "XmlEscapeNeeded",
+        briefDescription = "Missing XML Escape",
+        explanation =
+          """
               When a string contains characters that have special usage in XML, \
               you must escape the characters.
             """,
-            category = Category.CORRECTNESS,
-            priority = 5,
-            severity = Severity.ERROR,
-            implementation = Implementation(
-                DataBindingDetector::class.java,
-                Scope.RESOURCE_FILE_SCOPE
-            )
-        )
-    }
+        category = Category.CORRECTNESS,
+        priority = 5,
+        severity = Severity.ERROR,
+        implementation = Implementation(DataBindingDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+      )
+  }
 }

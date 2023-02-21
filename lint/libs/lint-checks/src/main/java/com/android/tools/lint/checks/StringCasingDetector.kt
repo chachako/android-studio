@@ -33,139 +33,137 @@ import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.formatList
 import com.android.tools.lint.detector.api.getLocale
 import com.android.utils.Pair
-import org.w3c.dom.Element
-import org.w3c.dom.Node
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.Locale
+import org.w3c.dom.Element
+import org.w3c.dom.Node
 
 /** String duplication when case conversion is more efficient. */
 class StringCasingDetector : ResourceXmlDetector() {
 
-    companion object {
-        private val IMPLEMENTATION_XML =
-            Implementation(StringCasingDetector::class.java, Scope.ALL_RESOURCES_SCOPE)
+  companion object {
+    private val IMPLEMENTATION_XML =
+      Implementation(StringCasingDetector::class.java, Scope.ALL_RESOURCES_SCOPE)
 
-        /**
-         * Whether there are any duplicate strings, including
-         * capitalization adjustments.
-         */
-        @JvmField
-        val DUPLICATE_STRINGS = Issue.create(
-            id = "DuplicateStrings",
-            briefDescription = "Duplicate Strings",
-            explanation = """
+    /** Whether there are any duplicate strings, including capitalization adjustments. */
+    @JvmField
+    val DUPLICATE_STRINGS =
+      Issue.create(
+        id = "DuplicateStrings",
+        briefDescription = "Duplicate Strings",
+        explanation =
+          """
                 Duplicate strings can make applications larger unnecessarily.
 
                 This lint check looks for duplicate strings, including differences for strings \
                 where the only difference is in capitalization. Title casing and all uppercase can \
                 all be adjusted in the layout or in code.
                 """,
-            implementation = IMPLEMENTATION_XML,
-            moreInfo = "https://developer.android.com/reference/android/widget/TextView.html#attr_android:inputType",
-            category = Category.APP_SIZE,
-            priority = 2,
-            severity = Severity.WARNING,
-            enabledByDefault = false
-        )
+        implementation = IMPLEMENTATION_XML,
+        moreInfo =
+          "https://developer.android.com/reference/android/widget/TextView.html#attr_android:inputType",
+        category = Category.APP_SIZE,
+        priority = 2,
+        severity = Severity.WARNING,
+        enabledByDefault = false
+      )
+  }
+
+  /*
+   * Map of all locale,strings in lower case, to their raw elements to ensure that there are no
+   * duplicate strings.
+   */
+  private val allStrings = HashMap<Pair<String, String>, MutableList<StringDeclaration>>()
+
+  override fun appliesTo(folderType: ResourceFolderType): Boolean {
+    return folderType == ResourceFolderType.VALUES
+  }
+
+  override fun getApplicableElements(): Collection<String> {
+    return listOf(TAG_STRING)
+  }
+
+  override fun visitElement(context: XmlContext, element: Element) {
+    val childNodes = element.childNodes
+    if (childNodes.length > 0) {
+      if (childNodes.length == 1) {
+        val child = childNodes.item(0)
+        val nodeType = child.nodeType
+        if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {
+          checkTextNode(context, element, StringFormatDetector.stripQuotes(child.nodeValue))
+        }
+      } else {
+        val sb = StringBuilder()
+        StringFormatDetector.addText(sb, element)
+        if (sb.isNotEmpty()) {
+          checkTextNode(context, element, sb.toString())
+        }
+      }
+    }
+  }
+
+  private fun checkTextNode(context: XmlContext, element: Element, text: String) {
+    if (VALUE_FALSE == element.getAttribute(ATTR_TRANSLATABLE)) {
+      return
     }
 
-    /*
-     * Map of all locale,strings in lower case, to their raw elements to ensure that there are no
-     * duplicate strings.
-     */
-    private val allStrings = HashMap<Pair<String, String>, MutableList<StringDeclaration>>()
+    val locale = getLocale(context)
+    val key =
+      if (locale != null) Pair.of(locale.full, text.toLowerCase(Locale.forLanguageTag(locale.tag)))
+      else Pair.of("default", text.toLowerCase(Locale.US))
+    val handle = context.createLocationHandle(element)
+    handle.clientData = element
+    val handleList = allStrings.getOrDefault(key, ArrayList())
+    handleList.add(StringDeclaration(element.getAttribute(ATTR_NAME), text, handle))
+    allStrings[key] = handleList
+  }
 
-    override fun appliesTo(folderType: ResourceFolderType): Boolean {
-        return folderType == ResourceFolderType.VALUES
-    }
+  data class StringDeclaration(val name: String, val text: String, val location: Location.Handle)
 
-    override fun getApplicableElements(): Collection<String> {
-        return listOf(TAG_STRING)
-    }
-
-    override fun visitElement(context: XmlContext, element: Element) {
-        val childNodes = element.childNodes
-        if (childNodes.length > 0) {
-            if (childNodes.length == 1) {
-                val child = childNodes.item(0)
-                val nodeType = child.nodeType
-                if (nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE) {
-                    checkTextNode(
-                        context,
-                        element,
-                        StringFormatDetector.stripQuotes(child.nodeValue)
-                    )
-                }
-            } else {
-                val sb = StringBuilder()
-                StringFormatDetector.addText(sb, element)
-                if (sb.isNotEmpty()) {
-                    checkTextNode(context, element, sb.toString())
-                }
+  override fun afterCheckRootProject(context: Context) {
+    for ((_, duplicates) in allStrings) {
+      if (duplicates.size > 1) {
+        var firstLocation: Location? = null
+        var prevLocation: Location? = null
+        var prevString = ""
+        var caseVaries = false
+        val names = mutableListOf<String>()
+        for (duplicate in duplicates) {
+          names.add(duplicate.name)
+          val string = duplicate.text
+          val location = duplicate.location.resolve()
+          if (prevLocation == null) {
+            firstLocation = location
+          } else {
+            prevLocation.secondary = location
+            location.message = "Duplicates value in `${names[0]}`"
+            location.setSelfExplanatory(false)
+            if (string != prevString) {
+              caseVaries = true
+              location.message +=
+                " (case varies, but you can use " +
+                  "`android:inputType` or `android:capitalize` in the " +
+                  "presentation)"
             }
-        }
-    }
+          }
 
-    private fun checkTextNode(context: XmlContext, element: Element, text: String) {
-        if (VALUE_FALSE == element.getAttribute(ATTR_TRANSLATABLE)) {
-            return
+          prevLocation = location
+          prevString = string
         }
 
-        val locale = getLocale(context)
-        val key = if (locale != null)
-            Pair.of(locale.full, text.toLowerCase(Locale.forLanguageTag(locale.tag)))
-        else Pair.of("default", text.toLowerCase(Locale.US))
-        val handle = context.createLocationHandle(element)
-        handle.clientData = element
-        val handleList = allStrings.getOrDefault(key, ArrayList())
-        handleList.add(StringDeclaration(element.getAttribute(ATTR_NAME), text, handle))
-        allStrings[key] = handleList
-    }
+        firstLocation ?: continue
 
-    data class StringDeclaration(val name: String, val text: String, val location: Location.Handle)
+        val nameList = formatList(names.map { "`$it`" }, useConjunction = true)
+        var message = "Duplicate string value `$prevString`, used in $nameList"
 
-    override fun afterCheckRootProject(context: Context) {
-        for ((_, duplicates) in allStrings) {
-            if (duplicates.size > 1) {
-                var firstLocation: Location? = null
-                var prevLocation: Location? = null
-                var prevString = ""
-                var caseVaries = false
-                val names = mutableListOf<String>()
-                for (duplicate in duplicates) {
-                    names.add(duplicate.name)
-                    val string = duplicate.text
-                    val location = duplicate.location.resolve()
-                    if (prevLocation == null) {
-                        firstLocation = location
-                    } else {
-                        prevLocation.secondary = location
-                        location.message = "Duplicates value in `${names[0]}`"
-                        location.setSelfExplanatory(false)
-                        if (string != prevString) {
-                            caseVaries = true
-                            location.message += " (case varies, but you can use " +
-                                "`android:inputType` or `android:capitalize` in the " +
-                                "presentation)"
-                        }
-                    }
-
-                    prevLocation = location
-                    prevString = string
-                }
-
-                firstLocation ?: continue
-
-                val nameList = formatList(names.map { "`$it`" }, useConjunction = true)
-                var message = "Duplicate string value `$prevString`, used in $nameList"
-
-                if (caseVaries) {
-                    message += ". Use `android:inputType` or `android:capitalize` " +
-                        "to treat these as the same and avoid string duplication."
-                }
-                context.report(DUPLICATE_STRINGS, firstLocation, message)
-            }
+        if (caseVaries) {
+          message +=
+            ". Use `android:inputType` or `android:capitalize` " +
+              "to treat these as the same and avoid string duplication."
         }
+        context.report(DUPLICATE_STRINGS, firstLocation, message)
+      }
     }
+  }
 }

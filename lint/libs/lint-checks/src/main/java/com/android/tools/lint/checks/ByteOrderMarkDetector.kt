@@ -30,99 +30,103 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.XmlContext
-import org.w3c.dom.Document
 import java.util.EnumSet
+import org.w3c.dom.Document
 
 /** Checks that byte order marks do not appear in resource names. */
 class ByteOrderMarkDetector : ResourceXmlDetector(), SourceCodeScanner, GradleScanner {
-    companion object Issues {
+  companion object Issues {
 
-        /** Detects BOM characters in the middle of files. */
-        @JvmField
-        val BOM = Issue.create(
-            id = "ByteOrderMark",
-            briefDescription = "Byte order mark inside files",
-            explanation = """
+    /** Detects BOM characters in the middle of files. */
+    @JvmField
+    val BOM =
+      Issue.create(
+        id = "ByteOrderMark",
+        briefDescription = "Byte order mark inside files",
+        explanation =
+          """
             Lint will flag any byte-order-mark (BOM) characters it finds in the middle of a file. Since we \
             expect files to be encoded with UTF-8 (see the EnforceUTF8 issue), the BOM characters are not \
             necessary, and they are not handled correctly by all tools. For example, if you have a BOM as \
             part of a resource name in one particular translation, that name will not be considered identical \
             to the base resource's name and the translation will not be used.""",
-            moreInfo = "https://en.wikipedia.org/wiki/Byte_order_mark",
-            category = Category.I18N,
-            priority = 8,
-            severity = Severity.ERROR,
-            implementation = Implementation(
-                ByteOrderMarkDetector::class.java,
-                // Applies to all text files
-                EnumSet.of(
-                    Scope.MANIFEST, Scope.RESOURCE_FILE, Scope.JAVA_FILE, Scope.GRADLE_FILE,
-                    Scope.PROPERTY_FILE, Scope.PROGUARD_FILE
-                ),
-                Scope.RESOURCE_FILE_SCOPE,
-                Scope.JAVA_FILE_SCOPE,
-                Scope.MANIFEST_SCOPE,
-                Scope.JAVA_FILE_SCOPE,
-                Scope.GRADLE_SCOPE,
-                Scope.PROPERTY_SCOPE,
-                Scope.PROGUARD_SCOPE
-            )
-        )
+        moreInfo = "https://en.wikipedia.org/wiki/Byte_order_mark",
+        category = Category.I18N,
+        priority = 8,
+        severity = Severity.ERROR,
+        implementation =
+          Implementation(
+            ByteOrderMarkDetector::class.java,
+            // Applies to all text files
+            EnumSet.of(
+              Scope.MANIFEST,
+              Scope.RESOURCE_FILE,
+              Scope.JAVA_FILE,
+              Scope.GRADLE_FILE,
+              Scope.PROPERTY_FILE,
+              Scope.PROGUARD_FILE
+            ),
+            Scope.RESOURCE_FILE_SCOPE,
+            Scope.JAVA_FILE_SCOPE,
+            Scope.MANIFEST_SCOPE,
+            Scope.JAVA_FILE_SCOPE,
+            Scope.GRADLE_SCOPE,
+            Scope.PROPERTY_SCOPE,
+            Scope.PROGUARD_SCOPE
+          )
+      )
+  }
+
+  override fun beforeCheckFile(context: Context) {
+    if (context is XmlContext && context.resourceFolderType == ResourceFolderType.RAW) {
+      return
     }
 
-    override fun beforeCheckFile(context: Context) {
-        if (context is XmlContext && context.resourceFolderType == ResourceFolderType.RAW) {
-            return
-        }
+    val source = context.getContents() ?: return
+    val max = source.length
+    for (i in 1 until max) {
+      val c = source[i]
+      if (c == '\uFEFF') {
+        val location = Location.create(context.file, source, i, i + 1)
+        val message = "Found byte-order-mark in the middle of a file"
 
-        val source = context.getContents() ?: return
-        val max = source.length
-        for (i in 1 until max) {
-            val c = source[i]
-            if (c == '\uFEFF') {
-                val location = Location.create(context.file, source, i, i + 1)
-                val message = "Found byte-order-mark in the middle of a file"
-
-                if (context is XmlContext) {
-                    val leaf = context.parser.findNodeAt(context, i)
-                    if (leaf != null) {
-                        context.report(BOM, leaf, location, message)
-                        continue
-                    }
-                } else if (context is JavaContext) {
-                    val file = context.uastFile
-                    if (file != null) {
-                        val psi = file.psi
-                        var closest = psi.findElementAt(i)
-                        if (closest == null && file.classes.isNotEmpty()) {
-                            closest = file.classes[0]
-                        }
-                        if (closest != null) {
-                            context.report(BOM, closest, location, message)
-                            continue
-                        }
-                    }
-                }
-
-                // Report without surrounding scope node; no nearby @SuppressLint annotation
-                context.report(BOM, location, message)
+        if (context is XmlContext) {
+          val leaf = context.parser.findNodeAt(context, i)
+          if (leaf != null) {
+            context.report(BOM, leaf, location, message)
+            continue
+          }
+        } else if (context is JavaContext) {
+          val file = context.uastFile
+          if (file != null) {
+            val psi = file.psi
+            var closest = psi.findElementAt(i)
+            if (closest == null && file.classes.isNotEmpty()) {
+              closest = file.classes[0]
             }
+            if (closest != null) {
+              context.report(BOM, closest, location, message)
+              continue
+            }
+          }
         }
+
+        // Report without surrounding scope node; no nearby @SuppressLint annotation
+        context.report(BOM, location, message)
+      }
     }
+  }
 
-    // XML files: work is done in beforeCheckFile()
-    override fun visitDocument(context: XmlContext, document: Document) =
-        Unit
+  // XML files: work is done in beforeCheckFile()
+  override fun visitDocument(context: XmlContext, document: Document) = Unit
 
-    // Java files: work is done in beforeCheckFile()
-    override fun createUastHandler(context: JavaContext): UElementHandler? =
-        null
+  // Java files: work is done in beforeCheckFile()
+  override fun createUastHandler(context: JavaContext): UElementHandler? = null
 
-    // ProGuard files: work is done in beforeCheckFile()
-    override fun run(context: Context) =
-        Unit
+  // ProGuard files: work is done in beforeCheckFile()
+  override fun run(context: Context) = Unit
 
-    // Gradle: Don't attempt to visit the file
-    override val customVisitor: Boolean
-        get() = true
+  // Gradle: Don't attempt to visit the file
+  override val customVisitor: Boolean
+    get() = true
 }

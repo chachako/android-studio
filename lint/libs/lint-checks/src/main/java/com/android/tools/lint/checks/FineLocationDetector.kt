@@ -33,53 +33,51 @@ import com.android.utils.iterator
 import org.w3c.dom.Element
 
 class FineLocationDetector : Detector(), XmlScanner {
-    override fun checkMergedProject(context: Context) {
-        if (context.mainProject.targetSdk < S) return
-        var fineElement: Element? = null
-        var coarseElement: Element? = null
-        val manifest = context.mainProject.mergedManifest ?: return
-        for (node in manifest.documentElement) {
-            if (node.tagName != TAG_USES_PERMISSION) continue
-            when (node.getAttributeNS(ANDROID_URI, ATTR_NAME)) {
-                FINE_LOCATION_PERMISSION -> fineElement = node
-                COARSE_LOCATION_PERMISSION -> coarseElement = node
-            }
-        }
-        if (fineElement != null && coarseElement == null) {
-            context.report(
-                Incident(
-                    ISSUE,
-                    context.getLocation(fineElement),
-                    "If you need access to FINE location, you must request both " +
-                        "`ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`"
-                )
-            )
-        }
+  override fun checkMergedProject(context: Context) {
+    if (context.mainProject.targetSdk < S) return
+    var fineElement: Element? = null
+    var coarseElement: Element? = null
+    val manifest = context.mainProject.mergedManifest ?: return
+    for (node in manifest.documentElement) {
+      if (node.tagName != TAG_USES_PERMISSION) continue
+      when (node.getAttributeNS(ANDROID_URI, ATTR_NAME)) {
+        FINE_LOCATION_PERMISSION -> fineElement = node
+        COARSE_LOCATION_PERMISSION -> coarseElement = node
+      }
     }
+    if (fineElement != null && coarseElement == null) {
+      context.report(
+        Incident(
+          ISSUE,
+          context.getLocation(fineElement),
+          "If you need access to FINE location, you must request both " +
+            "`ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`"
+        )
+      )
+    }
+  }
 
-    companion object {
-        private const val FINE_LOCATION_PERMISSION = "android.permission.ACCESS_FINE_LOCATION"
-        private const val COARSE_LOCATION_PERMISSION = "android.permission.ACCESS_COARSE_LOCATION"
+  companion object {
+    private const val FINE_LOCATION_PERMISSION = "android.permission.ACCESS_FINE_LOCATION"
+    private const val COARSE_LOCATION_PERMISSION = "android.permission.ACCESS_COARSE_LOCATION"
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "CoarseFineLocation",
-            //noinspection LintImplTextFormat
-            briefDescription = "Cannot use `ACCESS_FINE_LOCATION` without `ACCESS_COARSE_LOCATION`",
-            explanation =
-            """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "CoarseFineLocation",
+        //noinspection LintImplTextFormat
+        briefDescription = "Cannot use `ACCESS_FINE_LOCATION` without `ACCESS_COARSE_LOCATION`",
+        explanation =
+          """
                 If your app requires access to FINE location, on Android 12 and higher you must \
                 now request both FINE and COARSE. Users will have the option to grant only COARSE \
                 location. Ensure your app can work with just COARSE location.
             """,
-            category = Category.CORRECTNESS,
-            priority = 5,
-            severity = Severity.ERROR,
-            implementation = Implementation(
-                FineLocationDetector::class.java,
-                Scope.MANIFEST_SCOPE
-            ),
-            androidSpecific = true
-        )
-    }
+        category = Category.CORRECTNESS,
+        priority = 5,
+        severity = Severity.ERROR,
+        implementation = Implementation(FineLocationDetector::class.java, Scope.MANIFEST_SCOPE),
+        androidSpecific = true
+      )
+  }
 }

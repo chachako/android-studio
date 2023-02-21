@@ -18,13 +18,13 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class DateFormatDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return DateFormatDetector()
-    }
+  override fun getDetector(): Detector {
+    return DateFormatDetector()
+  }
 
-    fun testSpecifyingLocale() {
-        val expected =
-            """
+  fun testSpecifyingLocale() {
+    val expected =
+      """
             src/test/pkg/LocaleTest.java:32: Warning: To get local formatting use getDateInstance(), getDateTimeInstance(), or getTimeInstance(), or use new SimpleDateFormat(String template, Locale locale) with for example Locale.US for ASCII dates. [SimpleDateFormat]
                     new SimpleDateFormat(); // WRONG
                     ~~~~~~~~~~~~~~~~~~~~~~
@@ -36,11 +36,12 @@ class DateFormatDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 3 warnings
             """
-        lint().files(
-            manifest().minSdk(19),
-            java(
-                "src/test/pkg/LocaleTest.java",
-                """
+    lint()
+      .files(
+        manifest().minSdk(19),
+        java(
+            "src/test/pkg/LocaleTest.java",
+            """
                 package test.pkg;
 
                 import java.text.*;
@@ -79,15 +80,19 @@ class DateFormatDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testEraYear() {
-        lint().files(
-            manifest().minSdk(19),
-            kotlin(
-                """
+  fun testEraYear() {
+    lint()
+      .files(
+        manifest().minSdk(19),
+        kotlin(
+            """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -129,10 +134,13 @@ class DateFormatDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/DateFormatTest.kt:16: Warning: DateFormat character 'Y' in YYYY is the week-era-year; did you mean 'y'? [WeekBasedYear]
                     DateTimeFormatter.ofPattern("'profile-'YYYY-MM-dd-HH-mm-ss-SSS'.rawproto'", Locale.US) // ERROR
                                                            ~~~~
@@ -159,6 +167,6 @@ class DateFormatDetectorTest : AbstractCheckTest() {
                                                                ~~
             0 errors, 8 warnings
             """
-        )
-    }
+      )
+  }
 }

@@ -20,16 +20,16 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import com.android.tools.lint.detector.api.Detector
 
 class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
-    override fun lint(): TestLintTask {
-        val task = super.lint()
-        // This detector isn't intended to be run on the platform
-        task.skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
-        return task
-    }
+  override fun lint(): TestLintTask {
+    val task = super.lint()
+    // This detector isn't intended to be run on the platform
+    task.skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
+    return task
+  }
 
-    fun testThreadingFromJava() {
-        val expected =
-            """
+  fun testThreadingFromJava() {
+    val expected =
+      """
             src/test/pkg/Runnable.java:14: Error: Interprocedural thread annotation violation (UiThread to WorkerThread):
             Test#uiThreadStatic -> Test#unannotatedStatic -> Test#workerThreadStatic [WrongThreadInterprocedural]
               @UiThread static void uiThreadStatic() { unannotatedStatic(); }
@@ -61,9 +61,10 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
             7 errors, 0 warnings
             """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
 
                     import androidx.annotation.UiThread;
@@ -144,18 +145,19 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
                       }
                     }
                     """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .allowSystemErrors(true)
-            .allowDuplicates()
-            .run()
-            .expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowSystemErrors(true)
+      .allowDuplicates()
+      .run()
+      .expect(expected)
+  }
 
-    fun testThreadingFromKotlin() {
-        val expected =
-            """
+  fun testThreadingFromKotlin() {
+    val expected =
+      """
             src/test/pkg/Test.kt:9: Error: Interprocedural thread annotation violation (UiThread to WorkerThread):
             Test#uiThread -> Test#unannotated -> Test#workerThread [WrongThreadInterprocedural]
               @UiThread fun uiThread() { unannotated() }
@@ -190,9 +192,10 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
                                                  ~~~~~~~~~~~~~~~~~~~
             8 errors, 0 warnings
             """
-        lint().files(
-            kotlin(
-                """
+    lint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
 
                     import androidx.annotation.UiThread
@@ -269,15 +272,16 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
                       }
                     }
                     """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        )
-            .allowSystemErrors(true)
-            .run()
-            .expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .allowSystemErrors(true)
+      .run()
+      .expect(expected)
+  }
 
-    override fun getDetector(): Detector {
-        return WrongThreadInterproceduralDetector()
-    }
+  override fun getDetector(): Detector {
+    return WrongThreadInterproceduralDetector()
+  }
 }

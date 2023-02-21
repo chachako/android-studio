@@ -22,51 +22,56 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TestLintResultTest {
-    @Test
-    fun testDiff() {
-        assertEquals("", getDiff("", ""))
-        assertEquals("", getDiff("aaa", "aaa"))
-        assertEquals(
-            """
+  @Test
+  fun testDiff() {
+    assertEquals("", getDiff("", ""))
+    assertEquals("", getDiff("aaa", "aaa"))
+    assertEquals(
+      """
             @@ -1 +1
             - aaa
             + bbb
-            """.trimIndent(),
-            getDiff("aaa", "bbb")
-        )
-        assertEquals(
             """
+        .trimIndent(),
+      getDiff("aaa", "bbb")
+    )
+    assertEquals(
+      """
             @@ -1 +1
             - this
             @@ -4 +3
             + new
-            """.trimIndent(),
-            getDiff(
-                """
+            """
+        .trimIndent(),
+      getDiff(
+        """
                 this
                 is
                 a
                 test
-                """.trimIndent(),
                 """
+          .trimIndent(),
+        """
                 is
                 a
                 new
                 test
-                """.trimIndent()
-            )
-        )
-        assertEquals(
-            """
+                """
+          .trimIndent()
+      )
+    )
+    assertEquals(
+      """
             @@ -4 +4
             - line4
             - line5
             @@ -8 +6
             - line8
             + line7.5
-            """.trimIndent(),
-            getDiff(
-                """
+            """
+        .trimIndent(),
+      getDiff(
+        """
                 line1
                 line2
                 line3
@@ -76,8 +81,9 @@ class TestLintResultTest {
                 line7
                 line8
                 line9
-                """.trimIndent(),
                 """
+          .trimIndent(),
+        """
                 line1
                 line2
                 line3
@@ -85,12 +91,13 @@ class TestLintResultTest {
                 line7
                 line7.5
                 line9
-                """.trimIndent()
-            )
-        )
+                """
+          .trimIndent()
+      )
+    )
 
-        assertEquals(
-            """
+    assertEquals(
+      """
             @@ -4 +4
               line1
               line2
@@ -102,9 +109,10 @@ class TestLintResultTest {
             - line8
             + line7.5
               line9
-            """.trimIndent(),
-            getDiff(
-                """
+            """
+        .trimIndent(),
+      getDiff(
+        """
                 line1
                 line2
                 line3
@@ -114,8 +122,9 @@ class TestLintResultTest {
                 line7
                 line8
                 line9
-                """.trimIndent(),
                 """
+          .trimIndent(),
+        """
                 line1
                 line2
                 line3
@@ -123,12 +132,13 @@ class TestLintResultTest {
                 line7
                 line7.5
                 line9
-                """.trimIndent(),
-                3
-            )
-        )
-        assertEquals(
-            """
+                """
+          .trimIndent(),
+        3
+      )
+    )
+    assertEquals(
+      """
             @@ -8 +8
             -         android:id="@+id/textView1"
             +         android:id="@+id/output"
@@ -137,9 +147,10 @@ class TestLintResultTest {
             -         android:layout_below="@+id/textView1"
             +         android:layout_alignLeft="@+id/output"
             +         android:layout_below="@+id/output"
-            """.trimIndent(),
-            getDiff(
-                """
+            """
+        .trimIndent(),
+      getDiff(
+        """
                 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
                     android:layout_width="match_parent"
@@ -173,8 +184,9 @@ class TestLintResultTest {
                         android:text="Button" />
 
                 </RelativeLayout>
-                """.trimIndent(),
                 """
+          .trimIndent(),
+        """
                 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
                     android:layout_width="match_parent"
@@ -208,15 +220,16 @@ class TestLintResultTest {
                         android:text="Button" />
 
                 </RelativeLayout>
-                """.trimIndent()
-            )
-        )
-    }
+                """
+          .trimIndent()
+      )
+    )
+  }
 
-    @Test
-    fun testMyDiff() {
-        val a =
-            """
+  @Test
+  fun testMyDiff() {
+    val a =
+      """
             <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
@@ -250,9 +263,10 @@ class TestLintResultTest {
                     android:text="Button" />
 
             </RelativeLayout>
-            """.trimIndent()
-        val b =
             """
+        .trimIndent()
+    val b =
+      """
             <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
@@ -288,9 +302,10 @@ class TestLintResultTest {
                     android:text="Button" />
 
             </RelativeLayout>
-            """.trimIndent()
-        assertEquals(
             """
+        .trimIndent()
+    assertEquals(
+      """
             @@ -11 +11
                       android:id="@+id/textView1"
                       android:layout_width="wrap_content"
@@ -300,128 +315,118 @@ class TestLintResultTest {
                       android:layout_centerVertical="true"
                       android:layout_toRightOf="@+id/button2"
                       android:text="@string/hello_world" />
-            """.trimIndent(),
-            getDiff(a, b, 3)
-        )
-    }
+            """
+        .trimIndent(),
+      getDiff(a, b, 3)
+    )
+  }
 
-    @Test
-    fun testNoTrailingSpaces() {
-        val a = "" +
-            "\n" +
-            "foo\n" +
-            "\n"
-        val b = "" +
-            "\n" +
-            "bar\n" +
-            "\n"
-        assertThat(getDiff(a, b, 3)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "\n" +
-                "- foo\n" +
-                "+ bar"
-        )
-    }
+  @Test
+  fun testNoTrailingSpaces() {
+    val a = "" + "\n" + "foo\n" + "\n"
+    val b = "" + "\n" + "bar\n" + "\n"
+    assertThat(getDiff(a, b, 3)).isEqualTo("" + "@@ -2 +2\n" + "\n" + "- foo\n" + "+ bar")
+  }
 
-    @Test
-    fun testDiffAtEnd() {
-        val a = "" +
-            "[versions]\n" +
-            "\n" +
-            "[libraries]"
-        val b = "" +
-            "[versions]\n" +
-            "appcompat = \"1.5.1\"\n" +
-            "\n" +
-            "[libraries]\n" +
-            "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        assertThat(getDiff(a, b, 1)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "  [versions]\n" +
-                "+ appcompat = \"1.5.1\"\n" +
-                "\n" +
-                "  [libraries]\n" +
-                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        )
-        assertThat(getDiff(a, b, 2)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "  [versions]\n" +
-                "+ appcompat = \"1.5.1\"\n" +
-                "\n" +
-                "  [libraries]\n" +
-                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        )
-        assertThat(getDiff(a, b, 3)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "  [versions]\n" +
-                "+ appcompat = \"1.5.1\"\n" +
-                "\n" +
-                "  [libraries]\n" +
-                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        )
-    }
+  @Test
+  fun testDiffAtEnd() {
+    val a = "" + "[versions]\n" + "\n" + "[libraries]"
+    val b =
+      "" +
+        "[versions]\n" +
+        "appcompat = \"1.5.1\"\n" +
+        "\n" +
+        "[libraries]\n" +
+        "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+    assertThat(getDiff(a, b, 1))
+      .isEqualTo(
+        "" +
+          "@@ -2 +2\n" +
+          "  [versions]\n" +
+          "+ appcompat = \"1.5.1\"\n" +
+          "\n" +
+          "  [libraries]\n" +
+          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      )
+    assertThat(getDiff(a, b, 2))
+      .isEqualTo(
+        "" +
+          "@@ -2 +2\n" +
+          "  [versions]\n" +
+          "+ appcompat = \"1.5.1\"\n" +
+          "\n" +
+          "  [libraries]\n" +
+          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      )
+    assertThat(getDiff(a, b, 3))
+      .isEqualTo(
+        "" +
+          "@@ -2 +2\n" +
+          "  [versions]\n" +
+          "+ appcompat = \"1.5.1\"\n" +
+          "\n" +
+          "  [libraries]\n" +
+          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      )
+  }
 
-    @Test
-    fun testOverlaps() {
-        val a = "" +
-            "[versions]\n" +
-            "version=1\n" +
-            "[libraries]\n" +
-            "different1\n" +
-            "[bundles]"
-        val b = "" +
-            "[versions]\n" +
-            "appcompat = \"1.5.1\"\n" +
-            "version=1\n" +
-            "[libraries]\n" +
-            "different2\n" +
-            "[bundles]\n" +
-            "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        assertThat(getDiff(a, b, 1)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "  [versions]\n" +
-                "+ appcompat = \"1.5.1\"\n" +
-                "  version=1\n" +
-                "  [libraries]\n" +
-                "- different1\n" +
-                "+ different2\n" +
-                "  [bundles]\n" +
-                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        )
-        assertThat(getDiff(a, b, 2)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "  [versions]\n" +
-                "+ appcompat = \"1.5.1\"\n" +
-                "  version=1\n" +
-                "  [libraries]\n" +
-                "- different1\n" +
-                "+ different2\n" +
-                "  [bundles]\n" +
-                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        )
-        assertThat(getDiff(a, b, 3)).isEqualTo(
-            "" +
-                "@@ -2 +2\n" +
-                "  [versions]\n" +
-                "+ appcompat = \"1.5.1\"\n" +
-                "  version=1\n" +
-                "  [libraries]\n" +
-                "- different1\n" +
-                "+ different2\n" +
-                "  [bundles]\n" +
-                "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
-        )
-    }
+  @Test
+  fun testOverlaps() {
+    val a = "" + "[versions]\n" + "version=1\n" + "[libraries]\n" + "different1\n" + "[bundles]"
+    val b =
+      "" +
+        "[versions]\n" +
+        "appcompat = \"1.5.1\"\n" +
+        "version=1\n" +
+        "[libraries]\n" +
+        "different2\n" +
+        "[bundles]\n" +
+        "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+    assertThat(getDiff(a, b, 1))
+      .isEqualTo(
+        "" +
+          "@@ -2 +2\n" +
+          "  [versions]\n" +
+          "+ appcompat = \"1.5.1\"\n" +
+          "  version=1\n" +
+          "  [libraries]\n" +
+          "- different1\n" +
+          "+ different2\n" +
+          "  [bundles]\n" +
+          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      )
+    assertThat(getDiff(a, b, 2))
+      .isEqualTo(
+        "" +
+          "@@ -2 +2\n" +
+          "  [versions]\n" +
+          "+ appcompat = \"1.5.1\"\n" +
+          "  version=1\n" +
+          "  [libraries]\n" +
+          "- different1\n" +
+          "+ different2\n" +
+          "  [bundles]\n" +
+          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      )
+    assertThat(getDiff(a, b, 3))
+      .isEqualTo(
+        "" +
+          "@@ -2 +2\n" +
+          "  [versions]\n" +
+          "+ appcompat = \"1.5.1\"\n" +
+          "  version=1\n" +
+          "  [libraries]\n" +
+          "- different1\n" +
+          "+ different2\n" +
+          "  [bundles]\n" +
+          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      )
+  }
 
-    @Test
-    fun testOverlap2() {
-        val before = """
+  @Test
+  fun testOverlap2() {
+    val before =
+      """
             import android.graphics.drawable.VectorDrawable
 
             class VectorDrawableProvider {
@@ -431,9 +436,11 @@ class TestLintResultTest {
                     }
                 }
             }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        val after = """
+    val after =
+      """
             import android.graphics.drawable.VectorDrawable
             import android.os.Build
             import android.support.annotation.RequiresApi
@@ -446,10 +453,12 @@ class TestLintResultTest {
                     }
                 }
             }
-        """.trimIndent()
+        """
+        .trimIndent()
 
-        assertThat(getDiff(before, after, 1)).isEqualTo(
-            """
+    assertThat(getDiff(before, after, 1))
+      .isEqualTo(
+        """
             @@ -2 +2
               import android.graphics.drawable.VectorDrawable
             + import android.os.Build
@@ -458,7 +467,8 @@ class TestLintResultTest {
               class VectorDrawableProvider {
             +     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
                   fun getVectorDrawable(): VectorDrawable {
-            """.trimIndent()
-        )
-    }
+            """
+          .trimIndent()
+      )
+  }
 }

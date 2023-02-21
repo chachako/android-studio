@@ -99,1106 +99,1089 @@ import org.jetbrains.uast.util.isMethodCall
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 /**
- * Specialized visitor for running detectors on a Java AST. It operates
- * in three phases:
- * 1. First, it computes a set of maps where it generates a map from
- *    each significant AST attribute (such as method call names)
- *    to a list of detectors to consult whenever that attribute is
- *    encountered. Examples of "attributes" are method names, Android
- *    resource identifiers, and general AST node types such as "cast"
- *    nodes etc. These are defined on the [SourceCodeScanner] interface.
- * 2. Second, it iterates over the document a single time, delegating to
- *    the detectors found at each relevant AST attribute.
- * 3. Finally, it calls the remaining visitors (those that need to
- *    process a whole document on their own).
+ * Specialized visitor for running detectors on a Java AST. It operates in three phases:
+ * 1. First, it computes a set of maps where it generates a map from each significant AST attribute
+ *    (such as method call names) to a list of detectors to consult whenever that attribute is
+ *    encountered. Examples of "attributes" are method names, Android resource identifiers, and
+ *    general AST node types such as "cast" nodes etc. These are defined on the [SourceCodeScanner]
+ *    interface.
+ * 2. Second, it iterates over the document a single time, delegating to the detectors found at each
+ *    relevant AST attribute.
+ * 3. Finally, it calls the remaining visitors (those that need to process a whole document on their
+ *    own).
  *
- * It also notifies all the detectors before and after the document is
- * processed such that they can do pre- and post-processing.
+ * It also notifies all the detectors before and after the document is processed such that they can
+ * do pre- and post-processing.
  */
-internal class UElementVisitor constructor(
-    driver: LintDriver,
-    private val parser: UastParser,
-    detectors: List<Detector>
-) {
+internal class UElementVisitor
+constructor(driver: LintDriver, private val parser: UastParser, detectors: List<Detector>) {
 
-    private val methodDetectors =
-        Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(120)
-    private val constructorDetectors =
-        Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(16)
-    private val referenceDetectors =
-        Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(12)
-    private val resourceFieldDetectors = ArrayList<VisitingDetector>()
-    private val allDetectors: MutableList<VisitingDetector>
-    private val nodePsiTypeDetectors =
-        Maps.newHashMapWithExpectedSize<Class<out UElement>, MutableList<VisitingDetector>>(25)
-    private val superClassDetectors = HashMap<String, MutableList<VisitingDetector>>(40)
-    private val annotationHandler: AnnotationHandler?
-    private val callGraphDetectors = ArrayList<SourceCodeScanner>()
+  private val methodDetectors =
+    Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(120)
+  private val constructorDetectors =
+    Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(16)
+  private val referenceDetectors =
+    Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(12)
+  private val resourceFieldDetectors = ArrayList<VisitingDetector>()
+  private val allDetectors: MutableList<VisitingDetector>
+  private val nodePsiTypeDetectors =
+    Maps.newHashMapWithExpectedSize<Class<out UElement>, MutableList<VisitingDetector>>(25)
+  private val superClassDetectors = HashMap<String, MutableList<VisitingDetector>>(40)
+  private val annotationHandler: AnnotationHandler?
+  private val callGraphDetectors = ArrayList<SourceCodeScanner>()
 
-    init {
-        allDetectors = ArrayList(detectors.size)
+  init {
+    allDetectors = ArrayList(detectors.size)
 
-        var annotationScanners: Multimap<String, SourceCodeScanner>? = null
+    var annotationScanners: Multimap<String, SourceCodeScanner>? = null
 
-        for (detector in detectors) {
-            val uastScanner = detector as SourceCodeScanner
-            val v = VisitingDetector(detector, uastScanner)
-            allDetectors.add(v)
+    for (detector in detectors) {
+      val uastScanner = detector as SourceCodeScanner
+      val v = VisitingDetector(detector, uastScanner)
+      allDetectors.add(v)
 
-            val names = detector.getApplicableMethodNames()
-            if (names != null) {
-                // not supported in Java visitors; adding a method invocation node is trivial
-                // for that case.
-                assert(names !== XmlScannerConstants.ALL)
+      val names = detector.getApplicableMethodNames()
+      if (names != null) {
+        // not supported in Java visitors; adding a method invocation node is trivial
+        // for that case.
+        assert(names !== XmlScannerConstants.ALL)
 
-                for (name in names) {
-                    val list = methodDetectors.computeIfAbsent(name) { ArrayList(SAME_TYPE_COUNT) }
-                    list.add(v)
-                }
-            }
+        for (name in names) {
+          val list = methodDetectors.computeIfAbsent(name) { ArrayList(SAME_TYPE_COUNT) }
+          list.add(v)
+        }
+      }
 
-            val applicableSuperClasses = detector.applicableSuperClasses()
-            if (applicableSuperClasses != null) {
-                for (fqn in applicableSuperClasses) {
-                    val list =
-                        superClassDetectors.computeIfAbsent(fqn) { ArrayList(SAME_TYPE_COUNT) }
-                    list.add(v)
-                }
-            }
+      val applicableSuperClasses = detector.applicableSuperClasses()
+      if (applicableSuperClasses != null) {
+        for (fqn in applicableSuperClasses) {
+          val list = superClassDetectors.computeIfAbsent(fqn) { ArrayList(SAME_TYPE_COUNT) }
+          list.add(v)
+        }
+      }
 
-            val nodePsiTypes = detector.getApplicableUastTypes()
-            if (nodePsiTypes != null) {
-                for (type in nodePsiTypes) {
-                    val list =
-                        nodePsiTypeDetectors.computeIfAbsent(type) { ArrayList(SAME_TYPE_COUNT) }
-                    list.add(v)
-                }
-            }
+      val nodePsiTypes = detector.getApplicableUastTypes()
+      if (nodePsiTypes != null) {
+        for (type in nodePsiTypes) {
+          val list = nodePsiTypeDetectors.computeIfAbsent(type) { ArrayList(SAME_TYPE_COUNT) }
+          list.add(v)
+        }
+      }
 
-            val types = detector.getApplicableConstructorTypes()
-            if (types != null) {
-                // not supported in Java visitors; adding a method invocation node is trivial
-                // for that case.
-                assert(types !== XmlScannerConstants.ALL)
-                for (type in types) {
-                    var list: MutableList<VisitingDetector>? = constructorDetectors[type]
-                    if (list == null) {
-                        list = ArrayList(SAME_TYPE_COUNT)
-                        constructorDetectors[type] = list
-                    }
-                    list.add(v)
-                }
-            }
+      val types = detector.getApplicableConstructorTypes()
+      if (types != null) {
+        // not supported in Java visitors; adding a method invocation node is trivial
+        // for that case.
+        assert(types !== XmlScannerConstants.ALL)
+        for (type in types) {
+          var list: MutableList<VisitingDetector>? = constructorDetectors[type]
+          if (list == null) {
+            list = ArrayList(SAME_TYPE_COUNT)
+            constructorDetectors[type] = list
+          }
+          list.add(v)
+        }
+      }
 
-            val referenceNames = detector.getApplicableReferenceNames()
-            if (referenceNames != null) {
-                // not supported in Java visitors; adding a method invocation node is trivial
-                // for that case.
-                assert(referenceNames !== XmlScannerConstants.ALL)
+      val referenceNames = detector.getApplicableReferenceNames()
+      if (referenceNames != null) {
+        // not supported in Java visitors; adding a method invocation node is trivial
+        // for that case.
+        assert(referenceNames !== XmlScannerConstants.ALL)
 
-                for (name in referenceNames) {
-                    val list =
-                        referenceDetectors.computeIfAbsent(name) { ArrayList(SAME_TYPE_COUNT) }
-                    list.add(v)
-                }
-            }
+        for (name in referenceNames) {
+          val list = referenceDetectors.computeIfAbsent(name) { ArrayList(SAME_TYPE_COUNT) }
+          list.add(v)
+        }
+      }
 
-            if (detector.appliesToResourceRefs()) {
-                resourceFieldDetectors.add(v)
-            }
+      if (detector.appliesToResourceRefs()) {
+        resourceFieldDetectors.add(v)
+      }
 
-            val annotations = detector.applicableAnnotations()
-            if (annotations != null) {
-                if (annotationScanners == null) {
-                    annotationScanners = ArrayListMultimap.create()
-                }
-                for (annotation in annotations) {
-                    annotationScanners!!.put(annotation, uastScanner)
-                }
-            }
+      val annotations = detector.applicableAnnotations()
+      if (annotations != null) {
+        if (annotationScanners == null) {
+          annotationScanners = ArrayListMultimap.create()
+        }
+        for (annotation in annotations) {
+          annotationScanners!!.put(annotation, uastScanner)
+        }
+      }
 
-            if (uastScanner.isCallGraphRequired()) {
-                callGraphDetectors.add(uastScanner)
-            }
+      if (uastScanner.isCallGraphRequired()) {
+        callGraphDetectors.add(uastScanner)
+      }
+    }
+
+    val relevantAnnotations: Set<String>?
+    if (annotationScanners != null) {
+      annotationHandler = AnnotationHandler(driver, annotationScanners)
+      relevantAnnotations = annotationHandler.relevantAnnotations
+    } else {
+      annotationHandler = null
+      relevantAnnotations = null
+    }
+    parser.evaluator.setRelevantAnnotations(relevantAnnotations)
+  }
+
+  fun visitFile(context: JavaContext) {
+    try {
+      val uastParser = context.uastParser
+
+      val uFile = uastParser.parse(context) ?: return
+
+      // (Immediate return if null: No need to log this; the parser should be reporting
+      // a full warning (such as IssueRegistry#PARSER_ERROR) with details, location, etc.)
+
+      val client = context.client
+      try {
+        val sourcePsi = uFile.sourcePsi
+        context.setJavaFile(sourcePsi) // needed for getLocation
+        context.uastFile = uFile
+
+        client.runReadAction {
+          for (v in allDetectors) {
+            v.setContext(context)
+            v.detector.beforeCheckFile(context)
+          }
         }
 
-        val relevantAnnotations: Set<String>?
-        if (annotationScanners != null) {
-            annotationHandler = AnnotationHandler(driver, annotationScanners)
-            relevantAnnotations = annotationHandler.relevantAnnotations
+        if (superClassDetectors.isNotEmpty()) {
+          client.runReadAction {
+            val visitor = SuperclassPsiVisitor(context)
+            uFile.acceptSourceFile(visitor)
+          }
+        }
+
+        if (
+          methodDetectors.isNotEmpty() ||
+            resourceFieldDetectors.isNotEmpty() ||
+            constructorDetectors.isNotEmpty() ||
+            referenceDetectors.isNotEmpty() ||
+            annotationHandler != null
+        ) {
+          client.runReadAction {
+            // TODO: Do we need to break this one up into finer grain locking units
+            val visitor = DelegatingPsiVisitor(context)
+            uFile.acceptSourceFile(visitor)
+          }
         } else {
-            annotationHandler = null
-            relevantAnnotations = null
-        }
-        parser.evaluator.setRelevantAnnotations(relevantAnnotations)
-    }
-
-    fun visitFile(context: JavaContext) {
-        try {
-            val uastParser = context.uastParser
-
-            val uFile = uastParser.parse(context) ?: return
-
-            // (Immediate return if null: No need to log this; the parser should be reporting
-            // a full warning (such as IssueRegistry#PARSER_ERROR) with details, location, etc.)
-
-            val client = context.client
-            try {
-                val sourcePsi = uFile.sourcePsi
-                context.setJavaFile(sourcePsi) // needed for getLocation
-                context.uastFile = uFile
-
-                client.runReadAction {
-                    for (v in allDetectors) {
-                        v.setContext(context)
-                        v.detector.beforeCheckFile(context)
-                    }
-                }
-
-                if (superClassDetectors.isNotEmpty()) {
-                    client.runReadAction {
-                        val visitor = SuperclassPsiVisitor(context)
-                        uFile.acceptSourceFile(visitor)
-                    }
-                }
-
-                if (methodDetectors.isNotEmpty() ||
-                    resourceFieldDetectors.isNotEmpty() ||
-                    constructorDetectors.isNotEmpty() ||
-                    referenceDetectors.isNotEmpty() ||
-                    annotationHandler != null
-                ) {
-                    client.runReadAction {
-                        // TODO: Do we need to break this one up into finer grain locking units
-                        val visitor = DelegatingPsiVisitor(context)
-                        uFile.acceptSourceFile(visitor)
-                    }
-                } else {
-                    // Note that the DelegatingPsiVisitor is a subclass of DispatchPsiVisitor
-                    // so the above includes the below as well (through super classes)
-                    if (nodePsiTypeDetectors.isNotEmpty()) {
-                        client.runReadAction {
-                            val visitor = DispatchPsiVisitor()
-                            uFile.acceptSourceFile(visitor)
-                        }
-                    }
-                }
-
-                client.runReadAction {
-                    for (v in allDetectors) {
-                        ProgressManager.checkCanceled()
-                        v.detector.afterCheckFile(context)
-                    }
-                }
-            } finally {
-                context.setJavaFile(null)
-                context.uastFile = null
+          // Note that the DelegatingPsiVisitor is a subclass of DispatchPsiVisitor
+          // so the above includes the below as well (through super classes)
+          if (nodePsiTypeDetectors.isNotEmpty()) {
+            client.runReadAction {
+              val visitor = DispatchPsiVisitor()
+              uFile.acceptSourceFile(visitor)
             }
-        } catch (e: Throwable) {
-            // Don't allow lint bugs to take down the whole build. TRY to log this as a
-            // lint error instead!
-            LintDriver.handleDetectorError(context, context.driver, e)
-        }
-    }
-
-    fun visitGroups(
-        projectContext: Context,
-        allContexts: List<JavaContext>
-    ) {
-        if (allContexts.isNotEmpty() && allDetectors.stream()
-            .anyMatch { it.uastScanner.isCallGraphRequired() }
-        ) {
-            val callGraph = projectContext.client.runReadAction(
-                Computable {
-                    generateCallGraph(projectContext, parser, allContexts)
-                }
-            )
-            if (callGraph != null && callGraphDetectors.isNotEmpty()) {
-                for (scanner in callGraphDetectors) {
-                    projectContext.client.runReadAction {
-                        ProgressManager.checkCanceled()
-                        scanner.analyzeCallGraph(projectContext, callGraph)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun generateCallGraph(
-        projectContext: Context,
-        parser: UastParser,
-        contexts: List<JavaContext>
-    ): CallGraphResult? {
-        if (contexts.isEmpty()) {
-            return null
+          }
         }
 
-        try {
-            val chaVisitor = ClassHierarchyVisitor()
-            val receiverEvalVisitor =
-                IntraproceduralDispatchReceiverVisitor(chaVisitor.classHierarchy)
-            val callGraphVisitor = CallGraphVisitor(
-                receiverEvalVisitor.receiverEval,
-                chaVisitor.classHierarchy, false
-            )
-
-            for (context in contexts) {
-                val uFile = parser.parse(context)
-                uFile?.accept(chaVisitor)
-            }
-            for (context in contexts) {
-                val uFile = parser.parse(context)
-                uFile?.accept(receiverEvalVisitor)
-            }
-            for (context in contexts) {
-                val uFile = parser.parse(context)
-                uFile?.accept(callGraphVisitor)
-            }
-
-            val callGraph = callGraphVisitor.callGraph
-            val receiverEval = receiverEvalVisitor.receiverEval
-            return CallGraphResult(callGraph, receiverEval)
-        } catch (oom: OutOfMemoryError) {
-            val detectors = Lists.newArrayList<String>()
-            for (detector in callGraphDetectors) {
-                detectors.add(detector.javaClass.simpleName)
-            }
-            val detectorNames = "[" + Joiner.on(", ").join(detectors) + "]"
-            var message = "Lint ran out of memory while building a callgraph (requested by " +
-                "these detectors: " + detectorNames + "). You can either disable these " +
-                "checks, or give lint more heap space."
-            if (LintClient.isGradle) {
-                message += " For example, to set the Gradle daemon to use 4 GB, edit " +
-                    "`gradle.properties` to contains `org.gradle.jvmargs=-Xmx4g`"
-            }
-            projectContext.report(
-                IssueRegistry.LINT_ERROR,
-                Location.create(projectContext.project.dir), message
-            )
-            return null
-        }
-    }
-
-    private class VisitingDetector(val detector: Detector, val uastScanner: SourceCodeScanner) {
-        private var mVisitor: UElementHandler? = null
-        private var mContext: JavaContext? = null
-
-        val visitor: UElementHandler
-            get() {
-                if (mVisitor == null) {
-                    mVisitor = detector.createUastHandler(mContext!!)
-                    if (mVisitor == null) {
-                        mVisitor = UElementHandler.NONE
-                    }
-                }
-                return mVisitor!!
-            }
-
-        fun setContext(context: JavaContext) {
-            mContext = context
-
-            // The visitors are one-per-context, so clear them out here and construct
-            // lazily only if needed
-            mVisitor = null
-        }
-    }
-
-    private inner class SuperclassPsiVisitor(private val context: JavaContext) :
-        AbstractUastVisitor() {
-
-        override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
-            val type = node.functionalInterfaceType
-            if (type is PsiClassType) {
-                val resolved = type.resolve()
-                if (resolved != null) {
-                    checkClass(node, null, resolved)
-                }
-            }
-
-            return super.visitLambdaExpression(node)
-        }
-
-        override fun visitClass(node: UClass): Boolean {
-            val result = super.visitClass(node)
-            checkClass(null, node, node)
-            return result
-        }
-
-        private fun checkClass(
-            lambda: ULambdaExpression?,
-            uClass: UClass?,
-            node: PsiClass
-        ) {
-            if (node is PsiTypeParameter) return // See Javadoc for SourceCodeScanner.visitClass.
-
-            val superClasses = InheritanceUtil.getSuperClasses(node)
-            superClasses.add(node) // Include self.
-
-            // The current class may inherit from multiple superclasses listed by a
-            // single detector, so we need to avoid double-visiting.
-            val detectorsUsed = mutableSetOf<VisitingDetector>()
-
-            for (superClass in superClasses) {
-                val fqName = superClass.qualifiedName ?: continue
-                val detectors = superClassDetectors[fqName] ?: continue
-                for (detector in detectors) {
-                    if (!detectorsUsed.add(detector)) continue
-                    if (uClass != null) {
-                        detector.uastScanner.visitClass(context, uClass)
-                    } else {
-                        check(lambda != null)
-                        detector.uastScanner.visitClass(context, lambda)
-                    }
-                }
-            }
-        }
-    }
-
-    private open inner class DispatchPsiVisitor : AbstractUastVisitor() {
-
-        override fun visitAnnotation(node: UAnnotation): Boolean {
-            val list = nodePsiTypeDetectors[UAnnotation::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitAnnotation(node)
-                }
-            }
-            return super.visitAnnotation(node)
-        }
-
-        override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
-            val list = nodePsiTypeDetectors[UArrayAccessExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitArrayAccessExpression(node)
-                }
-            }
-            return super.visitArrayAccessExpression(node)
-        }
-
-        override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-            val list = nodePsiTypeDetectors[UBinaryExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitBinaryExpression(node)
-                }
-            }
-            return super.visitBinaryExpression(node)
-        }
-
-        override fun visitBinaryExpressionWithType(node: UBinaryExpressionWithType): Boolean {
-            val list = nodePsiTypeDetectors[UBinaryExpressionWithType::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitBinaryExpressionWithType(node)
-                }
-            }
-            return super.visitBinaryExpressionWithType(node)
-        }
-
-        override fun visitBlockExpression(node: UBlockExpression): Boolean {
-            val list = nodePsiTypeDetectors[UBlockExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitBlockExpression(node)
-                }
-            }
-            return super.visitBlockExpression(node)
-        }
-
-        override fun visitBreakExpression(node: UBreakExpression): Boolean {
-            val list = nodePsiTypeDetectors[UBreakExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitBreakExpression(node)
-                }
-            }
-            return super.visitBreakExpression(node)
-        }
-
-        override fun visitCallExpression(node: UCallExpression): Boolean {
-            val list = nodePsiTypeDetectors[UCallExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitCallExpression(node)
-                }
-            }
-            return super.visitCallExpression(node)
-        }
-
-        override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
-            val list = nodePsiTypeDetectors[UCallableReferenceExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitCallableReferenceExpression(node)
-                }
-            }
-            return super.visitCallableReferenceExpression(node)
-        }
-
-        override fun visitCatchClause(node: UCatchClause): Boolean {
-            val list = nodePsiTypeDetectors[UCatchClause::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitCatchClause(node)
-                }
-            }
-            return super.visitCatchClause(node)
-        }
-
-        override fun visitClass(node: UClass): Boolean {
-            val list = nodePsiTypeDetectors[UClass::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitClass(node)
-                }
-            }
-            return super.visitClass(node)
-        }
-
-        override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
-            val list = nodePsiTypeDetectors[UClassLiteralExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitClassLiteralExpression(node)
-                }
-            }
-            return super.visitClassLiteralExpression(node)
-        }
-
-        override fun visitContinueExpression(node: UContinueExpression): Boolean {
-            val list = nodePsiTypeDetectors[UContinueExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitContinueExpression(node)
-                }
-            }
-            return super.visitContinueExpression(node)
-        }
-
-        override fun visitDeclaration(node: UDeclaration): Boolean {
-            val list = nodePsiTypeDetectors[UDeclaration::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitDeclaration(node)
-                }
-            }
-            return super.visitDeclaration(node)
-        }
-
-        override fun visitDeclarationsExpression(node: UDeclarationsExpression): Boolean {
-            val list = nodePsiTypeDetectors[UDeclarationsExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitDeclarationsExpression(node)
-                }
-            }
-            return super.visitDeclarationsExpression(node)
-        }
-
-        override fun visitDoWhileExpression(node: UDoWhileExpression): Boolean {
-            val list = nodePsiTypeDetectors[UDoWhileExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitDoWhileExpression(node)
-                }
-            }
-            return super.visitDoWhileExpression(node)
-        }
-
-        override fun visitElement(node: UElement): Boolean {
-            val list = nodePsiTypeDetectors[UElement::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitElement(node)
-                }
-            }
-            return super.visitElement(node)
-        }
-
-        override fun visitEnumConstant(node: UEnumConstant): Boolean {
-            val list = nodePsiTypeDetectors[UEnumConstant::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitEnumConstant(node)
-                }
-            }
-            return super.visitEnumConstant(node)
-        }
-
-        override fun visitExpression(node: UExpression): Boolean {
-            val list = nodePsiTypeDetectors[UExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitExpression(node)
-                }
-            }
-            return super.visitExpression(node)
-        }
-
-        override fun visitExpressionList(node: UExpressionList): Boolean {
-            val list = nodePsiTypeDetectors[UExpressionList::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitExpressionList(node)
-                }
-            }
-            return super.visitExpressionList(node)
-        }
-
-        override fun visitField(node: UField): Boolean {
-            val list = nodePsiTypeDetectors[UField::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitField(node)
-                }
-            }
-            return super.visitField(node)
-        }
-
-        override fun visitFile(node: UFile): Boolean {
-            val list = nodePsiTypeDetectors[UFile::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitFile(node)
-                }
-            }
-            return super.visitFile(node)
-        }
-
-        override fun visitForEachExpression(node: UForEachExpression): Boolean {
-            val list = nodePsiTypeDetectors[UForEachExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitForEachExpression(node)
-                }
-            }
-            return super.visitForEachExpression(node)
-        }
-
-        override fun visitForExpression(node: UForExpression): Boolean {
-            val list = nodePsiTypeDetectors[UForExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitForExpression(node)
-                }
-            }
-            return super.visitForExpression(node)
-        }
-
-        override fun visitIfExpression(node: UIfExpression): Boolean {
-            val list = nodePsiTypeDetectors[UIfExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitIfExpression(node)
-                }
-            }
-            return super.visitIfExpression(node)
-        }
-
-        override fun visitImportStatement(node: UImportStatement): Boolean {
-            val list = nodePsiTypeDetectors[UImportStatement::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitImportStatement(node)
-                }
-            }
-            return super.visitImportStatement(node)
-        }
-
-        override fun visitInitializer(node: UClassInitializer): Boolean {
-            val list = nodePsiTypeDetectors[UClassInitializer::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitInitializer(node)
-                }
-            }
-            return super.visitInitializer(node)
-        }
-
-        override fun visitLabeledExpression(node: ULabeledExpression): Boolean {
-            val list = nodePsiTypeDetectors[ULabeledExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitLabeledExpression(node)
-                }
-            }
-            return super.visitLabeledExpression(node)
-        }
-
-        override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
-            val list = nodePsiTypeDetectors[ULambdaExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitLambdaExpression(node)
-                }
-            }
-            return super.visitLambdaExpression(node)
-        }
-
-        override fun visitLiteralExpression(node: ULiteralExpression): Boolean {
-            val list = nodePsiTypeDetectors[ULiteralExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitLiteralExpression(node)
-                }
-            }
-            return super.visitLiteralExpression(node)
-        }
-
-        override fun visitLocalVariable(node: ULocalVariable): Boolean {
-            val list = nodePsiTypeDetectors[ULocalVariable::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitLocalVariable(node)
-                }
-            }
-            return super.visitLocalVariable(node)
-        }
-
-        override fun visitMethod(node: UMethod): Boolean {
-            val list = nodePsiTypeDetectors[UMethod::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitMethod(node)
-                }
-            }
-            return super.visitMethod(node)
-        }
-
-        override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {
-            val list = nodePsiTypeDetectors[UObjectLiteralExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitObjectLiteralExpression(node)
-                }
-            }
-            return super.visitObjectLiteralExpression(node)
-        }
-
-        override fun visitParameter(node: UParameter): Boolean {
-            val list = nodePsiTypeDetectors[UParameter::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitParameter(node)
-                }
-            }
-            return super.visitParameter(node)
-        }
-
-        override fun visitParenthesizedExpression(node: UParenthesizedExpression): Boolean {
-            val list = nodePsiTypeDetectors[UParenthesizedExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitParenthesizedExpression(node)
-                }
-            }
-            return super.visitParenthesizedExpression(node)
-        }
-
-        override fun visitPolyadicExpression(node: UPolyadicExpression): Boolean {
-            val list = nodePsiTypeDetectors[UPolyadicExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitPolyadicExpression(node)
-                }
-            }
-            return super.visitPolyadicExpression(node)
-        }
-
-        override fun visitPostfixExpression(node: UPostfixExpression): Boolean {
-            val list = nodePsiTypeDetectors[UPostfixExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitPostfixExpression(node)
-                }
-            }
-            return super.visitPostfixExpression(node)
-        }
-
-        override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
-            val list = nodePsiTypeDetectors[UPrefixExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitPrefixExpression(node)
-                }
-            }
-            return super.visitPrefixExpression(node)
-        }
-
-        override fun visitQualifiedReferenceExpression(node: UQualifiedReferenceExpression): Boolean {
-            val list = nodePsiTypeDetectors[UQualifiedReferenceExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitQualifiedReferenceExpression(node)
-                }
-            }
-            return super.visitQualifiedReferenceExpression(node)
-        }
-
-        override fun visitReturnExpression(node: UReturnExpression): Boolean {
-            val list = nodePsiTypeDetectors[UReturnExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitReturnExpression(node)
-                }
-            }
-            return super.visitReturnExpression(node)
-        }
-
-        override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
-            val list = nodePsiTypeDetectors[USimpleNameReferenceExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitSimpleNameReferenceExpression(node)
-                }
-            }
-            return super.visitSimpleNameReferenceExpression(node)
-        }
-
-        override fun visitSuperExpression(node: USuperExpression): Boolean {
-            val list = nodePsiTypeDetectors[USuperExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitSuperExpression(node)
-                }
-            }
-            return super.visitSuperExpression(node)
-        }
-
-        override fun visitSwitchClauseExpression(node: USwitchClauseExpression): Boolean {
-            val list = nodePsiTypeDetectors[USwitchClauseExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitSwitchClauseExpression(node)
-                }
-            }
-            return super.visitSwitchClauseExpression(node)
-        }
-
-        override fun visitSwitchExpression(node: USwitchExpression): Boolean {
-            val list = nodePsiTypeDetectors[USwitchExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitSwitchExpression(node)
-                }
-            }
-            return super.visitSwitchExpression(node)
-        }
-
-        override fun visitThisExpression(node: UThisExpression): Boolean {
-            val list = nodePsiTypeDetectors[UThisExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitThisExpression(node)
-                }
-            }
-            return super.visitThisExpression(node)
-        }
-
-        override fun visitThrowExpression(node: UThrowExpression): Boolean {
-            val list = nodePsiTypeDetectors[UThrowExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitThrowExpression(node)
-                }
-            }
-            return super.visitThrowExpression(node)
-        }
-
-        override fun visitTryExpression(node: UTryExpression): Boolean {
-            val list = nodePsiTypeDetectors[UTryExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitTryExpression(node)
-                }
-            }
-            return super.visitTryExpression(node)
-        }
-
-        override fun visitTypeReferenceExpression(node: UTypeReferenceExpression): Boolean {
-            val list = nodePsiTypeDetectors[UTypeReferenceExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitTypeReferenceExpression(node)
-                }
-            }
-            return super.visitTypeReferenceExpression(node)
-        }
-
-        override fun visitUnaryExpression(node: UUnaryExpression): Boolean {
-            val list = nodePsiTypeDetectors[UUnaryExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitUnaryExpression(node)
-                }
-            }
-            return super.visitUnaryExpression(node)
-        }
-
-        override fun visitVariable(node: UVariable): Boolean {
-            val list = nodePsiTypeDetectors[UVariable::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitVariable(node)
-                }
-            }
-            return super.visitVariable(node)
-        }
-
-        override fun visitWhileExpression(node: UWhileExpression): Boolean {
-            val list = nodePsiTypeDetectors[UWhileExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitWhileExpression(node)
-                }
-            }
-            return super.visitWhileExpression(node)
-        }
-
-        @Suppress("UnstableApiUsage")
-        override fun visitYieldExpression(node: UYieldExpression): Boolean {
-            val list = nodePsiTypeDetectors[UYieldExpression::class.java]
-            if (list != null) {
-                for (v in list) {
-                    v.visitor.visitYieldExpression(node)
-                }
-            }
-            return super.visitYieldExpression(node)
-        }
-    }
-
-    /**
-     * Performs common AST searches for method calls and R-type-field
-     * references. Note that this is a specialized form of the
-     * [DispatchPsiVisitor].
-     */
-    private inner class DelegatingPsiVisitor constructor(private val mContext: JavaContext) :
-        DispatchPsiVisitor() {
-        private val mVisitResources: Boolean = resourceFieldDetectors.isNotEmpty()
-        private val mVisitMethods: Boolean = methodDetectors.isNotEmpty()
-        private val mVisitConstructors: Boolean = constructorDetectors.isNotEmpty()
-        private val mVisitReferences: Boolean = referenceDetectors.isNotEmpty()
-        private var aliasedImports = false
-
-        override fun visitImportStatement(node: UImportStatement): Boolean {
-            (node.sourcePsi as? KtImportDirective)?.alias?.name?.let {
-                aliasedImports = true
-            }
-            return super.visitImportStatement(node)
-        }
-
-        override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
-            if (mVisitReferences || mVisitResources) {
-                ProgressManager.checkCanceled()
-            }
-
-            if (mVisitReferences) {
-                val identifier = node.identifier
-                val list = referenceDetectors[identifier]
-                if (list != null) {
-                    val referenced = node.resolve()
-                    if (referenced != null) {
-                        for (v in list) {
-                            val uastScanner = v.uastScanner
-                            uastScanner.visitReference(mContext, node, referenced)
-                        }
-                    }
-                }
-
-                if (aliasedImports) {
-                    val referenced = node.resolve()
-                    if (referenced is PsiNamedElement) {
-                        val name = referenced.name
-                        if (name != null && name != identifier) {
-                            referenceDetectors[name]?.forEach { v ->
-                                val uastScanner = v.uastScanner
-                                uastScanner.visitReference(mContext, node, referenced)
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (mVisitResources) {
-                val reference = ResourceReference.get(node)
-                if (reference != null) {
-                    for (v in resourceFieldDetectors) {
-                        val uastScanner = v.uastScanner
-                        uastScanner.visitResourceReference(
-                            mContext,
-                            reference.node,
-                            reference.type,
-                            reference.name,
-                            reference.`package` == ANDROID_PKG
-                        )
-                    }
-                } else if (aliasedImports && node.resolve() == null) {
-                    val identifier = node.identifier
-                    // Resolving a reference failed, but we're in a compilation unit that has
-                    // aliased imports; as a workaround check the import statements
-                    for (import in mContext.uastFile?.imports ?: emptyList()) {
-                        if (import.sourcePsi is KtImportDirective) {
-                            val ktImport = import.sourcePsi as KtImportDirective
-                            if (identifier == ktImport.alias?.name) {
-                                val resource = ktImport.importedReference
-                                    ?.let { it.toUElement() }
-                                    ?.let { ResourceReference.get(it) }
-                                    ?: continue
-                                for (v in resourceFieldDetectors) {
-                                    val uastScanner = v.uastScanner
-                                    uastScanner.visitResourceReference(
-                                        mContext,
-                                        resource.node,
-                                        resource.type,
-                                        resource.name,
-                                        resource.`package` == ANDROID_PKG
-                                    )
-                                }
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-
-            annotationHandler?.visitSimpleNameReferenceExpression(mContext, node)
-
-            return super.visitSimpleNameReferenceExpression(node)
-        }
-
-        override fun visitCallExpression(node: UCallExpression): Boolean {
-            val result = super.visitCallExpression(node)
-
+        client.runReadAction {
+          for (v in allDetectors) {
             ProgressManager.checkCanceled()
-
-            if (node.isMethodCall()) {
-                visitMethodCallExpression(node)
-            } else if (node.isConstructorCall()) {
-                visitNewExpression(node)
-            }
-
-            annotationHandler?.visitCallExpression(mContext, node)
-
-            return result
+            v.detector.afterCheckFile(context)
+          }
         }
+      } finally {
+        context.setJavaFile(null)
+        context.uastFile = null
+      }
+    } catch (e: Throwable) {
+      // Don't allow lint bugs to take down the whole build. TRY to log this as a
+      // lint error instead!
+      LintDriver.handleDetectorError(context, context.driver, e)
+    }
+  }
 
-        private fun visitMethodCallExpression(node: UCallExpression) {
-            if (mVisitMethods) {
-                val methodName = node.methodName ?: node.methodIdentifier?.name
-                if (methodName != null) {
-                    val list = methodDetectors[methodName]
-                    if (list != null) {
-                        val function = node.resolve()
-                        if (function != null) {
-                            for (v in list) {
-                                val scanner = v.uastScanner
-                                scanner.visitMethodCall(mContext, node, function)
-                            }
-                        }
-                    }
-                }
-            }
+  fun visitGroups(projectContext: Context, allContexts: List<JavaContext>) {
+    if (
+      allContexts.isNotEmpty() &&
+        allDetectors.stream().anyMatch { it.uastScanner.isCallGraphRequired() }
+    ) {
+      val callGraph =
+        projectContext.client.runReadAction(
+          Computable { generateCallGraph(projectContext, parser, allContexts) }
+        )
+      if (callGraph != null && callGraphDetectors.isNotEmpty()) {
+        for (scanner in callGraphDetectors) {
+          projectContext.client.runReadAction {
+            ProgressManager.checkCanceled()
+            scanner.analyzeCallGraph(projectContext, callGraph)
+          }
         }
+      }
+    }
+  }
 
-        override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
-            annotationHandler?.visitCallableReferenceExpression(mContext, node)
-            return super.visitCallableReferenceExpression(node)
-        }
-
-        private fun visitNewExpression(node: UCallExpression) {
-            if (mVisitConstructors) {
-                val method = node.resolve() ?: return
-
-                val resolvedClass = method.containingClass
-                if (resolvedClass != null) {
-                    val list = constructorDetectors[resolvedClass.qualifiedName]
-                    if (list != null) {
-                        for (v in list) {
-                            val javaPsiScanner = v.uastScanner
-                            javaPsiScanner.visitConstructor(mContext, node, method)
-                        }
-                    }
-                }
-            }
-        }
-
-        // Annotations
-
-        // (visitCallExpression handled above)
-
-        override fun visitMethod(node: UMethod): Boolean {
-            annotationHandler?.visitMethod(mContext, node)
-            return super.visitMethod(node)
-        }
-
-        override fun visitAnnotation(node: UAnnotation): Boolean {
-            annotationHandler?.visitAnnotation(mContext, node)
-
-            return super.visitAnnotation(node)
-        }
-
-        override fun visitEnumConstant(node: UEnumConstant): Boolean {
-            annotationHandler?.visitEnumConstant(mContext, node)
-            return super.visitEnumConstant(node)
-        }
-
-        override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
-            node.asCall()?.let(::visitMethodCallExpression)
-            annotationHandler?.visitArrayAccessExpression(mContext, node)
-
-            return super.visitArrayAccessExpression(node)
-        }
-
-        override fun visitVariable(node: UVariable): Boolean {
-            annotationHandler?.visitVariable(mContext, node)
-
-            return super.visitVariable(node)
-        }
-
-        override fun visitClass(node: UClass): Boolean {
-            annotationHandler?.visitClass(mContext, node)
-
-            return super.visitClass(node)
-        }
-
-        override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-            node.asCall()?.let(::visitMethodCallExpression)
-            annotationHandler?.visitBinaryExpression(mContext, node)
-
-            return super.visitBinaryExpression(node)
-        }
-
-        override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
-            node.asCall()?.let(::visitMethodCallExpression)
-            annotationHandler?.visitUnaryExpression(mContext, node)
-
-            return super.visitPrefixExpression(node)
-        }
-
-        override fun visitPostfixExpression(node: UPostfixExpression): Boolean {
-            node.asCall()?.let(::visitMethodCallExpression)
-            annotationHandler?.visitUnaryExpression(mContext, node)
-
-            return super.visitPostfixExpression(node)
-        }
-
-        override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
-            annotationHandler?.visitClassLiteralExpression(mContext, node)
-            return super.visitClassLiteralExpression(node)
-        }
-
-        override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {
-            annotationHandler?.visitObjectLiteralExpression(mContext, node)
-            return super.visitObjectLiteralExpression(node)
-        }
+  private fun generateCallGraph(
+    projectContext: Context,
+    parser: UastParser,
+    contexts: List<JavaContext>
+  ): CallGraphResult? {
+    if (contexts.isEmpty()) {
+      return null
     }
 
-    companion object {
-        /**
-         * Default size of lists holding detectors of the same type for
-         * a given node type.
-         */
-        private const val SAME_TYPE_COUNT = 8
+    try {
+      val chaVisitor = ClassHierarchyVisitor()
+      val receiverEvalVisitor = IntraproceduralDispatchReceiverVisitor(chaVisitor.classHierarchy)
+      val callGraphVisitor =
+        CallGraphVisitor(receiverEvalVisitor.receiverEval, chaVisitor.classHierarchy, false)
+
+      for (context in contexts) {
+        val uFile = parser.parse(context)
+        uFile?.accept(chaVisitor)
+      }
+      for (context in contexts) {
+        val uFile = parser.parse(context)
+        uFile?.accept(receiverEvalVisitor)
+      }
+      for (context in contexts) {
+        val uFile = parser.parse(context)
+        uFile?.accept(callGraphVisitor)
+      }
+
+      val callGraph = callGraphVisitor.callGraph
+      val receiverEval = receiverEvalVisitor.receiverEval
+      return CallGraphResult(callGraph, receiverEval)
+    } catch (oom: OutOfMemoryError) {
+      val detectors = Lists.newArrayList<String>()
+      for (detector in callGraphDetectors) {
+        detectors.add(detector.javaClass.simpleName)
+      }
+      val detectorNames = "[" + Joiner.on(", ").join(detectors) + "]"
+      var message =
+        "Lint ran out of memory while building a callgraph (requested by " +
+          "these detectors: " +
+          detectorNames +
+          "). You can either disable these " +
+          "checks, or give lint more heap space."
+      if (LintClient.isGradle) {
+        message +=
+          " For example, to set the Gradle daemon to use 4 GB, edit " +
+            "`gradle.properties` to contains `org.gradle.jvmargs=-Xmx4g`"
+      }
+      projectContext.report(
+        IssueRegistry.LINT_ERROR,
+        Location.create(projectContext.project.dir),
+        message
+      )
+      return null
     }
+  }
+
+  private class VisitingDetector(val detector: Detector, val uastScanner: SourceCodeScanner) {
+    private var mVisitor: UElementHandler? = null
+    private var mContext: JavaContext? = null
+
+    val visitor: UElementHandler
+      get() {
+        if (mVisitor == null) {
+          mVisitor = detector.createUastHandler(mContext!!)
+          if (mVisitor == null) {
+            mVisitor = UElementHandler.NONE
+          }
+        }
+        return mVisitor!!
+      }
+
+    fun setContext(context: JavaContext) {
+      mContext = context
+
+      // The visitors are one-per-context, so clear them out here and construct
+      // lazily only if needed
+      mVisitor = null
+    }
+  }
+
+  private inner class SuperclassPsiVisitor(private val context: JavaContext) :
+    AbstractUastVisitor() {
+
+    override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
+      val type = node.functionalInterfaceType
+      if (type is PsiClassType) {
+        val resolved = type.resolve()
+        if (resolved != null) {
+          checkClass(node, null, resolved)
+        }
+      }
+
+      return super.visitLambdaExpression(node)
+    }
+
+    override fun visitClass(node: UClass): Boolean {
+      val result = super.visitClass(node)
+      checkClass(null, node, node)
+      return result
+    }
+
+    private fun checkClass(lambda: ULambdaExpression?, uClass: UClass?, node: PsiClass) {
+      if (node is PsiTypeParameter) return // See Javadoc for SourceCodeScanner.visitClass.
+
+      val superClasses = InheritanceUtil.getSuperClasses(node)
+      superClasses.add(node) // Include self.
+
+      // The current class may inherit from multiple superclasses listed by a
+      // single detector, so we need to avoid double-visiting.
+      val detectorsUsed = mutableSetOf<VisitingDetector>()
+
+      for (superClass in superClasses) {
+        val fqName = superClass.qualifiedName ?: continue
+        val detectors = superClassDetectors[fqName] ?: continue
+        for (detector in detectors) {
+          if (!detectorsUsed.add(detector)) continue
+          if (uClass != null) {
+            detector.uastScanner.visitClass(context, uClass)
+          } else {
+            check(lambda != null)
+            detector.uastScanner.visitClass(context, lambda)
+          }
+        }
+      }
+    }
+  }
+
+  private open inner class DispatchPsiVisitor : AbstractUastVisitor() {
+
+    override fun visitAnnotation(node: UAnnotation): Boolean {
+      val list = nodePsiTypeDetectors[UAnnotation::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitAnnotation(node)
+        }
+      }
+      return super.visitAnnotation(node)
+    }
+
+    override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
+      val list = nodePsiTypeDetectors[UArrayAccessExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitArrayAccessExpression(node)
+        }
+      }
+      return super.visitArrayAccessExpression(node)
+    }
+
+    override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+      val list = nodePsiTypeDetectors[UBinaryExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitBinaryExpression(node)
+        }
+      }
+      return super.visitBinaryExpression(node)
+    }
+
+    override fun visitBinaryExpressionWithType(node: UBinaryExpressionWithType): Boolean {
+      val list = nodePsiTypeDetectors[UBinaryExpressionWithType::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitBinaryExpressionWithType(node)
+        }
+      }
+      return super.visitBinaryExpressionWithType(node)
+    }
+
+    override fun visitBlockExpression(node: UBlockExpression): Boolean {
+      val list = nodePsiTypeDetectors[UBlockExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitBlockExpression(node)
+        }
+      }
+      return super.visitBlockExpression(node)
+    }
+
+    override fun visitBreakExpression(node: UBreakExpression): Boolean {
+      val list = nodePsiTypeDetectors[UBreakExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitBreakExpression(node)
+        }
+      }
+      return super.visitBreakExpression(node)
+    }
+
+    override fun visitCallExpression(node: UCallExpression): Boolean {
+      val list = nodePsiTypeDetectors[UCallExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitCallExpression(node)
+        }
+      }
+      return super.visitCallExpression(node)
+    }
+
+    override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
+      val list = nodePsiTypeDetectors[UCallableReferenceExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitCallableReferenceExpression(node)
+        }
+      }
+      return super.visitCallableReferenceExpression(node)
+    }
+
+    override fun visitCatchClause(node: UCatchClause): Boolean {
+      val list = nodePsiTypeDetectors[UCatchClause::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitCatchClause(node)
+        }
+      }
+      return super.visitCatchClause(node)
+    }
+
+    override fun visitClass(node: UClass): Boolean {
+      val list = nodePsiTypeDetectors[UClass::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitClass(node)
+        }
+      }
+      return super.visitClass(node)
+    }
+
+    override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
+      val list = nodePsiTypeDetectors[UClassLiteralExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitClassLiteralExpression(node)
+        }
+      }
+      return super.visitClassLiteralExpression(node)
+    }
+
+    override fun visitContinueExpression(node: UContinueExpression): Boolean {
+      val list = nodePsiTypeDetectors[UContinueExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitContinueExpression(node)
+        }
+      }
+      return super.visitContinueExpression(node)
+    }
+
+    override fun visitDeclaration(node: UDeclaration): Boolean {
+      val list = nodePsiTypeDetectors[UDeclaration::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitDeclaration(node)
+        }
+      }
+      return super.visitDeclaration(node)
+    }
+
+    override fun visitDeclarationsExpression(node: UDeclarationsExpression): Boolean {
+      val list = nodePsiTypeDetectors[UDeclarationsExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitDeclarationsExpression(node)
+        }
+      }
+      return super.visitDeclarationsExpression(node)
+    }
+
+    override fun visitDoWhileExpression(node: UDoWhileExpression): Boolean {
+      val list = nodePsiTypeDetectors[UDoWhileExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitDoWhileExpression(node)
+        }
+      }
+      return super.visitDoWhileExpression(node)
+    }
+
+    override fun visitElement(node: UElement): Boolean {
+      val list = nodePsiTypeDetectors[UElement::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitElement(node)
+        }
+      }
+      return super.visitElement(node)
+    }
+
+    override fun visitEnumConstant(node: UEnumConstant): Boolean {
+      val list = nodePsiTypeDetectors[UEnumConstant::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitEnumConstant(node)
+        }
+      }
+      return super.visitEnumConstant(node)
+    }
+
+    override fun visitExpression(node: UExpression): Boolean {
+      val list = nodePsiTypeDetectors[UExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitExpression(node)
+        }
+      }
+      return super.visitExpression(node)
+    }
+
+    override fun visitExpressionList(node: UExpressionList): Boolean {
+      val list = nodePsiTypeDetectors[UExpressionList::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitExpressionList(node)
+        }
+      }
+      return super.visitExpressionList(node)
+    }
+
+    override fun visitField(node: UField): Boolean {
+      val list = nodePsiTypeDetectors[UField::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitField(node)
+        }
+      }
+      return super.visitField(node)
+    }
+
+    override fun visitFile(node: UFile): Boolean {
+      val list = nodePsiTypeDetectors[UFile::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitFile(node)
+        }
+      }
+      return super.visitFile(node)
+    }
+
+    override fun visitForEachExpression(node: UForEachExpression): Boolean {
+      val list = nodePsiTypeDetectors[UForEachExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitForEachExpression(node)
+        }
+      }
+      return super.visitForEachExpression(node)
+    }
+
+    override fun visitForExpression(node: UForExpression): Boolean {
+      val list = nodePsiTypeDetectors[UForExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitForExpression(node)
+        }
+      }
+      return super.visitForExpression(node)
+    }
+
+    override fun visitIfExpression(node: UIfExpression): Boolean {
+      val list = nodePsiTypeDetectors[UIfExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitIfExpression(node)
+        }
+      }
+      return super.visitIfExpression(node)
+    }
+
+    override fun visitImportStatement(node: UImportStatement): Boolean {
+      val list = nodePsiTypeDetectors[UImportStatement::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitImportStatement(node)
+        }
+      }
+      return super.visitImportStatement(node)
+    }
+
+    override fun visitInitializer(node: UClassInitializer): Boolean {
+      val list = nodePsiTypeDetectors[UClassInitializer::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitInitializer(node)
+        }
+      }
+      return super.visitInitializer(node)
+    }
+
+    override fun visitLabeledExpression(node: ULabeledExpression): Boolean {
+      val list = nodePsiTypeDetectors[ULabeledExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitLabeledExpression(node)
+        }
+      }
+      return super.visitLabeledExpression(node)
+    }
+
+    override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
+      val list = nodePsiTypeDetectors[ULambdaExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitLambdaExpression(node)
+        }
+      }
+      return super.visitLambdaExpression(node)
+    }
+
+    override fun visitLiteralExpression(node: ULiteralExpression): Boolean {
+      val list = nodePsiTypeDetectors[ULiteralExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitLiteralExpression(node)
+        }
+      }
+      return super.visitLiteralExpression(node)
+    }
+
+    override fun visitLocalVariable(node: ULocalVariable): Boolean {
+      val list = nodePsiTypeDetectors[ULocalVariable::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitLocalVariable(node)
+        }
+      }
+      return super.visitLocalVariable(node)
+    }
+
+    override fun visitMethod(node: UMethod): Boolean {
+      val list = nodePsiTypeDetectors[UMethod::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitMethod(node)
+        }
+      }
+      return super.visitMethod(node)
+    }
+
+    override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {
+      val list = nodePsiTypeDetectors[UObjectLiteralExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitObjectLiteralExpression(node)
+        }
+      }
+      return super.visitObjectLiteralExpression(node)
+    }
+
+    override fun visitParameter(node: UParameter): Boolean {
+      val list = nodePsiTypeDetectors[UParameter::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitParameter(node)
+        }
+      }
+      return super.visitParameter(node)
+    }
+
+    override fun visitParenthesizedExpression(node: UParenthesizedExpression): Boolean {
+      val list = nodePsiTypeDetectors[UParenthesizedExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitParenthesizedExpression(node)
+        }
+      }
+      return super.visitParenthesizedExpression(node)
+    }
+
+    override fun visitPolyadicExpression(node: UPolyadicExpression): Boolean {
+      val list = nodePsiTypeDetectors[UPolyadicExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitPolyadicExpression(node)
+        }
+      }
+      return super.visitPolyadicExpression(node)
+    }
+
+    override fun visitPostfixExpression(node: UPostfixExpression): Boolean {
+      val list = nodePsiTypeDetectors[UPostfixExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitPostfixExpression(node)
+        }
+      }
+      return super.visitPostfixExpression(node)
+    }
+
+    override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
+      val list = nodePsiTypeDetectors[UPrefixExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitPrefixExpression(node)
+        }
+      }
+      return super.visitPrefixExpression(node)
+    }
+
+    override fun visitQualifiedReferenceExpression(node: UQualifiedReferenceExpression): Boolean {
+      val list = nodePsiTypeDetectors[UQualifiedReferenceExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitQualifiedReferenceExpression(node)
+        }
+      }
+      return super.visitQualifiedReferenceExpression(node)
+    }
+
+    override fun visitReturnExpression(node: UReturnExpression): Boolean {
+      val list = nodePsiTypeDetectors[UReturnExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitReturnExpression(node)
+        }
+      }
+      return super.visitReturnExpression(node)
+    }
+
+    override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
+      val list = nodePsiTypeDetectors[USimpleNameReferenceExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitSimpleNameReferenceExpression(node)
+        }
+      }
+      return super.visitSimpleNameReferenceExpression(node)
+    }
+
+    override fun visitSuperExpression(node: USuperExpression): Boolean {
+      val list = nodePsiTypeDetectors[USuperExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitSuperExpression(node)
+        }
+      }
+      return super.visitSuperExpression(node)
+    }
+
+    override fun visitSwitchClauseExpression(node: USwitchClauseExpression): Boolean {
+      val list = nodePsiTypeDetectors[USwitchClauseExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitSwitchClauseExpression(node)
+        }
+      }
+      return super.visitSwitchClauseExpression(node)
+    }
+
+    override fun visitSwitchExpression(node: USwitchExpression): Boolean {
+      val list = nodePsiTypeDetectors[USwitchExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitSwitchExpression(node)
+        }
+      }
+      return super.visitSwitchExpression(node)
+    }
+
+    override fun visitThisExpression(node: UThisExpression): Boolean {
+      val list = nodePsiTypeDetectors[UThisExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitThisExpression(node)
+        }
+      }
+      return super.visitThisExpression(node)
+    }
+
+    override fun visitThrowExpression(node: UThrowExpression): Boolean {
+      val list = nodePsiTypeDetectors[UThrowExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitThrowExpression(node)
+        }
+      }
+      return super.visitThrowExpression(node)
+    }
+
+    override fun visitTryExpression(node: UTryExpression): Boolean {
+      val list = nodePsiTypeDetectors[UTryExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitTryExpression(node)
+        }
+      }
+      return super.visitTryExpression(node)
+    }
+
+    override fun visitTypeReferenceExpression(node: UTypeReferenceExpression): Boolean {
+      val list = nodePsiTypeDetectors[UTypeReferenceExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitTypeReferenceExpression(node)
+        }
+      }
+      return super.visitTypeReferenceExpression(node)
+    }
+
+    override fun visitUnaryExpression(node: UUnaryExpression): Boolean {
+      val list = nodePsiTypeDetectors[UUnaryExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitUnaryExpression(node)
+        }
+      }
+      return super.visitUnaryExpression(node)
+    }
+
+    override fun visitVariable(node: UVariable): Boolean {
+      val list = nodePsiTypeDetectors[UVariable::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitVariable(node)
+        }
+      }
+      return super.visitVariable(node)
+    }
+
+    override fun visitWhileExpression(node: UWhileExpression): Boolean {
+      val list = nodePsiTypeDetectors[UWhileExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitWhileExpression(node)
+        }
+      }
+      return super.visitWhileExpression(node)
+    }
+
+    @Suppress("UnstableApiUsage")
+    override fun visitYieldExpression(node: UYieldExpression): Boolean {
+      val list = nodePsiTypeDetectors[UYieldExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitYieldExpression(node)
+        }
+      }
+      return super.visitYieldExpression(node)
+    }
+  }
+
+  /**
+   * Performs common AST searches for method calls and R-type-field references. Note that this is a
+   * specialized form of the [DispatchPsiVisitor].
+   */
+  private inner class DelegatingPsiVisitor constructor(private val mContext: JavaContext) :
+    DispatchPsiVisitor() {
+    private val mVisitResources: Boolean = resourceFieldDetectors.isNotEmpty()
+    private val mVisitMethods: Boolean = methodDetectors.isNotEmpty()
+    private val mVisitConstructors: Boolean = constructorDetectors.isNotEmpty()
+    private val mVisitReferences: Boolean = referenceDetectors.isNotEmpty()
+    private var aliasedImports = false
+
+    override fun visitImportStatement(node: UImportStatement): Boolean {
+      (node.sourcePsi as? KtImportDirective)?.alias?.name?.let { aliasedImports = true }
+      return super.visitImportStatement(node)
+    }
+
+    override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
+      if (mVisitReferences || mVisitResources) {
+        ProgressManager.checkCanceled()
+      }
+
+      if (mVisitReferences) {
+        val identifier = node.identifier
+        val list = referenceDetectors[identifier]
+        if (list != null) {
+          val referenced = node.resolve()
+          if (referenced != null) {
+            for (v in list) {
+              val uastScanner = v.uastScanner
+              uastScanner.visitReference(mContext, node, referenced)
+            }
+          }
+        }
+
+        if (aliasedImports) {
+          val referenced = node.resolve()
+          if (referenced is PsiNamedElement) {
+            val name = referenced.name
+            if (name != null && name != identifier) {
+              referenceDetectors[name]?.forEach { v ->
+                val uastScanner = v.uastScanner
+                uastScanner.visitReference(mContext, node, referenced)
+              }
+            }
+          }
+        }
+      }
+
+      if (mVisitResources) {
+        val reference = ResourceReference.get(node)
+        if (reference != null) {
+          for (v in resourceFieldDetectors) {
+            val uastScanner = v.uastScanner
+            uastScanner.visitResourceReference(
+              mContext,
+              reference.node,
+              reference.type,
+              reference.name,
+              reference.`package` == ANDROID_PKG
+            )
+          }
+        } else if (aliasedImports && node.resolve() == null) {
+          val identifier = node.identifier
+          // Resolving a reference failed, but we're in a compilation unit that has
+          // aliased imports; as a workaround check the import statements
+          for (import in mContext.uastFile?.imports ?: emptyList()) {
+            if (import.sourcePsi is KtImportDirective) {
+              val ktImport = import.sourcePsi as KtImportDirective
+              if (identifier == ktImport.alias?.name) {
+                val resource =
+                  ktImport.importedReference
+                    ?.let { it.toUElement() }
+                    ?.let { ResourceReference.get(it) }
+                    ?: continue
+                for (v in resourceFieldDetectors) {
+                  val uastScanner = v.uastScanner
+                  uastScanner.visitResourceReference(
+                    mContext,
+                    resource.node,
+                    resource.type,
+                    resource.name,
+                    resource.`package` == ANDROID_PKG
+                  )
+                }
+                break
+              }
+            }
+          }
+        }
+      }
+
+      annotationHandler?.visitSimpleNameReferenceExpression(mContext, node)
+
+      return super.visitSimpleNameReferenceExpression(node)
+    }
+
+    override fun visitCallExpression(node: UCallExpression): Boolean {
+      val result = super.visitCallExpression(node)
+
+      ProgressManager.checkCanceled()
+
+      if (node.isMethodCall()) {
+        visitMethodCallExpression(node)
+      } else if (node.isConstructorCall()) {
+        visitNewExpression(node)
+      }
+
+      annotationHandler?.visitCallExpression(mContext, node)
+
+      return result
+    }
+
+    private fun visitMethodCallExpression(node: UCallExpression) {
+      if (mVisitMethods) {
+        val methodName = node.methodName ?: node.methodIdentifier?.name
+        if (methodName != null) {
+          val list = methodDetectors[methodName]
+          if (list != null) {
+            val function = node.resolve()
+            if (function != null) {
+              for (v in list) {
+                val scanner = v.uastScanner
+                scanner.visitMethodCall(mContext, node, function)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
+      annotationHandler?.visitCallableReferenceExpression(mContext, node)
+      return super.visitCallableReferenceExpression(node)
+    }
+
+    private fun visitNewExpression(node: UCallExpression) {
+      if (mVisitConstructors) {
+        val method = node.resolve() ?: return
+
+        val resolvedClass = method.containingClass
+        if (resolvedClass != null) {
+          val list = constructorDetectors[resolvedClass.qualifiedName]
+          if (list != null) {
+            for (v in list) {
+              val javaPsiScanner = v.uastScanner
+              javaPsiScanner.visitConstructor(mContext, node, method)
+            }
+          }
+        }
+      }
+    }
+
+    // Annotations
+
+    // (visitCallExpression handled above)
+
+    override fun visitMethod(node: UMethod): Boolean {
+      annotationHandler?.visitMethod(mContext, node)
+      return super.visitMethod(node)
+    }
+
+    override fun visitAnnotation(node: UAnnotation): Boolean {
+      annotationHandler?.visitAnnotation(mContext, node)
+
+      return super.visitAnnotation(node)
+    }
+
+    override fun visitEnumConstant(node: UEnumConstant): Boolean {
+      annotationHandler?.visitEnumConstant(mContext, node)
+      return super.visitEnumConstant(node)
+    }
+
+    override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
+      node.asCall()?.let(::visitMethodCallExpression)
+      annotationHandler?.visitArrayAccessExpression(mContext, node)
+
+      return super.visitArrayAccessExpression(node)
+    }
+
+    override fun visitVariable(node: UVariable): Boolean {
+      annotationHandler?.visitVariable(mContext, node)
+
+      return super.visitVariable(node)
+    }
+
+    override fun visitClass(node: UClass): Boolean {
+      annotationHandler?.visitClass(mContext, node)
+
+      return super.visitClass(node)
+    }
+
+    override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+      node.asCall()?.let(::visitMethodCallExpression)
+      annotationHandler?.visitBinaryExpression(mContext, node)
+
+      return super.visitBinaryExpression(node)
+    }
+
+    override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
+      node.asCall()?.let(::visitMethodCallExpression)
+      annotationHandler?.visitUnaryExpression(mContext, node)
+
+      return super.visitPrefixExpression(node)
+    }
+
+    override fun visitPostfixExpression(node: UPostfixExpression): Boolean {
+      node.asCall()?.let(::visitMethodCallExpression)
+      annotationHandler?.visitUnaryExpression(mContext, node)
+
+      return super.visitPostfixExpression(node)
+    }
+
+    override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
+      annotationHandler?.visitClassLiteralExpression(mContext, node)
+      return super.visitClassLiteralExpression(node)
+    }
+
+    override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {
+      annotationHandler?.visitObjectLiteralExpression(mContext, node)
+      return super.visitObjectLiteralExpression(node)
+    }
+  }
+
+  companion object {
+    /** Default size of lists holding detectors of the same type for a given node type. */
+    private const val SAME_TYPE_COUNT = 8
+  }
 }

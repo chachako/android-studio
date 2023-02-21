@@ -24,12 +24,12 @@ import org.junit.Test
 
 class HdpiDetectorTest {
 
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import com.intellij.util.ui.JBUI;
                     import com.intellij.ui.scale.JBUIScale;
@@ -45,9 +45,10 @@ class HdpiDetectorTest {
                         }
                     }
                 """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import com.intellij.util.ui.JBUI
                     import com.intellij.ui.scale.JBUIScale
@@ -62,10 +63,11 @@ class HdpiDetectorTest {
                         }
                     }
                 """
-                ).indented(),
-                // Stubs
-                java(
-                    """
+          )
+          .indented(),
+        // Stubs
+        java(
+          """
                     package com.intellij.util.ui;
                     @SuppressWarnings("all")
                     public class JBUI {
@@ -74,21 +76,21 @@ class HdpiDetectorTest {
 
                     }
                     """
-                ),
-                java(
-                    """
+        ),
+        java(
+          """
                     package com.intellij.ui.scale;
                     @SuppressWarnings("all")
                     public class JBUIScale {
                         public static float scale(float f) { return f; }
                     }
                     """
-                )
-            )
-            .issues(HdpiDetector.ISSUE)
-            .run()
-            .expect(
-                """
+        )
+      )
+      .issues(HdpiDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/HdpiDetectorTest.java:6: Error: Do not store JBUI.scale scaled results in fields; this will not work correctly on dynamic theme or font size changes [JbUiStored]
                     private static final int FIGURE_PADDING = JBUI.scale(3); // WARN
                                                                    ~~~~~
@@ -109,6 +111,6 @@ class HdpiDetectorTest {
                                                ~~~~~
                 6 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

@@ -33,43 +33,42 @@ import com.android.tools.lint.detector.api.targetSdkAtLeast
 import org.w3c.dom.Element
 
 class HighSensorSamplingRateDetector : Detector(), XmlScanner {
-    override fun getApplicableElements() = setOf(TAG_USES_PERMISSION)
+  override fun getApplicableElements() = setOf(TAG_USES_PERMISSION)
 
-    override fun visitElement(context: XmlContext, element: Element) {
-        val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
-        if (name != HIGHER_SENSOR_SAMPLING_RATE) return
-        context.report(
-            Incident(
-                ISSUE,
-                context.getValueLocation(element.getAttributeNodeNS(ANDROID_URI, ATTR_NAME)),
-                "Most apps don't need access to high sensor sampling rate."
-            ),
-            targetSdkAtLeast(S)
-        )
-    }
+  override fun visitElement(context: XmlContext, element: Element) {
+    val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
+    if (name != HIGHER_SENSOR_SAMPLING_RATE) return
+    context.report(
+      Incident(
+        ISSUE,
+        context.getValueLocation(element.getAttributeNodeNS(ANDROID_URI, ATTR_NAME)),
+        "Most apps don't need access to high sensor sampling rate."
+      ),
+      targetSdkAtLeast(S)
+    )
+  }
 
-    companion object {
-        private const val HIGHER_SENSOR_SAMPLING_RATE =
-            "android.permission.HIGH_SAMPLING_RATE_SENSORS"
+  companion object {
+    private const val HIGHER_SENSOR_SAMPLING_RATE = "android.permission.HIGH_SAMPLING_RATE_SENSORS"
 
-        @JvmField
-        val ISSUE = Issue.create(
-            "HighSamplingRate",
-            briefDescription = "High sensor sampling rate",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        "HighSamplingRate",
+        briefDescription = "High sensor sampling rate",
+        explanation =
+          """
                 Most apps don't need access to high sensor sampling rate. Double check your use \
                 case to ensure your app absolutely needs access to sensor sampling rate > 200Hz. \
                 Be prepared for your app to be rejected from listing on Play Store until your use \
                 case for high sensor sampling rate has been reviewed and validated by the policy \
                 team.
             """,
-            category = Category.CORRECTNESS,
-            priority = 5,
-            severity = Severity.WARNING,
-            implementation = Implementation(
-                HighSensorSamplingRateDetector::class.java,
-                Scope.MANIFEST_SCOPE
-            )
-        )
-    }
+        category = Category.CORRECTNESS,
+        priority = 5,
+        severity = Severity.WARNING,
+        implementation =
+          Implementation(HighSensorSamplingRateDetector::class.java, Scope.MANIFEST_SCOPE)
+      )
+  }
 }

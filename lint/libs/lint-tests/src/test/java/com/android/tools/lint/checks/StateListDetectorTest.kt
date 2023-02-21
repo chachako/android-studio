@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class StateListDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return StateListDetector()
-    }
+  override fun getDetector(): Detector {
+    return StateListDetector()
+  }
 
-    fun testStates() {
-        lint().files(
-            xml(
-                "res/drawable/states.xml",
-                """
+  fun testStates() {
+    lint()
+      .files(
+        xml(
+            "res/drawable/states.xml",
+            """
                 <selector xmlns:android="http://schemas.android.com/apk/res/android">
                     <item  android:color="#ff000000"/> <!-- WRONG, SHOULD BE LAST -->
                     <item android:state_pressed="true"
@@ -35,9 +36,12 @@ class StateListDetectorTest : AbstractCheckTest() {
                           android:color="#ff0000ff"/> <!-- focused -->
                 </selector>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/drawable/states.xml:3: Warning: This item is unreachable because a previous item (item #1) is a more general match than this one [StateListReachable]
                 <item android:state_pressed="true"
                 ^
@@ -46,15 +50,16 @@ class StateListDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testCustomStates() {
-        //noinspection all // Sample code
-        lint().files(
-            xml(
-                "res/drawable/states2.xml",
-                """
+  fun testCustomStates() {
+    //noinspection all // Sample code
+    lint()
+      .files(
+        xml(
+            "res/drawable/states2.xml",
+            """
 
                 <selector xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:app="http://schemas.android.com/apk/res/com.domain.pkg">
@@ -63,15 +68,19 @@ class StateListDetectorTest : AbstractCheckTest() {
                     android:drawable="@drawable/item" />
                 </selector>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testStates3() {
-        lint().files(
-            xml(
-                "res/drawable/states3.xml",
-                """
+  fun testStates3() {
+    lint()
+      .files(
+        xml(
+            "res/drawable/states3.xml",
+            """
 
                 <!-- Copyright (C) 2008 The Android Open Source Project
 
@@ -122,9 +131,12 @@ class StateListDetectorTest : AbstractCheckTest() {
                     <item android:state_checked="true" android:drawable="@drawable/btn_star_big_on" />
                 </selector>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/drawable/states3.xml:24: Warning: This item is unreachable because a previous item (item #1) is a more general match than this one [StateListReachable]
                 <item android:state_checked="false" android:state_window_focused="false"
                 ^
@@ -133,6 +145,6 @@ class StateListDetectorTest : AbstractCheckTest() {
                 ^
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class HardcodedValuesDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return HardcodedValuesDetector()
-    }
+  override fun getDetector(): Detector {
+    return HardcodedValuesDetector()
+  }
 
-    fun testStrings() {
-        lint().files(
-            xml(
-                "res/layout/accessibility.xml",
-                """
+  fun testStrings() {
+    lint()
+      .files(
+        xml(
+            "res/layout/accessibility.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/newlinear" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
                     <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
                     <ImageView android:id="@+id/android_logo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
@@ -36,9 +37,12 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                     <ImageButton android:importantForAccessibility="no" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/accessibility.xml:2: Warning: Hardcoded string "Button", should use @string resource [HardcodedText]
                 <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
                         ~~~~~~~~~~~~~~~~~~~~~
@@ -47,14 +51,15 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMenus() {
-        lint().files(
-            xml(
-                "res/menu/menu.xml",
-                """
+  fun testMenus() {
+    lint()
+      .files(
+        xml(
+            "res/menu/menu.xml",
+            """
             <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
                 <item
@@ -71,9 +76,12 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
 
             </menu>
             """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/menu/menu.xml:6: Warning: Hardcoded string "My title 1", should use @string resource [HardcodedText]
                     android:title="My title 1">
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,14 +90,15 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMenusOk() {
-        lint().files(
-            xml(
-                "res/menu/titles.xml",
-                """
+  fun testMenusOk() {
+    lint()
+      .files(
+        xml(
+            "res/menu/titles.xml",
+            """
                 <menu xmlns:android="http://schemas.android.com/apk/res/android">
                     <item android:id="@+id/action_bar_progress_spinner"
                         android:showAsAction="always"
@@ -105,17 +114,21 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:icon="@drawable/ic_menu_plus1"/>
                 </menu>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testSuppress() {
-        // All but one errors in the file contain ignore attributes - direct, inherited
-        // and lists
-        lint().files(
-            xml(
-                "res/layout/ignores.xml",
-                """
+  fun testSuppress() {
+    // All but one errors in the file contain ignore attributes - direct, inherited
+    // and lists
+    lint()
+      .files(
+        xml(
+            "res/layout/ignores.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:tools="http://schemas.android.com/tools"
                     android:id="@+id/newlinear"
@@ -181,22 +194,26 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
 
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/ignores.xml:60: Warning: Hardcoded string "Hardcoded", should use @string resource [HardcodedText]
                     android:text="Hardcoded"
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testSuppressViaComment() {
-        lint().files(
-            xml(
-                "res/layout/ignores2.xml",
-                """
+  fun testSuppressViaComment() {
+    lint()
+      .files(
+        xml(
+            "res/layout/ignores2.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/newlinear"
                     android:layout_width="match_parent"
@@ -252,22 +269,26 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
 
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/ignores2.xml:50: Warning: Hardcoded string "Hardcoded", should use @string resource [HardcodedText]
                     android:text="Hardcoded"
                     ~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testSkippingPlaceHolders() {
-        lint().files(
-            xml(
-                "res/layout/test.xml",
-                """
+  fun testSkippingPlaceHolders() {
+    lint()
+      .files(
+        xml(
+            "res/layout/test.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:app="http://schemas.android.com/apk/res-auto"
                     xmlns:tools="http://schemas.android.com/tools"
@@ -313,16 +334,20 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:text="New Text" />
                 </LinearLayout>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAppRestrictions() {
-        // Sample from https://developer.android.com/samples/AppRestrictionSchema/index.html
-        lint().files(
-            xml(
-                "res/xml/app_restrictions.xml",
-                """
+  fun testAppRestrictions() {
+    // Sample from https://developer.android.com/samples/AppRestrictionSchema/index.html
+    lint()
+      .files(
+        xml(
+            "res/xml/app_restrictions.xml",
+            """
                 <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
 
                     <restriction
@@ -340,10 +365,11 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:title="Hardcoded title"/>
 
                 </restrictions>"""
-            ).indented(),
-            xml(
-                "res/xml/random_file.xml",
-                """<myRoot xmlns:android="http://schemas.android.com/apk/res/android">
+          )
+          .indented(),
+        xml(
+            "res/xml/random_file.xml",
+            """<myRoot xmlns:android="http://schemas.android.com/apk/res/android">
 
                     <myElement
                         android:description="Hardcoded description"
@@ -351,9 +377,12 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
 
                 </myRoot>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/xml/app_restrictions.xml:12: Warning: Hardcoded string "Hardcoded description", should use @string resource [HardcodedText]
                     android:description="Hardcoded description"
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -362,15 +391,15 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testToggleButtonLabels() {
-        // Regression test for
-        // https://code.google.com/p/android/issues/detail?id=206106
-        // Ensure that the toggle button text label attributes are internationalized
-        val expected =
-            """
+  fun testToggleButtonLabels() {
+    // Regression test for
+    // https://code.google.com/p/android/issues/detail?id=206106
+    // Ensure that the toggle button text label attributes are internationalized
+    val expected =
+      """
             res/layout/test.xml:4: Warning: Hardcoded string "Hi tools!", should use @string resource [HardcodedText]
                  android:textOn="Hi tools!"
                  ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -379,17 +408,21 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        lint().files(
-            xml(
-                "res/layout/test.xml",
-                """
+    lint()
+      .files(
+        xml(
+            "res/layout/test.xml",
+            """
                 <ToggleButton xmlns:android="http://schemas.android.com/apk/res/android"
                      android:layout_width="wrap_content"
                      android:layout_height="wrap_content"
                      android:textOn="Hi tools!"
                      android:textOff="Bye tools!" />
                  """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 }

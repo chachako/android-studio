@@ -34,6 +34,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNewExpression
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiSwitchStatement
+import java.io.File
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
@@ -46,459 +47,393 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.USwitchExpression
 import org.jetbrains.uast.UastContext
 import org.jetbrains.uast.getUastContext
-import java.io.File
 
 enum class SourceSetType {
-    MAIN,
-    INSTRUMENTATION_TESTS,
-    UNIT_TESTS,
-    UNKNOWN_TEST,
-    TEST_FIXTURES,
-    INVALID
+  MAIN,
+  INSTRUMENTATION_TESTS,
+  UNIT_TESTS,
+  UNKNOWN_TEST,
+  TEST_FIXTURES,
+  INVALID
 }
 
 /**
  * A [Context] used when checking Java files.
  *
- * @constructor Constructs a [JavaContext] for running lint on the given
- *     file, with the given scope, in the given
- *     project reporting errors to the given client.
+ * @constructor Constructs a [JavaContext] for running lint on the given file, with the given scope,
+ *   in the given project reporting errors to the given client.
  */
 open class JavaContext(
-    /** the driver running through the checks */
-    driver: LintDriver,
+  /** the driver running through the checks */
+  driver: LintDriver,
 
-    /** the project to run lint on which contains the given file */
-    project: Project,
+  /** the project to run lint on which contains the given file */
+  project: Project,
 
-    /**
-     * The main project if this project is a library project, or null
-     * if this is not a library project. The main project is the root
-     * project of all library projects, not necessarily the directly
-     * including project.
-     */
-    main: Project?,
+  /**
+   * The main project if this project is a library project, or null if this is not a library
+   * project. The main project is the root project of all library projects, not necessarily the
+   * directly including project.
+   */
+  main: Project?,
 
-    /** the file to be analyzed */
-    file: File
+  /** the file to be analyzed */
+  file: File
 ) : Context(driver, project, main, file) {
 
-    /** The parse tree, when using PSI. */
-    var psiFile: PsiFile? = null
-        private set
+  /** The parse tree, when using PSI. */
+  var psiFile: PsiFile? = null
+    private set
 
-    /** The parse tree, when using UAST. */
-    var uastFile: UFile? = null
+  /** The parse tree, when using UAST. */
+  var uastFile: UFile? = null
 
-    /** The parser which produced the parse tree. */
-    lateinit var uastParser: UastParser
+  /** The parser which produced the parse tree. */
+  lateinit var uastParser: UastParser
 
-    /** Whether this context is in a test source folder. */
-    var isTestSource: Boolean = false
+  /** Whether this context is in a test source folder. */
+  var isTestSource: Boolean = false
 
-    /** Whether this context is in a generated source folder. */
-    var isGeneratedSource: Boolean = false
+  /** Whether this context is in a generated source folder. */
+  var isGeneratedSource: Boolean = false
 
-    /** The type of the source set related to this context */
-    var sourceSetType: SourceSetType = SourceSetType.INVALID
+  /** The type of the source set related to this context */
+  var sourceSetType: SourceSetType = SourceSetType.INVALID
+
+  /**
+   * Returns a location for the given node range (from the starting offset of the first node to the
+   * ending offset of the second node).
+   *
+   * @param from the AST node to get a starting location from
+   * @param fromDelta Offset delta to apply to the starting offset
+   * @param to the AST node to get a ending location from
+   * @param toDelta Offset delta to apply to the ending offset
+   * @return a location for the given node
+   */
+  fun getRangeLocation(from: PsiElement, fromDelta: Int, to: PsiElement, toDelta: Int): Location =
+    uastParser.getRangeLocation(this, from, fromDelta, to, toDelta)
+
+  fun getRangeLocation(from: UElement, fromDelta: Int, to: UElement, toDelta: Int): Location =
+    uastParser.getRangeLocation(this, from, fromDelta, to, toDelta)
+
+  // Disambiguate since UDeclarations implement both PsiElement and UElement
+  fun getRangeLocation(
+    from: UDeclaration,
+    fromDelta: Int,
+    to: UDeclaration,
+    toDelta: Int
+  ): Location = uastParser.getRangeLocation(this, from as UElement, fromDelta, to, toDelta)
+
+  /**
+   * Returns a location for the given node range (from the starting offset of the first node to the
+   * ending offset of the second node).
+   *
+   * @param from the AST node to get a starting location from
+   * @param fromDelta Offset delta to apply to the starting offset
+   * @param length The number of characters to add from the delta
+   * @return a location for the given node
+   */
+  @Suppress("unused", "unused")
+  fun getRangeLocation(from: PsiElement, fromDelta: Int, length: Int): Location =
+    uastParser.getRangeLocation(this, from, fromDelta, fromDelta + length)
+
+  fun getRangeLocation(from: UElement, fromDelta: Int, length: Int): Location =
+    uastParser.getRangeLocation(this, from, fromDelta, fromDelta + length)
+
+  /**
+   * Returns a [Location] for the given element. This attempts to pick a shorter location range than
+   * the entire element; for a class or method for example, it picks the name element (if found).
+   * For statement constructs such as a `switch` statement it will highlight the keyword, etc.
+   *
+   * @param element the AST element to create a location for
+   * @return a location for the given element
+   */
+  fun getNameLocation(element: PsiElement): Location {
+    return run {
+      if (element is PsiSwitchStatement) {
+        // Just use keyword
+        return uastParser.getRangeLocation(this, element, 0, 6) // 6: "switch".length()
+      }
+      uastParser.getNameLocation(this, element)
+    }
+  }
+
+  /**
+   * Returns a [Location] for the given element. This attempts to pick a shorter location range than
+   * the entire element; for a class or method for example, it picks the name element (if found).
+   * For statement constructs such as a `switch` statement it will highlight the keyword, etc.
+   *
+   * @param element the AST element to create a location for
+   * @return a location for the given element
+   */
+  fun getNameLocation(element: UElement): Location {
+    if (element is USwitchExpression) {
+      // Just use keyword
+      return uastParser.getRangeLocation(this, element, 0, 6) // 6: "switch".length()
+    }
+    return uastParser.getNameLocation(this, element)
+  }
+
+  /**
+   * Returns a [Location] for the given element. This attempts to pick a shorter location range than
+   * the entire element; for a class or method for example, it picks the name element (if found).
+   * For statement constructs such as a `switch` statement it will highlight the keyword, etc.
+   *
+   * [UClass] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * getNameLocation(UClass) easier without having to make an explicit cast.
+   *
+   * @param cls the AST class element to create a location for
+   * @return a location for the given element
+   */
+  fun getNameLocation(cls: UDeclaration): Location = getNameLocation(cls as UElement)
+
+  fun getNameLocation(cls: UClass): Location = getNameLocation(cls as UElement)
+
+  fun getNameLocation(cls: UMethod): Location = getNameLocation(cls as UElement)
+
+  fun getLocation(node: PsiElement): Location = uastParser.getLocation(this, node)
+
+  fun getLocation(element: UElement): Location {
+    if (element is UCallExpression) {
+      return uastParser.getCallLocation(this, element, true, true)
+    } else if (element is UMethod) {
+      return uastParser.getNameLocation(this, element as UElement).withOriginalSource(element)
+    }
+    return uastParser.getLocation(this, element).withOriginalSource(element)
+  }
+
+  fun getLocation(element: UMethod): Location = uastParser.getLocation(this, element as UElement)
+
+  fun getLocation(element: UField): Location = uastParser.getLocation(this, element as UElement)
+
+  /**
+   * Creates a location for the given call.
+   *
+   * @param call the call to create a location range for
+   * @param includeReceiver whether we should include the receiver of the method call if applicable
+   * @param includeArguments whether we should include the arguments to the call
+   * @return a location
+   */
+  fun getCallLocation(
+    call: UCallExpression,
+    includeReceiver: Boolean,
+    includeArguments: Boolean
+  ): Location = uastParser.getCallLocation(this, call, includeReceiver, includeArguments)
+
+  val evaluator: JavaEvaluator
+    get() = uastParser.evaluator
+
+  /**
+   * Returns the [PsiJavaFile].
+   *
+   * @return the parsed Java source file
+   */
+  @Suppress("unused")
+  @Deprecated("Use {@link #getPsiFile()} instead", replaceWith = ReplaceWith("psiFile"))
+  val javaFile: PsiJavaFile?
+    get() {
+      return if (psiFile is PsiJavaFile) {
+        psiFile as PsiJavaFile?
+      } else {
+        null
+      }
+    }
+
+  /**
+   * Sets the compilation result. Not intended for client usage; the lint infrastructure will set
+   * this when a context has been processed
+   *
+   * @param javaFile the parse tree
+   */
+  fun setJavaFile(javaFile: PsiFile?) {
+    this.psiFile = javaFile
+  }
+
+  /**
+   * Reports an issue applicable to a given AST node. The AST node is used as the scope to check for
+   * suppress lint annotations.
+   *
+   * @param issue the issue to report
+   * @param scope the AST node scope the error applies to. The lint infrastructure will check
+   *   whether there are suppress annotations on this node (or its enclosing nodes) and if so
+   *   suppress the warning without involving the client.
+   * @param location the location of the issue, or null if not known
+   * @param message the message for this warning
+   * @param quickfixData optional data to pass to the IDE for use by a quickfix.
+   */
+  @JvmOverloads
+  fun report(
+    issue: Issue,
+    scope: PsiElement?,
+    location: Location,
+    message: String,
+    quickfixData: LintFix? = null
+  ) {
+    val incident = Incident(issue, message, location, scope, quickfixData)
+    driver.client.report(this, incident)
+  }
+
+  /**
+   * Reports an issue applicable to a given AST node. The AST node is used as the scope to check for
+   * suppress lint annotations.
+   *
+   * @param issue the issue to report
+   * @param scope the AST node scope the error applies to. The lint infrastructure will check
+   *   whether there are suppress annotations on this node (or its enclosing nodes) and if so
+   *   suppress the warning without involving the client.
+   * @param location the location of the issue, or null if not known
+   * @param message the message for this warning
+   * @param quickfixData optional data to pass to the IDE for use by a quickfix.
+   */
+  @JvmOverloads
+  fun report(
+    issue: Issue,
+    scope: UElement?,
+    location: Location,
+    message: String,
+    quickfixData: LintFix? = null
+  ) {
+    val incident = Incident(issue, message, location, scope, quickfixData)
+    driver.client.report(this, incident)
+  }
+
+  /**
+   * [UClass] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * report(..., UClass, ...) easier without having to make an explicit cast.
+   */
+  fun report(issue: Issue, scopeClass: UClass?, location: Location, message: String) =
+    report(issue, scopeClass as UElement?, location, message)
+
+  /**
+   * [UClass] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * report(..., UClass, ...) easier without having to make an explicit cast.
+   */
+  fun report(
+    issue: Issue,
+    scopeClass: UClass?,
+    location: Location,
+    message: String,
+    quickfixData: LintFix?
+  ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
+
+  /**
+   * [UMethod] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * report(..., UMethod, ...) easier without having to make an explicit cast.
+   */
+  fun report(issue: Issue, scopeClass: UMethod?, location: Location, message: String) =
+    report(issue, scopeClass as UElement?, location, message)
+
+  /**
+   * [UMethod] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * report(..., UMethod, ...) easier without having to make an explicit cast.
+   */
+  fun report(
+    issue: Issue,
+    scopeClass: UMethod?,
+    location: Location,
+    message: String,
+    quickfixData: LintFix?
+  ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
+
+  /**
+   * [UField] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * report(..., UField, ...) easier without having to make an explicit cast.
+   */
+  fun report(issue: Issue, scopeClass: UField?, location: Location, message: String) =
+    report(issue, scopeClass as UElement?, location, message)
+
+  /**
+   * [UField] is both a [PsiElement] and a [UElement] so this method is here to make calling
+   * report(..., UField, ...) easier without having to make an explicit cast.
+   */
+  fun report(
+    issue: Issue,
+    scopeClass: UField?,
+    location: Location,
+    message: String,
+    quickfixData: LintFix?
+  ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
+
+  override val suppressCommentPrefix: String?
+    get() = SUPPRESS_JAVA_COMMENT_PREFIX
+
+  fun isSuppressedWithComment(scope: PsiElement, issue: Issue): Boolean {
+    if (scope is PsiCompiledElement) {
+      return false
+    }
+
+    // Check whether there is a comment marker
+    getContents() ?: return false
+    val textRange = scope.textRange ?: return false
+    val start = textRange.startOffset
+    return isSuppressedWithComment(start, issue)
+  }
+
+  fun isSuppressedWithComment(scope: UElement, issue: Issue): Boolean {
+    val psi = scope.psi
+    return psi != null && isSuppressedWithComment(psi, issue)
+  }
+
+  @Deprecated(
+    "Use UastFacade instead",
+    ReplaceWith("org.jetbrains.uast.UastFacade"),
+    DeprecationLevel.HIDDEN
+  )
+  val uastContext: UastContext
+    get() = uastFile?.getUastContext()!!
+
+  override fun toString(): String {
+    return javaClass.simpleName + ':' + file.name + ':' + file.parent
+  }
+
+  companion object {
+    // TODO: Move to LintUtils etc
+    @JvmStatic
+    fun getMethodName(call: UElement): String? =
+      when (call) {
+        is UEnumConstant -> call.name
+        is UCallExpression -> call.methodName ?: call.classReference?.resolvedName
+        else -> null
+      }
 
     /**
-     * Returns a location for the given node range (from the starting
-     * offset of the first node to the ending offset of the second
-     * node).
+     * Searches for a name node corresponding to the given node
      *
-     * @param from the AST node to get a starting location from
-     * @param fromDelta Offset delta to apply to the starting offset
-     * @param to the AST node to get a ending location from
-     * @param toDelta Offset delta to apply to the ending offset
-     * @return a location for the given node
+     * @return the name node to use, if applicable
      */
-    fun getRangeLocation(
-        from: PsiElement,
-        fromDelta: Int,
-        to: PsiElement,
-        toDelta: Int
-    ): Location =
-        uastParser.getRangeLocation(this, from, fromDelta, to, toDelta)
-
-    fun getRangeLocation(
-        from: UElement,
-        fromDelta: Int,
-        to: UElement,
-        toDelta: Int
-    ): Location =
-        uastParser.getRangeLocation(this, from, fromDelta, to, toDelta)
-
-    // Disambiguate since UDeclarations implement both PsiElement and UElement
-    fun getRangeLocation(
-        from: UDeclaration,
-        fromDelta: Int,
-        to: UDeclaration,
-        toDelta: Int
-    ): Location =
-        uastParser.getRangeLocation(this, from as UElement, fromDelta, to, toDelta)
-
-    /**
-     * Returns a location for the given node range (from the starting
-     * offset of the first node to the ending offset of the second
-     * node).
-     *
-     * @param from the AST node to get a starting location from
-     * @param fromDelta Offset delta to apply to the starting offset
-     * @param length The number of characters to add from the delta
-     * @return a location for the given node
-     */
-    @Suppress("unused", "unused")
-    fun getRangeLocation(
-        from: PsiElement,
-        fromDelta: Int,
-        length: Int
-    ): Location =
-        uastParser.getRangeLocation(this, from, fromDelta, fromDelta + length)
-
-    fun getRangeLocation(
-        from: UElement,
-        fromDelta: Int,
-        length: Int
-    ): Location =
-        uastParser.getRangeLocation(this, from, fromDelta, fromDelta + length)
-
-    /**
-     * Returns a [Location] for the given element. This attempts to pick
-     * a shorter location range than the entire element; for a class
-     * or method for example, it picks the name element (if found).
-     * For statement constructs such as a `switch` statement it will
-     * highlight the keyword, etc.
-     *
-     * @param element the AST element to create a location for
-     * @return a location for the given element
-     */
-    fun getNameLocation(element: PsiElement): Location {
-        return run {
-            if (element is PsiSwitchStatement) {
-                // Just use keyword
-                return uastParser.getRangeLocation(this, element, 0, 6) // 6: "switch".length()
-            }
-            uastParser.getNameLocation(this, element)
+    @JvmStatic
+    fun findNameElement(element: PsiElement): PsiElement? {
+      when (element) {
+        is PsiNameIdentifierOwner -> return element.nameIdentifier
+        is PsiClass -> {
+          if (element is PsiAnonymousClass) {
+            return element.baseClassReference
+          }
+          return element.nameIdentifier
         }
+        is PsiMethod -> return element.nameIdentifier
+        is PsiMethodCallExpression -> return element.methodExpression.referenceNameElement
+        is PsiNewExpression -> return element.classReference
+        is PsiField -> return element.nameIdentifier
+        is PsiAnnotation -> return element.nameReferenceElement
+        is PsiReferenceExpression -> return element.referenceNameElement
+        is PsiLabeledStatement -> return element.labelIdentifier
+        is KtProperty -> return element.nameIdentifier
+        else -> return null
+      }
     }
 
-    /**
-     * Returns a [Location] for the given element. This attempts to pick
-     * a shorter location range than the entire element; for a class
-     * or method for example, it picks the name element (if found).
-     * For statement constructs such as a `switch` statement it will
-     * highlight the keyword, etc.
-     *
-     * @param element the AST element to create a location for
-     * @return a location for the given element
-     */
-    fun getNameLocation(element: UElement): Location {
-        if (element is USwitchExpression) {
-            // Just use keyword
-            return uastParser.getRangeLocation(this, element, 0, 6) // 6: "switch".length()
-        }
-        return uastParser.getNameLocation(this, element)
+    @JvmStatic
+    fun findNameElement(element: UElement): UElement? {
+      if (element is UDeclaration) {
+        return element.uastAnchor
+        // } else if (element instanceof PsiNameIdentifierOwner) {
+        //    return ((PsiNameIdentifierOwner) element).getNameIdentifier();
+      } else if (element is UCallExpression) {
+        return element.methodIdentifier
+      }
+
+      return null
     }
-
-    /**
-     * Returns a [Location] for the given element. This attempts to pick
-     * a shorter location range than the entire element; for a class
-     * or method for example, it picks the name element (if found).
-     * For statement constructs such as a `switch` statement it will
-     * highlight the keyword, etc.
-     *
-     * [UClass] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling getNameLocation(UClass) easier without
-     * having to make an explicit cast.
-     *
-     * @param cls the AST class element to create a location for
-     * @return a location for the given element
-     */
-    fun getNameLocation(cls: UDeclaration): Location = getNameLocation(cls as UElement)
-
-    fun getNameLocation(cls: UClass): Location = getNameLocation(cls as UElement)
-
-    fun getNameLocation(cls: UMethod): Location = getNameLocation(cls as UElement)
-
-    fun getLocation(node: PsiElement): Location = uastParser.getLocation(this, node)
-
-    fun getLocation(element: UElement): Location {
-        if (element is UCallExpression) {
-            return uastParser.getCallLocation(this, element, true, true)
-        } else if (element is UMethod) {
-            return uastParser.getNameLocation(this, element as UElement)
-                .withOriginalSource(element)
-        }
-        return uastParser.getLocation(this, element).withOriginalSource(element)
-    }
-
-    fun getLocation(element: UMethod): Location =
-        uastParser.getLocation(this, element as UElement)
-
-    fun getLocation(element: UField): Location =
-        uastParser.getLocation(this, element as UElement)
-
-    /**
-     * Creates a location for the given call.
-     *
-     * @param call the call to create a location range for
-     * @param includeReceiver whether we should include the receiver of
-     *     the method call if applicable
-     * @param includeArguments whether we should include the arguments
-     *     to the call
-     * @return a location
-     */
-    fun getCallLocation(
-        call: UCallExpression,
-        includeReceiver: Boolean,
-        includeArguments: Boolean
-    ): Location =
-        uastParser.getCallLocation(this, call, includeReceiver, includeArguments)
-
-    val evaluator: JavaEvaluator
-        get() = uastParser.evaluator
-
-    /**
-     * Returns the [PsiJavaFile].
-     *
-     * @return the parsed Java source file
-     */
-    @Suppress("unused")
-    @Deprecated(
-        "Use {@link #getPsiFile()} instead",
-        replaceWith = ReplaceWith("psiFile")
-    )
-    val javaFile: PsiJavaFile?
-        get() {
-            return if (psiFile is PsiJavaFile) {
-                psiFile as PsiJavaFile?
-            } else {
-                null
-            }
-        }
-
-    /**
-     * Sets the compilation result. Not intended for client usage;
-     * the lint infrastructure will set this when a context has been
-     * processed
-     *
-     * @param javaFile the parse tree
-     */
-    fun setJavaFile(javaFile: PsiFile?) {
-        this.psiFile = javaFile
-    }
-
-    /**
-     * Reports an issue applicable to a given AST node. The AST node is
-     * used as the scope to check for suppress lint annotations.
-     *
-     * @param issue the issue to report
-     * @param scope the AST node scope the error applies to. The lint
-     *     infrastructure will check whether there are suppress
-     *     annotations on this node (or its enclosing nodes) and if
-     *     so suppress the warning without involving the client.
-     * @param location the location of the issue, or null if not known
-     * @param message the message for this warning
-     * @param quickfixData optional data to pass to the IDE for use by a
-     *     quickfix.
-     */
-    @JvmOverloads
-    fun report(
-        issue: Issue,
-        scope: PsiElement?,
-        location: Location,
-        message: String,
-        quickfixData: LintFix? = null
-    ) {
-        val incident = Incident(issue, message, location, scope, quickfixData)
-        driver.client.report(this, incident)
-    }
-
-    /**
-     * Reports an issue applicable to a given AST node. The AST node is
-     * used as the scope to check for suppress lint annotations.
-     *
-     * @param issue the issue to report
-     * @param scope the AST node scope the error applies to. The lint
-     *     infrastructure will check whether there are suppress
-     *     annotations on this node (or its enclosing nodes) and if
-     *     so suppress the warning without involving the client.
-     * @param location the location of the issue, or null if not known
-     * @param message the message for this warning
-     * @param quickfixData optional data to pass to the IDE for use by a
-     *     quickfix.
-     */
-    @JvmOverloads
-    fun report(
-        issue: Issue,
-        scope: UElement?,
-        location: Location,
-        message: String,
-        quickfixData: LintFix? = null
-    ) {
-        val incident = Incident(issue, message, location, scope, quickfixData)
-        driver.client.report(this, incident)
-    }
-
-    /**
-     * [UClass] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling report(..., UClass, ...) easier without
-     * having to make an explicit cast.
-     */
-    fun report(
-        issue: Issue,
-        scopeClass: UClass?,
-        location: Location,
-        message: String
-    ) = report(issue, scopeClass as UElement?, location, message)
-
-    /**
-     * [UClass] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling report(..., UClass, ...) easier without
-     * having to make an explicit cast.
-     */
-    fun report(
-        issue: Issue,
-        scopeClass: UClass?,
-        location: Location,
-        message: String,
-        quickfixData: LintFix?
-    ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
-
-    /**
-     * [UMethod] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling report(..., UMethod, ...) easier without
-     * having to make an explicit cast.
-     */
-    fun report(
-        issue: Issue,
-        scopeClass: UMethod?,
-        location: Location,
-        message: String
-    ) = report(issue, scopeClass as UElement?, location, message)
-
-    /**
-     * [UMethod] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling report(..., UMethod, ...) easier without
-     * having to make an explicit cast.
-     */
-    fun report(
-        issue: Issue,
-        scopeClass: UMethod?,
-        location: Location,
-        message: String,
-        quickfixData: LintFix?
-    ) =
-        report(issue, scopeClass as UElement?, location, message, quickfixData)
-
-    /**
-     * [UField] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling report(..., UField, ...) easier without
-     * having to make an explicit cast.
-     */
-    fun report(
-        issue: Issue,
-        scopeClass: UField?,
-        location: Location,
-        message: String
-    ) =
-        report(issue, scopeClass as UElement?, location, message)
-
-    /**
-     * [UField] is both a [PsiElement] and a [UElement] so this method
-     * is here to make calling report(..., UField, ...) easier without
-     * having to make an explicit cast.
-     */
-    fun report(
-        issue: Issue,
-        scopeClass: UField?,
-        location: Location,
-        message: String,
-        quickfixData: LintFix?
-    ) =
-        report(issue, scopeClass as UElement?, location, message, quickfixData)
-
-    override val suppressCommentPrefix: String?
-        get() = SUPPRESS_JAVA_COMMENT_PREFIX
-
-    fun isSuppressedWithComment(scope: PsiElement, issue: Issue): Boolean {
-        if (scope is PsiCompiledElement) {
-            return false
-        }
-
-        // Check whether there is a comment marker
-        getContents() ?: return false
-        val textRange = scope.textRange ?: return false
-        val start = textRange.startOffset
-        return isSuppressedWithComment(start, issue)
-    }
-
-    fun isSuppressedWithComment(scope: UElement, issue: Issue): Boolean {
-        val psi = scope.psi
-        return psi != null && isSuppressedWithComment(psi, issue)
-    }
-
-    @Deprecated(
-        "Use UastFacade instead",
-        ReplaceWith("org.jetbrains.uast.UastFacade"),
-        DeprecationLevel.HIDDEN
-    )
-    val uastContext: UastContext
-        get() = uastFile?.getUastContext()!!
-
-    override fun toString(): String {
-        return javaClass.simpleName + ':' + file.name + ':' + file.parent
-    }
-
-    companion object {
-        // TODO: Move to LintUtils etc
-        @JvmStatic
-        fun getMethodName(call: UElement): String? =
-            when (call) {
-                is UEnumConstant -> call.name
-                is UCallExpression -> call.methodName ?: call.classReference?.resolvedName
-                else -> null
-            }
-
-        /**
-         * Searches for a name node corresponding to the given node
-         *
-         * @return the name node to use, if applicable
-         */
-        @JvmStatic
-        fun findNameElement(element: PsiElement): PsiElement? {
-            when (element) {
-                is PsiNameIdentifierOwner -> return element.nameIdentifier
-                is PsiClass -> {
-                    if (element is PsiAnonymousClass) {
-                        return element.baseClassReference
-                    }
-                    return element.nameIdentifier
-                }
-                is PsiMethod -> return element.nameIdentifier
-                is PsiMethodCallExpression -> return element.methodExpression.referenceNameElement
-                is PsiNewExpression -> return element.classReference
-                is PsiField -> return element.nameIdentifier
-                is PsiAnnotation -> return element.nameReferenceElement
-                is PsiReferenceExpression -> return element.referenceNameElement
-                is PsiLabeledStatement -> return element.labelIdentifier
-                is KtProperty -> return element.nameIdentifier
-                else -> return null
-            }
-        }
-
-        @JvmStatic
-        fun findNameElement(element: UElement): UElement? {
-            if (element is UDeclaration) {
-                return element.uastAnchor
-                // } else if (element instanceof PsiNameIdentifierOwner) {
-                //    return ((PsiNameIdentifierOwner) element).getNameIdentifier();
-            } else if (element is UCallExpression) {
-                return element.methodIdentifier
-            }
-
-            return null
-        }
-    }
+  }
 }

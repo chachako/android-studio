@@ -21,7 +21,8 @@ import com.android.tools.lint.detector.api.Detector
 
 class DiscouragedDetectorTest : AbstractCheckTest() {
 
-    private val discouragedAnnotationStub = java(
+  private val discouragedAnnotationStub =
+    java(
         "src/androidx/annotation/Discouraged.java",
         """
             package androidx.annotation;
@@ -38,9 +39,11 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
                 String message() default "";
             }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val resourcesStub = java(
+  private val resourcesStub =
+    java(
         "src/android/content/res/Resources.java",
         """
             package android.content.res;
@@ -59,20 +62,22 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
                 public int getValue(int id, TypedValue outValue, boolean resolveRefs) { }
             }
         """
-    ).indented()
+      )
+      .indented()
 
-    fun testDocumentationExample() {
-        val expected =
-            """
+  fun testDocumentationExample() {
+    val expected =
+      """
             src/test/pkg/Test1.java:9: Warning: Use of this function is discouraged. It is more efficient to retrieve resources by identifier than by name.
             See getValue(int id, TypedValue outValue, boolean resolveRefs). [DiscouragedApi]
                     Resources.getValue("name", testValue, false);
                               ~~~~~~~~
             0 errors, 1 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.res.Resources;
@@ -86,16 +91,20 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            resourcesStub,
-            discouragedAnnotationStub
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        resourcesStub,
+        discouragedAnnotationStub
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun test205800560() {
-        lint().files(
-            kotlin(
-                """
+  fun test205800560() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -119,20 +128,24 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            rClass("test.pkg", "@layout/activity_main", "@id/text"),
-            discouragedAnnotationStub
-        ).allowDuplicates().run().expect(
-            """
+          )
+          .indented(),
+        rClass("test.pkg", "@layout/activity_main", "@id/text"),
+        discouragedAnnotationStub
+      )
+      .allowDuplicates()
+      .run()
+      .expect(
+        """
             src/test/pkg/MainActivity.kt:13: Warning: don't use this [DiscouragedApi]
                     findViewById<TextView>(R.id.text)?.text = getSomeString()
                                                               ~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    override fun getDetector(): Detector {
-        return DiscouragedDetector()
-    }
+  override fun getDetector(): Detector {
+    return DiscouragedDetector()
+  }
 }

@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class SetTextDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return SetTextDetector()
-    }
+  override fun getDetector(): Detector {
+    return SetTextDetector()
+  }
 
-    fun test() {
-        lint().files(
-            java(
-                """
+  fun test() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Context;
@@ -55,9 +56,12 @@ class SetTextDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/CustomScreen.java:13: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
                 view.setText("Hardcoded");
                              ~~~~~~~~~~~
@@ -84,6 +88,6 @@ class SetTextDetectorTest : AbstractCheckTest() {
                             ~~~~~~~
             0 errors, 8 warnings
             """
-        )
-    }
+      )
+  }
 }

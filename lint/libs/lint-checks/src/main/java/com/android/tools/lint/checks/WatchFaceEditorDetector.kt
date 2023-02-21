@@ -31,53 +31,48 @@ import com.android.tools.lint.detector.api.XmlScanner
 import org.w3c.dom.Element
 
 class WatchFaceEditorDetector : Detector(), XmlScanner {
-    companion object Issues {
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "WatchFaceEditor",
-            briefDescription = "Watch face editor must use launchMode=\"standard\"",
-            explanation = """
+  companion object Issues {
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "WatchFaceEditor",
+        briefDescription = "Watch face editor must use launchMode=\"standard\"",
+        explanation =
+          """
                 Watch face editor activities must be able to launch in the Wear OS app activity task \
                 in order to work correctly. Thus only `launchMode="standard"` is allowed. The watch \
                 face will not be shown on the watch if it does not satisfy this requirement.
             """,
-            category = Category.CORRECTNESS,
-            priority = 5,
-            severity = Severity.WARNING,
-            implementation = Implementation(
-                WatchFaceEditorDetector::class.java,
-                Scope.MANIFEST_SCOPE
-            ),
-            androidSpecific = true
+        category = Category.CORRECTNESS,
+        priority = 5,
+        severity = Severity.WARNING,
+        implementation = Implementation(WatchFaceEditorDetector::class.java, Scope.MANIFEST_SCOPE),
+        androidSpecific = true
+      )
+
+    const val WATCH_FACE_EDITOR_ACTION = "androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR"
+  }
+
+  override fun getApplicableElements() = listOf(TAG_ACTION)
+
+  override fun visitElement(context: XmlContext, action: Element) {
+    if (action.getAttributeNS(ANDROID_URI, ATTR_NAME) == WATCH_FACE_EDITOR_ACTION) {
+      val activity = action.parentNode?.parentNode as? Element
+      if (activity == null || activity.nodeName != TAG_ACTIVITY) return
+      val launchMode = activity.getAttributeNS(ANDROID_URI, "launchMode")
+      if (launchMode.isEmpty()) return // default is "standard"
+      if (launchMode != "standard") {
+        val fix = fix().set().attribute("launchMode").value("standard").android().build()
+        context.report(
+          Incident(
+            ISSUE,
+            activity,
+            context.getNameLocation(activity.getAttributeNodeNS(ANDROID_URI, "launchMode")),
+            "Watch face editor must use launchMode=\"standard\"",
+            fix
+          )
         )
-
-        const val WATCH_FACE_EDITOR_ACTION = "androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR"
+      }
     }
-
-    override fun getApplicableElements() = listOf(TAG_ACTION)
-
-    override fun visitElement(context: XmlContext, action: Element) {
-        if (action.getAttributeNS(ANDROID_URI, ATTR_NAME) == WATCH_FACE_EDITOR_ACTION) {
-            val activity = action.parentNode?.parentNode as? Element
-            if (activity == null || activity.nodeName != TAG_ACTIVITY) return
-            val launchMode = activity.getAttributeNS(ANDROID_URI, "launchMode")
-            if (launchMode.isEmpty()) return // default is "standard"
-            if (launchMode != "standard") {
-                val fix = fix().set()
-                    .attribute("launchMode")
-                    .value("standard")
-                    .android()
-                    .build()
-                context.report(
-                    Incident(
-                        ISSUE,
-                        activity,
-                        context.getNameLocation(activity.getAttributeNodeNS(ANDROID_URI, "launchMode")),
-                        "Watch face editor must use launchMode=\"standard\"",
-                        fix
-                    )
-                )
-            }
-        }
-    }
+  }
 }

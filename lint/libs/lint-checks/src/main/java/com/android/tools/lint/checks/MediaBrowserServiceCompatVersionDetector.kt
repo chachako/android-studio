@@ -29,65 +29,62 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.model.LintModelExternalLibrary
 import org.jetbrains.uast.UClass
 
-/**
- * Constructs a new [MediaBrowserServiceCompatVersionDetector] check.
- */
+/** Constructs a new [MediaBrowserServiceCompatVersionDetector] check. */
 class MediaBrowserServiceCompatVersionDetector : Detector(), SourceCodeScanner {
 
-    companion object Issues {
+  companion object Issues {
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "IncompatibleMediaBrowserServiceCompatVersion",
-            briefDescription = "Obsolete version of MediaBrowserServiceCompat",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "IncompatibleMediaBrowserServiceCompatVersion",
+        briefDescription = "Obsolete version of MediaBrowserServiceCompat",
+        explanation =
+          """
             `MediaBrowserServiceCompat` from version 23.2.0 to 23.4.0 of the Support v4 Library \
             used private APIs and will not be compatible with future versions of Android beyond Android N. \
             Please upgrade to version 24.0.0 or higher of the Support Library.""",
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = Implementation(
-                MediaBrowserServiceCompatVersionDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
-        )
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation =
+          Implementation(
+            MediaBrowserServiceCompatVersionDetector::class.java,
+            Scope.JAVA_FILE_SCOPE
+          )
+      )
 
-        /**
-         * Minimum recommended support library version that has the
-         * necessary fixes to ensure that MediaBrowserServiceCompat is
-         * forward compatible with N.
-         */
-        val MIN_SUPPORT_V4_VERSION: GradleCoordinate = GradleCoordinate.parseVersionOnly("24.0.0")
+    /**
+     * Minimum recommended support library version that has the necessary fixes to ensure that
+     * MediaBrowserServiceCompat is forward compatible with N.
+     */
+    val MIN_SUPPORT_V4_VERSION: GradleCoordinate = GradleCoordinate.parseVersionOnly("24.0.0")
 
-        const val MEDIA_BROWSER_SERVICE_COMPAT =
-            "android.support.v4.media.MediaBrowserServiceCompat"
+    const val MEDIA_BROWSER_SERVICE_COMPAT = "android.support.v4.media.MediaBrowserServiceCompat"
+  }
+
+  override fun applicableSuperClasses(): List<String> {
+    return listOf(MEDIA_BROWSER_SERVICE_COMPAT)
+  }
+
+  override fun visitClass(context: JavaContext, declaration: UClass) {
+    if (!context.evaluator.extendsClass(declaration, MEDIA_BROWSER_SERVICE_COMPAT, true)) {
+      return
     }
 
-    override fun applicableSuperClasses(): List<String> {
-        return listOf(MEDIA_BROWSER_SERVICE_COMPAT)
+    val library =
+      context.project.buildVariant?.mainArtifact?.findCompileDependency(SUPPORT_LIB_ARTIFACT)
+        as? LintModelExternalLibrary
+        ?: return
+    val mc = library.resolvedCoordinates
+    if (mc.version.isNotBlank()) {
+      val libVersion = GradleCoordinate.parseVersionOnly(mc.version)
+      if (COMPARE_PLUS_HIGHER.compare(libVersion, MIN_SUPPORT_V4_VERSION) < 0) {
+        val location = GradleDetector.getDependencyLocation(context, mc)
+        val message = "Using a version of the class that is not forward compatible"
+        context.report(ISSUE, location, message)
+      }
     }
-
-    override fun visitClass(context: JavaContext, declaration: UClass) {
-        if (!context.evaluator.extendsClass(
-                declaration,
-                MEDIA_BROWSER_SERVICE_COMPAT, true
-            )
-        ) {
-            return
-        }
-
-        val library = context.project.buildVariant?.mainArtifact
-            ?.findCompileDependency(SUPPORT_LIB_ARTIFACT) as? LintModelExternalLibrary ?: return
-        val mc = library.resolvedCoordinates
-        if (mc.version.isNotBlank()) {
-            val libVersion = GradleCoordinate.parseVersionOnly(mc.version)
-            if (COMPARE_PLUS_HIGHER.compare(libVersion, MIN_SUPPORT_V4_VERSION) < 0) {
-                val location = GradleDetector.getDependencyLocation(context, mc)
-                val message = "Using a version of the class that is not forward compatible"
-                context.report(ISSUE, location, message)
-            }
-        }
-    }
+  }
 }

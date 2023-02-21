@@ -20,14 +20,15 @@ import com.android.tools.lint.detector.api.Detector
 
 class ChromeOsSourceDetectorTest : AbstractCheckTest() {
 
-    override fun getDetector(): Detector {
-        return ChromeOsSourceDetector()
-    }
+  override fun getDetector(): Detector {
+    return ChromeOsSourceDetector()
+  }
 
-    fun testValidSetRequestedOrientation() {
-        lint().files(
-            java(
-                """
+  fun testValidSetRequestedOrientation() {
+    lint()
+      .files(
+        java(
+            """
             package test.pkg;
 
             import android.app.Activity;
@@ -47,26 +48,28 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                 }
             }
         """
-            ).indented()
-        )
-            .issues(ChromeOsSourceDetector.UNSUPPORTED_LOCKED_ORIENTATION)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(ChromeOsSourceDetector.UNSUPPORTED_LOCKED_ORIENTATION)
+      .run()
+      .expectClean()
+  }
 
-    fun testInvalidSetRequestedOrientation() {
+  fun testInvalidSetRequestedOrientation() {
 
-        val expected =
-            """
+    val expected =
+      """
         src/test/pkg/MainActivity.java:15: Warning: You should not lock orientation of your activities, so that you can support a good user experience for any device or orientation [SourceLockedOrientationActivity]
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         0 errors, 1 warnings
         """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
             package test.pkg;
 
             import android.app.Activity;
@@ -85,25 +88,27 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                 }
             }
         """
-            ).indented()
-        )
-            .issues(ChromeOsSourceDetector.UNSUPPORTED_LOCKED_ORIENTATION)
-            .run()
-            .expect(expected)
-            .expectFixDiffs(
-                """
+          )
+          .indented()
+      )
+      .issues(ChromeOsSourceDetector.UNSUPPORTED_LOCKED_ORIENTATION)
+      .run()
+      .expect(expected)
+      .expectFixDiffs(
+        """
                 Fix for src/test/pkg/MainActivity.java line 15: Set the orientation to SCREEN_ORIENTATION_UNSPECIFIED:
                 @@ -15 +15
                 -         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 +         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 """
-            )
-    }
+      )
+  }
 
-    fun test188464656() {
-        lint().files(
-            kotlin(
-                """
+  fun test188464656() {
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import android.app.Activity
@@ -116,28 +121,32 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                     activityRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 }
                 """
-            )
-        ).run().expect(
-            """
+        )
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/ActivityRule.kt:11: Warning: You should not lock orientation of your activities, so that you can support a good user experience for any device or orientation [SourceLockedOrientationActivity]
                                 activityRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/ActivityRule.kt line 11: Set the orientation to SCREEN_ORIENTATION_UNSPECIFIED:
             @@ -11 +11
             -                     activityRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             +                     activityRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             """
-        )
-    }
+      )
+  }
 
-    fun testValidCameraSystemFeature() {
-        lint().files(
-            java(
-                """
+  fun testValidCameraSystemFeature() {
+    lint()
+      .files(
+        java(
+            """
             package test.pkg;
 
             import android.app.Activity;
@@ -156,26 +165,28 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                 }
             }
         """
-            ).indented()
-        )
-            .issues(ChromeOsSourceDetector.UNSUPPORTED_CAMERA_FEATURE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(ChromeOsSourceDetector.UNSUPPORTED_CAMERA_FEATURE)
+      .run()
+      .expectClean()
+  }
 
-    fun testInvalidCameraSystemFeature() {
+  fun testInvalidCameraSystemFeature() {
 
-        val expected =
-            """
+    val expected =
+      """
             src/test/pkg/MainActivity.java:15: Warning: You should look for any camera available on the device, not just the rear [UnsupportedChromeOsCameraSystemFeature]
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
         """
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
             package test.pkg;
 
             import android.app.Activity;
@@ -194,17 +205,19 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                 }
             }
         """
-            ).indented()
-        )
-            .issues(ChromeOsSourceDetector.UNSUPPORTED_CAMERA_FEATURE)
-            .run()
-            .expect(expected)
-    }
+          )
+          .indented()
+      )
+      .issues(ChromeOsSourceDetector.UNSUPPORTED_CAMERA_FEATURE)
+      .run()
+      .expect(expected)
+  }
 
-    fun testFinishFoundInsideOnConfigurationChanged() {
-        lint().files(
-            java(
-                """
+  fun testFinishFoundInsideOnConfigurationChanged() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import android.app.Activity;
                 import android.content.pm.PackageManager;
@@ -227,24 +240,26 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED)
+      .run()
+      .expect(
+        """
                     src/test/pkg/MainActivity.java:19: Warning: Calling finish() within onConfigurationChanged() can lead to redraws [ChromeOsOnConfigurationChanged]
                             finish(); // ERROR 1
                             ~~~~~~~~
                     0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testFinishNotFoundInsideOnConfigurationChanged() {
-        lint().files(
-            java(
-                """
+  fun testFinishNotFoundInsideOnConfigurationChanged() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import android.app.Activity;
                 import android.content.pm.PackageManager;
@@ -266,10 +281,11 @@ class ChromeOsSourceDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(ChromeOsSourceDetector.CHROMEOS_ON_CONFIGURATION_CHANGED)
+      .run()
+      .expectClean()
+  }
 }

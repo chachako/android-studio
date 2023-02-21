@@ -65,63 +65,72 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 // Misc tests to verify type handling in the Kotlin UAST initialization.
 class UastTest : TestCase() {
-    private fun check(source: TestFile, check: (UFile) -> Unit) {
-        check(sources = arrayOf(source), check = check)
-    }
+  private fun check(source: TestFile, check: (UFile) -> Unit) {
+    check(sources = arrayOf(source), check = check)
+  }
 
-    private fun check(
-        vararg sources: TestFile,
-        android: Boolean = true,
-        library: Boolean = false,
-        javaLanguageLevel: LanguageLevel? = null,
-        kotlinLanguageLevel: LanguageVersionSettings? = null,
-        check: (UFile) -> Unit = {}
-    ) {
-        val pair = LintUtilsTest.parse(
-            testFiles = sources, javaLanguageLevel = javaLanguageLevel,
-            kotlinLanguageLevel = kotlinLanguageLevel, android = android, library = library
-        )
-        val uastFile = pair.first.uastFile
-        assertNotNull(uastFile)
-        check(uastFile!!)
+  private fun check(
+    vararg sources: TestFile,
+    android: Boolean = true,
+    library: Boolean = false,
+    javaLanguageLevel: LanguageLevel? = null,
+    kotlinLanguageLevel: LanguageVersionSettings? = null,
+    check: (UFile) -> Unit = {}
+  ) {
+    val pair =
+      LintUtilsTest.parse(
+        testFiles = sources,
+        javaLanguageLevel = javaLanguageLevel,
+        kotlinLanguageLevel = kotlinLanguageLevel,
+        android = android,
+        library = library
+      )
+    val uastFile = pair.first.uastFile
+    assertNotNull(uastFile)
+    check(uastFile!!)
 
-        // Validity check: everything should be convertible
-        pair.first.psiFile?.accept(object : PsiRecursiveElementVisitor() {
-            override fun visitElement(element: PsiElement) {
-                try {
-                    element.toUElement()
-                } catch (e: Throwable) {
-                    System.err.println("Converting element " + element + " of class " + element.javaClass + ":")
-                    throw e
-                }
-                super.visitElement(element)
-            }
-        })
+    // Validity check: everything should be convertible
+    pair.first.psiFile?.accept(
+      object : PsiRecursiveElementVisitor() {
+        override fun visitElement(element: PsiElement) {
+          try {
+            element.toUElement()
+          } catch (e: Throwable) {
+            System.err.println(
+              "Converting element " + element + " of class " + element.javaClass + ":"
+            )
+            throw e
+          }
+          super.visitElement(element)
+        }
+      }
+    )
 
-        Disposer.dispose(pair.second)
-    }
+    Disposer.dispose(pair.second)
+  }
 
-    fun test263980844() {
-        val testFiles = arrayOf(
-            bytecode(
-                "libs/lib1.jar",
-                kotlin(
-                    "src/test/pkg/KotlinFoo.kt",
-                    """
+  fun test263980844() {
+    val testFiles =
+      arrayOf(
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+            "src/test/pkg/KotlinFoo.kt",
+            """
                     package test.pkg
                     open class KotlinFoo {
                         fun kotlinBar() {}
                     }
                     class SubKotlinFoo : KotlinFoo()
                     """
-                ),
-                0xa46d4086,
-                """
+          ),
+          0xa46d4086,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAA/2NgYGBmYGBgBGIOBijg4uJiEGILSS0u8S5RYtBiAAB9et6n
                 JAAAAA==
                 """,
-                """
+          """
                 test/pkg/KotlinFoo.class:
                 H4sIAAAAAAAA/2VQXU8aQRQ9dxYWXLAuaC1Q28Q3bdMuGp+sMakmJCjaRBte
                 eBpgQ4eP3YYZjI/8Fv+BT036YIiP/ijjncUQo5Psufecu+fOnfvw+P8OwB4+
@@ -133,7 +142,7 @@ class UastTest : TestCase() {
                 b5NyhdFNRAcfGfPzH7AEj2MBuYX5a7IK/l4bUy+M9GwU2EiwhE8c9+3Duely
                 C04d7+pYqcNHgVMU61jFWguk8R7rLaQ1PI0PGq5GjpMnUjk4fyACAAA=
                 """,
-                """
+          """
                 test/pkg/SubKotlinFoo.class:
                 H4sIAAAAAAAA/21Ry07CQBQ9t4WCtcpDUFDZqwsLxJ3GRE1IGqsLMWxYFWh0
                 UugYOjUu+Rb/wJWJC0Nc+lHG20qIiS7m5DxuZk7ufH69vQM4QoNQVX6k7Ifg
@@ -144,53 +153,55 @@ class UastTest : TestCase() {
                 wlhjZacayB68Iv/CREOd0UhNA9uM1s8AVmCm+U6KW9hNP4mwypnVh+5gzcG6
                 gwKKTFFyUMZGHxShgirnEcwImxGMb1x6FCzhAQAA
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+          """
                 import test.pkg.SubKotlinFoo
 
                 fun test(instance: SubKotlinFoo) {
                     instance.kotlinBar()
                 }
                 """
-            )
         )
+      )
 
-        check(
-            *testFiles
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    if (node.sourcePsi is KtSuperTypeCallEntry)
-                        return super.visitCallExpression(node)
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            if (node.sourcePsi is KtSuperTypeCallEntry) return super.visitCallExpression(node)
 
-                    val bar = node.resolve()
-                    assertNotNull(bar)
-                    assertEquals("kotlinBar", bar!!.name)
-                    // TODO(kotlin-uast-cleanup): FIR UAST will point to KotlinFoo correctly
-                    assertEquals("SubKotlinFoo", bar.containingClass?.name)
+            val bar = node.resolve()
+            assertNotNull(bar)
+            assertEquals("kotlinBar", bar!!.name)
+            // TODO(kotlin-uast-cleanup): FIR UAST will point to KotlinFoo correctly
+            assertEquals("SubKotlinFoo", bar.containingClass?.name)
 
-                    val service = ApplicationManager.getApplication().getService(BaseKotlinUastResolveProviderService::class.java)
-                    (node.sourcePsi as? KtCallExpression)?.let {
-                        val otherResolved = service?.resolveToDeclaration(it) as? PsiMethod
-                        assertNotNull(otherResolved)
-                        assertEquals("kotlinBar", otherResolved!!.name)
-                        assertEquals("KotlinFoo", otherResolved.containingClass?.name)
-                    }
+            val service =
+              ApplicationManager.getApplication()
+                .getService(BaseKotlinUastResolveProviderService::class.java)
+            (node.sourcePsi as? KtCallExpression)?.let {
+              val otherResolved = service?.resolveToDeclaration(it) as? PsiMethod
+              assertNotNull(otherResolved)
+              assertEquals("kotlinBar", otherResolved!!.name)
+              assertEquals("KotlinFoo", otherResolved.containingClass?.name)
+            }
 
-                    return super.visitCallExpression(node)
-                }
-            })
+            return super.visitCallExpression(node)
+          }
         }
+      )
     }
+  }
 
-    fun test257514416() {
-        val testFiles = arrayOf(
-            bytecode(
-                "libs/lib1.jar",
-                kotlin(
-                    "src/test/Dependency.kt",
-                    """
+  fun test257514416() {
+    val testFiles =
+      arrayOf(
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+            "src/test/Dependency.kt",
+            """
                     package test
 
                     object Dependency {
@@ -198,14 +209,14 @@ class UastTest : TestCase() {
                         fun String.bar(): Int = this.length
                     }
                     """
-                ),
-                0xbd459443,
-                """
+          ),
+          0xbd459443,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAA/2NgYGBmYGBgBGIOBijg4uJiEGILSS0u8S5RYtBiAAB9et6n
                 JAAAAA==
                 """,
-                """
+          """
                 test/Dependency.class:
                 H4sIAAAAAAAA/21S227TQBA96yS266ZtWugdyqWB3qBOS7lIqYpKAeEqBESr
                 SqhPjrOkmzg2sjcRvPWJD+GZlwqJIpBQBW98FGLWiXoDWZ6Z3T1zZubs/v7z
@@ -224,9 +235,9 @@ class UastTest : TestCase() {
                 EDxPbd7YRcrBTQczDmYxRyHmHZrr1i5YjNtY3IUZw4phx9Bj9CZBNrH2X1tj
                 1gpGBAAA
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+          """
                 import test.Dependency.foo
                 import test.Dependency.bar
 
@@ -235,44 +246,47 @@ class UastTest : TestCase() {
                     "42".bar()
                 }
                 """
-            )
         )
+      )
 
-        val names = setOf("foo", "bar")
+    val names = setOf("foo", "bar")
 
-        check(
-            *testFiles
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    val resolved = node.resolve()
-                    assertNull(resolved)
-                    // TODO(kotlin-uast-cleanup): FIR UAST will successfully resolve it
-                    /*
-                    assertNotNull(resolved)
-                    assertTrue(resolved!!.name in names)
-                    assertEquals("Dependency", resolved.containingClass?.name)
-                     */
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNull(resolved)
+            // TODO(kotlin-uast-cleanup): FIR UAST will successfully resolve it
+            /*
+            assertNotNull(resolved)
+            assertTrue(resolved!!.name in names)
+            assertEquals("Dependency", resolved.containingClass?.name)
+             */
 
-                    val service = ApplicationManager.getApplication().getService(BaseKotlinUastResolveProviderService::class.java)
-                    (node.sourcePsi as? KtCallExpression)?.let {
-                        val otherResolved = service?.resolveToDeclaration(it) as? PsiMethod
-                        assertNotNull(otherResolved)
-                        assertTrue(otherResolved!!.name in names)
-                        assertEquals("Dependency", otherResolved.containingClass?.name)
-                    }
+            val service =
+              ApplicationManager.getApplication()
+                .getService(BaseKotlinUastResolveProviderService::class.java)
+            (node.sourcePsi as? KtCallExpression)?.let {
+              val otherResolved = service?.resolveToDeclaration(it) as? PsiMethod
+              assertNotNull(otherResolved)
+              assertTrue(otherResolved!!.name in names)
+              assertEquals("Dependency", otherResolved.containingClass?.name)
+            }
 
-                    return super.visitCallExpression(node)
-                }
-            })
+            return super.visitCallExpression(node)
+          }
         }
+      )
     }
+  }
 
-    fun testJavaAnnotationTarget_fromSource() {
-        // Regression test from b/266740119: not applicable only for project-type dependency.
-        val testFiles = arrayOf(
-            java(
-                """
+  fun testJavaAnnotationTarget_fromSource() {
+    // Regression test from b/266740119: not applicable only for project-type dependency.
+    val testFiles =
+      arrayOf(
+        java(
+            """
                 package test;
 
                 class Test {
@@ -282,9 +296,10 @@ class UastTest : TestCase() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test
 
                 import java.lang.annotation.ElementType.METHOD
@@ -302,33 +317,35 @@ class UastTest : TestCase() {
                 )
                 annotation class MyNullable
                 """
-            ).indented(),
-        )
+          )
+          .indented(),
+      )
 
-        check(
-            *testFiles
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitAnnotation(node: UAnnotation): Boolean {
-                    if (node.qualifiedName == "test.MyNullable" && node.javaPsi != null) {
-                        val targets = AnnotationTargetUtil.getTargetsForLocation(node.javaPsi?.owner)
-                        val applicable = AnnotationTargetUtil.findAnnotationTarget(node.javaPsi!!, *targets)
-                        // TODO: should be applicable!
-                        //   https://youtrack.jetbrains.com/issue/KTIJ-24597
-                        assertNull(applicable)
-                    }
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitAnnotation(node: UAnnotation): Boolean {
+            if (node.qualifiedName == "test.MyNullable" && node.javaPsi != null) {
+              val targets = AnnotationTargetUtil.getTargetsForLocation(node.javaPsi?.owner)
+              val applicable = AnnotationTargetUtil.findAnnotationTarget(node.javaPsi!!, *targets)
+              // TODO: should be applicable!
+              //   https://youtrack.jetbrains.com/issue/KTIJ-24597
+              assertNull(applicable)
+            }
 
-                    return super.visitAnnotation(node)
-                }
-            })
+            return super.visitAnnotation(node)
+          }
         }
+      )
     }
+  }
 
-    fun testJavaAnnotationTarget_fromBytecode() {
-        // Regression test from b/266740119: applicable if prebuilt bytecode is given.
-        val testFiles = arrayOf(
-            java(
-                """
+  fun testJavaAnnotationTarget_fromBytecode() {
+    // Regression test from b/266740119: applicable if prebuilt bytecode is given.
+    val testFiles =
+      arrayOf(
+        java(
+            """
                 package test;
 
                 class Test {
@@ -338,11 +355,12 @@ class UastTest : TestCase() {
                     }
                 }
                 """
-            ).indented(),
-            bytecode(
-                "libs/lib1.jar",
-                kotlin(
-                    """
+          )
+          .indented(),
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+              """
                     package test
 
                     import java.lang.annotation.ElementType.METHOD
@@ -360,13 +378,14 @@ class UastTest : TestCase() {
                     )
                     annotation class MyNullable
                     """
-                ).indented(),
-                0xf7411d45,
-                """
+            )
+            .indented(),
+          0xf7411d45,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAA/2NgYGBmYGBgBGJOBihQYtBiAAD1Iry9GAAAAA==
                 """,
-                """
+          """
                 test/MyNullable.class:
                 H4sIAAAAAAAA/4VSTU9aQRQ99yGC1A/UfoDW4ifuxBp3rp4U6ot8GKBNDKsR
                 JubJ8J7xDbTs2PU/uTCkS3+U6R1NgTQvdXPnzL3nnLl3Zh6f7h8AHGOfsKRl
@@ -379,31 +398,32 @@ class UastTest : TestCase() {
                 mo4Y7z3HXWR57SIK/niIS8whgTcM55uwJBawaMISkqb6nFrGigmrePsieIf3
                 +MD6VBMRB2kHaw7W8ZEhNhx8QqYJCrCJLVYH2A6w8wdjiabo/wIAAA==
                 """
-            ),
-        )
+        ),
+      )
 
-        check(
-            *testFiles
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitAnnotation(node: UAnnotation): Boolean {
-                    if (node.qualifiedName == "test.MyNullable" && node.javaPsi != null) {
-                        val targets = AnnotationTargetUtil.getTargetsForLocation(node.javaPsi?.owner)
-                        val applicable = AnnotationTargetUtil.findAnnotationTarget(node.javaPsi!!, *targets)
-                        assertEquals("METHOD", applicable?.name)
-                    }
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitAnnotation(node: UAnnotation): Boolean {
+            if (node.qualifiedName == "test.MyNullable" && node.javaPsi != null) {
+              val targets = AnnotationTargetUtil.getTargetsForLocation(node.javaPsi?.owner)
+              val applicable = AnnotationTargetUtil.findAnnotationTarget(node.javaPsi!!, *targets)
+              assertEquals("METHOD", applicable?.name)
+            }
 
-                    return super.visitAnnotation(node)
-                }
-            })
+            return super.visitAnnotation(node)
+          }
         }
+      )
     }
+  }
 
-    fun test126439418() {
-        // Regression test for https://issuetracker.google.com/126439418 /
-        //  https://youtrack.jetbrains.com/issue/KT-35801
-        val source = kotlin(
-            """
+  fun test126439418() {
+    // Regression test for https://issuetracker.google.com/126439418 /
+    //  https://youtrack.jetbrains.com/issue/KT-35801
+    val source =
+      kotlin(
+          """
                 private val variable: Any = Object()
 
                 fun foo1() {
@@ -414,35 +434,35 @@ class UastTest : TestCase() {
 
                 fun foo2(function: () -> Int) {}
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                "" +
-                    "public final class TestKt {\n" +
-                    "    @org.jetbrains.annotations.NotNull private static final var variable: java.lang.Object = <init>()\n" +
-                    "    public static final fun foo1() : void {\n" +
-                    // Using plain string literal such that we can have our trailing space
-                    // here without IntelliJ removing it every time we save this file:
-                    "        foo2({ \n" +
-                    "            return variable.hashCode()\n" +
-                    "        })\n" +
-                    "    }\n" +
-                    "    public static final fun foo2(@org.jetbrains.annotations.NotNull function: kotlin.jvm.functions.Function0<java.lang.Integer>) : void {\n" +
-                    "    }\n" +
-                    "}",
-                file.asSourceString().dos2unix().trim()
-            )
-        }
+    check(source) { file ->
+      assertEquals(
+        "" +
+          "public final class TestKt {\n" +
+          "    @org.jetbrains.annotations.NotNull private static final var variable: java.lang.Object = <init>()\n" +
+          "    public static final fun foo1() : void {\n" +
+          // Using plain string literal such that we can have our trailing space
+          // here without IntelliJ removing it every time we save this file:
+          "        foo2({ \n" +
+          "            return variable.hashCode()\n" +
+          "        })\n" +
+          "    }\n" +
+          "    public static final fun foo2(@org.jetbrains.annotations.NotNull function: kotlin.jvm.functions.Function0<java.lang.Integer>) : void {\n" +
+          "    }\n" +
+          "}",
+        file.asSourceString().dos2unix().trim()
+      )
     }
+  }
 
-    fun testKt25298() {
-        // Regression test for
-        // 	KT-25298 UAST: NPE ClsFileImpl.getMirror during lambda inference session
-        val source = java(
-            """
+  fun testKt25298() {
+    // Regression test for
+    // 	KT-25298 UAST: NPE ClsFileImpl.getMirror during lambda inference session
+    val source =
+      java(
+          """
             package test.pkg;
             import java.util.concurrent.Executors;
             import java.util.concurrent.ScheduledExecutorService;
@@ -464,79 +484,83 @@ class UastTest : TestCase() {
                     return true;
                 }
             }"""
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                "" +
-                    "UFile (package = test.pkg) [package test.pkg...]\n" +
-                    "    UImportStatement (isOnDemand = false) [import java.util.concurrent.Executors]\n" +
-                    "    UImportStatement (isOnDemand = false) [import java.util.concurrent.ScheduledExecutorService]\n" +
-                    "    UImportStatement (isOnDemand = false) [import java.util.concurrent.TimeUnit]\n" +
-                    "    UClass (name = MyTestCase) [public class MyTestCase {...}]\n" +
-                    "        UField (name = mExecutorService) [private final var mExecutorService: java.util.concurrent.ScheduledExecutorService] : PsiType:ScheduledExecutorService\n" +
-                    "        UMethod (name = MyTestCase) [public fun MyTestCase() {...}]\n" +
-                    "            UBlockExpression [{...}]\n" +
-                    "                UBinaryExpression (operator = =) [mExecutorService = Executors.newSingleThreadScheduledExecutor()] : PsiType:ScheduledExecutorService\n" +
-                    "                    USimpleNameReferenceExpression (identifier = mExecutorService) [mExecutorService] : PsiType:ScheduledExecutorService\n" +
-                    "                    UQualifiedReferenceExpression [Executors.newSingleThreadScheduledExecutor()] : PsiType:ScheduledExecutorService\n" +
-                    "                        USimpleNameReferenceExpression (identifier = Executors) [Executors]\n" +
-                    "                        UCallExpression (kind = UastCallKind(name='method_call'), argCount = 0)) [newSingleThreadScheduledExecutor()] : PsiType:ScheduledExecutorService\n" +
-                    "                            UIdentifier (Identifier (newSingleThreadScheduledExecutor)) [UIdentifier (Identifier (newSingleThreadScheduledExecutor))]\n" +
-                    "        UMethod (name = foo) [public fun foo() : void {...}] : PsiType:void\n" +
-                    "            UBlockExpression [{...}]\n" +
-                    "                UQualifiedReferenceExpression [mExecutorService.schedule(this::initBar, 10, TimeUnit.SECONDS)]\n" +
-                    "                    USimpleNameReferenceExpression (identifier = mExecutorService) [mExecutorService] : PsiType:ScheduledExecutorService\n" +
-                    "                    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 3)) [schedule(this::initBar, 10, TimeUnit.SECONDS)]\n" +
-                    "                        UIdentifier (Identifier (schedule)) [UIdentifier (Identifier (schedule))]\n" +
-                    "                        UCallableReferenceExpression (name = initBar) [this::initBar] : PsiType:<method reference>\n" +
-                    "                            UThisExpression (label = null) [this] : PsiType:MyTestCase\n" +
-                    "                        ULiteralExpression (value = 10) [10] : PsiType:int\n" +
-                    "                        UQualifiedReferenceExpression [TimeUnit.SECONDS] : PsiType:TimeUnit\n" +
-                    "                            USimpleNameReferenceExpression (identifier = TimeUnit) [TimeUnit]\n" +
-                    "                            USimpleNameReferenceExpression (identifier = SECONDS) [SECONDS]\n" +
-                    "        UMethod (name = initBar) [private fun initBar() : boolean {...}] : PsiType:boolean\n" +
-                    "            UBlockExpression [{...}]\n" +
-                    "                UReturnExpression [return true]\n" +
-                    "                    ULiteralExpression (value = true) [true] : PsiType:boolean\n",
-                file.asLogTypes()
-            )
-        }
+    check(source) { file ->
+      assertEquals(
+        "" +
+          "UFile (package = test.pkg) [package test.pkg...]\n" +
+          "    UImportStatement (isOnDemand = false) [import java.util.concurrent.Executors]\n" +
+          "    UImportStatement (isOnDemand = false) [import java.util.concurrent.ScheduledExecutorService]\n" +
+          "    UImportStatement (isOnDemand = false) [import java.util.concurrent.TimeUnit]\n" +
+          "    UClass (name = MyTestCase) [public class MyTestCase {...}]\n" +
+          "        UField (name = mExecutorService) [private final var mExecutorService: java.util.concurrent.ScheduledExecutorService] : PsiType:ScheduledExecutorService\n" +
+          "        UMethod (name = MyTestCase) [public fun MyTestCase() {...}]\n" +
+          "            UBlockExpression [{...}]\n" +
+          "                UBinaryExpression (operator = =) [mExecutorService = Executors.newSingleThreadScheduledExecutor()] : PsiType:ScheduledExecutorService\n" +
+          "                    USimpleNameReferenceExpression (identifier = mExecutorService) [mExecutorService] : PsiType:ScheduledExecutorService\n" +
+          "                    UQualifiedReferenceExpression [Executors.newSingleThreadScheduledExecutor()] : PsiType:ScheduledExecutorService\n" +
+          "                        USimpleNameReferenceExpression (identifier = Executors) [Executors]\n" +
+          "                        UCallExpression (kind = UastCallKind(name='method_call'), argCount = 0)) [newSingleThreadScheduledExecutor()] : PsiType:ScheduledExecutorService\n" +
+          "                            UIdentifier (Identifier (newSingleThreadScheduledExecutor)) [UIdentifier (Identifier (newSingleThreadScheduledExecutor))]\n" +
+          "        UMethod (name = foo) [public fun foo() : void {...}] : PsiType:void\n" +
+          "            UBlockExpression [{...}]\n" +
+          "                UQualifiedReferenceExpression [mExecutorService.schedule(this::initBar, 10, TimeUnit.SECONDS)]\n" +
+          "                    USimpleNameReferenceExpression (identifier = mExecutorService) [mExecutorService] : PsiType:ScheduledExecutorService\n" +
+          "                    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 3)) [schedule(this::initBar, 10, TimeUnit.SECONDS)]\n" +
+          "                        UIdentifier (Identifier (schedule)) [UIdentifier (Identifier (schedule))]\n" +
+          "                        UCallableReferenceExpression (name = initBar) [this::initBar] : PsiType:<method reference>\n" +
+          "                            UThisExpression (label = null) [this] : PsiType:MyTestCase\n" +
+          "                        ULiteralExpression (value = 10) [10] : PsiType:int\n" +
+          "                        UQualifiedReferenceExpression [TimeUnit.SECONDS] : PsiType:TimeUnit\n" +
+          "                            USimpleNameReferenceExpression (identifier = TimeUnit) [TimeUnit]\n" +
+          "                            USimpleNameReferenceExpression (identifier = SECONDS) [SECONDS]\n" +
+          "        UMethod (name = initBar) [private fun initBar() : boolean {...}] : PsiType:boolean\n" +
+          "            UBlockExpression [{...}]\n" +
+          "                UReturnExpression [return true]\n" +
+          "                    ULiteralExpression (value = true) [true] : PsiType:boolean\n",
+        file.asLogTypes()
+      )
     }
+  }
 
-    fun testNodeIsConstructor() {
-        // Regression test for
-        // 206982645: UMethod#isConstructor returns false on actual constructor
-        // https://youtrack.jetbrains.com/issue/KTIJ-20200
-        val source = kotlin(
-            """
+  fun testNodeIsConstructor() {
+    // Regression test for
+    // 206982645: UMethod#isConstructor returns false on actual constructor
+    // https://youtrack.jetbrains.com/issue/KTIJ-20200
+    val source =
+      kotlin(
+          """
             class Test(private val parameter: Int)  {
                 @Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
                 constructor() : this(42)
             }
           """
-        ).indented()
+        )
+        .indented()
 
-        check(source) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitMethod(node: UMethod): Boolean {
-                    if (node.sourcePsi is KtConstructor<*>) {
-                        assertTrue("`${node.name}` is not marked as a UAST constructor", node.isConstructor)
-                    }
-                    return super.visitMethod(node)
-                }
-            })
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            if (node.sourcePsi is KtConstructor<*>) {
+              assertTrue("`${node.name}` is not marked as a UAST constructor", node.isConstructor)
+            }
+            return super.visitMethod(node)
+          }
         }
+      )
     }
+  }
 
-    fun test123923544() {
-        // Regression test for
-        //  https://youtrack.jetbrains.com/issue/KT-30033
-        // 	https://issuetracker.google.com/123923544
-        val source = kotlin(
-            """
+  fun test123923544() {
+    // Regression test for
+    //  https://youtrack.jetbrains.com/issue/KT-30033
+    // 	https://issuetracker.google.com/123923544
+    val source =
+      kotlin(
+          """
             interface Base {
                 fun print()
             }
@@ -551,13 +575,12 @@ class UastTest : TestCase() {
 
             class Derived(b: Base) : Base by createBase(10)
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 public final class BaseKt {
                     public static final fun createBase(@org.jetbrains.annotations.NotNull i: int) : Base {
                         return <init>(i)
@@ -581,12 +604,13 @@ class UastTest : TestCase() {
                     public fun Derived(@org.jetbrains.annotations.NotNull b: Base) = UastEmptyExpression
                 }
 
-                """.trimIndent(),
-                file.asSourceString().dos2unix()
-            )
-
-            assertEquals(
                 """
+          .trimIndent(),
+        file.asSourceString().dos2unix()
+      )
+
+      assertEquals(
+        """
                 UFile (package = ) [public final class BaseKt {...]
                     UClass (name = BaseKt) [public final class BaseKt {...}]
                         UMethod (name = createBase) [public static final fun createBase(@org.jetbrains.annotations.NotNull i: int) : Base {...}] : PsiType:Base
@@ -624,16 +648,17 @@ class UastTest : TestCase() {
                             UParameter (name = b) [@org.jetbrains.annotations.NotNull var b: Base] : PsiType:Base
                                 UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
 
-                """.trimIndent(),
-                file.asLogTypes()
-            )
-        }
-    }
-
-    fun test13Features() {
-        check(
-            kotlin(
                 """
+          .trimIndent(),
+        file.asLogTypes()
+      )
+    }
+  }
+
+  fun test13Features() {
+    check(
+      kotlin(
+          """
                 package test.pkg
 
                 // Assignment in when
@@ -684,10 +709,11 @@ class UastTest : TestCase() {
                     fun foo(): Int = 42
                 }
                 """
-            ).indented()
-        ) { file ->
-            assertEquals(
-                """
+        )
+        .indented()
+    ) { file ->
+      assertEquals(
+        """
                 UFile (package = test.pkg) [package test.pkg...]
                     UClass (name = FooInterfaceKt) [public final class FooInterfaceKt {...}]
                         UField (name = uint) [@org.jetbrains.annotations.NotNull private static final var uint: int = 42] : PsiType:int
@@ -792,18 +818,20 @@ class UastTest : TestCase() {
                                 UReturnExpression [return 42]
                                     ULiteralExpression (value = 42) [42] : PsiType:int
 
-                """.trimIndent(),
-                file.asLogTypes()
-            )
-        }
+                """
+          .trimIndent(),
+        file.asLogTypes()
+      )
     }
+  }
 
-    fun testSuspend() {
-        // Regression test for
-        // https://youtrack.jetbrains.com/issue/KT-32031:
-        // UAST: Method body missing for suspend functions
-        val source = kotlin(
-            """
+  fun testSuspend() {
+    // Regression test for
+    // https://youtrack.jetbrains.com/issue/KT-32031:
+    // UAST: Method body missing for suspend functions
+    val source =
+      kotlin(
+          """
             package test.pkg
             import android.widget.TextView
             class Test : android.app.Activity {
@@ -812,13 +840,12 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 package test.pkg
 
                 import android.widget.TextView
@@ -830,12 +857,13 @@ class UastTest : TestCase() {
                     public fun Test() = UastEmptyExpression
                 }
 
-                """.trimIndent(),
-                file.asSourceString().dos2unix()
-            )
-
-            assertEquals(
                 """
+          .trimIndent(),
+        file.asSourceString().dos2unix()
+      )
+
+      assertEquals(
+        """
                 UFile (package = test.pkg) [package test.pkg...]
                     UImportStatement (isOnDemand = false) [import android.widget.TextView]
                     UClass (name = Test) [public final class Test : android.app.Activity {...}]
@@ -853,18 +881,20 @@ class UastTest : TestCase() {
                                             USimpleNameReferenceExpression (identifier = y) [y] : PsiType:int
                         UMethod (name = Test) [public fun Test() = UastEmptyExpression]
 
-                """.trimIndent(),
-                file.asLogTypes()
-            )
-        }
+                """
+          .trimIndent(),
+        file.asLogTypes()
+      )
     }
+  }
 
-    fun testReifiedTypes() {
-        // Regression test for
-        // https://youtrack.jetbrains.com/issue/KT-35610:
-        // UAST: Some reified methods nave null returnType
-        val source = kotlin(
-            """
+  fun testReifiedTypes() {
+    // Regression test for
+    // https://youtrack.jetbrains.com/issue/KT-35610:
+    // UAST: Some reified methods nave null returnType
+    val source =
+      kotlin(
+          """
             package test.pkg
             inline fun <T> function1(t: T) { }                  // return type void (PsiPrimitiveType)
             inline fun <T> function2(t: T): T = t               // return type T (PsiClassReferenceType)
@@ -880,13 +910,12 @@ class UastTest : TestCase() {
             inline fun <reified T> T.function11(t: T): T = t
             fun <reified T> function12(t: T) { }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 package test.pkg
 
                 public final class TestKt {
@@ -925,18 +954,20 @@ class UastTest : TestCase() {
                     }
                 }
 
-                """.trimIndent(),
-                file.asSourceString().dos2unix()
-            )
-        }
+                """
+          .trimIndent(),
+        file.asSourceString().dos2unix()
+      )
     }
+  }
 
-    fun testModifiers() {
-        // Regression test for
-        // https://youtrack.jetbrains.com/issue/KT-35610:
-        // UAST: Some reified methods nave null returnType
-        val source = kotlin(
-            """
+  fun testModifiers() {
+    // Regression test for
+    // https://youtrack.jetbrains.com/issue/KT-35610:
+    // UAST: Some reified methods nave null returnType
+    val source =
+      kotlin(
+          """
             @file:Suppress("all")
             package test.pkg
             class Test {
@@ -985,171 +1016,174 @@ class UastTest : TestCase() {
                 fun compare(e1: T, e2: T): Int = 0
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
+    check(source) { file ->
 
-            // type parameter lookup methods; these would ideally go in JavaEvaluator
-            // but can't yet because they're relying on some patches only available
-            // in the kotlin-compiler fork (i.e. KotlinLightTypeParameterBuilder).
+      // type parameter lookup methods; these would ideally go in JavaEvaluator
+      // but can't yet because they're relying on some patches only available
+      // in the kotlin-compiler fork (i.e. KotlinLightTypeParameterBuilder).
 
-            fun hasTypeParameterKeyword(element: PsiTypeParameter?, keyword: KtModifierKeywordToken): Boolean {
-                val ktOrigin = when (element) {
-                    is KotlinLightTypeParameterBuilder -> element.origin
-                    else -> element?.unwrapped as? KtTypeParameter ?: return false
-                }
-                return ktOrigin.hasModifier(keyword)
+      fun hasTypeParameterKeyword(
+        element: PsiTypeParameter?,
+        keyword: KtModifierKeywordToken
+      ): Boolean {
+        val ktOrigin =
+          when (element) {
+            is KotlinLightTypeParameterBuilder -> element.origin
+            else -> element?.unwrapped as? KtTypeParameter ?: return false
+          }
+        return ktOrigin.hasModifier(keyword)
+      }
+
+      fun isReified(element: PsiTypeParameter?): Boolean {
+        return hasTypeParameterKeyword(element, KtTokens.REIFIED_KEYWORD)
+      }
+
+      fun isInVariance(element: PsiTypeParameter?): Boolean {
+        return hasTypeParameterKeyword(element, KtTokens.IN_KEYWORD)
+      }
+
+      fun isOutVariance(element: PsiTypeParameter?): Boolean {
+        return hasTypeParameterKeyword(element, KtTokens.OUT_KEYWORD)
+      }
+
+      val evaluator = DefaultJavaEvaluator(null, null)
+      val sb = StringBuilder()
+      for (cls in file.classes.sortedBy { it.name }) {
+        for (declaration in cls.uastDeclarations) {
+          if (declaration is UClass) {
+            sb.append("nested class ")
+            sb.append(declaration.name).append(":")
+            if (evaluator.isCompanion(declaration)) {
+              sb.append(" companion")
+            }
+            sb.append("\n")
+          }
+        }
+        sb.append("class ")
+        sb.append(cls.name).append(":")
+        if (evaluator.isData(cls)) {
+          sb.append(" data")
+        }
+        if (evaluator.isSealed(cls)) {
+          sb.append(" sealed")
+        }
+        if (evaluator.isCompanion(cls)) {
+          sb.append(" companion")
+        }
+        for (typeParameter in cls.typeParameters) {
+          sb.append(" ")
+          if (isOutVariance(typeParameter)) {
+            sb.append("out ")
+          }
+          if (isInVariance(typeParameter)) {
+            sb.append("in ")
+          }
+          val parameterName = typeParameter.name ?: "arg"
+          sb.append(parameterName.replace('$', '＄'))
+        }
+        sb.append("\n")
+        if (evaluator.isData(cls)) {
+          continue
+        }
+        for (method in cls.methods.sortedBy { it.name }) {
+          if (method.isConstructor) {
+            continue
+          }
+          val methodName = method.name.replace('$', '＄')
+          sb.append("    method ").append(methodName)
+          sb.append("(")
+          var first = true
+          for (parameter in method.uastParameters) {
+            if (first) {
+              first = false
+            } else {
+              sb.append(",")
+            }
+            if (evaluator.isCrossInline(parameter)) {
+              sb.append("crossinline ")
+            }
+            if (evaluator.isVararg(parameter)) {
+              sb.append("vararg ")
+            }
+            sb.append(parameter.name.replace('$', '＄'))
+          }
+          sb.append(")")
+          sb.append(":")
+          if (evaluator.isInline(method)) {
+            sb.append(" inline")
+          }
+          if (evaluator.isNoInline(method)) {
+            sb.append(" noinline")
+          }
+          if (evaluator.isTailRec(method)) {
+            sb.append(" tailrec")
+          }
+          if (evaluator.isSuspend(method)) {
+            sb.append(" suspend")
+          }
+          if (evaluator.isInfix(method)) {
+            sb.append(" infix")
+          }
+          if (evaluator.isInternal(method)) {
+            sb.append(" internal")
+          }
+          if (evaluator.isOperator(method)) {
+            sb.append(" operator")
+          }
+          if (evaluator.isOpen(method)) {
+            sb.append(" open")
+          }
+          if (evaluator.isExpect(method)) {
+            sb.append(" expect")
+          }
+          if (evaluator.isActual(method)) {
+            sb.append(" actual")
+          }
+          if (evaluator.isExternal(method)) {
+            sb.append(" external")
+          }
+          first = true
+          for (typeParam in method.typeParameters) {
+            if (first) {
+              first = false
+            } else {
+              sb.append(",")
             }
 
-            fun isReified(element: PsiTypeParameter?): Boolean {
-                return hasTypeParameterKeyword(element, KtTokens.REIFIED_KEYWORD)
+            if (isReified(typeParam)) {
+              sb.append(" reified")
             }
-
-            fun isInVariance(element: PsiTypeParameter?): Boolean {
-                return hasTypeParameterKeyword(element, KtTokens.IN_KEYWORD)
+            if (isOutVariance(typeParam)) {
+              sb.append(" out")
             }
-
-            fun isOutVariance(element: PsiTypeParameter?): Boolean {
-                return hasTypeParameterKeyword(element, KtTokens.OUT_KEYWORD)
+            if (isInVariance(typeParam)) {
+              sb.append(" in")
             }
+            sb.append(" ")
+            sb.append(typeParam.name)
+          }
 
-            val evaluator = DefaultJavaEvaluator(null, null)
-            val sb = StringBuilder()
-            for (cls in file.classes.sortedBy { it.name }) {
-                for (declaration in cls.uastDeclarations) {
-                    if (declaration is UClass) {
-                        sb.append("nested class ")
-                        sb.append(declaration.name).append(":")
-                        if (evaluator.isCompanion(declaration)) {
-                            sb.append(" companion")
-                        }
-                        sb.append("\n")
-                    }
-                }
-                sb.append("class ")
-                sb.append(cls.name).append(":")
-                if (evaluator.isData(cls)) {
-                    sb.append(" data")
-                }
-                if (evaluator.isSealed(cls)) {
-                    sb.append(" sealed")
-                }
-                if (evaluator.isCompanion(cls)) {
-                    sb.append(" companion")
-                }
-                for (typeParameter in cls.typeParameters) {
-                    sb.append(" ")
-                    if (isOutVariance(typeParameter)) {
-                        sb.append("out ")
-                    }
-                    if (isInVariance(typeParameter)) {
-                        sb.append("in ")
-                    }
-                    val parameterName = typeParameter.name ?: "arg"
-                    sb.append(parameterName.replace('$', '＄'))
-                }
-                sb.append("\n")
-                if (evaluator.isData(cls)) {
-                    continue
-                }
-                for (method in cls.methods.sortedBy { it.name }) {
-                    if (method.isConstructor) {
-                        continue
-                    }
-                    val methodName = method.name.replace('$', '＄')
-                    sb.append("    method ").append(methodName)
-                    sb.append("(")
-                    var first = true
-                    for (parameter in method.uastParameters) {
-                        if (first) {
-                            first = false
-                        } else {
-                            sb.append(",")
-                        }
-                        if (evaluator.isCrossInline(parameter)) {
-                            sb.append("crossinline ")
-                        }
-                        if (evaluator.isVararg(parameter)) {
-                            sb.append("vararg ")
-                        }
-                        sb.append(parameter.name.replace('$', '＄'))
-                    }
-                    sb.append(")")
-                    sb.append(":")
-                    if (evaluator.isInline(method)) {
-                        sb.append(" inline")
-                    }
-                    if (evaluator.isNoInline(method)) {
-                        sb.append(" noinline")
-                    }
-                    if (evaluator.isTailRec(method)) {
-                        sb.append(" tailrec")
-                    }
-                    if (evaluator.isSuspend(method)) {
-                        sb.append(" suspend")
-                    }
-                    if (evaluator.isInfix(method)) {
-                        sb.append(" infix")
-                    }
-                    if (evaluator.isInternal(method)) {
-                        sb.append(" internal")
-                    }
-                    if (evaluator.isOperator(method)) {
-                        sb.append(" operator")
-                    }
-                    if (evaluator.isOpen(method)) {
-                        sb.append(" open")
-                    }
-                    if (evaluator.isExpect(method)) {
-                        sb.append(" expect")
-                    }
-                    if (evaluator.isActual(method)) {
-                        sb.append(" actual")
-                    }
-                    if (evaluator.isExternal(method)) {
-                        sb.append(" external")
-                    }
-                    first = true
-                    for (typeParam in method.typeParameters) {
-                        if (first) {
-                            first = false
-                        } else {
-                            sb.append(",")
-                        }
+          sb.append("\n")
+        }
+        for (method in cls.fields.sortedBy { it.name }) {
+          sb.append("    field ").append(method.name).append(":")
+          if (evaluator.isLateInit(method)) {
+            sb.append(" lateinit")
+          }
+          if (evaluator.isConst(method)) {
+            sb.append(" const")
+          }
+          sb.append("\n")
+        }
+      }
 
-                        if (isReified(typeParam)) {
-                            sb.append(" reified")
-                        }
-                        if (isOutVariance(typeParam)) {
-                            sb.append(" out")
-                        }
-                        if (isInVariance(typeParam)) {
-                            sb.append(" in")
-                        }
-                        sb.append(" ")
-                        sb.append(typeParam.name)
-                    }
-
-                    sb.append("\n")
-                }
-                for (method in cls.fields.sortedBy { it.name }) {
-                    sb.append("    field ").append(method.name).append(":")
-                    if (evaluator.isLateInit(method)) {
-                        sb.append(" lateinit")
-                    }
-                    if (evaluator.isConst(method)) {
-                        sb.append(" const")
-                    }
-                    sb.append("\n")
-                }
-            }
-
-            // function1 and function2 do not have reified types;
-            // the rest do
-            assertEquals(
-                """
+      // function1 and function2 do not have reified types;
+      // the rest do
+      assertEquals(
+        """
                 class Comparator: in T
                     method compare(e1,e2):
                 class Data: data
@@ -1184,17 +1218,20 @@ class UastTest : TestCase() {
                     field NamedCompanion:
                     field constant: const
                     field delayed: lateinit
-                """.trimIndent().trim(),
-                sb.toString().trim()
-            )
-        }
+                """
+          .trimIndent()
+          .trim(),
+        sb.toString().trim()
+      )
     }
+  }
 
-    fun testKtParameters() {
-        // Regression test for
-        // https://issuetracker.google.com/134093981
-        val source = kotlin(
-            """
+  fun testKtParameters() {
+    // Regression test for
+    // https://issuetracker.google.com/134093981
+    val source =
+      kotlin(
+          """
             package test.pkg
             inline class GraphVariables(val set: MutableSet<GraphVariable<*>>) {
                 fun <T> variable(name: String, graphType: String, value: T) {
@@ -1204,13 +1241,12 @@ class UastTest : TestCase() {
             class GraphVariable<T>(name: String, graphType: String, value: T) {
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 package test.pkg
 
                 public final class GraphVariables {
@@ -1224,18 +1260,20 @@ class UastTest : TestCase() {
                     public fun GraphVariable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, @org.jetbrains.annotations.Nullable value: T) = UastEmptyExpression
                 }
 
-                """.trimIndent(),
-                file.asSourceString().dos2unix()
-            )
-        }
+                """
+          .trimIndent(),
+        file.asSourceString().dos2unix()
+      )
     }
+  }
 
-    fun testCatchClausesKotlin() {
-        // Regression test for
-        // https://issuetracker.google.com/140154274
-        // and https://youtrack.jetbrains.com/issue/KT-35804
-        val source = kotlin(
-            """
+  fun testCatchClausesKotlin() {
+    // Regression test for
+    // https://issuetracker.google.com/140154274
+    // and https://youtrack.jetbrains.com/issue/KT-35804
+    val source =
+      kotlin(
+          """
             package test.pkg
 
             class TryCatchKotlin {
@@ -1251,13 +1289,12 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 package test.pkg
 
                 public final class TryCatchKotlin {
@@ -1273,14 +1310,17 @@ class UastTest : TestCase() {
                     }
                     public fun TryCatchKotlin() = UastEmptyExpression
                 }
-                """.trimIndent().trim(),
-                file.asSourceString().dos2unix().trim().replace("\n        \n", "\n")
-            )
-        }
+                """
+          .trimIndent()
+          .trim(),
+        file.asSourceString().dos2unix().trim().replace("\n        \n", "\n")
+      )
+    }
 
-        // Java is OK:
-        val javaSource = java(
-            """
+    // Java is OK:
+    val javaSource =
+      java(
+          """
             public class TryCatchJava {
                 @SuppressWarnings("Something")
                 public void test() {
@@ -1293,17 +1333,16 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            javaSource
-        ) { file ->
-            assertEquals(
-                // The annotations work in Java, as checked by
-                // ApiDetectorTest#testConditionalAroundExceptionSuppress
-                // However, in pretty printing catch clause parameters are not
-                // visited, as described in https://youtrack.jetbrains.com/issue/KT-35803
-                """
+    check(javaSource) { file ->
+      assertEquals(
+        // The annotations work in Java, as checked by
+        // ApiDetectorTest#testConditionalAroundExceptionSuppress
+        // However, in pretty printing catch clause parameters are not
+        // visited, as described in https://youtrack.jetbrains.com/issue/KT-35803
+        """
                 public class TryCatchJava {
                     @java.lang.SuppressWarnings(null = "Something")
                     public fun test() : void {
@@ -1316,15 +1355,18 @@ class UastTest : TestCase() {
                     public fun canThrow() : void {
                     }
                 }
-                """.trimIndent().trim(),
-                file.asSourceString().dos2unix().trim().replace("\n        \n", "\n")
-            )
-        }
+                """
+          .trimIndent()
+          .trim(),
+        file.asSourceString().dos2unix().trim().replace("\n        \n", "\n")
+      )
     }
+  }
 
-    fun testSamAst() { // See KT-28272
-        val source = kotlin(
-            """
+  fun testSamAst() { // See KT-28272
+    val source =
+      kotlin(
+          """
             //@file:Suppress("RedundantSamConstructor", "MoveLambdaOutsideParentheses", "unused", "UNUSED_VARIABLE")
 
             package test.pkg
@@ -1337,13 +1379,12 @@ class UastTest : TestCase() {
                 val thread2 = Thread(Runnable { println("hello") })
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 UFile (package = test.pkg) [package test.pkg...]
                   UClass (name = TestKt) [public final class TestKt {...}]
                     UMethod (name = test1) [public static final fun test1() : void {...}] : PsiType:void
@@ -1375,33 +1416,37 @@ class UastTest : TestCase() {
                                       UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
                                       USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
                                       ULiteralExpression (value = "hello") ["hello"] : PsiType:String
-                """.trimIndent(),
-                file.asLogTypes(indent = "  ").trim()
-            )
+                """
+          .trimIndent(),
+        file.asLogTypes(indent = "  ").trim()
+      )
 
-            try {
-                file.accept(object : AbstractUastVisitor() {
-                    override fun visitCallExpression(node: UCallExpression): Boolean {
-                        val resolved = node.resolve()
-                        if (resolved == null) {
-                            throw IllegalStateException("Could not resolve this call: ${node.asSourceString()}")
-                        }
-                        return super.visitCallExpression(node)
-                    }
-                })
-                fail("Expected unresolved error: see KT-28272")
-            } catch (failure: IllegalStateException) {
-                assertEquals(
-                    "Could not resolve this call: Runnable({ \n    println(\"hello\")\n})",
-                    failure.message
-                )
+      try {
+        file.accept(
+          object : AbstractUastVisitor() {
+            override fun visitCallExpression(node: UCallExpression): Boolean {
+              val resolved = node.resolve()
+              if (resolved == null) {
+                throw IllegalStateException("Could not resolve this call: ${node.asSourceString()}")
+              }
+              return super.visitCallExpression(node)
             }
-        }
+          }
+        )
+        fail("Expected unresolved error: see KT-28272")
+      } catch (failure: IllegalStateException) {
+        assertEquals(
+          "Could not resolve this call: Runnable({ \n    println(\"hello\")\n})",
+          failure.message
+        )
+      }
     }
+  }
 
-    fun testJava11() {
-        val source = java(
-            """
+  fun testJava11() {
+    val source =
+      java(
+          """
             package test.pkg;
             import java.util.function.IntFunction;
             public class Java11Test {
@@ -1426,13 +1471,16 @@ class UastTest : TestCase() {
                 IntFunction<Integer> doubler = (var x) -> x * 2;
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source, javaLanguageLevel = LanguageLevel.JDK_11, android = false,
-            check = { file ->
-                assertEquals(
-                    """
+    check(
+      source,
+      javaLanguageLevel = LanguageLevel.JDK_11,
+      android = false,
+      check = { file ->
+        assertEquals(
+          """
                     UFile (package = test.pkg) [package test.pkg...]
                       UImportStatement (isOnDemand = false) [import java.util.function.IntFunction]
                       UClass (name = Java11Test) [public class Java11Test {...}]
@@ -1476,26 +1524,30 @@ class UastTest : TestCase() {
                               UReturnExpression [return getHello()]
                                 UCallExpression (kind = UastCallKind(name='method_call'), argCount = 0)) [getHello()] : PsiType:String
                                   UIdentifier (Identifier (getHello)) [UIdentifier (Identifier (getHello))]
-                    """.trimIndent(),
-                    file.asLogTypes(indent = "  ").trim()
-                )
-
-                // Make sure that all calls correctly resolve
-                file.accept(object : AbstractUastVisitor() {
-                    override fun visitCallExpression(node: UCallExpression): Boolean {
-                        val resolved = node.resolve()
-                        assertNotNull(resolved)
-                        return super.visitCallExpression(node)
-                    }
-                })
-            }
+                    """
+            .trimIndent(),
+          file.asLogTypes(indent = "  ").trim()
         )
-    }
 
-    fun test125138962() {
-        // Regression test for https://issuetracker.google.com/125138962
-        val source = kotlin(
-            """
+        // Make sure that all calls correctly resolve
+        file.accept(
+          object : AbstractUastVisitor() {
+            override fun visitCallExpression(node: UCallExpression): Boolean {
+              val resolved = node.resolve()
+              assertNotNull(resolved)
+              return super.visitCallExpression(node)
+            }
+          }
+        )
+      }
+    )
+  }
+
+  fun test125138962() {
+    // Regression test for https://issuetracker.google.com/125138962
+    val source =
+      kotlin(
+          """
             package test.pkg
 
             class SimpleClass() {
@@ -1506,13 +1558,14 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source,
-            check = { file ->
-                assertEquals(
-                    """
+    check(
+      source,
+      check = { file ->
+        assertEquals(
+          """
                 package test.pkg
 
                 public final class SimpleClass {
@@ -1525,17 +1578,19 @@ class UastTest : TestCase() {
                         }
                     }
                 }
-                    """.trimIndent(),
-                    file.asSourceString().dos2unix().trim()
-                )
-            }
+                    """
+            .trimIndent(),
+          file.asSourceString().dos2unix().trim()
         )
-    }
+      }
+    )
+  }
 
-    fun testIdea234484() {
-        // Regression test for https://youtrack.jetbrains.com/issue/KT-37200
-        val source = kotlin(
-            """
+  fun testIdea234484() {
+    // Regression test for https://youtrack.jetbrains.com/issue/KT-37200
+    val source =
+      kotlin(
+          """
             package test.pkg
 
             inline fun <reified F> ViewModelContext.viewModelFactory(): F {
@@ -1546,30 +1601,34 @@ class UastTest : TestCase() {
                 abstract val activity: Number
             }
             """
-        ).indented()
-
-        check(
-            source,
-            check = { file ->
-                val newFile = file.sourcePsi.toUElement()
-                newFile?.accept(object : AbstractUastVisitor() {
-                    override fun visitLocalVariable(node: ULocalVariable): Boolean {
-                        val initializerType = node.uastInitializer?.getExpressionType()
-                        val interfaceType = node.type
-                        @Suppress("UNUSED_VARIABLE")
-                        val equals = initializerType == interfaceType // Stack overflow!
-
-                        return super.visitLocalVariable(node)
-                    }
-                })
-            }
         )
-    }
+        .indented()
 
-    fun testKt27935() {
-        // Regression test for https://youtrack.jetbrains.com/issue/KT-27935
-        val source = kotlin(
-            """
+    check(
+      source,
+      check = { file ->
+        val newFile = file.sourcePsi.toUElement()
+        newFile?.accept(
+          object : AbstractUastVisitor() {
+            override fun visitLocalVariable(node: ULocalVariable): Boolean {
+              val initializerType = node.uastInitializer?.getExpressionType()
+              val interfaceType = node.type
+              @Suppress("UNUSED_VARIABLE")
+              val equals = initializerType == interfaceType // Stack overflow!
+
+              return super.visitLocalVariable(node)
+            }
+          }
+        )
+      }
+    )
+  }
+
+  fun testKt27935() {
+    // Regression test for https://youtrack.jetbrains.com/issue/KT-27935
+    val source =
+      kotlin(
+          """
             package test.pkg
 
             typealias IndexedDistance = Pair<Int, Double>
@@ -1578,15 +1637,17 @@ class UastTest : TestCase() {
                     val window: Window
             )
             """
-        ).indented()
+        )
+        .indented()
 
-        check(source, check = { })
-    }
+    check(source, check = {})
+  }
 
-    fun testKt36275() {
-        // Regression test for https://youtrack.jetbrains.com/issue/KT-36275
-        val source = kotlin(
-            """
+  fun testKt36275() {
+    // Regression test for https://youtrack.jetbrains.com/issue/KT-36275
+    val source =
+      kotlin(
+          """
             package test.pkg
 
              fun foo() {
@@ -1595,27 +1656,31 @@ class UastTest : TestCase() {
                 bar()
             }
             """
-        ).indented()
-
-        check(
-            source,
-            check = { file ->
-                // Make sure that all calls correctly resolve
-                file.accept(object : AbstractUastVisitor() {
-                    override fun visitCallExpression(node: UCallExpression): Boolean {
-                        val resolved = node.resolve()
-                        assertNotNull(resolved)
-                        return super.visitCallExpression(node)
-                    }
-                })
-            }
         )
-    }
+        .indented()
 
-    fun testKt34187() {
-        // Regression test for https://youtrack.jetbrains.com/issue/KT-34187
-        val source = kotlin(
-            """
+    check(
+      source,
+      check = { file ->
+        // Make sure that all calls correctly resolve
+        file.accept(
+          object : AbstractUastVisitor() {
+            override fun visitCallExpression(node: UCallExpression): Boolean {
+              val resolved = node.resolve()
+              assertNotNull(resolved)
+              return super.visitCallExpression(node)
+            }
+          }
+        )
+      }
+    )
+  }
+
+  fun testKt34187() {
+    // Regression test for https://youtrack.jetbrains.com/issue/KT-34187
+    val source =
+      kotlin(
+          """
             package test.pkg
 
             class Publisher<T> { }
@@ -1625,41 +1690,46 @@ class UastTest : TestCase() {
                 a[0] = Publisher()
             }
             """
-        ).indented()
-
-        check(
-            source,
-            check = { file ->
-                // Make sure that all calls correctly resolve
-                file.accept(object : AbstractUastVisitor() {
-                    override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-                        if (node.isAssignment()) {
-                            val type = node.leftOperand.getExpressionType()
-                            assertNotNull("type of ${node.leftOperand.sourcePsi?.text} is null", type)
-                        }
-                        return super.visitBinaryExpression(node)
-                    }
-                })
-            }
         )
-    }
+        .indented()
 
-    fun testKt45676() {
-        // Regression test for https://youtrack.jetbrains.com/issue/KT-45676,
-        // in which backing field annotations were missing their attribute values.
-        val source = kotlin(
-            """
+    check(
+      source,
+      check = { file ->
+        // Make sure that all calls correctly resolve
+        file.accept(
+          object : AbstractUastVisitor() {
+            override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+              if (node.isAssignment()) {
+                val type = node.leftOperand.getExpressionType()
+                assertNotNull("type of ${node.leftOperand.sourcePsi?.text} is null", type)
+              }
+              return super.visitBinaryExpression(node)
+            }
+          }
+        )
+      }
+    )
+  }
+
+  fun testKt45676() {
+    // Regression test for https://youtrack.jetbrains.com/issue/KT-45676,
+    // in which backing field annotations were missing their attribute values.
+    val source =
+      kotlin(
+          """
             @Target(AnnotationTarget.FIELD)
             annotation class MyFieldAnnotation(val value: String)
 
             @MyFieldAnnotation("SomeStringValue")
             var myProperty = 0
             """
-        ).indented()
+        )
+        .indented()
 
-        check(source) { file ->
-            assertEquals(
-                """
+    check(source) { file ->
+      assertEquals(
+        """
                 UFile (package = ) [public final class MyFieldAnnotationKt {...]
                   UClass (name = MyFieldAnnotationKt) [public final class MyFieldAnnotationKt {...}]
                     UField (name = myProperty) [@org.jetbrains.annotations.NotNull @MyFieldAnnotation(value = "SomeStringValue") private static var myProperty: int = 0] : PsiType:int
@@ -1678,15 +1748,17 @@ class UastTest : TestCase() {
                           USimpleNameReferenceExpression (identifier = AnnotationTarget) [AnnotationTarget]
                           USimpleNameReferenceExpression (identifier = FIELD) [FIELD] : PsiType:AnnotationTarget
                     UAnnotationMethod (name = value) [public abstract fun value() : java.lang.String = UastEmptyExpression] : PsiType:String
-                """.trimIndent(),
-                file.asLogTypes(indent = "  ").trim()
-            )
-        }
+                """
+          .trimIndent(),
+        file.asLogTypes(indent = "  ").trim()
+      )
     }
+  }
 
-    fun testResolveLambdaVar() { // See KT-46628
-        val source = kotlin(
-            """
+  fun testResolveLambdaVar() { // See KT-46628
+    val source =
+      kotlin(
+          """
             package test.pkg
 
             fun test1(s: String?) {
@@ -1707,82 +1779,80 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    val argument = node.valueArguments.firstOrNull()
-                    (argument as? UReferenceExpression)?.let {
-                        val resolved = argument.resolve()
-                        assertNotNull(
-                            "Couldn't resolve `${argument.sourcePsi?.text ?: argument.asSourceString()}`",
-                            resolved
-                        )
-                    }
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val argument = node.valueArguments.firstOrNull()
+            (argument as? UReferenceExpression)?.let {
+              val resolved = argument.resolve()
+              assertNotNull(
+                "Couldn't resolve `${argument.sourcePsi?.text ?: argument.asSourceString()}`",
+                resolved
+              )
+            }
 
-                    return super.visitCallExpression(node)
-                }
-            })
+            return super.visitCallExpression(node)
+          }
         }
+      )
     }
+  }
 
-    fun testSamConstructorCallKind() {
-        val source = kotlin(
-            """
+  fun testSamConstructorCallKind() {
+    val source = kotlin("""
             val r = java.lang.Runnable {  }
-            """
-        ).indented()
+            """).indented()
 
-        check(
-            source
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    assertEquals("Runnable", node.methodName)
-                    assertEquals(UastCallKind.CONSTRUCTOR_CALL, node.kind)
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            assertEquals("Runnable", node.methodName)
+            assertEquals(UastCallKind.CONSTRUCTOR_CALL, node.kind)
 
-                    return super.visitCallExpression(node)
-                }
-            })
+            return super.visitCallExpression(node)
+          }
         }
+      )
     }
+  }
 
-    fun testCommentOnDataClass() {
-        val source = kotlin(
-            """
+  fun testCommentOnDataClass() {
+    val source =
+      kotlin(
+          """
             // Single-line comment on data class
             data class DataClass(val id: String)
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            val commentMap: MutableMap<String, MutableSet<UElement>> = mutableMapOf()
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitElement(node: UElement): Boolean {
-                    node.comments.forEach {
-                        val boundUElement = commentMap.computeIfAbsent(it.text) {
-                            mutableSetOf()
-                        }
-                        boundUElement.add(node)
-                    }
-                    return super.visitElement(node)
-                }
-            })
-            assertTrue(commentMap.keys.isNotEmpty())
-            commentMap.forEach { (_, uElementSet) ->
-                assertEquals(1, uElementSet.size)
+    check(source) { file ->
+      val commentMap: MutableMap<String, MutableSet<UElement>> = mutableMapOf()
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitElement(node: UElement): Boolean {
+            node.comments.forEach {
+              val boundUElement = commentMap.computeIfAbsent(it.text) { mutableSetOf() }
+              boundUElement.add(node)
             }
+            return super.visitElement(node)
+          }
         }
+      )
+      assertTrue(commentMap.keys.isNotEmpty())
+      commentMap.forEach { (_, uElementSet) -> assertEquals(1, uElementSet.size) }
     }
+  }
 
-    fun testTextOfModifierListOfFunction() {
-        val source = kotlin(
-            """
+  fun testTextOfModifierListOfFunction() {
+    val source =
+      kotlin(
+          """
             annotation class MyComposable
             class Test {
                 @MyComposable
@@ -1790,38 +1860,40 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitMethod(node: UMethod): Boolean {
-                    if (node.isConstructor) return super.visitMethod(node)
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            if (node.isConstructor) return super.visitMethod(node)
 
-                    val javaPsiModifierList = node.modifierList
-                    assertTrue(javaPsiModifierList.textOffset > 0)
-                    assertFalse(javaPsiModifierList.textRange.isEmpty)
-                    assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
+            val javaPsiModifierList = node.modifierList
+            assertTrue(javaPsiModifierList.textOffset > 0)
+            assertFalse(javaPsiModifierList.textRange.isEmpty)
+            assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
 
-                    val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
-                    assertNotNull(sourceModifierList)
-                    sourceModifierList!!
-                    assertTrue(sourceModifierList.textOffset > 0)
-                    assertFalse(sourceModifierList.textRange.isEmpty)
-                    assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
+            val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
+            assertNotNull(sourceModifierList)
+            sourceModifierList!!
+            assertTrue(sourceModifierList.textOffset > 0)
+            assertFalse(sourceModifierList.textRange.isEmpty)
+            assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
 
-                    assertEquals(sourceModifierList.text, javaPsiModifierList.text)
-                    assertEquals("@MyComposable", sourceModifierList.text)
-                    return super.visitMethod(node)
-                }
-            })
+            assertEquals(sourceModifierList.text, javaPsiModifierList.text)
+            assertEquals("@MyComposable", sourceModifierList.text)
+            return super.visitMethod(node)
+          }
         }
+      )
     }
+  }
 
-    fun testTextOfModifierListOfPropertyAccessor() {
-        val source = kotlin(
-            """
+  fun testTextOfModifierListOfPropertyAccessor() {
+    val source =
+      kotlin(
+          """
             annotation class MyComposable
             object Test {
                 var foo3: Boolean
@@ -1835,38 +1907,40 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitMethod(node: UMethod): Boolean {
-                    if (node.sourcePsi !is KtPropertyAccessor) return super.visitMethod(node)
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            if (node.sourcePsi !is KtPropertyAccessor) return super.visitMethod(node)
 
-                    val javaPsiModifierList = node.modifierList
-                    assertTrue(javaPsiModifierList.textOffset > 0)
-                    assertFalse(javaPsiModifierList.textRange.isEmpty)
-                    assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
+            val javaPsiModifierList = node.modifierList
+            assertTrue(javaPsiModifierList.textOffset > 0)
+            assertFalse(javaPsiModifierList.textRange.isEmpty)
+            assertEquals(javaPsiModifierList.textOffset, javaPsiModifierList.textRange.startOffset)
 
-                    val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
-                    assertNotNull(sourceModifierList)
-                    sourceModifierList!!
-                    assertTrue(sourceModifierList.textOffset > 0)
-                    assertFalse(sourceModifierList.textRange.isEmpty)
-                    assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
+            val sourceModifierList = (node.sourcePsi as? KtModifierListOwner)?.modifierList
+            assertNotNull(sourceModifierList)
+            sourceModifierList!!
+            assertTrue(sourceModifierList.textOffset > 0)
+            assertFalse(sourceModifierList.textRange.isEmpty)
+            assertEquals(sourceModifierList.textOffset, sourceModifierList.textRange.startOffset)
 
-                    assertEquals(sourceModifierList.text, javaPsiModifierList.text)
-                    assertEquals("@MyComposable", sourceModifierList.text)
-                    return super.visitMethod(node)
-                }
-            })
+            assertEquals(sourceModifierList.text, javaPsiModifierList.text)
+            assertEquals("@MyComposable", sourceModifierList.text)
+            return super.visitMethod(node)
+          }
         }
+      )
     }
+  }
 
-    fun testConstructorReferences() {
-        val source = kotlin(
-            """
+  fun testConstructorReferences() {
+    val source =
+      kotlin(
+          """
             class Foo(val p : Int)
             class Boo
             data class Bar(val isEnabled: Boolean = true)
@@ -1880,42 +1954,46 @@ class UastTest : TestCase() {
               z(false)
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitMethod(node: UMethod): Boolean {
-                    if (!node.isConstructor) return super.visitMethod(node)
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            if (!node.isConstructor) return super.visitMethod(node)
 
-                    assertTrue(
-                        node.sourcePsi is KtConstructor<*> ||
-                            (node.sourcePsi is KtClassOrObject && node.name == "Boo")
-                    )
-                    return super.visitMethod(node)
-                }
+            assertTrue(
+              node.sourcePsi is KtConstructor<*> ||
+                (node.sourcePsi is KtClassOrObject && node.name == "Boo")
+            )
+            return super.visitMethod(node)
+          }
 
-                override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
-                    val resolved = node.resolve()
-                    assertNotNull(resolved)
+          override fun visitCallableReferenceExpression(
+            node: UCallableReferenceExpression
+          ): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
 
-                    // If a class doesn't have its own primary constructor,
-                    // the reference will be resolved to the class itself.
-                    assertTrue(
-                        (resolved as? PsiMethod)?.isConstructor == true ||
-                            (resolved as? PsiClass)?.constructors?.single()?.isPhysical == false
-                    )
+            // If a class doesn't have its own primary constructor,
+            // the reference will be resolved to the class itself.
+            assertTrue(
+              (resolved as? PsiMethod)?.isConstructor == true ||
+                (resolved as? PsiClass)?.constructors?.single()?.isPhysical == false
+            )
 
-                    return super.visitCallableReferenceExpression(node)
-                }
-            })
+            return super.visitCallableReferenceExpression(node)
+          }
         }
+      )
     }
+  }
 
-    fun test263887242() {
-        val source = kotlin(
-            """
+  fun test263887242() {
+    val source =
+      kotlin(
+          """
             inline fun <T> remember(calc: () -> T): T = calc()
 
             fun test() {
@@ -1927,35 +2005,38 @@ class UastTest : TestCase() {
                 }
             }
             """
-        ).indented()
+        )
+        .indented()
 
-        check(
-            source
-        ) { file ->
-            file.accept(object : AbstractUastVisitor() {
-                override fun visitCallExpression(node: UCallExpression): Boolean {
-                    if (node.methodName != "remember")
-                        return super.visitCallExpression(node)
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            if (node.methodName != "remember") return super.visitCallExpression(node)
 
-                    // Due to coercion-to-Unit (in FE1.0), a type error is hidden, and Unit is returned.
-                    val callExpressionType = node.getExpressionType()
-                    assertTrue(callExpressionType?.canonicalText in listOf("kotlin.Unit", "int"))
+            // Due to coercion-to-Unit (in FE1.0), a type error is hidden, and Unit is returned.
+            val callExpressionType = node.getExpressionType()
+            assertTrue(callExpressionType?.canonicalText in listOf("kotlin.Unit", "int"))
 
-                    // We can go deeper into the last expression of the lambda argument.
-                    val sourcePsi = node.sourcePsi
-                    if (sourcePsi is KtCallExpression) {
-                        val tailLambda = sourcePsi.valueArguments.lastOrNull() as? KtLambdaArgument
-                        val lambda = tailLambda?.getLambdaExpression()
-                        val lastExp = lambda?.bodyExpression?.statements?.lastOrNull()
-                        val lastExpType = lastExp?.let { it.toUElementOfType<UExpression>()?.getExpressionType() }
-                        // Since unresolved, the expression type will be actually `null`.
-                        val isReallyUnit = callExpressionType?.canonicalText == "kotlin.Unit" && callExpressionType == lastExpType
-                        assertFalse(isReallyUnit)
-                    }
+            // We can go deeper into the last expression of the lambda argument.
+            val sourcePsi = node.sourcePsi
+            if (sourcePsi is KtCallExpression) {
+              val tailLambda = sourcePsi.valueArguments.lastOrNull() as? KtLambdaArgument
+              val lambda = tailLambda?.getLambdaExpression()
+              val lastExp = lambda?.bodyExpression?.statements?.lastOrNull()
+              val lastExpType =
+                lastExp?.let { it.toUElementOfType<UExpression>()?.getExpressionType() }
+              // Since unresolved, the expression type will be actually `null`.
+              val isReallyUnit =
+                callExpressionType?.canonicalText == "kotlin.Unit" &&
+                  callExpressionType == lastExpType
+              assertFalse(isReallyUnit)
+            }
 
-                    return super.visitCallExpression(node)
-                }
-            })
+            return super.visitCallExpression(node)
+          }
         }
+      )
     }
+  }
 }

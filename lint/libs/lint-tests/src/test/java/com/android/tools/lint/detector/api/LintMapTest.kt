@@ -18,136 +18,136 @@ package com.android.tools.lint.detector.api
 
 import com.android.tools.lint.client.api.IssueRegistry
 import com.google.common.truth.Truth.assertThat
-import org.junit.Test
 import java.io.File
+import org.junit.Test
 
 class LintMapTest {
-    @Test
-    fun testBasicOperations() {
-        val map = LintMap()
-        assertThat(map.getInt("key")).isNull()
-        assertThat(map.getInt("key", -1)).isEqualTo(-1)
-        assertThat(map.containsKey("key")).isFalse()
+  @Test
+  fun testBasicOperations() {
+    val map = LintMap()
+    assertThat(map.getInt("key")).isNull()
+    assertThat(map.getInt("key", -1)).isEqualTo(-1)
+    assertThat(map.containsKey("key")).isFalse()
 
-        map.put("key", 42)
-        assertThat(map.containsKey("key")).isTrue()
-        map.put("key2", 84)
-        assertThat(map.getInt("key")).isEqualTo(42)
-        assertThat(map.getInt(StringBuilder("key").toString())).isEqualTo(42)
-        assertThat(map.getInt("key2")).isEqualTo(84)
-        assertThat(map.getInt("key", -1)).isEqualTo(42)
-        map.put("key", 0)
-        assertThat(map.getInt("key")).isEqualTo(0)
-        map.remove("key")
-        assertThat(map.getInt("key")).isNull()
-        assertThat(map.put("key", 42)).isSameAs(map)
+    map.put("key", 42)
+    assertThat(map.containsKey("key")).isTrue()
+    map.put("key2", 84)
+    assertThat(map.getInt("key")).isEqualTo(42)
+    assertThat(map.getInt(StringBuilder("key").toString())).isEqualTo(42)
+    assertThat(map.getInt("key2")).isEqualTo(84)
+    assertThat(map.getInt("key", -1)).isEqualTo(42)
+    map.put("key", 0)
+    assertThat(map.getInt("key")).isEqualTo(0)
+    map.remove("key")
+    assertThat(map.getInt("key")).isNull()
+    assertThat(map.put("key", 42)).isSameAs(map)
 
-        assertThat(map.getInt("key2")).isEqualTo(84)
-        assertThat(map.getString("key2")).isNull()
-        assertThat(map.getBoolean("key2")).isNull()
-        // Supported conversion: int to API level
-        assertThat(map.getApi("key2")).isEqualTo(84)
-    }
+    assertThat(map.getInt("key2")).isEqualTo(84)
+    assertThat(map.getString("key2")).isNull()
+    assertThat(map.getBoolean("key2")).isNull()
+    // Supported conversion: int to API level
+    assertThat(map.getApi("key2")).isEqualTo(84)
+  }
 
-    @Test
-    fun testInts() {
-        val map = LintMap()
-        // Defaults
-        assertThat(map.getInt("key")).isNull()
-        assertThat(map.getInt("key", -1)).isEqualTo(-1)
+  @Test
+  fun testInts() {
+    val map = LintMap()
+    // Defaults
+    assertThat(map.getInt("key")).isNull()
+    assertThat(map.getInt("key", -1)).isEqualTo(-1)
 
-        map.put("key", 42)
-        map.put("key2", 84)
-        assertThat(map.getInt("key")).isEqualTo(42)
-        assertThat(map.getInt("key2")).isEqualTo(84)
-        assertThat(map.getInt("key", -1)).isEqualTo(42)
-        map.put("key", 0)
-        assertThat(map.getInt("key")).isEqualTo(0)
-    }
+    map.put("key", 42)
+    map.put("key2", 84)
+    assertThat(map.getInt("key")).isEqualTo(42)
+    assertThat(map.getInt("key2")).isEqualTo(84)
+    assertThat(map.getInt("key", -1)).isEqualTo(42)
+    map.put("key", 0)
+    assertThat(map.getInt("key")).isEqualTo(0)
+  }
 
-    @Test
-    fun testBooleans() {
-        val map = LintMap()
-        assertThat(map.getBoolean("key")).isNull()
-        assertThat(map.getBoolean("key", true)).isTrue()
-        map.put("key", true)
-        map.put("key2", false)
-        assertThat(map.getBoolean("key")).isTrue()
-        assertThat(map.getBoolean("key2")).isFalse()
-    }
+  @Test
+  fun testBooleans() {
+    val map = LintMap()
+    assertThat(map.getBoolean("key")).isNull()
+    assertThat(map.getBoolean("key", true)).isTrue()
+    map.put("key", true)
+    map.put("key2", false)
+    assertThat(map.getBoolean("key")).isTrue()
+    assertThat(map.getBoolean("key2")).isFalse()
+  }
 
-    @Test
-    fun testGetStrings() {
-        val map = LintMap()
-        assertThat(map.getString("key")).isNull()
-        assertThat(map.getString("key", "hello")).isEqualTo("hello")
-        map.put("key", "world")
-        assertThat(map.getString("key")).isEqualTo("world")
-        map.put("key", 9)
-        assertThat(map.getString("key")).isNull()
-    }
+  @Test
+  fun testGetStrings() {
+    val map = LintMap()
+    assertThat(map.getString("key")).isNull()
+    assertThat(map.getString("key", "hello")).isEqualTo("hello")
+    map.put("key", "world")
+    assertThat(map.getString("key")).isEqualTo("world")
+    map.put("key", 9)
+    assertThat(map.getString("key")).isNull()
+  }
 
-    @Test
-    fun testGetApiLevel() {
-        val map = LintMap()
-        assertThat(map.getApi("key")).isNull()
-        assertThat(map.getApi("key", 30)).isEqualTo(30)
-        map.put("key", 9)
-        assertThat(map.getApi("key")).isEqualTo(9)
-        // Conversion from code name to API level:
-        map.put("key", "honeycomb")
-        assertThat(map.getApi("key")).isEqualTo(11)
-    }
+  @Test
+  fun testGetApiLevel() {
+    val map = LintMap()
+    assertThat(map.getApi("key")).isNull()
+    assertThat(map.getApi("key", 30)).isEqualTo(30)
+    map.put("key", 9)
+    assertThat(map.getApi("key")).isEqualTo(9)
+    // Conversion from code name to API level:
+    map.put("key", "honeycomb")
+    assertThat(map.getApi("key")).isEqualTo(11)
+  }
 
-    @Test
-    fun testNestedMap() {
-        val map = LintMap()
-        val map2 = LintMap()
-        map.put("key", 9)
-        map.put("api", "honeycomb")
-        map.put("map", map2)
-        val parent = LintMap()
-        parent.put("map1", map)
-        assertThat(parent.getMap("map1")!!.getApi("key")).isEqualTo(9)
-        assertThat(parent.getMap("map1")!!.getApi("api")).isEqualTo(11)
-        assertThat(map.getMap("map")).isSameAs(map2)
-    }
+  @Test
+  fun testNestedMap() {
+    val map = LintMap()
+    val map2 = LintMap()
+    map.put("key", 9)
+    map.put("api", "honeycomb")
+    map.put("map", map2)
+    val parent = LintMap()
+    parent.put("map1", map)
+    assertThat(parent.getMap("map1")!!.getApi("key")).isEqualTo(9)
+    assertThat(parent.getMap("map1")!!.getApi("api")).isEqualTo(11)
+    assertThat(map.getMap("map")).isSameAs(map2)
+  }
 
-    @Test
-    fun testLocation() {
-        val map = LintMap()
-        val location = Location.create(File("path"), "test", 0, 0)
-        assertThat(map.getLocation("key")).isNull()
-        map.put("key", location)
-        assertThat(map.getLocation("key")).isSameAs(location)
-        assertThat(map.getString("key")).isNull()
-        assertThat(map.getInt("key")).isNull()
-    }
+  @Test
+  fun testLocation() {
+    val map = LintMap()
+    val location = Location.create(File("path"), "test", 0, 0)
+    assertThat(map.getLocation("key")).isNull()
+    map.put("key", location)
+    assertThat(map.getLocation("key")).isSameAs(location)
+    assertThat(map.getString("key")).isNull()
+    assertThat(map.getInt("key")).isNull()
+  }
 
-    @Test
-    fun testIncident() {
-        val map = LintMap()
-        val location = Location.create(File("path"), "test", 0, 0)
-        val incident = Incident(IssueRegistry.LINT_WARNING, "test", location)
-        assertThat(map.getIncident("key")).isNull()
-        map.put("key", incident)
-        assertThat(map.getIncident("key")).isSameAs(incident)
-        assertThat(map.getLocation("key")).isNull()
-        assertThat(map.getString("key")).isNull()
-        assertThat(map.getInt("key")).isNull()
-    }
+  @Test
+  fun testIncident() {
+    val map = LintMap()
+    val location = Location.create(File("path"), "test", 0, 0)
+    val incident = Incident(IssueRegistry.LINT_WARNING, "test", location)
+    assertThat(map.getIncident("key")).isNull()
+    map.put("key", incident)
+    assertThat(map.getIncident("key")).isSameAs(incident)
+    assertThat(map.getLocation("key")).isNull()
+    assertThat(map.getString("key")).isNull()
+    assertThat(map.getInt("key")).isNull()
+  }
 
-    @Test
-    fun testSeverity() {
-        val map = LintMap()
-        assertThat(map.getSeverity("key")).isNull()
-        map.put("key", Severity.FATAL)
-        assertThat(map.getSeverity("key")).isEqualTo(Severity.FATAL)
-        assertThat(map.getSeverity("key2")).isNull()
-        assertThat(map.getSeverity("key2", Severity.ERROR)).isEqualTo(Severity.ERROR)
+  @Test
+  fun testSeverity() {
+    val map = LintMap()
+    assertThat(map.getSeverity("key")).isNull()
+    map.put("key", Severity.FATAL)
+    assertThat(map.getSeverity("key")).isEqualTo(Severity.FATAL)
+    assertThat(map.getSeverity("key2")).isNull()
+    assertThat(map.getSeverity("key2", Severity.ERROR)).isEqualTo(Severity.ERROR)
 
-        assertThat(map.getLocation("key")).isNull()
-        assertThat(map.getString("key")).isNull()
-        assertThat(map.getInt("key")).isNull()
-    }
+    assertThat(map.getLocation("key")).isNull()
+    assertThat(map.getString("key")).isNull()
+    assertThat(map.getInt("key")).isNull()
+  }
 }

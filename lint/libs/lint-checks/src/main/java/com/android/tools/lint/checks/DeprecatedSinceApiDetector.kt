@@ -37,69 +37,73 @@ import com.android.tools.lint.detector.api.minSdkLessThan
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
+import java.util.Locale
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.evaluateString
-import java.util.Locale
 
-/**
- * Flags calls to library APIs deprecated as of a particular API level.
- */
+/** Flags calls to library APIs deprecated as of a particular API level. */
 class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
-    companion object {
-        private val IMPLEMENTATION = Implementation(
-            DeprecatedSinceApiDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object {
+    private val IMPLEMENTATION =
+      Implementation(DeprecatedSinceApiDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        /** Calling a deprecated API */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "DeprecatedSinceApi",
-            briefDescription = "Using a method deprecated in earlier SDK",
-            explanation = """
+    /** Calling a deprecated API */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "DeprecatedSinceApi",
+        briefDescription = "Using a method deprecated in earlier SDK",
+        explanation =
+          """
                 Some backport methods are only necessary until a specific version of Android. These have been \
                 annotated with `@DeprecatedSinceApi`, specifying the relevant API level and replacement suggestions. \
                 Calling these methods when the `minSdkVersion` is already at the deprecated API level or above is unnecessary.
                 """,
-            category = Category.CORRECTNESS,
-            priority = 4,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION,
-            androidSpecific = true
-        )
+        category = Category.CORRECTNESS,
+        priority = 4,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION,
+        androidSpecific = true
+      )
 
-        private const val DEPRECATED_SDK_VERSION_ANNOTATION = "androidx.annotation.DeprecatedSinceApi"
-        private const val ATTR_API = "api"
+    private const val DEPRECATED_SDK_VERSION_ANNOTATION = "androidx.annotation.DeprecatedSinceApi"
+    private const val ATTR_API = "api"
+  }
+
+  override fun applicableAnnotations(): List<String> = listOf(DEPRECATED_SDK_VERSION_ANNOTATION)
+
+  override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean =
+    when (type) {
+      METHOD_CALL,
+      FIELD_REFERENCE,
+      CLASS_REFERENCE,
+      METHOD_REFERENCE -> true
+      else -> false
     }
 
-    override fun applicableAnnotations(): List<String> = listOf(DEPRECATED_SDK_VERSION_ANNOTATION)
-
-    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean =
-        when (type) {
-            METHOD_CALL, FIELD_REFERENCE, CLASS_REFERENCE, METHOD_REFERENCE -> true
-            else -> false
-        }
-
-    override fun visitAnnotationUsage(
-        context: JavaContext,
-        element: UElement,
-        annotationInfo: AnnotationInfo,
-        usageInfo: AnnotationUsageInfo
-    ) {
-        val apiLevel = annotationInfo.annotation.findAttributeValue(ATTR_API)?.evaluate() as? Int ?: return
-        val details = annotationInfo.annotation.findAttributeValue(ATTR_MESSAGE)?.evaluateString()
-        val elementType = when (annotationInfo.annotated) {
-            is PsiMethod -> "method"
-            is PsiField -> "field"
-            is PsiClass -> "class"
-            else -> "element"
-        }
-        val message = "This $elementType is deprecated as of API level $apiLevel${
+  override fun visitAnnotationUsage(
+    context: JavaContext,
+    element: UElement,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo
+  ) {
+    val apiLevel =
+      annotationInfo.annotation.findAttributeValue(ATTR_API)?.evaluate() as? Int ?: return
+    val details = annotationInfo.annotation.findAttributeValue(ATTR_MESSAGE)?.evaluateString()
+    val elementType =
+      when (annotationInfo.annotated) {
+        is PsiMethod -> "method"
+        is PsiField -> "field"
+        is PsiClass -> "class"
+        else -> "element"
+      }
+    val message =
+      "This $elementType is deprecated as of API level $apiLevel${
         if (details.isNullOrBlank()) "" else "; ${details.capitalize(Locale.US)}"
         }"
-        context.report(
-            Incident(ISSUE, message, context.getLocation(element), element, null),
-            minSdkLessThan(apiLevel)
-        )
-    }
+    context.report(
+      Incident(ISSUE, message, context.getLocation(element), element, null),
+      minSdkLessThan(apiLevel)
+    )
+  }
 }

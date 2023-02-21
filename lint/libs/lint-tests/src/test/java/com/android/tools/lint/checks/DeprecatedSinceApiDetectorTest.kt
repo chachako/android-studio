@@ -20,15 +20,16 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.detector.api.Detector
 
 class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return DeprecatedSinceApiDetector()
-    }
+  override fun getDetector(): Detector {
+    return DeprecatedSinceApiDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            manifest().minSdk(24),
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        manifest().minSdk(24),
+        kotlin(
+            """
                 package test.pkg
                 import androidx.annotation.DeprecatedSinceApi
 
@@ -64,10 +65,13 @@ class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            deprecatedSdkVersionStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        deprecatedSdkVersionStub
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Api.kt:26: Warning: This method is deprecated as of API level 25 [DeprecatedSinceApi]
                   api.someMethod2(0)         // WARN 1
                   ~~~~~~~~~~~~~~~~~~
@@ -91,12 +95,13 @@ class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
                           ~~~~~~~~~~~~~~~~
             0 errors, 7 warnings
             """
-        )
-    }
+      )
+  }
 }
 
-val deprecatedSdkVersionStub: TestFile = kotlin(
-    """
+val deprecatedSdkVersionStub: TestFile =
+  kotlin(
+      """
     package androidx.annotation
     import kotlin.annotation.AnnotationTarget.ANNOTATION_CLASS
     import kotlin.annotation.AnnotationTarget.CLASS
@@ -112,4 +117,5 @@ val deprecatedSdkVersionStub: TestFile = kotlin(
         val message: String = ""
     )
     """
-).indented()
+    )
+    .indented()

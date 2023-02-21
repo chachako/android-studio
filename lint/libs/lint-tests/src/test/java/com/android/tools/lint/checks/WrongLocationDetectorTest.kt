@@ -18,64 +18,72 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class WrongLocationDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return WrongLocationDetector()
-    }
+  override fun getDetector(): Detector {
+    return WrongLocationDetector()
+  }
 
-    fun testOk() {
-        lint().files(
-            xml(
-                "res/values/strings.xml",
-                """
-                <resources>
-                    <!-- Home -->
-                    <string name="home_title">Home Sample</string>
-                    <string name="show_all_apps">All</string>
-
-                    <!-- Home Menus -->
-                    <string name="menu_wallpaper">Wallpaper</string>
-                    <string name="menu_search">Search</string>
-                    <string name="menu_settings">Settings</string>
-                    <string name="sample" translatable="false">Ignore Me</string>
-
-                    <!-- Wallpaper -->
-                    <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
-                </resources>
-
-                """
-            ).indented()
-        ).run().expectClean()
-    }
-
-    fun test() {
-        lint().files(
-            xml(
-                "res/layout/alias.xml",
-                """
-                <resources>
-                    <!-- Home -->
-                    <string name="home_title">Home Sample</string>
-                    <string name="show_all_apps">All</string>
-
-                    <!-- Home Menus -->
-                    <string name="menu_wallpaper">Wallpaper</string>
-                    <string name="menu_search">Search</string>
-                    <string name="menu_settings">Settings</string>
-                    <string name="sample" translatable="false">Ignore Me</string>
-
-                    <!-- Wallpaper -->
-                    <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
-                </resources>
-
-                """
-            ).indented()
-        ).run().expect(
+  fun testOk() {
+    lint()
+      .files(
+        xml(
+            "res/values/strings.xml",
             """
+                <resources>
+                    <!-- Home -->
+                    <string name="home_title">Home Sample</string>
+                    <string name="show_all_apps">All</string>
+
+                    <!-- Home Menus -->
+                    <string name="menu_wallpaper">Wallpaper</string>
+                    <string name="menu_search">Search</string>
+                    <string name="menu_settings">Settings</string>
+                    <string name="sample" translatable="false">Ignore Me</string>
+
+                    <!-- Wallpaper -->
+                    <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
+                </resources>
+
+                """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun test() {
+    lint()
+      .files(
+        xml(
+            "res/layout/alias.xml",
+            """
+                <resources>
+                    <!-- Home -->
+                    <string name="home_title">Home Sample</string>
+                    <string name="show_all_apps">All</string>
+
+                    <!-- Home Menus -->
+                    <string name="menu_wallpaper">Wallpaper</string>
+                    <string name="menu_search">Search</string>
+                    <string name="menu_settings">Settings</string>
+                    <string name="sample" translatable="false">Ignore Me</string>
+
+                    <!-- Wallpaper -->
+                    <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
+                </resources>
+
+                """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/alias.xml:1: Error: This file should be placed in a values/ folder, not a layout/ folder [WrongFolder]
             <resources>
              ~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

@@ -16,52 +16,44 @@
 
 package com.android.tools.lint.detector.api
 
-/**
- * Different types of locations that lint can compute for a given
- * element or AST node.
- */
+/** Different types of locations that lint can compute for a given element or AST node. */
 enum class LocationType {
-    /**
-     * The whole range for the AST element. For an XML attribute for
-     * example this includes both the name and attribute parts, and for
-     * a Kotlin method, it includes both the signature and the method
-     * body.
-     */
-    ALL,
+  /**
+   * The whole range for the AST element. For an XML attribute for example this includes both the
+   * name and attribute parts, and for a Kotlin method, it includes both the signature and the
+   * method body.
+   */
+  ALL,
 
-    /**
-     * The default location which applies various heuristics to try to
-     * pick a suitable location. For example, for an XML element, this
-     * will only include the first line of the element, since we don't
-     * want to highlight the entire block which would look noisy (and
-     * could hide other issues within the element).
-     */
-    DEFAULT,
+  /**
+   * The default location which applies various heuristics to try to pick a suitable location. For
+   * example, for an XML element, this will only include the first line of the element, since we
+   * don't want to highlight the entire block which would look noisy (and could hide other issues
+   * within the element).
+   */
+  DEFAULT,
 
-    /**
-     * Just the name of the element. For a method, this would be the
-     * method name identifier; in an XML element, it would be the tag,
-     * and so on.
-     */
-    NAME,
+  /**
+   * Just the name of the element. For a method, this would be the method name identifier; in an XML
+   * element, it would be the tag, and so on.
+   */
+  NAME,
 
-    /**
-     * Just the value part of the element. For an XML attribute, this
-     * would be the text inside the quotes, etc.
-     */
-    VALUE,
+  /**
+   * Just the value part of the element. For an XML attribute, this would be the text inside the
+   * quotes, etc.
+   */
+  VALUE,
 
-    /**
-     * In a method call, includes the called method and arguments, but
-     * not the receiver. If you want to include the receiver as well,
-     * use [ALL].
-     */
-    CALL_WITH_ARGUMENTS,
+  /**
+   * In a method call, includes the called method and arguments, but not the receiver. If you want
+   * to include the receiver as well, use [ALL].
+   */
+  CALL_WITH_ARGUMENTS,
 
-    /**
-     * In a method call, includes the receiver and the method name, but
-     * not the arguments. If you want to include the arguments as well,
-     * use [ALL].
-     */
-    CALL_WITH_RECEIVER
+  /**
+   * In a method call, includes the receiver and the method name, but not the arguments. If you want
+   * to include the arguments as well, use [ALL].
+   */
+  CALL_WITH_RECEIVER
 }

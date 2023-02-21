@@ -38,114 +38,116 @@ import org.jetbrains.uast.UDeclaration
 import org.jetbrains.uast.UElement
 
 /**
- * Looks for addJavascriptInterface calls on interfaces have been
- * properly annotated with `@JavaScriptInterface`
+ * Looks for addJavascriptInterface calls on interfaces have been properly annotated with
+ * `@JavaScriptInterface`
  */
 class JavaScriptInterfaceDetector : Detector(), SourceCodeScanner {
 
-    // ---- implements SourceCodeScanner ----
+  // ---- implements SourceCodeScanner ----
 
-    override fun getApplicableMethodNames(): List<String> {
-        return listOf(ADD_JAVASCRIPT_INTERFACE)
+  override fun getApplicableMethodNames(): List<String> {
+    return listOf(ADD_JAVASCRIPT_INTERFACE)
+  }
+
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    val arguments = node.valueArguments
+    if (arguments.size != 2) {
+      return
     }
 
-    override fun visitMethodCall(
-        context: JavaContext,
-        node: UCallExpression,
-        method: PsiMethod
-    ) {
-        val arguments = node.valueArguments
-        if (arguments.size != 2) {
-            return
-        }
-
-        val evaluator = context.evaluator
-        if (!evaluator.isMemberInClass(method, WEB_VIEW_CLS)) {
-            return
-        }
-
-        val first = arguments[0]
-        val evaluated = TypeEvaluator.evaluate(first)
-        if (evaluated is PsiClassType) {
-            val cls = evaluated.resolve() ?: return
-            if (isJavaScriptAnnotated(cls)) {
-                return
-            }
-
-            val location = context.getNameLocation(node)
-            val message = "None of the methods in the added interface (${cls.name}) have " +
-                "been annotated with `@android.webkit.JavascriptInterface`; they will not " +
-                "be visible in API 17"
-            val incident = Incident(ISSUE, node, location, message)
-            context.report(incident, targetSdkAtLeast(17))
-        }
+    val evaluator = context.evaluator
+    if (!evaluator.isMemberInClass(method, WEB_VIEW_CLS)) {
+      return
     }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>>? =
-        listOf(UDeclaration::class.java)
+    val first = arguments[0]
+    val evaluated = TypeEvaluator.evaluate(first)
+    if (evaluated is PsiClassType) {
+      val cls = evaluated.resolve() ?: return
+      if (isJavaScriptAnnotated(cls)) {
+        return
+      }
 
-    override fun createUastHandler(context: JavaContext): UElementHandler? {
-        return object : UElementHandler() {
-            override fun visitDeclaration(node: UDeclaration) {
-                val modifierList = node.modifierList ?: return
-                if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
-                    return
-                }
-                for (annotation in node.uAnnotations) {
-                    if (annotation.qualifiedName == JAVASCRIPT_INTERFACE_CLS) {
-                        val incident = Incident(
-                            ISSUE, node as UElement, context.getNameLocation(node),
-                            "Must be public when using `@JavascriptInterface`"
-                        )
-                        context.report(incident, isAndroidProject())
-                    }
-                }
-            }
-        }
+      val location = context.getNameLocation(node)
+      val message =
+        "None of the methods in the added interface (${cls.name}) have " +
+          "been annotated with `@android.webkit.JavascriptInterface`; they will not " +
+          "be visible in API 17"
+      val incident = Incident(ISSUE, node, location, message)
+      context.report(incident, targetSdkAtLeast(17))
     }
+  }
 
-    companion object {
-        /** The main issue discovered by this detector. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "JavascriptInterface",
-            briefDescription = "Missing @JavascriptInterface on methods",
-            explanation = """
+  override fun getApplicableUastTypes(): List<Class<out UElement>>? =
+    listOf(UDeclaration::class.java)
+
+  override fun createUastHandler(context: JavaContext): UElementHandler? {
+    return object : UElementHandler() {
+      override fun visitDeclaration(node: UDeclaration) {
+        val modifierList = node.modifierList ?: return
+        if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
+          return
+        }
+        for (annotation in node.uAnnotations) {
+          if (annotation.qualifiedName == JAVASCRIPT_INTERFACE_CLS) {
+            val incident =
+              Incident(
+                ISSUE,
+                node as UElement,
+                context.getNameLocation(node),
+                "Must be public when using `@JavascriptInterface`"
+              )
+            context.report(incident, isAndroidProject())
+          }
+        }
+      }
+    }
+  }
+
+  companion object {
+    /** The main issue discovered by this detector. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "JavascriptInterface",
+        briefDescription = "Missing @JavascriptInterface on methods",
+        explanation =
+          """
                 As of API 17, you must annotate methods in objects registered with the \
                 `addJavascriptInterface` method with a `@JavascriptInterface` annotation.
                 """,
-            category = Category.SECURITY,
-            moreInfo = "https://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface(java.lang.Object, java.lang.String)",
-            androidSpecific = true,
-            priority = 8,
-            severity = Severity.ERROR,
-            implementation = Implementation(
-                JavaScriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE
-            )
-        )
+        category = Category.SECURITY,
+        moreInfo =
+          "https://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface(java.lang.Object, java.lang.String)",
+        androidSpecific = true,
+        priority = 8,
+        severity = Severity.ERROR,
+        implementation =
+          Implementation(JavaScriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
 
-        private const val ADD_JAVASCRIPT_INTERFACE = "addJavascriptInterface"
-        private const val JAVASCRIPT_INTERFACE_CLS = "android.webkit.JavascriptInterface"
-        private const val WEB_VIEW_CLS = "android.webkit.WebView"
+    private const val ADD_JAVASCRIPT_INTERFACE = "addJavascriptInterface"
+    private const val JAVASCRIPT_INTERFACE_CLS = "android.webkit.JavascriptInterface"
+    private const val WEB_VIEW_CLS = "android.webkit.WebView"
 
-        private fun isJavaScriptAnnotated(clz: PsiClass?): Boolean {
-            var current = clz
-            while (current != null) {
-                val modifierList = current.modifierList
-                if (modifierList?.findAnnotation(JAVASCRIPT_INTERFACE_CLS) != null) {
-                    return true
-                }
-
-                for (method in current.methods) {
-                    if (method.modifierList.findAnnotation(JAVASCRIPT_INTERFACE_CLS) != null) {
-                        return true
-                    }
-                }
-
-                current = current.superClass
-            }
-
-            return false
+    private fun isJavaScriptAnnotated(clz: PsiClass?): Boolean {
+      var current = clz
+      while (current != null) {
+        val modifierList = current.modifierList
+        if (modifierList?.findAnnotation(JAVASCRIPT_INTERFACE_CLS) != null) {
+          return true
         }
+
+        for (method in current.methods) {
+          if (method.modifierList.findAnnotation(JAVASCRIPT_INTERFACE_CLS) != null) {
+            return true
+          }
+        }
+
+        current = current.superClass
+      }
+
+      return false
     }
+  }
 }

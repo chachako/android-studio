@@ -40,6 +40,7 @@ import com.intellij.psi.PsiField
 import com.intellij.psi.PsiKeyword
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierList
+import java.util.Locale
 import org.jetbrains.kotlin.asJava.elements.KtLightFieldForSourceDeclarationSupport
 import org.jetbrains.uast.UAnonymousClass
 import org.jetbrains.uast.UBinaryExpression
@@ -56,274 +57,273 @@ import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.visitor.AbstractUastVisitor
-import java.util.Locale
 
 /** Looks for leaks via static fields. */
 class LeakDetector : Detector(), SourceCodeScanner {
 
-    override fun applicableSuperClasses(): List<String> {
-        return SUPER_CLASSES
+  override fun applicableSuperClasses(): List<String> {
+    return SUPER_CLASSES
+  }
+
+  /** Warn about inner classes that aren't static: these end up retaining the outer class. */
+  override fun visitClass(context: JavaContext, declaration: UClass) {
+    val containingClass = declaration.getContainingUClass()
+    val isAnonymous = declaration is UAnonymousClass
+
+    // Only consider static inner classes
+    val evaluator = context.evaluator
+    val isStatic = evaluator.isStatic(declaration) || containingClass == null
+    if (isStatic || isAnonymous) { // containingClass == null: implicitly static
+      // But look for fields that store contexts
+      for (field in declaration.fields) {
+        checkInstanceField(context, field)
+      }
+
+      if (!isAnonymous) {
+        return
+      }
+    }
+
+    var superClass: String? = null
+    for (cls in SUPER_CLASSES) {
+      if (evaluator.inheritsFrom(declaration, cls, false)) {
+        superClass = cls
+        break
+      }
+    }
+    superClass ?: return
+
+    val uastParent = declaration.uastParent
+    if (uastParent != null) {
+
+      val method =
+        uastParent.getParentOfType<UMethod>(
+          UMethod::class.java,
+          true,
+          UClass::class.java,
+          UObjectLiteralExpression::class.java
+        )
+      if (method != null && evaluator.isStatic(method)) {
+        return
+      }
+    }
+
+    val invocation =
+      declaration.getParentOfType<UCallExpression>(
+        UObjectLiteralExpression::class.java,
+        true,
+        UMethod::class.java
+      )
+
+    val location: Location
+    location =
+      if (isAnonymous && invocation != null) {
+        context.getCallLocation(invocation, false, false)
+      } else {
+        context.getNameLocation(declaration)
+      }
+    var name: String?
+    if (isAnonymous) {
+      name = "anonymous " + (declaration as UAnonymousClass).baseClassReference.qualifiedName
+    } else {
+      name = declaration.qualifiedName
+      if (name == null) {
+        name = declaration.name
+      }
+    }
+
+    val superClassName = superClass.substring(superClass.lastIndexOf('.') + 1)
+    context.report(
+      ISSUE,
+      declaration,
+      location,
+      "This `$superClassName` class should be static or leaks might occur ($name)"
+    )
+  }
+
+  override fun getApplicableUastTypes(): List<Class<out UElement>> {
+    return listOf<Class<out UElement>>(UField::class.java)
+  }
+
+  override fun createUastHandler(context: JavaContext): UElementHandler {
+    return FieldChecker(context)
+  }
+
+  private class FieldChecker(private val context: JavaContext) : UElementHandler() {
+
+    override fun visitField(node: UField) {
+      val modifierList = node.modifierList
+      if (
+        modifierList == null ||
+          !modifierList.hasModifierProperty(PsiModifier.STATIC) ||
+          node.uastParent is UAnonymousClass
+      ) {
+        return
+      }
+
+      val type = node.type as? PsiClassType ?: return
+      val fqn = type.canonicalText
+      if (fqn.startsWith("java.")) {
+        return
+      }
+      val cls = type.resolve() ?: return
+      if (fqn.startsWith("android.")) {
+        if (
+          isLeakCandidate(cls, context.evaluator) &&
+            !isAppContext(cls, node) &&
+            !isInitializedToAppContext(node, cls)
+        ) {
+          val message =
+            "Do not place Android context classes in static fields; " + "this is a memory leak"
+          report(node, modifierList, message)
+        }
+      } else {
+        // User application object -- look to see if that one itself has
+        // static fields?
+        // We only check *one* level of indirection here
+        for ((count, referenced) in cls.allFields.withIndex()) {
+          // Only check a few; avoid getting bogged down on large classes
+          if (count == 20) {
+            break
+          }
+
+          val innerType = referenced.type as? PsiClassType ?: continue
+
+          val canonical = innerType.canonicalText
+          if (canonical.startsWith("java.")) {
+            continue
+          }
+          val innerCls = innerType.resolve() ?: continue
+
+          if (canonical.startsWith("android.")) {
+            if (
+              isLeakCandidate(innerCls, context.evaluator) &&
+                !isAppContext(innerCls, referenced) &&
+                !isInitializedToAppContext(context, referenced, innerCls)
+            ) {
+              val message =
+                "Do not place Android context classes in static " +
+                  "fields (static reference to `${cls.name}` which has field " +
+                  "`${referenced.name}` pointing to `${innerCls.name}`); this " +
+                  "is a memory leak"
+              report(node, modifierList, message)
+              break
+            }
+          }
+        }
+      }
+    }
+
+    private fun isInitializedToAppContext(
+      context: JavaContext,
+      field: PsiField,
+      typeClass: PsiClass
+    ): Boolean {
+      if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
+        return false
+      }
+
+      val uField = field.toUElement(UField::class.java) ?: return true
+      return isInitializedToAppContext(uField, typeClass)
     }
 
     /**
-     * Warn about inner classes that aren't static: these end up
-     * retaining the outer class.
+     * If it's a static field see if it's initialized to an app context in one of the constructors.
      */
-    override fun visitClass(context: JavaContext, declaration: UClass) {
-        val containingClass = declaration.getContainingUClass()
-        val isAnonymous = declaration is UAnonymousClass
+    private fun isInitializedToAppContext(field: UField, typeClass: PsiClass): Boolean {
+      val containingClass = field.getContainingUClass() ?: return false
 
-        // Only consider static inner classes
-        val evaluator = context.evaluator
-        val isStatic = evaluator.isStatic(declaration) || containingClass == null
-        if (isStatic || isAnonymous) { // containingClass == null: implicitly static
-            // But look for fields that store contexts
-            for (field in declaration.fields) {
-                checkInstanceField(context, field)
-            }
+      // Only check for app context if we're dealing with a Context field -- there's
+      // no chance Fragments, Views etc will be the app context.
+      if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
+        return false
+      }
 
-            if (!isAnonymous) {
-                return
-            }
+      for (method in containingClass.uastDeclarations) {
+        if (method !is UMethod || !method.isConstructor) {
+          continue
         }
+        val methodBody = method.uastBody ?: continue
+        val assignedToAppContext = Ref(false)
 
-        var superClass: String? = null
-        for (cls in SUPER_CLASSES) {
-            if (evaluator.inheritsFrom(declaration, cls, false)) {
-                superClass = cls
-                break
+        methodBody.accept(
+          object : AbstractUastVisitor() {
+            override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+              if (
+                node.isAssignment() &&
+                  node.leftOperand is UResolvable &&
+                  field.sourcePsi == (node.leftOperand as UResolvable).resolve()
+              ) {
+                // Yes, assigning to this field
+                // See if the right hand side looks like an app context
+                var rhs: UElement = node.rightOperand
+                while (rhs is UQualifiedReferenceExpression) {
+                  rhs = rhs.selector
+                }
+                if (rhs is UCallExpression) {
+                  if ("getApplicationContext" == getMethodName(rhs)) {
+                    assignedToAppContext.set(true)
+                  }
+                }
+              }
+              return super.visitBinaryExpression(node)
             }
-        }
-        superClass ?: return
-
-        val uastParent = declaration.uastParent
-        if (uastParent != null) {
-
-            val method = uastParent.getParentOfType<UMethod>(
-                UMethod::class.java,
-                true,
-                UClass::class.java,
-                UObjectLiteralExpression::class.java
-            )
-            if (method != null && evaluator.isStatic(method)) {
-                return
-            }
-        }
-
-        val invocation = declaration.getParentOfType<UCallExpression>(
-            UObjectLiteralExpression::class.java,
-            true,
-            UMethod::class.java
+          }
         )
 
-        val location: Location
-        location = if (isAnonymous && invocation != null) {
-            context.getCallLocation(invocation, false, false)
-        } else {
-            context.getNameLocation(declaration)
+        if (assignedToAppContext.get()) {
+          return true
         }
-        var name: String?
-        if (isAnonymous) {
-            name = "anonymous " + (declaration as UAnonymousClass)
-                .baseClassReference
-                .qualifiedName
-        } else {
-            name = declaration.qualifiedName
-            if (name == null) {
-                name = declaration.name
-            }
-        }
+      }
 
-        val superClassName = superClass.substring(superClass.lastIndexOf('.') + 1)
-        context.report(
-            ISSUE,
-            declaration,
-            location,
-            "This `$superClassName` class should be static or leaks might occur ($name)"
-        )
+      return false
     }
 
-    override fun getApplicableUastTypes(): List<Class<out UElement>> {
-        return listOf<Class<out UElement>>(UField::class.java)
+    private fun report(field: PsiField, modifierList: PsiModifierList, message: String) {
+      var locationNode: PsiElement = field
+      // Try to find the static modifier itself
+      if (modifierList.hasExplicitModifier(PsiModifier.STATIC)) {
+        var child: PsiElement? = modifierList.firstChild
+        while (child != null) {
+          if (child is PsiKeyword && PsiKeyword.STATIC == child.text) {
+            locationNode = child
+            break
+          }
+          child = child.nextSibling
+        }
+      }
+      val location = context.getLocation(locationNode)
+      context.report(ISSUE, field, location, message)
     }
+  }
 
-    override fun createUastHandler(context: JavaContext): UElementHandler {
-        return FieldChecker(context)
+  private fun checkInstanceField(context: JavaContext, field: UField) {
+    val type = field.type as? PsiClassType ?: return
+    val fqn = type.canonicalText
+    if (fqn.startsWith("java.")) {
+      return
     }
+    val cls = type.resolve() ?: return
 
-    private class FieldChecker(private val context: JavaContext) : UElementHandler() {
-
-        override fun visitField(node: UField) {
-            val modifierList = node.modifierList
-            if (modifierList == null || !modifierList.hasModifierProperty(PsiModifier.STATIC) ||
-                node.uastParent is UAnonymousClass
-            ) {
-                return
-            }
-
-            val type = node.type as? PsiClassType ?: return
-            val fqn = type.canonicalText
-            if (fqn.startsWith("java.")) {
-                return
-            }
-            val cls = type.resolve() ?: return
-            if (fqn.startsWith("android.")) {
-                if (isLeakCandidate(cls, context.evaluator) &&
-                    !isAppContext(cls, node) &&
-                    !isInitializedToAppContext(node, cls)
-                ) {
-                    val message =
-                        "Do not place Android context classes in static fields; " +
-                            "this is a memory leak"
-                    report(node, modifierList, message)
-                }
-            } else {
-                // User application object -- look to see if that one itself has
-                // static fields?
-                // We only check *one* level of indirection here
-                for ((count, referenced) in cls.allFields.withIndex()) {
-                    // Only check a few; avoid getting bogged down on large classes
-                    if (count == 20) {
-                        break
-                    }
-
-                    val innerType = referenced.type as? PsiClassType ?: continue
-
-                    val canonical = innerType.canonicalText
-                    if (canonical.startsWith("java.")) {
-                        continue
-                    }
-                    val innerCls = innerType.resolve() ?: continue
-
-                    if (canonical.startsWith("android.")) {
-                        if (isLeakCandidate(innerCls, context.evaluator) &&
-                            !isAppContext(innerCls, referenced) &&
-                            !isInitializedToAppContext(context, referenced, innerCls)
-                        ) {
-                            val message = "Do not place Android context classes in static " +
-                                "fields (static reference to `${cls.name}` which has field " +
-                                "`${referenced.name}` pointing to `${innerCls.name}`); this " +
-                                "is a memory leak"
-                            report(node, modifierList, message)
-                            break
-                        }
-                    }
-                }
-            }
-        }
-
-        private fun isInitializedToAppContext(
-            context: JavaContext,
-            field: PsiField,
-            typeClass: PsiClass
-        ): Boolean {
-            if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
-                return false
-            }
-
-            val uField = field.toUElement(UField::class.java) ?: return true
-            return isInitializedToAppContext(uField, typeClass)
-        }
-
-        /**
-         * If it's a static field see if it's initialized to an app
-         * context in one of the constructors.
-         */
-        private fun isInitializedToAppContext(field: UField, typeClass: PsiClass): Boolean {
-            val containingClass = field.getContainingUClass() ?: return false
-
-            // Only check for app context if we're dealing with a Context field -- there's
-            // no chance Fragments, Views etc will be the app context.
-            if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
-                return false
-            }
-
-            for (method in containingClass.uastDeclarations) {
-                if (method !is UMethod || !method.isConstructor) {
-                    continue
-                }
-                val methodBody = method.uastBody ?: continue
-                val assignedToAppContext = Ref(false)
-
-                methodBody.accept(
-                    object : AbstractUastVisitor() {
-                        override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-                            if (node.isAssignment() &&
-                                node.leftOperand is UResolvable &&
-                                field.sourcePsi == (node.leftOperand as UResolvable)
-                                    .resolve()
-                            ) {
-                                // Yes, assigning to this field
-                                // See if the right hand side looks like an app context
-                                var rhs: UElement = node.rightOperand
-                                while (rhs is UQualifiedReferenceExpression) {
-                                    rhs = rhs.selector
-                                }
-                                if (rhs is UCallExpression) {
-                                    if ("getApplicationContext" == getMethodName(rhs)) {
-                                        assignedToAppContext.set(true)
-                                    }
-                                }
-                            }
-                            return super.visitBinaryExpression(node)
-                        }
-                    })
-
-                if (assignedToAppContext.get()) {
-                    return true
-                }
-            }
-
-            return false
-        }
-
-        private fun report(
-            field: PsiField,
-            modifierList: PsiModifierList,
-            message: String
-        ) {
-            var locationNode: PsiElement = field
-            // Try to find the static modifier itself
-            if (modifierList.hasExplicitModifier(PsiModifier.STATIC)) {
-                var child: PsiElement? = modifierList.firstChild
-                while (child != null) {
-                    if (child is PsiKeyword && PsiKeyword.STATIC == child.text) {
-                        locationNode = child
-                        break
-                    }
-                    child = child.nextSibling
-                }
-            }
-            val location = context.getLocation(locationNode)
-            context.report(ISSUE, field, location, message)
-        }
+    if (isLeakCandidate(cls, context.evaluator)) {
+      context.report(
+        LeakDetector.ISSUE,
+        field,
+        context.getLocation(field),
+        "This field leaks a context object"
+      )
     }
+  }
 
-    private fun checkInstanceField(context: JavaContext, field: UField) {
-        val type = field.type as? PsiClassType ?: return
-        val fqn = type.canonicalText
-        if (fqn.startsWith("java.")) {
-            return
-        }
-        val cls = type.resolve() ?: return
-
-        if (isLeakCandidate(cls, context.evaluator)) {
-            context.report(
-                LeakDetector.ISSUE,
-                field,
-                context.getLocation(field),
-                "This field leaks a context object"
-            )
-        }
-    }
-
-    companion object {
-        /** Leaking data via static fields. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "StaticFieldLeak",
-            briefDescription = "Static Field Leaks",
-            explanation = """
+  companion object {
+    /** Leaking data via static fields. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "StaticFieldLeak",
+        briefDescription = "Static Field Leaks",
+        explanation =
+          """
                 A static field will leak contexts.
 
                 Non-static inner classes have an implicit reference to their outer class. \
@@ -336,65 +336,68 @@ class LeakDetector : Detector(), SourceCodeScanner {
 
                 ViewModel classes should never point to Views or non-application Contexts.
                 """,
-            category = Category.PERFORMANCE,
-            androidSpecific = true,
-            priority = 6,
-            severity = Severity.WARNING,
-            implementation = Implementation(LeakDetector::class.java, Scope.JAVA_FILE_SCOPE)
-        )
+        category = Category.PERFORMANCE,
+        androidSpecific = true,
+        priority = 6,
+        severity = Severity.WARNING,
+        implementation = Implementation(LeakDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
 
-        private val SUPER_CLASSES = listOf(
-            "android.content.Loader",
-            "android.support.v4.content.Loader",
-            "androidx.loader.content.Loader",
-            "android.os.AsyncTask",
-            "android.arch.lifecycle.ViewModel",
-            "androidx.lifecycle.ViewModel"
-        )
+    private val SUPER_CLASSES =
+      listOf(
+        "android.content.Loader",
+        "android.support.v4.content.Loader",
+        "androidx.loader.content.Loader",
+        "android.os.AsyncTask",
+        "android.arch.lifecycle.ViewModel",
+        "androidx.lifecycle.ViewModel"
+      )
 
-        private const val CLASS_LIFECYCLE = "androidx.lifecycle.Lifecycle"
-        private const val CLASS_LIFECYCLE_OLD = "android.arch.lifecycle.Lifecycle"
+    private const val CLASS_LIFECYCLE = "androidx.lifecycle.Lifecycle"
+    private const val CLASS_LIFECYCLE_OLD = "android.arch.lifecycle.Lifecycle"
 
-        private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
-            //noinspection ExternalAnnotations
-            if (field.annotations.any { it.qualifiedName?.endsWith("ApplicationContext") == true }) {
-                // dagger.hilt.android.qualifiers.ApplicationContext
-                // and various other ones like com.google.android.apps.common.inject.annotation.ApplicationContext;
-                // see b/159130139
-                return true
-            } else if (field is KtLightFieldForSourceDeclarationSupport) {
-                val origin = field.kotlinOrigin
-                if (origin != null && origin.annotationEntries.any { it.shortName?.identifier == "ApplicationContext" }) {
-                    return true
-                }
-            }
-
-            // Don't flag names like "sAppContext" or "applicationContext".
-            val name = field.name
-            val lower = name.toLowerCase(Locale.US)
-            if (lower.contains("appcontext") || lower.contains("application")) {
-                if (CLASS_CONTEXT == cls.qualifiedName) {
-                    return true
-                }
-            }
-
-            return false
+    private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
+      //noinspection ExternalAnnotations
+      if (field.annotations.any { it.qualifiedName?.endsWith("ApplicationContext") == true }) {
+        // dagger.hilt.android.qualifiers.ApplicationContext
+        // and various other ones like
+        // com.google.android.apps.common.inject.annotation.ApplicationContext;
+        // see b/159130139
+        return true
+      } else if (field is KtLightFieldForSourceDeclarationSupport) {
+        val origin = field.kotlinOrigin
+        if (
+          origin != null &&
+            origin.annotationEntries.any { it.shortName?.identifier == "ApplicationContext" }
+        ) {
+          return true
         }
+      }
 
-        private fun isLeakCandidate(cls: PsiClass, evaluator: JavaEvaluator): Boolean {
-            return (
-                evaluator.extendsClass(cls, CLASS_CONTEXT, false) &&
-                    !evaluator.extendsClass(cls, CLASS_APPLICATION, false)
-                ) ||
-                evaluator.extendsClass(cls, CLASS_VIEW, false) ||
-                evaluator.extendsClass(cls, CLASS_FRAGMENT, false) ||
-                // TODO: Include androidx fragments here?
-
-                // From https://developer.android.com/topic/libraries/architecture/viewmodel:
-                // Caution: A ViewModel must never reference a view, Lifecycle, or any
-                // class that may hold a reference to the activity context
-                evaluator.extendsClass(cls, CLASS_LIFECYCLE, false) ||
-                evaluator.extendsClass(cls, CLASS_LIFECYCLE_OLD, false)
+      // Don't flag names like "sAppContext" or "applicationContext".
+      val name = field.name
+      val lower = name.toLowerCase(Locale.US)
+      if (lower.contains("appcontext") || lower.contains("application")) {
+        if (CLASS_CONTEXT == cls.qualifiedName) {
+          return true
         }
+      }
+
+      return false
     }
+
+    private fun isLeakCandidate(cls: PsiClass, evaluator: JavaEvaluator): Boolean {
+      return (evaluator.extendsClass(cls, CLASS_CONTEXT, false) &&
+        !evaluator.extendsClass(cls, CLASS_APPLICATION, false)) ||
+        evaluator.extendsClass(cls, CLASS_VIEW, false) ||
+        evaluator.extendsClass(cls, CLASS_FRAGMENT, false) ||
+        // TODO: Include androidx fragments here?
+
+        // From https://developer.android.com/topic/libraries/architecture/viewmodel:
+        // Caution: A ViewModel must never reference a view, Lifecycle, or any
+        // class that may hold a reference to the activity context
+        evaluator.extendsClass(cls, CLASS_LIFECYCLE, false) ||
+        evaluator.extendsClass(cls, CLASS_LIFECYCLE_OLD, false)
+    }
+  }
 }

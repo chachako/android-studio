@@ -36,134 +36,133 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.psi.PsiMethod
+import java.io.IOException
+import kotlin.math.max
 import org.jetbrains.uast.UCallExpression
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
-import kotlin.math.max
 
 /** Checks related to RemoteViews. */
 class RemoteViewDetector : Detector(), SourceCodeScanner {
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            RemoteViewDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION =
+      Implementation(RemoteViewDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        /** Unsupported views in a remote view. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "RemoteViewLayout",
-            briefDescription = "Unsupported View in RemoteView",
-            explanation = """
+    /** Unsupported views in a remote view. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "RemoteViewLayout",
+        briefDescription = "Unsupported View in RemoteView",
+        explanation =
+          """
             In a `RemoteView`, only some layouts and views are allowed.
             """,
-            moreInfo = "https://developer.android.com/reference/android/widget/RemoteViews",
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.ERROR,
-            androidSpecific = true,
-            implementation = IMPLEMENTATION
-        )
+        moreInfo = "https://developer.android.com/reference/android/widget/RemoteViews",
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        androidSpecific = true,
+        implementation = IMPLEMENTATION
+      )
+  }
+
+  override fun getApplicableConstructorTypes(): List<String> {
+    return listOf("android.widget.RemoteViews")
+  }
+
+  override fun visitConstructor(
+    context: JavaContext,
+    node: UCallExpression,
+    constructor: PsiMethod
+  ) {
+    val arguments = node.valueArguments
+    if (arguments.size != 2) return
+    val argument = arguments[1]
+    val resource = ResourceReference.get(argument) ?: return
+    if (resource.`package` == ANDROID_PKG || resource.type != LAYOUT) {
+      return
     }
 
-    override fun getApplicableConstructorTypes(): List<String> {
-        return listOf("android.widget.RemoteViews")
-    }
+    val client = context.client
+    val full = context.isGlobalAnalysis()
+    val project = if (full) context.mainProject else context.project
+    val resources = context.client.getResources(project, LOCAL_DEPENDENCIES)
 
-    override fun visitConstructor(
-        context: JavaContext,
-        node: UCallExpression,
-        constructor: PsiMethod
-    ) {
-        val arguments = node.valueArguments
-        if (arguments.size != 2) return
-        val argument = arguments[1]
-        val resource = ResourceReference.get(argument) ?: return
-        if (resource.`package` == ANDROID_PKG || resource.type != LAYOUT) {
-            return
-        }
-
-        val client = context.client
-        val full = context.isGlobalAnalysis()
-        val project = if (full) context.mainProject else context.project
-        val resources = context.client.getResources(project, LOCAL_DEPENDENCIES)
-
-        // See if the associated resource references propertyValuesHolder, and if so
-        // suggest switching to AnimatorInflaterCompat.loadAnimator.
-        val items =
-            resources.getResources(TODO(), resource.type, resource.name)
-        var tags: MutableSet<String>? = null
-        val paths = items.asSequence().mapNotNull { it.source }.toSet()
-        for (path in paths) {
-            val min = max(context.project.minSdk, getFolderVersion(path.rawPath))
-            try {
-                val parser = client.createXmlPullParser(path) ?: continue
-                while (true) {
-                    val event = parser.next()
-                    if (event == XmlPullParser.START_TAG) {
-                        val tag = parser.name ?: continue
-                        if (!isSupportedTag(tag, min)) {
-                            (tags ?: HashSet<String>().also { tags = it }).add(tag)
-                        }
-                    } else if (event == XmlPullParser.END_DOCUMENT) {
-                        break
-                    }
-                }
-            } catch (ignore: XmlPullParserException) {
-                // Users might be editing these files in the IDE; don't flag
-            } catch (ignore: IOException) {
-                // Users might be editing these files in the IDE; don't flag
+    // See if the associated resource references propertyValuesHolder, and if so
+    // suggest switching to AnimatorInflaterCompat.loadAnimator.
+    val items = resources.getResources(TODO(), resource.type, resource.name)
+    var tags: MutableSet<String>? = null
+    val paths = items.asSequence().mapNotNull { it.source }.toSet()
+    for (path in paths) {
+      val min = max(context.project.minSdk, getFolderVersion(path.rawPath))
+      try {
+        val parser = client.createXmlPullParser(path) ?: continue
+        while (true) {
+          val event = parser.next()
+          if (event == XmlPullParser.START_TAG) {
+            val tag = parser.name ?: continue
+            if (!isSupportedTag(tag, min)) {
+              (tags ?: HashSet<String>().also { tags = it }).add(tag)
             }
+          } else if (event == XmlPullParser.END_DOCUMENT) {
+            break
+          }
         }
-        tags?.let { set ->
-            val sorted = set.toSortedSet()
-            context.report(
-                ISSUE, node, context.getLocation(node),
-                "`@layout/${resource.name}` includes views not allowed in a `RemoteView`: ${sorted.joinToString()}"
-            )
-        }
+      } catch (ignore: XmlPullParserException) {
+        // Users might be editing these files in the IDE; don't flag
+      } catch (ignore: IOException) {
+        // Users might be editing these files in the IDE; don't flag
+      }
     }
-
-    private fun isSupportedTag(tag: String, min: Int): Boolean {
-        if (tag.startsWith(VIEW_PKG_PREFIX) || tag.startsWith(WIDGET_PKG_PREFIX)) {
-            return isSupportedTag(tag.substringAfterLast('.'), min)
-        }
-        return when (tag) {
-            "AdapterViewFlipper",
-            "FrameLayout",
-            "GridLayout",
-            "GridView",
-            "LinearLayout",
-            "ListView",
-            "RelativeLayout",
-            "StackView",
-            "ViewFlipper",
-            "AnalogClock",
-            "Button",
-            "Chronometer",
-            "ImageButton",
-            "ImageView",
-            "ProgressBar",
-            "TextClock",
-            "TextView" -> true
-
-            "CheckBox",
-            "Switch",
-            "RadioButton",
-            "RadioGroup" -> min >= 31
-
-            // These are not listed in the docs for RemoteView, but are annotated with
-            // @RemoteView in the source code:
-            "AbsoluteLayout",
-            "ViewStub" -> true // b/2541651, fixed in 2012
-
-            // meta tags handled by inflater
-            VIEW_MERGE,
-            REQUEST_FOCUS,
-            VIEW_INCLUDE -> true
-
-            else -> false
-        }
+    tags?.let { set ->
+      val sorted = set.toSortedSet()
+      context.report(
+        ISSUE,
+        node,
+        context.getLocation(node),
+        "`@layout/${resource.name}` includes views not allowed in a `RemoteView`: ${sorted.joinToString()}"
+      )
     }
+  }
+
+  private fun isSupportedTag(tag: String, min: Int): Boolean {
+    if (tag.startsWith(VIEW_PKG_PREFIX) || tag.startsWith(WIDGET_PKG_PREFIX)) {
+      return isSupportedTag(tag.substringAfterLast('.'), min)
+    }
+    return when (tag) {
+      "AdapterViewFlipper",
+      "FrameLayout",
+      "GridLayout",
+      "GridView",
+      "LinearLayout",
+      "ListView",
+      "RelativeLayout",
+      "StackView",
+      "ViewFlipper",
+      "AnalogClock",
+      "Button",
+      "Chronometer",
+      "ImageButton",
+      "ImageView",
+      "ProgressBar",
+      "TextClock",
+      "TextView" -> true
+      "CheckBox",
+      "Switch",
+      "RadioButton",
+      "RadioGroup" -> min >= 31
+
+      // These are not listed in the docs for RemoteView, but are annotated with
+      // @RemoteView in the source code:
+      "AbsoluteLayout",
+      "ViewStub" -> true // b/2541651, fixed in 2012
+
+      // meta tags handled by inflater
+      VIEW_MERGE,
+      REQUEST_FOCUS,
+      VIEW_INCLUDE -> true
+      else -> false
+    }
+  }
 }

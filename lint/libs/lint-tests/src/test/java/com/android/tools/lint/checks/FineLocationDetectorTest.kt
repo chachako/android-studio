@@ -17,12 +17,13 @@
 package com.android.tools.lint.checks
 
 class FineLocationDetectorTest : AbstractCheckTest() {
-    override fun getDetector() = FineLocationDetector()
+  override fun getDetector() = FineLocationDetector()
 
-    fun testDocumentationExample() {
-        lint().files(
-            manifest(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -33,21 +34,25 @@ class FineLocationDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:3: Error: If you need access to FINE location, you must request both ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION [CoarseFineLocation]
                 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testFineNoCoarsePermissionPreS() {
-        lint().files(
-            manifest(
-                """
+  fun testFineNoCoarsePermissionPreS() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -58,14 +63,18 @@ class FineLocationDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testOnlyCoarsePermission() {
-        lint().files(
-            manifest(
-                """
+  fun testOnlyCoarsePermission() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
                     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -76,14 +85,18 @@ class FineLocationDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testCoarseAndFinePermission() {
-        lint().files(
-            manifest(
-                """
+  fun testCoarseAndFinePermission() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
                     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -94,7 +107,10 @@ class FineLocationDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

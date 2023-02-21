@@ -43,142 +43,143 @@ import org.w3c.dom.Element
 
 /** Detector which finds unlabeled text fields */
 class LabelForDetector : LayoutDetector() {
-    private var labels: MutableSet<String>? = null
-    private var editableTextFields: MutableList<Element>? = null
+  private var labels: MutableSet<String>? = null
+  private var editableTextFields: MutableList<Element>? = null
 
-    override fun getApplicableAttributes(): Collection<String> {
-        return listOf(ATTR_LABEL_FOR)
+  override fun getApplicableAttributes(): Collection<String> {
+    return listOf(ATTR_LABEL_FOR)
+  }
+
+  override fun getApplicableElements(): Collection<String> {
+    return listOf(EDIT_TEXT, AUTO_COMPLETE_TEXT_VIEW, MULTI_AUTO_COMPLETE_TEXT_VIEW)
+  }
+
+  override fun afterCheckFile(context: Context) {
+    val labels = labels ?: emptySet()
+    val editableTextFields = editableTextFields ?: emptyList()
+    this.labels = null
+    this.editableTextFields = null
+
+    for (element in editableTextFields) {
+      val id = element.getAttributeNS(ANDROID_URI, ATTR_ID)
+      val hintProvided = element.hasAttributeNS(ANDROID_URI, ATTR_HINT)
+      var labelForProvided = false
+      when {
+        labels.contains(id) -> labelForProvided = true
+        id.startsWith(NEW_ID_PREFIX) ->
+          labelForProvided = labels.contains(ID_PREFIX + stripIdPrefix(id))
+        id.startsWith(ID_PREFIX) ->
+          labelForProvided = labels.contains(NEW_ID_PREFIX + stripIdPrefix(id))
+      }
+
+      // Note: if only android:hint is provided, no need for a warning.
+      if (
+        (!hintProvided || !labelForProvided) &&
+          (hintProvided || labelForProvided) &&
+          (!labelForProvided || context.project.minSdk >= 17)
+      ) {
+        return
+      }
+      val location = context.getLocation(element)
+      val incident = Incident(ISSUE, element, location, "")
+      context.report(incident, map().put(KEY_HINT, hintProvided).put(KEY_LABEL, labelForProvided))
     }
+  }
 
-    override fun getApplicableElements(): Collection<String> {
-        return listOf(
-            EDIT_TEXT,
-            AUTO_COMPLETE_TEXT_VIEW,
-            MULTI_AUTO_COMPLETE_TEXT_VIEW
-        )
-    }
-
-    override fun afterCheckFile(context: Context) {
-        val labels = labels ?: emptySet()
-        val editableTextFields = editableTextFields ?: emptyList()
-        this.labels = null
-        this.editableTextFields = null
-
-        for (element in editableTextFields) {
-            val id = element.getAttributeNS(ANDROID_URI, ATTR_ID)
-            val hintProvided = element.hasAttributeNS(ANDROID_URI, ATTR_HINT)
-            var labelForProvided = false
-            when {
-                labels.contains(id) -> labelForProvided = true
-                id.startsWith(NEW_ID_PREFIX) -> labelForProvided = labels.contains(ID_PREFIX + stripIdPrefix(id))
-                id.startsWith(ID_PREFIX) -> labelForProvided = labels.contains(NEW_ID_PREFIX + stripIdPrefix(id))
-            }
-
-            // Note: if only android:hint is provided, no need for a warning.
-            if ((!hintProvided || !labelForProvided) &&
-                (hintProvided || labelForProvided) &&
-                (!labelForProvided || context.project.minSdk >= 17)
-            ) {
-                return
-            }
-            val location = context.getLocation(element)
-            val incident = Incident(ISSUE, element, location, "")
-            context.report(incident, map().put(KEY_HINT, hintProvided).put(KEY_LABEL, labelForProvided))
-        }
-    }
-
-    override fun filterIncident(
-        context: Context,
-        incident: Incident,
-        map: LintMap
-    ): Boolean {
-        val hintProvided = map.getBoolean(KEY_HINT) ?: false
-        val labelForProvided = map.getBoolean(KEY_LABEL) ?: false
-        var message = ""
-        val minSdk = context.mainProject.minSdk
-        if (hintProvided && labelForProvided) {
-            // Note: labelFor no-ops below 17.
-            if (minSdk >= 17) {
-                message = "$PROVIDE_LABEL_FOR_OR_HINT, but not both"
-            }
-        } else if (!hintProvided && !labelForProvided) {
-            message = if (minSdk < 17) {
-                PROVIDE_HINT
-            } else {
-                PROVIDE_LABEL_FOR_OR_HINT
-            }
+  override fun filterIncident(context: Context, incident: Incident, map: LintMap): Boolean {
+    val hintProvided = map.getBoolean(KEY_HINT) ?: false
+    val labelForProvided = map.getBoolean(KEY_LABEL) ?: false
+    var message = ""
+    val minSdk = context.mainProject.minSdk
+    if (hintProvided && labelForProvided) {
+      // Note: labelFor no-ops below 17.
+      if (minSdk >= 17) {
+        message = "$PROVIDE_LABEL_FOR_OR_HINT, but not both"
+      }
+    } else if (!hintProvided && !labelForProvided) {
+      message =
+        if (minSdk < 17) {
+          PROVIDE_HINT
         } else {
-            // Note: if only android:hint is provided, no need for a warning.
-            if (labelForProvided) {
-                if (minSdk < 17) {
-                    message = PROVIDE_HINT
-                }
-            }
+          PROVIDE_LABEL_FOR_OR_HINT
         }
-        if (message.isEmpty()) {
-            return false
+    } else {
+      // Note: if only android:hint is provided, no need for a warning.
+      if (labelForProvided) {
+        if (minSdk < 17) {
+          message = PROVIDE_HINT
         }
-
-        incident.message = messageWithPrefix(message)
-        return true
+      }
+    }
+    if (message.isEmpty()) {
+      return false
     }
 
-    override fun visitAttribute(context: XmlContext, attribute: Attr) {
-        assert(attribute.localName == ATTR_LABEL_FOR)
-        val element = attribute.ownerElement
+    incident.message = messageWithPrefix(message)
+    return true
+  }
 
-        val labels = labels ?: mutableSetOf<String>().also { labels = it }
-        labels.add(attribute.value)
+  override fun visitAttribute(context: XmlContext, attribute: Attr) {
+    assert(attribute.localName == ATTR_LABEL_FOR)
+    val element = attribute.ownerElement
 
-        // Unlikely this is anything other than a TextView. If it is, bail.
-        if (element.localName != TEXT_VIEW) {
-            return
-        }
-        val textAttributeNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_TEXT)
-        val contentDescriptionNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_CONTENT_DESCRIPTION)
-        if ((textAttributeNode == null || textAttributeNode.value.isEmpty()) &&
-            (contentDescriptionNode == null || contentDescriptionNode.value.isEmpty())
-        ) {
-            val fix = fix().alternatives(
-                fix().set().todo(ANDROID_URI, ATTR_TEXT).build(),
-                fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build()
-            )
-            context.report(
-                ISSUE,
-                element,
-                context.getElementLocation(element, null, ANDROID_URI, ATTR_LABEL_FOR),
-                messageWithPrefix(
-                    "when using `android:labelFor`, you must also define an " +
-                        "`android:text` or an `android:contentDescription`"
-                ),
-                fix
-            )
-        }
+    val labels = labels ?: mutableSetOf<String>().also { labels = it }
+    labels.add(attribute.value)
+
+    // Unlikely this is anything other than a TextView. If it is, bail.
+    if (element.localName != TEXT_VIEW) {
+      return
     }
-
-    override fun visitElement(context: XmlContext, element: Element) {
-        if (element.hasAttributeNS(ANDROID_URI, ATTR_HINT)) {
-            val hintAttributeNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_HINT)
-            if (hintAttributeNode.value.isEmpty()) {
-                context.report(
-                    ISSUE,
-                    hintAttributeNode,
-                    context.getLocation(hintAttributeNode),
-                    "Empty `android:hint` attribute"
-                )
-            }
-        }
-        val fields = editableTextFields ?: mutableListOf<Element>().also { editableTextFields = it }
-        fields.add(element)
+    val textAttributeNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_TEXT)
+    val contentDescriptionNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_CONTENT_DESCRIPTION)
+    if (
+      (textAttributeNode == null || textAttributeNode.value.isEmpty()) &&
+        (contentDescriptionNode == null || contentDescriptionNode.value.isEmpty())
+    ) {
+      val fix =
+        fix()
+          .alternatives(
+            fix().set().todo(ANDROID_URI, ATTR_TEXT).build(),
+            fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build()
+          )
+      context.report(
+        ISSUE,
+        element,
+        context.getElementLocation(element, null, ANDROID_URI, ATTR_LABEL_FOR),
+        messageWithPrefix(
+          "when using `android:labelFor`, you must also define an " +
+            "`android:text` or an `android:contentDescription`"
+        ),
+        fix
+      )
     }
+  }
 
-    companion object {
-        /** The main issue discovered by this detector */
-        @JvmField
-        val ISSUE = create(
-            id = "LabelFor",
-            briefDescription = "Missing accessibility label",
-            explanation = """
+  override fun visitElement(context: XmlContext, element: Element) {
+    if (element.hasAttributeNS(ANDROID_URI, ATTR_HINT)) {
+      val hintAttributeNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_HINT)
+      if (hintAttributeNode.value.isEmpty()) {
+        context.report(
+          ISSUE,
+          hintAttributeNode,
+          context.getLocation(hintAttributeNode),
+          "Empty `android:hint` attribute"
+        )
+      }
+    }
+    val fields = editableTextFields ?: mutableListOf<Element>().also { editableTextFields = it }
+    fields.add(element)
+  }
+
+  companion object {
+    /** The main issue discovered by this detector */
+    @JvmField
+    val ISSUE =
+      create(
+        id = "LabelFor",
+        briefDescription = "Missing accessibility label",
+        explanation =
+          """
                  Editable text fields should provide an `android:hint` or, provided your `minSdkVersion` \
                  is at least 17, they may be referenced by a view with a `android:labelFor` attribute.
 
@@ -188,21 +189,22 @@ class LabelForDetector : LayoutDetector() {
                  If your view is labeled but by a label in a different layout which includes this one, \
                  just suppress this warning from lint.
                 """,
-            category = Category.A11Y,
-            priority = 2,
-            severity = Severity.WARNING,
-            implementation = Implementation(LabelForDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
-        )
+        category = Category.A11Y,
+        priority = 2,
+        severity = Severity.WARNING,
+        implementation = Implementation(LabelForDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+      )
 
-        private const val PREFIX = "Missing accessibility label"
-        private const val PROVIDE_HINT = "where minSdk < 17, you should provide an `android:hint`"
-        private const val PROVIDE_LABEL_FOR_OR_HINT = "provide either a view with an " +
-            "`android:labelFor` that references this view or provide an `android:hint`"
-        private const val KEY_HINT = "hint"
-        private const val KEY_LABEL = "label"
+    private const val PREFIX = "Missing accessibility label"
+    private const val PROVIDE_HINT = "where minSdk < 17, you should provide an `android:hint`"
+    private const val PROVIDE_LABEL_FOR_OR_HINT =
+      "provide either a view with an " +
+        "`android:labelFor` that references this view or provide an `android:hint`"
+    private const val KEY_HINT = "hint"
+    private const val KEY_LABEL = "label"
 
-        private fun messageWithPrefix(message: String): String {
-            return "$PREFIX: $message"
-        }
+    private fun messageWithPrefix(message: String): String {
+      return "$PREFIX: $message"
     }
+  }
 }

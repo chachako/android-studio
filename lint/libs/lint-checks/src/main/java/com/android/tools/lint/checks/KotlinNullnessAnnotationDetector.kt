@@ -39,177 +39,200 @@ import org.jetbrains.uast.UMethod
 
 /** Flags misleading nullability annotations. */
 class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            KotlinNullnessAnnotationDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION =
+      Implementation(KotlinNullnessAnnotationDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        /** Incorrect nullability annotation */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "KotlinNullnessAnnotation",
-            briefDescription = "Kotlin nullability annotation",
-            explanation = """
+    /** Incorrect nullability annotation */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "KotlinNullnessAnnotation",
+        briefDescription = "Kotlin nullability annotation",
+        explanation =
+          """
                 In Kotlin, nullness is part of the type system; `s: String` is **never** null \
                 and `s: String?` is sometimes null, whether or not you add in additional annotations \
                 stating `@NonNull` or `@Nullable`. These are likely copy/paste mistakes, and are \
                 misleading.
                 """,
-            category = Category.CORRECTNESS,
-            priority = 6,
-            severity = Severity.ERROR,
-            androidSpecific = true,
-            implementation = IMPLEMENTATION,
-            enabledByDefault = true
-        )
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        androidSpecific = true,
+        implementation = IMPLEMENTATION,
+        enabledByDefault = true
+      )
 
-        const val IDEA_NULLABLE = "org.jetbrains.annotations.Nullable"
-        const val IDEA_NOTNULL = "org.jetbrains.annotations.NotNull"
-    }
+    const val IDEA_NULLABLE = "org.jetbrains.annotations.Nullable"
+    const val IDEA_NOTNULL = "org.jetbrains.annotations.NotNull"
+  }
 
-    override fun applicableAnnotations(): List<String> = listOf(
-        "Nullable", // everybody
-        "NonNull", // androidx
-        "NotNull", // jetbrains
-        "Nonnull" // jsr305
+  override fun applicableAnnotations(): List<String> =
+    listOf(
+      "Nullable", // everybody
+      "NonNull", // androidx
+      "NotNull", // jetbrains
+      "Nonnull" // jsr305
     )
 
-    override fun inheritAnnotation(annotation: String): Boolean {
-        // Require restriction annotations to be annotated everywhere
-        return false
-    }
+  override fun inheritAnnotation(annotation: String): Boolean {
+    // Require restriction annotations to be annotated everywhere
+    return false
+  }
 
-    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
-        return type == AnnotationUsageType.DEFINITION
-    }
+  override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
+    return type == AnnotationUsageType.DEFINITION
+  }
 
-    override fun visitAnnotationUsage(
-        context: JavaContext,
-        element: UElement,
-        annotationInfo: AnnotationInfo,
-        usageInfo: AnnotationUsageInfo
+  override fun visitAnnotationUsage(
+    context: JavaContext,
+    element: UElement,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo
+  ) {
+    // Only applies for Kotlin annotations
+    val sourcePsi = element.sourcePsi ?: return
+    if (!isKotlin(sourcePsi)) {
+      return
+    }
+    val annotated = element.uastParent as? UAnnotated ?: return
+
+    // What is the nullness implied by the Kotlin type? This will return "Nullable" if it's
+    // nullable (as in `Any?`) and NotNull if it's not (as in `Any`).
+    val actualTypeAnnotation = findKotlinTypeAnnotation(annotated, annotationInfo) ?: return
+    val annotationName =
+      annotationInfo.qualifiedName.substringAfterLast('.', annotationInfo.qualifiedName)
+    val declaredNullable = annotationName.endsWith("Nullable")
+    val isNullable = actualTypeAnnotation == "Nullable"
+    val annotationContradictsKotlinType = declaredNullable != isNullable
+    if (
+      !annotationContradictsKotlinType &&
+        annotationInfo.qualifiedName.startsWith("javax.annotation")
     ) {
-        // Only applies for Kotlin annotations
-        val sourcePsi = element.sourcePsi ?: return
-        if (!isKotlin(sourcePsi)) {
-            return
-        }
-        val annotated = element.uastParent as? UAnnotated ?: return
-
-        // What is the nullness implied by the Kotlin type? This will return "Nullable" if it's
-        // nullable (as in `Any?`) and NotNull if it's not (as in `Any`).
-        val actualTypeAnnotation = findKotlinTypeAnnotation(annotated, annotationInfo) ?: return
-        val annotationName = annotationInfo.qualifiedName.substringAfterLast('.', annotationInfo.qualifiedName)
-        val declaredNullable = annotationName.endsWith("Nullable")
-        val isNullable = actualTypeAnnotation == "Nullable"
-        val annotationContradictsKotlinType = declaredNullable != isNullable
-        if (!annotationContradictsKotlinType && annotationInfo.qualifiedName.startsWith("javax.annotation")) {
-            // Don't flag redundant annotations in javax since they have runtime retention and theoretically could
-            // be placed there for some sort of introspection
-            return
-        }
-
-        val message = with(StringBuilder("Do not use `@$annotationName` in Kotlin; ")) {
-            val typeString = findKotlinTypeString(annotated)
-            if (annotationContradictsKotlinType) {
-                append("the nullability is determined by the Kotlin type ")
-                if (typeString != null) {
-                    append("`").append(typeString).append("` ")
-                    assert(isNullable == typeString.endsWith("?"))
-                }
-                if (isNullable) {
-                    append("ending with `?` which declares it nullable")
-                } else {
-                    append("**not** ending with `?` which declares it not nullable")
-                }
-                append(", contradicting the annotation")
-            } else {
-                append("the nullability is already implied by the Kotlin type ")
-                if (typeString != null) {
-                    append("`").append(typeString).append("` ")
-                    assert(isNullable == typeString.endsWith("?"))
-                }
-                if (declaredNullable) {
-                    append("ending with `?`")
-                } else {
-                    append("**not** ending with `?`")
-                }
-            }
-            toString()
-        }
-
-        val location = context.getLocation(element)
-        val fixLocation = locationWithNextSpace(location, context, element)
-        val fix = fix().replace().name("Delete `@$annotationName`").all().with("").range(fixLocation).build()
-
-        val incident = Incident(ISSUE, element, location, message, fix).apply {
-            if (!annotationContradictsKotlinType) {
-                // The annotation is consistent with Kotlin type (but isn't necessary). We'll just make this a warning.
-                overrideSeverity(Severity.WARNING)
-                // We can also safely apply these fixes in batch mode. Contradictions should probably examined manually.
-                fix.autoFix()
-            }
-        }
-        context.report(incident)
+      // Don't flag redundant annotations in javax since they have runtime retention and
+      // theoretically could
+      // be placed there for some sort of introspection
+      return
     }
 
-    private fun findKotlinTypeString(annotated: UAnnotated): String? {
-        val typeReference = when (val sourcePsi = annotated.sourcePsi) {
-            is KtParameter -> sourcePsi.typeReference
-            is KtProperty -> sourcePsi.typeReference
-            is KtNamedFunction -> sourcePsi.typeReference
-            else -> null
+    val message =
+      with(StringBuilder("Do not use `@$annotationName` in Kotlin; ")) {
+        val typeString = findKotlinTypeString(annotated)
+        if (annotationContradictsKotlinType) {
+          append("the nullability is determined by the Kotlin type ")
+          if (typeString != null) {
+            append("`").append(typeString).append("` ")
+            assert(isNullable == typeString.endsWith("?"))
+          }
+          if (isNullable) {
+            append("ending with `?` which declares it nullable")
+          } else {
+            append("**not** ending with `?` which declares it not nullable")
+          }
+          append(", contradicting the annotation")
+        } else {
+          append("the nullability is already implied by the Kotlin type ")
+          if (typeString != null) {
+            append("`").append(typeString).append("` ")
+            assert(isNullable == typeString.endsWith("?"))
+          }
+          if (declaredNullable) {
+            append("ending with `?`")
+          } else {
+            append("**not** ending with `?`")
+          }
         }
-        return typeReference?.text?.trim()
-    }
+        toString()
+      }
 
-    private fun findKotlinTypeAnnotation(annotated: UAnnotated, annotationInfo: AnnotationInfo): String? {
-        //noinspection ExternalAnnotations
-        val directAnnotations = annotated.uAnnotations
+    val location = context.getLocation(element)
+    val fixLocation = locationWithNextSpace(location, context, element)
+    val fix =
+      fix().replace().name("Delete `@$annotationName`").all().with("").range(fixLocation).build()
 
-        // To determine whether a Kotlin type is nullable, we could try to do this at the Kotlin PSI level
-        // but UAST already does the heavy lifting here (see org/jetbrains/uast/kotlin/internal/kotlinInternalUastUtils.kt)
-        // and maps this to specific JetBrains nullability annotations. We'll just look for these directly on the UAST elements.
-        val kotlinNullnessAnnotation: String? = directAnnotations
-            .filter { it !== annotationInfo.annotation }
-            .mapNotNull { it.qualifiedName }
-            .firstOrNull { qualifiedName -> qualifiedName == IDEA_NOTNULL || qualifiedName == IDEA_NULLABLE }
-            ?: run {
-                if (annotated is UMethod) { // specifically, KotlinUMethod
-                    // Workaround: KotlinUMethod seems to omit nullness annotations!
-                    @Suppress("UElementAsPsi", "ExternalAnnotations")
-                    annotated.annotations.mapNotNull { it.qualifiedName }
-                        .firstOrNull { qualifiedName -> qualifiedName == IDEA_NOTNULL || qualifiedName == IDEA_NULLABLE }
-                } else {
-                    null
-                }
-            }
-        return kotlinNullnessAnnotation?.substringAfterLast('.', kotlinNullnessAnnotation)
-    }
-
-    /**
-     * Given a location, returns a location which also consumes the
-     * next character if it's whitespace (but not a newline character).
-     * This is used such that if we delete the annotation in "@Nullable
-     * type"", we end up with "type", not " type".
-     */
-    private fun locationWithNextSpace(
-        location: Location,
-        context: JavaContext,
-        element: UElement
-    ): Location {
-        var fixLocation = location
-
-        // Include whitespace next to annotation
-        val doc = context.getContents()
-        val end = location.end
-        if (doc != null && end != null && end.offset < doc.length) {
-            val nextChar = doc[end.offset]
-            if (nextChar.isWhitespace() && nextChar != '\n') {
-                fixLocation = context.getRangeLocation(element, 0, element, 1)
-            }
+    val incident =
+      Incident(ISSUE, element, location, message, fix).apply {
+        if (!annotationContradictsKotlinType) {
+          // The annotation is consistent with Kotlin type (but isn't necessary). We'll just make
+          // this a warning.
+          overrideSeverity(Severity.WARNING)
+          // We can also safely apply these fixes in batch mode. Contradictions should probably
+          // examined manually.
+          fix.autoFix()
         }
-        return fixLocation
+      }
+    context.report(incident)
+  }
+
+  private fun findKotlinTypeString(annotated: UAnnotated): String? {
+    val typeReference =
+      when (val sourcePsi = annotated.sourcePsi) {
+        is KtParameter -> sourcePsi.typeReference
+        is KtProperty -> sourcePsi.typeReference
+        is KtNamedFunction -> sourcePsi.typeReference
+        else -> null
+      }
+    return typeReference?.text?.trim()
+  }
+
+  private fun findKotlinTypeAnnotation(
+    annotated: UAnnotated,
+    annotationInfo: AnnotationInfo
+  ): String? {
+    //noinspection ExternalAnnotations
+    val directAnnotations = annotated.uAnnotations
+
+    // To determine whether a Kotlin type is nullable, we could try to do this at the Kotlin PSI
+    // level
+    // but UAST already does the heavy lifting here (see
+    // org/jetbrains/uast/kotlin/internal/kotlinInternalUastUtils.kt)
+    // and maps this to specific JetBrains nullability annotations. We'll just look for these
+    // directly on the UAST elements.
+    val kotlinNullnessAnnotation: String? =
+      directAnnotations
+        .filter { it !== annotationInfo.annotation }
+        .mapNotNull { it.qualifiedName }
+        .firstOrNull { qualifiedName ->
+          qualifiedName == IDEA_NOTNULL || qualifiedName == IDEA_NULLABLE
+        }
+        ?: run {
+          if (annotated is UMethod) { // specifically, KotlinUMethod
+            // Workaround: KotlinUMethod seems to omit nullness annotations!
+            @Suppress("UElementAsPsi", "ExternalAnnotations")
+            annotated.annotations
+              .mapNotNull { it.qualifiedName }
+              .firstOrNull { qualifiedName ->
+                qualifiedName == IDEA_NOTNULL || qualifiedName == IDEA_NULLABLE
+              }
+          } else {
+            null
+          }
+        }
+    return kotlinNullnessAnnotation?.substringAfterLast('.', kotlinNullnessAnnotation)
+  }
+
+  /**
+   * Given a location, returns a location which also consumes the next character if it's whitespace
+   * (but not a newline character). This is used such that if we delete the annotation in "@Nullable
+   * type"", we end up with "type", not " type".
+   */
+  private fun locationWithNextSpace(
+    location: Location,
+    context: JavaContext,
+    element: UElement
+  ): Location {
+    var fixLocation = location
+
+    // Include whitespace next to annotation
+    val doc = context.getContents()
+    val end = location.end
+    if (doc != null && end != null && end.offset < doc.length) {
+      val nextChar = doc[end.offset]
+      if (nextChar.isWhitespace() && nextChar != '\n') {
+        fixLocation = context.getRangeLocation(element, 0, element, 1)
+      }
     }
+    return fixLocation
+  }
 }

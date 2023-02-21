@@ -21,14 +21,15 @@ import com.android.tools.lint.checks.infrastructure.LintDetectorTest.kotlin
 import com.android.tools.lint.detector.api.Detector
 
 class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return WebViewApiAvailabilityDetector()
-    }
+  override fun getDetector(): Detector {
+    return WebViewApiAvailabilityDetector()
+  }
 
-    fun testUnguardedMethods() {
-        lint().files(
-            java(
-                """
+  fun testUnguardedMethods() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -45,9 +46,10 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -63,17 +65,19 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(WebViewApiAvailabilityDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(WebViewApiAvailabilityDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    fun testGuardedFrameworkOnlyMethods() {
-        lint().files(
-            java(
-                """
+  fun testGuardedFrameworkOnlyMethods() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -106,9 +110,10 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -139,17 +144,18 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(WebViewApiAvailabilityDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(WebViewApiAvailabilityDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    @Suppress("WrongTerminology")
-    fun testGuardedAndroidXAvailableMethods() {
-        val expected =
-            """
+  @Suppress("WrongTerminology")
+  fun testGuardedAndroidXAvailableMethods() {
+    val expected =
+      """
             src/test/pkg/WebViewActivity.java:14: Warning: Consider using WebViewCompat.createWebMessageChannel instead which will support more devices. [WebViewApiAvailability]
                         webView.createWebMessageChannel();
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,11 +184,13 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                         WebView.startSafeBrowsing(this, null);
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 9 warnings
-            """.trimIndent()
+            """
+        .trimIndent()
 
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -209,17 +217,18 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(WebViewApiAvailabilityDetector.ISSUE)
-            .run()
-            .expect(expected)
-    }
+          )
+          .indented()
+      )
+      .issues(WebViewApiAvailabilityDetector.ISSUE)
+      .run()
+      .expect(expected)
+  }
 
-    @Suppress("WrongTerminology")
-    fun testGuardedAndroidXAvailableMethodsKotlin() {
-        val expected =
-            """
+  @Suppress("WrongTerminology")
+  fun testGuardedAndroidXAvailableMethodsKotlin() {
+    val expected =
+      """
             src/test/pkg/MainActivity.kt:13: Warning: Consider using WebViewCompat.createWebMessageChannel instead which will support more devices. [WebViewApiAvailability]
                         webView.createWebMessageChannel()
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -250,9 +259,10 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
             0 errors, 9 warnings
             """
 
-        lint().files(
-            kotlin(
-                """
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -278,10 +288,11 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .issues(WebViewApiAvailabilityDetector.ISSUE)
-            .run()
-            .expect(expected)
-    }
+          )
+          .indented()
+      )
+      .issues(WebViewApiAvailabilityDetector.ISSUE)
+      .run()
+      .expect(expected)
+  }
 }

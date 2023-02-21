@@ -43,152 +43,155 @@ import com.android.tools.lint.detector.api.targetSdkLessThan
 import com.android.utils.subtag
 import com.android.utils.subtags
 import com.intellij.psi.PsiClass
+import java.util.EnumSet
 import org.jetbrains.uast.UClass
 import org.w3c.dom.Element
-import java.util.EnumSet
 
-/**
- * Ensures that PreferenceActivity and its subclasses are never
- * exported.
- */
+/** Ensures that PreferenceActivity and its subclasses are never exported. */
 class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
 
-    // ---- Implements XmlScanner ----
+  // ---- Implements XmlScanner ----
 
-    override fun getApplicableElements(): Collection<String> {
-        return listOf(TAG_ACTIVITY)
-    }
+  override fun getApplicableElements(): Collection<String> {
+    return listOf(TAG_ACTIVITY)
+  }
 
-    override fun visitElement(context: XmlContext, element: Element) {
-        val explicitlyDecided = getExplicitExported(element)
-        val implicitlyExportedPreS = explicitlyDecided == null && isImplicitlyExportedPreS(element)
-        if (implicitlyExportedPreS || explicitlyDecided == true) {
-            val className = resolveManifestName(element)
-            if (className == PREFERENCE_ACTIVITY) {
-                val message = "`PreferenceActivity` should not be exported"
-                val incident = Incident(ISSUE, element, context.getLocation(element), message)
-                if (implicitlyExportedPreS) {
-                    context.report(incident, targetSdkLessThan(31))
-                } else {
-                    context.report(incident)
-                }
-            } else {
-                val parser = context.client.getUastParser(context.project)
-                val evaluator = parser.evaluator
-                val declaration = evaluator.findClass(className.replace('$', '.'))
-                if (declaration != null && evaluator.extendsClass(declaration, PREFERENCE_ACTIVITY, true)) {
-                    val overrides = overridesIsValidFragment(evaluator, declaration)
-                    val message = "`PreferenceActivity` subclass $className should not be exported"
-                    val location: Location = context.getLocation(element)
-                    if (context.driver.isIsolated()) {
-                        location.secondary = context.getLocation(declaration)
-                    }
-                    val incident = Incident(ISSUE, element, location, message)
-                    context.report(
-                        incident,
-                        map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS)
-                    )
-                }
-            }
+  override fun visitElement(context: XmlContext, element: Element) {
+    val explicitlyDecided = getExplicitExported(element)
+    val implicitlyExportedPreS = explicitlyDecided == null && isImplicitlyExportedPreS(element)
+    if (implicitlyExportedPreS || explicitlyDecided == true) {
+      val className = resolveManifestName(element)
+      if (className == PREFERENCE_ACTIVITY) {
+        val message = "`PreferenceActivity` should not be exported"
+        val incident = Incident(ISSUE, element, context.getLocation(element), message)
+        if (implicitlyExportedPreS) {
+          context.report(incident, targetSdkLessThan(31))
+        } else {
+          context.report(incident)
         }
-    }
-
-    override fun filterIncident(context: Context, incident: Incident, map: LintMap): Boolean {
-        if (context.mainProject.targetSdk < 19) return true
-        if (map.getBoolean(KEY_IMPLICIT, false) == true && context.mainProject.targetSdk >= 31) return true
-        return map.getBoolean(KEY_OVERRIDES, false) == false
-    }
-
-    // ---- implements SourceCodeScanner ----
-
-    override fun applicableSuperClasses(): List<String> {
-        return listOf(PREFERENCE_ACTIVITY)
-    }
-
-    override fun visitClass(context: JavaContext, declaration: UClass) {
-        if (!context.project.reportIssues || !context.driver.isIsolated()) {
-            return
+      } else {
+        val parser = context.client.getUastParser(context.project)
+        val evaluator = parser.evaluator
+        val declaration = evaluator.findClass(className.replace('$', '.'))
+        if (declaration != null && evaluator.extendsClass(declaration, PREFERENCE_ACTIVITY, true)) {
+          val overrides = overridesIsValidFragment(evaluator, declaration)
+          val message = "`PreferenceActivity` subclass $className should not be exported"
+          val location: Location = context.getLocation(element)
+          if (context.driver.isIsolated()) {
+            location.secondary = context.getLocation(declaration)
+          }
+          val incident = Incident(ISSUE, element, location, message)
+          context.report(
+            incident,
+            map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS)
+          )
         }
+      }
+    }
+  }
 
-        val evaluator = context.evaluator
-        if (!evaluator.extendsClass(declaration, PREFERENCE_ACTIVITY, false)) {
-            return
-        }
-        val className = declaration.qualifiedName ?: return
-        val element = findManifestElement(context, className) ?: return
-        val explicitlyDecided: Boolean? = getExplicitExported(element)
-        val implicitlyExportedPreS = explicitlyDecided == null && isImplicitlyExportedPreS(element)
+  override fun filterIncident(context: Context, incident: Incident, map: LintMap): Boolean {
+    if (context.mainProject.targetSdk < 19) return true
+    if (map.getBoolean(KEY_IMPLICIT, false) == true && context.mainProject.targetSdk >= 31)
+      return true
+    return map.getBoolean(KEY_OVERRIDES, false) == false
+  }
 
-        if (implicitlyExportedPreS || explicitlyDecided == true) {
-            // Ignore the issue if we target an API greater than 19 and the class in
-            // question specifically overrides isValidFragment() and thus knowingly allows
-            // valid fragments.
-            val overrides = overridesIsValidFragment(evaluator, declaration)
-            val message = "`PreferenceActivity` subclass $className should not be exported in the manifest"
-            // When linting incrementally just in the Java class, place the error on
-            // the class itself rather than the export line in the manifest
-            val location = context.getNameLocation(declaration)
-            val incident = Incident(ISSUE, declaration, location, message)
-            context.report(incident, map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS))
-        }
+  // ---- implements SourceCodeScanner ----
+
+  override fun applicableSuperClasses(): List<String> {
+    return listOf(PREFERENCE_ACTIVITY)
+  }
+
+  override fun visitClass(context: JavaContext, declaration: UClass) {
+    if (!context.project.reportIssues || !context.driver.isIsolated()) {
+      return
     }
 
-    private fun findManifestElement(context: JavaContext, className: String): Element? {
-        val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
-        val mergedManifest = project.mergedManifest ?: return null
-        val manifest = mergedManifest.documentElement ?: return null
-        val application = manifest.subtag(TAG_APPLICATION) ?: return null
-        for (element in application.subtags(TAG_ACTIVITY)) {
-            val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
-            if (className.endsWith(name)) {
-                val fqn = resolveManifestName(element)
-                if (fqn == className) {
-                    return element
-                }
-            }
-        }
+    val evaluator = context.evaluator
+    if (!evaluator.extendsClass(declaration, PREFERENCE_ACTIVITY, false)) {
+      return
+    }
+    val className = declaration.qualifiedName ?: return
+    val element = findManifestElement(context, className) ?: return
+    val explicitlyDecided: Boolean? = getExplicitExported(element)
+    val implicitlyExportedPreS = explicitlyDecided == null && isImplicitlyExportedPreS(element)
 
-        return null
+    if (implicitlyExportedPreS || explicitlyDecided == true) {
+      // Ignore the issue if we target an API greater than 19 and the class in
+      // question specifically overrides isValidFragment() and thus knowingly allows
+      // valid fragments.
+      val overrides = overridesIsValidFragment(evaluator, declaration)
+      val message =
+        "`PreferenceActivity` subclass $className should not be exported in the manifest"
+      // When linting incrementally just in the Java class, place the error on
+      // the class itself rather than the export line in the manifest
+      val location = context.getNameLocation(declaration)
+      val incident = Incident(ISSUE, declaration, location, message)
+      context.report(
+        incident,
+        map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS)
+      )
+    }
+  }
+
+  private fun findManifestElement(context: JavaContext, className: String): Element? {
+    val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
+    val mergedManifest = project.mergedManifest ?: return null
+    val manifest = mergedManifest.documentElement ?: return null
+    val application = manifest.subtag(TAG_APPLICATION) ?: return null
+    for (element in application.subtags(TAG_ACTIVITY)) {
+      val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
+      if (className.endsWith(name)) {
+        val fqn = resolveManifestName(element)
+        if (fqn == className) {
+          return element
+        }
+      }
     }
 
-    private fun overridesIsValidFragment(
-        evaluator: JavaEvaluator,
-        resolvedClass: PsiClass
-    ): Boolean {
-        for (method in resolvedClass.findMethodsByName(IS_VALID_FRAGMENT, false)) {
-            if (evaluator.parametersMatch(method, TYPE_STRING)) {
-                return true
-            }
-        }
-        return false
+    return null
+  }
+
+  private fun overridesIsValidFragment(evaluator: JavaEvaluator, resolvedClass: PsiClass): Boolean {
+    for (method in resolvedClass.findMethodsByName(IS_VALID_FRAGMENT, false)) {
+      if (evaluator.parametersMatch(method, TYPE_STRING)) {
+        return true
+      }
     }
+    return false
+  }
 
-    companion object {
-        private val IMPLEMENTATION = Implementation(
-            PreferenceActivityDetector::class.java,
-            EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
-            Scope.MANIFEST_SCOPE,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object {
+    private val IMPLEMENTATION =
+      Implementation(
+        PreferenceActivityDetector::class.java,
+        EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
+        Scope.MANIFEST_SCOPE,
+        Scope.JAVA_FILE_SCOPE
+      )
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "ExportedPreferenceActivity",
-            briefDescription = "PreferenceActivity should not be exported",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "ExportedPreferenceActivity",
+        briefDescription = "PreferenceActivity should not be exported",
+        explanation =
+          """
                 Fragment injection gives anyone who can send your `PreferenceActivity` an intent \
                 the ability to load any fragment, with any arguments, in your process.""",
-            //noinspection LintImplUnexpectedDomain
-            moreInfo = "http://securityintelligence.com/new-vulnerability-android-framework-fragment-injection",
-            category = Category.SECURITY,
-            priority = 8,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION
-        )
+        moreInfo =
+          //noinspection LintImplUnexpectedDomain
+          "http://securityintelligence.com/new-vulnerability-android-framework-fragment-injection",
+        category = Category.SECURITY,
+        priority = 8,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION
+      )
 
-        private const val PREFERENCE_ACTIVITY = "android.preference.PreferenceActivity"
-        private const val IS_VALID_FRAGMENT = "isValidFragment"
-        private const val KEY_OVERRIDES = "overrides"
-        private const val KEY_IMPLICIT = "implicit"
-    }
+    private const val PREFERENCE_ACTIVITY = "android.preference.PreferenceActivity"
+    private const val IS_VALID_FRAGMENT = "isValidFragment"
+    private const val KEY_OVERRIDES = "overrides"
+    private const val KEY_IMPLICIT = "implicit"
+  }
 }

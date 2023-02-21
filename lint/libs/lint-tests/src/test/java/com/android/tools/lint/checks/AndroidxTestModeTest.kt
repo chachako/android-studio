@@ -23,15 +23,16 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class AndroidxTestModeTest {
-    private fun migrate(testFile: TestFile): String {
-        return AndroidxTestMode().migrateToAndroidX(testFile.contents)
-    }
+  private fun migrate(testFile: TestFile): String {
+    return AndroidxTestMode().migrateToAndroidX(testFile.contents)
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("java")
-        val java = java(
-            """
+  @Test
+  fun testBasic() {
+    @Language("java")
+    val java =
+      java(
+          """
             package test.pkg;
 
             import android.support.v4.app.DialogFragment;
@@ -51,11 +52,13 @@ class AndroidxTestModeTest {
                 }
             }
           """
-        ).indented()
+        )
+        .indented()
 
-        @Suppress("DanglingJavadoc", "PointlessBooleanExpression", "ConstantConditions")
-        @Language("java")
-        val expected = """
+    @Suppress("DanglingJavadoc", "PointlessBooleanExpression", "ConstantConditions")
+    @Language("java")
+    val expected =
+      """
             package test.pkg;
 
             import androidx.fragment.app.DialogFragment;
@@ -74,8 +77,10 @@ class AndroidxTestModeTest {
                     return null;
                 }
             }
-        """.trimIndent().trim()
-        val modified = migrate(java)
-        assertEquals(expected, modified)
-    }
+        """
+        .trimIndent()
+        .trim()
+    val modified = migrate(java)
+    assertEquals(expected, modified)
+  }
 }

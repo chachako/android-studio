@@ -21,12 +21,12 @@ import org.junit.Test
 
 class ImplicitExecutorDetectorTest {
 
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                java(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        java(
+            """
                     package com.google.common.util.concurrent;
 
                     import java.util.concurrent.Executor;
@@ -37,17 +37,19 @@ class ImplicitExecutorDetectorTest {
                         public static <V> void addCallback(ListenableFuture<V> future, Runnable runnable, Executor executor) {}
                     }
                     """
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     package com.google.common.util.concurrent;
                     import java.util.concurrent.Future;
                     public interface ListenableFuture<V> extends Future<V> {
                     }
                     """
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
 
                     import java.util.concurrent.Executor;
@@ -68,12 +70,13 @@ class ImplicitExecutorDetectorTest {
                         }
                     }
                 """
-                ).indented()
-            )
-            .issues(ImplicitExecutorDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(ImplicitExecutorDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/Test.java:11: Error: Use whenCompleteAsync overload with an explicit Executor instead. See go/do-not-freeze. [ImplicitExecutor]
                         future.whenCompleteAsync(null); // WARN
                         ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,6 +85,6 @@ class ImplicitExecutorDetectorTest {
                         ~~~~~~~~~~~~~~~~~~~
                 2 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

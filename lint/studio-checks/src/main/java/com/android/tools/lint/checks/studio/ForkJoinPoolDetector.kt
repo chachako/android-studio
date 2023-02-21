@@ -29,17 +29,17 @@ import org.jetbrains.uast.UCallExpression
 /** Forbid ForkJoinPool usage. */
 class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
 
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            ForkJoinPoolDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION =
+      Implementation(ForkJoinPoolDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        @JvmField
-        val COMMON_FJ_POOL = Issue.create(
-            id = "CommonForkJoinPool",
-            briefDescription = "Using common Fork Join Pool",
-            explanation = """
+    @JvmField
+    val COMMON_FJ_POOL =
+      Issue.create(
+        id = "CommonForkJoinPool",
+        briefDescription = "Using common Fork Join Pool",
+        explanation =
+          """
                 Using the common ForkJoinPool can lead to freezes because in many cases \
                 the set of threads is very low.
 
@@ -54,18 +54,20 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
 
                 For more, see `go/do-not-freeze`.
             """,
-            category = UI_RESPONSIVENESS,
-            priority = 6,
-            severity = Severity.ERROR,
-            platforms = STUDIO_PLATFORMS,
-            implementation = IMPLEMENTATION
-        )
+        category = UI_RESPONSIVENESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION
+      )
 
-        @JvmField
-        val NEW_FJ_POOL = Issue.create(
-            id = "NewForkJoinPool",
-            briefDescription = "Using Fork Join Pool",
-            explanation = """
+    @JvmField
+    val NEW_FJ_POOL =
+      Issue.create(
+        id = "NewForkJoinPool",
+        briefDescription = "Using Fork Join Pool",
+        explanation =
+          """
                 Using new Fork Join Pools should be limited to very specific use cases.
 
                 For Android Studio, when possible, prefer using the IntelliJ application pool: \
@@ -79,52 +81,52 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
 
                 For more, see `go/do-not-freeze`.
             """,
-            category = UI_RESPONSIVENESS,
-            priority = 6,
-            severity = Severity.ERROR,
-            platforms = STUDIO_PLATFORMS,
-            implementation = IMPLEMENTATION
-        )
-    }
+        category = UI_RESPONSIVENESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION
+      )
+  }
 
-    override fun getApplicableConstructorTypes() = listOf("java.util.concurrent.ForkJoinPool")
+  override fun getApplicableConstructorTypes() = listOf("java.util.concurrent.ForkJoinPool")
 
-    override fun visitConstructor(
-        context: JavaContext,
-        node: UCallExpression,
-        constructor: PsiMethod
-    ) {
-        // Called constructor directly
-        // TODO: ForkJoinTask
-        context.report(
-            NEW_FJ_POOL, node, context.getLocation(node),
-            "Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`."
-        )
-    }
+  override fun visitConstructor(
+    context: JavaContext,
+    node: UCallExpression,
+    constructor: PsiMethod
+  ) {
+    // Called constructor directly
+    // TODO: ForkJoinTask
+    context.report(
+      NEW_FJ_POOL,
+      node,
+      context.getLocation(node),
+      "Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`."
+    )
+  }
 
-    override fun getApplicableMethodNames() = listOf("commonPool")
+  override fun getApplicableMethodNames() = listOf("commonPool")
 
-    override fun visitMethodCall(
-        context: JavaContext,
-        node: UCallExpression,
-        method: PsiMethod
-    ) {
-        val evaluator = context.evaluator
-        // Make sure it's the right methods
-        when (method.name) {
-            "commonPool" -> {
-                if (!evaluator.isMemberInClass(method, "java.util.concurrent.ForkJoinPool")) {
-                    return
-                }
-            }
-            else -> {
-                error(method.name)
-            }
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    val evaluator = context.evaluator
+    // Make sure it's the right methods
+    when (method.name) {
+      "commonPool" -> {
+        if (!evaluator.isMemberInClass(method, "java.util.concurrent.ForkJoinPool")) {
+          return
         }
-
-        context.report(
-            COMMON_FJ_POOL, node, context.getNameLocation(node),
-            "Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
-        )
+      }
+      else -> {
+        error(method.name)
+      }
     }
+
+    context.report(
+      COMMON_FJ_POOL,
+      node,
+      context.getNameLocation(node),
+      "Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+    )
+  }
 }

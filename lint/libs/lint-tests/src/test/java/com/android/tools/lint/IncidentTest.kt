@@ -29,19 +29,20 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicReference
 
 class IncidentTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return UnusedResourceDetector()
-    }
+  override fun getDetector(): Detector {
+    return UnusedResourceDetector()
+  }
 
-    override fun isEnabled(issue: Issue): Boolean {
-        return true
-    }
+  override fun isEnabled(issue: Issue): Boolean {
+    return true
+  }
 
-    fun testComparator() {
-        val projectDir = getProjectDir(
-            null, // Rename .txt files to .java
-            java(
-                """
+  fun testComparator() {
+    val projectDir =
+      getProjectDir(
+        null, // Rename .txt files to .java
+        java(
+            """
                 package my.pgk;
 
                 class Test {
@@ -53,9 +54,10 @@ class IncidentTest : AbstractCheckTest() {
                    }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package my.pkg;
                 public final class R {
                     public static final class attr {
@@ -81,11 +83,12 @@ class IncidentTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            manifest().minSdk(14),
-            xml(
-                "res/layout/accessibility.xml",
-                """
+          )
+          .indented(),
+        manifest().minSdk(14),
+        xml(
+            "res/layout/accessibility.xml",
+            """
 
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/newlinear" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
                     <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
@@ -96,113 +99,94 @@ class IncidentTest : AbstractCheckTest() {
                     <ImageButton android:importantForAccessibility="no" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                 </LinearLayout>
                 """
-            ).indented()
-        )
-        val holder = AtomicReference<List<Incident>>()
-        val lintClient: TestLintClient = object : TestLintClient() {
-            override fun analyze(files: List<File>): String {
-                val lintRequest = LintRequest(this, files)
-                lintRequest.setScope(getLintScope(files))
-                driver = LintDriver(
-                    CustomIssueRegistry(),
-                    this,
-                    lintRequest
-                )
-                configureDriver(driver)
-                driver.analyze()
-                holder.set(definiteIncidents)
-                return "<unused>"
-            }
+          )
+          .indented()
+      )
+    val holder = AtomicReference<List<Incident>>()
+    val lintClient: TestLintClient =
+      object : TestLintClient() {
+        override fun analyze(files: List<File>): String {
+          val lintRequest = LintRequest(this, files)
+          lintRequest.setScope(getLintScope(files))
+          driver = LintDriver(CustomIssueRegistry(), this, lintRequest)
+          configureDriver(driver)
+          driver.analyze()
+          holder.set(definiteIncidents)
+          return "<unused>"
         }
-        val files = listOf(projectDir)
-        lintClient.analyze(files)
-        val incidents = holder.get()
-        var prev: Incident? = null
-        for (incident in incidents) {
-            if (prev != null) {
-                val equals = incident.equals(prev)
-                assertEquals(equals, prev.equals(incident))
-                val compare = incident.compareTo(prev)
-                assertEquals(equals, compare == 0)
-                assertEquals(-compare, prev.compareTo(incident))
-            }
-            prev = incident
-        }
-        Collections.sort(incidents)
-        var prev2 = prev
-        prev = null
-        for (incident in incidents) {
-            if (prev != null && prev2 != null) {
-                assertTrue(incident.compareTo(prev) > 0)
-                assertTrue(prev.compareTo(prev2) > 0)
-                assertTrue(incident.compareTo(prev2) > 0)
-                assertTrue(prev.compareTo(incident) < 0)
-                assertTrue(prev2.compareTo(prev) < 0)
-                assertTrue(prev2.compareTo(incident) < 0)
-            }
-            prev2 = prev
-            prev = incident
-        }
-
-        // Regression test for https://issuetracker.google.com/146824833
-        val incident1 = incidents[0]
-        val location1 = incident1.location
-        val location2 =
-            create(
-                location1.file,
-                DefaultPosition(
-                    location1.start!!.line,
-                    location1.start!!.column + 1,
-                    location1.start!!.offset + 1
-                ),
-                DefaultPosition(
-                    location1.end!!.line,
-                    location1.end!!.column + 1,
-                    location1.end!!.offset + 1
-                )
-            )
-        val incident2 = Incident(
-            incident1.issue,
-            incident1.message,
-            location2,
-            incident1.fix
-        ).apply {
-            this.project = incident1.project
-            this.severity = incident1.severity
-        }
-
-        // Make position on same line but shifted one char to the right; should not equal!
-        assertTrue(incident2.compareTo(incident1) > 0)
-        assertTrue(incident1.compareTo(incident2) < 0)
-        val secondary1 =
-            create(
-                location1.file,
-                location1.start!!,
-                location1.end
-            )
-        var secondary2 =
-            create(
-                location1.file,
-                location1.start!!,
-                location1.end
-            )
-        location1.secondary = secondary1
-        incident2.location.secondary = secondary2
-        assertTrue(incident2.compareTo(incident1) > 0)
-        assertTrue(incident1.compareTo(incident2) < 0)
-        secondary2 = create(
-            File(location1.file.parentFile, "_before"),
-            location1.start!!,
-            location1.end
-        )
-        incident2.location.secondary = secondary2
-        assertTrue(incident2.compareTo(incident1) > 0)
-        assertTrue(incident1.compareTo(incident2) < 0)
+      }
+    val files = listOf(projectDir)
+    lintClient.analyze(files)
+    val incidents = holder.get()
+    var prev: Incident? = null
+    for (incident in incidents) {
+      if (prev != null) {
+        val equals = incident.equals(prev)
+        assertEquals(equals, prev.equals(incident))
+        val compare = incident.compareTo(prev)
+        assertEquals(equals, compare == 0)
+        assertEquals(-compare, prev.compareTo(incident))
+      }
+      prev = incident
+    }
+    Collections.sort(incidents)
+    var prev2 = prev
+    prev = null
+    for (incident in incidents) {
+      if (prev != null && prev2 != null) {
+        assertTrue(incident.compareTo(prev) > 0)
+        assertTrue(prev.compareTo(prev2) > 0)
+        assertTrue(incident.compareTo(prev2) > 0)
+        assertTrue(prev.compareTo(incident) < 0)
+        assertTrue(prev2.compareTo(prev) < 0)
+        assertTrue(prev2.compareTo(incident) < 0)
+      }
+      prev2 = prev
+      prev = incident
     }
 
-    override fun allowCompilationErrors(): Boolean {
-        // Some of these unit tests are still relying on source code that references
-        // unresolved symbols etc.
-        return true
-    }
+    // Regression test for https://issuetracker.google.com/146824833
+    val incident1 = incidents[0]
+    val location1 = incident1.location
+    val location2 =
+      create(
+        location1.file,
+        DefaultPosition(
+          location1.start!!.line,
+          location1.start!!.column + 1,
+          location1.start!!.offset + 1
+        ),
+        DefaultPosition(
+          location1.end!!.line,
+          location1.end!!.column + 1,
+          location1.end!!.offset + 1
+        )
+      )
+    val incident2 =
+      Incident(incident1.issue, incident1.message, location2, incident1.fix).apply {
+        this.project = incident1.project
+        this.severity = incident1.severity
+      }
+
+    // Make position on same line but shifted one char to the right; should not equal!
+    assertTrue(incident2.compareTo(incident1) > 0)
+    assertTrue(incident1.compareTo(incident2) < 0)
+    val secondary1 = create(location1.file, location1.start!!, location1.end)
+    var secondary2 = create(location1.file, location1.start!!, location1.end)
+    location1.secondary = secondary1
+    incident2.location.secondary = secondary2
+    assertTrue(incident2.compareTo(incident1) > 0)
+    assertTrue(incident1.compareTo(incident2) < 0)
+    secondary2 =
+      create(File(location1.file.parentFile, "_before"), location1.start!!, location1.end)
+    incident2.location.secondary = secondary2
+    assertTrue(incident2.compareTo(incident1) > 0)
+    assertTrue(incident1.compareTo(incident2) < 0)
+  }
+
+  override fun allowCompilationErrors(): Boolean {
+    // Some of these unit tests are still relying on source code that references
+    // unresolved symbols etc.
+    return true
+  }
 }

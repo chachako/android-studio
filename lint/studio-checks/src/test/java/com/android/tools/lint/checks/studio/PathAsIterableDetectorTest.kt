@@ -23,12 +23,12 @@ import org.junit.Test
 
 class PathAsIterableDetectorTest {
 
-    @Test
-    fun testProblems() {
-        studioLint()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun testProblems() {
+    studioLint()
+      .files(
+        kotlin(
+            """
                     package test.pkg
 
                     import java.io.File
@@ -42,17 +42,18 @@ class PathAsIterableDetectorTest {
 
                     fun <E> newArrayList(elements: Iterable<E>): ArrayList<E> = TODO()
                 """
-                ).indented()
-            )
-            .issues(PathAsIterableDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(PathAsIterableDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/test/pkg/test.kt:9: Error: Using Path in an Iterable context: make sure this is doing what you expect and suppress this warning if so [PathAsIterable]
                     return newArrayList(File(root, "something").toPath())
                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 0 warnings
                 """
-            )
-    }
+      )
+  }
 }

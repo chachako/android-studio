@@ -19,45 +19,38 @@ package com.android.tools.lint
 import com.android.testutils.TestUtils
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.client.api.LintClient
+import java.io.File
+import java.io.File.pathSeparator
+import java.io.PrintWriter
+import java.io.StringWriter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
-import java.io.File.pathSeparator
-import java.io.PrintWriter
-import java.io.StringWriter
 
 class LintIssueDocGeneratorTest {
-    @get:Rule
-    var temporaryFolder = TemporaryFolder()
+  @get:Rule var temporaryFolder = TemporaryFolder()
 
-    @Before
-    fun setUp() {
-        LintClient.clientName = LintClient.CLIENT_UNIT_TESTS
-    }
+  @Before
+  fun setUp() {
+    LintClient.clientName = LintClient.CLIENT_UNIT_TESTS
+  }
 
-    @Test
-    fun testMarkDeep() {
-        // (This is the default output format)
-        val outputFolder = temporaryFolder.root
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--no-index",
-                "--issues",
-                "SdCardPath,MissingClass",
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("MissingClass.md.html, SdCardPath.md.html", names)
-        val text = files[1].readText()
-        assertEquals(
-            """
+  @Test
+  fun testMarkDeep() {
+    // (This is the default output format)
+    val outputFolder = temporaryFolder.root
+    LintIssueDocGenerator.run(
+      arrayOf("--no-index", "--issues", "SdCardPath,MissingClass", "--output", outputFolder.path)
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("MissingClass.md.html, SdCardPath.md.html", names)
+    val text = files[1].readText()
+    assertEquals(
+      """
             <meta charset="utf-8">
             (#) Hardcoded reference to `/sdcard`
 
@@ -158,42 +151,45 @@ class LintIssueDocGeneratorTest {
               [here](https://googlesamples.github.io/android-custom-lint-rules/usage/baselines.md.html).
 
             <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
-            """.trimIndent(),
-            text
-        )
-    }
-
-    @Test
-    fun testMarkdown() {
-        val outputFolder = temporaryFolder.newFolder("out")
-        val sourceFolder = temporaryFolder.newFolder("src")
-
-        val packageFolder = File(sourceFolder, "lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks")
-        packageFolder.mkdirs()
-        File(packageFolder, "SdCardDetector.kt").writeText("// Copyright 1985, 2019, 2016-2018\n")
-        // In reality this detector is in Kotlin but here testing that we correctly compute URLs based on actual
-        // discovered implementation type
-        File(packageFolder, "BatteryDetector.java").writeText("\n/** (C) 2019-2020 */\n")
-
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--md",
-                "--no-index",
-                "--issues",
-                "SdCardPath,BatteryLife",
-                "--source-url",
-                "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-master-dev:lint/",
-                sourceFolder.path,
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("BatteryLife.md, SdCardPath.md", names)
-        val text = files[0].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testMarkdown() {
+    val outputFolder = temporaryFolder.newFolder("out")
+    val sourceFolder = temporaryFolder.newFolder("src")
+
+    val packageFolder =
+      File(sourceFolder, "lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks")
+    packageFolder.mkdirs()
+    File(packageFolder, "SdCardDetector.kt").writeText("// Copyright 1985, 2019, 2016-2018\n")
+    // In reality this detector is in Kotlin but here testing that we correctly compute URLs based
+    // on actual
+    // discovered implementation type
+    File(packageFolder, "BatteryDetector.java").writeText("\n/** (C) 2019-2020 */\n")
+
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--md",
+        "--no-index",
+        "--issues",
+        "SdCardPath,BatteryLife",
+        "--source-url",
+        "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-master-dev:lint/",
+        sourceFolder.path,
+        "--output",
+        outputFolder.path
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("BatteryLife.md, SdCardPath.md", names)
+    val text = files[0].readText()
+    assertEquals(
+      """
             # Battery Life Issues
 
             Id             | `BatteryLife`
@@ -299,42 +295,45 @@ class LintIssueDocGeneratorTest {
 
             * Last, but not least, using baselines, as discussed
               [here](https://googlesamples.github.io/android-custom-lint-rules/usage/baselines.md.html).
-            """.trimIndent(),
-            text
-        )
-    }
-
-    @Test
-    fun testMarkdownIndex() {
-        val outputFolder = temporaryFolder.newFolder("out")
-        val sourceFolder = temporaryFolder.newFolder("src")
-
-        val packageFolder = File(sourceFolder, "lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks")
-        packageFolder.mkdirs()
-        File(packageFolder, "InteroperabilityDetector.kt").writeText("// Copyright 1985, 2019, 2016-2018\n")
-        File(packageFolder, "MissingClassDetector.java").writeText("\n/** (C) 2019-2020 */\n")
-
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--md",
-                "--issues",
-                "SdCardPath,MissingClass,ViewTag,LambdaLast",
-                "--source-url",
-                "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-master-dev:lint/",
-                sourceFolder.path,
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals(
-            "LambdaLast.md, MissingClass.md, SdCardPath.md, ViewTag.md, categories.md, index.md, severity.md, vendors.md, year.md",
-            names
-        )
-        val alphabetical = files[5].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testMarkdownIndex() {
+    val outputFolder = temporaryFolder.newFolder("out")
+    val sourceFolder = temporaryFolder.newFolder("src")
+
+    val packageFolder =
+      File(sourceFolder, "lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks")
+    packageFolder.mkdirs()
+    File(packageFolder, "InteroperabilityDetector.kt")
+      .writeText("// Copyright 1985, 2019, 2016-2018\n")
+    File(packageFolder, "MissingClassDetector.java").writeText("\n/** (C) 2019-2020 */\n")
+
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--md",
+        "--issues",
+        "SdCardPath,MissingClass,ViewTag,LambdaLast",
+        "--source-url",
+        "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-master-dev:lint/",
+        sourceFolder.path,
+        "--output",
+        outputFolder.path
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals(
+      "LambdaLast.md, MissingClass.md, SdCardPath.md, ViewTag.md, categories.md, index.md, severity.md, vendors.md, year.md",
+      names
+    )
+    val alphabetical = files[5].readText()
+    assertEquals(
+      """
             # Lint Issue Index
 
             Order: Alphabetical | [By category](categories.md) | [By vendor](vendors.md) | [By severity](severity.md) | [By year](year.md)
@@ -346,12 +345,13 @@ class LintIssueDocGeneratorTest {
             * Withdrawn or Obsolete Issues (1)
 
               - [ViewTag](ViewTag.md)
-            """.trimIndent(),
-            alphabetical
-        )
-        val categories = files[4].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      alphabetical
+    )
+    val categories = files[4].readText()
+    assertEquals(
+      """
             # Lint Issue Index
 
             Order: [Alphabetical](index.md) | By category | [By vendor](vendors.md) | [By severity](severity.md) | [By year](year.md)
@@ -368,12 +368,13 @@ class LintIssueDocGeneratorTest {
             * Withdrawn or Obsolete Issues (1)
 
               - [ViewTag](ViewTag.md)
-            """.trimIndent(),
-            categories
-        )
-        val severities = files[6].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      categories
+    )
+    val severities = files[6].readText()
+    assertEquals(
+      """
             # Lint Issue Index
 
             Order: [Alphabetical](index.md) | [By category](categories.md) | [By vendor](vendors.md) | By severity | [By year](year.md)
@@ -395,12 +396,13 @@ class LintIssueDocGeneratorTest {
             * Withdrawn or Obsolete Issues (1)
 
               - [ViewTag](ViewTag.md)
-            """.trimIndent(),
-            severities
-        )
-        val vendors = files[7].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      severities
+    )
+    val vendors = files[7].readText()
+    assertEquals(
+      """
             # Lint Issue Index
 
             Order: [Alphabetical](index.md) | [By category](categories.md) | By vendor | [By severity](severity.md) | [By year](year.md)
@@ -414,12 +416,13 @@ class LintIssueDocGeneratorTest {
             * Withdrawn or Obsolete Issues (1)
 
               - [ViewTag](ViewTag.md)
-            """.trimIndent(),
-            vendors
-        )
-        val years = files[8].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      vendors
+    )
+    val years = files[8].readText()
+    assertEquals(
+      """
             # Lint Issue Index
 
             Order: [Alphabetical](index.md) | [By category](categories.md) | [By vendor](vendors.md) | [By severity](severity.md) | By year
@@ -439,69 +442,72 @@ class LintIssueDocGeneratorTest {
             * Withdrawn or Obsolete Issues (1)
 
               - [ViewTag](ViewTag.md)
-            """.trimIndent(),
-            years
-        )
-    }
-
-    @Test
-    fun testMarkdownDeleted() {
-        val outputFolder = temporaryFolder.root
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--md",
-                "--no-index",
-                "--issues",
-                // MissingRegistered has been renamed, ViewTag has been deleted
-                "SdCardPath,MissingRegistered,ViewTag",
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("MissingRegistered.md, SdCardPath.md, ViewTag.md", names)
-        val text = files[0].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      years
+    )
+  }
+
+  @Test
+  fun testMarkdownDeleted() {
+    val outputFolder = temporaryFolder.root
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--md",
+        "--no-index",
+        "--issues",
+        // MissingRegistered has been renamed, ViewTag has been deleted
+        "SdCardPath,MissingRegistered,ViewTag",
+        "--output",
+        outputFolder.path
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("MissingRegistered.md, SdCardPath.md, ViewTag.md", names)
+    val text = files[0].readText()
+    assertEquals(
+      """
             # MissingRegistered
 
             This issue id is an alias for [MissingClass](MissingClass.md).
 
             (Additional metadata not available.)
-            """.trimIndent(),
-            text
-        )
-        val text2 = files[2].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      text
+    )
+    val text2 = files[2].readText()
+    assertEquals(
+      """
             # ViewTag
 
             The issue for this id has been deleted or marked obsolete and can now be
             ignored.
 
             (Additional metadata not available.)
-            """.trimIndent(),
-            text2
-        )
-    }
-
-    @Test
-    fun testSingleDoc() {
-        val output = temporaryFolder.newFile()
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--single-doc",
-                "--md",
-                "--issues",
-                "SdCardPath,MissingClass",
-                "--output",
-                output.path
-            )
-        )
-        val text = output.readText()
-        assertEquals(
             """
+        .trimIndent(),
+      text2
+    )
+  }
+
+  @Test
+  fun testSingleDoc() {
+    val output = temporaryFolder.newFile()
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--single-doc",
+        "--md",
+        "--issues",
+        "SdCardPath,MissingClass",
+        "--output",
+        output.path
+      )
+    )
+    val text = output.readText()
+    assertEquals(
+      """
             # Lint Issues
             This document lists the built-in issues for Lint. Note that lint also reads additional
             checks directly bundled with libraries, so this is a subset of the checks lint will
@@ -550,52 +556,55 @@ class LintIssueDocGeneratorTest {
             Similarly, do not reference the `/data/data/` path directly; it can vary
             in multi-user scenarios. Instead, use
             `Context.getFilesDir().getPath()`.
-            """.trimIndent(),
-            text
-        )
-    }
-
-    @Test
-    fun testLintMainIntegration() {
-        // Also allow invoking the documentation tool from the main lint
-        // binary (so that you don't have to construct a long java command
-        // with full classpath etc). This test makes sure this works.
-        val outputFolder = temporaryFolder.root
-        Main().run(
-            arrayOf(
-                "--generate-docs", // Flag to lint
-                "--md", // the rest of the flags are interpreted by this tool
-                "--no-index",
-                "--issues",
-                "SdCardPath,MissingClass,ViewTag",
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("MissingClass.md, SdCardPath.md, ViewTag.md", names)
-        val text = files[2].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testLintMainIntegration() {
+    // Also allow invoking the documentation tool from the main lint
+    // binary (so that you don't have to construct a long java command
+    // with full classpath etc). This test makes sure this works.
+    val outputFolder = temporaryFolder.root
+    Main()
+      .run(
+        arrayOf(
+          "--generate-docs", // Flag to lint
+          "--md", // the rest of the flags are interpreted by this tool
+          "--no-index",
+          "--issues",
+          "SdCardPath,MissingClass,ViewTag",
+          "--output",
+          outputFolder.path
+        )
+      )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("MissingClass.md, SdCardPath.md, ViewTag.md", names)
+    val text = files[2].readText()
+    assertEquals(
+      """
             # ViewTag
 
             The issue for this id has been deleted or marked obsolete and can now be
             ignored.
 
             (Additional metadata not available.)
-            """.trimIndent(),
-            text
-        )
-    }
-
-    @Test
-    fun testUsage() {
-        val writer = StringWriter()
-        LintIssueDocGenerator.printUsage(false, PrintWriter(writer))
-        val usage = writer.toString().trim().replace("\r\n", "\n")
-        assertEquals(
             """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testUsage() {
+    val writer = StringWriter()
+    LintIssueDocGenerator.printUsage(false, PrintWriter(writer))
+    val usage = writer.toString().trim().replace("\r\n", "\n")
+    assertEquals(
+      """
             Usage: lint-issue-docs-generator [flags] --output <directory or file>]
 
             Flags:
@@ -635,26 +644,28 @@ class LintIssueDocGeneratorTest {
             --no-severity                     Do not include the red, orange or green
                                               informational boxes showing the severity of
                                               each issue
-            """.trimIndent().trim(),
-            usage.trim()
-        )
-    }
-
-    @Test
-    fun testCodeSample() {
-        // TODO: Point it to source and test classes
-        val sources = temporaryFolder.newFolder("sources")
-        val testSources = temporaryFolder.newFolder("test-sources")
-        val outputFolder = temporaryFolder.newFolder("report")
-
-        val sourceFile = File(sources, "com/android/tools/lint/checks/SdCardDetector.kt")
-        val testSourceFile = File(testSources, "com/android/tools/lint/checks/SdCardDetectorTest.java")
-        sourceFile.parentFile?.mkdirs()
-        testSourceFile.parentFile?.mkdirs()
-        sourceFile.writeText("// Copyright 2020\n")
-        // TODO: Test Kotlin test as well
-        testSourceFile.writeText(
             """
+        .trimIndent()
+        .trim(),
+      usage.trim()
+    )
+  }
+
+  @Test
+  fun testCodeSample() {
+    // TODO: Point it to source and test classes
+    val sources = temporaryFolder.newFolder("sources")
+    val testSources = temporaryFolder.newFolder("test-sources")
+    val outputFolder = temporaryFolder.newFolder("report")
+
+    val sourceFile = File(sources, "com/android/tools/lint/checks/SdCardDetector.kt")
+    val testSourceFile = File(testSources, "com/android/tools/lint/checks/SdCardDetectorTest.java")
+    sourceFile.parentFile?.mkdirs()
+    testSourceFile.parentFile?.mkdirs()
+    sourceFile.writeText("// Copyright 2020\n")
+    // TODO: Test Kotlin test as well
+    testSourceFile.writeText(
+      """
             package com.android.tools.lint.checks;
 
             import com.android.tools.lint.detector.api.Detector;
@@ -701,30 +712,31 @@ class LintIssueDocGeneratorTest {
                 }
             }
             """
-        )
+    )
 
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--md",
-                "--no-index",
-                "--source-url", "http://example.com/lint-source-code/src/",
-                sources.path,
-                "--test-url",
-                "http://example.com/lint-source-code/tests/",
-                testSources.path,
-                "--issues",
-                "SdCardPath",
-                "--no-suppress-info",
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("SdCardPath.md", names)
-        val text = files[0].readText()
-        assertEquals(
-            """
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--md",
+        "--no-index",
+        "--source-url",
+        "http://example.com/lint-source-code/src/",
+        sources.path,
+        "--test-url",
+        "http://example.com/lint-source-code/tests/",
+        testSources.path,
+        "--issues",
+        "SdCardPath",
+        "--no-suppress-info",
+        "--output",
+        outputFolder.path
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("SdCardPath.md", names)
+    val text = files[0].readText()
+    assertEquals(
+      """
             # Hardcoded reference to `/sdcard`
 
             Id             | `SdCardPath`
@@ -781,29 +793,31 @@ class LintIssueDocGeneratorTest {
             found for this lint check, `SdCardDetector.testKotlin`.
             To report a problem with this extracted sample, visit
             https://issuetracker.google.com/issues/new?component=192708.
-            """.trimIndent(),
-            text
-        )
-    }
-
-    @Test
-    fun testCuratedCodeSample() {
-        // Like testCodeSample, but here the test has a special name which indicates
-        // that it's curated and in that case we include ALL the test files in the
-        // output, along with file names, and all the output from that test.
-        // (We also test using empty source and test urls.)
-        val sources = temporaryFolder.newFolder("sources")
-        val testSources = temporaryFolder.newFolder("test-sources")
-        val outputFolder = temporaryFolder.newFolder("report")
-
-        val sourceFile = File(sources, "com/android/tools/lint/checks/StringFormatDetector.kt")
-        val testSourceFile = File(testSources, "com/android/tools/lint/checks/StringFormatDetectorTest.java")
-        sourceFile.parentFile?.mkdirs()
-        testSourceFile.parentFile?.mkdirs()
-        sourceFile.createNewFile()
-        // TODO: Test Kotlin test as well
-        testSourceFile.writeText(
             """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testCuratedCodeSample() {
+    // Like testCodeSample, but here the test has a special name which indicates
+    // that it's curated and in that case we include ALL the test files in the
+    // output, along with file names, and all the output from that test.
+    // (We also test using empty source and test urls.)
+    val sources = temporaryFolder.newFolder("sources")
+    val testSources = temporaryFolder.newFolder("test-sources")
+    val outputFolder = temporaryFolder.newFolder("report")
+
+    val sourceFile = File(sources, "com/android/tools/lint/checks/StringFormatDetector.kt")
+    val testSourceFile =
+      File(testSources, "com/android/tools/lint/checks/StringFormatDetectorTest.java")
+    sourceFile.parentFile?.mkdirs()
+    testSourceFile.parentFile?.mkdirs()
+    sourceFile.createNewFile()
+    // TODO: Test Kotlin test as well
+    testSourceFile.writeText(
+      """
             package com.android.tools.lint.checks;
 
             import com.android.tools.lint.detector.api.Detector;
@@ -849,30 +863,31 @@ class LintIssueDocGeneratorTest {
                 }
             }
             """
-        )
+    )
 
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--md",
-                "--no-index",
-                "--source-url", "",
-                sources.path,
-                "--test-url",
-                "",
-                testSources.path,
-                "--issues",
-                "StringFormatMatches",
-                "--no-suppress-info",
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("StringFormatMatches.md", names)
-        val text = files[0].readText()
-        assertEquals(
-            """
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--md",
+        "--no-index",
+        "--source-url",
+        "",
+        sources.path,
+        "--test-url",
+        "",
+        testSources.path,
+        "--issues",
+        "StringFormatMatches",
+        "--no-suppress-info",
+        "--output",
+        outputFolder.path
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("StringFormatMatches.md", names)
+    val text = files[0].readText()
+    assertEquals(
+      """
             # `String.format` string doesn't match the XML format string
 
             Id       | `StringFormatMatches`
@@ -926,31 +941,32 @@ class LintIssueDocGeneratorTest {
                 }
             }
             ```
-            """.trimIndent(),
-            text
-        )
-    }
-
-    @Test
-    fun testOptions() {
-        // (This is the default output format)
-        val outputFolder = temporaryFolder.root
-        LintIssueDocGenerator.run(
-            arrayOf(
-                "--no-index",
-                "--issues",
-                "UnknownNullness",
-                "--no-suppress-info",
-                "--output",
-                outputFolder.path
-            )
-        )
-        val files = outputFolder.listFiles()!!.sortedBy { it.name }
-        val names = files.joinToString { it.name }
-        assertEquals("UnknownNullness.md.html", names)
-        val text = files[0].readText()
-        assertEquals(
             """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testOptions() {
+    // (This is the default output format)
+    val outputFolder = temporaryFolder.root
+    LintIssueDocGenerator.run(
+      arrayOf(
+        "--no-index",
+        "--issues",
+        "UnknownNullness",
+        "--no-suppress-info",
+        "--output",
+        outputFolder.path
+      )
+    )
+    val files = outputFolder.listFiles()!!.sortedBy { it.name }
+    val names = files.joinToString { it.name }
+    assertEquals("UnknownNullness.md.html", names)
+    val text = files[0].readText()
+    assertEquals(
+      """
             <meta charset="utf-8">
             (#) Unknown nullness
 
@@ -1009,56 +1025,64 @@ class LintIssueDocGeneratorTest {
 
 
             <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
-            """.trimIndent(),
-            text
-        )
+            """
+        .trimIndent(),
+      text
+    )
+  }
+
+  @Test
+  fun testUsageUpToDate() {
+    val root = TestUtils.getWorkspaceRoot().toFile() ?: findSourceTree()
+    val relativePath = "tools/base/lint/docs/usage/flags.md.html"
+    val flags = File(root, relativePath)
+    if (!flags.isFile) {
+      // Not yet working from Bazel context; run in IDE to check
+      return
     }
-
-    @Test
-    fun testUsageUpToDate() {
-        val root = TestUtils.getWorkspaceRoot().toFile() ?: findSourceTree()
-        val relativePath = "tools/base/lint/docs/usage/flags.md.html"
-        val flags = File(root, relativePath)
-        if (!flags.isFile) {
-            // Not yet working from Bazel context; run in IDE to check
-            return
-        }
-        val fileContents = flags.readText()
-        val start = fileContents.indexOf("## ")
-        val end = fileContents.lastIndexOf("<!-- Markdeep")
-        val writer = StringWriter()
-        Main.printUsage(PrintWriter(writer), true)
-        val usage = writer.toString()
-        val newContents = fileContents.substring(0, start) + usage.substring(usage.indexOf("## ")) + fileContents.substring(end)
-        if (fileContents != newContents && findSourceTree() != null) {
-            flags.writeText(newContents)
-            fail("Command line flags changed. Updated $flags document.")
-        }
-        assertEquals(
-            "$relativePath needs to be updated to reflect changes to the lint command line flags.\n" +
-                "***If you set the environment variable $ADT_SOURCE_TREE (or set it as a system property " +
-                "in the test run config) this test can automatically create/edit the files for you!***",
-            fileContents.dos2unix(), newContents.dos2unix()
-        )
+    val fileContents = flags.readText()
+    val start = fileContents.indexOf("## ")
+    val end = fileContents.lastIndexOf("<!-- Markdeep")
+    val writer = StringWriter()
+    Main.printUsage(PrintWriter(writer), true)
+    val usage = writer.toString()
+    val newContents =
+      fileContents.substring(0, start) +
+        usage.substring(usage.indexOf("## ")) +
+        fileContents.substring(end)
+    if (fileContents != newContents && findSourceTree() != null) {
+      flags.writeText(newContents)
+      fail("Command line flags changed. Updated $flags document.")
     }
+    assertEquals(
+      "$relativePath needs to be updated to reflect changes to the lint command line flags.\n" +
+        "***If you set the environment variable $ADT_SOURCE_TREE (or set it as a system property " +
+        "in the test run config) this test can automatically create/edit the files for you!***",
+      fileContents.dos2unix(),
+      newContents.dos2unix()
+    )
+  }
 
-    companion object {
-        private const val ADT_SOURCE_TREE = "ADT_SOURCE_TREE"
+  companion object {
+    private const val ADT_SOURCE_TREE = "ADT_SOURCE_TREE"
 
-        private fun findSourceTree(): File? {
-            val sourceTree = System.getenv(ADT_SOURCE_TREE)
-                ?: System.getProperty(ADT_SOURCE_TREE)
-                // Tip: you can temporarily set your own path here:
-                // ?: "/your/path"
-                ?: return null
+    private fun findSourceTree(): File? {
+      val sourceTree =
+        System.getenv(ADT_SOURCE_TREE)
+          ?: System.getProperty(ADT_SOURCE_TREE)
+          // Tip: you can temporarily set your own path here:
+          // ?: "/your/path"
+          ?: return null
 
-            return if (sourceTree.isNotBlank()) {
-                File(sourceTree).apply {
-                    if (!File(this, ".repo").isDirectory) {
-                        fail("Invalid directory $this: should be pointing to the root of a tools checkout directory")
-                    }
-                }
-            } else null
+      return if (sourceTree.isNotBlank()) {
+        File(sourceTree).apply {
+          if (!File(this, ".repo").isDirectory) {
+            fail(
+              "Invalid directory $this: should be pointing to the root of a tools checkout directory"
+            )
+          }
         }
+      } else null
     }
+  }
 }

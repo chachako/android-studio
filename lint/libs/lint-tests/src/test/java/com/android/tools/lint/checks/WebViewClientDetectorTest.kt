@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class WebViewClientDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return WebViewClientDetector()
-    }
+  override fun getDetector(): Detector {
+    return WebViewClientDetector()
+  }
 
-    @Suppress("LintDocExample")
-    fun testOnReceivedSslError_expectWarnings() {
-        lint().files(
-            manifest(
-                """
+  @Suppress("LintDocExample")
+  fun testOnReceivedSslError_expectWarnings() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg"
                     android:versionCode="1"
@@ -43,9 +44,10 @@ class WebViewClientDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -78,22 +80,26 @@ class WebViewClientDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MainActivity.java:25: Warning: Permitting connections with SSL-related errors could allow eavesdroppers to intercept data sent by your app, which impacts the privacy of your users. Consider canceling the connections by invoking SslErrorHandler#cancel(). [WebViewClientOnReceivedSslError]
                             handler.proceed();
                             ~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOnReceivedSslError_expectNoWarnings() {
-        lint().files(
-            manifest(
-                """
+  fun testOnReceivedSslError_expectNoWarnings() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg"
                     android:versionCode="1"
@@ -110,9 +116,10 @@ class WebViewClientDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -142,8 +149,11 @@ class WebViewClientDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 }

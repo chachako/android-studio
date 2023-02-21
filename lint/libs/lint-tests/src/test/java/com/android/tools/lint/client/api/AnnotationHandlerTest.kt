@@ -39,28 +39,32 @@ import org.jetbrains.uast.UMethod
 import org.junit.Test
 
 class AnnotationHandlerTest {
-    private fun lint() = TestLintTask.lint().sdkHome(getSdk().toFile()).issues(MyAnnotationDetector.TEST_ISSUE)
+  private fun lint() =
+    TestLintTask.lint().sdkHome(getSdk().toFile()).issues(MyAnnotationDetector.TEST_ISSUE)
 
-    private val javaAnnotation: TestFile = java(
+  private val javaAnnotation: TestFile =
+    java(
         """
         package pkg.java;
         public @interface MyJavaAnnotation {
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val kotlinAnnotation: TestFile = kotlin(
-        """
+  private val kotlinAnnotation: TestFile =
+    kotlin("""
         package pkg.kotlin
         annotation class MyKotlinAnnotation
-        """
-    ).indented()
+        """)
+      .indented()
 
-    @Test
-    fun testReferenceKotlinAnnotation() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testReferenceKotlinAnnotation() {
+    lint()
+      .files(
+        java(
+            """
                     package test.pkg;
                     import pkg.java.MyJavaAnnotation;
                     import pkg.kotlin.MyKotlinAnnotation;
@@ -74,9 +78,10 @@ class AnnotationHandlerTest {
                         }
                     }
                     """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import pkg.java.MyJavaAnnotation
                     import pkg.kotlin.MyKotlinAnnotation
@@ -120,9 +125,10 @@ class AnnotationHandlerTest {
                         }
                     }
                     """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
                     import pkg.java.MyJavaAnnotation;
                     import pkg.kotlin.MyKotlinAnnotation;
@@ -137,9 +143,10 @@ class AnnotationHandlerTest {
                         }
                     }
                     """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
                     import pkg.java.MyJavaAnnotation
                     import pkg.kotlin.MyKotlinAnnotation
@@ -154,11 +161,14 @@ class AnnotationHandlerTest {
                         }
                     }
                     """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/JavaUsage.java:7: Error: METHOD_CALL usage associated with @MyJavaAnnotation on METHOD [_AnnotationIssue]
                     new JavaApi().method1();
                     ~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,14 +195,15 @@ class AnnotationHandlerTest {
                     ~~~~~~~~~~~~~~~~~~~~~
             8 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFieldReferences() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testFieldReferences() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 import pkg.java.MyJavaAnnotation;
                 import pkg.kotlin.MyKotlinAnnotation;
@@ -204,9 +215,10 @@ class AnnotationHandlerTest {
                     public Object field = null;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.usage;
                 import test.api.Api;
                 public class Usage {
@@ -217,9 +229,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.usage
                 import test.api.Api
                 private fun use(o: Any?) { }
@@ -228,11 +241,14 @@ class AnnotationHandlerTest {
                     use(api.next.field)  // ERROR 5A, 5B on next, 6A, 6B on field
                 }
                 """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
                     use(api.field);      // ERROR 1A and 1B
                             ~~~~~
@@ -271,21 +287,23 @@ class AnnotationHandlerTest {
                              ~~~~~
             12 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFileLevelAnnotations() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testFileLevelAnnotations() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package pkg.kotlin
                 @Target(AnnotationTarget.FILE)
                 annotation class MyKotlinAnnotation
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                     package test.pkg;
 
                     public class JavaUsage {
@@ -294,9 +312,10 @@ class AnnotationHandlerTest {
                         }
                     }
                     """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
 
                     class KotlinUsage {
@@ -306,9 +325,10 @@ class AnnotationHandlerTest {
                         }
                     }
                     """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                     @file:MyKotlinAnnotation
                     package test.pkg
                     import pkg.kotlin.MyKotlinAnnotation
@@ -318,9 +338,12 @@ class AnnotationHandlerTest {
                     }
                     fun method2() { }
                     """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/JavaUsage.java:5: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on FILE [_AnnotationIssue]
                     new KotlinApi().method();
                     ~~~~~~~~~~~~~~~
@@ -338,14 +361,15 @@ class AnnotationHandlerTest {
                     ~~~~~~~~~
             5 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testOuterClassReferences() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testOuterClassReferences() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 import pkg.java.MyJavaAnnotation;
                 import pkg.kotlin.MyKotlinAnnotation;
@@ -359,9 +383,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.usage;
                 import test.api.Api;
                 import test.api.Api.InnerApi;
@@ -378,9 +403,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.usage
 
                 import test.api.Api.InnerApi
@@ -397,11 +423,14 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/usage/JavaUsage.java:10: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
                     use(InnerApi.CONSTANT); // ERROR 1A and 1B
                                  ~~~~~~~~
@@ -452,14 +481,15 @@ class AnnotationHandlerTest {
                         ~~~~~~~~
             16 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testClassReference() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testClassReference() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 import pkg.java.MyJavaAnnotation;
 
@@ -469,9 +499,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.usage;
                 import test.api.Api.InnerApi;
 
@@ -482,9 +513,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.usage
                 import test.api.Api.InnerApi
 
@@ -493,10 +525,13 @@ class AnnotationHandlerTest {
                     use(InnerApi::class.java)  // ERROR2
                 }
                 """
-            ).indented(),
-            javaAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/usage/JavaUsage.java:7: Error: CLASS_REFERENCE usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
                     use(InnerApi.class); // ERROR1
                         ~~~~~~~~~~~~~~
@@ -505,14 +540,15 @@ class AnnotationHandlerTest {
                     ~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testObjectLiteral() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testObjectLiteral() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 import pkg.java.MyJavaAnnotation;
 
@@ -522,9 +558,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.usage;
                 import test.api.Api.InnerApi;
                 public class JavaUsage {
@@ -534,9 +571,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.usage
                 import test.api.Api.InnerApi
                 fun test() {
@@ -544,10 +582,13 @@ class AnnotationHandlerTest {
                     object : InnerApi() { } // ERROR4
                 }
                 """
-            ).indented(),
-            javaAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/usage/JavaUsage.java:5: Error: METHOD_CALL usage associated with @MyJavaAnnotation on OUTER_CLASS [_AnnotationIssue]
                     new InnerApi(); // ERROR1
                     ~~~~~~~~~~~~~~
@@ -562,41 +603,44 @@ class AnnotationHandlerTest {
                          ~~~~~~~~~~
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testFieldPackageReference() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testFieldPackageReference() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 public class Api {
                     public Object field = null;
                 }
                 """
-            ).indented(),
-            bytecode(
-                "libs/packageinfoclass.jar",
-                java(
-                    "src/test/api/package-info.java",
-                    """
+          )
+          .indented(),
+        bytecode(
+          "libs/packageinfoclass.jar",
+          java(
+              "src/test/api/package-info.java",
+              """
                     @MyJavaAnnotation
                     package test.api;
                     import pkg.java.MyJavaAnnotation;
                     """
-                ).indented(),
-                0x1373820f,
-                """
+            )
+            .indented(),
+          0x1373820f,
+          """
                 test/api/package-info.class:
                 H4sIAAAAAAAAADv1b9c+BgYGcwZOdgZ2dgYORgau4PzSouRUt8ycVEYGwYLE
                 5OzE9FTdzLy0fL2sxLJERgbpoNK8kszcVM+8sszizKScVMe8vPySxJLM/Lxi
                 oKxPQXa6Pkilvm+lF5BCyFozMoiWpBaX6CcWZOojG8zIIADWkJOYl67vn5SV
                 mlwixsDAyMDEAAFMDMxgkoWBFUizAWXYGBgAA/vgtboAAAA=
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+            """
                 package test.usage;
                 import test.api.Api;
                 public class Usage {
@@ -606,24 +650,28 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            javaAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/usage/Usage.java:6: Error: FIELD_REFERENCE usage associated with @MyJavaAnnotation on PACKAGE [_AnnotationIssue]
                     use(api.field);
                             ~~~~~
             libs/packageinfoclass.jar!/test/api/package-info.class: Error: Incident reported on package annotation [_AnnotationIssue]
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testOverride() {
-        lint().files(
-            java(
-                """
+  @Test
+  fun testOverride() {
+    lint()
+      .files(
+        java(
+            """
                 package test.api;
                 import pkg.java.MyJavaAnnotation;
                 import pkg.kotlin.MyKotlinAnnotation;
@@ -634,26 +682,29 @@ class AnnotationHandlerTest {
                     void experimentalMethod();
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.api;
                 class ConcreteStableInterface implements StableInterface {
                     @Override
                     public void experimentalMethod() {} // ERROR 1A and 1B
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.api
                 class ConcreteStableInterface2 : StableInterface {
                     override fun experimentalMethod() {} // ERROR 2A and 2B
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import pkg.kotlin.MyKotlinAnnotation
 
@@ -673,11 +724,14 @@ class AnnotationHandlerTest {
                     override fun m() {}
                 }
                 """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/api/ConcreteStableInterface.java:4: Error: METHOD_OVERRIDE usage associated with @MyJavaAnnotation on METHOD [_AnnotationIssue]
                 public void experimentalMethod() {} // ERROR 1A and 1B
                             ~~~~~~~~~~~~~~~~~~
@@ -698,15 +752,16 @@ class AnnotationHandlerTest {
                              ~
             6 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun test195014464() {
-        @Suppress("MemberVisibilityCanBePrivate")
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun test195014464() {
+    @Suppress("MemberVisibilityCanBePrivate")
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.usage
                 import pkg.kotlin.MyKotlinAnnotation
 
@@ -727,11 +782,14 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/usage/FooBar.kt:13: Error: METHOD_CALL_PARAMETER usage associated with @MyKotlinAnnotation on PARAMETER [_AnnotationIssue]
                     this infixFun 0 // visit 0
                                   ~
@@ -749,14 +807,15 @@ class AnnotationHandlerTest {
                             ~
             5 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testBinaryOperators() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testBinaryOperators() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import pkg.kotlin.MyKotlinAnnotation
 
@@ -784,11 +843,14 @@ class AnnotationHandlerTest {
                     println(resource2 * color) // visit *resource*
                 }
                 """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Resource.kt:18: Error: METHOD_CALL_PARAMETER usage associated with @MyKotlinAnnotation on PARAMETER [_AnnotationIssue]
                 println(color in resource) // visit color
                         ~~~~~
@@ -812,14 +874,15 @@ class AnnotationHandlerTest {
                         ~~~~~~~~~
             7 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testArrayAccess() {
-        lint().files(
-            kotlin(
-                """
+  @Test
+  fun testArrayAccess() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import pkg.kotlin.MyKotlinAnnotation
 
@@ -849,11 +912,14 @@ class AnnotationHandlerTest {
                     resource4[0, 5] = w // visit 5
                 }
                 """
-            ).indented(),
-            javaAnnotation,
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        javaAnnotation,
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Resource.kt:20: Error: METHOD_CALL_PARAMETER usage associated with @MyKotlinAnnotation on PARAMETER [_AnnotationIssue]
                 val x = resource[5] // visit 5
                                  ~
@@ -880,30 +946,31 @@ class AnnotationHandlerTest {
                              ~
             8 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testResolveExtensionArrayAccessFunction() {
-        lint().files(
-            bytecode(
-                "libs/library.jar",
-                kotlin(
-                    """
+  @Test
+  fun testResolveExtensionArrayAccessFunction() {
+    lint()
+      .files(
+        bytecode(
+          "libs/library.jar",
+          kotlin(
+            """
                     package test.pkg1
                     import pkg.kotlin.MyKotlinAnnotation
                     class Resource
                     operator fun Resource.get(@MyKotlinAnnotation id: Int): String = ""
                     operator fun Resource.set(@MyKotlinAnnotation id: Int, value: String) {}
                 """
-                ),
-                0x96bee228,
-                """
+          ),
+          0x96bee228,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM3AJcTFUZJaXKJXkJ0uxBYCZHmXcIlz
                 ccLEDIW4glKL80uLklO9S5QYtBgA5F2hGUUAAAA=
                 """,
-                """
+          """
                 test/pkg1/Resource.class:
                 H4sIAAAAAAAAAGVRwU4CMRScdmHRFWVBVFDjWT24QLxpTNTEhGTVBA0XTgUa
                 LCxdQwvxyLf4B55MPBji0Y8yvl31ZA+TNzOvr/PSz6+3dwDH2GUoWWls8Dga
@@ -914,7 +981,7 @@ class AnnotationHandlerTest {
                 k0NZk8UJt4gFKacVDl+x9EIFR4XQTcUMqoT5nwYsw0v97RQ3sZP+AcUnL9+B
                 08RqE2uEKCTgN1FEqQNmsI4y+QaewYaB+w30FRU7wAEAAA==
                 """,
-                """
+          """
                 test/pkg1/ResourceKt.class:
                 H4sIAAAAAAAAAG1Sz08TQRT+Zpe22/JrqUUoKCBUoRXZQryhJobEuKGgAcMF
                 L9N2Uqbd7prdaaM3Tv49ejMeDPHoH2V8s1uKhc7hve+9+eZ9897Mn78/fwF4
@@ -932,9 +999,9 @@ class AnnotationHandlerTest {
                 4cQbcGK7hSr5A8o+pNZWzmG6WHWxRhaPXKxjw0UJj8/BIjzB5jmsCKkIcxEK
                 EeZjsBDb4j8xfuP2ggQAAA==
                 """
-            ),
-            kotlin(
-                """
+        ),
+        kotlin(
+            """
                 package test.pkg
                 import test.pkg1.Resource
                 import test.pkg1.get
@@ -944,10 +1011,13 @@ class AnnotationHandlerTest {
                     resource[5] = x // visit 5
                 }
                 """
-            ).indented(),
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:6: Error: METHOD_CALL_PARAMETER usage associated with @MyKotlinAnnotation on PARAMETER [_AnnotationIssue]
                 val x = resource[5] // visit 5
                                  ~
@@ -956,16 +1026,18 @@ class AnnotationHandlerTest {
                          ~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    @Test
-    fun testImplicitConstructor() {
-        // Regression test for
-        // 234779271: com.android.tools.lint.client.api.AnnotationHandler doesn't visit implicit constructor delegations
-        lint().files(
-            java(
-                """
+  @Test
+  fun testImplicitConstructor() {
+    // Regression test for
+    // 234779271: com.android.tools.lint.client.api.AnnotationHandler doesn't visit implicit
+    // constructor delegations
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import pkg.kotlin.MyKotlinAnnotation;
 
@@ -1003,9 +1075,10 @@ class AnnotationHandlerTest {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
                 import pkg.kotlin.MyKotlinAnnotation;
 
@@ -1032,10 +1105,13 @@ class AnnotationHandlerTest {
                     internal inner class IndirectChildDefaultConstructor2(a: Int) : ChildDefaultConstructor() // (15) Annotations on indirect implicit super constructor
                 }
                 """
-            ).indented(),
-            kotlinAnnotation
-        ).run().expect(
-            """
+          )
+          .indented(),
+        kotlinAnnotation
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Java.java:12: Error: METHOD_CALL usage associated with @MyKotlinAnnotation on METHOD [_AnnotationIssue]
                         this(); // (1) Invoked constructor is marked @MyKotlinAnnotation
                         ~~~~~~
@@ -1083,58 +1159,60 @@ class AnnotationHandlerTest {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             15 errors, 0 warnings
             """
+      )
+  }
+
+  // Simple detector which just flags annotation references
+  @SuppressWarnings("ALL")
+  class MyAnnotationDetector : Detector(), Detector.UastScanner {
+    override fun applicableAnnotations(): List<String> {
+      return listOf("pkg.java.MyJavaAnnotation", "pkg.kotlin.MyKotlinAnnotation")
+    }
+
+    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
+      return type != AnnotationUsageType.DEFINITION
+    }
+
+    override fun visitAnnotationUsage(
+      context: JavaContext,
+      element: UElement,
+      annotationInfo: AnnotationInfo,
+      usageInfo: AnnotationUsageInfo
+    ) {
+      if (annotationInfo.origin == AnnotationOrigin.PACKAGE) {
+        val annotation = annotationInfo.annotation
+        // Regression test for https://issuetracker.google.com/191286558: Make sure we can report
+        // incidents on annotations from package info files without throwing an exception
+        context.report(
+          TEST_ISSUE,
+          context.getLocation(annotation),
+          "Incident reported on package annotation"
+        )
+      }
+
+      val name = annotationInfo.qualifiedName.substringAfterLast('.')
+      val message =
+        "`${usageInfo.type.name}` usage associated with `@$name` on ${annotationInfo.origin}"
+      val locationType = if (element is UMethod) LocationType.NAME else LocationType.ALL
+      val location = context.getLocation(element, locationType)
+      context.report(TEST_ISSUE, element, location, message)
+    }
+
+    companion object {
+      @JvmField val TEST_CATEGORY = Category.create(Category.CORRECTNESS, "Test Category", 0)
+
+      @Suppress("SpellCheckingInspection")
+      @JvmField
+      val TEST_ISSUE =
+        Issue.create(
+          id = "_AnnotationIssue",
+          briefDescription = "Blahblah",
+          explanation = "Blahdiblah",
+          category = TEST_CATEGORY,
+          priority = 10,
+          severity = Severity.ERROR,
+          implementation = Implementation(MyAnnotationDetector::class.java, Scope.JAVA_FILE_SCOPE)
         )
     }
-
-    // Simple detector which just flags annotation references
-    @SuppressWarnings("ALL")
-    class MyAnnotationDetector : Detector(), Detector.UastScanner {
-        override fun applicableAnnotations(): List<String> {
-            return listOf("pkg.java.MyJavaAnnotation", "pkg.kotlin.MyKotlinAnnotation")
-        }
-
-        override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
-            return type != AnnotationUsageType.DEFINITION
-        }
-
-        override fun visitAnnotationUsage(
-            context: JavaContext,
-            element: UElement,
-            annotationInfo: AnnotationInfo,
-            usageInfo: AnnotationUsageInfo
-        ) {
-            if (annotationInfo.origin == AnnotationOrigin.PACKAGE) {
-                val annotation = annotationInfo.annotation
-                // Regression test for https://issuetracker.google.com/191286558: Make sure we can report
-                // incidents on annotations from package info files without throwing an exception
-                context.report(TEST_ISSUE, context.getLocation(annotation), "Incident reported on package annotation")
-            }
-
-            val name = annotationInfo.qualifiedName.substringAfterLast('.')
-            val message = "`${usageInfo.type.name}` usage associated with `@$name` on ${annotationInfo.origin}"
-            val locationType = if (element is UMethod) LocationType.NAME else LocationType.ALL
-            val location = context.getLocation(element, locationType)
-            context.report(TEST_ISSUE, element, location, message)
-        }
-
-        companion object {
-            @JvmField
-            val TEST_CATEGORY = Category.create(Category.CORRECTNESS, "Test Category", 0)
-
-            @Suppress("SpellCheckingInspection")
-            @JvmField
-            val TEST_ISSUE = Issue.create(
-                id = "_AnnotationIssue",
-                briefDescription = "Blahblah",
-                explanation = "Blahdiblah",
-                category = TEST_CATEGORY,
-                priority = 10,
-                severity = Severity.ERROR,
-                implementation = Implementation(
-                    MyAnnotationDetector::class.java,
-                    Scope.JAVA_FILE_SCOPE
-                )
-            )
-        }
-    }
+  }
 }

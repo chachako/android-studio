@@ -42,35 +42,37 @@ import org.junit.Test
 import org.w3c.dom.Attr
 
 /**
- * Checks that some lint checks cannot be suppressed with the normal
- * suppression annotations or mechanisms.
+ * Checks that some lint checks cannot be suppressed with the normal suppression annotations or
+ * mechanisms.
  */
 class SuppressLintTest {
 
-    @Test
-    fun checkErrorFlagged() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkErrorFlagged() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     import forbidden;
                     class Test {
                     }
                     """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 src/Test.java:1: Warning: Some error message here [_SecureIssue]
                 import forbidden;
                 ~~~~~~~~~~~~~~~~~
@@ -79,24 +81,25 @@ class SuppressLintTest {
                     ~~~~~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkOkSuppress() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkOkSuppress() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     import foo.bar.MyOwnAnnotation
                     @MyOwnAnnotation
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     import foo.bar.MyOwnAnnotation;
                     import forbidden;
                     @MyOwnAnnotation
@@ -107,40 +110,42 @@ class SuppressLintTest {
                         }
                     }
                     """
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+          """
                     package foo.bar;
                     @SuppressWarnings("ClassNameDiffersFromFileName")
                     public @interface MyOwnAnnotation {
                     }
                     """
-                )
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expectClean()
-    }
+        )
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun checkForbiddenSuppressWithComment() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkForbiddenSuppressWithComment() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         //noinspection AndroidLint_SecureIssue
                         forbidden()
                     }"""
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 src/test.kt:3: Error: Issue _SecureIssue is not allowed to be suppressed (but can be with @foo.bar.MyOwnAnnotation) [LintError]
                     forbidden()
                     ~~~~~~~~~~~
@@ -149,37 +154,39 @@ class SuppressLintTest {
                     ~~~~~~~~~~~
                 1 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkForbiddenSuppressWithAnnotation() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkForbiddenSuppressWithAnnotation() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     import android.annotation.SuppressLint
                     @SuppressLint("_SecureIssue")
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented(),
-                java(
-                    """
+          )
+          .indented(),
+        java(
+            """
                     import android.annotation.SuppressLint;
                     import forbidden;
                     @SuppressLint("_SecureIssue")
                     class Test {
                     }
                     """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 src/Test.java:3: Error: Issue _SecureIssue is not allowed to be suppressed (but can be with @foo.bar.MyOwnAnnotation) [LintError]
                 @SuppressLint("_SecureIssue")
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,17 +201,17 @@ class SuppressLintTest {
                     ~~~~~~~~~~~
                 2 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkForbiddenSuppressWithXmlIgnore() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                xml(
-                    "res/layout/main.xml",
-                    """
+  @Test
+  fun checkForbiddenSuppressWithXmlIgnore() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        xml(
+            "res/layout/main.xml",
+            """
                     <LinearLayout
                       android:layout_width="match_parent"
                       android:layout_height="match_parent"
@@ -218,13 +225,14 @@ class SuppressLintTest {
                         tools:ignore="_SecureIssue"/>
                     </LinearLayout>
                     """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 res/layout/main.xml:7: Error: Issue _SecureIssue is not allowed to be suppressed [LintError]
                   <androidx.compose.ui.platform.ComposeView
                   ^
@@ -233,17 +241,17 @@ class SuppressLintTest {
                     ~~~~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkForbiddenSuppressWithXmlComment() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                xml(
-                    "res/layout/main.xml",
-                    """
+  @Test
+  fun checkForbiddenSuppressWithXmlComment() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        xml(
+            "res/layout/main.xml",
+            """
                     <LinearLayout
                       android:layout_width="match_parent"
                       android:layout_height="match_parent"
@@ -253,13 +261,14 @@ class SuppressLintTest {
                       <androidx.compose.ui.platform.ComposeView android:forbidden="true"/>
                     </LinearLayout>
                     """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 res/layout/main.xml:7: Error: Issue _SecureIssue is not allowed to be suppressed [LintError]
                   <androidx.compose.ui.platform.ComposeView android:forbidden="true"/>
                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -268,95 +277,100 @@ class SuppressLintTest {
                                                             ~~~~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkForbiddenSuppressWithLintXml() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkForbiddenSuppressWithLintXml() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented(),
-                xml(
-                    "lint.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "lint.xml",
+            """
                     <lint>
                         <issue id="all" severity="ignore" />
                         <issue id="_SecureIssue" severity="ignore" />
                     </lint>
                 """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 src/test.kt:2: Warning: Some error message here [_SecureIssue]
                     forbidden()
                     ~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkIgnoredSuppressWithLintXmlAll() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkIgnoredSuppressWithLintXmlAll() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented(),
-                xml(
-                    "lint.xml",
-                    """
+          )
+          .indented(),
+        xml(
+            "lint.xml",
+            """
                     <lint>
                         <!-- Not specifically targeting the forbidden issue with "all"
                          so we skip it for this issue but don't complain about it -->
                         <issue id="all" severity="ignore" />
                     </lint>
                 """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 src/test.kt:2: Warning: Some error message here [_SecureIssue]
                     forbidden()
                     ~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkIgnoredBaseline() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkIgnoredBaseline() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .baseline(
-                xml(
-                    "baseline.xml",
-                    """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .baseline(
+        xml(
+            "baseline.xml",
+            """
                     <issues format="5" by="lint 3.3.0">
                         <issue
                             id="_SecureIssue"
@@ -375,39 +389,41 @@ class SuppressLintTest {
                         </issue>
                     </issues>
                     """
-                ).indented()
-            )
-            .skipTestModes(TestMode.PARTIAL)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.PARTIAL)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 baseline.xml: Error: Issue _SecureIssue is not allowed to be suppressed (but can be with @foo.bar.MyOwnAnnotation) [LintError]
                 src/test.kt:2: Warning: Some error message here [_SecureIssue]
                     forbidden()
                     ~~~~~~~~~~~
                 1 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkNeverSuppressible() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkNeverSuppressible() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE_NEVER_SUPPRESSIBLE)
-            .baseline(
-                xml(
-                    "baseline.xml",
-                    """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE_NEVER_SUPPRESSIBLE)
+      .baseline(
+        xml(
+            "baseline.xml",
+            """
                     <issues format="5" by="lint 3.3.0">
                         <issue
                             id="_SecureIssue2"
@@ -426,42 +442,44 @@ class SuppressLintTest {
                         </issue>
                     </issues>
                 """
-                ).indented()
-            )
-            .skipTestModes(TestMode.PARTIAL)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .skipTestModes(TestMode.PARTIAL)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 baseline.xml: Error: Issue _SecureIssue2 is not allowed to be suppressed [LintError]
                 src/test.kt:2: Warning: Some error message here [_SecureIssue2]
                     forbidden()
                     ~~~~~~~~~~~
                 1 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun checkAllowBaselineSuppressViaFlag() {
-        // This test is identical to the one above (checkNeverSuppressible)
-        // except that it turns on the --XallowBaselineSuppress flag (via the
-        // clientFactory method below)
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkAllowBaselineSuppressViaFlag() {
+    // This test is identical to the one above (checkNeverSuppressible)
+    // except that it turns on the --XallowBaselineSuppress flag (via the
+    // clientFactory method below)
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE_NEVER_SUPPRESSIBLE)
-            .baseline(
-                xml(
-                    "baseline.xml",
-                    """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE_NEVER_SUPPRESSIBLE)
+      .baseline(
+        xml(
+            "baseline.xml",
+            """
                     <issues format="5" by="lint 3.3.0">
                         <issue
                             id="_SecureIssue2"
@@ -480,29 +498,31 @@ class SuppressLintTest {
                         </issue>
                     </issues>
                 """
-                ).indented()
-            )
-            // Sets the --XallowBaselineSuppress flag:
-            .clientFactory { TestLintClient().apply { flags.allowBaselineSuppress = true } }
-            .skipTestModes(TestMode.PARTIAL)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      // Sets the --XallowBaselineSuppress flag:
+      .clientFactory { TestLintClient().apply { flags.allowBaselineSuppress = true } }
+      .skipTestModes(TestMode.PARTIAL)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun checkForbiddenSuppressWithLintOptions() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun checkForbiddenSuppressWithLintOptions() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     fun forbidden() {
                         forbidden()
                     }"""
-                ).indented(),
-                gradle(
-                    """
+          )
+          .indented(),
+        gradle(
+            """
                     apply plugin: 'com.android.application'
 
                     android {
@@ -511,14 +531,15 @@ class SuppressLintTest {
                         }
                     }
                     """
-                ).indented()
-            )
-            .issues(MySecurityDetector.TEST_ISSUE)
-            .skipTestModes(TestMode.PARTIAL)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(MySecurityDetector.TEST_ISSUE)
+      .skipTestModes(TestMode.PARTIAL)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expect(
+        """
                 src/main/kotlin/test.kt:2: Warning: Some error message here [_SecureIssue]
                     forbidden()
                     ~~~~~~~~~~~
@@ -527,16 +548,16 @@ class SuppressLintTest {
                     ~~~~~~~~~~~
                 0 errors, 2 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testSuppressProperty() {
-        lint()
-            .allowCompilationErrors()
-            .files(
-                kotlin(
-                    """
+  @Test
+  fun testSuppressProperty() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
                     class Test(
                         @Suppress("_PropertyIssue") var forbidden0: String = ""
                     ) {
@@ -550,133 +571,130 @@ class SuppressLintTest {
                           get() = ""
                     }
                     """
-                ).indented()
-            )
-            .issues(MyPropertyDetector.PROPERTY_ISSUE)
-            .sdkHome(TestUtils.getSdk().toFile())
-            .run()
-            .expectClean()
+          )
+          .indented()
+      )
+      .issues(MyPropertyDetector.PROPERTY_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expectClean()
+  }
+
+  // Sample detector which just flags calls to a method called "forbidden"
+  @SuppressWarnings("ALL")
+  class MySecurityDetector : Detector(), SourceCodeScanner, XmlScanner {
+    override fun getApplicableUastTypes() = listOf(UImportStatement::class.java)
+
+    override fun getApplicableMethodNames(): List<String> {
+      return listOf("forbidden")
     }
 
-    // Sample detector which just flags calls to a method called "forbidden"
-    @SuppressWarnings("ALL")
-    class MySecurityDetector : Detector(), SourceCodeScanner, XmlScanner {
-        override fun getApplicableUastTypes() = listOf(UImportStatement::class.java)
+    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      val message = "Some error message here"
+      val location = context.getLocation(node)
+      context.report(TEST_ISSUE, node, location, message)
+      context.report(TEST_ISSUE_NEVER_SUPPRESSIBLE, node, location, message)
+    }
 
-        override fun getApplicableMethodNames(): List<String> {
-            return listOf("forbidden")
-        }
+    override fun createUastHandler(context: JavaContext): UElementHandler = Handler(context)
 
-        override fun visitMethodCall(
-            context: JavaContext,
-            node: UCallExpression,
-            method: PsiMethod
-        ) {
+    private class Handler(private val context: JavaContext) : UElementHandler() {
+      override fun visitImportStatement(node: UImportStatement) {
+        node.importReference?.let { importReference ->
+          if (importReference.asSourceString().contains("forbidden")) {
             val message = "Some error message here"
             val location = context.getLocation(node)
             context.report(TEST_ISSUE, node, location, message)
-            context.report(TEST_ISSUE_NEVER_SUPPRESSIBLE, node, location, message)
+          }
         }
-
-        override fun createUastHandler(context: JavaContext): UElementHandler = Handler(context)
-
-        private class Handler(private val context: JavaContext) : UElementHandler() {
-            override fun visitImportStatement(node: UImportStatement) {
-                node.importReference?.let { importReference ->
-                    if (importReference.asSourceString().contains("forbidden")) {
-                        val message = "Some error message here"
-                        val location = context.getLocation(node)
-                        context.report(TEST_ISSUE, node, location, message)
-                    }
-                }
-            }
-        }
-
-        override fun getApplicableAttributes(): Collection<String> = listOf("forbidden")
-
-        override fun visitAttribute(context: XmlContext, attribute: Attr) {
-            val message = "Some error message here"
-            val location = context.getLocation(attribute)
-            context.report(TEST_ISSUE, attribute, location, message)
-            context.report(TEST_ISSUE_NEVER_SUPPRESSIBLE, attribute, location, message)
-        }
-
-        companion object {
-            @Suppress("SpellCheckingInspection")
-            @JvmField
-            val TEST_ISSUE = Issue.create(
-                id = "_SecureIssue",
-                briefDescription = "Some important security issue",
-                explanation = "Blahdiblah",
-                category = Category.SECURITY, priority = 10, severity = Severity.WARNING,
-                suppressAnnotations = listOf("foo.bar.MyOwnAnnotation"),
-                implementation = Implementation(
-                    MySecurityDetector::class.java,
-                    Scope.JAVA_AND_RESOURCE_FILES
-                )
-            )
-
-            @Suppress("SpellCheckingInspection")
-            @JvmField
-            val TEST_ISSUE_NEVER_SUPPRESSIBLE = Issue.create(
-                id = "_SecureIssue2",
-                briefDescription = "Some important security issue",
-                explanation = "Blahdiblah",
-                category = Category.SECURITY,
-                priority = 10,
-                severity = Severity.WARNING,
-                suppressAnnotations = emptyList(),
-                implementation = Implementation(
-                    MySecurityDetector::class.java,
-                    Scope.JAVA_AND_RESOURCE_FILES
-                )
-            )
-        }
+      }
     }
 
-    // Sample detector which just flags the property accessors named forbidden
-    @SuppressWarnings("ALL")
-    class MyPropertyDetector : Detector(), SourceCodeScanner, XmlScanner {
-        override fun getApplicableUastTypes() = listOf(UImportStatement::class.java, UMethod::class.java, UField::class.java)
+    override fun getApplicableAttributes(): Collection<String> = listOf("forbidden")
 
-        override fun createUastHandler(context: JavaContext): UElementHandler = Handler(context)
-
-        private class Handler(private val context: JavaContext) : UElementHandler() {
-            override fun visitImportStatement(node: UImportStatement) {
-            }
-
-            override fun visitField(node: UField) {
-                val name = node.name
-                if (name == "forbidden") {
-                    val message = "Some error message here"
-                    val location = context.getLocation(node)
-                    context.report(PROPERTY_ISSUE, node, location, message)
-                }
-            }
-
-            override fun visitMethod(node: UMethod) {
-                val name = node.name
-                if (name.startsWith("getForbidden") || name.startsWith("setForbidden")) {
-                    val message = "Some error message here"
-                    val location = context.getLocation(node)
-                    context.report(PROPERTY_ISSUE, node, location, message)
-                }
-            }
-        }
-
-        companion object {
-            @Suppress("SpellCheckingInspection")
-            @JvmField
-            val PROPERTY_ISSUE = Issue.create(
-                id = "_PropertyIssue",
-                briefDescription = "Some issue",
-                explanation = "Blahdiblah",
-                category = Category.CORRECTNESS, priority = 10, severity = Severity.WARNING,
-                implementation = Implementation(
-                    MyPropertyDetector::class.java,
-                    Scope.JAVA_FILE_SCOPE
-                )
-            )
-        }
+    override fun visitAttribute(context: XmlContext, attribute: Attr) {
+      val message = "Some error message here"
+      val location = context.getLocation(attribute)
+      context.report(TEST_ISSUE, attribute, location, message)
+      context.report(TEST_ISSUE_NEVER_SUPPRESSIBLE, attribute, location, message)
     }
+
+    companion object {
+      @Suppress("SpellCheckingInspection")
+      @JvmField
+      val TEST_ISSUE =
+        Issue.create(
+          id = "_SecureIssue",
+          briefDescription = "Some important security issue",
+          explanation = "Blahdiblah",
+          category = Category.SECURITY,
+          priority = 10,
+          severity = Severity.WARNING,
+          suppressAnnotations = listOf("foo.bar.MyOwnAnnotation"),
+          implementation =
+            Implementation(MySecurityDetector::class.java, Scope.JAVA_AND_RESOURCE_FILES)
+        )
+
+      @Suppress("SpellCheckingInspection")
+      @JvmField
+      val TEST_ISSUE_NEVER_SUPPRESSIBLE =
+        Issue.create(
+          id = "_SecureIssue2",
+          briefDescription = "Some important security issue",
+          explanation = "Blahdiblah",
+          category = Category.SECURITY,
+          priority = 10,
+          severity = Severity.WARNING,
+          suppressAnnotations = emptyList(),
+          implementation =
+            Implementation(MySecurityDetector::class.java, Scope.JAVA_AND_RESOURCE_FILES)
+        )
+    }
+  }
+
+  // Sample detector which just flags the property accessors named forbidden
+  @SuppressWarnings("ALL")
+  class MyPropertyDetector : Detector(), SourceCodeScanner, XmlScanner {
+    override fun getApplicableUastTypes() =
+      listOf(UImportStatement::class.java, UMethod::class.java, UField::class.java)
+
+    override fun createUastHandler(context: JavaContext): UElementHandler = Handler(context)
+
+    private class Handler(private val context: JavaContext) : UElementHandler() {
+      override fun visitImportStatement(node: UImportStatement) {}
+
+      override fun visitField(node: UField) {
+        val name = node.name
+        if (name == "forbidden") {
+          val message = "Some error message here"
+          val location = context.getLocation(node)
+          context.report(PROPERTY_ISSUE, node, location, message)
+        }
+      }
+
+      override fun visitMethod(node: UMethod) {
+        val name = node.name
+        if (name.startsWith("getForbidden") || name.startsWith("setForbidden")) {
+          val message = "Some error message here"
+          val location = context.getLocation(node)
+          context.report(PROPERTY_ISSUE, node, location, message)
+        }
+      }
+    }
+
+    companion object {
+      @Suppress("SpellCheckingInspection")
+      @JvmField
+      val PROPERTY_ISSUE =
+        Issue.create(
+          id = "_PropertyIssue",
+          briefDescription = "Some issue",
+          explanation = "Blahdiblah",
+          category = Category.CORRECTNESS,
+          priority = 10,
+          severity = Severity.WARNING,
+          implementation = Implementation(MyPropertyDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        )
+    }
+  }
 }

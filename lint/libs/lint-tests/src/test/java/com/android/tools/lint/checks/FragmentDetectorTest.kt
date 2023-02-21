@@ -20,19 +20,19 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import com.android.tools.lint.detector.api.Detector
 
 class FragmentDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return FragmentDetector()
-    }
+  override fun getDetector(): Detector {
+    return FragmentDetector()
+  }
 
-    override fun lint(): TestLintTask {
-        // Note: We are deliberately NOT requiring this for androidx;
-        // androidx Fragments are allowed to use non-default constructors (see issue 119675579)
-        return super.lint().skipTestModes(ANDROIDX_TEST_MODE)
-    }
+  override fun lint(): TestLintTask {
+    // Note: We are deliberately NOT requiring this for androidx;
+    // androidx Fragments are allowed to use non-default constructors (see issue 119675579)
+    return super.lint().skipTestModes(ANDROIDX_TEST_MODE)
+  }
 
-    fun testBasic() {
-        val expected =
-            """
+  fun testBasic() {
+    val expected =
+      """
             src/test/pkg/FragmentTest.java:10: Error: This fragment class should be public (test.pkg.FragmentTest.Fragment1) [ValidFragment]
                 private static class Fragment1 extends Fragment {
                                      ~~~~~~~~~
@@ -54,10 +54,11 @@ class FragmentDetectorTest : AbstractCheckTest() {
             6 errors, 0 warnings
             """
 
-        lint().files(
-            java(
-                "src/test/pkg/FragmentTest.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/FragmentTest.java",
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -118,22 +119,26 @@ class FragmentDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testAnonymousInnerClass() {
-        val expected =
-            """
+  fun testAnonymousInnerClass() {
+    val expected =
+      """
             src/test/pkg/Parent.java:7: Error: Fragments should be static such that they can be re-instantiated by the system, and anonymous classes are not static [ValidFragment]
                     return new Fragment() {
                                ~~~~~~~~
             1 errors, 0 warnings"""
 
-        lint().files(
-            java(
-                "src/test/pkg/Parent.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/Parent.java",
+            """
                     package test.pkg;
 
                     import android.app.Fragment;
@@ -145,15 +150,18 @@ class FragmentDetectorTest : AbstractCheckTest() {
                         }
                     }
                     """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testAndroidXFragment() {
-        // Regression test for
-        // 119675579: Remove the Fragments must have a no-arg constructor warning when using 1.1.0+
-        val expected =
-            """
+  fun testAndroidXFragment() {
+    // Regression test for
+    // 119675579: Remove the Fragments must have a no-arg constructor warning when using 1.1.0+
+    val expected =
+      """
             src/test/pkg/Parent.java:5: Error: This fragment should provide a default constructor (a public constructor with no arguments) (test.pkg.FragmentTest.Fragment1) [ValidFragment]
                 public static class Fragment1 extends android.support.v4.app.Fragment {
                                     ~~~~~~~~~
@@ -163,10 +171,11 @@ class FragmentDetectorTest : AbstractCheckTest() {
             2 errors, 0 warnings
         """
 
-        lint().files(
-            java(
-                "src/test/pkg/Parent.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/Parent.java",
+            """
                     package test.pkg;
 
                     public class FragmentTest {
@@ -182,23 +191,26 @@ class FragmentDetectorTest : AbstractCheckTest() {
                         }
                     }
                     """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package android.support.v4.app;
                 // Stub
                 public class Fragment {
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package androidx.fragment.app;
                 // Stub
                 public class Fragment {
                 }
                 """
-            )
-        ).run().expect(expected)
-    }
+        )
+      )
+      .run()
+      .expect(expected)
+  }
 }

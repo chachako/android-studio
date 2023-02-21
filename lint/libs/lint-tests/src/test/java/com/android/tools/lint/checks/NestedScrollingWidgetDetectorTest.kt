@@ -18,15 +18,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class NestedScrollingWidgetDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return NestedScrollingWidgetDetector()
-    }
+  override fun getDetector(): Detector {
+    return NestedScrollingWidgetDetector()
+  }
 
-    fun testNested() {
-        lint().files(
-            xml(
-                "res/layout/scrolling.xml",
-                """
+  fun testNested() {
+    lint()
+      .files(
+        xml(
+            "res/layout/scrolling.xml",
+            """
                 <ScrollView
                     xmlns:android="http://schemas.android.com/apk/res/android"
 
@@ -45,14 +46,17 @@ class NestedScrollingWidgetDetectorTest : AbstractCheckTest() {
 
                 </ScrollView>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             res/layout/scrolling.xml:11: Warning: The vertically scrolling ScrollView should not contain another vertically scrolling widget (ListView) [NestedScrolling]
                     <ListView
                      ~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

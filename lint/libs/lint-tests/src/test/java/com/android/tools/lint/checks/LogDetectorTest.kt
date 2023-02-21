@@ -19,14 +19,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class LogDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return LogDetector()
-    }
+  override fun getDetector(): Detector {
+    return LogDetector()
+  }
 
-    fun testDocumentationExampleLogTagMismatch() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExampleLogTagMismatch() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.util.Log
 
                 const val TAG1 = "tag1"
@@ -40,9 +41,12 @@ class LogDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             src/LogExample.kt:9: Error: Mismatched tags: the d() and isLoggable() calls typically should pass the same tag: TAG1 versus TAG2 [LogTagMismatch]
                         Log.d(TAG2, "message") // warn: mismatched tags - TAG1 and TAG2
                               ~~~~
@@ -51,13 +55,14 @@ class LogDetectorTest : AbstractCheckTest() {
                                        ~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testDocumentationExampleLongLogTag() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExampleLongLogTag() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package pkg1.pkg2.pkg3.pkg4.pkg5
 
                 import android.util.Log
@@ -70,21 +75,25 @@ class LogDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             src/pkg1/pkg2/pkg3/pkg4/pkg5/LogExampleInLongClassName.kt:9: Error: The logging tag can be at most 23 characters, was 35 (SuperSuperLongLogTagWhichExceedsMax) [LongLogTag]
                     Log.d(TAG, "message")
                           ~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testDocumentationExampleLogConditional() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExampleLogConditional() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import android.util.Log
 
                 const val TAG = "tag1"
@@ -95,20 +104,23 @@ class LogDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-        ).run().expect(
-            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
             src/LogExample.kt:7: Warning: The log call Log.i(...) should be conditional: surround with if (Log.isLoggable(...)) or if (BuildConfig.DEBUG) { ... } [LogConditional]
                     Log.i(TAG, "message" + m) // string is not constant; computed each time
                     ~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testBasic() {
-        val expected =
-            """
+  fun testBasic() {
+    val expected =
+      """
             src/test/pkg/LogTest.java:33: Error: Mismatched tags: the d() and isLoggable() calls typically should pass the same tag: TAG1 versus TAG2 [LogTagMismatch]
                         Log.d(TAG2, "message"); // warn: mismatched tags!
                               ~~~~
@@ -169,10 +181,11 @@ class LogDetectorTest : AbstractCheckTest() {
             11 errors, 3 warnings
             """
 
-        lint().files(
-            java(
-                "src/test/pkg/LogTest.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/LogTest.java",
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -290,18 +303,22 @@ class LogDetectorTest : AbstractCheckTest() {
                         public static final int MY_LEVEL = 5;
                     }
                 }"""
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testNoMaxLength() {
-        // As of API level 24 there's no limit of 23 chars anymore
+  fun testNoMaxLength() {
+    // As of API level 24 there's no limit of 23 chars anymore
 
-        lint().files(
-            manifest().minSdk(24),
-            java(
-                "src/test/pkg/LogTest.java",
-                """
+    lint()
+      .files(
+        manifest().minSdk(24),
+        java(
+            "src/test/pkg/LogTest.java",
+            """
                     package test.pkg;
 
                     import android.annotation.SuppressLint;
@@ -316,7 +333,10 @@ class LogDetectorTest : AbstractCheckTest() {
                             }
                         }
                     }"""
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

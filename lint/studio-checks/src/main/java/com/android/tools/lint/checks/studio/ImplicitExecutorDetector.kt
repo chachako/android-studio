@@ -27,23 +27,20 @@ import com.intellij.psi.PsiMethod
 import com.intellij.util.containers.MultiMap
 import org.jetbrains.uast.UCallExpression
 
-/**
- * Forbid methods related to Futures that run code in an implicitly
- * chosen Executor.
- */
+/** Forbid methods related to Futures that run code in an implicitly chosen Executor. */
 class ImplicitExecutorDetector : Detector(), SourceCodeScanner {
 
-    companion object Issues {
-        private val IMPLEMENTATION = Implementation(
-            ImplicitExecutorDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
+  companion object Issues {
+    private val IMPLEMENTATION =
+      Implementation(ImplicitExecutorDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "ImplicitExecutor",
-            briefDescription = "Using an implicitly chosen Executor",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "ImplicitExecutor",
+        briefDescription = "Using an implicitly chosen Executor",
+        explanation =
+          """
                 Not specifying an Executor for running callbacks is a common source of threading \
                 issues, resulting in too much work running on the UI thread or the shared \
                 ForkJoinPool used by the IDE for highlighting.
@@ -54,89 +51,75 @@ class ImplicitExecutorDetector : Detector(), SourceCodeScanner {
 
                 For more, see `go/do-not-freeze`.
             """,
-            category = UI_RESPONSIVENESS,
-            priority = 6,
-            severity = Severity.ERROR,
-            platforms = STUDIO_PLATFORMS,
-            implementation = IMPLEMENTATION
+        category = UI_RESPONSIVENESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION
+      )
+
+    private const val COMPLETABLE_FUTURE = "java.util.concurrent.CompletableFuture"
+    private const val EXECUTOR = "java.util.concurrent.Executor"
+
+    private val knownMethods =
+      MultiMap<String, String>().apply {
+        // These got removed in later versions of Guava, see
+        // https://github.com/google/guava/commit/87d87f5cac5a540d46a6382683722ead7b72d1b3#diff-3fe13f15fa4a5af9b4a55b21d7db2541
+        put(
+          "com.google.common.util.concurrent.Futures",
+          listOf("addCallback", "catching", "catchingAsync", "transform", "transformAsync")
         )
 
-        private const val COMPLETABLE_FUTURE = "java.util.concurrent.CompletableFuture"
-        private const val EXECUTOR = "java.util.concurrent.Executor"
+        // These got removed in later versions of Guava, see
+        // https://github.com/google/guava/commit/87d87f5cac5a540d46a6382683722ead7b72d1b3#diff-3fe13f15fa4a5af9b4a55b21d7db2541
+        put("com.google.common.util.concurrent.Futures.FutureCombiner", listOf("call", "callAsync"))
 
-        private val knownMethods = MultiMap<String, String>().apply {
-            // These got removed in later versions of Guava, see
-            // https://github.com/google/guava/commit/87d87f5cac5a540d46a6382683722ead7b72d1b3#diff-3fe13f15fa4a5af9b4a55b21d7db2541
-            put(
-                "com.google.common.util.concurrent.Futures",
-                listOf(
-                    "addCallback",
-                    "catching",
-                    "catchingAsync",
-                    "transform",
-                    "transformAsync"
-                )
-            )
+        put(
+          COMPLETABLE_FUTURE,
+          Class.forName(COMPLETABLE_FUTURE)
+            .methods
+            .asSequence()
+            .map { it.name }
+            .filter { it.endsWith("Async") }
+            .toSet()
+        )
+      }
+  }
 
-            // These got removed in later versions of Guava, see
-            // https://github.com/google/guava/commit/87d87f5cac5a540d46a6382683722ead7b72d1b3#diff-3fe13f15fa4a5af9b4a55b21d7db2541
-            put(
-                "com.google.common.util.concurrent.Futures.FutureCombiner",
-                listOf(
-                    "call",
-                    "callAsync"
-                )
-            )
+  override fun getApplicableMethodNames(): List<String>? = knownMethods.values().toList()
 
-            put(
-                COMPLETABLE_FUTURE,
-                Class.forName(COMPLETABLE_FUTURE)
-                    .methods
-                    .asSequence()
-                    .map { it.name }
-                    .filter { it.endsWith("Async") }
-                    .toSet()
-            )
-        }
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    val evaluator = context.evaluator
+    val containingClass = method.containingClass ?: return
+    if (!knownMethods.get(containingClass.qualifiedName).contains(method.name)) return
+
+    val lastParameter = evaluator.getParameterCount(method) - 1
+    if (evaluator.parameterHasType(method, lastParameter, EXECUTOR)) return
+
+    // See if this method has an overload that takes an Executor.
+    val overloads = containingClass.findMethodsByName(method.name, false)
+    if (overloads.size < 2) {
+      return
     }
 
-    override fun getApplicableMethodNames(): List<String>? = knownMethods.values().toList()
+    val parametersWithExecutor =
+      method.parameterList.parameters
+        .asSequence()
+        .map { it.type.canonicalText }
+        .plus(EXECUTOR)
+        .toList()
+        .toTypedArray()
 
-    override fun visitMethodCall(
-        context: JavaContext,
-        node: UCallExpression,
-        method: PsiMethod
-    ) {
-        val evaluator = context.evaluator
-        val containingClass = method.containingClass ?: return
-        if (!knownMethods.get(containingClass.qualifiedName).contains(method.name)) return
+    val overloadWithExecutor =
+      overloads.firstOrNull { evaluator.parametersMatch(it, *parametersWithExecutor) }
 
-        val lastParameter = evaluator.getParameterCount(method) - 1
-        if (evaluator.parameterHasType(method, lastParameter, EXECUTOR)) return
-
-        // See if this method has an overload that takes an Executor.
-        val overloads = containingClass.findMethodsByName(method.name, false)
-        if (overloads.size < 2) {
-            return
-        }
-
-        val parametersWithExecutor =
-            method.parameterList.parameters.asSequence()
-                .map { it.type.canonicalText }
-                .plus(EXECUTOR)
-                .toList()
-                .toTypedArray()
-
-        val overloadWithExecutor =
-            overloads.firstOrNull { evaluator.parametersMatch(it, *parametersWithExecutor) }
-
-        if (overloadWithExecutor != null) {
-            context.report(
-                ISSUE,
-                node,
-                context.getCallLocation(node, includeReceiver = true, includeArguments = false),
-                "Use `${method.name}` overload with an explicit Executor instead. See `go/do-not-freeze`."
-            )
-        }
+    if (overloadWithExecutor != null) {
+      context.report(
+        ISSUE,
+        node,
+        context.getCallLocation(node, includeReceiver = true, includeArguments = false),
+        "Use `${method.name}` overload with an explicit Executor instead. See `go/do-not-freeze`."
+      )
     }
+  }
 }

@@ -22,22 +22,23 @@ import com.android.tools.lint.detector.api.Detector
 
 class ShortcutUsageDetectorTest : AbstractCheckTest() {
 
-    override fun getDetector(): Detector {
-        return ShortcutUsageDetector()
-    }
+  override fun getDetector(): Detector {
+    return ShortcutUsageDetector()
+  }
 
-    fun testDocumentationExample() {
-        val expected =
-            """
+  fun testDocumentationExample() {
+    val expected =
+      """
             src/test/pkg/TestDocumentationExample.java:16: Information: Calling this method indicates use of dynamic shortcuts, but there are no calls to methods that track shortcut usage, such as pushDynamicShortcut or reportShortcutUsed. Calling these methods is recommended, as they track shortcut usage and allow launchers to adjust which shortcuts appear based on activation history. Please see https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts#track-usage [ReportShortcutUsage]
                     ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts);
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 0 warnings
             """
-        lint().files(
-            java(
-                "src/test/pkg/TestDocumentationExample.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/TestDocumentationExample.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -57,26 +58,31 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *stubs
-        ).run().expect(expected).expectFixDiffs(
-            """
+          )
+          .indented(),
+        *stubs
+      )
+      .run()
+      .expect(expected)
+      .expectFixDiffs(
+        """
             Show URL for src/test/pkg/TestDocumentationExample.java line 16: https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts#track-usage
             """
-        )
-    }
-    fun testAddDynamicShortcutsExample() {
-        val expected =
-            """
+      )
+  }
+  fun testAddDynamicShortcutsExample() {
+    val expected =
+      """
             src/test/pkg/TestAddDynamicShortcutsExample.java:16: Information: Calling this method indicates use of dynamic shortcuts, but there are no calls to methods that track shortcut usage, such as pushDynamicShortcut or reportShortcutUsed. Calling these methods is recommended, as they track shortcut usage and allow launchers to adjust which shortcuts appear based on activation history. Please see https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts#track-usage [ReportShortcutUsage]
                     ShortcutManagerCompat.addDynamicShortcuts(context, shortcuts);
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 0 warnings
             """
-        lint().files(
-            java(
-                "src/test/pkg/TestAddDynamicShortcutsExample.java",
-                """
+    lint()
+      .files(
+        java(
+            "src/test/pkg/TestAddDynamicShortcutsExample.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -96,20 +102,25 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *stubs
-        ).run().expect(expected).expectFixDiffs(
-            """
+          )
+          .indented(),
+        *stubs
+      )
+      .run()
+      .expect(expected)
+      .expectFixDiffs(
+        """
             Show URL for src/test/pkg/TestAddDynamicShortcutsExample.java line 16: https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts#track-usage
             """
-        )
-    }
+      )
+  }
 
-    fun testReportUsageViaPushDynamicShorcut() {
-        lint().files(
-            java(
-                "src/test/pkg/testReportUsageViaPushDynamicShorcut.java",
-                """
+  fun testReportUsageViaPushDynamicShorcut() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/testReportUsageViaPushDynamicShorcut.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -126,16 +137,20 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *stubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *stubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testReportShortcutUsed() {
-        lint().files(
-            java(
-                "src/test/pkg/testReportShortcutUsed.java",
-                """
+  fun testReportShortcutUsed() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/testReportShortcutUsed.java",
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -157,13 +172,17 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            *stubs
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        *stubs
+      )
+      .run()
+      .expectClean()
+  }
 
-    // Stubs
-    private val ShortcutCompatManager: TestFile = java(
+  // Stubs
+  private val ShortcutCompatManager: TestFile =
+    java(
         """
             package androidx.core.content.pm;
 
@@ -184,9 +203,11 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
             }
 
         """
-    ).indented()
+      )
+      .indented()
 
-    private val ShortcutInfoCompat: TestFile = java(
+  private val ShortcutInfoCompat: TestFile =
+    java(
         """
             package androidx.core.content.pm;
 
@@ -210,10 +231,8 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                 }
             }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val stubs = arrayOf(
-        ShortcutCompatManager,
-        ShortcutInfoCompat
-    )
+  private val stubs = arrayOf(ShortcutCompatManager, ShortcutInfoCompat)
 }

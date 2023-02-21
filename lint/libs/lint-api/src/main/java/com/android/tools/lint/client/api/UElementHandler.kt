@@ -71,233 +71,232 @@ import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.visitor.UastVisitor
 
 /**
- * The [UElementHandler] is similar to a [UastVisitor], but it
- * is used to only visit a single element. Detectors tell lint
- * which types of elements they want to be called for by invoking
+ * The [UElementHandler] is similar to a [UastVisitor], but it is used to only visit a single
+ * element. Detectors tell lint which types of elements they want to be called for by invoking
  * [UastScanner.getApplicableUastTypes].
  *
- * If you want to actually perform a full file visitor iteration you
- * should implement the link [visitFile] and then create a [UastVisitor]
- * and then invoke that on `file.accept(visitor)`.
+ * If you want to actually perform a full file visitor iteration you should implement the link
+ * [visitFile] and then create a [UastVisitor] and then invoke that on `file.accept(visitor)`.
  */
 open class UElementHandler {
 
-    internal open fun error(parameterType: Class<out UElement>) {
-        val name = parameterType.simpleName
-        require(name.startsWith("U")) { name }
-        throw RuntimeException(
-            "You must override visit${name.substring(1)} " +
-                "(and don't call super.visit${name.substring(1)}!)"
-        )
-    }
+  internal open fun error(parameterType: Class<out UElement>) {
+    val name = parameterType.simpleName
+    require(name.startsWith("U")) { name }
+    throw RuntimeException(
+      "You must override visit${name.substring(1)} " +
+        "(and don't call super.visit${name.substring(1)}!)"
+    )
+  }
 
-    open fun visitAnnotation(node: UAnnotation) {
-        error(UAnnotation::class.java)
-    }
+  open fun visitAnnotation(node: UAnnotation) {
+    error(UAnnotation::class.java)
+  }
 
-    open fun visitArrayAccessExpression(node: UArrayAccessExpression) {
-        error(UArrayAccessExpression::class.java)
-    }
+  open fun visitArrayAccessExpression(node: UArrayAccessExpression) {
+    error(UArrayAccessExpression::class.java)
+  }
 
-    open fun visitBinaryExpression(node: UBinaryExpression) {
-        error(UBinaryExpression::class.java)
-    }
+  open fun visitBinaryExpression(node: UBinaryExpression) {
+    error(UBinaryExpression::class.java)
+  }
 
-    open fun visitBinaryExpressionWithType(node: UBinaryExpressionWithType) {
-        error(UBinaryExpressionWithType::class.java)
-    }
+  open fun visitBinaryExpressionWithType(node: UBinaryExpressionWithType) {
+    error(UBinaryExpressionWithType::class.java)
+  }
 
-    open fun visitBlockExpression(node: UBlockExpression) {
-        error(UBlockExpression::class.java)
-    }
+  open fun visitBlockExpression(node: UBlockExpression) {
+    error(UBlockExpression::class.java)
+  }
 
-    open fun visitBreakExpression(node: UBreakExpression) {
-        error(UBreakExpression::class.java)
-    }
+  open fun visitBreakExpression(node: UBreakExpression) {
+    error(UBreakExpression::class.java)
+  }
 
-    open fun visitCallExpression(node: UCallExpression) {
-        error(UCallExpression::class.java)
-    }
+  open fun visitCallExpression(node: UCallExpression) {
+    error(UCallExpression::class.java)
+  }
 
-    open fun visitCallableReferenceExpression(node: UCallableReferenceExpression) {
-        error(UCallableReferenceExpression::class.java)
-    }
+  open fun visitCallableReferenceExpression(node: UCallableReferenceExpression) {
+    error(UCallableReferenceExpression::class.java)
+  }
 
-    open fun visitCatchClause(node: UCatchClause) {
-        error(UCatchClause::class.java)
-    }
+  open fun visitCatchClause(node: UCatchClause) {
+    error(UCatchClause::class.java)
+  }
 
-    open fun visitClass(node: UClass) {
-        error(UClass::class.java)
-    }
+  open fun visitClass(node: UClass) {
+    error(UClass::class.java)
+  }
 
-    open fun visitClassLiteralExpression(node: UClassLiteralExpression) {
-        error(UClassLiteralExpression::class.java)
-    }
+  open fun visitClassLiteralExpression(node: UClassLiteralExpression) {
+    error(UClassLiteralExpression::class.java)
+  }
 
-    open fun visitContinueExpression(node: UContinueExpression) {
-        error(UContinueExpression::class.java)
-    }
+  open fun visitContinueExpression(node: UContinueExpression) {
+    error(UContinueExpression::class.java)
+  }
 
-    open fun visitDeclaration(node: UDeclaration) {
-        error(UDeclaration::class.java)
-    }
+  open fun visitDeclaration(node: UDeclaration) {
+    error(UDeclaration::class.java)
+  }
 
-    open fun visitDeclarationsExpression(node: UDeclarationsExpression) {
-        error(UDeclarationsExpression::class.java)
-    }
+  open fun visitDeclarationsExpression(node: UDeclarationsExpression) {
+    error(UDeclarationsExpression::class.java)
+  }
 
-    open fun visitDoWhileExpression(node: UDoWhileExpression) {
-        error(UDoWhileExpression::class.java)
-    }
+  open fun visitDoWhileExpression(node: UDoWhileExpression) {
+    error(UDoWhileExpression::class.java)
+  }
 
-    open fun visitElement(node: UElement) {
-        error(UElement::class.java)
-    }
+  open fun visitElement(node: UElement) {
+    error(UElement::class.java)
+  }
 
-    open fun visitEnumConstant(node: UEnumConstant) {
-        error(UEnumConstant::class.java)
-    }
+  open fun visitEnumConstant(node: UEnumConstant) {
+    error(UEnumConstant::class.java)
+  }
 
-    open fun visitExpression(node: UExpression) {
-        error(UExpression::class.java)
-    }
+  open fun visitExpression(node: UExpression) {
+    error(UExpression::class.java)
+  }
 
-    open fun visitExpressionList(node: UExpressionList) {
-        error(UExpressionList::class.java)
-    }
+  open fun visitExpressionList(node: UExpressionList) {
+    error(UExpressionList::class.java)
+  }
 
-    open fun visitField(node: UField) {
-        error(UField::class.java)
-    }
+  open fun visitField(node: UField) {
+    error(UField::class.java)
+  }
 
-    open fun visitFile(node: UFile) {
-        error(UFile::class.java)
-    }
+  open fun visitFile(node: UFile) {
+    error(UFile::class.java)
+  }
 
-    open fun visitForEachExpression(node: UForEachExpression) {
-        error(UForEachExpression::class.java)
-    }
+  open fun visitForEachExpression(node: UForEachExpression) {
+    error(UForEachExpression::class.java)
+  }
 
-    open fun visitForExpression(node: UForExpression) {
-        error(UForExpression::class.java)
-    }
+  open fun visitForExpression(node: UForExpression) {
+    error(UForExpression::class.java)
+  }
 
-    open fun visitIfExpression(node: UIfExpression) {
-        error(UIfExpression::class.java)
-    }
+  open fun visitIfExpression(node: UIfExpression) {
+    error(UIfExpression::class.java)
+  }
 
-    open fun visitImportStatement(node: UImportStatement) {
-        error(UImportStatement::class.java)
-    }
+  open fun visitImportStatement(node: UImportStatement) {
+    error(UImportStatement::class.java)
+  }
 
-    open fun visitInitializer(node: UClassInitializer) {
-        error(UClassInitializer::class.java)
-    }
+  open fun visitInitializer(node: UClassInitializer) {
+    error(UClassInitializer::class.java)
+  }
 
-    open fun visitLabeledExpression(node: ULabeledExpression) {
-        error(ULabeledExpression::class.java)
-    }
+  open fun visitLabeledExpression(node: ULabeledExpression) {
+    error(ULabeledExpression::class.java)
+  }
 
-    open fun visitLambdaExpression(node: ULambdaExpression) {
-        error(ULambdaExpression::class.java)
-    }
+  open fun visitLambdaExpression(node: ULambdaExpression) {
+    error(ULambdaExpression::class.java)
+  }
 
-    open fun visitLiteralExpression(node: ULiteralExpression) {
-        error(ULiteralExpression::class.java)
-    }
+  open fun visitLiteralExpression(node: ULiteralExpression) {
+    error(ULiteralExpression::class.java)
+  }
 
-    open fun visitLocalVariable(node: ULocalVariable) {
-        error(ULocalVariable::class.java)
-    }
+  open fun visitLocalVariable(node: ULocalVariable) {
+    error(ULocalVariable::class.java)
+  }
 
-    open fun visitMethod(node: UMethod) {
-        error(UMethod::class.java)
-    }
+  open fun visitMethod(node: UMethod) {
+    error(UMethod::class.java)
+  }
 
-    open fun visitObjectLiteralExpression(node: UObjectLiteralExpression) {
-        error(UObjectLiteralExpression::class.java)
-    }
+  open fun visitObjectLiteralExpression(node: UObjectLiteralExpression) {
+    error(UObjectLiteralExpression::class.java)
+  }
 
-    open fun visitParameter(node: UParameter) {
-        error(UParameter::class.java)
-    }
+  open fun visitParameter(node: UParameter) {
+    error(UParameter::class.java)
+  }
 
-    open fun visitParenthesizedExpression(node: UParenthesizedExpression) {
-        error(UParenthesizedExpression::class.java)
-    }
+  open fun visitParenthesizedExpression(node: UParenthesizedExpression) {
+    error(UParenthesizedExpression::class.java)
+  }
 
-    open fun visitPolyadicExpression(node: UPolyadicExpression) {
-        error(UPolyadicExpression::class.java)
-    }
+  open fun visitPolyadicExpression(node: UPolyadicExpression) {
+    error(UPolyadicExpression::class.java)
+  }
 
-    open fun visitPostfixExpression(node: UPostfixExpression) {
-        error(UPostfixExpression::class.java)
-    }
+  open fun visitPostfixExpression(node: UPostfixExpression) {
+    error(UPostfixExpression::class.java)
+  }
 
-    open fun visitPrefixExpression(node: UPrefixExpression) {
-        error(UPrefixExpression::class.java)
-    }
+  open fun visitPrefixExpression(node: UPrefixExpression) {
+    error(UPrefixExpression::class.java)
+  }
 
-    open fun visitQualifiedReferenceExpression(node: UQualifiedReferenceExpression) {
-        error(UQualifiedReferenceExpression::class.java)
-    }
+  open fun visitQualifiedReferenceExpression(node: UQualifiedReferenceExpression) {
+    error(UQualifiedReferenceExpression::class.java)
+  }
 
-    open fun visitReturnExpression(node: UReturnExpression) {
-        error(UReturnExpression::class.java)
-    }
+  open fun visitReturnExpression(node: UReturnExpression) {
+    error(UReturnExpression::class.java)
+  }
 
-    open fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression) {
-        error(USimpleNameReferenceExpression::class.java)
-    }
+  open fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression) {
+    error(USimpleNameReferenceExpression::class.java)
+  }
 
-    open fun visitSuperExpression(node: USuperExpression) {
-        error(USuperExpression::class.java)
-    }
+  open fun visitSuperExpression(node: USuperExpression) {
+    error(USuperExpression::class.java)
+  }
 
-    open fun visitSwitchClauseExpression(node: USwitchClauseExpression) {
-        error(USwitchClauseExpression::class.java)
-    }
+  open fun visitSwitchClauseExpression(node: USwitchClauseExpression) {
+    error(USwitchClauseExpression::class.java)
+  }
 
-    open fun visitSwitchExpression(node: USwitchExpression) {
-        error(USwitchExpression::class.java)
-    }
+  open fun visitSwitchExpression(node: USwitchExpression) {
+    error(USwitchExpression::class.java)
+  }
 
-    open fun visitThisExpression(node: UThisExpression) {
-        error(UThisExpression::class.java)
-    }
+  open fun visitThisExpression(node: UThisExpression) {
+    error(UThisExpression::class.java)
+  }
 
-    open fun visitThrowExpression(node: UThrowExpression) {
-        error(UThrowExpression::class.java)
-    }
+  open fun visitThrowExpression(node: UThrowExpression) {
+    error(UThrowExpression::class.java)
+  }
 
-    open fun visitTryExpression(node: UTryExpression) {
-        error(UTryExpression::class.java)
-    }
+  open fun visitTryExpression(node: UTryExpression) {
+    error(UTryExpression::class.java)
+  }
 
-    open fun visitTypeReferenceExpression(node: UTypeReferenceExpression) {
-        error(UTypeReferenceExpression::class.java)
-    }
+  open fun visitTypeReferenceExpression(node: UTypeReferenceExpression) {
+    error(UTypeReferenceExpression::class.java)
+  }
 
-    open fun visitUnaryExpression(node: UUnaryExpression) {
-        error(UUnaryExpression::class.java)
-    }
+  open fun visitUnaryExpression(node: UUnaryExpression) {
+    error(UUnaryExpression::class.java)
+  }
 
-    open fun visitVariable(node: UVariable) {
-        error(UVariable::class.java)
-    }
+  open fun visitVariable(node: UVariable) {
+    error(UVariable::class.java)
+  }
 
-    open fun visitWhileExpression(node: UWhileExpression) {
-        error(UWhileExpression::class.java)
-    }
+  open fun visitWhileExpression(node: UWhileExpression) {
+    error(UWhileExpression::class.java)
+  }
 
-    open fun visitYieldExpression(node: UYieldExpression) {
-        error(UYieldExpression::class.java)
-    }
+  open fun visitYieldExpression(node: UYieldExpression) {
+    error(UYieldExpression::class.java)
+  }
 
-    companion object {
-        val NONE: UElementHandler = object : UElementHandler() {
-            override fun error(parameterType: Class<out UElement>) {}
-        }
-    }
+  companion object {
+    val NONE: UElementHandler =
+      object : UElementHandler() {
+        override fun error(parameterType: Class<out UElement>) {}
+      }
+  }
 }

@@ -19,19 +19,20 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import com.android.tools.lint.detector.api.Detector
 
 class ItemDecoratorDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ItemDecoratorDetector()
-    }
+  override fun getDetector(): Detector {
+    return ItemDecoratorDetector()
+  }
 
-    override fun lint(): TestLintTask {
-        // This check only applies to older versions of the RecyclerView library
-        return super.lint().skipTestModes(ANDROIDX_TEST_MODE)
-    }
+  override fun lint(): TestLintTask {
+    // This check only applies to older versions of the RecyclerView library
+    return super.lint().skipTestModes(ANDROIDX_TEST_MODE)
+  }
 
-    fun test() {
-        lint().files(
-            java(
-                """
+  fun test() {
+    lint()
+      .files(
+        java(
+            """
                 package com.example.android.supportv7.widget.decorator;
 
                 import android.content.Context;
@@ -57,9 +58,10 @@ class ItemDecoratorDetectorTest : AbstractCheckTest() {
                     private int mOrientation;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package android.support.v7.widget;
                 public class RecyclerView {
                     public abstract static class ItemDecoration {
@@ -67,14 +69,17 @@ class ItemDecoratorDetectorTest : AbstractCheckTest() {
 
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/com/example/android/supportv7/widget/decorator/DividerItemDecoration.java:11: Warning: Replace with android.support.v7.widget.DividerItemDecoration? [DuplicateDivider]
             public abstract class DividerItemDecoration extends RecyclerView.ItemDecoration {
                                   ~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 }

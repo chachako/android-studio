@@ -34,17 +34,18 @@ import org.w3c.dom.Element
 
 class MonochromeLauncherIconDetector : Detector(), XmlScanner {
 
-    companion object {
+  companion object {
 
-        private val IMPLEMENTATION = Implementation(
-            MonochromeLauncherIconDetector::class.java, Scope.MANIFEST_AND_RESOURCE_SCOPE
-        )
+    private val IMPLEMENTATION =
+      Implementation(MonochromeLauncherIconDetector::class.java, Scope.MANIFEST_AND_RESOURCE_SCOPE)
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "MonochromeLauncherIcon",
-            briefDescription = "Monochrome icon is not defined",
-            explanation = """
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "MonochromeLauncherIcon",
+        briefDescription = "Monochrome icon is not defined",
+        explanation =
+          """
                 If `android:roundIcon` and `android:icon` are both in your manifest, \
                 you must either remove the reference to `android:roundIcon` if it is not needed; or, supply \
                 the monochrome icon in the drawable defined by the `android:roundIcon` and `android:icon` attribute.
@@ -52,52 +53,56 @@ class MonochromeLauncherIconDetector : Detector(), XmlScanner {
                 For example, if `android:roundIcon` and `android:icon` are both in the manifest, a launcher might choose to use \
                 `android:roundIcon` over `android:icon` to display the adaptive app icon. Therefore, your themed application icon\
                 will not show if your monochrome attribute is not also specified in `android:roundIcon`.""",
-            category = Category.ICONS,
-            priority = 6,
-            severity = Severity.WARNING,
-            androidSpecific = true,
-            implementation = IMPLEMENTATION
-        )
-    }
+        category = Category.ICONS,
+        priority = 6,
+        severity = Severity.WARNING,
+        androidSpecific = true,
+        implementation = IMPLEMENTATION
+      )
+  }
 
-    private var foundIconName: String? = null
-    private var foundRoundIconName: String? = null
+  private var foundIconName: String? = null
+  private var foundRoundIconName: String? = null
 
-    override fun appliesTo(folderType: ResourceFolderType): Boolean {
-        return folderType == ResourceFolderType.DRAWABLE || folderType == ResourceFolderType.MIPMAP
-    }
+  override fun appliesTo(folderType: ResourceFolderType): Boolean {
+    return folderType == ResourceFolderType.DRAWABLE || folderType == ResourceFolderType.MIPMAP
+  }
 
-    override fun getApplicableElements(): Collection<String> {
-        return listOf(
-            TAG_APPLICATION,
-            TAG_ADAPTIVE_ICON,
-        )
-    }
+  override fun getApplicableElements(): Collection<String> {
+    return listOf(
+      TAG_APPLICATION,
+      TAG_ADAPTIVE_ICON,
+    )
+  }
 
-    override fun visitElement(context: XmlContext, element: Element) {
-        when (element.tagName) {
-            TAG_APPLICATION -> {
-                // there is only one application tag
-                foundIconName = element.getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ICON)
-                    .substringAfterLast('/')
-                foundRoundIconName = element.getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ROUND_ICON)
-                    .substringAfterLast('/')
-            }
-            TAG_ADAPTIVE_ICON -> {
-                if (XmlUtils.getFirstSubTagByName(element, "monochrome") != null) return
-                val currentIconName = context.file.name.removeSuffix(DOT_XML)
-                if (currentIconName == foundIconName || currentIconName == foundRoundIconName) {
-                    val iconDescription = if (currentIconName == foundIconName) "icon" else "roundIcon"
-                    context.report(
-                        Incident(
-                            ISSUE,
-                            scope = element,
-                            location = context.getLocation(element),
-                            "The application adaptive $iconDescription is missing a monochrome tag",
-                        )
-                    )
-                }
-            }
+  override fun visitElement(context: XmlContext, element: Element) {
+    when (element.tagName) {
+      TAG_APPLICATION -> {
+        // there is only one application tag
+        foundIconName =
+          element
+            .getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ICON)
+            .substringAfterLast('/')
+        foundRoundIconName =
+          element
+            .getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_ROUND_ICON)
+            .substringAfterLast('/')
+      }
+      TAG_ADAPTIVE_ICON -> {
+        if (XmlUtils.getFirstSubTagByName(element, "monochrome") != null) return
+        val currentIconName = context.file.name.removeSuffix(DOT_XML)
+        if (currentIconName == foundIconName || currentIconName == foundRoundIconName) {
+          val iconDescription = if (currentIconName == foundIconName) "icon" else "roundIcon"
+          context.report(
+            Incident(
+              ISSUE,
+              scope = element,
+              location = context.getLocation(element),
+              "The application adaptive $iconDescription is missing a monochrome tag",
+            )
+          )
         }
+      }
     }
+  }
 }

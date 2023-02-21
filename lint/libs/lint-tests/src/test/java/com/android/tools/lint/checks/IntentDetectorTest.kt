@@ -19,15 +19,16 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class IntentDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return IntentDetector()
-    }
+  override fun getDetector(): Detector {
+    return IntentDetector()
+  }
 
-    fun testBasic() {
-        // Regression test for https://issuetracker.google.com/36967533
-        lint().files(
-            java(
-                """
+  fun testBasic() {
+    // Regression test for https://issuetracker.google.com/36967533
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Intent;
@@ -101,9 +102,12 @@ class IntentDetectorTest : AbstractCheckTest() {
                             }
                         }
                 }"""
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/IntentTest.java:19: Warning: Calling setType after calling setData will clear the data: Call setDataAndType instead? [IntentReset]
                         intent.setType(type); // ERROR 1.1
                                ~~~~~~~~~~~~~
@@ -118,15 +122,16 @@ class IntentDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testConstructor() {
-        // URI specified in Intent constructor
-        // Regression test for https://issuetracker.google.com/73183202
-        lint().files(
-            java(
-                """
+  fun testConstructor() {
+    // URI specified in Intent constructor
+    // Regression test for https://issuetracker.google.com/73183202
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -145,9 +150,12 @@ class IntentDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/IntentReset.java:13: Warning: Calling setType after setting URI in Intent constructor will clear the data: Call setDataAndType instead? [IntentReset]
                     myIntent.setType("text/plain");
                              ~~~~~~~~~~~~~~~~~~~~~
@@ -156,14 +164,15 @@ class IntentDetectorTest : AbstractCheckTest() {
                                                                      ~~~
             0 errors, 1 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testChained() {
-        // Regression test for issue 205738500
-        lint().files(
-            java(
-                """
+  fun testChained() {
+    // Regression test for issue 205738500
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.content.Intent;
@@ -178,9 +187,12 @@ class IntentDetectorTest : AbstractCheckTest() {
                         }
 
                 }"""
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/IntentTest.java:10: Warning: Calling setType after calling setData will clear the data: Call setDataAndType instead? [IntentReset]
                         intent.setData(uri).setFlags(0).setType(type); // ERROR 1
                                                         ~~~~~~~~~~~~~
@@ -195,6 +207,6 @@ class IntentDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 }

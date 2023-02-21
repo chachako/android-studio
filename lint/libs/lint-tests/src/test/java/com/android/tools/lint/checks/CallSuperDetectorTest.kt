@@ -19,14 +19,15 @@ import com.android.tools.lint.checks.infrastructure.LintDetectorTest.compiled
 import com.android.tools.lint.detector.api.Detector
 
 class CallSuperDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return CallSuperDetector()
-    }
+  override fun getDetector(): Detector {
+    return CallSuperDetector()
+  }
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.CallSuper
 
                 open class ParentClass {
@@ -42,21 +43,24 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/ParentClass.kt:11: Error: Overriding method should call super.someMethod [MissingSuperCall]
                 override fun someMethod(arg: Int) {
                              ~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testCallSuper() {
-        val expected =
-            """
+  fun testCallSuper() {
+    val expected =
+      """
             src/test/pkg/CallSuperTest.java:11: Error: Overriding method should call super.test1 [MissingSuperCall]
                     protected void test1() { // ERROR
                                    ~~~~~
@@ -77,9 +81,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                                    ~~~~~
             6 errors, 0 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.CallSuper;
@@ -168,14 +173,17 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testForeignSuperAnnotations() {
-        val expected =
-            """
+  fun testForeignSuperAnnotations() {
+    val expected =
+      """
             src/test/pkg/OverrideTest.java:9: Error: Overriding method should call super.test [MissingSuperCall]
                     protected void test() { // ERROR
                                    ~~~~
@@ -184,9 +192,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                                    ~~~~
             2 errors, 0 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -219,9 +228,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package edu.umd.cs.findbugs.annotations;
 
                 import java.lang.annotation.Retention;
@@ -237,9 +247,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 }
 
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package javax.annotation;
 
                 import java.lang.annotation.Retention;
@@ -255,20 +266,24 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 }
 
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testCallSuperIndirect() {
-        // Ensure that when the @CallSuper is on an indirect super method,
-        // we correctly check that you call the direct super method, not the ancestor.
-        //
-        // Regression test for
-        //    https://code.google.com/p/android/issues/detail?id=174964
-        lint().files(
-            java(
-                "src/test/pkg/CallSuperTest.java",
-                """
+  fun testCallSuperIndirect() {
+    // Ensure that when the @CallSuper is on an indirect super method,
+    // we correctly check that you call the direct super method, not the ancestor.
+    //
+    // Regression test for
+    //    https://code.google.com/p/android/issues/detail?id=174964
+    lint()
+      .files(
+        java(
+            "src/test/pkg/CallSuperTest.java",
+            """
                 package test.pkg;
 
                 import androidx.annotation.CallSuper;
@@ -303,14 +318,17 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testDetachFromWindow() {
-        val expected =
-            """
+  fun testDetachFromWindow() {
+    val expected =
+      """
             src/test/pkg/DetachedFromWindow.java:7: Error: Overriding method should call super.onDetachedFromWindow [MissingSuperCall]
                     protected void onDetachedFromWindow() {
                                    ~~~~~~~~~~~~~~~~~~~~
@@ -319,9 +337,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                                    ~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.view.View;
@@ -369,21 +388,25 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testWatchFaceVisibility() {
-        val expected =
-            """
+  fun testWatchFaceVisibility() {
+    val expected =
+      """
             src/test/pkg/WatchFaceTest.java:9: Error: Overriding method should call super.onVisibilityChanged [MissingSuperCall]
                     public void onVisibilityChanged(boolean visible) { // ERROR: Missing super call
                                 ~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        lint().files(
-            java(
-                """
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.support.wearable.watchface.CanvasWatchFaceService;
@@ -423,9 +446,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package android.support.wearable.watchface;
 
                 // Unit testing stub
@@ -436,9 +460,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package android.support.wearable.watchface;
 
                 public class CanvasWatchFaceService extends WatchFaceService {
@@ -449,14 +474,18 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(expected)
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expect(expected)
+  }
 
-    fun testKotlinMissing() {
-        lint().files(
-            kotlin(
-                """
+  fun testKotlinMissing() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -465,21 +494,26 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     override fun onDetachedFromWindow() {
                     }
                 }"""
-            ).indented()
-        ).incremental().run().expect(
-            """
+          )
+          .indented()
+      )
+      .incremental()
+      .run()
+      .expect(
+        """
             src/test/pkg/MissingSuperCallLibrary.kt:6: Error: Overriding method should call super.onDetachedFromWindow [MissingSuperCall]
                 override fun onDetachedFromWindow() {
                              ~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testKotlinOk() {
-        lint().files(
-            kotlin(
-                """package test.pkg
+  fun testKotlinOk() {
+    lint()
+      .files(
+        kotlin(
+            """package test.pkg
 
                 import android.content.Context
                 import android.view.View
@@ -488,16 +522,21 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                         super.onDetachedFromWindow();
                     }
                 }"""
-            ).indented()
-        ).incremental().run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .incremental()
+      .run()
+      .expectClean()
+  }
 
-    fun testMultipleSuperCalls() {
-        // Regression test for
-        //  37133950: new Lint check: calling the same super function more than once
-        lint().files(
-            kotlin(
-                """
+  fun testMultipleSuperCalls() {
+    // Regression test for
+    //  37133950: new Lint check: calling the same super function more than once
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.content.Context
@@ -532,9 +571,13 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).incremental().run().expect(
-            """
+          )
+          .indented()
+      )
+      .incremental()
+      .run()
+      .expect(
+        """
             src/test/pkg/MyActivity.kt:10: Error: Calling super.onCreate more than once can lead to crashes [MissingSuperCall]
                     super.onCreate(savedInstanceState) // ERROR
                     ~~~~~
@@ -543,23 +586,25 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                         ~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testWorkaround180509152() {
-        // We have a temporary workaround for 180509152; this tests verifies that
-        // workaround. When the bug is fixed the super.onCreate call in MainActivity
-        // below should be uncommented.
-        lint().files(
-            kotlin(
-                """
+  fun testWorkaround180509152() {
+    // We have a temporary workaround for 180509152; this tests verifies that
+    // workaround. When the bug is fixed the super.onCreate call in MainActivity
+    // below should be uncommented.
+    lint()
+      .files(
+        kotlin(
+            """
                 package androidx.fragment.app
                 open class FragmentActivity {
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package androidx.appcompat.app
                 import android.os.Bundle
                 import androidx.annotation.CallSuper
@@ -571,9 +616,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import android.os.Bundle
@@ -595,16 +641,20 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testAbstractMethods() {
-        // Regression test for b/266700164
-        lint().files(
-            kotlin(
-                """
+  fun testAbstractMethods() {
+    // Regression test for b/266700164
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.CallSuper
 
                 open abstract class ParentClass {
@@ -627,16 +677,20 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     abstract override fun otherMethod(arg: Int) // OK because is abstract
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testSuperCallInNestedObject() {
-        // Regression test for b/266700164
-        lint().files(
-            kotlin(
-                """
+  fun testSuperCallInNestedObject() {
+    // Regression test for b/266700164
+    lint()
+      .files(
+        kotlin(
+            """
                 import androidx.annotation.CallSuper
 
                 open class Parent {
@@ -656,23 +710,27 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/Parent.kt:11: Error: Overriding method should call super.someMethod [MissingSuperCall]
               override fun someMethod(arg: Int) {
                            ~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testIndirectSuperCallCompiled() {
-        // Regression test for b/189433125.
-        lint().files(
-            kotlin(
-                """
+  fun testIndirectSuperCallCompiled() {
+    // Regression test for b/189433125.
+    lint()
+      .files(
+        kotlin(
+            """
                 open class A : Middle() {
                     override fun foo() {
                         super.foo() // OK
@@ -685,16 +743,16 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            compiled(
-                "libs/lib1.jar",
-                kotlin(
-                    """
+          )
+          .indented(),
+        compiled(
+          "libs/lib1.jar",
+          kotlin("""
                     open class Middle : Base()
-                    """
-                ).indented(),
-                0xb76b5946,
-                """
+                    """)
+            .indented(),
+          0xb76b5946,
+          """
                 Middle.class:
                 H4sIAAAAAAAAAC1QTUsDMRB9k2237Vrth1rrB4g39WBr8aYIVhAKWw8qvfSU
                 dhcM3WahScVjf4v/wJPgQYpHf5Q42RrIY96bycyb/Px+fgG4wAHB76soSuIC
@@ -705,15 +763,15 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 BwJNRj8TuSNjeVWAEoIsv5dhA/vZJxPWOFcewuthvYcNRlQcVHuooT4EGWxi
                 i/MGgcG2gf8H2auBiqEBAAA=
                 """,
-                """
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM2gxKDFAABNj30wGAAAAA==
                 """
-            ),
-            compiled(
-                "libs/lib2.jar",
-                kotlin(
-                    """
+        ),
+        compiled(
+          "libs/lib2.jar",
+          kotlin(
+              """
                     import androidx.annotation.CallSuper
 
                     open class Base {
@@ -721,13 +779,14 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                         open fun foo() {}
                     }
                     """
-                ).indented(),
-                0xdd7e8dee,
-                """
+            )
+            .indented(),
+          0xdd7e8dee,
+          """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM2gxKDFAABNj30wGAAAAA==
                 """,
-                """
+          """
                 Base.class:
                 H4sIAAAAAAAAAGVQTU8bMRB99mY36RJgoQXCR0HcCkjdFPVUUCVAqppqoVKp
                 csnJyZpisrGrXSfimN/Sf9BTpR5QxJEfVTFeIlSBJT/PvHnPmpm7f39vALzH
@@ -740,15 +799,17 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 /2dkU+PGtFovta9LbGCT3g/EzpJnrgOvhfkWIkIsOFhs4SVedcAKLGG5A79A
                 WGClQFBghoJ7aI1RU0ICAAA=
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/A.kt:8: Error: Overriding method should call super.foo [MissingSuperCall]
                 override fun foo() {
                              ~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 }

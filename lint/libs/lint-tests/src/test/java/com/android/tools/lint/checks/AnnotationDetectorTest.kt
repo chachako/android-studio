@@ -21,10 +21,11 @@ import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.requiresExtensionStub
 
 class AnnotationDetectorTest : AbstractCheckTest() {
-    fun testBasic() {
-        lint().files(
-            java(
-                """
+  fun testBasic() {
+    lint()
+      .files(
+        java(
+            """
 
                 package test.pkg;
 
@@ -63,9 +64,12 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/WrongAnnotation.java:10: Error: The @SuppressLint annotation cannot be used on a local variable with the lint check 'NewApi': move out to the surrounding method [LocalSuppress]
                     public static void foobar(View view, @SuppressLint("NewApi") int foo) { // $ Invalid: class-file check
                                                          ~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,13 +90,14 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                         ~~~~~~~~~~~~~~~~~~~~~~~
                 6 errors, 0 warnings
                 """
-        )
-    }
+      )
+  }
 
-    fun testUniqueValues() {
-        lint().files(
-            java(
-                """
+  fun testUniqueValues() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
                 import androidx.annotation.IntDef;
                 import android.annotation.SuppressLint;
@@ -130,10 +135,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
 
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/IntDefTest.java:9: Error: Constants STYLE_NO_INPUT and STYLE_NO_FRAME specify the same exact value (2); this is usually a cut & paste or merge error [UniqueConstants]
                     @IntDef({STYLE_NORMAL, STYLE_NO_TITLE, STYLE_NO_FRAME, STYLE_NO_INPUT})
                                                                            ~~~~~~~~~~~~~~
@@ -154,14 +162,15 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                              ~~~~~
                 3 errors, 0 warnings
                 """
-        )
-    }
+      )
+  }
 
-    fun testAnnotationTarget() {
-        // 207151948: Lint check for accidentally importing java.lang.annotation.Target
-        lint().files(
-            kotlin(
-                """
+  fun testAnnotationTarget() {
+    // 207151948: Lint check for accidentally importing java.lang.annotation.Target
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import java.lang.annotation.ElementType
@@ -184,25 +193,30 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 @Target(AnnotationTarget.VALUE_PARAMETER)
                 annotation class Annotation4()
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import java.lang.annotation.ElementType;
                 @Target({ElementType.PARAMETER}) // OK 3
                 public @interface Annotation5 { }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import java.lang.annotation.ElementType;
                 @java.lang.annotation.Target({ElementType.PARAMETER}) // OK 4
                 public @interface Annotation6 { }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Annotation1.kt:14: Error: Use @kotlin.annotation.Target, not @java.lang.annotation.Target here; these targets will be ignored from Kotlin and the annotation will not be allowed on any element types from Java [SupportAnnotationUsage]
             @java.lang.annotation.Target(ElementType.PARAMETER) // ERROR 1
                                   ~~~~~~
@@ -211,8 +225,9 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                                   ~~~~~~
             2 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/Annotation1.kt line 14: Replace with Target:
             @@ -14 +14
             - @java.lang.annotation.Target(ElementType.PARAMETER) // ERROR 1
@@ -222,14 +237,15 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             - @java.lang.annotation.Target(ElementType.PARAMETER) // ERROR 2
             +  // ERROR 2
             """
-        )
-    }
+      )
+  }
 
-    fun testFlagStyle() {
-        lint().files(
-            java(
-                "src/test/pkg/IntDefTest.java",
-                """
+  fun testFlagStyle() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/IntDefTest.java",
+            """
                 package test.pkg;
                 import androidx.annotation.IntDef;
 
@@ -269,10 +285,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     @IntDef(flag = true, value={FLAG1,FLAG9,FLAG13}) private @interface Flags13 {}
                     @IntDef(flag = true, value={FLAG1,FLAG9,FLAG14}) private @interface Flags14 {}
                 }"""
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/IntDefTest.java:13: Warning: Consider declaring this constant using 1 << 44 instead [ShiftFlags]
                     public static final long FLAG5 = 0x100000000000L;
                                                      ~~~~~~~~~~~~~~~
@@ -287,9 +306,9 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                                                       ~~~~
                 0 errors, 4 warnings
                 """
-        )
-            .expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Autofix for src/test/pkg/IntDefTest.java line 13: Replace with 1L << 44:
                 @@ -13 +13
                 -     public static final long FLAG5 = 0x100000000000L;
@@ -307,13 +326,14 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 -     public static final int  FLAG12 = 0x10;
                 +     public static final int  FLAG12 = 1 << 4;
                 """
-            )
-    }
+      )
+  }
 
-    fun testFlagStyleShl() {
-        lint().files(
-            kotlin(
-                """
+  fun testFlagStyleShl() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import androidx.annotation.IntDef
 
@@ -327,31 +347,35 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 const val DIVIDER_TOP: Int = 1
                 const val DIVIDER_BOTTOM: Int = 2
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/DividerFlags.kt:12: Warning: Consider declaring this constant using 1 shl 1 instead [ShiftFlags]
                 const val DIVIDER_BOTTOM: Int = 2
                                                 ~
                 0 errors, 1 warnings
                 """
-        )
-            .expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Autofix for src/test/pkg/DividerFlags.kt line 12: Replace with 1 shl 1:
                 @@ -12 +12
                 - const val DIVIDER_BOTTOM: Int = 2
                 + const val DIVIDER_BOTTOM: Int = 1 shl 1
                 """
-            )
-    }
+      )
+  }
 
-    fun testMissingIntDefSwitchConstants() {
-        lint().files(
-            java(
-                "src/test/pkg/X.java",
-                """
+  fun testMissingIntDefSwitchConstants() {
+    lint()
+      .files(
+        java(
+            "src/test/pkg/X.java",
+            """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -482,10 +506,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/X.java:40: Warning: Don't use a constant here; expected one of: LENGTH_INDEFINITE, LENGTH_LONG, LENGTH_SHORT [SwitchIntDef]
                         case 5:
                              ~
@@ -509,13 +536,14 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                         ~~~~~~
             0 errors, 7 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMissingSwitchFailingIntDef() {
-        lint().files(
-            java(
-                """
+  fun testMissingSwitchFailingIntDef() {
+    lint()
+      .files(
+        java(
+            """
 
                 package test.pkg;
 
@@ -531,21 +559,25 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/X.java:9: Warning: Switch statement on an int with known associated constant missing case MeasureSpec.EXACTLY, MeasureSpec.UNSPECIFIED [SwitchIntDef]
                         switch (val) {
                         ~~~~~~
                 0 errors, 1 warnings
                 """
-        )
-    }
+      )
+  }
 
-    fun testMissingSwitchFailingIntDefKotlin() {
-        lint().files(
-            kotlin(
-                """
+  fun testMissingSwitchFailingIntDefKotlin() {
+    lint()
+      .files(
+        kotlin(
+            """
 
                 package test.pkg;
 
@@ -562,24 +594,28 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/X.kt:9: Warning: Switch statement on an int with known associated constant missing case MeasureSpec.EXACTLY, MeasureSpec.UNSPECIFIED [SwitchIntDef]
                         when (`val`) {
                         ~~~~
                 0 errors, 1 warnings
                 """
-        )
-    }
+      )
+  }
 
-    fun testUnexpectedSwitchConstant() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=204326
-        // 	The switch check should look for unexpected constants in case statements
-        lint().files(
-            java(
-                "src/test/pkg/X.java",
-                """
+  fun testUnexpectedSwitchConstant() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=204326
+    // 	The switch check should look for unexpected constants in case statements
+    lint()
+      .files(
+        java(
+            "src/test/pkg/X.java",
+            """
                 package test.pkg;
 
                 import android.view.View;
@@ -597,9 +633,12 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/X.java:9: Warning: Switch statement on an int with known associated constant missing case MeasureSpec.EXACTLY [SwitchIntDef]
                     switch (val) {
                     ~~~~~~
@@ -608,16 +647,17 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                              ~~~~~~~~~~~
             0 errors, 2 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testUnexpectedSwitchConstantInOpenTypedef() {
-        // Regression test for 216746694
-        // Don't flag unexpected constants in open typedefs
-        // 	The switch check should look for unexpected constants in case statements
-        lint().files(
-            java(
-                """
+  fun testUnexpectedSwitchConstantInOpenTypedef() {
+    // Regression test for 216746694
+    // Don't flag unexpected constants in open typedefs
+    // 	The switch check should look for unexpected constants in case statements
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 public class Test {
@@ -631,9 +671,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package test.pkg;
 
                 import androidx.annotation.IntDef;
@@ -644,17 +685,20 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     public static final int STATE_NONE = 0;
                     public static final int STATE_STOPPED = 1;
                 }"""
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMissingSwitchConstantsWithElse() {
-        // Regression test for
-        // 117854168: Wrong lint warning used for PlaybackStateCompat.STATE_* constants
-        lint().files(
-            kotlin(
-                """
+  fun testMissingSwitchConstantsWithElse() {
+    // Regression test for
+    // 117854168: Wrong lint warning used for PlaybackStateCompat.STATE_* constants
+    lint()
+      .files(
+        kotlin(
+          """
                 @file:Suppress("unused")
 
                 package test.pkg
@@ -675,9 +719,9 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
 
                 import androidx.annotation.IntDef;
@@ -693,15 +737,18 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     public static final int STATE_PLAYING = 3;
                     public static final int STATE_FAST_FORWARDING = 4;
                 }"""
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testMatchEcjAndExternalFieldNames() {
-        lint().files(
-            java(
-                """
+  fun testMatchEcjAndExternalFieldNames() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.net.wifi.WifiManager;
@@ -726,14 +773,18 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testWrongUsages() {
-        lint().files(
-            java(
-                """
+  fun testWrongUsages() {
+    lint()
+      .files(
+        java(
+            """
 
                 package test.pkg;
                 import androidx.annotation.IntDef;
@@ -830,10 +881,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/WrongUsages.java:34: Error: This annotation does not apply for type String; expected int. Should @DialogStyle be annotated with @StringDef instead? [SupportAnnotationUsage]
                 @DialogStyle
                 ~~~~~~~~~~~~
@@ -878,14 +932,15 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~
             14 errors, 0 warnings
                 """
-        )
-    }
+      )
+  }
 
-    fun testValidateRequiresApi() {
-        lint().files(
-            manifest().minSdk(15),
-            java(
-                """
+  fun testValidateRequiresApi() {
+    lint()
+      .files(
+        manifest().minSdk(15),
+        java(
+            """
                 package test.pkg;
                 import android.os.Build;
                 import androidx.annotation.RequiresApi;
@@ -910,10 +965,15 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(AnnotationDetector.ANNOTATION_USAGE, ApiDetector.OBSOLETE_SDK).skipTestModes(TestMode.PARTIAL).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(AnnotationDetector.ANNOTATION_USAGE, ApiDetector.OBSOLETE_SDK)
+      .skipTestModes(TestMode.PARTIAL)
+      .run()
+      .expect(
+        """
             src/test/pkg/WrongUsages.java:6: Error: Must specify an API level [SupportAnnotationUsage]
                 @RequiresApi // ERROR 1: Misses API level
                 ~~~~~~~~~~~~
@@ -931,8 +991,9 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~
             1 errors, 4 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/WrongUsages.java line 6: Specify API level:
             @@ -6 +6
             -     @RequiresApi // ERROR 1: Misses API level
@@ -954,14 +1015,15 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             -         @RequiresApi(15) // ERROR 4: Already known to be at least 20 from outer annotation
             +          // ERROR 4: Already known to be at least 20 from outer annotation
             """
-        )
-    }
+      )
+  }
 
-    fun testValidateRequiresExtensions() {
-        lint().files(
-            manifest().minSdk(15),
-            java(
-                """
+  fun testValidateRequiresExtensions() {
+    lint()
+      .files(
+        manifest().minSdk(15),
+        java(
+            """
                 package test.pkg;
                 import android.os.Build;
                 import androidx.annotation.RequiresApi;
@@ -1005,12 +1067,17 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     public void testApi6() { }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR,
-            requiresExtensionStub
-        ).issues(AnnotationDetector.ANNOTATION_USAGE).skipTestModes(TestMode.PARTIAL).run().expect(
-            if (AnnotationDetector.WARN_ABOUT_EXTENSION_LEVEL_GAPS)
-                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+        requiresExtensionStub
+      )
+      .issues(AnnotationDetector.ANNOTATION_USAGE)
+      .skipTestModes(TestMode.PARTIAL)
+      .run()
+      .expect(
+        if (AnnotationDetector.WARN_ABOUT_EXTENSION_LEVEL_GAPS)
+          """
                 src/test/pkg/WrongUsages.java:7: Error: Must specify an extension sdk id attribute [SupportAnnotationUsage]
                     @RequiresExtension() // ERROR 2: Misses API level
                     ~~~~~~~~~~~~~~~~~~~~
@@ -1040,8 +1107,8 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~
                 6 errors, 0 warnings
                 """
-            else
-                """
+        else
+          """
                 src/test/pkg/WrongUsages.java:7: Error: Must specify an extension sdk id attribute [SupportAnnotationUsage]
                     @RequiresExtension() // ERROR 2: Misses API level
                     ~~~~~~~~~~~~~~~~~~~~
@@ -1059,12 +1126,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                                                                  ~
                 4 errors, 0 warnings
                 """
-        )
-    }
-    fun testAdditionalFlagScenarios() {
-        lint().files(
-            java(
-                """
+      )
+  }
+  fun testAdditionalFlagScenarios() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.util.SparseIntArray;
@@ -1132,9 +1200,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     private @interface DialogStyle5 {}
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+          """
                 package test.pkg
 
                 import android.util.SparseIntArray
@@ -1212,10 +1281,12 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     @DialogStyle var EXTRA_AUDIO_CODEC : String? = null // ERROR 4
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/TypedefWarnings.java:56: Error: Constants VALUE_2 and VALUE_1 specify the same exact value (0x840); this is usually a cut & paste or merge error [UniqueConstants]
                 @IntDef({VALUE_1, VALUE_2}) // ERROR 2
                                   ~~~~~~~
@@ -1236,13 +1307,14 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                                 ~~~~~~~~~~~~
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testWrongUsagesInKotlin() {
-        lint().files(
-            kotlin(
-                """
+  fun testWrongUsagesInKotlin() {
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import androidx.annotation.LayoutRes
@@ -1254,19 +1326,22 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     return Button(null, null, 5)
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testOverlappingConstants() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=214161
-        // Ensure that we don't flag a missing constant if there is an existing constant
-        // with the same value already present.
-        lint().files(
-            java(
-                "src/test/pkg/IntDefSwitchTest.java",
-                """
+  fun testOverlappingConstants() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=214161
+    // Ensure that we don't flag a missing constant if there is an existing constant
+    // with the same value already present.
+    lint()
+      .files(
+        java(
+          "src/test/pkg/IntDefSwitchTest.java",
+          """
                 package test.pkg;
 
                 import android.annotation.SuppressLint;
@@ -1293,16 +1368,19 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testWarnEnumMethod() {
-        // Regression test for https://issuetracker.google.com/116747166
-        lint().files(
-            kotlin(
-                """
+  fun testWarnEnumMethod() {
+    // Regression test for https://issuetracker.google.com/116747166
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import androidx.annotation.DrawableRes;
@@ -1322,9 +1400,9 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     MyEnum.C -> R.drawable.c
                     MyEnum.X -> throw IllegalArgumentException("Invalid")
                 }"""
-            ),
-            java(
-                """
+        ),
+        java(
+          """
                 package test.pkg;
 
                 public final class R {
@@ -1335,15 +1413,18 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testWarnHalfFloat() {
-        lint().files(
-            java(
-                """
+  fun testWarnHalfFloat() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.HalfFloat;
@@ -1360,10 +1441,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/HalfFloatWarnings.java:6: Error: This annotation does not apply for type int; expected short [SupportAnnotationUsage]
                 @HalfFloat
                 ~~~~~~~~~~
@@ -1372,13 +1456,14 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                                      ~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testRestrictToArgument() {
-        lint().files(
-            kotlin(
-                """
+  fun testRestrictToArgument() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.RestrictTo
@@ -1387,9 +1472,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 class RestrictTest {
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
 
                     import androidx.annotation.RestrictTo
@@ -1398,10 +1484,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     class RestrictTest2 {
                     }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/RestrictTest.kt:5: Error: Restrict to what? Expected at least one RestrictTo.Scope arguments. [SupportAnnotationUsage]
                 @RestrictTo
                 ~~~~~~~~~~~
@@ -1410,16 +1499,17 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 2 errors, 0 warnings
                 """
-        )
-    }
+      )
+  }
 
-    fun testUnknownTypes() {
-        // Regression test for
-        // 133280834: False positive with support annotations and kotlin when operator
-        // Can happen in editor before all when clauses are entered.
-        lint().files(
-            kotlin(
-                """
+  fun testUnknownTypes() {
+    // Regression test for
+    // 133280834: False positive with support annotations and kotlin when operator
+    // Can happen in editor before all when clauses are entered.
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import androidx.annotation.DrawableRes
@@ -1439,17 +1529,20 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                         Foo.REJECTED -> R.drawable.ic_launcher_foreground
                     }
                 }"""
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testPxOnFloats() {
-        // Regression test for
-        //  133205958: @Px annotation should support float
-        lint().files(
-            java(
-                """
+  fun testPxOnFloats() {
+    // Regression test for
+    //  133205958: @Px annotation should support float
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.Px;
@@ -1463,23 +1556,27 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/PxTest.java:10: Error: This annotation does not apply for type char; expected int, long, float, or double [SupportAnnotationUsage]
                 public boolean wrongPx(@Px char c) { // ERROR
                                        ~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testDelegates() {
-        // Regression test for 132782238
-        lint().files(
-            kotlin(
-                """
+  fun testDelegates() {
+    // Regression test for 132782238
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
                 import androidx.annotation.ColorRes
                 import androidx.annotation.FloatRange
@@ -1497,22 +1594,26 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 var textColor3: String by Delegates.observable("") { _, _, newValue ->
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:14: Error: This annotation does not apply for type String; expected float or double [SupportAnnotationUsage]
             @delegate:FloatRange(from=1.0, to=2.0) // ERROR
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testConstructorTarget() {
-        lint().files(
-            kotlin(
-                """
+  fun testConstructorTarget() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.VisibleForTesting
@@ -1525,10 +1626,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     @get:[VisibleForTesting] val p5: String, // OK
                 )
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/TestClass.kt:6: Error: Did you mean @get:VisibleForTesting? Without get: this annotates the constructor parameter itself instead of the associated getter. [SupportAnnotationUsage]
                 @VisibleForTesting val p1: String, // ERROR
                 ~~~~~~~~~~~~~~~~~~
@@ -1537,20 +1641,22 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        ).expectFixDiffs(
-            """
+      )
+      .expectFixDiffs(
+        """
             Fix for src/test/pkg/TestClass.kt line 6: Change to `@get:`:
             @@ -6 +6
             -     @VisibleForTesting val p1: String, // ERROR
             +     @get:VisibleForTesting val p1: String, // ERROR
             """
-        )
-    }
+      )
+  }
 
-    fun testPermissions() {
-        lint().files(
-            kotlin(
-                """
+  fun testPermissions() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.Manifest.permission.ACCESS_COARSE_LOCATION
@@ -1582,10 +1688,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 fun missing() {
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expect(
-            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:24: Error: Only specify one of value, anyOf or allOf [SupportAnnotationUsage]
             @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION], allOf = [ACCESS_COARSE_LOCATION])
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1594,43 +1703,49 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             ~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testOpenForTesting() {
-        lint().files(
-            java(
-                """
+  fun testOpenForTesting() {
+    lint()
+      .files(
+        java(
+            """
                 import androidx.annotation.OpenForTesting;
 
                 @OpenForTesting // WARN
                 public class Test {
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 import androidx.annotation.OpenForTesting
 
                 @OpenForTesting // OK
                 class KotlinTest
                 """
-            ).indented(),
-            openForTestingStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        openForTestingStub
+      )
+      .run()
+      .expect(
+        """
             src/Test.java:3: Error: @OpenForTesting only applies to Kotlin APIs [SupportAnnotationUsage]
             @OpenForTesting // WARN
             ~~~~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testEmptySuper() {
-        lint().files(
-            java(
-                """
+  fun testEmptySuper() {
+    lint()
+      .files(
+        java(
+            """
                 import androidx.annotation.EmptySuper;
 
                 public class TestJava {
@@ -1640,9 +1755,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                   public void ok() { }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 import androidx.annotation.EmptySuper
                 open class TestKotlin {
                   @EmptySuper // WARN 2
@@ -1651,10 +1767,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                   open fun ok() { }
                 }
                 """
-            ).indented(),
-            emptySuperStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        emptySuperStub
+      )
+      .run()
+      .expect(
+        """
             src/TestJava.java:4: Error: @EmptySuper is pointless on a final method [SupportAnnotationUsage]
               @EmptySuper // WARN 1
               ~~~~~~~~~~~
@@ -1663,13 +1782,14 @@ class AnnotationDetectorTest : AbstractCheckTest() {
               ~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testReturnThis() {
-        lint().files(
-            java(
-                """
+  fun testReturnThis() {
+    lint()
+      .files(
+        java(
+            """
                 import androidx.annotation.ReturnThis;
 
                 public class JavaTest {
@@ -1681,9 +1801,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     public Integer okMethod() { }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 import androidx.annotation.ReturnThis
 
                 class KotlinTest {
@@ -1695,10 +1816,13 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     fun okMethod(): Any? { }
                 }
                 """
-            ).indented(),
-            returnThisStub
-        ).run().expect(
-            """
+          )
+          .indented(),
+        returnThisStub
+      )
+      .run()
+      .expect(
+        """
             src/JavaTest.java:4: Error: @ReturnThis should not be specified on void or primitive methods [SupportAnnotationUsage]
                 @ReturnThis // WARN 1
                 ~~~~~~~~~~~
@@ -1713,14 +1837,15 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 ~~~~~~~~~~~
             4 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testMissingElse() {
-        // Regression test for b/232115816
-        lint().files(
-            java(
-                """
+  fun testMissingElse() {
+    // Regression test for b/232115816
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.IntDef;
@@ -1744,9 +1869,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     int BOTH = PRIMARY | SECONDARY;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
 
                 import androidx.annotation.DrawableRes;
@@ -1775,9 +1901,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            kotlin(
-                """
+          )
+          .indented(),
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.annotation.DrawableRes
@@ -1796,27 +1923,29 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     private val primarySwipeIcon: Int? = null
                 }
                 """
-            ).indented(),
-            SUPPORT_ANNOTATIONS_JAR
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
 
-    override fun getDetector(): Detector {
-        return AnnotationDetector()
-    }
+  override fun getDetector(): Detector {
+    return AnnotationDetector()
+  }
 
-    override fun getIssues(): List<Issue> {
-        val issues =
-            super.getIssues()
+  override fun getIssues(): List<Issue> {
+    val issues = super.getIssues()
 
-        // Need these issues on to be found by the registry as well to look up scope
-        // in id references (these ids are referenced in the unit test java file below)
-        issues.add(ApiDetector.UNSUPPORTED)
-        issues.add(SdCardDetector.ISSUE)
-        return issues
-    }
+    // Need these issues on to be found by the registry as well to look up scope
+    // in id references (these ids are referenced in the unit test java file below)
+    issues.add(ApiDetector.UNSUPPORTED)
+    issues.add(SdCardDetector.ISSUE)
+    return issues
+  }
 
-    companion object {
-        const val SUPPORT_JAR_PATH = "libs/support-annotations.jar"
-    }
+  companion object {
+    const val SUPPORT_JAR_PATH = "libs/support-annotations.jar"
+  }
 }

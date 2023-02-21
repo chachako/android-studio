@@ -18,59 +18,53 @@ package com.android.tools.lint.client.api
 
 /** Information about SDKs */
 abstract class SdkInfo {
-    /**
-     * Returns true if the given child view is the same class or a sub
-     * class of the given parent view class
-     *
-     * @param parentViewFqcn the fully qualified class name of the
-     *     parent view
-     * @param childViewFqcn the fully qualified class name of the child
-     *     view
-     * @return true if the child view is a sub view of (or the same
-     *     class as) the parent view
-     */
-    open fun isSubViewOf(parentViewFqcn: String, childViewFqcn: String): Boolean {
-        var current = childViewFqcn
-        while (current != "android.view.View") {
-            if (parentViewFqcn == current) {
-                return true
-            }
-            val parent = getParentViewClass(current)
-                ?: return true // Unknown view - err on the side of caution
-            current = parent
-        }
-
-        return false
+  /**
+   * Returns true if the given child view is the same class or a sub class of the given parent view
+   * class
+   *
+   * @param parentViewFqcn the fully qualified class name of the parent view
+   * @param childViewFqcn the fully qualified class name of the child view
+   * @return true if the child view is a sub view of (or the same class as) the parent view
+   */
+  open fun isSubViewOf(parentViewFqcn: String, childViewFqcn: String): Boolean {
+    var current = childViewFqcn
+    while (current != "android.view.View") {
+      if (parentViewFqcn == current) {
+        return true
+      }
+      val parent =
+        getParentViewClass(current) ?: return true // Unknown view - err on the side of caution
+      current = parent
     }
 
-    /**
-     * Returns the fully qualified name of the parent view, or null if
-     * the view is the root android.view.View class.
-     *
-     * @param fqcn the fully qualified class name of the view
-     * @return the fully qualified class name of the parent view, or
-     *     null
-     */
-    abstract fun getParentViewClass(fqcn: String): String?
+    return false
+  }
 
-    /**
-     * Returns the class name of the parent view, or null if the view
-     * is the root android.view.View class. This is the same as the
-     * [getParentViewClass] but without the package.
-     *
-     * @param name the view class name to look up the parent for (not
-     *     including package)
-     * @return the view name of the parent
-     */
-    abstract fun getParentViewName(name: String): String?
+  /**
+   * Returns the fully qualified name of the parent view, or null if the view is the root
+   * android.view.View class.
+   *
+   * @param fqcn the fully qualified class name of the view
+   * @return the fully qualified class name of the parent view, or null
+   */
+  abstract fun getParentViewClass(fqcn: String): String?
 
-    /**
-     * Returns true if the given widget name is a layout
-     *
-     * @param tag the XML tag for the view
-     * @return true if the given tag corresponds to a layout
-     */
-    open fun isLayout(tag: String): Boolean = tag.endsWith("Layout")
+  /**
+   * Returns the class name of the parent view, or null if the view is the root android.view.View
+   * class. This is the same as the [getParentViewClass] but without the package.
+   *
+   * @param name the view class name to look up the parent for (not including package)
+   * @return the view name of the parent
+   */
+  abstract fun getParentViewName(name: String): String?
 
-    // TODO: Add access to resource resolution here.
+  /**
+   * Returns true if the given widget name is a layout
+   *
+   * @param tag the XML tag for the view
+   * @return true if the given tag corresponds to a layout
+   */
+  open fun isLayout(tag: String): Boolean = tag.endsWith("Layout")
+
+  // TODO: Add access to resource resolution here.
 }

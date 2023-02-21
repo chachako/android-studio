@@ -20,24 +20,28 @@ import com.android.tools.lint.detector.api.Detector
 
 class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
 
-    fun testOlderSdk() {
-        lint().files(
-            classpath(),
-            manifest().minSdk(10),
-            annotatedObject,
-            inheritsFromAnnotated,
-            nonAnnotatedObject,
-            javaScriptTest
-        ).run().expectClean()
-    }
+  fun testOlderSdk() {
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(10),
+        annotatedObject,
+        inheritsFromAnnotated,
+        nonAnnotatedObject,
+        javaScriptTest
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNotPublic() {
-        // Regression test for issue 118464831
-        lint().files(
-            classpath(),
-            manifest().minSdk(10),
-            java(
-                """
+  fun testNotPublic() {
+    // Regression test for issue 118464831
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(10),
+        java(
+            """
                 package test.pkg;
 
                 import android.webkit.JavascriptInterface;
@@ -54,9 +58,12 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/AnnotatedObject.java:7: Error: Must be public when using @JavascriptInterface [JavascriptInterface]
             class AnnotatedObject {
                   ~~~~~~~~~~~~~~~
@@ -65,12 +72,12 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
                      ~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun test() {
-        val expected =
-            """
+  fun test() {
+    val expected =
+      """
             src/test/pkg/JavaScriptTest.java:11: Error: None of the methods in the added interface (NonAnnotatedObject) have been annotated with @android.webkit.JavascriptInterface; they will not be visible in API 17 [JavascriptInterface]
                     webview.addJavascriptInterface(new NonAnnotatedObject(), "myobj");
                             ~~~~~~~~~~~~~~~~~~~~~~
@@ -86,10 +93,11 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
             4 errors, 0 warnings
             """
 
-        lint().files(
-            classpath(),
-            manifest(
-                """
+    lint()
+      .files(
+        classpath(),
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.bytecode"
                     android:versionCode="1"
@@ -113,15 +121,19 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            annotatedObject,
-            inheritsFromAnnotated,
-            nonAnnotatedObject,
-            javaScriptTest
-        ).run().expect(expected)
-    }
+          )
+          .indented(),
+        annotatedObject,
+        inheritsFromAnnotated,
+        nonAnnotatedObject,
+        javaScriptTest
+      )
+      .run()
+      .expect(expected)
+  }
 
-    private val annotatedObject = java(
+  private val annotatedObject =
+    java(
         """
         package test.pkg;
 
@@ -141,9 +153,11 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val inheritsFromAnnotated = java(
+  private val inheritsFromAnnotated =
+    java(
         """
         package test.pkg;
 
@@ -162,9 +176,11 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
 
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val javaScriptTest = java(
+  private val javaScriptTest =
+    java(
         """
         package test.pkg;
 
@@ -202,9 +218,11 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    private val nonAnnotatedObject = java(
+  private val nonAnnotatedObject =
+    java(
         """
         package test.pkg;
 
@@ -216,9 +234,10 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
             }
         }
         """
-    ).indented()
+      )
+      .indented()
 
-    override fun getDetector(): Detector {
-        return JavaScriptInterfaceDetector()
-    }
+  override fun getDetector(): Detector {
+    return JavaScriptInterfaceDetector()
+  }
 }

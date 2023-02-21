@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class ManifestResourceDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return ManifestResourceDetector()
-    }
+  override fun getDetector(): Detector {
+    return ManifestResourceDetector()
+  }
 
-    fun test() {
-        lint().files(
-            manifest(
-                """
+  fun test() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="foo.bar2"
                     android:versionCode="1"
@@ -47,47 +48,56 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/values/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/values.xml",
+            """
                 <resources>
                     <string name="app_name">App Name (Default)</string>
                     <bool name="has_honeycomb">false</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-v11/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-v11/values.xml",
+            """
                 <resources>
                     <bool name="has_honeycomb">true</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-en-rUS/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-en-rUS/values.xml",
+            """
                 <resources>
                     <string name="app_name">App Name (English)</string>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-xlarge/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-xlarge/values.xml",
+            """
                 <resources>
                     <dimen name="activity_horizontal_margin">16dp</dimen>
                 </resources>
                 """
-            ).indented()
-        ).incremental("AndroidManifest.xml").run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .incremental("AndroidManifest.xml")
+      .run()
+      .expectClean()
+  }
 
-    fun testInvalidManifestReference() {
-        lint().files(
-            manifest(
-                """
+  fun testInvalidManifestReference() {
+    lint()
+      .files(
+        manifest(
+            """
 
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="test.pkg">
@@ -101,59 +111,69 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/values/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/values.xml",
+            """
                 <resources>
                     <string name="location_process">Location Process</string>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values/bools.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/bools.xml",
+            """
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">true</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-en-rUS/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-en-rUS/values.xml",
+            """
                 <resources>
                     <string name="location_process">Location Process (English)</string>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-watch/bools.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-watch/bools.xml",
+            """
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">false</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/xml/backup.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="dd"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
                 """
-            ).indented(),
-            xml(
-                "res/xml-mcc/backup.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml-mcc/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="mcc"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).incremental("AndroidManifest.xml").run().expect(
-            """
+          )
+          .indented()
+      )
+      .incremental("AndroidManifest.xml")
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:6: Error: Resources referenced from the manifest cannot vary by configuration (except for version qualifiers, e.g. -v21). Found variation in mcc [ManifestResource]
                 <application android:fullBackupContent="@xml/backup">
                                                         ~~~~~~~~~~~
@@ -165,13 +185,14 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testInvalidReferences() {
-        lint().files(
-            manifest(
-                """
+  fun testInvalidReferences() {
+    lint()
+      .files(
+        manifest(
+            """
 
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="foo.bar2"
@@ -198,78 +219,89 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
 
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/values/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/values.xml",
+            """
                 <resources>
                     <string name="location_process">Location Process</string>
                     <string name="app_name">App Name (Default)</string>
                     <bool name="has_honeycomb">false</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values/bools.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/bools.xml",
+            """
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">true</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-en-rUS/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-en-rUS/values.xml",
+            """
                 <resources>
                     <string name="location_process">Location Process (English)</string>
                     <string name="app_name">App Name (English)</string>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-watch/bools.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-watch/bools.xml",
+            """
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">false</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-v11/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-v11/values.xml",
+            """
                 <resources>
                     <bool name="has_honeycomb">true</bool>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-xlarge/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-xlarge/values.xml",
+            """
                 <resources>
                     <dimen name="activity_horizontal_margin">16dp</dimen>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/xml/backup.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="dd"/>
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
                 """
-            ).indented(),
-            xml(
-                "res/xml-mcc/backup.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/xml-mcc/backup.xml",
+            """
                 <full-backup-content>
                      <include domain="file" path="mcc"/>
                 </full-backup-content>
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             AndroidManifest.xml:11: Error: Resources referenced from the manifest cannot vary by configuration (except for version qualifiers, e.g. -v21). Found variation in mcc [ManifestResource]
                     android:fullBackupContent="@xml/backup"
                                                ~~~~~~~~~~~
@@ -288,13 +320,14 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                                                               ~~~~~
             3 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testAllowPermissionNameLocalizations() {
-        lint().files(
-            manifest(
-                """
+  fun testAllowPermissionNameLocalizations() {
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="foo.bar2"
                     android:versionCode="1"
@@ -313,10 +346,11 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                         android:protectionLevel="dangerous" />
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/values/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/values.xml",
+            """
                 <resources>
                     <string name="permgrouplab_contacts">Contacts</string>
                     <string name="permgroupdesc_contacts">access your contacts</string>
@@ -324,10 +358,11 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="permdesc_readContacts">Allows the app to...</string>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-nb/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-nb/values.xml",
+            """
                 <resources>
                     <string name="permgrouplab_contacts">"Kontakter"</string>
                     <string name="permgroupdesc_contacts">"se kontaktene dine"</string>
@@ -335,16 +370,21 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="permdesc_readContacts">"Lar appen lese...</string>
                 </resources>
                 """
-            ).indented()
-        ).incremental("AndroidManifest.xml").run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .incremental("AndroidManifest.xml")
+      .run()
+      .expectClean()
+  }
 
-    fun testAllowMetadataResources() {
-        // Regression test for https://code.google.com/p/android/issues/detail?id=216279
-        // <meta-data> elements are free to reference resources as they see fit.
-        lint().files(
-            manifest(
-                """
+  fun testAllowMetadataResources() {
+    // Regression test for https://code.google.com/p/android/issues/detail?id=216279
+    // <meta-data> elements are free to reference resources as they see fit.
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                           xmlns:tools="http://schemas.android.com/tools"
                           package="foo.bar2">
@@ -361,71 +401,88 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     </application>
                 </manifest>
                 """
-            ).indented(),
-            xml(
-                "res/values/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values/values.xml",
+            """
                 <resources>
                     <string name="app_id">Id</string>
                     <mipmap name="ic_launcher">@mipmap/other</mipmap>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-nb/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-nb/values.xml",
+            """
                 <resources>
                     <string name="app_id">"Id"</string>
                 </resources>
                 """
-            ).indented(),
-            xml(
-                "res/values-hdpi/values.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/values-hdpi/values.xml",
+            """
                 <resources>
                     <mipmap name="ic_launcher">@mipmap/other</mipmap>
                 </resources>
                 """
-            ).indented()
-        ).incremental("AndroidManifest.xml").run().expectClean()
-    }
+          )
+          .indented()
+      )
+      .incremental("AndroidManifest.xml")
+      .run()
+      .expectClean()
+  }
 
-    fun testRoundIcon() {
-        // Allow round icons in density folders
-        // Regression test for https://code.google.com/p/android/issues/detail?id=225711
-        lint().files(
-            manifest(
-                """
+  fun testRoundIcon() {
+    // Allow round icons in density folders
+    // Regression test for https://code.google.com/p/android/issues/detail?id=225711
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="webp.test.tools.android.com.myapplication" >
                     <application
                         android:roundIcon="@mipmap/round_icon" />
                 </manifest>
                 """
-            ).indented(),
-            image("res/mipmap-mdpi/round_icon.png", 472, 290).fill(-0x1),
-            image("res/mipmap-hdpi/round_icon.png", 472, 290).fill(-0x1),
-            image("res/mipmap-xhdpi/round_icon.png", 472, 290).fill(-0x1),
-            image("res/mipmap-xxhdpi/round_icon.png", 472, 290).fill(-0x1),
-            image("res/mipmap-xxxhdpi/round_icon.png", 472, 290).fill(-0x1)
-        ).incremental("AndroidManifest.xml").run().expectClean()
-    }
+          )
+          .indented(),
+        image("res/mipmap-mdpi/round_icon.png", 472, 290).fill(-0x1),
+        image("res/mipmap-hdpi/round_icon.png", 472, 290).fill(-0x1),
+        image("res/mipmap-xhdpi/round_icon.png", 472, 290).fill(-0x1),
+        image("res/mipmap-xxhdpi/round_icon.png", 472, 290).fill(-0x1),
+        image("res/mipmap-xxxhdpi/round_icon.png", 472, 290).fill(-0x1)
+      )
+      .incremental("AndroidManifest.xml")
+      .run()
+      .expectClean()
+  }
 
-    fun testAnyDensity() {
-        // Allow round icons in density folders
-        lint().files(
-            manifest(
-                """
+  fun testAnyDensity() {
+    // Allow round icons in density folders
+    lint()
+      .files(
+        manifest(
+            """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                     package="webp.test.tools.android.com.myapplication" >
                     <application
                         android:randomAttribute="@mipmap/round_icon" />
                 </manifest>
                 """
-            ).indented(),
-            image("res/mipmap-mdpi/round_icon.png", 472, 290).fill(-0x1),
-            image("res/mipmap-hdpi-v4/round_icon.png", 472, 290).fill(-0x1),
-            image("res/mipmap-v21/round_icon.png", 472, 290).fill(-0x1)
-        ).incremental("AndroidManifest.xml").run().expectClean()
-    }
+          )
+          .indented(),
+        image("res/mipmap-mdpi/round_icon.png", 472, 290).fill(-0x1),
+        image("res/mipmap-hdpi-v4/round_icon.png", 472, 290).fill(-0x1),
+        image("res/mipmap-v21/round_icon.png", 472, 290).fill(-0x1)
+      )
+      .incremental("AndroidManifest.xml")
+      .run()
+      .expectClean()
+  }
 }

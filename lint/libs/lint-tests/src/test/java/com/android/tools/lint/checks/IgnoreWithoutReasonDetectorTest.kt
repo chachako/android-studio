@@ -24,19 +24,22 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import org.junit.Test
 
 class IgnoreWithoutReasonDetectorTest {
-    private fun lint(): TestLintTask {
-        return TestLintTask().sdkHome(TestUtils.getSdk().toFile())
-    }
+  private fun lint(): TestLintTask {
+    return TestLintTask().sdkHome(TestUtils.getSdk().toFile())
+  }
 
-    private val stubJUnitTest: TestFile = java(
+  private val stubJUnitTest: TestFile =
+    java(
         """
         package org.junit;
 
         @SuppressWarnings("ClassNameDiffersFromFileName")
         public @interface Test { }"""
-    ).indented()
+      )
+      .indented()
 
-    private val stubJUnitIgnore: TestFile = java(
+  private val stubJUnitIgnore: TestFile =
+    java(
         """
         package org.junit;
 
@@ -44,15 +47,16 @@ class IgnoreWithoutReasonDetectorTest {
         public @interface Ignore {
             String value() default "";
         }"""
-    ).indented()
+      )
+      .indented()
 
-    @Test
-    fun testNoAnnotations() {
-        lint()
-            .files(
-                stubJUnitTest,
-                java(
-                    """
+  @Test
+  fun testNoAnnotations() {
+    lint()
+      .files(
+        stubJUnitTest,
+        java(
+            """
                 package foo;
 
                 import org.junit.Test;
@@ -62,20 +66,22 @@ class IgnoreWithoutReasonDetectorTest {
                   @Test void something() {
                   }
                 }"""
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testAnnotationWithReasonOnFunction() {
-        lint()
-            .files(
-                stubJUnitTest, stubJUnitIgnore,
-                java(
-                    """
+  @Test
+  fun testAnnotationWithReasonOnFunction() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            """
                 package foo;
 
                 import org.junit.Ignore;
@@ -86,20 +92,22 @@ class IgnoreWithoutReasonDetectorTest {
                   @Test @Ignore("reason") public void something() {
                   }
                 }"""
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testAnnotationWithReasonOnClass() {
-        lint()
-            .files(
-                stubJUnitTest, stubJUnitIgnore,
-                java(
-                    """
+  @Test
+  fun testAnnotationWithReasonOnClass() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            """
                 package foo;
 
                 import org.junit.Ignore;
@@ -110,20 +118,22 @@ class IgnoreWithoutReasonDetectorTest {
                   @Test public void something() {
                   }
                 }"""
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .run()
-            .expectClean()
-    }
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 
-    @Test
-    fun testAnnotationWithoutReasonOnClass() {
-        lint()
-            .files(
-                stubJUnitTest, stubJUnitIgnore,
-                java(
-                    """
+  @Test
+  fun testAnnotationWithoutReasonOnClass() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            """
                 package foo;
 
                 import org.junit.Ignore;
@@ -134,27 +144,29 @@ class IgnoreWithoutReasonDetectorTest {
                   @Test public void something() {
                   }
                 }"""
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/foo/MyTest.java:7: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                 @Ignore class MyTest {
                 ~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testAnnotationWithoutReasonOnClassKotlin() {
-        lint()
-            .files(
-                stubJUnitTest, stubJUnitIgnore,
-                kotlin(
-                    """
+  @Test
+  fun testAnnotationWithoutReasonOnClassKotlin() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        kotlin(
+            """
                     package foo
 
                     import org.junit.Ignore
@@ -167,27 +179,29 @@ class IgnoreWithoutReasonDetectorTest {
                       }
                     }
                     """
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/foo/MyTest.kt:6: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                 @Ignore class MyTest {
                 ~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testAnnotationWithoutReasonOnFunction() {
-        lint()
-            .files(
-                stubJUnitTest, stubJUnitIgnore,
-                java(
-                    """
+  @Test
+  fun testAnnotationWithoutReasonOnFunction() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            """
                 package foo;
 
                 import org.junit.Ignore;
@@ -205,12 +219,13 @@ class IgnoreWithoutReasonDetectorTest {
                   }
                 }
                 """
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .run()
+      .expect(
+        """
                 src/foo/MyTest.java:8: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                   @Test @Ignore public void something() {
                         ~~~~~~~
@@ -222,25 +237,25 @@ class IgnoreWithoutReasonDetectorTest {
                         ~~~~~~~~~~~~~~~
                 0 errors, 3 warnings
                 """
-            )
-            .expectFixDiffs(
-                """
+      )
+      .expectFixDiffs(
+        """
                 Fix for src/foo/MyTest.java line 8: Give reason:
                 @@ -8 +8
                 -   @Test @Ignore public void something() {
                 +   @Test @Ignore("[TODO]|") public void something() {
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testIgnoredWithComment() {
-        lint()
-            .files(
-                stubJUnitTest,
-                stubJUnitIgnore,
-                java(
-                    """
+  @Test
+  fun testIgnoredWithComment() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            """
                     package test.pkg;
 
                     import org.junit.Ignore;
@@ -260,9 +275,10 @@ class IgnoreWithoutReasonDetectorTest {
                       }
                     }
                     """
-                ).indented(),
-                kotlin(
-                    """
+          )
+          .indented(),
+        kotlin(
+            """
                     package test.pkg
 
                     import org.junit.Ignore
@@ -293,30 +309,32 @@ class IgnoreWithoutReasonDetectorTest {
 
                     }
                     """
-                ).indented()
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, true)
-            .run()
-            .expect(
-                """
+          )
+          .indented()
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, true)
+      .run()
+      .expect(
+        """
                 src/test/pkg/MyKotlinTest.kt:24: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                   @Ignore
                   ~~~~~~~
                 0 errors, 1 warnings
-                """.trimIndent()
-            )
-    }
+                """
+          .trimIndent()
+      )
+  }
 
-    @Test
-    fun testIgnoredWithCommentDisabled() {
-        lint()
-            .files(
-                stubJUnitTest,
-                stubJUnitIgnore,
-                java(
-                    "test/test/pkg/MyJavaTest.java",
-                    """
+  @Test
+  fun testIgnoredWithCommentDisabled() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            "test/test/pkg/MyJavaTest.java",
+            """
                     package test.pkg;
 
                     import org.junit.Ignore;
@@ -328,30 +346,31 @@ class IgnoreWithoutReasonDetectorTest {
                       }
                     }
                     """
-                ).indented(),
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, false)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, false)
+      .run()
+      .expect(
+        """
                 test/test/pkg/MyJavaTest.java:7: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                   @Ignore // comment after
                   ~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    @Test
-    fun testInstrumentationTest() {
-        lint()
-            .files(
-                stubJUnitTest,
-                stubJUnitIgnore,
-                java(
-                    "androidTest/test/pkg/MyJavaTest.java",
-                    """
+  @Test
+  fun testInstrumentationTest() {
+    lint()
+      .files(
+        stubJUnitTest,
+        stubJUnitIgnore,
+        java(
+            "androidTest/test/pkg/MyJavaTest.java",
+            """
                     package test.pkg;
 
                     import org.junit.Ignore;
@@ -363,18 +382,19 @@ class IgnoreWithoutReasonDetectorTest {
                       }
                     }
                     """
-                ).indented(),
-            )
-            .issues(IgnoreWithoutReasonDetector.ISSUE)
-            .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, false)
-            .run()
-            .expect(
-                """
+          )
+          .indented(),
+      )
+      .issues(IgnoreWithoutReasonDetector.ISSUE)
+      .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, false)
+      .run()
+      .expect(
+        """
                 androidTest/test/pkg/MyJavaTest.java:7: Warning: Test is ignored without giving any explanation [IgnoreWithoutReason]
                   @Ignore // comment after
                   ~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 }

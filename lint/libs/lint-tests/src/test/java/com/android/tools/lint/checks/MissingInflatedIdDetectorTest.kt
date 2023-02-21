@@ -20,10 +20,11 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.rClass
 import com.android.tools.lint.detector.api.Detector
 
 class MissingInflatedIdDetectorTest : AbstractCheckTest() {
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.app.Activity
@@ -50,30 +51,35 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            xml(
-                "res/layout/activity_main.xml",
-                """
-                <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent" android:layout_height="match_parent" />
-                """
-            ).indented(),
-            xml(
-                "res/layout/list_item.xml",
-                """
-                <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent" android:layout_height="match_parent" />
-                """
-            ).indented(),
-            rClass(
-                "test.pkg",
-                "@layout/activity_main",
-                "@layout/list_item",
-                "@id/image_view",
-                "@id/text_field",
-            )
-        ).run().expect(
+          )
+          .indented(),
+        xml(
+            "res/layout/activity_main.xml",
             """
+                <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent" android:layout_height="match_parent" />
+                """
+          )
+          .indented(),
+        xml(
+            "res/layout/list_item.xml",
+            """
+                <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent" android:layout_height="match_parent" />
+                """
+          )
+          .indented(),
+        rClass(
+          "test.pkg",
+          "@layout/activity_main",
+          "@layout/list_item",
+          "@id/image_view",
+          "@id/text_field",
+        )
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyActivity.kt:15: Error: @layout/activity_main does not contain a declaration with id text_field [MissingInflatedId]
                     requireViewById<EditText>(R.id.text_field).isEnabled = false
                                               ~~~~~~~~~~~~~~~
@@ -82,13 +88,14 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                                                                    ~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testInflatingOnView() {
-        lint().files(
-            kotlin(
-                """
+  fun testInflatingOnView() {
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import android.view.LayoutInflater
@@ -103,10 +110,10 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                     val view3 = rootView.findViewById<ImageView>(R.id.frame_layout)                     // OK
                 }
                 """
-            ),
-            xml(
-                "res/layout/some_layout.xml",
-                """
+        ),
+        xml(
+            "res/layout/some_layout.xml",
+            """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/frame_layout"
@@ -123,26 +130,30 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                         app:navGraph="@navigation/nav_graph" />
                 </FrameLayout>
                 """
-            ).indented(),
-            xml(
-                "res/layout/unrelated_layout.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout/unrelated_layout.xml",
+            """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/an_id_in_another_viewgroup"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
                 """
-            ).indented(),
-            rClass(
-                "test.pkg",
-                "@layout/some_layout",
-                "@layout/unrelated_layout",
-                "@id/an_id_in_another_viewgroup",
-                "@id/navigation_host_fragment",
-                "@id/frame_layout"
-            )
-        ).run().expect(
-            """
+          )
+          .indented(),
+        rClass(
+          "test.pkg",
+          "@layout/some_layout",
+          "@layout/unrelated_layout",
+          "@id/an_id_in_another_viewgroup",
+          "@id/navigation_host_fragment",
+          "@id/frame_layout"
+        )
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/test.kt:9: Error: @layout/some_layout does not contain a declaration with id an_id_in_another_viewgroup [MissingInflatedId]
                                 val imgView1 = rootView.findViewById<ImageView>(R.id.an_id_in_another_viewgroup)    // ERROR
                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,13 +162,14 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testInflatingOnCreate() {
-        lint().files(
-            java(
-                """
+  fun testInflatingOnCreate() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -176,10 +188,11 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            xml(
-                "res/layout/casts.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout/casts.xml",
+            """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -198,28 +211,26 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                         android:text="EditText" />
                 </LinearLayout>
                 """
-            ).indented(),
-            rClass(
-                "test.pkg",
-                "@layout/casts",
-                "@id/unknown",
-                "@id/button",
-                "@id/edittext"
-            )
-        ).run().expect(
-            """
+          )
+          .indented(),
+        rClass("test.pkg", "@layout/casts", "@id/unknown", "@id/button", "@id/edittext")
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/MyActivity.java:15: Error: @layout/casts does not contain a declaration with id unknown [MissingInflatedId]
                     TextView textView = (TextView) findViewById(R.id.unknown);             // ERROR
                                                                 ~~~~~~~~~~~~
             1 errors, 0 warnings
             """
-        )
-    }
+      )
+  }
 
-    fun testFrameworkIds() {
-        lint().files(
-            kotlin(
-                """
+  fun testFrameworkIds() {
+    lint()
+      .files(
+        kotlin(
+          """
                 package test.pkg
 
                 import android.view.LayoutInflater
@@ -236,17 +247,21 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                     val view1 = rootView.findViewById<TextView>(android.R.id.text1) // OK: not there but not looking at android ids
                 }
                 """
-            ),
-            xml("res/layout/my_layout.xml", "<merge/>"),
-            rClass("test.pkg", "@layout/my_layout", "@id/my_id")
-        ).run().expectClean()
-    }
+        ),
+        xml("res/layout/my_layout.xml", "<merge/>"),
+        rClass("test.pkg", "@layout/my_layout", "@id/my_id")
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testIncludes() {
-        // If there are <include> tags in the layout, don't draw any conclusions about which id's are present
-        lint().files(
-            java(
-                """
+  fun testIncludes() {
+    // If there are <include> tags in the layout, don't draw any conclusions about which id's are
+    // present
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.app.Activity;
@@ -262,19 +277,23 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented(),
-            xml(
-                "res/layout/casts.xml",
-                """
+          )
+          .indented(),
+        xml(
+            "res/layout/casts.xml",
+            """
                 <merge>
                     <include layout="@layout/content_main" />
                 </merge>
                 """
-            ).indented(),
-            xml("res/layout/content_main.xml", "<LinearLayout/>").indented(),
-            rClass("test.pkg", "@layout/casts", "@layout/content_main", "@id/button")
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        xml("res/layout/content_main.xml", "<LinearLayout/>").indented(),
+        rClass("test.pkg", "@layout/casts", "@layout/content_main", "@id/button")
+      )
+      .run()
+      .expectClean()
+  }
 
-    override fun getDetector(): Detector = MissingInflatedIdDetector()
+  override fun getDetector(): Detector = MissingInflatedIdDetector()
 }

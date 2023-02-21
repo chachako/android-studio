@@ -21,12 +21,13 @@ import com.android.sdklib.AndroidVersion.VersionCodes.S
 import com.android.tools.lint.checks.infrastructure.TestFile
 
 class SplashScreenDetectorTest : AbstractCheckTest() {
-    override fun getDetector() = SplashScreenDetector()
+  override fun getDetector() = SplashScreenDetector()
 
-    fun testDocumentationExample() {
-        lint().files(
-            kotlin(
-                """
+  fun testDocumentationExample() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import android.support.v7.app.AppCompatActivity
@@ -36,31 +37,34 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                     override fun onCreate(savedState: Bundle?) { }
                 }
                 """
-            ).indented(),
-            // v7 AppCompatActivity stub
-            java(
-                """
+          )
+          .indented(),
+        // v7 AppCompatActivity stub
+        java(
+          """
                 package android.support.v7.app; // HIDE-FROM-DOCUMENTATION
                 public class AppCompatActivity extends android.app.Activity {
                 }
                 """
-            ),
-            manifest().minSdk(S)
-        ).run()
-            .expect(
-                """
+        ),
+        manifest().minSdk(S)
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/SplashActivity.kt:6: Warning: The application should not provide its own launch screen [CustomSplashScreen]
                 class SplashActivity : AppCompatActivity() {
                       ~~~~~~~~~~~~~~
                 0 errors, 1 warnings
             """
-            )
-    }
+      )
+  }
 
-    fun testSplashScreen2() {
-        lint().files(
-            kotlin(
-                """
+  fun testSplashScreen2() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.fragment.app.FragmentActivity
@@ -75,24 +79,27 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                 // an error in LaunchScreen.kt)
                 fun topLevelFunction() { }
                 """
-            ).indented(),
-            fragmentActivityStub,
-            manifest().minSdk(S)
-        ).run()
-            .expect(
-                """
+          )
+          .indented(),
+        fragmentActivityStub,
+        manifest().minSdk(S)
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/LaunchScreen.kt:6: Warning: The application should not provide its own launch screen [CustomSplashScreen]
                 class LaunchScreen : FragmentActivity() {
                       ~~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testSplashScreen3() {
-        lint().files(
-            kotlin(
-                """
+  fun testSplashScreen3() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.fragment.app.Fragment
@@ -110,12 +117,14 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                 class MyRoutingActivity : android.app.Activity { // OK: RoutingActivity too generic of a name
                 }
                 """
-            ).indented(),
-            fragmentStub,
-            manifest().minSdk(S)
-        ).run()
-            .expect(
-                """
+          )
+          .indented(),
+        fragmentStub,
+        manifest().minSdk(S)
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/SplashScreen.kt:6: Warning: The application should not provide its own launch screen [CustomSplashScreen]
                 class SplashScreen : Fragment() {
                       ~~~~~~~~~~~~
@@ -127,13 +136,14 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                       ~~~~~~~~~~~~~~~~
                 0 errors, 3 warnings
                 """
-            )
-    }
+      )
+  }
 
-    fun testSplashScreen4() {
-        lint().files(
-            kotlin(
-                """
+  fun testSplashScreen4() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.fragment.app.Fragment
@@ -142,24 +152,27 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                 class MySplashscreen : Fragment() {
                 }
                 """
-            ).indented(),
-            fragmentStub,
-            manifest().minSdk(S)
-        ).run()
-            .expect(
-                """
+          )
+          .indented(),
+        fragmentStub,
+        manifest().minSdk(S)
+      )
+      .run()
+      .expect(
+        """
                 src/test/pkg/MySplashscreen.kt:6: Warning: The application should not provide its own launch screen [CustomSplashScreen]
                 class MySplashscreen : Fragment() {
                       ~~~~~~~~~~~~~~
                 0 errors, 1 warnings
             """
-            )
-    }
+      )
+  }
 
-    fun testSplashScreenPreS() {
-        lint().files(
-            kotlin(
-                """
+  fun testSplashScreenPreS() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.fragment.app.Fragment
@@ -168,16 +181,20 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                 class MySplashscreen : Fragment() {
                 }
                 """
-            ).indented(),
-            fragmentStub,
-            manifest().minSdk(R)
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        fragmentStub,
+        manifest().minSdk(R)
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNonSplashScreen() {
-        lint().files(
-            kotlin(
-                """
+  fun testNonSplashScreen() {
+    lint()
+      .files(
+        kotlin(
+            """
                 package test.pkg
 
                 import androidx.fragment.app.FragmentActivity
@@ -187,43 +204,53 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                     override fun onCreate(savedState: Bundle?) { }
                 }
                 """
-            ).indented(),
-            manifest().minSdk(S),
-            fragmentActivityStub,
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        manifest().minSdk(S),
+        fragmentActivityStub,
+      )
+      .run()
+      .expectClean()
+  }
 
-    fun testNonActivity() {
-        // Regression test for b/180481539
-        lint().files(
-            kotlin(
-                """
+  fun testNonActivity() {
+    // Regression test for b/180481539
+    lint()
+      .files(
+        kotlin(
+            """
             package test.pkg
 
             object SplashScreenUtil
             """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
             package test.pkg;
 
             class SplashScreenUtil2 {}
             """
-            ).indented(),
-            manifest().minSdk(S)
-        ).run().expectClean()
-    }
+          )
+          .indented(),
+        manifest().minSdk(S)
+      )
+      .run()
+      .expectClean()
+  }
 
-    private val fragmentActivityStub: TestFile = java(
-        """
+  private val fragmentActivityStub: TestFile =
+    java(
+      """
         package androidx.fragment.app;
         public class FragmentActivity extends android.app.Activity {
         }
         """
     )
 
-    private val fragmentStub: TestFile = java(
-        """
+  private val fragmentStub: TestFile =
+    java(
+      """
         package androidx.fragment.app;
         public class Fragment implements android.content.ComponentCallbacks {
         }

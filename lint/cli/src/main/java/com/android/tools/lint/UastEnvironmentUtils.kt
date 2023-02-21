@@ -30,6 +30,7 @@ import com.intellij.openapi.vfs.CompactVirtualFileSet
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSet
 import com.intellij.openapi.vfs.VirtualFileSetFactory
+import java.util.concurrent.locks.ReentrantLock
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.GradleStyleMessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
@@ -41,46 +42,45 @@ import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.evaluation.UEvaluatorExtension
 import org.jetbrains.uast.java.JavaUastLanguagePlugin
 import org.jetbrains.uast.kotlin.evaluation.KotlinEvaluatorExtension
-import java.util.concurrent.locks.ReentrantLock
 
 internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
-    val config = CompilerConfiguration()
+  val config = CompilerConfiguration()
 
-    config.put(CommonConfigurationKeys.MODULE_NAME, "lint-module")
+  config.put(CommonConfigurationKeys.MODULE_NAME, "lint-module")
 
-    // We're not running compiler checks, but we still want to register a logger
-    // in order to see warnings related to misconfiguration.
-    val logger = PrintingMessageCollector(System.err, GradleStyleMessageRenderer(), false)
-    config.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, logger)
+  // We're not running compiler checks, but we still want to register a logger
+  // in order to see warnings related to misconfiguration.
+  val logger = PrintingMessageCollector(System.err, GradleStyleMessageRenderer(), false)
+  config.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, logger)
 
-    // The Kotlin compiler uses a fast, ASM-based class file reader.
-    // However, Lint still relies on representing class files with PSI.
-    config.put(JVMConfigurationKeys.USE_PSI_CLASS_FILES_READING, true)
+  // The Kotlin compiler uses a fast, ASM-based class file reader.
+  // However, Lint still relies on representing class files with PSI.
+  config.put(JVMConfigurationKeys.USE_PSI_CLASS_FILES_READING, true)
 
-    config.put(JVMConfigurationKeys.NO_JDK, true)
+  config.put(JVMConfigurationKeys.NO_JDK, true)
 
-    return config
+  return config
 }
 
 internal fun configureProjectEnvironment(
-    project: MockProject,
-    config: UastEnvironment.Configuration
+  project: MockProject,
+  config: UastEnvironment.Configuration
 ) {
-    // Annotation support.
-    project.registerService(
-        ExternalAnnotationsManager::class.java,
-        LintExternalAnnotationsManager::class.java
-    )
-    project.registerService(
-        InferredAnnotationsManager::class.java,
-        LintInferredAnnotationsManager::class.java
-    )
+  // Annotation support.
+  project.registerService(
+    ExternalAnnotationsManager::class.java,
+    LintExternalAnnotationsManager::class.java
+  )
+  project.registerService(
+    InferredAnnotationsManager::class.java,
+    LintInferredAnnotationsManager::class.java
+  )
 
-    // Java language level.
-    val javaLanguageLevel = config.javaLanguageLevel
-    if (javaLanguageLevel != null) {
-        LanguageLevelProjectExtension.getInstance(project).languageLevel = javaLanguageLevel
-    }
+  // Java language level.
+  val javaLanguageLevel = config.javaLanguageLevel
+  if (javaLanguageLevel != null) {
+    LanguageLevelProjectExtension.getInstance(project).languageLevel = javaLanguageLevel
+  }
 }
 
 // In parallel builds the Kotlin compiler will reuse the application environment
@@ -90,75 +90,73 @@ internal val appLock = ReentrantLock()
 private var appConfigured = false
 
 internal fun configureApplicationEnvironment(
-    appEnv: CoreApplicationEnvironment,
-    configurator: (CoreApplicationEnvironment) -> Unit
+  appEnv: CoreApplicationEnvironment,
+  configurator: (CoreApplicationEnvironment) -> Unit
 ) {
-    check(appLock.isHeldByCurrentThread)
+  check(appLock.isHeldByCurrentThread)
 
-    if (appConfigured) return
+  if (appConfigured) return
 
-    if (!Logger.isInitialized()) {
-        Logger.setFactory(::IdeaLoggerForLint)
-    }
+  if (!Logger.isInitialized()) {
+    Logger.setFactory(::IdeaLoggerForLint)
+  }
 
-    // Mark the registry as loaded, otherwise there are warnings upon registry value lookup.
-    Registry.markAsLoaded()
+  // Mark the registry as loaded, otherwise there are warnings upon registry value lookup.
+  Registry.markAsLoaded()
 
-    // The Kotlin compiler does not use UAST, so we must configure it ourselves.
-    CoreApplicationEnvironment.registerApplicationExtensionPoint(
-        UastLanguagePlugin.extensionPointName,
-        UastLanguagePlugin::class.java
-    )
-    CoreApplicationEnvironment.registerApplicationExtensionPoint(
-        UEvaluatorExtension.EXTENSION_POINT_NAME,
-        UEvaluatorExtension::class.java
-    )
-    appEnv.addExtension(UastLanguagePlugin.extensionPointName, JavaUastLanguagePlugin())
+  // The Kotlin compiler does not use UAST, so we must configure it ourselves.
+  CoreApplicationEnvironment.registerApplicationExtensionPoint(
+    UastLanguagePlugin.extensionPointName,
+    UastLanguagePlugin::class.java
+  )
+  CoreApplicationEnvironment.registerApplicationExtensionPoint(
+    UEvaluatorExtension.EXTENSION_POINT_NAME,
+    UEvaluatorExtension::class.java
+  )
+  appEnv.addExtension(UastLanguagePlugin.extensionPointName, JavaUastLanguagePlugin())
 
-    appEnv.addExtension(UEvaluatorExtension.EXTENSION_POINT_NAME, KotlinEvaluatorExtension())
+  appEnv.addExtension(UEvaluatorExtension.EXTENSION_POINT_NAME, KotlinEvaluatorExtension())
 
-    configurator(appEnv)
+  configurator(appEnv)
 
-    // These extensions points seem to be needed too, probably because Lint
-    // triggers different IntelliJ code paths than the Kotlin compiler does.
-    CoreApplicationEnvironment.registerApplicationExtensionPoint(
-        CustomExceptionHandler.KEY,
-        CustomExceptionHandler::class.java
-    )
-    CoreApplicationEnvironment.registerApplicationExtensionPoint(
-        DiagnosticSuppressor.EP_NAME,
-        DiagnosticSuppressor::class.java
-    )
+  // These extensions points seem to be needed too, probably because Lint
+  // triggers different IntelliJ code paths than the Kotlin compiler does.
+  CoreApplicationEnvironment.registerApplicationExtensionPoint(
+    CustomExceptionHandler.KEY,
+    CustomExceptionHandler::class.java
+  )
+  CoreApplicationEnvironment.registerApplicationExtensionPoint(
+    DiagnosticSuppressor.EP_NAME,
+    DiagnosticSuppressor::class.java
+  )
 
-    appConfigured = true
-    Disposer.register(
-        appEnv.parentDisposable,
-        Disposable {
-            appConfigured = false
-        }
-    )
+  appConfigured = true
+  Disposer.register(appEnv.parentDisposable, Disposable { appConfigured = false })
 }
 
-// KT-56277: [CompactVirtualFileSetFactory] is package-private, so we introduce our own default-ish implementation.
+// KT-56277: [CompactVirtualFileSetFactory] is package-private, so we introduce our own default-ish
+// implementation.
 internal object LintVirtualFileSetFactory : VirtualFileSetFactory {
-    override fun createCompactVirtualFileSet(): VirtualFileSet {
-        return CompactVirtualFileSet()
-    }
+  override fun createCompactVirtualFileSet(): VirtualFileSet {
+    return CompactVirtualFileSet()
+  }
 
-    override fun createCompactVirtualFileSet(files: MutableCollection<out VirtualFile>): VirtualFileSet {
-        return CompactVirtualFileSet().apply { addAll(files) }
-    }
+  override fun createCompactVirtualFileSet(
+    files: MutableCollection<out VirtualFile>
+  ): VirtualFileSet {
+    return CompactVirtualFileSet().apply { addAll(files) }
+  }
 }
 
 // Most Logger.error() calls exist to trigger bug reports but are
 // otherwise recoverable. E.g. see commit 3260e41111 in the Kotlin compiler.
 // Thus we want to log errors to stderr but not throw exceptions (similar to the IDE).
 private class IdeaLoggerForLint(category: String) : DefaultLogger(category) {
-    override fun error(message: String?, t: Throwable?, vararg details: String?) {
-        if (IdeaLoggerForLint::class.java.desiredAssertionStatus()) {
-            throw AssertionError(message, t)
-        } else {
-            dumpExceptionsToStderr(message + attachmentsToString(t), t, *details)
-        }
+  override fun error(message: String?, t: Throwable?, vararg details: String?) {
+    if (IdeaLoggerForLint::class.java.desiredAssertionStatus()) {
+      throw AssertionError(message, t)
+    } else {
+      dumpExceptionsToStderr(message + attachmentsToString(t), t, *details)
     }
+  }
 }

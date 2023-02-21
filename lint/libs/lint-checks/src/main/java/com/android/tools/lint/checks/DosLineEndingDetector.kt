@@ -28,79 +28,79 @@ import org.w3c.dom.Document
 
 /** Checks that the line endings in DOS files are consistent. */
 class DosLineEndingDetector : LayoutDetector() {
-    companion object Issues {
-        /** Detects mangled DOS line ending documents. */
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "MangledCRLF",
-            briefDescription = "Mangled file line endings",
-            explanation = """
+  companion object Issues {
+    /** Detects mangled DOS line ending documents. */
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "MangledCRLF",
+        briefDescription = "Mangled file line endings",
+        explanation =
+          """
             On Windows, line endings are typically recorded as carriage return plus newline: \\r\\n.
 
             This detector looks for invalid line endings with repeated carriage return characters \
             (without newlines). Previous versions of the ADT plugin could accidentally introduce these \
             into the file, and when editing the file, the editor could produce confusing visual artifacts.
             """,
-            moreInfo = "https://bugs.eclipse.org/bugs/show_bug.cgi?id=375421",
-            category = Category.CORRECTNESS,
-            priority = 2,
-            severity = Severity.ERROR,
-            // This check is probably not relevant for most users anymore
-            enabledByDefault = false,
-            implementation = Implementation(
-                DosLineEndingDetector::class.java,
-                Scope.RESOURCE_FILE_SCOPE
-            )
-        )
-    }
+        moreInfo = "https://bugs.eclipse.org/bugs/show_bug.cgi?id=375421",
+        category = Category.CORRECTNESS,
+        priority = 2,
+        severity = Severity.ERROR,
+        // This check is probably not relevant for most users anymore
+        enabledByDefault = false,
+        implementation =
+          Implementation(DosLineEndingDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+      )
+  }
 
-    override fun visitDocument(context: XmlContext, document: Document) {
-        val contents = context.getContents() ?: return
+  override fun visitDocument(context: XmlContext, document: Document) {
+    val contents = context.getContents() ?: return
 
-        // We could look for *consistency* and complain if you mix \n and \r\n too,
-        // but that isn't really a problem (most editors handle it) so let's
-        // not complain needlessly.
+    // We could look for *consistency* and complain if you mix \n and \r\n too,
+    // but that isn't really a problem (most editors handle it) so let's
+    // not complain needlessly.
 
-        var prev: Char = 0.toChar()
-        var i = 0
-        val n = contents.length
-        while (i < n) {
-            val c = contents[i]
-            if (c == '\r' && prev == '\r') {
-                val message =
-                    "Incorrect line ending: found carriage return (`\\r`) without corresponding newline (`\\n`)"
+    var prev: Char = 0.toChar()
+    var i = 0
+    val n = contents.length
+    while (i < n) {
+      val c = contents[i]
+      if (c == '\r' && prev == '\r') {
+        val message =
+          "Incorrect line ending: found carriage return (`\\r`) without corresponding newline (`\\n`)"
 
-                // Mark the whole line as the error range, since pointing just to the
-                // line ending makes the error invisible in IDEs and error reports etc
-                // Find the most recent non-blank line
-                var blankLine = true
-                for (index in i - 2 until i) {
-                    val d = contents[index]
-                    if (!Character.isWhitespace(d)) {
-                        blankLine = false
-                    }
-                }
-
-                var lineBegin = i
-                for (index in i - 2 downTo 0) {
-                    val d = contents[index]
-                    if (d == '\n') {
-                        lineBegin = index + 1
-                        if (!blankLine) {
-                            break
-                        }
-                    } else if (!Character.isWhitespace(d)) {
-                        blankLine = false
-                    }
-                }
-
-                val lineEnd = Math.min(contents.length, i + 1)
-                val location = Location.create(context.file, contents, lineBegin, lineEnd)
-                context.report(ISSUE, document.documentElement, location, message)
-                return
-            }
-            prev = c
-            i++
+        // Mark the whole line as the error range, since pointing just to the
+        // line ending makes the error invisible in IDEs and error reports etc
+        // Find the most recent non-blank line
+        var blankLine = true
+        for (index in i - 2 until i) {
+          val d = contents[index]
+          if (!Character.isWhitespace(d)) {
+            blankLine = false
+          }
         }
+
+        var lineBegin = i
+        for (index in i - 2 downTo 0) {
+          val d = contents[index]
+          if (d == '\n') {
+            lineBegin = index + 1
+            if (!blankLine) {
+              break
+            }
+          } else if (!Character.isWhitespace(d)) {
+            blankLine = false
+          }
+        }
+
+        val lineEnd = Math.min(contents.length, i + 1)
+        val location = Location.create(context.file, contents, lineBegin, lineEnd)
+        context.report(ISSUE, document.documentElement, location, message)
+        return
+      }
+      prev = c
+      i++
     }
+  }
 }

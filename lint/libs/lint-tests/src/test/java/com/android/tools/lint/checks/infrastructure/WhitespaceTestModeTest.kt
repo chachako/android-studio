@@ -24,25 +24,26 @@ import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class WhitespaceTestModeTest {
-    private fun addSpacesKotlin(@Language("kotlin") source: String): String {
-        return addSpaces(kotlin(source))
-    }
+  private fun addSpacesKotlin(@Language("kotlin") source: String): String {
+    return addSpaces(kotlin(source))
+  }
 
-    private fun addSpacesJava(@Language("java") source: String): String {
-        return addSpaces(java(source))
-    }
+  private fun addSpacesJava(@Language("java") source: String): String {
+    return addSpaces(java(source))
+  }
 
-    private fun addSpaces(testFile: TestFile): String {
-        val sdkHome = TestUtils.getSdk().toFile()
-        var source = testFile.contents
-        WhitespaceTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
-        return source
-    }
+  private fun addSpaces(testFile: TestFile): String {
+    val sdkHome = TestUtils.getSdk().toFile()
+    var source = testFile.contents
+    WhitespaceTestMode().processTestFiles(listOf(testFile), sdkHome) { _, s -> source = s }
+    return source
+  }
 
-    @Test
-    fun testBasic() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testBasic() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             import android.util.List
             /** {@link Test} and [test] */
@@ -60,73 +61,83 @@ class WhitespaceTestModeTest {
                 (t as? String)?.plus("other")?.get(0)?.dec()?.inc()
                 "foo".chars().allMatch { it.dec() > 0 }.toString()
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = "" +
-            " @file:Suppress(\"ALL\") \n" +
-            " import android.util.List \n" +
-            " /** {@link Test} and [test] */ \n" +
-            " fun   test ( i1 :   Int ,   i2 :   Int ,   s1 :   String ,   s2 :   String ,   a :   Any ,   b1 :   Boolean ,   b2 :   Boolean )   { \n" +
-            "     val   x   =   i1   +   i2   +   s1 . length   +   s2 . length \n" +
-            "     var   y   =   0 \n" +
-            "     y ++ \n" +
-            "     val   z2   =   ! b2 \n" +
-            "     val   z   =   ( b2   &&   ! b1   &&   ++ y   !=   5 ) \n" +
-            "     if   ( x   >   1 )   { \n" +
-            "         val   y   =   a   as?   String \n" +
-            "     } \n" +
-            "     val   t :   Any   =   \"test\" \n" +
-            "     val   t2 :   Any   =   \"\"\"test\"\"\" \n" +
-            "     ( t   as?   String ) ?. plus ( \"other\" ) ?. get ( 0 ) ?. dec ( ) ?. inc ( ) \n" +
-            "     \"foo\" . chars ( ) . allMatch   {   it . dec ( )   >   0   } . toString ( ) \n" +
-            " } "
+    @Language("kotlin")
+    val expected =
+      "" +
+        " @file:Suppress(\"ALL\") \n" +
+        " import android.util.List \n" +
+        " /** {@link Test} and [test] */ \n" +
+        " fun   test ( i1 :   Int ,   i2 :   Int ,   s1 :   String ,   s2 :   String ,   a :   Any ,   b1 :   Boolean ,   b2 :   Boolean )   { \n" +
+        "     val   x   =   i1   +   i2   +   s1 . length   +   s2 . length \n" +
+        "     var   y   =   0 \n" +
+        "     y ++ \n" +
+        "     val   z2   =   ! b2 \n" +
+        "     val   z   =   ( b2   &&   ! b1   &&   ++ y   !=   5 ) \n" +
+        "     if   ( x   >   1 )   { \n" +
+        "         val   y   =   a   as?   String \n" +
+        "     } \n" +
+        "     val   t :   Any   =   \"test\" \n" +
+        "     val   t2 :   Any   =   \"\"\"test\"\"\" \n" +
+        "     ( t   as?   String ) ?. plus ( \"other\" ) ?. get ( 0 ) ?. dec ( ) ?. inc ( ) \n" +
+        "     \"foo\" . chars ( ) . allMatch   {   it . dec ( )   >   0   } . toString ( ) \n" +
+        " } "
 
-        val modified = addSpacesKotlin(kotlin)
-        assertEquals(expected, modified)
-    }
+    val modified = addSpacesKotlin(kotlin)
+    assertEquals(expected, modified)
+  }
 
-    @Test
-    fun testAnnotationBracketSyntax() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testAnnotationBracketSyntax() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             annotation class VisibleForTesting
             class TestClass(@get:[VisibleForTesting] @set:VisibleForTesting var p5: String)
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Language("kotlin")
-        val expected = "" +
-            " @file:Suppress(\"ALL\") \n" +
-            " annotation   class   VisibleForTesting \n" +
-            " class   TestClass ( @get:[VisibleForTesting]   @set:VisibleForTesting   var   p5 :   String ) "
+    @Language("kotlin")
+    val expected =
+      "" +
+        " @file:Suppress(\"ALL\") \n" +
+        " annotation   class   VisibleForTesting \n" +
+        " class   TestClass ( @get:[VisibleForTesting]   @set:VisibleForTesting   var   p5 :   String ) "
 
-        val modified = addSpacesKotlin(kotlin)
-        assertEquals(expected, modified)
-    }
+    val modified = addSpacesKotlin(kotlin)
+    assertEquals(expected, modified)
+  }
 
-    @Test
-    fun testStrings() {
-        @Language("kotlin")
-        val kotlin = """
+  @Test
+  fun testStrings() {
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             val test = "test" + ""${'"'}test""${'"'}
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Suppress("MayBeConstant")
-        @Language("kotlin")
-        val expected = "" +
-            " @file:Suppress(\"ALL\") \n" +
-            " val   test   =   \"test\"   +   \"\"\"test\"\"\" "
+    @Suppress("MayBeConstant")
+    @Language("kotlin")
+    val expected =
+      "" + " @file:Suppress(\"ALL\") \n" + " val   test   =   \"test\"   +   \"\"\"test\"\"\" "
 
-        val modified = addSpacesKotlin(kotlin)
-        assertEquals(expected, modified)
-    }
+    val modified = addSpacesKotlin(kotlin)
+    assertEquals(expected, modified)
+  }
 
-    @Test
-    fun testJava() {
-        @Language("java")
-        val java = """
+  @Test
+  fun testJava() {
+    @Language("java")
+    val java =
+      """
             package test.pkg;
             import android.util.List;
             @SuppressWarnings("ALL")
@@ -137,31 +148,35 @@ class WhitespaceTestModeTest {
                     boolean x=i>5?!true:i%2==0;
                 }
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Suppress("DanglingJavadoc", "PointlessBooleanExpression", "ConstantConditions")
-        @Language("java")
-        val expected = "" +
-            " package test.pkg; \n" +
-            " import android.util.List; \n" +
-            " @SuppressWarnings(\"ALL\") \n" +
-            " public   class   Test   { \n" +
-            "     void   test ( int   i )   { \n" +
-            "         /** {@link Test} */ \n" +
-            "         String   s = \"test\" + 'test' ; \n" +
-            "         boolean   x = i > 5 ? ! true : i % 2 == 0 ; \n" +
-            "     } \n" +
-            " } "
-        val modified = addSpacesJava(java)
-        assertEquals(expected, modified)
-    }
+    @Suppress("DanglingJavadoc", "PointlessBooleanExpression", "ConstantConditions")
+    @Language("java")
+    val expected =
+      "" +
+        " package test.pkg; \n" +
+        " import android.util.List; \n" +
+        " @SuppressWarnings(\"ALL\") \n" +
+        " public   class   Test   { \n" +
+        "     void   test ( int   i )   { \n" +
+        "         /** {@link Test} */ \n" +
+        "         String   s = \"test\" + 'test' ; \n" +
+        "         boolean   x = i > 5 ? ! true : i % 2 == 0 ; \n" +
+        "     } \n" +
+        " } "
+    val modified = addSpacesJava(java)
+    assertEquals(expected, modified)
+  }
 
-    @Test
-    fun testLabels() {
-        // 202187519: TestMode.WHITESPACE should not add spaces to label references in kotlin
+  @Test
+  fun testLabels() {
+    // 202187519: TestMode.WHITESPACE should not add spaces to label references in kotlin
 
-        @Language("kotlin")
-        val kotlin = """
+    @Language("kotlin")
+    val kotlin =
+      """
             @file:Suppress("ALL")
             fun test() = run {
                 label@ for (i in 0 until 10) {
@@ -171,22 +186,25 @@ class WhitespaceTestModeTest {
                 }
                 this@run
             }
-        """.trimIndent().trim()
+        """
+        .trimIndent()
+        .trim()
 
-        @Suppress("MayBeConstant")
-        @Language("kotlin")
-        val expected = "" +
-            " @file:Suppress(\"ALL\") \n" +
-            " fun   test ( )   =   run   { \n" +
-            "     label@   for   ( i   in   0   until   10 )   { \n" +
-            "         if   ( i   <   5 )   { \n" +
-            "             continue@label \n" +
-            "         } \n" +
-            "     } \n" +
-            "     this@run \n" +
-            " } "
+    @Suppress("MayBeConstant")
+    @Language("kotlin")
+    val expected =
+      "" +
+        " @file:Suppress(\"ALL\") \n" +
+        " fun   test ( )   =   run   { \n" +
+        "     label@   for   ( i   in   0   until   10 )   { \n" +
+        "         if   ( i   <   5 )   { \n" +
+        "             continue@label \n" +
+        "         } \n" +
+        "     } \n" +
+        "     this@run \n" +
+        " } "
 
-        val modified = addSpacesKotlin(kotlin)
-        assertEquals(expected, modified)
-    }
+    val modified = addSpacesKotlin(kotlin)
+    assertEquals(expected, modified)
+  }
 }

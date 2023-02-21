@@ -25,49 +25,51 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 /** A precomputed class and overriding method hierarchy. */
 interface ClassHierarchy {
 
-    fun directInheritorsOf(superClass: UClass): Sequence<UClass>
+  fun directInheritorsOf(superClass: UClass): Sequence<UClass>
 
-    fun allInheritorsOf(superClass: UClass): Sequence<UClass> =
-        directInheritorsOf(superClass).flatMap { allInheritorsOf(it) + it }
+  fun allInheritorsOf(superClass: UClass): Sequence<UClass> =
+    directInheritorsOf(superClass).flatMap { allInheritorsOf(it) + it }
 
-    fun directOverridesOf(superMethod: UMethod): Sequence<UMethod>
+  fun directOverridesOf(superMethod: UMethod): Sequence<UMethod>
 
-    fun allOverridesOf(superMethod: UMethod): Sequence<UMethod> =
-        directOverridesOf(superMethod).flatMap { allOverridesOf(it) + it }
+  fun allOverridesOf(superMethod: UMethod): Sequence<UMethod> =
+    directOverridesOf(superMethod).flatMap { allOverridesOf(it) + it }
 }
 
 class MutableClassHierarchy : ClassHierarchy {
-    private val directInheritors = HashMultimap.create<UClass, UClass>()
-    private val directOverrides = HashMultimap.create<UMethod, UMethod>()
+  private val directInheritors = HashMultimap.create<UClass, UClass>()
+  private val directOverrides = HashMultimap.create<UMethod, UMethod>()
 
-    override fun directInheritorsOf(superClass: UClass) = directInheritors[superClass].asSequence()
+  override fun directInheritorsOf(superClass: UClass) = directInheritors[superClass].asSequence()
 
-    override fun directOverridesOf(superMethod: UMethod) = directOverrides[superMethod].asSequence()
+  override fun directOverridesOf(superMethod: UMethod) = directOverrides[superMethod].asSequence()
 
-    fun addClass(subClass: UClass) {
-        subClass.javaPsi.supers
-            .mapNotNull { it.navigationElement.toUElementOfType<UClass>() }
-            .forEach { directInheritors.put(it, subClass) }
-    }
+  fun addClass(subClass: UClass) {
+    subClass.javaPsi.supers
+      .mapNotNull { it.navigationElement.toUElementOfType<UClass>() }
+      .forEach { directInheritors.put(it, subClass) }
+  }
 
-    fun addMethod(subMethod: UMethod) {
-        subMethod.javaPsi.findSuperMethods()
-            .mapNotNull { it.navigationElement.toUElementOfType<UMethod>() }
-            .forEach { directOverrides.put(it, subMethod) }
-    }
+  fun addMethod(subMethod: UMethod) {
+    subMethod.javaPsi
+      .findSuperMethods()
+      .mapNotNull { it.navigationElement.toUElementOfType<UMethod>() }
+      .forEach { directOverrides.put(it, subMethod) }
+  }
 }
 
 class ClassHierarchyVisitor : AbstractUastVisitor() {
-    private val mutableClassHierarchy = MutableClassHierarchy()
-    val classHierarchy: ClassHierarchy get() = mutableClassHierarchy
+  private val mutableClassHierarchy = MutableClassHierarchy()
+  val classHierarchy: ClassHierarchy
+    get() = mutableClassHierarchy
 
-    override fun visitClass(node: UClass): Boolean {
-        mutableClassHierarchy.addClass(node)
-        return super.visitClass(node)
-    }
+  override fun visitClass(node: UClass): Boolean {
+    mutableClassHierarchy.addClass(node)
+    return super.visitClass(node)
+  }
 
-    override fun visitMethod(node: UMethod): Boolean {
-        mutableClassHierarchy.addMethod(node)
-        return super.visitMethod(node)
-    }
+  override fun visitMethod(node: UMethod): Boolean {
+    mutableClassHierarchy.addMethod(node)
+    return super.visitMethod(node)
+  }
 }

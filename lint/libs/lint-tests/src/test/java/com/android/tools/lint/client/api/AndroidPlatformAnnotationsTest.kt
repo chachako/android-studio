@@ -24,28 +24,27 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask
 import org.junit.Test
 
 /**
- * [AndroidPlatformAnnotations] are mostly tested via the
- * [AndroidPlatformAnnotationsTestMode], which reframes every single
- * annotation test into a platform annotation test by bytecode
- * transforming the annotations over to the platform space and expecting
- * the same output as with androidx.
+ * [AndroidPlatformAnnotations] are mostly tested via the [AndroidPlatformAnnotationsTestMode],
+ * which reframes every single annotation test into a platform annotation test by bytecode
+ * transforming the annotations over to the platform space and expecting the same output as with
+ * androidx.
  *
- * This test case adds some extra manual tests for specific scenarios
- * that have come up.
+ * This test case adds some extra manual tests for specific scenarios that have come up.
  */
 @Suppress("LintDocExample")
 class AndroidPlatformAnnotationsTest {
-    private fun lint(): TestLintTask = TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
+  private fun lint(): TestLintTask = TestLintTask.lint().sdkHome(TestUtils.getSdk().toFile())
 
-    @Test
-    fun testRequiresApi() {
-        // Regression test for 214255490 comment 41: when using a platform version
-        // of android.annotation, make sure we correctly compute the API level when
-        // looking up the surrounding API level from annotations (and make sure
-        // we do not report method returns)
-        lint().files(
-            java(
-                """
+  @Test
+  fun testRequiresApi() {
+    // Regression test for 214255490 comment 41: when using a platform version
+    // of android.annotation, make sure we correctly compute the API level when
+    // looking up the surrounding API level from annotations (and make sure
+    // we do not report method returns)
+    lint()
+      .files(
+        java(
+            """
                 package android.annotation;
                 import static java.lang.annotation.ElementType.*;
                 import static java.lang.annotation.RetentionPolicy.SOURCE;
@@ -58,9 +57,10 @@ class AndroidPlatformAnnotationsTest {
                     int api() default 1;
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package android.os;
                 public class Build {
                     public static class VERSION {
@@ -75,9 +75,9 @@ class AndroidPlatformAnnotationsTest {
                     }
                 }
                 """
-            ),
-            java(
-                """
+        ),
+        java(
+            """
                 package android.provider;
                 import android.annotation.RequiresApi;
                 import android.os.Build;
@@ -95,9 +95,10 @@ class AndroidPlatformAnnotationsTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+            """
                 package test.pkg;
                 import android.annotation.RequiresApi;
                 import android.os.Build;
@@ -108,9 +109,10 @@ class AndroidPlatformAnnotationsTest {
                     }
                 }
                 """
-            ).indented(),
-            java(
-                """
+          )
+          .indented(),
+        java(
+          """
                 package com.android.modules.utils.build;
                 import static android.os.Build.VERSION.CODENAME;
                 import static android.os.Build.VERSION.SDK_INT;
@@ -131,8 +133,11 @@ class AndroidPlatformAnnotationsTest {
                     }
                 }
                 """
-            ),
-            SUPPORT_ANNOTATIONS_JAR
-        ).issues(ApiDetector.UNSUPPORTED).run().expectClean()
-    }
+        ),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .issues(ApiDetector.UNSUPPORTED)
+      .run()
+      .expectClean()
+  }
 }

@@ -20,12 +20,13 @@ import org.jetbrains.uast.UClass
 
 class UElementVisitorTest : AbstractCheckTest() {
 
-    @Suppress("LintDocExample")
-    fun testSubclassVisitedOnlyOnce() {
-        // Regression test for b/204342275: UElementVisitor visits subclasses twice in some cases.
-        lint().files(
-            java(
-                """
+  @Suppress("LintDocExample")
+  fun testSubclassVisitedOnlyOnce() {
+    // Regression test for b/204342275: UElementVisitor visits subclasses twice in some cases.
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 class Test {
@@ -39,9 +40,12 @@ class UElementVisitorTest : AbstractCheckTest() {
                     class C4 {}
                 }
                 """
-            ).indented()
-        ).run().expect(
-            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
             src/test/pkg/Test.java:4: Warning: Visited I1 [_TestIssueId]
                 interface I1 {}
                           ~~
@@ -59,32 +63,37 @@ class UElementVisitorTest : AbstractCheckTest() {
                       ~~
             0 errors, 5 warnings
             """
-        )
+      )
+  }
+
+  override fun getDetector(): Detector = TestDetector()
+
+  override fun getIssues(): List<Issue> = listOf(TEST_ISSUE)
+
+  class TestDetector : Detector(), SourceCodeScanner {
+    override fun applicableSuperClasses(): List<String> =
+      listOf("test.pkg.Test.I1", "test.pkg.Test.I2")
+
+    override fun visitClass(context: JavaContext, declaration: UClass) {
+      context.report(
+        TEST_ISSUE,
+        declaration,
+        context.getNameLocation(declaration),
+        "Visited `${declaration.name}`"
+      )
     }
+  }
 
-    override fun getDetector(): Detector = TestDetector()
-
-    override fun getIssues(): List<Issue> = listOf(TEST_ISSUE)
-
-    class TestDetector : Detector(), SourceCodeScanner {
-        override fun applicableSuperClasses(): List<String> = listOf("test.pkg.Test.I1", "test.pkg.Test.I2")
-
-        override fun visitClass(context: JavaContext, declaration: UClass) {
-            context.report(
-                TEST_ISSUE, declaration, context.getNameLocation(declaration),
-                "Visited `${declaration.name}`"
-            )
-        }
-    }
-
-    companion object {
-        val TEST_ISSUE = Issue.create(
-            "_TestIssueId", "Not applicable", "Not applicable",
-            Category.CORRECTNESS, 5, Severity.WARNING,
-            Implementation(
-                TestDetector::class.java,
-                Scope.JAVA_FILE_SCOPE
-            )
-        )
-    }
+  companion object {
+    val TEST_ISSUE =
+      Issue.create(
+        "_TestIssueId",
+        "Not applicable",
+        "Not applicable",
+        Category.CORRECTNESS,
+        5,
+        Severity.WARNING,
+        Implementation(TestDetector::class.java, Scope.JAVA_FILE_SCOPE)
+      )
+  }
 }

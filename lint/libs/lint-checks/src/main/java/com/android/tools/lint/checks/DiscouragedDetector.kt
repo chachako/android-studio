@@ -37,59 +37,58 @@ import org.jetbrains.uast.UElement
 
 class DiscouragedDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
-    override fun applicableAnnotations(): List<String> = listOf(
-        DISCOURAGED_ANNOTATION
-    )
+  override fun applicableAnnotations(): List<String> = listOf(DISCOURAGED_ANNOTATION)
 
-    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
-        return type == METHOD_CALL || type == METHOD_REFERENCE || type == CLASS_REFERENCE ||
-            type == METHOD_OVERRIDE || type == EXTENDS || type == FIELD_REFERENCE
+  override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
+    return type == METHOD_CALL ||
+      type == METHOD_REFERENCE ||
+      type == CLASS_REFERENCE ||
+      type == METHOD_OVERRIDE ||
+      type == EXTENDS ||
+      type == FIELD_REFERENCE
+  }
+
+  override fun visitAnnotationUsage(
+    context: JavaContext,
+    element: UElement,
+    annotationInfo: AnnotationInfo,
+    usageInfo: AnnotationUsageInfo
+  ) {
+    usageInfo.referenced ?: return
+    val location = context.getNameLocation(element)
+
+    // androidx.annotation.Discouraged defines the message as an empty string; it is non-null.
+    val message = getAnnotationStringValue(annotationInfo.annotation, "message")
+
+    // If an explanation is not provided, a generic message will be shown instead.
+    if (!message.isNullOrBlank()) {
+      report(context, ISSUE, element, location, message)
+    } else {
+      val defaultMessage = "Use of this API is discouraged"
+      report(context, ISSUE, element, location, defaultMessage)
     }
+  }
 
-    override fun visitAnnotationUsage(
-        context: JavaContext,
-        element: UElement,
-        annotationInfo: AnnotationInfo,
-        usageInfo: AnnotationUsageInfo
-    ) {
-        usageInfo.referenced ?: return
-        val location = context.getNameLocation(element)
+  companion object {
+    const val DISCOURAGED_ANNOTATION = "androidx.annotation.Discouraged"
 
-        // androidx.annotation.Discouraged defines the message as an empty string; it is non-null.
-        val message = getAnnotationStringValue(
-            annotationInfo.annotation, "message"
-        )
+    private val IMPLEMENTATION = Implementation(DiscouragedDetector::class.java, JAVA_FILE_SCOPE)
 
-        // If an explanation is not provided, a generic message will be shown instead.
-        if (!message.isNullOrBlank()) {
-            report(context, ISSUE, element, location, message)
-        } else {
-            val defaultMessage = "Use of this API is discouraged"
-            report(context, ISSUE, element, location, defaultMessage)
-        }
-    }
-
-    companion object {
-        const val DISCOURAGED_ANNOTATION = "androidx.annotation.Discouraged"
-
-        private val IMPLEMENTATION = Implementation(
-            DiscouragedDetector::class.java,
-            JAVA_FILE_SCOPE
-        )
-
-        /** Usage of elements that are discouraged against. */
-        @JvmField
-        val ISSUE = create(
-            id = "DiscouragedApi",
-            briefDescription = "Using discouraged APIs",
-            explanation = """
+    /** Usage of elements that are discouraged against. */
+    @JvmField
+    val ISSUE =
+      create(
+        id = "DiscouragedApi",
+        briefDescription = "Using discouraged APIs",
+        explanation =
+          """
                 Discouraged APIs are allowed and are not deprecated, but they may be unfit for \
                 common use (e.g. due to slow performance or subtle behavior).
                 """,
-            category = Category.CORRECTNESS,
-            priority = 2,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION
-        )
-    }
+        category = Category.CORRECTNESS,
+        priority = 2,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION
+      )
+  }
 }

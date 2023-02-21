@@ -18,14 +18,15 @@ package com.android.tools.lint.checks
 import com.android.tools.lint.detector.api.Detector
 
 class SslCertificateSocketFactoryDetectorTest : AbstractCheckTest() {
-    override fun getDetector(): Detector {
-        return SslCertificateSocketFactoryDetector()
-    }
+  override fun getDetector(): Detector {
+    return SslCertificateSocketFactoryDetector()
+  }
 
-    fun test() {
-        lint().files(
-            java(
-                """
+  fun test() {
+    lint()
+      .files(
+        java(
+            """
                 package test.pkg;
 
                 import android.net.SSLCertificateSocketFactory;
@@ -58,11 +59,13 @@ class SslCertificateSocketFactoryDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-            ).indented()
-        )
-            .allowCompilationErrors()
-            .run().expect(
-                """
+          )
+          .indented()
+      )
+      .allowCompilationErrors()
+      .run()
+      .expect(
+        """
             src/test/pkg/SSLCertificateSocketFactoryTest.java:21: Warning: Use of SSLCertificateSocketFactory.createSocket() with an InetAddress parameter can cause insecure network traffic due to trusting arbitrary hostnames in TLS/SSL certificates presented by peers [SSLCertificateSocketFactoryCreateSocket]
                     sf.createSocket(inet, 80);
                     ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +89,6 @@ class SslCertificateSocketFactoryDetectorTest : AbstractCheckTest() {
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 7 warnings
             """
-            )
-    }
+      )
+  }
 }

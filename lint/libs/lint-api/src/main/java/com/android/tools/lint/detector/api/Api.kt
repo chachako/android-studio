@@ -19,33 +19,32 @@ package com.android.tools.lint.detector.api
 import com.android.tools.lint.client.api.IssueRegistry
 
 /**
- * The current API version for Lint's API. Custom checks should return
- * this value from [IssueRegistry.api]. Note that this is a constant, so
- * the compiler should inline the value, not read the current value from
- * the hosting lint environment when the custom lint checks are loaded
+ * The current API version for Lint's API. Custom checks should return this value from
+ * [IssueRegistry.api]. Note that this is a constant, so the compiler should inline the value, not
+ * read the current value from the hosting lint environment when the custom lint checks are loaded
  * into lint.
  */
 const val CURRENT_API = 14
 
 /** Describes the given API level. */
 fun describeApi(api: Int): String {
-    return when (api) {
-        14 -> "8.0+" // 8.0.0-alpha06
-        13 -> "7.3 and 7.4" // 7.3.0-alpha02
-        12 -> "7.2" // 7.2.0-beta02
-        11 -> "7.1" // 7.1.0-alpha06
-        10 -> "7.0" // 7.0.0-alpha04
-        9 -> "4.2" // 4.2.0-alpha08
-        8 -> "4.1" // 4.1.0-alpha06
-        7 -> "4.0" // 4.0.0-alpha08
-        6 -> "3.6" // 3.6.0-alpha06
-        5 -> "3.5" // 3.5.0-alpha07
-        4 -> "3.4" // 3.4.0-alpha03
-        3 -> "3.3" // 3.3.0-alpha12
-        2 -> "3.2" // 3.2.0-alpha07
-        1 -> "3.1" // Initial; 3.1.0-alpha4
-        0 -> "3.0 and older"
-        -1 -> "Not specified"
-        else -> "Future: $api"
-    }
+  return when (api) {
+    14 -> "8.0+" // 8.0.0-alpha06
+    13 -> "7.3 and 7.4" // 7.3.0-alpha02
+    12 -> "7.2" // 7.2.0-beta02
+    11 -> "7.1" // 7.1.0-alpha06
+    10 -> "7.0" // 7.0.0-alpha04
+    9 -> "4.2" // 4.2.0-alpha08
+    8 -> "4.1" // 4.1.0-alpha06
+    7 -> "4.0" // 4.0.0-alpha08
+    6 -> "3.6" // 3.6.0-alpha06
+    5 -> "3.5" // 3.5.0-alpha07
+    4 -> "3.4" // 3.4.0-alpha03
+    3 -> "3.3" // 3.3.0-alpha12
+    2 -> "3.2" // 3.2.0-alpha07
+    1 -> "3.1" // Initial; 3.1.0-alpha4
+    0 -> "3.0 and older"
+    -1 -> "Not specified"
+    else -> "Future: $api"
+  }
 }

@@ -36,64 +36,65 @@ import org.w3c.dom.Element
 /** Flags usages of C2DM, which as of P no longer works. */
 class C2dmDetector : Detector(), XmlScanner {
 
-    override fun getApplicableElements(): Collection<String> {
-        return listOf(TAG_RECEIVER)
+  override fun getApplicableElements(): Collection<String> {
+    return listOf(TAG_RECEIVER)
+  }
+
+  override fun visitElement(context: XmlContext, element: Element) {
+    val attribute = element.getAttributeNodeNS(ANDROID_URI, ATTR_NAME) ?: return
+    val receiverName = attribute.value
+    if (
+      receiverName != "com.google.android.c2dm.C2DMBroadcastReceiver" &&
+        receiverName != "com.google.android.gcm.GCMBroadcastReceiver"
+    ) {
+      return
     }
 
-    override fun visitElement(context: XmlContext, element: Element) {
-        val attribute = element.getAttributeNodeNS(ANDROID_URI, ATTR_NAME) ?: return
-        val receiverName = attribute.value
-        if (receiverName != "com.google.android.c2dm.C2DMBroadcastReceiver" &&
-            receiverName != "com.google.android.gcm.GCMBroadcastReceiver"
-        ) {
-            return
+    var haveReceive = false
+    var haveRegistration = false
+    var intentFilter = getFirstSubTagByName(element, TAG_INTENT_FILTER)
+    while (intentFilter != null) {
+      var action = getFirstSubTagByName(intentFilter, TAG_ACTION)
+      while (action != null) {
+        val actionName = action.getAttributeNS(ANDROID_URI, ATTR_NAME)
+        if (actionName == "com.google.android.c2dm.intent.RECEIVE") {
+          haveReceive = true
+        } else if (actionName == "com.google.android.c2dm.intent.REGISTRATION") {
+          haveRegistration = true
         }
+        action = getNextTagByName(action, TAG_ACTION)
+      }
 
-        var haveReceive = false
-        var haveRegistration = false
-        var intentFilter = getFirstSubTagByName(element, TAG_INTENT_FILTER)
-        while (intentFilter != null) {
-            var action = getFirstSubTagByName(intentFilter, TAG_ACTION)
-            while (action != null) {
-                val actionName = action.getAttributeNS(ANDROID_URI, ATTR_NAME)
-                if (actionName == "com.google.android.c2dm.intent.RECEIVE") {
-                    haveReceive = true
-                } else if (actionName == "com.google.android.c2dm.intent.REGISTRATION") {
-                    haveRegistration = true
-                }
-                action = getNextTagByName(action, TAG_ACTION)
-            }
-
-            intentFilter = getNextTagByName(intentFilter, TAG_INTENT_FILTER)
-        }
-
-        if (haveReceive && haveRegistration) {
-            val message = "The C2DM library does not work on Android P or newer devices; " +
-                "you should migrate to Firebase Cloud Messaging to ensure reliable " +
-                "message delivery"
-            context.report(ISSUE, attribute, context.getValueLocation(attribute), message)
-        }
+      intentFilter = getNextTagByName(intentFilter, TAG_INTENT_FILTER)
     }
 
-    companion object {
-        private val IMPLEMENTATION = Implementation(
-            C2dmDetector::class.java,
-            Scope.MANIFEST_SCOPE
-        )
+    if (haveReceive && haveRegistration) {
+      val message =
+        "The C2DM library does not work on Android P or newer devices; " +
+          "you should migrate to Firebase Cloud Messaging to ensure reliable " +
+          "message delivery"
+      context.report(ISSUE, attribute, context.getValueLocation(attribute), message)
+    }
+  }
 
-        @JvmField
-        val ISSUE = Issue.create(
-            id = "UsingC2DM",
-            briefDescription = "Using C2DM",
-            explanation = """
+  companion object {
+    private val IMPLEMENTATION = Implementation(C2dmDetector::class.java, Scope.MANIFEST_SCOPE)
+
+    @JvmField
+    val ISSUE =
+      Issue.create(
+        id = "UsingC2DM",
+        briefDescription = "Using C2DM",
+        explanation =
+          """
                 The C2DM library does not work on Android P or newer devices; \
                 you should migrate to Firebase Cloud Messaging to ensure reliable message delivery.
                 """,
-            moreInfo = "https://developers.google.com/cloud-messaging/c2dm",
-            category = Category.SECURITY,
-            priority = 8,
-            severity = Severity.ERROR,
-            implementation = IMPLEMENTATION
-        )
-    }
+        moreInfo = "https://developers.google.com/cloud-messaging/c2dm",
+        category = Category.SECURITY,
+        priority = 8,
+        severity = Severity.ERROR,
+        implementation = IMPLEMENTATION
+      )
+  }
 }

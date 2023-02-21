@@ -28,68 +28,65 @@ import org.jetbrains.uast.UClass
 import org.jetbrains.uast.util.isMethodCall
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
-/**
- * Looks for classes that continue to proceed in
- * WebViewClient#onReceivedSslError
- */
+/** Looks for classes that continue to proceed in WebViewClient#onReceivedSslError */
 class WebViewClientDetector : Detector(), SourceCodeScanner {
-    override fun applicableSuperClasses(): List<String> {
-        return listOf("android.webkit.WebViewClient")
-    }
+  override fun applicableSuperClasses(): List<String> {
+    return listOf("android.webkit.WebViewClient")
+  }
 
-    override fun visitClass(context: JavaContext, declaration: UClass) {
-        val evaluator = context.evaluator
-        for (method in declaration.methods.filter { it.name == "onReceivedSslError" }) {
-            if (evaluator.isAbstract(method)) {
-                continue
-            }
-            val visitor = OnReceivedSslErrorBodyVisitor(context)
-            method.accept(visitor)
+  override fun visitClass(context: JavaContext, declaration: UClass) {
+    val evaluator = context.evaluator
+    for (method in declaration.methods.filter { it.name == "onReceivedSslError" }) {
+      if (evaluator.isAbstract(method)) {
+        continue
+      }
+      val visitor = OnReceivedSslErrorBodyVisitor(context)
+      method.accept(visitor)
+    }
+  }
+
+  private class OnReceivedSslErrorBodyVisitor(private val context: JavaContext) :
+    AbstractUastVisitor() {
+    override fun visitCallExpression(node: UCallExpression): Boolean {
+      if (node.isMethodCall()) {
+        val receiver = node.receiver
+        val receiverType = receiver?.getExpressionType()
+        val methodName = node.methodName
+        if (
+          receiverType != null &&
+            methodName != null &&
+            receiverType.canonicalText == "android.webkit.SslErrorHandler" &&
+            methodName == "proceed"
+        ) {
+          val message =
+            "Permitting connections with SSL-related errors could allow " +
+              "eavesdroppers to intercept data sent by your app, which impacts " +
+              "the privacy of your users. Consider canceling the connections by " +
+              "invoking `SslErrorHandler#cancel()`."
+          context.report(PROCEEDS_ON_RECEIVED_SSL_ERROR, node, context.getLocation(node), message)
         }
+      }
+      return super.visitCallExpression(node)
     }
+  }
 
-    private class OnReceivedSslErrorBodyVisitor(private val context: JavaContext) :
-        AbstractUastVisitor() {
-        override fun visitCallExpression(node: UCallExpression): Boolean {
-            if (node.isMethodCall()) {
-                val receiver = node.receiver
-                val receiverType = receiver?.getExpressionType()
-                val methodName = node.methodName
-                if (receiverType != null && methodName != null &&
-                    receiverType.canonicalText == "android.webkit.SslErrorHandler" &&
-                    methodName == "proceed"
-                ) {
-                    val message = "Permitting connections with SSL-related errors could allow " +
-                        "eavesdroppers to intercept data sent by your app, which impacts " +
-                        "the privacy of your users. Consider canceling the connections by " +
-                        "invoking `SslErrorHandler#cancel()`."
-                    context.report(
-                        PROCEEDS_ON_RECEIVED_SSL_ERROR,
-                        node, context.getLocation(node), message
-                    )
-                }
-            }
-            return super.visitCallExpression(node)
-        }
-    }
+  companion object {
+    private val IMPLEMENTATION =
+      Implementation(WebViewClientDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
-    companion object {
-        private val IMPLEMENTATION = Implementation(
-            WebViewClientDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-        )
-
-        @JvmField
-        val PROCEEDS_ON_RECEIVED_SSL_ERROR = create(
-            id = "WebViewClientOnReceivedSslError",
-            briefDescription = "Proceeds with the HTTPS connection despite SSL errors",
-            explanation = "This check looks for `onReceivedSslError` implementations " +
-                "that invoke `SslErrorHandler#proceed`.",
-            category = Category.SECURITY,
-            priority = 5,
-            androidSpecific = true,
-            severity = Severity.WARNING,
-            implementation = IMPLEMENTATION
-        )
-    }
+    @JvmField
+    val PROCEEDS_ON_RECEIVED_SSL_ERROR =
+      create(
+        id = "WebViewClientOnReceivedSslError",
+        briefDescription = "Proceeds with the HTTPS connection despite SSL errors",
+        explanation =
+          "This check looks for `onReceivedSslError` implementations " +
+            "that invoke `SslErrorHandler#proceed`.",
+        category = Category.SECURITY,
+        priority = 5,
+        androidSpecific = true,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION
+      )
+  }
 }

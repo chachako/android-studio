@@ -18,58 +18,58 @@ package com.android.tools.lint.detector.api
 
 import com.google.common.base.Joiner
 import com.google.common.collect.Lists
-import junit.framework.TestCase
 import java.lang.reflect.Modifier
+import junit.framework.TestCase
 
 class CategoryTest : TestCase() {
-    fun testCompare() {
-        val categories = Lists.newArrayList<Category>()
-        for (field in Category::class.java.declaredFields) {
-            if (field.type == Category::class.java && field.modifiers and Modifier.STATIC != 0) {
-                field.isAccessible = true
-                val o = field.get(null)
-                if (o is Category) {
-                    categories.add(o)
-                }
-            }
+  fun testCompare() {
+    val categories = Lists.newArrayList<Category>()
+    for (field in Category::class.java.declaredFields) {
+      if (field.type == Category::class.java && field.modifiers and Modifier.STATIC != 0) {
+        field.isAccessible = true
+        val o = field.get(null)
+        if (o is Category) {
+          categories.add(o)
         }
-
-        categories.sort()
-
-        assertEquals(
-            "" +
-                "Lint\n" +
-                "Correctness\n" +
-                "Correctness:Messages\n" +
-                "Correctness:Chrome OS\n" +
-                "Security\n" +
-                "Compliance\n" +
-                "Performance\n" +
-                "Performance:Application Size\n" +
-                "Usability:Typography\n" +
-                "Usability:Icons\n" +
-                "Usability\n" +
-                "Productivity\n" +
-                "Accessibility\n" +
-                "Internationalization\n" +
-                "Internationalization:Bidirectional Text\n" +
-                "Testing\n" +
-                "Interoperability\n" +
-                "Interoperability:Kotlin Interoperability\n" +
-                "Interoperability:Java Interoperability\n" +
-                "Lint Implementation Issues",
-            Joiner.on("\n").join(categories)
-        )
+      }
     }
 
-    fun testGetName() = assertEquals("Messages", Category.MESSAGES.name)
+    categories.sort()
 
-    fun testGetFullName() = assertEquals("Correctness:Messages", Category.MESSAGES.fullName)
+    assertEquals(
+      "" +
+        "Lint\n" +
+        "Correctness\n" +
+        "Correctness:Messages\n" +
+        "Correctness:Chrome OS\n" +
+        "Security\n" +
+        "Compliance\n" +
+        "Performance\n" +
+        "Performance:Application Size\n" +
+        "Usability:Typography\n" +
+        "Usability:Icons\n" +
+        "Usability\n" +
+        "Productivity\n" +
+        "Accessibility\n" +
+        "Internationalization\n" +
+        "Internationalization:Bidirectional Text\n" +
+        "Testing\n" +
+        "Interoperability\n" +
+        "Interoperability:Kotlin Interoperability\n" +
+        "Interoperability:Java Interoperability\n" +
+        "Lint Implementation Issues",
+      Joiner.on("\n").join(categories)
+    )
+  }
 
-    fun testEquals() {
-        assertEquals(Category.MESSAGES, Category.MESSAGES)
-        assertEquals(Category.create("Correctness", 100), Category.create("Correctness", 100))
-        assertFalse(Category.MESSAGES == Category.CORRECTNESS)
-        assertFalse(Category.create("Correctness", 100) == Category.create("Correct", 100))
-    }
+  fun testGetName() = assertEquals("Messages", Category.MESSAGES.name)
+
+  fun testGetFullName() = assertEquals("Correctness:Messages", Category.MESSAGES.fullName)
+
+  fun testEquals() {
+    assertEquals(Category.MESSAGES, Category.MESSAGES)
+    assertEquals(Category.create("Correctness", 100), Category.create("Correctness", 100))
+    assertFalse(Category.MESSAGES == Category.CORRECTNESS)
+    assertFalse(Category.create("Correctness", 100) == Category.create("Correct", 100))
+  }
 }
