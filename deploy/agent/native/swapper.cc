@@ -22,6 +22,7 @@
 #include "tools/base/deploy/agent/native/hotswap.h"
 #include "tools/base/deploy/agent/native/instrumenter.h"
 #include "tools/base/deploy/agent/native/jni/jni_class.h"
+#include "tools/base/deploy/agent/native/live_edit.h"
 #include "tools/base/deploy/common/event.h"
 #include "tools/base/deploy/proto/deploy.pb.h"
 
@@ -39,6 +40,11 @@ Swapper& Swapper::Instance() {
 proto::AgentSwapResponse Swapper::Swap(jvmtiEnv* jvmti, JNIEnv* jni,
                                        const proto::SwapRequest& request) {
   proto::AgentSwapResponse response;
+
+  if (HasPrimedClasses()) {
+    response.set_status(proto::AgentSwapResponse::LIVE_EDIT_PRIMED_CLASSES);
+    return response;
+  }
 
   // TODO: Find a cleaner method to distinguish swap / overlay swap than a
   // boolean flag passed through.

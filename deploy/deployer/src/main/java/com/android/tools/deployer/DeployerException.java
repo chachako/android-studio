@@ -344,6 +344,12 @@ public class DeployerException extends Exception {
                 "",
                 ResolutionAction.NONE),
 
+        SWAP_AFTER_LIVE_EDIT_NOT_SUPPORTED(
+                "Apply Changes/Apply Code Changes are not compatible with Live Edit and require the running app to be restarted",
+                "",
+                "Reinstall and restart app",
+                ResolutionAction.RUN_APP),
+
         OPERATION_NOT_SUPPORTED("Operation not supported.", "%s", "", ResolutionAction.NONE),
 
         RUN_TIME_EXCEPTION("Runtime Exception.", "%s", "Retry", ResolutionAction.RETRY),
@@ -574,6 +580,10 @@ public class DeployerException extends Exception {
     public static DeployerException agentSwapFailed(Deploy.AgentSwapResponse.Status code) {
         String suffix = code != Deploy.AgentSwapResponse.Status.UNKNOWN ? ": " + code.name() : ".";
         return new DeployerException(Error.AGENT_SWAP_FAILED, code, new String[] {suffix}, "");
+    }
+
+    public static DeployerException swapAfterLeNotSupported() {
+        return new DeployerException(Error.SWAP_AFTER_LIVE_EDIT_NOT_SUPPORTED, NO_ARGS, NO_ARGS);
     }
 
     public static DeployerException appIdChanged(String before, String after) {

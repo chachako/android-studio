@@ -24,6 +24,8 @@
 
 namespace deploy {
 
+bool HasPrimedClasses();
+
 proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
                                       const proto::LiveEditRequest&);
 }

@@ -133,6 +133,8 @@ bool CheckVersion(Recompose& recompose, jobject& reloader,
 
 }  // namespace
 
+bool HasPrimedClasses() { return !primed_classes.empty(); }
+
 proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
                                       const proto::LiveEditRequest& req) {
   proto::AgentLiveEditResponse resp;

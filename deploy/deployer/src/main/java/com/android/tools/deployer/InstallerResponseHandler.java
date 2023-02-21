@@ -120,6 +120,10 @@ public class InstallerResponseHandler {
             handleJvmtiError(failedAgent.getJvmtiError());
         }
 
+        if (failedAgent.getStatus() == AgentSwapResponse.Status.LIVE_EDIT_PRIMED_CLASSES) {
+            throw DeployerException.swapAfterLeNotSupported();
+        }
+
         throw DeployerException.agentSwapFailed(failedAgent.getStatus());
     }
 
