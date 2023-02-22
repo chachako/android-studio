@@ -82,7 +82,10 @@ class SourcesImpl(
             defaultSourceProvider.getBaselineProfiles(sourceDirectoriesImpl).run {
                 sourceDirectoriesImpl.addSources(this)
             }
-            updateSourceDirectories(sourceDirectoriesImpl, variantSourceProvider?.resources)
+            updateSourceDirectories(
+                sourceDirectoriesImpl,
+                variantSourceProvider?.baselineProfiles as DefaultAndroidSourceDirectorySet?
+            )
         }
 
     override val res =
