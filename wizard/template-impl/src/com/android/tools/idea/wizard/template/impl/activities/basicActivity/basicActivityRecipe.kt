@@ -63,6 +63,19 @@ fun RecipeExecutor.generateBasicActivity(
   // appropriate set of themes
   generateMaterial3Themes(moduleData.themesData.main.name, moduleData.resDir)
 
+  // TODO: (b/272389296, b/272389537) put the xml in the values/themes.xml when minApi >= 23
+  mergeXml(
+      """
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <style name="${moduleData.themesData.main.name}" parent="Base.${moduleData.themesData.main.name}">
+    <!-- Transparent system bars for edge-to-edge. -->
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+  </style>
+</resources>""", resOut.resolve("values-v23").resolve("themes.xml")
+  )
+
   generateManifest(
     moduleData = moduleData,
     activityClass = activityClass,

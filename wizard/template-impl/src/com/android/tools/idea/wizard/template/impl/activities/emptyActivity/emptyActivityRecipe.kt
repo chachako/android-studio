@@ -20,7 +20,7 @@ import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.PackageName
 import com.android.tools.idea.wizard.template.RecipeExecutor
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
-import com.android.tools.idea.wizard.template.impl.activities.common.addMaterialDependency
+import com.android.tools.idea.wizard.template.impl.activities.common.addMaterial3Dependency
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
 import com.android.tools.idea.wizard.template.impl.activities.common.generateSimpleLayout
 import com.android.tools.idea.wizard.template.impl.activities.emptyActivity.src.emptyActivityJava
@@ -39,7 +39,7 @@ fun RecipeExecutor.generateEmptyActivity(
   val ktOrJavaExt = projectData.language.extension
 
   addDependency("com.android.support:appcompat-v7:${moduleData.apis.appCompatVersion}.+")
-  addMaterialDependency(useAndroidX)
+  addMaterial3Dependency()
 
   generateManifest(
     moduleData, activityClass, packageName, isLauncher, false,

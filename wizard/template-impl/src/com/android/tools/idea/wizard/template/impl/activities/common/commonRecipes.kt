@@ -15,6 +15,7 @@
  */
 package com.android.tools.idea.wizard.template.impl.activities.common
 
+import com.android.tools.idea.wizard.template.ApiTemplateData
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.PackageName
 import com.android.tools.idea.wizard.template.RecipeExecutor
@@ -266,8 +267,7 @@ fun RecipeExecutor.generateMaterial3Themes(themeName: String, resOut: File) {
   // an Activity is created under a flavor
   // com.android.tools.idea.npw.module.recipes.androidModule.res.values.androidModuleThemesMaterial3
   // com.android.tools.idea.npw.module.recipes.androidModule.res.values_night.androidModuleThemesMaterial3
-  // com.android.tools.idea.npw.module.recipes.androidModule.res.values_v29.androidModuleThemesMaterial3V29
-  save("""<resources xmlns:tools="http://schemas.android.com/tools">
+  mergeXml("""<resources xmlns:tools="http://schemas.android.com/tools">
   <!-- Base application theme. -->
   <style name="Base.${themeName}" parent="Theme.Material3.DayNight.NoActionBar">
     <!-- Customize your light theme here. -->
@@ -277,21 +277,11 @@ fun RecipeExecutor.generateMaterial3Themes(themeName: String, resOut: File) {
   <style name="$themeName" parent="Base.${themeName}" />
 </resources>""", resOut.resolve("values/themes.xml"))
 
-  save(  """<resources xmlns:tools="http://schemas.android.com/tools">
+  mergeXml(  """<resources xmlns:tools="http://schemas.android.com/tools">
   <!-- Base application theme. -->
   <style name="Base.${themeName}" parent="Theme.Material3.DayNight.NoActionBar">
     <!-- Customize your dark theme here. -->
     <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
   </style>
 </resources>""", resOut.resolve("values-night/themes.xml"))
-
-  save("""<resources xmlns:tools="http://schemas.android.com/tools">
-  <style name="$themeName" parent="Base.${themeName}">
-    <!-- Transparent system bars for edge-to-edge. -->
-    <item name="android:navigationBarColor">@android:color/transparent</item>
-    <item name="android:statusBarColor">@android:color/transparent</item>
-    <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
-  </style>
-</resources>""", resOut.resolve("values-v29/themes.xml"))
-
 }
