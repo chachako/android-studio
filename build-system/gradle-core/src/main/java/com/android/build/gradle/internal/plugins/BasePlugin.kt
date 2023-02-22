@@ -201,11 +201,9 @@ abstract class BasePlugin<
         )
     }
 
-    private var _managedDeviceRegistry: ManagedDeviceRegistry? = null
-    val managedDeviceRegistry: ManagedDeviceRegistry
-        get() = _managedDeviceRegistry ?: ManagedDeviceRegistry(newExtension.testOptions).also {
-            _managedDeviceRegistry = it
-        }
+    val managedDeviceRegistry: ManagedDeviceRegistry by lazy(LazyThreadSafetyMode.NONE) {
+        ManagedDeviceRegistry(newExtension.testOptions)
+    }
 
     private val globalConfig by lazy {
         withProject("globalConfig") { project ->

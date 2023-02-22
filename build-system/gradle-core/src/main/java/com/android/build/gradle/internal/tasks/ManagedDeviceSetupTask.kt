@@ -39,7 +39,9 @@ import org.gradle.work.DisableCachingByDefault
 @DisableCachingByDefault(because = "The Setup Task is expected to get values external to " +
         "the Gradle Project. As such, it can never be considered up-to-date.")
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
-abstract class ManagedDeviceSetupTask: NonIncrementalGlobalTask() {
+abstract class ManagedDeviceSetupTask : UnsafeOutputsTask(
+    "The Setup Task is expected to get values external to the Gradle Project. " +
+            "As such, it can never be considered up-to-date.") {
 
     @get:Inject
     abstract val objectFactory: ObjectFactory
@@ -79,7 +81,6 @@ abstract class ManagedDeviceSetupTask: NonIncrementalGlobalTask() {
                 task.objectFactory.newInstance(setupConfigAction).configureTaskInput(dslDevice))
             task.setupAction.setDisallowChanges(setupTaskAction)
             task.setupResultDir.set(setupTaskResultOutputDir)
-            task.outputs.upToDateWhen { false }
         }
     }
 }
