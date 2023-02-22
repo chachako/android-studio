@@ -26,7 +26,7 @@
     <orderEntry type="library" name="bouncy-castle" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="library" name="gson" level="project" />
-    <orderEntry type="module" module-name="android.sdktools.repository" />
+    <orderEntry type="module" module-name="android.sdktools.repository-base" />
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
     <orderEntry type="library" name="kotlin-reflect" level="project" />
     <orderEntry type="library" name="jimfs" level="project" />
@@ -43,5 +43,9 @@
     <orderEntry type="module" module-name="android.sdktools.base.build-system.aapt2-proto" />
     <orderEntry type="library" name="jaxb-api" level="project" />
     <orderEntry type="library" name="xerces" level="project" />
+    <orderEntry type="library" name="aia-proto" level="project" />
+    <orderEntry type="library" name="studio-proto" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
+    <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
   </component>
 </module>

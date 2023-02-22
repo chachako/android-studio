@@ -16,7 +16,7 @@
     <orderEntry type="module" module-name="android.sdktools.base.lint.model-base" />
     <orderEntry type="module" module-name="android.sdktools.builder-model" />
     <orderEntry type="module" module-name="android.sdktools.base.sdklib-base" />
-    <orderEntry type="module" module-name="android.sdktools.repository" />
+    <orderEntry type="module" module-name="android.sdktools.repository-base" />
     <orderEntry type="module" module-name="android.sdktools.base.build-system.manifest-merger-base" />
     <orderEntry type="library" name="kxml2" level="project" />
     <orderEntry type="library" name="intellij-core" level="project" />
