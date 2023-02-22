@@ -150,7 +150,7 @@ fun UElement.asCall(): UCallExpression? {
  * which represents the call of that binary function.
  */
 fun UBinaryExpression.asCall(): UCallExpression? {
-  val operator = resolveOperatorWorkaround() ?: return null
+  val operator = resolveOperator() ?: return null
   return asCall(operator)
 }
 

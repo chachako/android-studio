@@ -116,7 +116,6 @@ import com.android.tools.lint.detector.api.isInlined
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.minSdkAtLeast
 import com.android.tools.lint.detector.api.resolveOperator
-import com.android.tools.lint.detector.api.resolveOperatorWorkaround
 import com.android.utils.XmlUtils
 import com.android.utils.usLocaleCapitalize
 import com.intellij.psi.CommonClassNames.JAVA_LANG_AUTO_CLOSEABLE
@@ -2078,7 +2077,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
     override fun visitBinaryExpression(node: UBinaryExpression) {
       // Overloaded operators
-      val method = node.resolveOperatorWorkaround()
+      val method = node.resolveOperator()
       if (method != null) {
         val call = node.asCall(method)
         visitCall(method, call, node)

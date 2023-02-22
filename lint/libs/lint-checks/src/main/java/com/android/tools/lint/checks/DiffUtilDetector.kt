@@ -25,7 +25,6 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.isKotlin
-import com.android.tools.lint.detector.api.resolveOperatorWorkaround
 import com.intellij.psi.CommonClassNames.JAVA_LANG_OBJECT
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -91,7 +90,7 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
 
     when (node) {
       is UBinaryExpression -> {
-        resolved = node.resolveOperatorWorkaround()
+        resolved = node.resolveOperator()
         if (resolved == null) {
           val left = node.leftOperand.getExpressionType() as? PsiClassType
           return defaultEquals(context, left)

@@ -603,23 +603,6 @@ fun UArrayAccessExpression.resolveOperator(skipOverloadedSetter: Boolean = true)
   return baseService.resolveCall(ktElement)
 }
 
-// TODO(kotlin-uast-cleanup): remove this when a fix for
-// https://youtrack.jetbrains.com/issue/KTIJ-17726 arrives.
-// Excerpted/modified from IJ 189b439abec02e39db28fbfa12092b6ca014040a
-fun UBinaryExpression.resolveOperatorWorkaround(): PsiMethod? {
-  // Try the existing logic first to resolve binary operator in general
-  resolveOperator()?.let {
-    return it
-  }
-  return when (operator) {
-    UastBinaryOperator.ASSIGN -> {
-      // Try to resolve overloaded indexed setter
-      (leftOperand as? UArrayAccessExpression)?.resolveOperator(skipOverloadedSetter = false)
-    }
-    else -> null
-  }
-}
-
 /**
  * Returns the layout resource name for the given layout file
  *
