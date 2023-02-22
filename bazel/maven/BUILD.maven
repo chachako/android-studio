@@ -6095,13 +6095,13 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.bytedeco.ffmpeg_5.0-1.5.7",
-    pom = "repository/org/bytedeco/ffmpeg/5.0-1.5.7/ffmpeg-5.0-1.5.7.pom",
+    name = "org.bytedeco.ffmpeg_5.1.2-1.5.8",
+    pom = "repository/org/bytedeco/ffmpeg/5.1.2-1.5.8/ffmpeg-5.1.2-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/ffmpeg/5.0-1.5.7",
-    parent = "org.bytedeco.javacpp-presets_1.5.7",
+    repo_path = "org/bytedeco/ffmpeg/5.1.2-1.5.8",
+    parent = "org.bytedeco.javacpp-presets_1.5.8",
     deps = [
-        "org.bytedeco.javacpp_1.5.7",
+        "org.bytedeco.javacpp_1.5.8",
     ],
     visibility = ["//visibility:public"],
 )
@@ -6109,27 +6109,27 @@ maven_artifact(
 maven_import(
     name = "org.bytedeco.ffmpeg",
     classifiers = [],
-    parent = "org.bytedeco.javacpp-presets_1.5.7",
+    parent = "org.bytedeco.javacpp-presets_1.5.8",
     jars = [
-        "repository/org/bytedeco/ffmpeg/5.0-1.5.7/ffmpeg-5.0-1.5.7.jar"
+        "repository/org/bytedeco/ffmpeg/5.1.2-1.5.8/ffmpeg-5.1.2-1.5.8.jar"
     ],
     exports = [
         "org.bytedeco.javacpp",
     ],
     original_deps = [
-        "org.bytedeco.javacpp_1.5.7",
+        "org.bytedeco.javacpp_1.5.8",
     ],
-    pom = "repository/org/bytedeco/ffmpeg/5.0-1.5.7/ffmpeg-5.0-1.5.7.pom",
+    pom = "repository/org/bytedeco/ffmpeg/5.1.2-1.5.8/ffmpeg-5.1.2-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/ffmpeg/5.0-1.5.7",
+    repo_path = "org/bytedeco/ffmpeg/5.1.2-1.5.8",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.bytedeco.javacpp_1.5.7",
-    pom = "repository/org/bytedeco/javacpp/1.5.7/javacpp-1.5.7.pom",
+    name = "org.bytedeco.javacpp_1.5.8",
+    pom = "repository/org/bytedeco/javacpp/1.5.8/javacpp-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/javacpp/1.5.7",
+    repo_path = "org/bytedeco/javacpp/1.5.8",
     visibility = ["//visibility:public"],
 )
 
@@ -6137,12 +6137,12 @@ maven_import(
     name = "org.bytedeco.javacpp",
     classifiers = [],
     jars = [
-        "repository/org/bytedeco/javacpp/1.5.7/javacpp-1.5.7.jar"
+        "repository/org/bytedeco/javacpp/1.5.8/javacpp-1.5.8.jar"
     ],
     original_deps = [],
-    pom = "repository/org/bytedeco/javacpp/1.5.7/javacpp-1.5.7.pom",
+    pom = "repository/org/bytedeco/javacpp/1.5.8/javacpp-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/javacpp/1.5.7",
+    repo_path = "org/bytedeco/javacpp/1.5.8",
     visibility = ["//visibility:public"],
 )
 
@@ -34289,25 +34289,25 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.bytedeco.ffmpeg-platform_5.0-1.5.7",
-    pom = "repository/org/bytedeco/ffmpeg-platform/5.0-1.5.7/ffmpeg-platform-5.0-1.5.7.pom",
+    name = "org.bytedeco.ffmpeg-platform_5.1.2-1.5.8",
+    pom = "repository/org/bytedeco/ffmpeg-platform/5.1.2-1.5.8/ffmpeg-platform-5.1.2-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/ffmpeg-platform/5.0-1.5.7",
-    parent = "org.bytedeco.javacpp-presets_1.5.7",
+    repo_path = "org/bytedeco/ffmpeg-platform/5.1.2-1.5.8",
+    parent = "org.bytedeco.javacpp-presets_1.5.8",
     deps = [
-        "org.bytedeco.javacpp-platform_1.5.7",
-        "org.bytedeco.ffmpeg_5.0-1.5.7",
+        "org.bytedeco.javacpp-platform_1.5.8",
+        "org.bytedeco.ffmpeg_5.1.2-1.5.8",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.bytedeco.javacpp-platform_1.5.7",
-    pom = "repository/org/bytedeco/javacpp-platform/1.5.7/javacpp-platform-1.5.7.pom",
+    name = "org.bytedeco.javacpp-platform_1.5.8",
+    pom = "repository/org/bytedeco/javacpp-platform/1.5.8/javacpp-platform-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/javacpp-platform/1.5.7",
+    repo_path = "org/bytedeco/javacpp-platform/1.5.8",
     deps = [
-        "org.bytedeco.javacpp_1.5.7",
+        "org.bytedeco.javacpp_1.5.8",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42980,10 +42980,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.bytedeco.javacpp-presets_1.5.7",
-    pom = "repository/org/bytedeco/javacpp-presets/1.5.7/javacpp-presets-1.5.7.pom",
+    name = "org.bytedeco.javacpp-presets_1.5.8",
+    pom = "repository/org/bytedeco/javacpp-presets/1.5.8/javacpp-presets-1.5.8.pom",
     repo_root_path = "repository",
-    repo_path = "org/bytedeco/javacpp-presets/1.5.7",
+    repo_path = "org/bytedeco/javacpp-presets/1.5.8",
 )
 
 maven_artifact(
