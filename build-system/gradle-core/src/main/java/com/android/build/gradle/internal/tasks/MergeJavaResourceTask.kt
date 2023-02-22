@@ -418,5 +418,5 @@ private fun getExternalLibJavaRes(
 /** Returns true if anything's been added to the annotation processor configuration. */
 fun projectHasAnnotationProcessors(creationConfig: ComponentCreationConfig): Boolean {
     val config = creationConfig.variantDependencies.annotationProcessorConfiguration
-    return config.incoming.dependencies.isNotEmpty()
+    return config != null && config.incoming.dependencies.isNotEmpty()
 }

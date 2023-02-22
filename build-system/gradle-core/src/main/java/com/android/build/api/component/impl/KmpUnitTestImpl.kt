@@ -25,6 +25,7 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.UnitTest
 import com.android.build.api.variant.impl.KmpVariantImpl
+import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
@@ -52,6 +53,7 @@ open class KmpUnitTestImpl @Inject constructor(
     taskContainer: MutableTaskContainer,
     services: TaskCreationServices,
     global: GlobalTaskCreationConfig,
+    androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
     override val mainVariant: KmpVariantImpl,
     manifestFile: File
 ): KmpComponentImpl<KmpUnitTestDslInfoImpl>(
@@ -64,6 +66,7 @@ open class KmpUnitTestImpl @Inject constructor(
     taskContainer,
     services,
     global,
+    androidKotlinCompilation,
     manifestFile
 ), UnitTestCreationConfig, UnitTest {
 

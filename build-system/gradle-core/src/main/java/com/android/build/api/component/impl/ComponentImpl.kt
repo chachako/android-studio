@@ -150,7 +150,7 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
     override val runtimeConfiguration = variantDependencies.runtimeClasspath
 
     override val annotationProcessorConfiguration =
-        variantDependencies.annotationProcessorConfiguration
+        variantDependencies.annotationProcessorConfiguration!!
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API

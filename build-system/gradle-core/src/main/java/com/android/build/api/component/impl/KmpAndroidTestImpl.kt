@@ -36,6 +36,7 @@ import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
 import com.android.build.api.variant.impl.ApkPackagingImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
+import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
@@ -57,7 +58,6 @@ import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.build.gradle.options.IntegerOption
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -77,6 +77,7 @@ open class KmpAndroidTestImpl @Inject constructor(
     taskContainer: MutableTaskContainer,
     services: TaskCreationServices,
     global: GlobalTaskCreationConfig,
+    androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
     override val mainVariant: KmpVariantImpl,
     manifestFile: File
 ): KmpComponentImpl<KmpAndroidTestDslInfoImpl>(
@@ -89,6 +90,7 @@ open class KmpAndroidTestImpl @Inject constructor(
     taskContainer,
     services,
     global,
+    androidKotlinCompilation,
     manifestFile
 ), AndroidTestCreationConfig, AndroidTest {
 

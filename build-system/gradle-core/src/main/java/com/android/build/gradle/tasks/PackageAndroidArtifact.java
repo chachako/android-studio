@@ -42,6 +42,7 @@ import com.android.build.api.variant.impl.VariantOutputImpl;
 import com.android.build.gradle.internal.LoggerWrapper;
 import com.android.build.gradle.internal.component.ApkCreationConfig;
 import com.android.build.gradle.internal.component.ApplicationCreationConfig;
+import com.android.build.gradle.internal.component.KmpComponentCreationConfig;
 import com.android.build.gradle.internal.component.TestComponentCreationConfig;
 import com.android.build.gradle.internal.core.Abi;
 import com.android.build.gradle.internal.dependency.AndroidAttributes;
@@ -1263,10 +1264,14 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                     .set(creationConfig.getServices().getProjectInfo().getProjectBaseName());
             packageAndroidArtifact.getProjectBaseName().disallowChanges();
             packageAndroidArtifact.manifestType = manifestType;
-            packageAndroidArtifact.buildTargetAbi =
-                    creationConfig.getGlobal().getSplits().getAbi().isEnable()
-                            ? projectOptions.get(StringOption.IDE_BUILD_TARGET_ABI)
-                            : null;
+            if (creationConfig instanceof KmpComponentCreationConfig) {
+                packageAndroidArtifact.buildTargetAbi = null;
+            } else {
+                packageAndroidArtifact.buildTargetAbi =
+                        creationConfig.getGlobal().getSplits().getAbi().isEnable()
+                                ? projectOptions.get(StringOption.IDE_BUILD_TARGET_ABI)
+                                : null;
+            }
             if (creationConfig.getComponentType().isDynamicFeature()) {
                 packageAndroidArtifact
                         .getBaseModuleMetadata()

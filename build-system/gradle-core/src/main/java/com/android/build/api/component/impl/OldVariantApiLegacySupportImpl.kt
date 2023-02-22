@@ -347,7 +347,7 @@ class OldVariantApiLegacySupportImpl(
         component.variantDependencies.compileClasspath.attributes.attribute(attributeKey, attributeValue)
         component.variantDependencies.runtimeClasspath.attributes.attribute(attributeKey, attributeValue)
         component.variantDependencies
-            .annotationProcessorConfiguration
+            .annotationProcessorConfiguration!!
             .attributes
             .attribute(attributeKey, attributeValue)
 

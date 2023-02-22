@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.component
+package com.android.build.api.variant.impl
 
-import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalDecoratedKotlinCompilation
 
-/**
- * Interface for all components related to the kotlin multiplatform plugin including the main
- * variant, unit tests, and instrumented tests.
- */
-interface KmpComponentCreationConfig: ComponentCreationConfig {
-    val androidKotlinCompilation: KotlinMultiplatformAndroidCompilation
+class KotlinMultiplatformAndroidCompilationImpl(
+    delegate: Delegate
+) : ExternalDecoratedKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation
+
+internal enum class KmpPredefinedAndroidCompilation(val compilationName: String) {
+    MAIN("main"),
+    TEST("test"),
+    INSTRUMENTED_TEST("instrumentedTest")
 }

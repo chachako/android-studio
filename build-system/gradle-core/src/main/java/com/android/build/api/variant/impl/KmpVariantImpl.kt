@@ -55,7 +55,8 @@ open class KmpVariantImpl @Inject constructor(
     taskContainer: MutableTaskContainer,
     services: TaskCreationServices,
     global: GlobalTaskCreationConfig,
-    manifestFile: File
+    androidKotlinCompilation: KotlinMultiplatformAndroidCompilation,
+    manifestFile: File,
 ): KmpComponentImpl<KmpVariantDslInfo>(
     dslInfo,
     internalServices,
@@ -66,7 +67,8 @@ open class KmpVariantImpl @Inject constructor(
     taskContainer,
     services,
     global,
-    manifestFile
+    androidKotlinCompilation,
+    manifestFile,
 ), KotlinMultiplatformAndroidVariant, KmpCreationConfig {
 
     override val aarOutputFileName: Property<String> =
