@@ -21,12 +21,15 @@ import com.android.zipflinger.Entry;
 import com.android.zipflinger.ZipArchive;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -82,6 +85,7 @@ public class V1SigningTest extends BaseSigning {
     public void createdByAndBuiltBy() throws Exception {
         File androidManifest = workspace.getDummyAndroidManifest();
         File zipFile = workspace.createZip(5, 2000, "testCreatedBy.zip", androidManifest);
+        assertNoVirtualEntry(zipFile);
 
         // Sign
         HashMap<String, String> manifestAttributes = new HashMap<>();
@@ -94,6 +98,9 @@ public class V1SigningTest extends BaseSigning {
         verifyManifestAttributes(zipFile, manifestAttributes);
         Utils.verifyApk(zipFile);
 
+        // Also check that no virtual entry were created (regression b/268071371).
+        assertNoVirtualEntry(zipFile);
+
         // Incremental update (make sure Created-By and Built-By are kept).
         options = getOptions(signerConfig, true);
         try (SignedApk signedApk = new SignedApk(zipFile, options)) {
@@ -102,6 +109,37 @@ public class V1SigningTest extends BaseSigning {
         // Check content of manifest file
         verifyManifestAttributes(zipFile, manifestAttributes);
         Utils.verifyApk(zipFile);
+    }
+
+    @Test
+    public void avoidVirtualEntry() throws Exception {
+        HashMap<String, String> manifestAttributes = new HashMap<>();
+        manifestAttributes.put(SignedApk.MANIFEST_CREATED_BY, CREATED_BY);
+        manifestAttributes.put(SignedApk.MANIFEST_BUILT_BY, BUILT_BY);
+        SignerConfig signerConfig = Signers.getDefaultRSASigner(workspace);
+        SignedApkOptions options = getOptions(signerConfig, false, manifestAttributes);
+        File archive = workspace.getTestOutputFile("avoidVirtualEntry.zip");
+        try (SignedApk signedApk = new SignedApk(archive, options)) {
+            signedApk.add(new BytesSource(new byte[100], "c", 0));
+        }
+
+        assertNoVirtualEntry(archive);
+    }
+
+    // Search for virtual entries, using a top-down parser. A virtual entry
+    // has no name and a payload size of zero.
+    private void assertNoVirtualEntry(File zipFile) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry temp;
+            int entryCounter = 0;
+            while ((temp = zis.getNextEntry()) != null) {
+                entryCounter++;
+                if (!temp.getName().isEmpty() || temp.getSize() != 0) {
+                    continue;
+                }
+                Assert.fail("Found virtual entry #" + entryCounter);
+            }
+        }
     }
 
     @Test
@@ -132,6 +170,7 @@ public class V1SigningTest extends BaseSigning {
             Manifest manifest =
                     new Manifest(
                             new ByteArrayInputStream(byteBuffer.array(), 0, byteBuffer.limit()));
+
             Attributes attributes = manifest.getMainAttributes();
             for (String key : expectedAttributes.keySet()) {
                 checkAttribute(attributes, key, expectedAttributes.get(key));

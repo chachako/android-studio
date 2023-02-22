@@ -44,6 +44,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -109,25 +110,57 @@ public class SignedApk implements Archive {
             archive.delete(MANIFEST_ENTRY_NAME);
         }
 
-        ByteBuffer manifestByteBuffer = archive.getContent(MANIFEST_ENTRY_NAME);
         byte[] manifestBytes;
-        if (manifestByteBuffer != null) {
+        if (hasManifest(archive.listEntries())) {
+            ByteBuffer manifestByteBuffer = archive.getContent(MANIFEST_ENTRY_NAME);
             manifestBytes = new byte[manifestByteBuffer.remaining()];
             manifestByteBuffer.get(manifestBytes);
         } else {
             manifestBytes = createDefaultManifest();
-            BytesSource bytesSource =
-                    new BytesSource(manifestBytes, MANIFEST_ENTRY_NAME, Deflater.NO_COMPRESSION);
-            archive.add(bytesSource);
         }
+
 
         Set<String> filesToSign = new HashSet<>(archive.listEntries());
         Set<String> signedEntries = signer.initWith(manifestBytes, filesToSign);
+
+        // If the archive contains entries that were not already signed, let the engine know
+        // so it can sign then now.
         filesToSign.removeAll(signedEntries);
         for (String entryName : filesToSign) {
             ApkSignerEngine.InspectJarEntryRequest req = signer.outputJarEntry(entryName);
             processRequest(req);
         }
+
+        // Let the signer take a look the new manifest if the archive did not contain one.
+        if (!hasManifest(archive.listEntries())) {
+            showNewManifestToSigner(manifestBytes);
+        }
+    }
+
+    // The signer learns about META-INF/MANIFEST.MF properties (e.g: Created-By, Built-By) by
+    // sending a InspectJarEntryRequest seeing our "outputJarEntry(MANIFEST_ENTRY_NAME)".
+    //
+    // This works if the archive already contains a META-INF/MANIFEST.MF but fails if there is none.
+    // The initial approach was to create a META-INF/MANIFEST.MF, write it to the archive, and let
+    // the signer discover it. The problem with this approach is that it creates a virtual
+    // entry when signing ends. Delete it the first META-INF/MANIFEST.MF when we receive the final
+    // META-INF/MANIFEST.MF is received (via getAdditionalJarEntries). See (b/268071371).
+    //
+    // The workaround is to declare a META-INF/MANIFEST.MF to the signer *without* writing it to
+    // the archive. We then fulfill the signer request "manually" since it is not in the archive
+    // and processRequest would fail.
+    private void showNewManifestToSigner(@NonNull byte[] manifestBytes) throws IOException {
+        ApkSignerEngine.InspectJarEntryRequest req = signer.outputJarEntry(MANIFEST_ENTRY_NAME);
+        // The signer will immediately request to see MANIFEST_ENTRY_NAME. Since it is not in the
+        // archive, we resolve the request without using "processRequest".
+        if (req != null && req.getEntryName().equals(MANIFEST_ENTRY_NAME)) {
+            req.getDataSink().consume(ByteBuffer.wrap(manifestBytes));
+            req.done();
+        }
+    }
+
+    private static boolean hasManifest(@NonNull Collection<String> entries) {
+        return entries.contains(MANIFEST_ENTRY_NAME);
     }
 
     /** See Archive.add documentation */
