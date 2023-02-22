@@ -115,9 +115,7 @@ class AddJavaSourceTest: VariantApiBaseTest(TestType.Script) {
 
                 androidComponents {
                     onVariants { variant ->
-                        val addSourceTaskProvider =  project.tasks.register<AddJavaSources>("${'$'}{variant.name}AddSources") {
-                            outputFolder.set(project.layout.buildDirectory.dir("gen"))
-                        }
+                        val addSourceTaskProvider =  project.tasks.register<AddJavaSources>("${'$'}{variant.name}AddSources")
 
                         variant.sources.java?.let { java ->
                             java.addGeneratedSourceDirectory(addSourceTaskProvider, AddJavaSources::outputFolder)
