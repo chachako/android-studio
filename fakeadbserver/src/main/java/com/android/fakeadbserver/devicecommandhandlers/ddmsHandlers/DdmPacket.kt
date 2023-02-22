@@ -79,6 +79,9 @@ class DdmPacket private constructor(
         fun createResponse(id: Int, chunkType: Int, payload: ByteArray) =
             DdmPacket(id, 0.toShort(), chunkType, payload, isResponse = true)
 
+        fun createCommand(id: Int, chunkType: Int, payload: ByteArray) =
+            DdmPacket(id, errorCode = 0.toShort(), chunkType, payload, isResponse = false)
+
         @JvmStatic
         fun isDdmPacket(packet: JdwpPacket): Boolean {
             return packet.cmdSet == DDMS_CMD_SET && packet.cmd == DDMS_CMD

@@ -42,6 +42,10 @@ internal class DdmPayloadWriter {
         stream.write(byte.toInt())
     }
 
+    fun writeBytes(bytes: ByteArray) {
+        stream.write(bytes)
+    }
+
     fun writeString(string: String) {
         val byteBuffer = ByteBuffer.allocate(string.ddmByteCount()).order(ByteOrder.BIG_ENDIAN)
         byteBuffer.putDdmString(string)

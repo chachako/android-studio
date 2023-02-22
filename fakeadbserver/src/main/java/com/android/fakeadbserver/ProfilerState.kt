@@ -18,9 +18,18 @@ package com.android.fakeadbserver
 class ProfilerState {
     var status = Status.Off
 
+    val samplingData = SamplingData()
+
     enum class Status(val ddmsChunkValue: Byte) {
         Off(0),
         Instrumentation(1),
         Sampling(2)
+    }
+
+    class SamplingData {
+        var bufferSize = 0
+        var flags = 0
+        var intervalMicros = 0
+        var bytes = ByteArray(0)
     }
 }

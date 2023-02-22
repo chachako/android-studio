@@ -19,14 +19,18 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.debugging.JdwpProcessProfiler
 import com.android.adblib.tools.debugging.ProfilerStatus
+import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
+import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfilerState
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
 
@@ -35,7 +39,7 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
-        fakeAdb.device("1234").getClient(10)?.profilerState?.status = ProfilerState.Status.Off
+        fakeAdb.device("1234").client(10).profilerState.status = ProfilerState.Status.Off
         val progress = FakeJdwpCommandProgress()
 
         // Act
@@ -54,7 +58,8 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
-        fakeAdb.device("1234").getClient(10)?.profilerState?.status = ProfilerState.Status.Instrumentation
+        fakeAdb.device("1234").client(10).profilerState.status =
+            ProfilerState.Status.Instrumentation
 
         // Act
         val status = profiler.queryStatus()
@@ -68,13 +73,67 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         // Prepare
         val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
-        fakeAdb.device("1234").getClient(10)?.profilerState?.status = ProfilerState.Status.Sampling
+        fakeAdb.device("1234").client(10).profilerState.status = ProfilerState.Status.Sampling
 
         // Act
         val status = profiler.queryStatus()
 
         // Assert
         assertEquals(ProfilerStatus.SamplingProfilerRunning, status)
+    }
+
+    @Test
+    fun startSampleProfilingWorks() = runBlockingWithTimeout {
+        // Prepare
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val profiler = createJdwpProcessProfiler(fakeAdb)
+        val profilerState = fakeAdb.device("1234").client(10).profilerState
+        val progress = FakeJdwpCommandProgress()
+
+        // Act
+        profiler.startSampleProfiling(
+            interval = 2,
+            intervalUnit = TimeUnit.MILLISECONDS,
+            bufferSize = 8_192,
+            progress = progress
+        )
+
+        // Assert
+        assertEquals(ProfilerState.Status.Sampling, profilerState.status)
+        assertEquals(8_192, profilerState.samplingData.bufferSize)
+        assertEquals(0, profilerState.samplingData.flags)
+        assertEquals(2_000, profilerState.samplingData.intervalMicros)
+
+        assertTrue(progress.beforeSendIsCalled)
+        assertTrue(progress.afterSendIsCalled)
+        assertFalse(progress.onReplyIsCalled)
+        assertTrue(progress.onReplyTimeoutIsCalled)
+    }
+
+    @Test
+    fun stopSampleProfilingWorks() = runBlockingWithTimeout {
+        // Prepare
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val profiler = createJdwpProcessProfiler(fakeAdb)
+        val samplingData = "This is a test".toByteArray(Charsets.UTF_8)
+        val profilerState = fakeAdb.device("1234").client(10).profilerState
+        profilerState.status = ProfilerState.Status.Sampling
+        profilerState.samplingData.bytes = samplingData
+        val progress = FakeJdwpCommandProgress()
+
+        // Act
+        val samplingResult = profiler.stopSampleProfiling(progress) { data, dataLength ->
+            data.toByteArray(dataLength)
+        }
+
+        // Assert
+        assertEquals(ProfilerState.Status.Off, profilerState.status)
+        assertArrayEquals(samplingData, samplingResult)
+
+        assertTrue(progress.beforeSendIsCalled)
+        assertTrue(progress.afterSendIsCalled)
+        assertFalse(progress.onReplyIsCalled)
+        assertTrue(progress.onReplyTimeoutIsCalled)
     }
 
     private suspend fun createJdwpProcessProfiler(fakeAdb: FakeAdbServerProvider): JdwpProcessProfiler {
@@ -96,5 +155,10 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         // Note: We don't currently need to collect process properties for the profiler API to
         // work, so we don't call "process.startMonitoring()" here
         return JdwpProcessProfilerImpl(process)
+    }
+
+    fun DeviceState.client(pid: Int): ClientState {
+        return getClient(pid)
+            ?: throw IllegalArgumentException("Client $pid does not exist on device ${this.deviceId}")
     }
 }

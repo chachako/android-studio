@@ -79,6 +79,8 @@ public class ClientState extends ProcessState {
 
     private final AtomicInteger hgpcRequestsCount = new AtomicInteger();
 
+    private final AtomicInteger nextDdmsCommandId = new AtomicInteger(0x7000_0000);
+
     ClientState(
             int pid,
             int uid,
@@ -151,6 +153,10 @@ public class ClientState extends ProcessState {
             }
         }
         this.jdwpSocket = null;
+    }
+
+    public int nextDdmsCommandId() {
+        return nextDdmsCommandId.incrementAndGet();
     }
 
     public synchronized void clearFeatures() {
