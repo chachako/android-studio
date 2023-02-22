@@ -345,6 +345,10 @@ class ProtoSerializeTest {
     testSerializeDeserialize(
       parse("mcc123-mnc456-b+en+GB-ldltr-sw300dp-w300dp-h400dp-large-long-round-widecg-highdr-" +
         "land-car-night-xhdpi-stylus-keysexposed-qwerty-navhidden-dpad-300x200-v23"))
+
+    testSerializeDeserialize(parse("neuter"))
+    testSerializeDeserialize(parse("feminine"))
+    testSerializeDeserialize(parse("masculine"))
   }
 
   @Test

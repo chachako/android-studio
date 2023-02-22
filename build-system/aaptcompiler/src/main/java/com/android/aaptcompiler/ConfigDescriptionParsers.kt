@@ -294,6 +294,17 @@ fun parseNavigation(part: String, config: ConfigDescription): Boolean {
     return true
 }
 
+fun parseGrammaticalInflection(part: String, config: ConfigDescription): Boolean {
+  config.grammaticalInflection = when (part) {
+    WILDCARD_NAME -> ResTableConfig.GRAMMATICAL_GENDER.ANY
+    "neuter" -> ResTableConfig.GRAMMATICAL_GENDER.NEUTER
+    "feminine" -> ResTableConfig.GRAMMATICAL_GENDER.FEMININE
+    "masculine" -> ResTableConfig.GRAMMATICAL_GENDER.MASCULINE
+    else -> return false
+  }
+  return true
+}
+
 fun parseScreenSize(part: String, config: ConfigDescription): Boolean {
     if (part == WILDCARD_NAME) {
         config.screenWidth = 0

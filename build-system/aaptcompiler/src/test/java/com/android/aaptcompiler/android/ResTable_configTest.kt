@@ -18,6 +18,8 @@ class ResTable_configTest {
       0x090a0b0c.hostToDevice(),
       // input block
       0x0d0e0f10.hostToDevice(),
+      // grammaticalGender block
+      1.hostToDevice(),
       // screenSize block
       0x11121314.hostToDevice(),
       // version block
@@ -788,6 +790,8 @@ class ResTable_configTest {
       0x494a4b4c.hostToDevice(),
       // input block
       0x4d4e4f10.hostToDevice(),
+      // grammaticalGender block
+      1.hostToDevice(),
       // screenSize block
       0x11121314.hostToDevice(),
       // version block
@@ -952,6 +956,7 @@ class ResTable_configTest {
         ResTableConfig.NAVIGATION.DPAD,
         (ResTableConfig.INPUT_FLAGS.NAVHIDDEN_YES.toInt() or
           ResTableConfig.INPUT_FLAGS.KEYSHIDDEN_SOFT.toInt()).toByte(),
+        ResTableConfig.GRAMMATICAL_GENDER.FEMININE,
         0,
         0,
         13,
@@ -972,7 +977,8 @@ class ResTable_configTest {
         false,
         byteArrayOf('t'.toByte(), 'h'.toByte(), 'e'.toByte(), 'r'.toByte(), 'e'.toByte(), 0, 0, 0))
     Truth.assertThat(config9.toString()).isEqualTo(
-      "mcc310-mnc100-b+en+latn+US+hi+u+nu+there-ldltr-sw480dp-w480dp-h640dp-large-long-" +
-        "round-widecg-highdr-land-desk-notnight-xxhdpi-finger-keyssoft-qwerty-navhidden-dpad-v13.2")
+      "mcc310-mnc100-b+en+latn+US+hi+u+nu+there-feminine-ldltr-sw480dp-w480dp-h640dp-large-" +
+        "long-round-widecg-highdr-land-desk-notnight-xxhdpi-finger-keyssoft-qwerty-navhidden-dpad-" +
+        "v13.2")
   }
 }
