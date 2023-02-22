@@ -63,6 +63,7 @@ class StudioIssueRegistry : IssueRegistry() {
 
   override val issues =
     listOf(
+      AdbDeviceServicesCommandDetector.ISSUE,
       ByLazyDetector.ISSUE,
       CheckResultDetector.CHECK_RESULT,
       ExternalAnnotationsDetector.ISSUE,
