@@ -23,6 +23,7 @@ import com.android.annotations.NonNull;
 import com.android.ide.common.resources.ResourceFile;
 import com.android.ide.common.resources.ResourceMergerItem;
 import com.android.resources.Density;
+import com.android.resources.GrammaticalGender;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
@@ -724,6 +725,22 @@ public class FolderConfigurationTest {
                         FolderConfiguration.getLanguageConfigFromQualifiers(
                                 "en-rUS,fr-rFR-ldltr-sw411dp-w411dp-h746dp-normal-long-notround-nowidecg-lowdr-port-notnight-560dpi-finger-keysexposed-nokeys-navhidden-nonav-v27"))
                 .containsExactly("en", "fr");
+    }
 
+    /**
+     * Verify that the folder name is correctly computed for multiple qualifiers including
+     * Grammatical Gender.
+     */
+    @Test
+    public void grammaticalGenderSerialization() {
+        FolderConfiguration defaultConfig = FolderConfiguration.createDefault();
+        defaultConfig.setGrammaticalGenderQualifier(
+                new GrammaticalGenderQualifier(GrammaticalGender.FEMININE));
+        defaultConfig.setVersionQualifier(new VersionQualifier(34));
+        defaultConfig.setScreenOrientationQualifier(
+                new ScreenOrientationQualifier(ScreenOrientation.LANDSCAPE));
+
+        assertThat(defaultConfig.getQualifierString())
+                .isEqualTo("feminine-sw-1dp-w-1dp-h-1dp-land-mdpi--1x-1-v34");
     }
 }
