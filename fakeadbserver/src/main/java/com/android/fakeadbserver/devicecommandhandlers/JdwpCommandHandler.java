@@ -36,6 +36,8 @@ import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmExitHa
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmIdSizesHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.JdwpVmVersionHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.MprqHandler;
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.MpseHandler;
+import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.MpssHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ReaeHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.RealHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers.ReaqHandler;
@@ -73,6 +75,8 @@ public class JdwpCommandHandler extends DeviceCommandHandler {
         addDdmPacketHandler(ReaqHandler.CHUNK_TYPE, new ReaqHandler());
         addDdmPacketHandler(SpssHandler.CHUNK_TYPE, new SpssHandler());
         addDdmPacketHandler(SpseHandler.CHUNK_TYPE, new SpseHandler());
+        addDdmPacketHandler(MpssHandler.CHUNK_TYPE, new MpssHandler());
+        addDdmPacketHandler(MpseHandler.CHUNK_TYPE, new MpseHandler());
         addDdmPacketHandler(VULWHandler.CHUNK_TYPE, new VULWHandler());
         addDdmPacketHandler(VUOPHandler.CHUNK_TYPE, new VUOPHandler());
         addDdmPacketHandler(VURTHandler.CHUNK_TYPE, new VURTHandler());

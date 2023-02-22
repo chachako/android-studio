@@ -136,6 +136,53 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         assertTrue(progress.onReplyTimeoutIsCalled)
     }
 
+    @Test
+    fun startInstrumentationProfilingWorks() = runBlockingWithTimeout {
+        // Prepare
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val profiler = createJdwpProcessProfiler(fakeAdb)
+        val profilerState = fakeAdb.device("1234").client(10).profilerState
+        val progress = FakeJdwpCommandProgress()
+
+        // Act
+        profiler.startInstrumentationProfiling(bufferSize = 8_192, progress = progress)
+
+        // Assert
+        assertEquals(ProfilerState.Status.Instrumentation, profilerState.status)
+        assertEquals(8_192, profilerState.instrumentationData.bufferSize)
+
+        assertTrue(progress.beforeSendIsCalled)
+        assertTrue(progress.afterSendIsCalled)
+        assertFalse(progress.onReplyIsCalled)
+        assertTrue(progress.onReplyTimeoutIsCalled)
+    }
+
+    @Test
+    fun stopInstrumentationProfilingWorks() = runBlockingWithTimeout {
+        // Prepare
+        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
+        val profiler = createJdwpProcessProfiler(fakeAdb)
+        val instrumentationData = "This is a test".toByteArray(Charsets.UTF_8)
+        val profilerState = fakeAdb.device("1234").client(10).profilerState
+        profilerState.status = ProfilerState.Status.Instrumentation
+        profilerState.instrumentationData.bytes = instrumentationData
+        val progress = FakeJdwpCommandProgress()
+
+        // Act
+        val samplingResult = profiler.stopInstrumentationProfiling(progress) { data, dataLength ->
+            data.toByteArray(dataLength)
+        }
+
+        // Assert
+        assertEquals(ProfilerState.Status.Off, profilerState.status)
+        assertArrayEquals(instrumentationData, samplingResult)
+
+        assertTrue(progress.beforeSendIsCalled)
+        assertTrue(progress.afterSendIsCalled)
+        assertFalse(progress.onReplyIsCalled)
+        assertTrue(progress.onReplyTimeoutIsCalled)
+    }
+
     private suspend fun createJdwpProcessProfiler(fakeAdb: FakeAdbServerProvider): JdwpProcessProfiler {
         val deviceID = "1234"
         val fakeDevice =

@@ -20,6 +20,8 @@ class ProfilerState {
 
     val samplingData = SamplingData()
 
+    val instrumentationData = InstrumentationData()
+
     enum class Status(val ddmsChunkValue: Byte) {
         Off(0),
         Instrumentation(1),
@@ -30,6 +32,11 @@ class ProfilerState {
         var bufferSize = 0
         var flags = 0
         var intervalMicros = 0
+        var bytes = ByteArray(0)
+    }
+
+    class InstrumentationData {
+        var bufferSize = 0
         var bytes = ByteArray(0)
     }
 }
