@@ -222,9 +222,14 @@ public class UnifiedDiff {
                                 chunk.addLine(rawLine.substring(1), FROM);
                                 break;
                             case '+':
-                                ensure(remTo > 0, "Unexpected common line, at line " + i);
+                                ensure(remTo > 0, "Unexpected 'to' line, at line " + i);
                                 remTo--;
                                 chunk.addLine(rawLine.substring(1), Chunk.Type.TO);
+                                break;
+                            case '\\':
+                                ensure(
+                                        rawLine.equals("\\ No newline at end of file"),
+                                        "Unexpected type of diff line at line " + i);
                                 break;
                             default:
                                 ensure(false, "Unexpected type of diff line at line " + i);
