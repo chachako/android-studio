@@ -22,7 +22,7 @@ class TypographyDetectorTest : AbstractCheckTest() {
     return TypographyDetector()
   }
 
-  fun test() {
+  fun testDocumentationExample() {
     lint()
       .files(
         xml(
@@ -394,6 +394,40 @@ class TypographyDetectorTest : AbstractCheckTest() {
             -     <string name="test">The fraction is 3 / 4 !</string>
             +     <string name="test">The fraction is ¾ !</string>
             """
+      )
+  }
+
+  fun testTypographyQuotesEscaped() {
+    // Regression test for
+    //    https://issuetracker.google.com/269323652
+    lint()
+      .files(
+        xml(
+            "res/values/strings.xml",
+            """
+                <resources>
+                    <string name="test1">Hello John's Cat</string>  <!-- error 1 -->
+                    <string name="test2">Hello John\'s Cat</string> <!-- error 1 -->
+                    <string name="test3">\'s</string> <!-- ok -->
+                    <string name="test4">\\'</string> <!-- ok -->
+                    <string name="test4">a\\'a</string> <!-- ok -->
+                    <string name="test4">.\'a</string> <!-- ok -->
+                </resources>
+                """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        res/values/strings.xml:2: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+            <string name="test1">Hello John's Cat</string>  <!-- error 1 -->
+                                 ~~~~~~~~~~~~~~~~
+        res/values/strings.xml:3: Warning: Replace apostrophe (') with typographic apostrophe (’, &#8217;) ? [TypographyQuotes]
+            <string name="test2">Hello John\'s Cat</string> <!-- error 1 -->
+                                 ~~~~~~~~~~~~~~~~~
+        0 errors, 2 warnings
+        """
       )
   }
 }

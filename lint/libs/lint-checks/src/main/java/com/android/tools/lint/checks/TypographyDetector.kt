@@ -188,7 +188,14 @@ class TypographyDetector : ResourceXmlDetector() {
         }
 
         // Check for apostrophes that can be replaced by typographic apostrophes
-        if (quoteEnd == -1 && quoteStart > 0 && Character.isLetterOrDigit(text[quoteStart - 1])) {
+        if (
+          quoteEnd == -1 &&
+            quoteStart > 0 &&
+            (text[quoteStart - 1].isLetterOrDigit() ||
+              quoteStart > 1 &&
+                text[quoteStart - 1] == '\\' &&
+                text[quoteStart - 2].isLetterOrDigit())
+        ) {
           context.report(
             QUOTES,
             element,
