@@ -404,22 +404,25 @@ class SdkParsingUtilsTest {
         )
         assertThat(issueReporter.messages).containsExactly(
             """
-                We recommend using a newer Android Gradle plugin to use compileSdk = 31
+            We recommend using a newer Android Gradle plugin to use compileSdk = 31
 
-                This Android Gradle plugin (7.0.0-beta01) was tested up to compileSdk = 30 (and compileSdkPreview = "S")
+            This Android Gradle plugin (7.0.0-beta01) was tested up to compileSdk = 30 (and compileSdkPreview = "S").
 
-                This warning can be suppressed by adding
-                    android.suppressUnsupportedCompileSdk=31
-                to this project's gradle.properties
+            You are strongly encouraged to update your project to use a newer
+            Android Gradle plugin that has been tested with compileSdk = 31.
 
-                The build will continue, but you are strongly encouraged to update your project to
-                use a newer Android Gradle Plugin that has been tested with compileSdk = 31
-        """.trimIndent()
+            If you are already using the latest version of the Android Gradle plugin,
+            you may need to wait until a newer version with support for compileSdk = 31 is available.
+
+            To suppress this warning, add/update
+                android.suppressUnsupportedCompileSdk=31
+            to this project's gradle.properties.
+            """.trimIndent()
         )
     }
 
     @Test
-    fun `don't warn when using a newer preview version`() {
+    fun `warn when using a newer preview version`() {
         val issueReporter = FakeSyncIssueReporter(throwOnError = true)
         warnIfCompileSdkTooNew(
             version = AndroidVersion(30, "S"),
@@ -427,8 +430,23 @@ class SdkParsingUtilsTest {
             maxVersion = AndroidVersion(30),
             androidGradlePluginVersion = "7.0.0-beta01"
         )
-        assertThat(issueReporter.errors).isEmpty()
-        assertThat(issueReporter.messages).isEmpty()
+        assertThat(issueReporter.messages).containsExactly(
+            """
+            We recommend using a newer Android Gradle plugin to use compileSdkPreview = "S"
+
+            This Android Gradle plugin (7.0.0-beta01) was tested up to compileSdk = 30.
+
+            You are strongly encouraged to update your project to use a newer
+            (stable or preview) Android Gradle plugin that has been tested with compileSdkPreview = "S".
+
+            If you are already using the latest preview version of the Android Gradle plugin,
+            you may need to wait until a newer version with support for compileSdkPreview = "S" is available.
+
+            To suppress this warning, add/update
+                android.suppressUnsupportedCompileSdk=S
+            to this project's gradle.properties.
+            """.trimIndent()
+        )
     }
 
     @Test
@@ -456,17 +474,20 @@ class SdkParsingUtilsTest {
         )
         assertThat(issueReporter.messages).containsExactly(
             """
-                We recommend using a newer Android Gradle plugin to use compileSdk = 32
+            We recommend using a newer Android Gradle plugin to use compileSdk = 32
 
-                This Android Gradle plugin (7.0.0-beta01) was tested up to compileSdk = 30
+            This Android Gradle plugin (7.0.0-beta01) was tested up to compileSdk = 30.
 
-                This warning can be suppressed by updating
-                    android.suppressUnsupportedCompileSdk=S,31,32
-                to this project's gradle.properties
+            You are strongly encouraged to update your project to use a newer
+            Android Gradle plugin that has been tested with compileSdk = 32.
 
-                The build will continue, but you are strongly encouraged to update your project to
-                use a newer Android Gradle Plugin that has been tested with compileSdk = 32
-        """.trimIndent()
+            If you are already using the latest version of the Android Gradle plugin,
+            you may need to wait until a newer version with support for compileSdk = 32 is available.
+
+            To suppress this warning, add/update
+                android.suppressUnsupportedCompileSdk=S,31,32
+            to this project's gradle.properties.
+            """.trimIndent()
         )
     }
 

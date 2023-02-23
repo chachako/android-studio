@@ -145,7 +145,7 @@ class R8TaskTest {
         val result = project.executor().run(":assembleDebug")
         result.stdout.use { scanner ->
             ScannerSubject.assertThat(scanner).contains(
-                "WARNING:Using multiDexKeepFile property with R8 is deprecated and will be fully " +
+                "WARNING: Using multiDexKeepFile property with R8 is deprecated and will be fully " +
                         "removed in AGP 8.0. Please migrate to use multiDexKeepProguard instead.")
         }
     }
