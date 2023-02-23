@@ -93,7 +93,6 @@ import com.google.common.io.ByteStreams
 import com.intellij.ide.util.JavaAnonymousClassesHelper
 import com.intellij.lang.Language
 import com.intellij.lang.java.JavaLanguage
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.CommonClassNames
@@ -145,7 +144,6 @@ import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.getContainingUFile
-import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.AbstractInsnNode
@@ -571,10 +569,10 @@ fun assertionsEnabled(): Boolean = LintJavaUtils.assertionsEnabled()
 /**
  * Attempts to find the [PsiMethod] for the operator overload of this array access expression.
  *
- * Temporary workaround for https://youtrack.jetbrains.com/issue/KTIJ-18765
+ * But, only for overloaded getter (if asked via [skipOverloadedSetter]). Overloaded setter is
+ * resolved as [UBinaryExpression], and if we return the resolved overloaded setter here, users will
+ * see duplicate issues.
  */
-// TODO(kotlin-uast-cleanup): remove this when a fix for
-// https://youtrack.jetbrains.com/issue/KTIJ-18765 arrives.
 fun UArrayAccessExpression.resolveOperator(skipOverloadedSetter: Boolean = true): PsiMethod? {
   if (skipOverloadedSetter && uastParent is UBinaryExpression) {
     val uastParentCapture = uastParent as UBinaryExpression
@@ -591,16 +589,7 @@ fun UArrayAccessExpression.resolveOperator(skipOverloadedSetter: Boolean = true)
   // is a sign that it's an operator overload
   if (receiver.getExpressionType() !is PsiClassType) return null
 
-  // No UAST accessor method to find the corresponding get/set methods; see
-  // https://youtrack.jetbrains.com/issue/KTIJ-18765
-  // Instead we'll search ourselves.
-
-  // First try Kotlin resolving service (base version, not FE1.0 variant)
-  val ktElement = sourcePsi as? KtElement ?: return null
-  val baseService =
-    ApplicationManager.getApplication().getService(BaseKotlinUastResolveProviderService::class.java)
-      ?: return null
-  return baseService.resolveCall(ktElement)
+  return resolve() as? PsiMethod
 }
 
 /**
