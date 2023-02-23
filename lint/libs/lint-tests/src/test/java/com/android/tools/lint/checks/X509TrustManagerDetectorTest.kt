@@ -223,4 +223,47 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
+  @Suppress("removal")
+  fun testInterfaceMethods() {
+    // Regression test for
+    // https://issuetracker.google.com/270065082
+    lint()
+      .files(
+        compiled(
+          "libs/library.jar",
+          java(
+              """
+            package test.pkg;
+
+            import java.util.List;
+
+            import javax.net.ssl.X509TrustManager;
+            import javax.security.cert.CertificateException;
+            import javax.security.cert.X509Certificate;
+
+            public interface ExtendedX509TrustManager extends X509TrustManager {
+                List<X509Certificate> checkServerTrusted(X509Certificate[] chain, String authType, String host)
+                        throws CertificateException;
+            }
+            """
+            )
+            .indented(),
+          0x2a622729,
+          """
+            test/pkg/ExtendedX509TrustManager.class:
+            H4sIAAAAAAAA/7WRP0sDQRDF38SYM/FfsFewi41rIyKRNBKriMVZCNqsm/Hc
+            5NiE3blw1n4rCz+AH0rcS0AFI9hYDLx5vJn9Mfv2/vIK4ATtBBsJNhNsEXbM
+            I5txyn7G/toXQXhIuOvcDkZ6pksV2BTeypMy7EXdHB+dnkdhH6zRwt15SOXa
+            ZSoVb122xDlYWIXYXA1skC6h1S8NT8VOXEiwTWimNnNaCs+E5398+uxPm3sV
+            YTopvOELm0ek3X4p7IY8rJLzG11qpzP2h9U6wr5wEDUdZ+q3IKH9BXd1P2Ij
+            hL0FjGNRIeTq50xnGe030s8rNgiEWqyV+L1UJ9SxGvtG7OrRTbAWVQ3NqFtz
+            tf4BCHqzYQsCAAA=
+            """
+        )
+      )
+      .issues(X509TrustManagerDetector.TRUSTS_ALL)
+      .run()
+      .expectClean()
+  }
 }
