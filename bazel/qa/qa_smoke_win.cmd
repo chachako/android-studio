@@ -66,7 +66,7 @@ setlocal
   --build_metadata=ANDROID_BUILD_ID=%BUILDNUMBER% ^
   --build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/%INVOCATIONID%" ^
   --build_metadata=ab_build_id=%BUILDNUMBER% ^
-  --build_metadata=ab_target=qa-win_smoke ^
+  --build_metadata=ab_target=qa-smoke-win ^
   --profile=%DISTDIR%\winprof%BUILDNUMBER%.json.gz ^
   %CONDITIONAL_FLAGS% ^
   -- ^
