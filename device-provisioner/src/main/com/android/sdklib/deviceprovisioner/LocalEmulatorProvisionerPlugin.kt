@@ -84,12 +84,6 @@ class LocalEmulatorProvisionerPlugin(
   }
 
   private val scope = adbSession.scope
-  init {
-    scope.coroutineContext.job.invokeOnCompletion {
-      avdScanner.cancel()
-      emulatorConsoles.values.forEach { it.close() }
-    }
-  }
 
   // We can identify local emulators reliably, so this can be relatively high priority.
   override val priority = 100
@@ -103,40 +97,55 @@ class LocalEmulatorProvisionerPlugin(
   private val emulatorConsoles = ConcurrentHashMap<ConnectedDevice, EmulatorConsole>()
 
   // TODO: Consider if it would be better to use a filesystem watcher here instead of polling.
-  private val avdScanner =
-    PeriodicAction(scope, rescanPeriod) {
-      val avdsOnDisk = avdManager.rescanAvds().associateBy { it.dataFolderPath }
-      mutex.withLock {
-        // Remove any current DeviceHandles that are no longer present on disk, unless they are
-        // connected. (If a client holds on to the disconnected device handle, and it gets
-        // recreated with the same path, the client will get a new device handle, which is fine.)
-        deviceHandles.entries.removeIf { (path, handle) ->
-          !avdsOnDisk.containsKey(path) && handle.state is Disconnected
-        }
+  private val avdScanner = PeriodicAction(scope, rescanPeriod, ::rescanAvds)
 
-        for ((path, avdInfo) in avdsOnDisk) {
-          when (val handle = deviceHandles[path]) {
-            null ->
-              deviceHandles[path] =
-                LocalEmulatorDeviceHandle(
-                  scope.createChildScope(isSupervisor = true),
-                  Disconnected(toDeviceProperties(avdInfo)),
-                  avdInfo
-                )
-            else ->
-              // Update the avdInfo if we're not currently running. If we are running, the old
-              // values are probably still in effect, but we will update on the next scan after
-              // shutdown.
-              if (handle.avdInfo != avdInfo && handle.state is Disconnected) {
-                handle.avdInfo = avdInfo
-                handle.stateFlow.value = Disconnected(toDeviceProperties(avdInfo))
-              }
-          }
-        }
+  init {
+    avdScanner.runNow()
 
-        _devices.value = deviceHandles.values.toList()
-      }
+    scope.coroutineContext.job.invokeOnCompletion {
+      avdScanner.cancel()
+      emulatorConsoles.values.forEach { it.close() }
     }
+  }
+
+  /**
+   * Scans the AVDs on disk and updates our devices.
+   *
+   * Do not call directly; this should only be called by PeriodicAction.
+   */
+  private suspend fun rescanAvds() {
+    val avdsOnDisk = avdManager.rescanAvds().associateBy { it.dataFolderPath }
+    mutex.withLock {
+      // Remove any current DeviceHandles that are no longer present on disk, unless they are
+      // connected. (If a client holds on to the disconnected device handle, and it gets
+      // recreated with the same path, the client will get a new device handle, which is fine.)
+      deviceHandles.entries.removeIf { (path, handle) ->
+        !avdsOnDisk.containsKey(path) && handle.state is Disconnected
+      }
+
+      for ((path, avdInfo) in avdsOnDisk) {
+        when (val handle = deviceHandles[path]) {
+          null ->
+            deviceHandles[path] =
+              LocalEmulatorDeviceHandle(
+                scope.createChildScope(isSupervisor = true),
+                Disconnected(toDeviceProperties(avdInfo)),
+                avdInfo
+              )
+          else ->
+            // Update the avdInfo if we're not currently running. If we are running, the old
+            // values are probably still in effect, but we will update on the next scan after
+            // shutdown.
+            if (handle.avdInfo != avdInfo && handle.state is Disconnected) {
+              handle.avdInfo = avdInfo
+              handle.stateFlow.value = Disconnected(toDeviceProperties(avdInfo))
+            }
+        }
+      }
+
+      _devices.value = deviceHandles.values.toList()
+    }
+  }
 
   override suspend fun claim(device: ConnectedDevice): DeviceHandle? {
     val result = LOCAL_EMULATOR_REGEX.matchEntire(device.serialNumber) ?: return null
