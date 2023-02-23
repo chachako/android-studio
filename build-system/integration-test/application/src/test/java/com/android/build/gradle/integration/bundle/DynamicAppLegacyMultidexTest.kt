@@ -40,11 +40,7 @@ class DynamicAppLegacyMultidexTest {
     /** Add a dynamic feature that the multidex project includes. */
     @Before
     fun before() {
-        project.file("settings.gradle").writeText(
-            """
-            include ":", ":feature"
-        """.trimIndent()
-        )
+        project.setIncludedProjects(":", "feature")
 
         project.buildFile.appendText(
             """

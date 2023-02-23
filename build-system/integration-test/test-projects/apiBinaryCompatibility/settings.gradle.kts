@@ -25,5 +25,10 @@ pluginManagement {
     apply(from="../commonLocalRepo.gradle", to=pluginManagement)
 }
 
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    apply(from="../commonLocalRepo.gradle", to=dependencyResolutionManagement)
+}
+
 
 include(":lib")

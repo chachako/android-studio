@@ -49,7 +49,6 @@ public class AppWithProvidedRemoteJarTest {
                 project.getBuildFile(),
                 "\n"
                         + "apply plugin: \"com.android.application\"\n"
-                        + "apply from: '../commonLocalRepo.gradle'\n"
                         + "\n"
                         + "android {\n"
                         + "    namespace 'com.android.tests.libWithProvidedLocalJar'\n"

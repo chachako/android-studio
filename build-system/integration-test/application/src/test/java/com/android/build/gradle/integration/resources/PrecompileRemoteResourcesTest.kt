@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.resources
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -97,7 +96,7 @@ class PrecompileRemoteResourcesTest {
 
     private val localLib = MinimalSubProject.lib("com.example.localLib")
         .appendToBuild(
-            """repositories { flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
+            """
                 dependencies { implementation name: 'publishedLib-release', ext:'aar' }
             """.trimIndent()
         )
@@ -118,7 +117,7 @@ class PrecompileRemoteResourcesTest {
 
     private val app = MinimalSubProject.app("com.example.app")
         .appendToBuild(
-            """repositories { flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
+            """
                 dependencies { implementation name: 'publishedLib-release', ext:'aar' }
                 android {
                     buildTypes {
@@ -190,6 +189,16 @@ class PrecompileRemoteResourcesTest {
 
     @Before
     fun setUp() {
+        project.settingsFile.appendText(
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            flatDir { dirs 'publishedLib/build/outputs/aar/' }
+                        }
+                    }
+
+                """.trimIndent()
+        )
         clearPreviousTransformOutput()
     }
 

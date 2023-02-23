@@ -20,8 +20,6 @@ plugins {
     id 'instrumentation-plugin'
 }
 
-apply from: "../../commonLocalRepo.gradle"
-
 android {
     namespace "com.example.feature"
     compileSdkVersion rootProject.latestCompileSdk

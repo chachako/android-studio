@@ -1,5 +1,4 @@
 apply from: '../../commonBuildScript.gradle'
-apply from: '../../commonLocalRepo.gradle'
 
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'

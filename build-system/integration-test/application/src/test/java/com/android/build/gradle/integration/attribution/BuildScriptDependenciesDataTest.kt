@@ -91,7 +91,6 @@ plugins {
     id 'org.jetbrains.kotlin.android' version "${TestUtils.KOTLIN_VERSION_FOR_TESTS}"
 }
 apply from: "../commonHeader.gradle"
-apply from: "../commonLocalRepo.gradle"
 apply from: "../commonVersions.gradle", to: rootProject.ext
 
 // Treat javac warnings as errors

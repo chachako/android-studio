@@ -7,6 +7,7 @@ import com.android.annotations.Nullable;
 import com.android.build.gradle.integration.common.fixture.BuildSrcProject;
 import com.android.build.gradle.integration.common.fixture.GradleProject;
 import com.android.build.gradle.integration.common.fixture.TestProject;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
@@ -95,8 +96,8 @@ public class MultiModuleTestProject implements TestProject {
         for (String subprojectName : subprojects.keySet()) {
             builder.append("include '").append(subprojectName).append("'\n");
         }
-        Files.asCharSink(new File(projectDir, "settings.gradle"), Charset.defaultCharset())
-                .write(builder.toString());
+
+        TestFileUtils.appendToFile(new File(projectDir, "settings.gradle"), builder.toString());
 
         Files.asCharSink(new File(projectDir, "build.gradle"), Charset.defaultCharset())
                 .write(buildScriptContent);

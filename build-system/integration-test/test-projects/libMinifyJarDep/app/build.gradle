@@ -1,7 +1,5 @@
 apply plugin: 'com.android.application'
 
-apply from: "../../commonLocalRepo.gradle"
-
 dependencies {
     api project(':lib')
 }

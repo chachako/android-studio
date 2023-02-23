@@ -18,8 +18,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
-apply from: "../../commonLocalRepo.gradle"
-
 android {
     namespace "com.example.myapplication"
     compileSdkVersion rootProject.latestCompileSdk

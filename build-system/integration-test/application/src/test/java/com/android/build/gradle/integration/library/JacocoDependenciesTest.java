@@ -56,14 +56,7 @@ public class JacocoDependenciesTest {
 
     @Before
     public void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
-
-        appendToFile(
-                project.getBuildFile(),
-                "\nsubprojects {\n"
-                        + "    apply from: \"$rootDir/../commonLocalRepo.gradle\"\n"
-                        + "}\n");
+        project.setIncludedProjects("app", "library");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

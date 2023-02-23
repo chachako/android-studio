@@ -21,7 +21,6 @@ import static com.android.build.gradle.integration.common.utils.LibraryGraphHelp
 import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Type.JAVA;
 import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Type.MODULE;
 import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
-import static com.android.testutils.truth.PathSubject.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
@@ -34,9 +33,7 @@ import com.android.builder.model.Dependencies;
 import com.android.builder.model.JavaLibrary;
 import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Files;
 import com.google.common.truth.Truth;
 import java.util.Collection;
 import java.util.Map;
@@ -57,13 +54,7 @@ public class AppWithCompileIndirectJarTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
-
-        appendToFile(project.getBuildFile(),
-"\nsubprojects {\n" +
-"    apply from: \"$rootDir/../commonLocalRepo.gradle\"\n" +
-"}\n");
+        project.setIncludedProjects("app", "library");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

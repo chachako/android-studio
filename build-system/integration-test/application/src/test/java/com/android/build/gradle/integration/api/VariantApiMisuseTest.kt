@@ -39,8 +39,6 @@ class VariantApiMisuseTest {
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
 
-apply from: "../commonLocalRepo.gradle"
-
 apply plugin: 'com.android.application'
 
 android {
@@ -82,8 +80,6 @@ androidComponents {
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
 
-apply from: "../commonLocalRepo.gradle"
-
 apply plugin: 'com.android.application'
 
 android {
@@ -123,8 +119,6 @@ androidComponents {
                 """
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
-
-apply from: "../commonLocalRepo.gradle"
 
 apply plugin: 'com.android.application'
 
@@ -168,8 +162,6 @@ androidComponents {
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
 
-apply from: "../commonLocalRepo.gradle"
-
 apply plugin: 'com.android.application'
 
 android {
@@ -211,8 +203,6 @@ androidComponents {
             """
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
-
-apply from: "../commonLocalRepo.gradle"
 
 apply plugin: 'com.android.application'
 
@@ -256,8 +246,6 @@ androidComponents {
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
 
-apply from: "../commonLocalRepo.gradle"
-
 apply plugin: 'com.android.application'
 
 android {
@@ -288,8 +276,6 @@ android {
             """
 apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
-
-apply from: "../commonLocalRepo.gradle"
 
 apply plugin: 'com.android.application'
 

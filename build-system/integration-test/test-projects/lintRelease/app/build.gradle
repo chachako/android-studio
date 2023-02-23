@@ -1,7 +1,5 @@
 apply plugin: 'com.android.application'
 
-apply from: "../../commonLocalRepo.gradle"
-
 android {
     namespace "com.android.test.lint"
     compileSdkVersion rootProject.latestCompileSdk

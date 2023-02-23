@@ -34,12 +34,6 @@ android {
     testFixtures.enable = true
 }
 
-repositories {
-    maven {
-        url = '../testrepo'
-    }
-}
-
 dependencies {
     compileOnly project(":javaLib")
     compileOnly project(":lib")

@@ -77,6 +77,11 @@ public class DataBindingExternalArtifactDependencyTest {
 
     @Before
     public void clean() throws IOException, InterruptedException {
+        TestFileUtils.appendToFile(
+                app.getSettingsFile(),
+                "dependencyResolutionManagement { repositories { maven { url '"
+                        + mavenRepo.getRoot().getAbsolutePath().replace("\\", "/")
+                        + "' } } }");
         // just provide maven_repo so that build.gradle does not complain
         library.executor()
                 .withArguments(ImmutableList.of(MAVEN_REPO_ARG_PREFIX + "."))

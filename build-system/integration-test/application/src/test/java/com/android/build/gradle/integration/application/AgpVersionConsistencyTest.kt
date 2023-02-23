@@ -46,7 +46,6 @@ class AgpVersionConsistencyTest {
         project.buildFile.writeText(
             """
             apply from: "../commonHeader.gradle"
-            apply from: "../commonLocalRepo.gradle"
         """.trimIndent()
         )
         addDirectClasspath("androidLib1", Version.ANDROID_GRADLE_PLUGIN_VERSION)

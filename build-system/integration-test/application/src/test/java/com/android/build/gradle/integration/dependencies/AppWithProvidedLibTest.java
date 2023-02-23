@@ -56,7 +56,6 @@ public class AppWithProvidedLibTest {
         Files.asCharSink(new File(libFolder, "build.gradle"), Charsets.UTF_8)
                 .write(
                         "apply plugin: 'com.android.library'\n"
-                                + "apply from: \"../../commonLocalRepo.gradle\"\n"
                                 + "\n"
                                 + "android {\n"
                                 + "    namespace 'com.example.android.multiproject.library.base'\n"

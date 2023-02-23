@@ -49,10 +49,6 @@ public class JavaResMergePackagingTest {
 
     @Before
     public void addResources() throws Exception {
-        TestFileUtils.appendToFile(
-                project.getBuildFile(),
-                "subprojects { apply from: \"$rootDir/../commonLocalRepo.gradle\"}");
-
         GradleTestProject appProject = project.getSubproject(":app");
         TestFileUtils.appendToFile(
                 appProject.getBuildFile(),

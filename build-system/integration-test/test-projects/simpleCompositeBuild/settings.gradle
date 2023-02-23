@@ -4,3 +4,12 @@ file('modules').listFiles().each { File moduleDir ->
     includeBuild moduleDir
 }
 
+dependencyResolutionManagement {
+    repositories {
+        ivy {
+            name 'localrepo'
+            url file("../../local-repo")
+        }
+    }
+}
+

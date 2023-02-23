@@ -53,7 +53,6 @@ class DifferentProjectClassLoadersTest {
         project.buildFile.writeText(
             """
             apply from: "../commonHeader.gradle"
-            apply from: "../commonLocalRepo.gradle"
         """.trimIndent()
         )
         addDirectClasspath("androidLib1")

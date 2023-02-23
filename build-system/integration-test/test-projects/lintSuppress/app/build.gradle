@@ -16,7 +16,6 @@
 
 
 apply plugin: 'com.android.application'
-apply from: "../../commonLocalRepo.gradle"
 
 android {
     namespace "com.example.android.lint.suppress"

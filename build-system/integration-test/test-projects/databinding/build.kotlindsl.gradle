@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 apply(from = "../commonHeader.gradle")
-apply(from = "../commonLocalRepo.gradle")
 buildscript { apply(from = "../commonBuildScript.gradle") }
 plugins {
     id("com.android.application")

@@ -23,12 +23,6 @@ android {
     compileSdkVersion rootProject.latestCompileSdk
 }
 
-repositories {
-    maven {
-        url = '../testrepo'
-    }
-}
-
 dependencies {
     implementation testFixtures(project(":lib"))
 

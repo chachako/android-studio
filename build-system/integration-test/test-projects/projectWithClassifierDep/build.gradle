@@ -9,10 +9,6 @@ android {
     buildToolsVersion = rootProject.buildToolsVersion
 }
 
-repositories {
-    maven { url 'repo' }
-}
-
 dependencies {
     api group: 'com.foo', name: 'sample', version: '1.0'
     androidTestImplementation group: 'com.foo', name: 'sample', version: '1.0', classifier: 'testlib'

@@ -1,6 +1,5 @@
 buildscript { apply from: "../commonBuildScript.gradle" }
 apply from: "../commonHeader.gradle"
-apply from: "../commonLocalRepo.gradle"
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'

@@ -1,7 +1,5 @@
 apply plugin: 'com.android.library'
 
-apply from: "../../commonLocalRepo.gradle"
-
 dependencies {
     api 'com.google.guava:guava:19.0'
     api fileTree(dir: 'libs', include: '*.jar')

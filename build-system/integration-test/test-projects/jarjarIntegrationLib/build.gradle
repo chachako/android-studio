@@ -21,8 +21,6 @@ android {
   }
 }
 
-apply from: "../commonLocalRepo.gradle"
-
 dependencies {
   api 'com.google.code.gson:gson:2.8.6'
 }

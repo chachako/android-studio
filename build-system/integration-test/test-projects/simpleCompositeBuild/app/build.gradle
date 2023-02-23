@@ -16,9 +16,3 @@ dependencies {
     implementation ('org.sample:string-utils:1.0')
 }
 
-repositories {
-    ivy {
-            url project.file("../local-repo")
-	}
-}
-

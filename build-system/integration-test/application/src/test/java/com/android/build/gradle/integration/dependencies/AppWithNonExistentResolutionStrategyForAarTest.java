@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.dependencies;
 
 import static com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat;
+import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
@@ -44,14 +45,8 @@ public class AppWithNonExistentResolutionStrategyForAarTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
+        project.setIncludedProjects("app", "library");
 
-        TestFileUtils.appendToFile(project.getBuildFile(),
-                "\n" +
-                "subprojects {\n" +
-                "    apply from: \"$rootDir/../commonLocalRepo.gradle\"\n" +
-                "}\n");
         TestFileUtils.appendToFile(project.getSubproject("app").getBuildFile(),
                 "\n" +
                 "\n" +

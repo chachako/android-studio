@@ -18,8 +18,6 @@
 apply plugin: 'com.android.dynamic-feature'
 apply plugin: 'kotlin-android'
 
-apply from: "../../commonLocalRepo.gradle"
-
 android {
     namespace "com.example.android.kotlin"
     compileSdkVersion rootProject.latestCompileSdk

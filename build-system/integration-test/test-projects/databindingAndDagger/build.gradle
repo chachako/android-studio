@@ -22,8 +22,6 @@ apply from: "../commonHeader.gradle"
 buildscript { apply from: "../commonBuildScript.gradle" }
 apply plugin: 'com.android.application'
 
-apply from: "../commonLocalRepo.gradle"
-
 android {
     namespace "android.databinding.testapp"
     compileSdkVersion rootProject.latestCompileSdk

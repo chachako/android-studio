@@ -80,6 +80,7 @@ public final class GradleTestProjectBuilder {
     private String withExtraPluginClasspath;
     private boolean withKotlinGradlePlugin = false;
     private boolean withPluginManagementBlock = false;
+    private boolean withDependencyManagementBlock = true;
     // list of included builds, relative to the main projectDir
     private List<String> withIncludedBuilds = Lists.newArrayList();
 
@@ -158,6 +159,7 @@ public final class GradleTestProjectBuilder {
                 withKotlinGradlePlugin,
                 withExtraPluginClasspath,
                 withPluginManagementBlock,
+                withDependencyManagementBlock,
                 withIncludedBuilds,
                 null,
                 additionalMavenRepo,
@@ -274,6 +276,12 @@ public final class GradleTestProjectBuilder {
 
     public GradleTestProjectBuilder withPluginManagementBlock(boolean withPluginManagementBlock) {
         this.withPluginManagementBlock = withPluginManagementBlock;
+        return this;
+    }
+
+    public GradleTestProjectBuilder withDependencyManagementBlock(
+            boolean withDependencyManagementBlock) {
+        this.withDependencyManagementBlock = withDependencyManagementBlock;
         return this;
     }
 

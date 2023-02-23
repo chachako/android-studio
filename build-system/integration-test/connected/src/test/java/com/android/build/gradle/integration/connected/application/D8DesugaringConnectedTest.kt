@@ -62,8 +62,6 @@ class D8DesugaringConnectedTest {
             """
                 apply plugin: "com.android.application"
 
-                apply from: "../../commonLocalRepo.gradle"
-
                 android {
                     namespace "${HelloWorldApp.NAMESPACE}"
                     compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}

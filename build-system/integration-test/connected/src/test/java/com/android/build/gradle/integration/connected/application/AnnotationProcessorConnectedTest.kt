@@ -57,7 +57,6 @@ class AnnotationProcessorConnectedTest {
         val buildScript = ("""
                 apply from: "../../commonHeader.gradle"
                 buildscript { apply from: "../../commonBuildScript.gradle" }
-                apply from: "../../commonLocalRepo.gradle"
 
                 apply plugin: 'com.android.application'
 

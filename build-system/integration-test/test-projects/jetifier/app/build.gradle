@@ -10,16 +10,6 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url '../localRepo'
-        metadataSources {
-            mavenPom()
-            artifact()
-        }
-    }
-}
-
 dependencies {
     // Basic dependency for MainActivity
     implementation "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"

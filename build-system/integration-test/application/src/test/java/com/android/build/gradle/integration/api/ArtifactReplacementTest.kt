@@ -38,8 +38,6 @@ class ArtifactReplacementTest {
                 apply from: "../commonHeader.gradle"
                 buildscript { apply from: "../commonBuildScript.gradle" }
 
-                apply from: "../commonLocalRepo.gradle"
-
                 apply plugin: 'com.android.application'
                 android {
                     defaultConfig.minSdkVersion 14

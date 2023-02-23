@@ -17,8 +17,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
-apply from: "../../commonLocalRepo.gradle"
-
 android {
     namespace "com.example.android.lint.desugaring.library"
     compileSdkVersion rootProject.latestCompileSdk

@@ -19,12 +19,6 @@ buildscript { apply from: "../commonBuildScript.gradle" }
 
 apply plugin: 'com.android.application'
 
-apply from: "../commonLocalRepo.gradle"
-
-repositories {
-    mavenLocal()
-}
-
 android {
     namespace "com.android.tests"
     compileSdkVersion rootProject.latestCompileSdk

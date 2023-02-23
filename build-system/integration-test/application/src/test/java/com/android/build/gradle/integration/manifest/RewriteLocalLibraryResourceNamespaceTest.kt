@@ -38,8 +38,7 @@ class RewriteLocalLibraryResourceNamespaceTest {
         val appProject = project.getSubproject("app")
         val libProject = project.getSubproject("library")
 
-        Files.asCharSink(project.settingsFile, Charsets.UTF_8)
-            .write("include 'app', 'library'")
+        project.setIncludedProjects("app", "library")
 
         // setup dependencies.
         appendToFile(

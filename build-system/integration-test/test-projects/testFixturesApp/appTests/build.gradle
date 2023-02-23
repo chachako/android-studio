@@ -15,12 +15,6 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url = '../testrepo'
-    }
-}
-
 dependencies {
     implementation testFixtures(project(":app"))
     implementation testFixtures(project(":javaLib"))

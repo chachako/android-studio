@@ -19,9 +19,11 @@ package com.android.build.gradle.integration.connected.databinding;
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import com.android.build.gradle.options.BooleanOption;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 import java.util.List;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -80,7 +82,12 @@ public class DataBindingExternalArtifactDependencyConnectedTest {
     }
 
     @Test
-    public void buildLibraryThenBuildApp_connectedCheck() {
+    public void buildLibraryThenBuildApp_connectedCheck() throws IOException {
+        TestFileUtils.appendToFile(
+                appProject.getSettingsFile(),
+                "dependencyResolutionManagement { repositories { maven { url '"
+                        + mavenRepo.getRoot().getAbsolutePath()
+                        + "' } } }");
         List<String> args = createLibraryArtifact();
         appProject.execute(args, ":app:connectedCheck");
     }

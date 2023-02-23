@@ -78,7 +78,6 @@ public class KotlinHelloWorldApp extends HelloWorldApp {
                                 + plugin
                                 + "'\n"
                                 + "apply plugin: 'kotlin-android'\n"
-                                + "apply from: '../commonLocalRepo.gradle'\n"
                                 + "android {\n"
                                 + "    namespace \""
                                 + NAMESPACE

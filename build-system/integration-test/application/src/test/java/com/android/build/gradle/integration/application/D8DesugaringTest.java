@@ -84,8 +84,6 @@ public class D8DesugaringTest {
                 "\n"
                         + "apply plugin: \"com.android.application\"\n"
                         + "\n"
-                        + "apply from: \"../../commonLocalRepo.gradle\"\n"
-                        + "\n"
                         + "android {\n"
                         + "    namespace \""
                         + HelloWorldApp.NAMESPACE

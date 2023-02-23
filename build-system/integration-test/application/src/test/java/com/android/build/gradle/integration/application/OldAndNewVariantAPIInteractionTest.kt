@@ -35,7 +35,6 @@ class OldAndNewVariantAPIInteractionTest {
 
         project.file("build.gradle.kts").writeText("""
             apply(from = "../commonHeader.gradle")
-            apply(from = "../commonLocalRepo.gradle")
             plugins {
                 id("com.android.application")
             }

@@ -41,7 +41,6 @@ class AsmTransformApiConfigurationCachingTest {
                     apply from: "../../commonBuildScript.gradle"
                 }
 
-                apply from: "../../commonLocalRepo.gradle"
                 apply plugin: 'java-gradle-plugin'
 
                 dependencies {

@@ -88,7 +88,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${"$"}rootProject.kotlinVersion"
     }
 }
-apply from: "../../commonLocalRepo.gradle"
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'

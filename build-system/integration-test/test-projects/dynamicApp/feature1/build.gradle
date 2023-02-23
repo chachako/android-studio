@@ -1,7 +1,5 @@
 apply plugin: 'com.android.dynamic-feature'
 
-apply from: "../../commonLocalRepo.gradle"
-
 android {
     namespace "com.example.feature1"
     compileSdkVersion rootProject.latestCompileSdk

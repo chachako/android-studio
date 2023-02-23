@@ -3,8 +3,6 @@ buildscript { apply from: "../commonBuildScript.gradle" }
 
 apply plugin: 'com.android.application'
 
-apply from: "../commonLocalRepo.gradle"
-
 dependencies {
     androidTestImplementation 'com.google.guava:guava:19.0'
 
