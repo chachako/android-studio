@@ -137,7 +137,7 @@ fun stripComments(source: String, extension: String, stripLineComments: Boolean 
       }
       AFTER_CHAR -> {
         sb.append(c)
-        if (c == '\\') {
+        if (c == '\'') {
           state = INIT
         }
       }

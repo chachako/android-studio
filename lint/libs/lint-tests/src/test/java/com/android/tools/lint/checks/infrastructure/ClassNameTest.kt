@@ -119,9 +119,23 @@ class ClassNameTest {
 
   @Test
   fun testAnnotations() {
+    assertEquals("Asdf", getClassName("package foo;\n@Anno(SomeClass.cass)\npublic class Asdf { }"))
+  }
+
+  @Test
+  fun testAnnotations2() {
     assertEquals(
-      "Asdf",
-      getClassName("" + "package foo;\n" + "@Anno(SomeClass.cass)\n" + "public class Asdf { }")
+      "MyClassName",
+      getClassName(
+        """
+        @Anno('\u0000')
+        /* class Comment */
+        public class MyClassName { }
+
+        @interface Anno {
+            char value();
+        }"""
+      )
     )
   }
 
