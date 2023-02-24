@@ -38,9 +38,7 @@ internal fun Configuration.alignWith(
         srcConfiguration: Configuration,
         dependencyHandler: DependencyHandler,
         isTest: Boolean,
-        cachedStringBuildService: Provider<StringCachingBuildService>,
-        issueReporter: IssueReporter,
-        buildFile: File
+        cachedStringBuildService: Provider<StringCachingBuildService>
 ) {
     incoming.beforeResolve {
         val srcConfigName = srcConfiguration.name
@@ -71,23 +69,26 @@ internal fun Configuration.alignWith(
             }
         }
     }
+}
 
-    if (!isTest) {
-        return
-    }
-
-    incoming.afterResolve { destConfiguration ->
+internal fun checkConfigurationAlignments(
+        destConfiguration: Configuration,
+        srcConfiguration: Configuration,
+        issueReporter: IssueReporter,
+        buildFile: File) {
+    destConfiguration.incoming.afterResolve { dest ->
         val moduleToProjectSubstitutionMap =
                 srcConfiguration.incoming.resolutionResult.allDependencies
                         .filterIsInstance<ResolvedDependencyResult>()
                         .filter {
                             it.selected.id is ProjectComponentIdentifier && it.requested is ModuleComponentSelector
                         }
-                        .associate { (it.requested as ModuleComponentSelector).moduleIdentifier to
-                                (it.selected.id as ProjectComponentIdentifier).projectPath
+                        .associate {
+                            (it.requested as ModuleComponentSelector).moduleIdentifier to
+                                    (it.selected.id as ProjectComponentIdentifier).projectPath
                         }
         // In that case assert the substitution was also done in the aligned configuration
-        val neededAndroidTestProjectDeps = destConfiguration.resolutionResult.allDependencies
+        val neededAndroidTestProjectDeps = dest.resolutionResult.allDependencies
                 .filterIsInstance<ResolvedDependencyResult>()
                 .filter { dependency ->
                     val componentIdentifier = dependency.selected.id
@@ -101,7 +102,6 @@ internal fun Configuration.alignWith(
                     moduleToProjectSubstitutionMap[componentIdentifier.moduleIdentifier]
                 }.toSet()
 
-
         if (neededAndroidTestProjectDeps.none()) {
             return@afterResolve
         }
@@ -110,8 +110,8 @@ internal fun Configuration.alignWith(
         issueReporter.reportError(
                 IssueReporter.Type.DEPENDENCY_INTERNAL_CONFLICT,
                 RuntimeException("Unable to align dependencies in configurations " +
-                        "'${srcConfiguration.name}' and '$name', as both require " +
-                        "${neededAndroidTestProjectDeps.joinToString(", ") {"'project $it'"}}.\n" +
+                        "'${srcConfiguration.name}' and '${dest.name}', as both require " +
+                        "${neededAndroidTestProjectDeps.joinToString(", ") { "'project $it'" }}.\n" +
                         "[Recommended action] Add the following $dependencyNumber to $buildFile: \n${
                             neededAndroidTestProjectDeps.joinToString("\n") { "androidTestImplementation(project(\"$it\"))" }
                         }"
