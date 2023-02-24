@@ -28,6 +28,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.tasks.AarMetadataTask
 import com.android.build.gradle.internal.tasks.CheckAarMetadataTask
+import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.repository.testframework.FakeProgressIndicator
@@ -526,6 +527,19 @@ class CheckAarMetadataTaskTest {
                     """.trimIndent()
                 )
         }
+    }
+
+    @Test
+    fun testDisableCompileSdk() {
+        addAarWithPossiblyInvalidAarMetadataToAppProject(
+            aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
+            aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
+            forceCompileSdkPreview = "TiramisuPrivacySandbox"
+        )
+
+        project.executor()
+            .with(BooleanOption.DISABLE_COMPILE_SDK_CHECKS, true)
+            .run(":app:checkDebugAarMetadata")
     }
 
     private fun addAarWithPossiblyInvalidAarMetadataToAppProject(
