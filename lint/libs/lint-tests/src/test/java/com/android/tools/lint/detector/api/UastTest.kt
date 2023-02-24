@@ -55,6 +55,7 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UastCallKind
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
@@ -334,6 +335,79 @@ class UastTest : TestCase() {
             }
 
             return super.visitAnnotation(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testExpressionTypeOfCallToInternalOperator() {
+    // Regression test from b/270595352.
+    val testFiles =
+      arrayOf(
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+            """
+                      package test
+
+                      object Dependency {
+                          internal operator fun unaryPlus() = Any()
+                          operator fun unaryMinus() = Any()
+                      }
+                  """
+          ),
+          0x3037fc2b,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC
+                JAAAAA==
+                """,
+          """
+                test/Dependency.class:
+                H4sIAAAAAAAA/41RTU8TURQ973U6nQ6lTBGlgN+gFhcONO5EE0SNJaUaIU0M
+                q9f2BV87nTGdN43suuKH+AskLkwkMQR3/ijjfUMDBBc6i/t5znn33vn1+/sP
+                AI9RYZjSMtb+C/lRhh0ZtvdzYAxeVwyFH4hwz3/T6sq2ziHDYK+pUOlnDJnK
+                crOALGwXFnIMlv6gYoZS/ZLWE4ZiEorB/tsgiZf6QoUMM5Xl+mV1wi3Wo8Ge
+                35W6NSBY7IswjLTQKqK4EelGEgSEclO1LRUm9Jyz1g7SgVxwM4VTa2zvrDc2
+                XhZQgpun4rSZqRdpgvlbUouO0IJUeH+YofWZMXljwMB6VP+kTLZCUWeVYeN4
+                VHB5mbvcOx653LGcnwe8fDyq8hX2POfwk8829/hm3svMU+X1yQHfLHrWaTxK
+                u07WSFWZeSB/dgiGyfMTPepphoV3SahVX9bCoYpVK5Dr59vTdTeijqQfVVeh
+                bCT9lhzsCMIwTNejtgiaYqBMPi6621EyaMtXyiRzY+HmX7JYpftY6epz5lzk
+                71Jmk58kb1E3m2aLlPnmQOSzD7/BOaSAY2kMNtB7ZAunAORJCiQ4QRWekqvk
+                Tc85gvWe+F8u8bMX+M6Yf3GUEor/rWX/Q8vB1NlSs8Q038QROGl5X3HlMC1w
+                3E/tHTwg/5TgMzTk1V1karhWw2wNZcxRiPkaFnB9FyzGDdzchR3DjXErNkEx
+                xu0YE38ApJb8UmoDAAA=
+                """
+        ),
+        kotlin(
+          """
+                 import test.Dependency
+
+                 fun test() {
+                     +Dependency
+                     Dependency.unaryPlus()
+                     -Dependency
+                 }
+              """
+        )
+      )
+
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            assertEquals("java.lang.Object", node.getExpressionType()?.canonicalText)
+
+            return super.visitCallExpression(node)
+          }
+
+          override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
+            // TODO(kotlin-uast-cleanup): FIR UAST will have a correct `getExpressionType`
+            val t = node.getExpressionType() ?: node.resolveOperator()?.returnType
+            assertEquals("java.lang.Object", t?.canonicalText)
+
+            return super.visitPrefixExpression(node)
           }
         }
       )
