@@ -87,27 +87,35 @@ internal fun Configuration.alignWith(
                                 (it.selected.id as ProjectComponentIdentifier).projectPath
                         }
         // In that case assert the substitution was also done in the aligned configuration
-        destConfiguration.resolutionResult.allDependencies
+        val neededAndroidTestProjectDeps = destConfiguration.resolutionResult.allDependencies
                 .filterIsInstance<ResolvedDependencyResult>()
-                .forEach { dependency ->
+                .filter { dependency ->
                     val componentIdentifier = dependency.selected.id
-                    //Not aligned if a module has not been substituted for a project in the srcConfig
-                    if (componentIdentifier is ModuleComponentIdentifier &&
-                            componentIdentifier.moduleIdentifier in moduleToProjectSubstitutionMap) {
-                        val projectDependency =
-                                moduleToProjectSubstitutionMap[componentIdentifier.moduleIdentifier]
-                        val dependencyToAdd =
-                                "androidTestImplementation(project(\"$projectDependency\"))"
-                        issueReporter.reportError(
-                                IssueReporter.Type.DEPENDENCY_INTERNAL_CONFLICT,
-                                RuntimeException("Unable to align dependencies in configurations " +
-                                        "'${srcConfiguration.name}' and '$name', as both require a " +
-                                        "'project $projectDependency'.\n" +
-                                        "Recommended action: Add '$dependencyToAdd' as a " +
-                                        "dependency in build file: $buildFile."
-                                )
-                        )
-                    }
+                    // Not aligned if a module has not been substituted for a project in the srcConfig
+                    componentIdentifier is ModuleComponentIdentifier &&
+                            componentIdentifier.moduleIdentifier in moduleToProjectSubstitutionMap
                 }
+                .map { dependency ->
+                    val componentIdentifier =
+                            dependency.selected.id as ModuleComponentIdentifier
+                    moduleToProjectSubstitutionMap[componentIdentifier.moduleIdentifier]
+                }.toSet()
+
+
+        if (neededAndroidTestProjectDeps.none()) {
+            return@afterResolve
+        }
+        val dependencyNumber =
+                if (neededAndroidTestProjectDeps.size > 1) "dependencies" else "dependency"
+        issueReporter.reportError(
+                IssueReporter.Type.DEPENDENCY_INTERNAL_CONFLICT,
+                RuntimeException("Unable to align dependencies in configurations " +
+                        "'${srcConfiguration.name}' and '$name', as both require " +
+                        "${neededAndroidTestProjectDeps.joinToString(", ") {"'project $it'"}}.\n" +
+                        "[Recommended action] Add the following $dependencyNumber to $buildFile: \n${
+                            neededAndroidTestProjectDeps.joinToString("\n") { "androidTestImplementation(project(\"$it\"))" }
+                        }"
+                )
+        )
     }
 }

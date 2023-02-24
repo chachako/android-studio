@@ -81,8 +81,9 @@ class AndroidTestClasspathTest {
                     executor().expectFailure().run("assembleDebug", "assembleDebugAndroidTest")
             failure.stderr.use {
                 ScannerSubject.assertThat(it).contains(
-                        "Unable to align dependencies in configurations 'debugRuntimeClasspath' and 'debugAndroidTestRuntimeClasspath', as both require a 'project :lib'.\n" +
-                                "  Recommended action: Add 'androidTestImplementation(project(\":lib\"))' as a dependency in build file: ${buildFile.absolutePath}"
+                        "Unable to align dependencies in configurations 'debugRuntimeClasspath' and 'debugAndroidTestRuntimeClasspath', as both require 'project :lib'.\n" +
+                                "  [Recommended action] Add the following dependency to ${buildFile.absolutePath}: \n" +
+                                "  androidTestImplementation(project(\":lib\"))"
                 )
             }
             appBuildFile.appendText(
