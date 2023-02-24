@@ -39,6 +39,7 @@ import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask
+import com.android.build.gradle.internal.tasks.ScreenshotTestTask
 import com.android.build.gradle.internal.tasks.SigningConfigVersionsWriterTask
 import com.android.build.gradle.internal.tasks.SigningConfigWriterTask
 import com.android.build.gradle.internal.tasks.StripDebugSymbolsTask
@@ -227,6 +228,8 @@ class AndroidTestTaskManager(
         }
 
         createConnectedTestForVariant(androidTestProperties)
+
+        createScreenshotTestTask(androidTestProperties)
     }
 
     private fun createConnectedTestForVariant(androidTestProperties: AndroidTestCreationConfig) {
@@ -459,5 +462,12 @@ class AndroidTestTaskManager(
         }
 
         super.createVariantPreBuildTask(creationConfig)
+    }
+
+    private fun createScreenshotTestTask(androidTestProperties: AndroidTestCreationConfig) {
+        if (androidTestProperties.services.projectOptions
+                        .get(BooleanOption.ENABLE_SCREENSHOT_TEST)) {
+            taskFactory.register(ScreenshotTestTask.CreationAction(androidTestProperties))
+        }
     }
 }
