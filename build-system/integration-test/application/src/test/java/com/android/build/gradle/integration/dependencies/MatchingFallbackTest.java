@@ -53,8 +53,7 @@ public class MatchingFallbackTest {
 
     @Before
     public void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
+        project.setIncludedProjects("app", "library");
 
         // add a resources file in the debug build type of the lib.
         File fooTxt =

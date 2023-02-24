@@ -56,12 +56,19 @@ class AdditionalArtifactsModelTest {
         library = project.getSubproject(LIBRARY_MODULE)
 
         TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            maven { url 'testrepo' }
+                        }
+                    }
+                """.trimIndent()
+        )
+
+        TestFileUtils.appendToFile(
                 app.buildFile,
                 """
-                repositories {
-                    maven { url '../testrepo' }
-                }
-
                 dependencies {
                     implementation 'com.example.android:myLib:1.0'
                 }

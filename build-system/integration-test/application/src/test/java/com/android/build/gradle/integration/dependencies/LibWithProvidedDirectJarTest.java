@@ -21,7 +21,6 @@ import static com.android.build.gradle.integration.common.utils.LibraryGraphHelp
 import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Property.GRADLE_PATH;
 import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Type.MODULE;
 import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
-import static com.android.testutils.truth.PathSubject.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
@@ -30,8 +29,6 @@ import com.android.build.gradle.integration.common.utils.LibraryGraphHelper;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -49,8 +46,7 @@ public class LibWithProvidedDirectJarTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library', 'jar'");
+        project.setIncludedProjects("app", "library", "jar");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

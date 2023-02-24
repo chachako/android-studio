@@ -74,11 +74,18 @@ class CheckJetifierTaskTest {
 
     private fun addSupportLibDependencies() {
         TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            maven { url 'mavenRepo' }
+                        }
+                    }
+                """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
             """
-            repositories {
-                maven { url '../mavenRepo' }
-            }
             dependencies {
                 implementation 'example:A:1.0' // `A` transitively depends on a support library
                 implementation 'com.android.support:collections:$SUPPORT_LIB_VERSION'
@@ -88,9 +95,6 @@ class CheckJetifierTaskTest {
         TestFileUtils.appendToFile(
             project.getSubproject("lib").buildFile,
             """
-            repositories {
-                maven { url '../mavenRepo' }
-            }
             dependencies {
                 implementation 'example:B:1.0' // B directly depends on a support library
                 // Add the same dependency in app to check if the task can handle duplicates

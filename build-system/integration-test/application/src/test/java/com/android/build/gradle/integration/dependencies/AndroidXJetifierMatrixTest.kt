@@ -68,13 +68,20 @@ class AndroidXJetifierMatrixTest {
         TestFileUtils.appendToFile(
                 project.buildFile,
                 """
-                repositories {
-                    maven { url 'mavenRepo' }
-                }
                 dependencies {
                     implementation 'depends-on-androidx:lib1:1.0'
                     implementation 'depends-on-androidx:lib2:1.0'
                 }
+                """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            maven { url 'mavenRepo' }
+                        }
+                    }
                 """.trimIndent()
         )
     }
@@ -104,13 +111,20 @@ class AndroidXJetifierMatrixTest {
         TestFileUtils.appendToFile(
                 project.buildFile,
                 """
-                repositories {
-                    maven { url 'mavenRepo' }
-                }
                 dependencies {
                     implementation 'depends-on-support-lib:lib1:1.0'
                     implementation 'depends-on-support-lib:lib2:1.0'
                 }
+                """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            maven { url 'mavenRepo' }
+                        }
+                    }
                 """.trimIndent()
         )
     }

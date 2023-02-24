@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import org.junit.Rule
 import org.junit.Test
 
@@ -70,7 +71,6 @@ class AarApiJarTest {
     private val consumingapp = MinimalSubProject.app("com.example.app")
         .appendToBuild(
             """
-                    repositories { flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                     dependencies { implementation name: 'publishedLib-release', ext:'aar' }"""
         )
         .withFile(
@@ -96,6 +96,17 @@ class AarApiJarTest {
 
     @Test
     fun checkBuilds() {
+        TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            flatDir { dirs 'publishedLib/build/outputs/aar/' }
+                        }
+                     }
+                """.trimIndent()
+        )
+
         project.executor().run(":publishedLib:assembleRelease")
         project.executor().run(":consumingApp:assembleDebug")
 

@@ -20,9 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.category.SmokeTests;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.v2.ide.SyncIssue;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -67,24 +65,5 @@ public class BasicTest {
                                 .getExecutionState()
                                 .toString())
                 .isEqualTo("SKIPPED");
-    }
-
-    @Test
-    public void testFlatDirWarning() throws Exception {
-        TestFileUtils.appendToFile(
-                project.getBuildFile(), "repositories { flatDir { dirs \"libs\" } }");
-        project.executor().run("clean", "assembleDebug");
-        ModelContainerV2 onlyModel =
-                project.modelV2()
-                        .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-                        .fetchModels()
-                        .getContainer();
-        assertThat(
-                        (int)
-                                onlyModel.getProject().getIssues().getSyncIssues().stream()
-                                        .map(SyncIssue::getMessage)
-                                        .filter(syncIssues -> syncIssues.contains("flatDir"))
-                                        .count())
-                .isEqualTo(1);
     }
 }

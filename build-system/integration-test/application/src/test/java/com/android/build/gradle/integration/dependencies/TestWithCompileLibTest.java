@@ -52,8 +52,7 @@ public class TestWithCompileLibTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
+        project.setIncludedProjects("app", "library");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

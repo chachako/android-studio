@@ -1495,9 +1495,10 @@ allprojects { proj ->
             settingsContent +=
                 """
 
-                    dependencyResolutionManagement {
-                    ${generateProjectRepoScript()}
-                    }
+dependencyResolutionManagement {
+    RepositoriesMode.PREFER_SETTINGS
+    ${generateProjectRepoScript()}
+}
 
                     """.trimIndent()
         }
@@ -1574,5 +1575,16 @@ buildCache {
                 }
                 """.trimIndent()
         )
+    }
+
+    fun setIncludedProjects(vararg projects: String) {
+        val includedProjects = projects.joinToString(separator = ",") { "'$it'" }
+        settingsFile.writeText("""
+            include $includedProjects
+
+            dependencyResolutionManagement {
+                apply from: '../commonLocalRepo.gradle', to: it
+            }
+        """.trimIndent())
     }
 }

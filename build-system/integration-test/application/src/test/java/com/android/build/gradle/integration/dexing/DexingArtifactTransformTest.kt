@@ -309,12 +309,19 @@ class DexingArtifactTransformTest {
                 )
             ).generate(it.toPath())
         }
+        project.settingsFile.appendText(
+                """
+
+dependencyResolutionManagement {
+    repositories {
+        maven { url 'mavenRepo' }
+    }
+}
+                """.trimIndent()
+        )
         project.buildFile.appendText(
                     """
 
-repositories {
-    maven { url 'mavenRepo' }
-}
 dependencies {
     implementation 'com.example:lib:1.0'
 }

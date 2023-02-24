@@ -69,14 +69,7 @@ public class NativeSoPackagingTest {
         jarProject2 = project.getSubproject("jar2");
 
         // rewrite settings.gradle to remove un-needed modules
-        Files.asCharSink(new File(project.getProjectDir(), "settings.gradle"), Charsets.UTF_8)
-                .write(
-                        "include 'app'\n"
-                                + "include 'library'\n"
-                                + "include 'library2'\n"
-                                + "include 'test'\n"
-                                + "include 'jar'\n"
-                                + "include 'jar2'\n");
+        project.setIncludedProjects("app", "library", "library2", "test", "jar", "jar2");
 
         // setup dependencies.
         TestFileUtils.appendToFile(

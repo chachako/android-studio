@@ -27,6 +27,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
 import com.android.build.gradle.integration.common.utils.LibraryGraphHelper;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
@@ -50,7 +51,7 @@ public class AppWithPackageDirectJarTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8).write("include 'app', 'jar'");
+        project.setIncludedProjects("app", "jar");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

@@ -76,12 +76,7 @@ public class ResPackagingTest {
         testProject = project.getSubproject("test");
 
         // rewrite settings.gradle to remove un-needed modules
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write(
-                        "include 'app'\n"
-                                + "include 'library'\n"
-                                + "include 'library2'\n"
-                                + "include 'test'\n");
+        project.setIncludedProjects("app", "library", "library2", "test");
 
         // setup dependencies.
         TestFileUtils.appendToFile(

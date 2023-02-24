@@ -27,6 +27,7 @@ import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.AbstractAndroidSubject;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.utils.FileUtils;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -63,14 +64,7 @@ public class JavaResPackagingTest {
         // Rewrite settings.gradle to remove un-needed modules. We include library3 so that
         // testAppProjectTestWithRemovedResFile() also serves as a regression test for
         // https://issuetracker.google.com/128858509
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write(
-                        "include 'app'\n"
-                                + "include 'library'\n"
-                                + "include 'library2'\n"
-                                + "include 'library3'\n"
-                                + "include 'test'\n"
-                                + "include 'jar'\n");
+        project.setIncludedProjects("app", "library", "library2", "library3", "test", "jar");
 
         // setup dependencies.
         appendToFile(

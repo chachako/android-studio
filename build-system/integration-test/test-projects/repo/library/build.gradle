@@ -10,10 +10,6 @@ publishing {
     }
 }
 
-repositories {
-    maven { url '../testrepo' }
-}
-
 dependencies {
     api 'com.example.android.multiproject:baseLib:1.0-SNAPSHOT'
 }

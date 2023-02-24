@@ -22,7 +22,6 @@ import static com.android.build.gradle.integration.common.utils.LibraryGraphHelp
 import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Property.VARIANT;
 import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Type.MODULE;
 import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
-import static com.android.testutils.truth.PathSubject.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
@@ -32,8 +31,6 @@ import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Variant;
 import com.android.builder.model.level2.DependencyGraphs;
 import com.android.testutils.apk.Apk;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import java.util.Map;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,8 +50,7 @@ public class AppWithCompileLibTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
+        project.setIncludedProjects("app", "library");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

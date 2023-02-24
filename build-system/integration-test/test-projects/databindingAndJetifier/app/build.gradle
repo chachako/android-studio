@@ -15,10 +15,6 @@ android {
     }
 }
 
-repositories {
-    maven { url '../localRepo' }
-}
-
 dependencies {
     // Basic dependency for MainActivity
     implementation "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"

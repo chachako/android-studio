@@ -60,8 +60,8 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
         val file = project.file("lint-results.txt")
         assertThat(file).exists()
         assertThat(file).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
-        assertThat(file).contains("build.gradle:7: Warning: no Java language level directives")
-        assertThat(file).contains("0 errors, 2 warnings")
+        assertThat(file).contains("build.gradle:6: Warning: no Java language level directives")
+        assertThat(file).contains("0 errors, 3 warnings")
 
         // Check that lint copies the result to the new location if that is changed
         // But the analysis itself is not re-run in the new integration
@@ -76,8 +76,8 @@ class LintStandaloneTest(private val runLintInProcess: Boolean) {
         val secondFile = project.file("lint-results2.txt")
         assertThat(secondFile).exists()
         assertThat(secondFile).contains("MyClass.java:5: Warning: Use Boolean.valueOf(true) instead")
-        assertThat(secondFile).contains("build.gradle:7: Warning: no Java language level directives")
-        assertThat(secondFile).contains("0 errors, 2 warnings")
+        assertThat(secondFile).contains("build.gradle:6: Warning: no Java language level directives")
+        assertThat(secondFile).contains("0 errors, 3 warnings")
     }
 
     @Test

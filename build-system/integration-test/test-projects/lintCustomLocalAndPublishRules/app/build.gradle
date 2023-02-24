@@ -19,10 +19,6 @@ android {
     }
 }
 
-repositories {
-    maven { url '../localRepo' }
-}
-
 dependencies {
     implementation project(':library')
     implementation 'com.example.google:library-remote:1.0'

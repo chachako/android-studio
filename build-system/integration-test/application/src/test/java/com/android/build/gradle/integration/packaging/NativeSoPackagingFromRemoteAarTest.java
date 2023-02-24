@@ -52,16 +52,20 @@ public class NativeSoPackagingFromRemoteAarTest {
         libProject = project.getSubproject("library");
 
         // rewrite settings.gradle to remove un-needed modules
-        Files.asCharSink(new File(project.getProjectDir(), "settings.gradle"), Charsets.UTF_8)
-                .write("include 'app'\n" + "include 'library'\n");
+        project.setIncludedProjects("app", "library");
+        TestFileUtils.appendToFile(
+                project.getSettingsFile(),
+                "dependencyResolutionManagement {\n"
+                        + "    repositories {\n"
+                        + "        maven { url 'testrepo' }\n"
+                        + "    }\n"
+                        + "}\n"
+        );
 
         // setup dependencies.
         TestFileUtils.appendToFile(
                 appProject.getBuildFile(),
-                "repositories {\n"
-                        + "    maven { url '../testrepo' }\n"
-                        + "}\n"
-                        + "dependencies {\n"
+                "dependencies {\n"
                         + "    api 'com.example.android.nativepackaging:library:1.0-SNAPSHOT@aar'\n"
                         + "}\n");
 

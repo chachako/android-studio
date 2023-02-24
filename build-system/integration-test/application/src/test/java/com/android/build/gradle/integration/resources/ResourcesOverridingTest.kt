@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.runner.FilterableParameterize
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -80,6 +81,20 @@ class ResourcesOverridingTest(private val precompileDependenciesResources: Boole
     @get:Rule
     val project = GradleTestProject.builder().fromTestApp(testApp).create()
 
+    @Before
+    fun setUp() {
+        TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            flatDir { dirs 'publishedLib/build/outputs/aar/' }
+                        }
+                    }
+                """.trimIndent()
+        )
+    }
+
     /**
      * app -> localLib -> publishedLib
      */
@@ -88,7 +103,6 @@ class ResourcesOverridingTest(private val precompileDependenciesResources: Boole
         TestFileUtils.appendToFile(
             project.getSubproject("localLib").buildFile,
             """
-                repositories {flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                 dependencies { implementation name: 'publishedLib-release', ext:'aar' }
             """.trimIndent()
         )
@@ -96,7 +110,6 @@ class ResourcesOverridingTest(private val precompileDependenciesResources: Boole
         TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
             """
-                repositories {flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                 dependencies { api project(':localLib') }
             """.trimIndent()
         )
@@ -129,7 +142,6 @@ class ResourcesOverridingTest(private val precompileDependenciesResources: Boole
         TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
             """
-                repositories {flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                 dependencies {
                     implementation project(':localLib')
                     implementation name: 'publishedLib-release', ext:'aar'
@@ -165,7 +177,6 @@ class ResourcesOverridingTest(private val precompileDependenciesResources: Boole
         TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
             """
-                repositories { flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                 dependencies {
                     implementation name: 'publishedLib-release', ext:'aar'
                     implementation project(':localLib')

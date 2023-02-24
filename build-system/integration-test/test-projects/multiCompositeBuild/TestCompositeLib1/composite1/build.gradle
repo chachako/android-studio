@@ -38,6 +38,3 @@ dependencies {
     api 'com.test.composite:composite2:1.0'
     api 'com.test.composite:composite3:1.0'
 }
-repositories {
-    mavenCentral()
-}

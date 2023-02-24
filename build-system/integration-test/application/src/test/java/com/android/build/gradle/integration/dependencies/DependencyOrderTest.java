@@ -18,13 +18,10 @@ package com.android.build.gradle.integration.dependencies;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
-import static com.android.testutils.truth.PathSubject.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import java.io.File;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -43,8 +40,7 @@ public class DependencyOrderTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library', 'library2'");
+        project.setIncludedProjects("app", "library", "library2");
 
         // add the library2 to make sure that whether it's before or after library, it'll still be
         // ordered after (since library depends on library2.)

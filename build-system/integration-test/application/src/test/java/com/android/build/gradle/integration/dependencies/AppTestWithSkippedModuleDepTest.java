@@ -55,7 +55,7 @@ public class AppTestWithSkippedModuleDepTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8).write("include 'app', 'jar'");
+        project.setIncludedProjects("app", "jar");
 
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),

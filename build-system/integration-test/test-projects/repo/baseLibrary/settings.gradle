@@ -1,7 +1,5 @@
-include ':app'
-
 dependencyResolutionManagement {
     repositories {
-        maven { url 'localRepo' }
+        maven { url '../testrepo' }
     }
 }

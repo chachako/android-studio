@@ -25,7 +25,6 @@ import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import java.nio.charset.StandardCharsets;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -42,8 +41,7 @@ public class AppWithAndroidTestDependencyOnLibTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), StandardCharsets.UTF_8)
-                .write("include 'app', 'library', 'library2'");
+        project.setIncludedProjects("app", "library", "library2");
 
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),

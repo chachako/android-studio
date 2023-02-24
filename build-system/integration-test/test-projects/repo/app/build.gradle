@@ -3,10 +3,6 @@ buildscript { apply from: "../commonBuildScript.gradle" }
 
 apply plugin: 'com.android.application'
 
-repositories {
-    maven { url '../testrepo' }
-}
-
 dependencies {
     implementation 'com.example.android.multiproject:lib:1.0'
 }

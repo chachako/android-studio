@@ -19,10 +19,12 @@ package com.android.build.gradle.integration.resources
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.common.utils.getDebugVariant
 import com.android.builder.model.AndroidProject
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -63,7 +65,6 @@ class NamespacedAarTest {
     private val lib = MinimalSubProject.lib("com.example.lib")
             .appendToBuild(
                     """$buildScriptContent
-                    repositories { flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                     dependencies { implementation name: 'publishedLib-release', ext:'aar' }""")
             .withFile(
                     "src/main/res/values/strings.xml",
@@ -83,7 +84,6 @@ class NamespacedAarTest {
     private val app = MinimalSubProject.app("com.example.app")
             .appendToBuild(
                     """$buildScriptContent
-                    repositories { flatDir { dirs rootProject.file('publishedLib/build/outputs/aar/') } }
                     dependencies { implementation name: 'publishedLib-release', ext:'aar' }""")
             .withFile(
                     "src/main/res/values/strings.xml",
@@ -111,6 +111,20 @@ class NamespacedAarTest {
                     .build()
 
     @get:Rule val project = GradleTestProject.builder().fromTestApp(testApp).create()
+
+    @Before
+    fun setUp() {
+        TestFileUtils.appendToFile(
+                project.settingsFile,
+                """
+                    dependencyResolutionManagement {
+                        repositories {
+                            flatDir { dirs 'publishedLib/build/outputs/aar/' }
+                        }
+                    }
+                """.trimIndent()
+        )
+    }
 
     @Test
     fun checkBuilds() {

@@ -24,6 +24,7 @@ import static com.android.build.gradle.integration.common.utils.TestFileUtils.ap
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainer;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.AndroidProject;
 import com.android.builder.model.Dependencies;
 import com.android.builder.model.JavaLibrary;
@@ -54,7 +55,7 @@ public class FlatJavaLibTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8).write("include 'app'");
+        project.setIncludedProjects("app");
 
         /*
          * These two dependencies will transitively bring in 9 counts of support-annotations.

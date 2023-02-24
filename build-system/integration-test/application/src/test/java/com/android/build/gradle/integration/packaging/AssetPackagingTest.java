@@ -38,6 +38,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
+
 /**
  * test for packaging of asset files.
  */
@@ -62,12 +64,7 @@ public class AssetPackagingTest {
         testProject = project.getSubproject("test");
 
         // rewrite settings.gradle to remove un-needed modules
-        Files.write(project.getSettingsFile().toPath(),
-                Arrays.asList(
-                        "include 'app'",
-                        "include 'library'",
-                        "include 'library2'",
-                        "include 'test'"));
+        project.setIncludedProjects("app", "library", "library2", "test");
 
         // setup dependencies.
         TestFileUtils.appendToFile(

@@ -29,11 +29,9 @@ import com.android.testutils.MavenRepoGenerator;
 import com.android.testutils.TestAarGenerator;
 import com.android.testutils.TestInputsGenerator;
 import com.android.utils.PathUtils;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -81,9 +79,7 @@ public class AppWithRuntimeDependencyTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        //noinspection deprecation
-        Files.write(
-                "include 'app', 'library', 'library2'", project.getSettingsFile(), Charsets.UTF_8);
+        project.setIncludedProjects("app", "library", "library2");
 
         appendToFile(
                 project.getSubproject("app").getBuildFile(),

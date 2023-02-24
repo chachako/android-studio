@@ -21,8 +21,11 @@ import com.android.build.gradle.integration.common.truth.TruthHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /**
  * test for incremental code change.
@@ -43,10 +46,13 @@ public class IncrementalCodeChangeTest {
             .fromTestProject("projectWithModules")
             .create();
 
+    @Before
+    public void setUp() throws IOException {
+        project.setIncludedProjects("app", "library");
+    }
+
     @Test
     public void checkNonMultiDex() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),
                 "\n" + "dependencies {\n" + "    api project(':library')\n" + "}");
@@ -71,8 +77,6 @@ public class IncrementalCodeChangeTest {
 
     @Test
     public void checkLegacyMultiDex() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),
                 "\n"
@@ -109,8 +113,6 @@ public class IncrementalCodeChangeTest {
 
     @Test
     public void checkNativeMultiDex() throws Exception {
-        Files.asCharSink(project.getSettingsFile(), Charsets.UTF_8)
-                .write("include 'app', 'library'");
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),
                 "\n"

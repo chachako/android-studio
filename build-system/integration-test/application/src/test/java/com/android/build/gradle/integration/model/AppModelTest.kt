@@ -30,6 +30,7 @@ import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -691,11 +692,6 @@ class DependencyWithoutFileWithDependenciesTest: ModelComparator() {
             }
             appendToBuildFile {
                 """
-                      repositories {
-                        maven {
-                          url { '../repo' }
-                        }
-                      }
                       dependencies {
                         testImplementation("com.foo:bar:1.0") {
                           capabilities {
@@ -740,6 +736,20 @@ class DependencyWithoutFileWithDependenciesTest: ModelComparator() {
         }
     }
 
+    @Before
+    fun setUpRepo( ) {
+        project.settingsFile.appendText("""
+
+            dependencyResolutionManagement {
+                repositories {
+                    maven {
+                      url { 'repo' }
+                    }
+                }
+            }
+        """.trimIndent())
+    }
+
     @Test
     fun `test models`() {
         project.executor().run(":bar:publish")
@@ -747,7 +757,7 @@ class DependencyWithoutFileWithDependenciesTest: ModelComparator() {
             .with(BooleanOption.USE_ANDROID_X, true)
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
             .fetchModels(variantName = "debug")
-
+        //todo fix me
         with(result).compareVariantDependencies(goldenFile = "VariantDependencies")
     }
 }

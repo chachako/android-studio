@@ -60,6 +60,13 @@ class AsmTransformApiConfigurationCachingTest {
             """.trimIndent()
         )
 
+        FileUtils.writeToFile(project.file("buildSrc/settings.gradle"),
+        """
+            dependencyResolutionManagement {
+                apply from: "../../commonLocalRepo.gradle", to: it
+            }
+        """.trimIndent())
+
         FileUtils.writeToFile(
             project.file("buildSrc/src/main/java/com/example/buildsrc/plugin/InstrumentationPlugin.java"),
             // language=java
