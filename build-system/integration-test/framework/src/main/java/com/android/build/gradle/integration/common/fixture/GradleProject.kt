@@ -49,7 +49,8 @@ abstract class GradleProject(
 
     /** Returns a source file with the specified file path.  */
     fun getFile(relativePath: String): TestSourceFile {
-        return sourceFiles[relativePath] ?: throw error("$relativePath does not exist")
+        return sourceFiles[relativePath]
+            ?: throw error("$relativePath does not exist, list is ${sourceFiles.keys.joinToString()}")
     }
 
     /** Returns a source file with the specified file name.  */

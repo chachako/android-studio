@@ -41,7 +41,9 @@ public final class TestSourceFile {
     }
 
     public TestSourceFile(@NonNull String parent, @NonNull String name, @NonNull String content) {
-        this(parent + File.separatorChar + name, content);
+        // all files in our tests are expressed in unix format which is automatically translated
+        // by java.io APIs anyhow so use / and not the separatorChar.
+        this(parent + "/" + name, content);
     }
 
     @NonNull
