@@ -168,6 +168,7 @@ java_library(
     name = "maven",
     srcs = glob(["src/com/android/tools/maven/**/*.java"]),
     deps = [
+        ":json",
         "@maven//:com.google.code.findbugs.jsr305",
         "@maven//:com.google.guava.guava",
         "@maven//:org.apache.maven.maven-aether-provider",

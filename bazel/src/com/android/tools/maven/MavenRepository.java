@@ -16,6 +16,7 @@
 
 package com.android.tools.maven;
 
+import com.android.tools.json.GradleMetadataJsonReader;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -138,7 +140,9 @@ public class MavenRepository {
     private ModelBuildingResult getModelBuildingResult(Artifact artifact) {
         try {
             File pomFile = getPomFile(artifact);
-            pullModuleFile(artifact, pomFile);
+            File moduleFile = getModuleFile(artifact, pomFile);
+            getVariantJars(moduleFile, artifact);
+
             ModelBuildingRequest buildingRequest = new DefaultModelBuildingRequest();
             // Java version is determined from system properties.
             buildingRequest.setSystemProperties(System.getProperties());
@@ -156,6 +160,7 @@ public class MavenRepository {
             throw new RuntimeException(e);
         }
     }
+
     /** Returns the maven model for the given artifact. */
     public Model getMavenModel(Artifact artifact) {
         ModelBuildingResult result = getModelBuildingResult(artifact);
@@ -180,11 +185,11 @@ public class MavenRepository {
         return pomArtifact.getFile();
     }
 
-    public void pullModuleFile(Artifact artifact, File pomFile) throws Exception {
+    private File getModuleFile(Artifact artifact, File pomFile) throws Exception {
         // published-with-gradle-metadata suggests module was published with a Gradle metadata model
         String content = Files.readString(pomFile.toPath());
         if (!content.contains("published-with-gradle-metadata")) {
-            return;
+            return null;
         }
         Artifact moduleArtifact =
                 new DefaultArtifact(
@@ -194,11 +199,67 @@ public class MavenRepository {
                         artifact.getVersion());
 
         if (DEPS_WITHOUT_GRADLE_MODULE.contains(moduleArtifact.toString())) {
-            return;
+            return null;
         }
 
         ArtifactRequest request = new ArtifactRequest(moduleArtifact, repositories, null);
-        system.resolveArtifact(session, request);
+        moduleArtifact = system.resolveArtifact(session, request).getArtifact();
+        return moduleArtifact.getFile();
+    }
+
+    private static String removePrefix(final String s, final String prefix) {
+        if (s != null && prefix != null && s.startsWith(prefix)) {
+            return s.substring(prefix.length());
+        }
+        return s;
+    }
+
+    private static String removeSuffix(final String s, final String suffix) {
+        if (s != null && suffix != null && s.endsWith(suffix)) {
+            return s.substring(0, s.length() - suffix.length());
+        }
+        return s;
+    }
+
+    private void getVariantJars(File moduleFile, Artifact artifact) {
+        try {
+            // get the jars for all the variants specified in the gradle module file
+            if (moduleFile != null) {
+                String moduleContent = Files.readString(moduleFile.toPath());
+                Set<String> urls = GradleMetadataJsonReader.readVariantUrls(moduleContent);
+
+                // The module file does not contain coordinates for each variant's artifact
+                // This code attempts to extract the classfier from the url provided
+                // e.g. for url = kotlin-gradle-plugin-1.8.0-Beta-gradle71.jar
+                // classifier = gradle71
+                for (String url : urls) {
+                    String fileExtension = url.substring(url.lastIndexOf(".") + 1);
+                    String prefix = artifact.getArtifactId() + "-" + artifact.getVersion();
+                    String suffix = "." + fileExtension;
+
+                    String gradleVariant = removeSuffix(removePrefix(url, prefix), suffix);
+                    // if it's the main variant, sources variant or javadoc variant, skip it
+                    if (gradleVariant.length() == 0
+                            || gradleVariant.contains("sources")
+                            || gradleVariant.contains("javadoc")) {
+                        continue;
+                    }
+
+                    Artifact jarArtifact =
+                            new DefaultArtifact(
+                                    artifact.getGroupId(),
+                                    artifact.getArtifactId(),
+                                    gradleVariant.substring(1),
+                                    fileExtension,
+                                    artifact.getVersion());
+
+                    ArtifactRequest request = new ArtifactRequest(jarArtifact, repositories, null);
+                    system.resolveArtifact(session, request).getArtifact();
+                }
+            }
+        } catch (Exception e) {
+            // do nothing
+        }
     }
 
     /** Creates and returns a new DefaultModelResolver instance. */
