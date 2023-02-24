@@ -16,6 +16,7 @@
 
 package com.android.build.api.instrumentation.manageddevice
 
+import com.android.build.api.instrumentation.StaticTestData
 import java.io.File
 import org.gradle.api.Incubating
 import org.gradle.api.file.Directory
@@ -111,5 +112,4 @@ interface TestRunData {
      */
     @get: Incubating
     val testData: StaticTestData
-
 }

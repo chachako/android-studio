@@ -16,7 +16,7 @@
 
 package com.android.tools.firebase.testlab.gradle.services
 
-import com.android.build.api.instrumentation.manageddevice.StaticTestData
+import com.android.build.api.instrumentation.StaticTestData
 import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto
