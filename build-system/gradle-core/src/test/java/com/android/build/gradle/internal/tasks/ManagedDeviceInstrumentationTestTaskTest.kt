@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.api.dsl.Device
 import com.android.build.api.variant.impl.TestVariantImpl
 import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
@@ -339,7 +338,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
         val avdComponents = mockEmptyProperty<AvdComponentsBuildService>()
         `when`(task.testRunnerFactory.avdComponents).thenReturn(avdComponents)
 
-        val device = mockEmptyProperty<Device>()
+        val device = mockEmptyProperty<ManagedVirtualDevice>()
         `when`(task.device).thenReturn(device)
 
         config.configure(task)

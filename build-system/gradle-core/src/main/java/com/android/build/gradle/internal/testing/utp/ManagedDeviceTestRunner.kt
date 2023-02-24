@@ -58,13 +58,13 @@ class ManagedDeviceTestRunner(
             runnerConfigs, workerExecutor, projectPath, variantName, resultsDir, logger,
             null, utpDependencies)
     },
-): com.android.build.api.instrumentation.ManagedDeviceTestRunner {
+) {
 
     /**
      * @param additionalTestOutputDir output directory for additional test output, or null if disabled
      * @param dependencyApks are the private sandbox SDK APKs
      */
-    override fun runTests(
+    fun runTests(
         managedDevice: Device,
         runId: String,
         outputDirectory: File,

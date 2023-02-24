@@ -18,8 +18,6 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.artifact.ScopedArtifact
-import com.android.build.api.dsl.Device
-import com.android.build.api.instrumentation.ManagedDeviceTestRunnerFactory
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.LoggerWrapper
@@ -57,7 +55,6 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
-import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -170,28 +167,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 getTargetIsSplitApk.getOrElse(false)
             )
         }
-
-        fun createTestRunner(
-            project: Project,
-            workerExecutor: WorkerExecutor,
-            factory: ManagedDeviceTestRunnerFactory,
-        ): com.android.build.api.instrumentation.ManagedDeviceTestRunner {
-            Preconditions.checkArgument(
-                customManagedDevice.get(),
-                "android.experimental.testOptions.managedDevices.customDevice must be enabled.")
-
-            val useOrchestrator = when(executionEnum.get()) {
-                TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR,
-                TestOptions.Execution.ANDROID_TEST_ORCHESTRATOR -> true
-                else -> false
-            }
-
-            return factory.createTestRunner(
-                project,
-                workerExecutor,
-                useOrchestrator,
-                enableEmulatorDisplay.get())
-        }
     }
 
     @get: Nested
@@ -218,7 +193,7 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
         private set
 
     @get: Nested
-    abstract val device: Property<Device>
+    abstract val device: Property<ManagedVirtualDevice>
 
     @Internal
     override fun getTestFailed(): Boolean {
@@ -301,19 +276,11 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             true
         } else {
             try {
-                val runner = if (device is ManagedDeviceTestRunnerFactory) {
-                    testRunnerFactory.createTestRunner(
-                        project,
-                        workerExecutor,
-                        device as ManagedDeviceTestRunnerFactory
-                    )
-                } else if (device is ManagedVirtualDevice) {
-                    testRunnerFactory.createTestRunner(
-                        workerExecutor,
-                        testRunnerFactory.testShardsSize.getOrNull())
-                } else {
-                    error("Unsupported Managed Device: ${device.javaClass}")
-                }
+                val runner = testRunnerFactory.createTestRunner(
+                    workerExecutor,
+                    testRunnerFactory.testShardsSize.getOrNull()
+                )
+
                 runner.runTests(
                     device,
                     path,
@@ -379,9 +346,9 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             .get()
     }
 
-    class CreationAction<DeviceType : Device>(
+    class CreationAction(
         creationConfig: InstrumentedTestCreationConfig,
-        private val device: DeviceType,
+        private val device: ManagedVirtualDevice,
         private val testData: AbstractTestDataImpl,
         private val testResultOutputDir: File,
         private val testReportOutputDir: File,
@@ -441,20 +408,18 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
 
             task.device.setDisallowChanges(device)
 
-            if (device is ManagedVirtualDevice) {
-                if (device.apiLevel <= 26 &&
-                    !projectOptions[BooleanOption.GRADLE_MANAGED_DEVICE_ALLOW_OLD_API_LEVEL_DEVICES]
-                ) {
-                    throw GradleException(
-                        """
-                        API level 26 and lower is currently not supported for Gradle Managed devices.
-                        Your current configuration requires API level ${device.apiLevel}.
-                        While it's not recommended, you can use API levels 26 and lower by adding
-                        android.experimental.testOptions.managedDevices.allowOldApiLevelDevices=true
-                        to your gradle.properties file.
-                        """.trimIndent()
-                    )
-                }
+            if (device.apiLevel <= 26 &&
+                !projectOptions[BooleanOption.GRADLE_MANAGED_DEVICE_ALLOW_OLD_API_LEVEL_DEVICES]
+            ) {
+                throw GradleException(
+                    """
+                    API level 26 and lower is currently not supported for Gradle Managed devices.
+                    Your current configuration requires API level ${device.apiLevel}.
+                    While it's not recommended, you can use API levels 26 and lower by adding
+                    android.experimental.testOptions.managedDevices.allowOldApiLevelDevices=true
+                    to your gradle.properties file.
+                    """.trimIndent()
+                )
             }
 
             task.testRunnerFactory.avdComponents.setDisallowChanges(

@@ -25,7 +25,6 @@ import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.DeviceGroup
 import com.android.build.api.instrumentation.FramesComputationMode
-import com.android.build.api.instrumentation.ManagedDeviceTestRunnerFactory
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.api.AndroidSourceSet
@@ -953,6 +952,13 @@ abstract class TaskManager(
                         )
                     )
                 registration != null -> {
+                    if (!globalConfig.services.projectOptions[
+                            BooleanOption.GRADLE_MANAGED_DEVICE_CUSTOM_DEVICE]) {
+                        error("Unsupported managed device type: ${managedDevice.javaClass}. " +
+                              "Managed Device extension API is experimental. Add " +
+                              "android.experimental.testOptions.managedDevices.customDevice=true " +
+                              "in your gradle.properties file to opt-in.")
+                    }
                     val setupResult: Provider<Directory>? = if (registration.hasSetupActions) {
                         taskFactory.named(setupTaskName(managedDevice)).flatMap { task ->
                             (task as ManagedDeviceSetupTask).setupResultDir
@@ -972,24 +978,6 @@ abstract class TaskManager(
                             deviceAdditionalOutputs,
                             deviceCoverage,
                             setupResult,
-                            testTaskSuffix,
-                        )
-                    )
-                }
-                managedDevice is ManagedDeviceTestRunnerFactory -> {
-                    if (!globalConfig.services.projectOptions[
-                            BooleanOption.GRADLE_MANAGED_DEVICE_CUSTOM_DEVICE]) {
-                        error("Unsupported managed device type: ${managedDevice.javaClass}")
-                    }
-                    taskFactory.register(
-                        ManagedDeviceInstrumentationTestTask.CreationAction(
-                            creationConfig,
-                            managedDevice,
-                            testData,
-                            deviceResults,
-                            deviceReports,
-                            deviceAdditionalOutputs,
-                            deviceCoverage,
                             testTaskSuffix,
                         )
                     )
