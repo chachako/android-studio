@@ -55,8 +55,6 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
-import org.jetbrains.kotlin.analysis.api.calls.symbol
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
@@ -381,8 +379,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
           // result in [PsiMethod] form.
           val sourcePsi = call.sourcePsi as? KtElement ?: return
           analyze(sourcePsi) {
-            val callInfo = sourcePsi.resolveCall() ?: return
-            val symbol = callInfo.singleFunctionCallOrNull()?.symbol ?: return
+            val symbol = getFunctionLikeSymbol(sourcePsi) ?: return
             val callName = symbol.callableIdIfNonLocal?.callableName?.asString() ?: return
             checkCall(
               call,
