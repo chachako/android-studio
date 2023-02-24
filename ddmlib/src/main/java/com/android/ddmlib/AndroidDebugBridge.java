@@ -88,7 +88,7 @@ public class AndroidDebugBridge {
     private static final String SERVER_PORT_ENV_VAR = "ANDROID_ADB_SERVER_PORT"; //$NON-NLS-1$
 
     // Where to find the ADB bridge.
-    static final int DEFAULT_ADB_PORT = 5037;
+    public static final int DEFAULT_ADB_PORT = 5037;
 
     // ADB exit value when no Universal C Runtime on Windows
     private static final int STATUS_DLL_NOT_FOUND = (int) (long) 0xc0000135;
