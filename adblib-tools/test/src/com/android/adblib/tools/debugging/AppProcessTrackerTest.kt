@@ -15,17 +15,23 @@
  */
 package com.android.adblib.tools.debugging
 
+import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils
 import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.junit.Assert
 import org.junit.Test
+import java.time.Duration
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -158,6 +164,7 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun testAppProcessTrackerFlowStopsWhenDeviceDisconnects(): Unit =
         CoroutineTestUtils.runBlockingWithTimeout {
+            // Prepare
             val deviceID = "1234"
             val theOneFeatureSupported = "push_sync"
             val features = setOf(theOneFeatureSupported)
@@ -204,6 +211,7 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun testAppProcessTrackerFlowIsExceptionTransparent(): Unit =
         CoroutineTestUtils.runBlockingWithTimeout {
+            // Prepare
             val deviceID = "1234"
             val theOneFeatureSupported = "push_sync"
             val features = setOf(theOneFeatureSupported)
@@ -241,6 +249,7 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun testAppProcessTrackerFlowCanBeCancelled(): Unit =
         CoroutineTestUtils.runBlockingWithTimeout {
+            // Prepare
             val deviceID = "1234"
             val theOneFeatureSupported = "push_sync"
             val features = setOf(theOneFeatureSupported)
@@ -273,5 +282,55 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
 
             // Assert (should not reach)
             Assert.fail()
+        }
+
+    @Test
+    fun testAppProcessFlowStartsWhenDeviceIsOnline(): Unit =
+        CoroutineTestUtils.runBlockingWithTimeout {
+            // Prepare
+            val deviceID = "1234"
+            val theOneFeatureSupported = "push_sync"
+            val features = setOf(theOneFeatureSupported)
+            val fakeAdb =
+                registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
+            val fakeDevice =
+                fakeAdb.connectDevice(
+                    deviceID,
+                    "test1",
+                    "test2",
+                    "model",
+                    "30", // SDK >= 30 is required for abb_exec feature.
+                    DeviceState.HostConnectionType.USB
+                )
+            val hostServices = createHostServices(fakeAdb)
+            val connectedDevice =
+                hostServices.session.connectedDevicesTracker.connectedDevices
+                    .mapNotNull { connectedDevices ->
+                        connectedDevices.firstOrNull { device ->
+                            device.serialNumber == fakeDevice.deviceId
+                        }
+                    }.first()
+
+            // Act
+            var appProcesses: List<AppProcess>? = null
+            launch {
+                appProcesses = connectedDevice.appProcessFlow.first()
+            }
+
+            // Device is in OFFLINE state and so the processes are not being tracked yet
+            delay(1000)
+            // Assert
+            Assert.assertNull(appProcesses)
+
+            // Act: Bring device ONLINE and confirm that the `ConnectedDevice.appProcessFlow`
+            // is now emitting values
+            fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+            CoroutineTestUtils.yieldUntil(Duration.ofSeconds(5)) {
+                appProcesses == listOf<AppProcess>()
+            }
+
+            // Assert
+            Assert.assertNotNull(appProcesses)
+            Assert.assertTrue(appProcesses!!.isEmpty())
         }
 }
