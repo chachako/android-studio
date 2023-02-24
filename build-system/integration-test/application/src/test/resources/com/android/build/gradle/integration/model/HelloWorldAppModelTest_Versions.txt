@@ -1,20 +1,25 @@
 > Versions:
    > versions:
       - android_dsl:
-         - major = 0
-         - minor = 1
+         - major         = 0
+         - minor         = 1
+         - humanReadable = (null)
       - android_project:
-         - major = 0
-         - minor = 1
+         - major         = 0
+         - minor         = 1
+         - humanReadable = (null)
       - basic_android_project:
-         - major = 0
-         - minor = 1
+         - major         = 0
+         - minor         = 1
+         - humanReadable = (null)
       - native_module:
-         - major = 0
-         - minor = 1
+         - major         = 0
+         - minor         = 1
+         - humanReadable = (null)
       - variant_dependencies:
-         - major = 0
-         - minor = 1
+         - major         = 0
+         - minor         = 1
+         - humanReadable = (null)
    < versions
    - agp = DEFAULT_AGP_REVISION
 < Versions

@@ -78,8 +78,8 @@ internal fun ModelSnapshotter<Versions>.snapshotVersions() {
     ) {
         item("major", Version::major)
         item("minor", Version::minor)
+        item("humanReadable", Version::humanReadable)
     }
-
     item("agp", Versions::agp) { version ->
         version?.let { normalizeAgpVersion(it) }
     }
