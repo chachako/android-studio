@@ -16,9 +16,7 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.tools.debugging.impl.JdwpSessionProxy
-import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
-import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsReaqChunk
 import java.net.InetSocketAddress
 
 /**
@@ -45,16 +43,16 @@ data class JdwpProcessProperties(
     val processName: String? = null,
 
     /**
-     * The User ID this process is running in context of, or `null` if the value is not known yet or
-     * the device does not support retrieving this information (R+ only).
-     */
-    val userId: Int? = null,
-
-    /**
      * The package name of the process, or `null` if the value is not known yet or if the device
      * does not support retrieving this information (R+ only)
      */
     val packageName: String? = null,
+
+    /**
+     * The User ID this process is running in context of, or `null` if the value is not known yet or
+     * the device does not support retrieving this information (R+ only).
+     */
+    val userId: Int? = null,
 
     /**
      * The Android VM identifier, or `null` if the value is not known yet.
@@ -96,15 +94,17 @@ data class JdwpProcessProperties(
     val features: List<String> = emptyList(),
 
     /**
-     * Whether "REcent Allocation Query" is enabled for this process.
-     *
-     * @see DdmsChunkTypes.REAQ
-     * @see DdmsReaqChunk
+     * Whether this [JdwpProcessProperties] instance is fully populated, i.e. there is no pending
+     * operation to collect more information. See the [exception] property for additional
+     * information about the status.
      */
-    val reaqEnabled: Boolean = false,
+    val completed: Boolean = false,
 
     /**
-     * Captures an error related to retrieving properties other than [pid].
+     * The error related to retrieving properties (other than [pid]), or `null`.
+     *
+     * This value is only set when [completed] is `true`, and remains `null` unless
+     * there was an error retrieving some property values.
      *
      * For example, it is sometimes not possible to retrieve any information about a process ID
      * from the Android VM if there is already a JDWP session active for that process.

@@ -20,6 +20,7 @@ import com.android.adblib.AdbChannelProvider
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbHostServices
 import com.android.adblib.AdbSession
+import com.android.adblib.AdbSessionHost
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.SOCKET_CONNECT_TIMEOUT_MS
 import com.android.adblib.connectedDevicesTracker
@@ -98,6 +99,9 @@ open class AdbLibToolsTestBase {
         return fakeDevice
     }
 
+    protected fun <T: Any> setHostPropertyValue(host: AdbSessionHost, property: AdbSessionHost.Property<T>, value: T) {
+        (host as TestingAdbSessionHost).setPropertyValue(property, value)
+    }
 
     protected suspend fun waitForOnlineConnectedDevice(
         session: AdbSession,
