@@ -69,7 +69,7 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
                 size == 1
             }
 
-            fakeDevice.startProfileableProcess(pid11, "x86")
+            fakeDevice.startProfileableProcess(pid11, "x86", "")
             Assert.assertNotNull(fakeDevice.getClient(pid10))
             Assert.assertNotNull(fakeDevice.getProfileableProcess(pid11))
             CoroutineTestUtils.yieldUntil { listOfProcessList.size == 2 }

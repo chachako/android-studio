@@ -26,12 +26,19 @@ abstract class ProcessState(val pid: Int) {
 
     open val architecture: String
         get() = ""
+
+    open val commandLine: String
+        get() = ""
 }
 
 /**
  * An [ProcessState] that is [profileable] but not [debuggable]
  */
-class ProfileableProcessState(pid: Int, override val architecture: String) : ProcessState(pid) {
+class ProfileableProcessState(
+    pid: Int,
+    override val architecture: String,
+    override val commandLine: String
+) : ProcessState(pid) {
 
     override val debuggable: Boolean
         get() = false

@@ -18,16 +18,21 @@ package com.android.fakeadbserver.shellv2commandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellV2Protocol
-import com.android.fakeadbserver.shellcommandhandlers.ShellHandler
+import com.google.common.base.Charsets
 import java.io.ByteArrayOutputStream
 import java.lang.Integer.min
 
 const val STDOUT_PACKET_SIZE = 80
 
 /**
- * A [SimpleShellV2Handler] that outputs all characters received from `stdin` back to `stdout`,
+ * A [SimpleShellV2Handler] that supports the following behaviors.
+ *
+ * If there are no arguments to the "cat" command then it outputs all characters received from `stdin` back to `stdout`,
  * one line at a time, i.e. characters are written back to `stdout` only when a newline ("\n")
  * character is received from `stdin`.
+ *
+ * If "cat" argument is in the form of "/proc/{pid}/cmdline then it returns a command line
+ * which started the process.
  */
 class CatV2CommandHandler : SimpleShellV2Handler("cat") {
 
@@ -39,6 +44,15 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
     ) {
         protocol.writeOkay()
 
+        if (args.isNullOrEmpty()) {
+            forwardStdinAsStdout(protocol)
+            return
+        }
+
+        handleCatProcPidCmdline(protocol, device, args)
+    }
+
+    private fun forwardStdinAsStdout(protocol: ShellV2Protocol) {
         // Forward `stdin` packets back as `stdout` packets
         val stdinProcessor = StdinProcessor(protocol)
         while (true) {
@@ -57,6 +71,24 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
                 }
             }
         }
+    }
+
+    private fun handleCatProcPidCmdline(protocol: ShellV2Protocol, device: DeviceState, args: String) {
+        val procIdRegex = Regex("/proc/(\\d+)/cmdline")
+        val matchResult = procIdRegex.find(args) ?: return
+        val pid = matchResult.groups[1]!!.value.toInt()
+        if (device.getClient(pid) != null) {
+            throw NotImplementedError("cmdline for ClientState is not implemented in FakeAdb")
+        }
+
+        val profileableClient = device.getProfileableProcess(pid)
+        if (profileableClient == null) {
+            protocol.writeStderr("profileableClient with a pid $pid not found")
+            return
+        }
+
+        protocol.writeStdout(profileableClient.commandLine.toByteArray(Charsets.UTF_8))
+        protocol.writeExitCode(0)
     }
 
     class StdinProcessor(private val protocol: ShellV2Protocol) {

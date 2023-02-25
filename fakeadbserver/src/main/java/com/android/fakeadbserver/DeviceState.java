@@ -284,9 +284,11 @@ public class DeviceState {
     }
 
     @NonNull
-    public ProfileableProcessState startProfileableProcess(int pid, @NonNull String architecture) {
+    public ProfileableProcessState startProfileableProcess(
+            int pid, @NonNull String architecture, @NonNull String commandLine) {
         synchronized (mProcessStates) {
-            ProfileableProcessState process = new ProfileableProcessState(pid, architecture);
+            ProfileableProcessState process =
+                    new ProfileableProcessState(pid, architecture, commandLine);
             mProcessStates.put(pid, process);
             mClientStateChangeHub.appProcessListChanged();
             return process;
