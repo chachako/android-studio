@@ -118,7 +118,7 @@ build:nice --jobs=HOST_CPUS*.5
 # See tools/base/bazel/toolchains/clang.BUILD for flags added in opt mode
 build:release -c opt
 build:release --strip=always
-build:release --define release=true
+build:release --//tools/base/bazel:studio-release
 # Disable Clang diagnostics for release builds, to reduce the amount of noise
 # # in the output in continuous builds and --config=remote runs.
 build:release --copt=-w

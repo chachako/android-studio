@@ -4,6 +4,7 @@ load("//tools/base/bazel:proto.bzl", "PROTOC_VERSION")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//tools/base/bazel:maven/artifacts.bzl", "ARTIFACTS", "DATA", "REMOTE_REPOS")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 exports_files(["jarjar_rules.txt"])
 
@@ -429,9 +430,16 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+bool_flag(
+    name = "studio-release",
+    build_setting_default = False,
+)
+
 config_setting(
     name = "release",
-    values = {"define": "release=true"},
+    flag_values = {
+        ":studio-release": "True",
+    },
     visibility = ["//visibility:public"],
 )
 
