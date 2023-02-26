@@ -1865,7 +1865,7 @@ abstract class TaskManager(
         return globalConfig
             .testOptions
             .managedDevices
-            .devices
+            .allDevices
             .toList()
     }
 

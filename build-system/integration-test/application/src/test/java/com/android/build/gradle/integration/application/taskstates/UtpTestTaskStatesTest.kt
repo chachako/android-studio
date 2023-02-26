@@ -65,7 +65,7 @@ class UtpTestTaskStatesTest {
             android {
                 testOptions {
                     managedDevices {
-                        devices {
+                        allDevices {
                             device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
                                 device = "Pixel 2"
                                 apiLevel = 29
@@ -103,7 +103,7 @@ class UtpTestTaskStatesTest {
             android {
                 testOptions {
                     managedDevices {
-                        devices {
+                        allDevices {
                             device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
                                 device = "Pixel 2"
                                 apiLevel = 29
@@ -131,7 +131,7 @@ class UtpTestTaskStatesTest {
             android {
                 testOptions {
                     managedDevices {
-                        devices {
+                        allDevices {
                             device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
                                 device = "Pixel 2"
                                 apiLevel = 29
@@ -180,7 +180,7 @@ class UtpTestTaskStatesTest {
                 }
                 testOptions {
                     managedDevices {
-                        devices {
+                        allDevices {
                             device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
                                 device = "Pixel 2"
                                 apiLevel = 29
@@ -211,7 +211,7 @@ class UtpTestTaskStatesTest {
             android {
                 testOptions {
                     managedDevices {
-                        devices {
+                        allDevices {
                             device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
                                 device = "Pixel 2"
                                 apiLevel = 29

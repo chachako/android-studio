@@ -27,6 +27,13 @@ interface ManagedDevices {
      *
      * These APIs are experimental and may change without notice.
      */
+    val allDevices: ExtensiblePolymorphicDomainObjectContainer<Device>
+
+    /**
+     * List of test devices for this project for use with the Unified Test Platform
+     *
+     * This is replaced with [allDevices]
+     */
     val devices: ExtensiblePolymorphicDomainObjectContainer<Device>
 
     /**

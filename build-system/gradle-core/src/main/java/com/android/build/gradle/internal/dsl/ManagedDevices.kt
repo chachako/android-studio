@@ -26,13 +26,15 @@ import javax.inject.Inject
 open class ManagedDevices @Inject constructor(dslServices: DslServices) :
     com.android.build.api.dsl.ManagedDevices {
 
-    override val devices: ExtensiblePolymorphicDomainObjectContainer<Device> =
+    override val allDevices: ExtensiblePolymorphicDomainObjectContainer<Device> =
         dslServices.polymorphicDomainObjectContainer(Device::class.java).apply {
             registerBinding(
                 com.android.build.api.dsl.ManagedVirtualDevice::class.java,
                 ManagedVirtualDevice::class.java
             )
         }
+
+    override val devices: ExtensiblePolymorphicDomainObjectContainer<Device> = allDevices
 
     override val groups: NamedDomainObjectContainer<DeviceGroup> =
         dslServices.domainObjectContainer(DeviceGroup::class.java, DeviceGroupFactory(dslServices))

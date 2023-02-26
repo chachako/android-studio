@@ -45,8 +45,8 @@ class ManagedDeviceRegistry(
     /**
      * Cached map of the Gradle Decorated Implementation cache to the appropriate Registration.
      *
-     * Since the actual classes in the [Managed Device Block][ManagedDevices.devices] are decorated
-     * Gradle classes, we have to check for the registration via ```instanceof``` the
+     * Since the actual classes in the [Managed Device Block][ManagedDevices.allDevices] are
+     * decorated Gradle classes, we have to check for the registration via ```instanceof``` the
      * implementation. This is not ideal, so we can at least cache the registrations based on the
      * decorated classes as the key for future calls to [get]
      */
@@ -116,7 +116,7 @@ class ManagedDeviceRegistry(
                           "as it is a superclass of an already registered implementation: $this")
         }
         // Now the registration is considered valid, update the binding.
-        testOptions.managedDevices.devices.registerBinding(
+        testOptions.managedDevices.allDevices.registerBinding(
             apiClass,
             implementationClass
         )

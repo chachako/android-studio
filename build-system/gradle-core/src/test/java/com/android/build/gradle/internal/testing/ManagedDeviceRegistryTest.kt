@@ -95,7 +95,7 @@ class ManagedDeviceRegistryTest {
                 TestDeviceTestRunTaskAction::class.java)
         }
 
-        verify(managedDevicesBlock.devices).registerBinding(
+        verify(managedDevicesBlock.allDevices).registerBinding(
             eq(TestDeviceApi::class.java),
             eq(TestDeviceImpl::class.java)
         )
