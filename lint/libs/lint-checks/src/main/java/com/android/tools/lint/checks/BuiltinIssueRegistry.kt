@@ -333,6 +333,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           PackageVisibilityDetector.QUERY_PERMISSIONS_NEEDED,
           ParcelDetector.ISSUE,
           PendingIntentMutableFlagDetector.ISSUE,
+          PendingIntentMutableImplicitDetector.ISSUE,
           PermissionDetector.MISSING_PERMISSION,
           PermissionErrorDetector.CUSTOM_PERMISSION_TYPO,
           PermissionErrorDetector.KNOWN_PERMISSION_ERROR,

@@ -35,11 +35,12 @@ import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UExpression
 
 class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
-  override fun getApplicableMethodNames() = METHOD_NAMES
+  override fun getApplicableMethodNames() = PendingIntentUtils.GET_METHOD_NAMES
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     if (!context.evaluator.isMemberInClass(method, "android.app.PendingIntent")) return
-    val flagsArgument = node.getArgumentForParameter(FLAG_ARGUMENT_POSITION) ?: return
+    val flagsArgument =
+      node.getArgumentForParameter(PendingIntentUtils.GET_ARGUMENT_POSITION_FLAG) ?: return
     val flags = ConstantEvaluator.evaluate(context, flagsArgument) as? Int ?: return
     if (flags and FLAG_MASK == 0) {
       val fix =
@@ -69,12 +70,10 @@ class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
   }
 
   companion object {
-    private val METHOD_NAMES = listOf("getActivity", "getActivities", "getBroadcast", "getService")
-    private const val FLAG_ARGUMENT_POSITION = 3
-    private const val FLAG_IMMUTABLE = 1 shl 26
-    private const val FLAG_MUTABLE = 1 shl 25
-    private const val FLAG_UPDATE_CURRENT = 1 shl 27
-    private const val FLAG_MASK = FLAG_IMMUTABLE or FLAG_MUTABLE or FLAG_UPDATE_CURRENT
+    private const val FLAG_MASK =
+      PendingIntentUtils.FLAG_IMMUTABLE or
+        PendingIntentUtils.FLAG_MUTABLE or
+        PendingIntentUtils.FLAG_UPDATE_CURRENT
 
     @JvmField
     val ISSUE =
