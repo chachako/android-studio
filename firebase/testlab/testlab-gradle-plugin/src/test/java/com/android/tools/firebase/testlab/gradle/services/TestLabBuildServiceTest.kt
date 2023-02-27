@@ -19,6 +19,7 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
+import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import java.io.File
 import org.gradle.api.Action
 import org.gradle.api.Transformer
@@ -51,6 +52,9 @@ class TestLabBuildServiceTest {
     @get:Rule
     val temporaryFolderRule = TemporaryFolder()
 
+    @Mock
+    lateinit var mockExtension: TestLabGradlePluginExtension
+
     @Mock(answer = Answers.RETURNS_MOCKS)
     lateinit var mockBuildServiceRegistry: BuildServiceRegistry
 
@@ -70,16 +74,14 @@ class TestLabBuildServiceTest {
                     }
                 """.trimIndent())
         }
-        val findCredentialFileFunc = {
-            credentialFile
-        }
+
         val credentialFileProvider = mock<Provider<File>>()
         `when`(mockProviderFactory.provider<File>(any()))
             .thenReturn(credentialFileProvider)
         val credentialFileRegularFile = mock<RegularFile>()
         `when`(credentialFileRegularFile.asFile).thenReturn(credentialFile)
 
-        TestLabBuildService.RegistrationAction(mockProviderFactory, findCredentialFileFunc)
+        TestLabBuildService.RegistrationAction(mockExtension, mockProviderFactory)
             .registerIfAbsent(mockBuildServiceRegistry)
 
         lateinit var configAction: Action<in BuildServiceSpec<TestLabBuildService.Parameters>>

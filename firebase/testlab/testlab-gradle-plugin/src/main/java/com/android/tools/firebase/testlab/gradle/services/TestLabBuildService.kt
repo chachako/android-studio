@@ -47,8 +47,8 @@ import com.google.api.services.testing.model.TestMatrix
 import com.google.api.services.testing.model.TestSpecification
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.StackTrace
-import com.google.firebase.testlab.gradle.ManagedDevice
 import com.google.firebase.testlab.gradle.Orientation
+import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import com.google.testing.platform.proto.api.core.ErrorProto.Error
 import com.google.testing.platform.proto.api.core.IssueProto.Issue
 import com.google.testing.platform.proto.api.core.LabelProto.Label
@@ -60,16 +60,6 @@ import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestStatusProto.TestStatus
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteMetaData
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.nio.charset.StandardCharsets
-import java.util.Locale
-import java.util.UUID
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
@@ -80,6 +70,16 @@ import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.services.BuildServiceRegistry
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.charset.StandardCharsets
+import java.util.Locale
+import java.util.UUID
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 /**
  * A Gradle Build service that provides APIs to talk to the Firebase Test Lab backend server.
@@ -93,6 +93,11 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
 
         const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
+
+        val oauthScope = listOf(
+                // Scope for Cloud Tool Results API and Cloud Testing API.
+                "https://www.googleapis.com/auth/cloud-platform",
+        )
 
         class TestCases : GenericJson() {
             @Key var testCases: List<TestCase>? = null
@@ -140,12 +145,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     }
 
     private val credential = parameters.credentialFile.get().asFile.inputStream().use {
-        GoogleCredential.fromStream(it).createScoped(
-            listOf(
-                // Scope for Cloud Tool Results API and Cloud Testing API.
-                "https://www.googleapis.com/auth/cloud-platform",
-            )
-        )
+        GoogleCredential.fromStream(it).createScoped(oauthScope)
     }
 
     private val httpRequestInitializer: HttpRequestInitializer = HttpRequestInitializer { request ->
@@ -155,23 +155,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     private val jacksonFactory: JacksonFactory
         get() = JacksonFactory.getDefaultInstance()
-
-    fun runTestsOnDevice(
-        device: ManagedDevice,
-        testData: StaticTestData,
-        resultsOutDir: File,
-        projectPath: String,
-        variantName: String,
-    ) = runTestsOnDevice(
-        deviceName = device.getName(),
-        deviceId = device.device,
-        deviceApiLevel = device.apiLevel,
-        deviceLocale = Locale.forLanguageTag(device.locale),
-        deviceOrientation = device.orientation,
-        testData = testData,
-        resultsOutDir = resultsOutDir,
-        projectPath = projectPath,
-        variantName = variantName)
 
     fun runTestsOnDevice(
         deviceName: String,
@@ -806,8 +789,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
      * An action to register TestLabBuildService to a project.
      */
     class RegistrationAction(
+        private val testLabExtension: TestLabGradlePluginExtension,
         private val providerFactory: ProviderFactory,
-        private val findCredentialFileFunc: () -> File = ::getGcloudCredentialsFile,
     ) {
         companion object {
             /**
@@ -846,7 +829,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             private const val WELL_KNOWN_CREDENTIALS_FILE = "application_default_credentials.json"
             private const val CLOUDSDK_CONFIG_DIRECTORY = "gcloud"
 
-            fun getGcloudCredentialsFile(): File {
+            private fun getGcloudApplicationDefaultCredentialsFile(): File {
                 val os = System.getProperty("os.name", "").lowercase(Locale.US)
                 val envPath = System.getenv("CLOUDSDK_CONFIG") ?: ""
                 val cloudConfigPath = if (envPath.isNotBlank()) {
@@ -862,6 +845,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             }
 
             private fun getQuotaProjectName(credentialFile: File): String {
+                if (!credentialFile.exists() || !credentialFile.isFile) {
+                    throwCredentialNotFoundError()
+                }
                 val quotaProjectName = credentialFile.inputStream().use {
                     val parser = JsonObjectParser(Utils.getDefaultJsonFactory())
                     val fileContents = parser.parseAndClose<GenericJson>(
@@ -909,7 +895,13 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }
 
         private fun configure(params: Parameters) {
-            params.credentialFile.fileProvider(providerFactory.provider(findCredentialFileFunc))
+            params.credentialFile.fileProvider(providerFactory.provider {
+                if (testLabExtension.serviceAccountCredentials.isPresent) {
+                    testLabExtension.serviceAccountCredentials.get().asFile
+                } else {
+                    getGcloudApplicationDefaultCredentialsFile()
+                }
+            })
             params.quotaProjectName.set(params.credentialFile.map {
                 getQuotaProjectName(it.asFile)
             })

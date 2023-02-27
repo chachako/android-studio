@@ -42,8 +42,6 @@ class TestLabGradlePlugin : Plugin<Project> {
                               " Current version is $agpVersion.")
             }
 
-            registerTestLabBuildServiceIfAbsent(project)
-
             // Registering with the Device registry will take care of the test options binding.
             project.extensions.getByType(AndroidComponentsExtension::class.java)
                 .managedDeviceRegistry.registerDeviceType(ManagedDevice::class.java) {
@@ -60,20 +58,11 @@ class TestLabGradlePlugin : Plugin<Project> {
                 project.objects,
                 androidExtension.testOptions.managedDevices
             )
+
+            TestLabBuildService.RegistrationAction(
+                    project.extensions.getByType(TestLabGradlePluginExtension::class.java),
+                    project.providers,
+            ).registerIfAbsent(project.gradle.sharedServices)
         }
-    }
-
-    private fun registerTestLabBuildServiceIfAbsent(project: Project) {
-        TestLabBuildService.RegistrationAction(project.providers) {
-            val testLabExtension = project
-                .extensions
-                .getByType(TestLabGradlePluginExtension::class.java)
-            if (testLabExtension.serviceAccountCredentials.isPresent) {
-                testLabExtension.serviceAccountCredentials.get().asFile
-            } else {
-                TestLabBuildService.RegistrationAction.getGcloudCredentialsFile()
-            }
-
-        }.registerIfAbsent(project.gradle.sharedServices)
     }
 }
