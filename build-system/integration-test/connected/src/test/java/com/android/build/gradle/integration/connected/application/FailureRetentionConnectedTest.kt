@@ -76,7 +76,7 @@ class FailureRetentionConnectedTest {
             )
             .run("connectedAndroidTest")
         val connectedDir = project.projectDir
-            .resolve("app/build/outputs/androidTest-results/connected/emulator-5554 - 10")
+            .resolve("app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 10")
         assertThat(connectedDir.resolve("test-result.pb")).exists()
     }
 
@@ -152,7 +152,7 @@ class FailureRetentionConnectedTest {
 
     private fun validateFailureOutputs() {
         val connectedDir = project.projectDir
-            .resolve("app/build/outputs/androidTest-results/connected/emulator-5554 - 10")
+            .resolve("app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 10")
         val testResultFile = connectedDir.resolve("test-result.pb")
         assertThat(testResultFile).exists()
         val testSuiteResultProto = TestSuiteResultProto.TestSuiteResult.parseFrom(
@@ -184,7 +184,7 @@ class FailureRetentionConnectedTest {
                 .run("connectedAndroidTest")
         }
         val connectedDir = project.projectDir
-            .resolve("app/build/outputs/androidTest-results/connected/emulator-5554 - 10")
+            .resolve("app/build/outputs/androidTest-results/connected/debug/emulator-5554 - 10")
         val testResultFile = connectedDir.resolve("test-result.pb")
         assertThat(testResultFile).exists()
         val testSuiteResultProto = TestSuiteResultProto.TestSuiteResult.parseFrom(

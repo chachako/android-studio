@@ -54,7 +54,7 @@ public class KotlinAppConnectedTest {
                 .run("connectedAndroidTest");
 
         String testReportPath =
-                "build/reports/androidTests/connected/com.example.android.kotlin.html";
+                "build/reports/androidTests/connected/debug/com.example.android.kotlin.html";
         assertThat(project.file("app/" + testReportPath)).exists();
         assertThat(project.file("library/" + testReportPath)).exists();
         assertThat(project.file("libraryNoTests/" + testReportPath)).doesNotExist();

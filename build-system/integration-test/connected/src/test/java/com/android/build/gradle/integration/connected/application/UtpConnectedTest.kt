@@ -37,11 +37,11 @@ class UtpConnectedTest : UtpTestBase() {
         @JvmField
         val EMULATOR = getEmulator()
 
-        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/TEST-emulator-5554 - 10-_"
-        private const val LOGCAT = "build/outputs/androidTest-results/connected/emulator-5554 - 10/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
-        private const val TEST_REPORT = "build/reports/androidTests/connected/com.example.android.kotlin.html"
-        private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/emulator-5554 - 10/test-result.pb"
-        private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/connected/test-result.pb"
+        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/debug/TEST-emulator-5554 - 10-_"
+        private const val LOGCAT = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 10/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
+        private const val TEST_REPORT = "build/reports/androidTests/connected/debug/com.example.android.kotlin.html"
+        private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 10/test-result.pb"
+        private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/test-result.pb"
         private const val TEST_COV_XML = "build/reports/coverage/androidTest/debug/connected/report.xml"
         private const val ENABLE_UTP_TEST_REPORT_PROPERTY = "com.android.tools.utp.GradleAndroidProjectResolverExtension.enable"
         private const val TEST_ADDITIONAL_OUTPUT = "build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/emulator-5554 - 10"

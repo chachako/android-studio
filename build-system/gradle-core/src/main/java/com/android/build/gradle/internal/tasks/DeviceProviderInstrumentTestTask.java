@@ -86,6 +86,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -858,14 +859,19 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                             : AndroidArtifacts.ArtifactType.CLASSES_JAR);
 
             String flavorFolder = testData.getFlavorName().get();
+            //  TODO(b/271294549): Move BuildTarget into testData
+            String buildTarget = "";
             if (!flavorFolder.isEmpty()) {
+                buildTarget = variantName.substring(flavorFolder.length()).toLowerCase(Locale.US);
                 flavorFolder = FD_FLAVORS + "/" + flavorFolder;
+            } else {
+                buildTarget = variantName;
             }
             String providerFolder =
                     type == Type.INTERNAL_CONNECTED_DEVICE_PROVIDER
                             ? CONNECTED
                             : DEVICE + "/" + deviceProviderName;
-            final String subFolder = "/" + providerFolder + "/" + flavorFolder;
+            final String subFolder = "/" + providerFolder + "/" + buildTarget + "/" + flavorFolder;
 
             String rootLocation = testOptions.getResultsDir();
             if (rootLocation == null) {

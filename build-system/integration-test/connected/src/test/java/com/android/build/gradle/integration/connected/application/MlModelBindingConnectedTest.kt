@@ -87,7 +87,7 @@ class MlModelBindingConnectedTest {
     fun verifyModelInferenceWithValidOutput() {
         project.executor().run("connectedAndroidTest")
         val htmlResults =
-            project.file("build/reports/androidTests/connected/com.example.app.ModelTest.html")
+            project.file("build/reports/androidTests/connected/debug/com.example.app.ModelTest.html")
         assertThat(htmlResults).isFile()
     }
 }
