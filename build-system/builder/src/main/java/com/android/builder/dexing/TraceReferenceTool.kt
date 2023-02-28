@@ -32,7 +32,7 @@ fun runTraceReferenceTool(
     keepRuleOutput: Path
 ) {
     val consumer = TraceReferencesKeepRules.builder()
-        .setAllowObfuscation(true)
+        .setAllowObfuscation(false)
         .setOutputConsumer(StringConsumer.FileConsumer(keepRuleOutput))
         .build()
 

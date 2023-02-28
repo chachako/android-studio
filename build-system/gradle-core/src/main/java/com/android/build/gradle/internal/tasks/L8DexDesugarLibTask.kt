@@ -159,10 +159,8 @@ abstract class L8DexDesugarLibTask : NonIncrementalTask() {
                     dexingCreationConfig.minSdkVersionForDexing.getFeatureLevel(),
                     task.fullBootClasspath),
                 )
-                // make sure non-minified release build is not obfuscated
-                if (dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8) {
-                    task.keepRulesConfigurations.set(listOf("-dontobfuscate"))
-                }
+                // desugar library is shrunk to reduce apk but not obfuscated or optimized
+                task.keepRulesConfigurations.set(listOf("-dontobfuscate", "-dontoptimize"))
 
                 if (creationConfig is ApplicationCreationConfig && creationConfig.consumesFeatureJars) {
                     task.dexFiles.from(creationConfig.artifacts.get(InternalArtifactType.BASE_DEX))

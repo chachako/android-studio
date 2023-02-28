@@ -276,7 +276,7 @@ class CoreLibraryDesugarTest {
             ?: fail("Failed to find the dex with class name $programClass")
         DexClassSubject.assertThat(dex.classes[programClass])
             .hasMethodThatInvokes("getText", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
-        val desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)!!
+        var desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)!!
         assertThat(getAllStartLocals(desugarLibDex)).named("debug locals info").isNotEmpty()
         assertThat(getAllDexWithJDollarTypes(apk.allDexes)).named("all dex files with desugar jdk lib classes").hasSize(1)
 
@@ -297,6 +297,8 @@ class CoreLibraryDesugarTest {
             ?: fail("Failed to find the dex with class name $programClass")
         DexClassSubject.assertThat(dex.classes[programClass])
             .hasMethodThatInvokes("a", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
+        desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)!!
+        DexSubject.assertThat(desugarLibDex).containsClass(unObfuscatedClass)
     }
 
     @Test
@@ -369,20 +371,20 @@ class CoreLibraryDesugarTest {
         executor().run("app:assembleRelease")
         val out = InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
         val expectedKeepRules =
-            "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
+            "-keep class j\$.time.LocalTime {$lineSeparator" +
                     "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
                     "  j\$.time.LocalTime NOON;$lineSeparator" +
                     "}$lineSeparator" +
-                    "-keep,allowobfuscation enum j\$.time.Month {$lineSeparator" +
+                    "-keep enum j\$.time.Month {$lineSeparator" +
                     "  j\$.time.Month JUNE;$lineSeparator" +
                     "}$lineSeparator" +
-                    "-keep,allowobfuscation class j\$.util.Collection\$-EL {$lineSeparator" +
+                    "-keep class j\$.util.Collection\$-EL {$lineSeparator" +
                     "  public static j\$.util.stream.Stream stream(java.util.Collection);$lineSeparator" +
                     "}$lineSeparator" +
-                    "-keep,allowobfuscation class j\$.util.Optional {$lineSeparator" +
+                    "-keep class j\$.util.Optional {$lineSeparator" +
                     "  public java.lang.Object get();$lineSeparator" +
                     "}$lineSeparator" +
-                    "-keep,allowobfuscation interface j\$.util.stream.Stream {$lineSeparator" +
+                    "-keep interface j\$.util.stream.Stream {$lineSeparator" +
                     "  public j\$.util.Optional findFirst();$lineSeparator" +
                     "}$lineSeparator"
         Truth.assertThat(collectKeepRulesUnderDirectory(out)).isEqualTo(expectedKeepRules)
@@ -462,7 +464,7 @@ class CoreLibraryDesugarTest {
 
         val out =
             InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
-        val expectedKeepRules = "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
+        val expectedKeepRules = "-keep class j\$.time.LocalTime {$lineSeparator" +
                 "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
                 "}$lineSeparator"
         assertThat(collectKeepRulesUnderDirectory(out)).contains(expectedKeepRules)
@@ -479,7 +481,7 @@ class CoreLibraryDesugarTest {
 
         val out =
             InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
-        val expectedKeepRules = "-keep,allowobfuscation class j\$.time.LocalTime {$lineSeparator" +
+        val expectedKeepRules = "-keep class j\$.time.LocalTime {$lineSeparator" +
                 "  j\$.time.LocalTime MIDNIGHT;$lineSeparator" +
                 "}$lineSeparator"
         assertThat(collectKeepRulesUnderDirectory(out)).contains(expectedKeepRules)
@@ -505,13 +507,13 @@ class CoreLibraryDesugarTest {
         val keepRulesOutputDir =
             InternalArtifactType.DESUGAR_LIB_KEEP_RULES.getOutputDir(app.buildDir)
         val expectedKeepRules =
-            "-keep,allowobfuscation class j\$.util.Collection\$-EL {$lineSeparator" +
+            "-keep class j\$.util.Collection\$-EL {$lineSeparator" +
                     "  public static j\$.util.stream.Stream stream(java.util.Collection);$lineSeparator" +
                     "}$lineSeparator" +
-                    "-keep,allowobfuscation class j\$.util.Optional {$lineSeparator" +
+                    "-keep class j\$.util.Optional {$lineSeparator" +
                     "  public java.lang.Object get();$lineSeparator" +
                     "}$lineSeparator" +
-                    "-keep,allowobfuscation interface j\$.util.stream.Stream {$lineSeparator" +
+                    "-keep interface j\$.util.stream.Stream {$lineSeparator" +
                     "  public j\$.util.Optional findFirst();$lineSeparator" +
                     "}$lineSeparator"
         Truth.assertThat(collectKeepRulesUnderDirectory(keepRulesOutputDir)).isEqualTo(expectedKeepRules)
