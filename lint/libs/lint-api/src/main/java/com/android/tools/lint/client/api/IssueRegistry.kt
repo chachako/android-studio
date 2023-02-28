@@ -25,6 +25,7 @@ import com.android.tools.lint.detector.api.Platform
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.VersionChecks.Companion.SDK_INT_VERSION_DATA
 import com.android.tools.lint.detector.api.editDistance
 import com.android.tools.lint.detector.api.isApplicableTo
 import com.google.common.collect.Maps
@@ -364,6 +365,7 @@ abstract class IssueRegistry protected constructor() {
     map[UNKNOWN_ISSUE_ID.id] = UNKNOWN_ISSUE_ID
     map[CANNOT_ENABLE_HIDDEN.id] = CANNOT_ENABLE_HIDDEN
     map[OBSOLETE_LINT_CHECK.id] = OBSOLETE_LINT_CHECK
+    map[SDK_INT_VERSION_DATA.id] = SDK_INT_VERSION_DATA
     return map
   }
 

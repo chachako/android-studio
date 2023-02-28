@@ -617,7 +617,8 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 variant,
                 checkDependencies = true,
                 warnIfProjectTreatedAsExternalDependency = true,
-                lintMode
+                lintMode,
+                fatalOnly = fatalOnly
             )
             val partialResults = if (fatalOnly) {
                 creationConfig.artifacts.get(InternalArtifactType.LINT_VITAL_PARTIAL_RESULTS)

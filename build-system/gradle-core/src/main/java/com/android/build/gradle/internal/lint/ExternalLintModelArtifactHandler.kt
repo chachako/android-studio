@@ -54,7 +54,8 @@ class ExternalLintModelArtifactHandler private constructor(
     private val projectExplodedAarsMap: Map<ProjectSourceSetKey, File>,
     private val projectJarsMap: Map<ProjectSourceSetKey, File>,
     private val baseModuleModelFileMap: Map<ProjectKey, File>,
-    private val lintModelMetadataMap: Map<ProjectKey, File>
+    private val lintModelMetadataMap: Map<ProjectKey, File>,
+    private val lintPartialResultsMap: Map<ProjectKey, File>
 ) : ArtifactHandler<LintModelLibrary>(localJarCache, mavenCoordinatesCache) {
 
     override fun handleAndroidLibrary(
@@ -85,7 +86,8 @@ class ExternalLintModelArtifactHandler private constructor(
             externalAnnotations = File(folder, SdkConstants.FN_ANNOTATIONS_ZIP),
             proguardRules = File(folder, SdkConstants.FN_PROGUARD_TXT),
             provided = isProvided,
-            resolvedCoordinates = coordinatesSupplier().toMavenName()
+            resolvedCoordinates = coordinatesSupplier().toMavenName(),
+            partialResultsDir = null
         )
 
     override fun handleAndroidModule(
@@ -142,7 +144,8 @@ class ExternalLintModelArtifactHandler private constructor(
             externalAnnotations = File(folder, SdkConstants.FN_ANNOTATIONS_ZIP),
             proguardRules = File(folder, SdkConstants.FN_PROGUARD_TXT),
             provided = isProvided,
-            resolvedCoordinates = resolvedCoordinates
+            resolvedCoordinates = resolvedCoordinates,
+            partialResultsDir = lintPartialResultsMap[mainKey]
         )
     }
 
@@ -156,7 +159,8 @@ class ExternalLintModelArtifactHandler private constructor(
             identifier = identitySupplier(),
             jarFiles = listOf(jarFile),
             resolvedCoordinates = coordinatesSupplier().toMavenName(),
-            provided = isProvided
+            provided = isProvided,
+            partialResultsDir = null
         )
 
     override fun handleJavaModule(
@@ -193,7 +197,8 @@ class ExternalLintModelArtifactHandler private constructor(
             identifier = identitySupplier(),
             jarFiles = listOf(jar),
             resolvedCoordinates = resolvedCoordinates,
-            provided = false
+            provided = false,
+            partialResultsDir = lintPartialResultsMap[mainKey]
         )
     }
 
@@ -221,6 +226,8 @@ class ExternalLintModelArtifactHandler private constructor(
             baseModuleModelFile: ArtifactCollection?,
             compileLintModelMetadata: ArtifactCollection,
             runtimeLintModelMetadata: ArtifactCollection,
+            compileLintPartialResults: ArtifactCollection?,
+            runtimeLintPartialResults: ArtifactCollection?,
             buildMapping: BuildMapping
         ): ExternalLintModelArtifactHandler {
             var projectExplodedAarsMap =
@@ -238,13 +245,19 @@ class ExternalLintModelArtifactHandler private constructor(
             val lintModelMetadataMap =
                 compileLintModelMetadata.asProjectKeyedMap(buildMapping) +
                         runtimeLintModelMetadata.asProjectKeyedMap(buildMapping)
+            var lintPartialResultsMap =
+                compileLintPartialResults?.asProjectKeyedMap(buildMapping) ?: emptyMap()
+            runtimeLintPartialResults?.let {
+                lintPartialResultsMap = lintPartialResultsMap + it.asProjectKeyedMap(buildMapping)
+            }
             return ExternalLintModelArtifactHandler(
                 dependencyCaches.localJarCache,
                 dependencyCaches.mavenCoordinatesCache,
                 Collections.unmodifiableMap(projectExplodedAarsMap),
                 Collections.unmodifiableMap(projectJarsMap),
                 Collections.unmodifiableMap(baseModuleModelFileMap),
-                Collections.unmodifiableMap(lintModelMetadataMap)
+                Collections.unmodifiableMap(lintModelMetadataMap),
+                Collections.unmodifiableMap(lintPartialResultsMap)
             )
 
         }

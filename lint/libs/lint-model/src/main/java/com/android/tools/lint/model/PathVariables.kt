@@ -125,7 +125,11 @@ class PathVariables {
   }
 
   /** Reverses the path string computed by [toPathString] */
-  fun fromPathString(path: String, relativeTo: File? = null): File {
+  fun fromPathString(
+    path: String,
+    relativeTo: File? = null,
+    allowMissingPathVariable: Boolean = false
+  ): File {
     if (path.startsWith("$")) {
       val hasBraces = path.length > 1 && path[1] == '{'
       for (i in 1 until path.length) {
@@ -134,14 +138,22 @@ class PathVariables {
           val varName = path.substring(1, i)
           val dir =
             pathVariables.firstOrNull { it.name == varName }?.dir
-              ?: error("Path variable \$$varName referenced in $path not provided to serialization")
+              ?: if (allowMissingPathVariable) {
+                File("\$$varName")
+              } else {
+                error("Path variable \$$varName referenced in $path not provided to serialization")
+              }
           val relativeStart = if (c == '/' || c == '\\') i + 1 else i
           return File(dir, path.substring(relativeStart))
         }
       }
       val name = path.substring(1)
       return pathVariables.firstOrNull { it.name == name }?.dir
-        ?: error("Path variable \$$name referenced in $path not provided to serialization")
+        ?: if (allowMissingPathVariable) {
+          File("\$$name")
+        } else {
+          error("Path variable \$$name referenced in $path not provided to serialization")
+        }
     }
 
     val file = File(path)

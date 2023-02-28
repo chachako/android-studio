@@ -304,7 +304,8 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
                 variant,
                 checkDependencies = false,
                 warnIfProjectTreatedAsExternalDependency = false,
-                LintMode.ANALYSIS
+                LintMode.ANALYSIS,
+                fatalOnly = fatalOnly
             )
             task.lintTool.initialize(creationConfig.services)
             task.desugaredMethodsFiles.from(

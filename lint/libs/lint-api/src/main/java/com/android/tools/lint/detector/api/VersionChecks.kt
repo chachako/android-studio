@@ -120,8 +120,13 @@ class VersionChecks(
         severity = Severity.INFORMATIONAL,
         androidSpecific = true,
         // Not a real implementation
-        implementation = Implementation(Detector::class.java, Scope.EMPTY)
+        implementation = Implementation(FakeDetector::class.java, Scope.EMPTY)
       )
+
+    class FakeDetector : Detector() {
+      override fun checkPartialResults(context: Context, partialResults: PartialResult) {}
+      override fun filterIncident(context: Context, incident: Incident, map: LintMap) = false
+    }
 
     const val SDK_INT = "SDK_INT"
     const val CHECKS_SDK_INT_AT_LEAST_ANNOTATION = "androidx.annotation.ChecksSdkIntAtLeast"
@@ -1733,7 +1738,11 @@ class VersionChecks(
             is PsiField -> getFieldKey(evaluator, owner)
             else -> return null
           }
-        val map = client.getPartialResults(project, SDK_INT_VERSION_DATA).map()
+        val lintMaps = client.getPartialResults(project, SDK_INT_VERSION_DATA).maps()
+        val map = mutableMapOf<String, String>()
+        lintMaps.forEach { lintMap ->
+          lintMap.keys().forEach { key -> lintMap[key]?.let { map[key] = it } }
+        }
         val args = map[key] ?: return null
         val api = findAttribute(args, "api")?.toIntOrNull()
         val codename = findAttribute(args, "codename")

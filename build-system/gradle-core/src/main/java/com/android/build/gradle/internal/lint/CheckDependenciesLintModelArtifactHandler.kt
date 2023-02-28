@@ -91,7 +91,8 @@ internal class CheckDependenciesLintModelArtifactHandler(
             externalAnnotations = File(folder, SdkConstants.FN_ANNOTATIONS_ZIP),
             proguardRules = File(folder, SdkConstants.FN_PROGUARD_TXT),
             provided = isProvided,
-            resolvedCoordinates = coordinatesSupplier().toMavenName()
+            resolvedCoordinates = coordinatesSupplier().toMavenName(),
+            partialResultsDir = null
         )
 
     override fun handleAndroidModule(
@@ -122,7 +123,8 @@ internal class CheckDependenciesLintModelArtifactHandler(
             identifier = identitySupplier(),
             jarFiles = listOf(jarFile),
             resolvedCoordinates = coordinatesSupplier().toMavenName(),
-            provided = isProvided
+            provided = isProvided,
+            partialResultsDir = null
         )
 
     override fun handleJavaModule(
@@ -158,7 +160,8 @@ internal class CheckDependenciesLintModelArtifactHandler(
                 identifier = identitySupplier(),
                 jarFiles = listOf(jar),
                 resolvedCoordinates = LintModelMavenName.NONE,
-                provided = false
+                provided = false,
+                partialResultsDir = null
             )
         }
     }

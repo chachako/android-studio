@@ -48,12 +48,12 @@ class AndroidLintAnalysisTaskTest {
         assertThat(partialResultsDir.listFiles()?.asList())
             .containsAtLeastElementsIn(
                 listOf(
-                    File(partialResultsDir, "lint-definite-debug.xml"),
-                    File(partialResultsDir, "lint-issues-debug.xml"),
-                    File(partialResultsDir, "lint-partial-debug.xml")
+                    File(partialResultsDir, "lint-definite.xml"),
+                    File(partialResultsDir, "lint-issues.xml"),
+                    File(partialResultsDir, "lint-partial.xml")
                 )
             )
-        assertThat(File(partialResultsDir, "lint-definite-debug.xml"))
+        assertThat(File(partialResultsDir, "lint-definite.xml"))
             .contains("{:app*debug*sourceProvider*0*javaDir*2}")
     }
 
@@ -72,11 +72,11 @@ class AndroidLintAnalysisTaskTest {
         assertThat(partialResultsDir.listFiles()?.asList())
             .containsAtLeastElementsIn(
                 listOf(
-                    File(partialResultsDir, "lint-definite-debug.xml"),
-                    File(partialResultsDir, "lint-partial-debug.xml")
+                    File(partialResultsDir, "lint-definite.xml"),
+                    File(partialResultsDir, "lint-partial.xml")
                 )
             )
-        assertThat(File(partialResultsDir, "lint-definite-debug.xml"))
+        assertThat(File(partialResultsDir, "lint-definite.xml"))
             .contains("{:library*debug*sourceProvider*0*resDir*0}")
     }
 }

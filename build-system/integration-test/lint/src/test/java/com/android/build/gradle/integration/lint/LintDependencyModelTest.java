@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.lint;
 
 import static com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat;
+import static com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT;
 import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -145,6 +146,20 @@ public class LintDependencyModelTest {
             assertThat(String.join("\n", Files.readAllLines(librariesModelFile.toPath())))
                     .contains(expectedString);
         }
+    }
+
+    @Test
+    public void testLintAnalysisDoesWorkWhenDependencyPartialResultsChange() throws Exception {
+        project.executor().with(LINT_ANALYSIS_PER_COMPONENT, true).run(":app:lintDebug");
+
+        TestFileUtils.searchAndReplace(
+                project.getSubproject("javalib").file("lint.xml"), "ignore", "information");
+
+        GradleBuildResult result =
+                project.executor().with(LINT_ANALYSIS_PER_COMPONENT, true).run(":app:lintDebug");
+        // The app's lint analysis task does work in this case because the partial results from the
+        // javalib module are different after tweaking its lint.xml file.
+        assertThat(result.findTask(":app:lintAnalyzeDebug")).didWork();
     }
 
     @NotNull

@@ -181,7 +181,8 @@ abstract class LintModelWriterTask : NonIncrementalTask() {
                 checkDependencies = checkDependencies,
                 warnIfProjectTreatedAsExternalDependency = false,
                 LintMode.MODEL_WRITING,
-                addBaseModuleLintModel = creationConfig is DynamicFeatureCreationConfig
+                addBaseModuleLintModel = creationConfig is DynamicFeatureCreationConfig,
+                fatalOnly = fatalOnly
             )
             task.partialResultsDir =
                 creationConfig.artifacts.getOutputPath(

@@ -2201,7 +2201,7 @@ class ProjectInitializerTest {
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/a/lint_partial_results"))
 
     // Delete definite issues, as these have definitely already been reported.
-    File(root, "out/java/com/google/a/lint_partial_results/lint-definite-all.xml").delete()
+    File(root, "out/java/com/google/a/lint_partial_results/lint-definite.xml").delete()
 
     // Analyze project b.
     MainTest.checkDriver(
@@ -2253,7 +2253,7 @@ class ProjectInitializerTest {
     )
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/b/lint_partial_results"))
     // Delete definite issues.
-    File(root, "out/java/com/google/b/lint_partial_results/lint-definite-all.xml").delete()
+    File(root, "out/java/com/google/b/lint_partial_results/lint-definite.xml").delete()
 
     // Analyze project onlyres.
     MainTest.checkDriver(
@@ -2295,7 +2295,7 @@ class ProjectInitializerTest {
     )
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/onlyres/lint_partial_results"))
     // Delete definite issues.
-    File(root, "out/java/com/google/onlyres/lint_partial_results/lint-definite-all.xml").delete()
+    File(root, "out/java/com/google/onlyres/lint_partial_results/lint-definite.xml").delete()
 
     // Analyze project c.
     MainTest.checkDriver(

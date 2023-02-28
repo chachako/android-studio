@@ -35,7 +35,7 @@ open class LintModelModuleLibraryProject(
   client: LintClient,
   dir: File,
   referenceDir: File,
-  val dependency: LintModelDependency
+  val dependency: LintModelDependency?
 ) : Project(client, dir, referenceDir) {
 
   init {
@@ -87,7 +87,7 @@ open class LintModelModuleJavaLibraryProject(
   client: LintClient,
   dir: File,
   referenceDir: File,
-  dependency: LintModelDependency,
+  dependency: LintModelDependency?,
   private val javaLibrary: LintModelJavaLibrary
 ) : LintModelModuleLibraryProject(client, dir, referenceDir, dependency) {
 
@@ -101,6 +101,10 @@ open class LintModelModuleJavaLibraryProject(
     }
     return javaLibraries
   }
+
+  override fun getPartialResultsDir(): java.io.File? {
+    return javaLibrary.partialResultsDir ?: super.getPartialResultsDir()
+  }
 }
 
 /** Lint project wrapping an Android library (AAR) */
@@ -108,7 +112,7 @@ open class LintModelModuleAndroidLibraryProject(
   client: LintClient,
   dir: File,
   referenceDir: File,
-  dependency: LintModelDependency,
+  dependency: LintModelDependency?,
   private val androidLibrary: LintModelAndroidLibrary
 ) : LintModelModuleLibraryProject(client, dir, referenceDir, dependency) {
   init {
@@ -217,20 +221,24 @@ open class LintModelModuleAndroidLibraryProject(
       ANDROIDX_APPCOMPAT_LIB_ARTIFACT -> {
         if (appCompat == null) {
           appCompat =
-            dependency.hasDependency(ANDROIDX_APPCOMPAT_LIB_ARTIFACT) ||
-              dependency.hasDependency(APPCOMPAT_LIB_ARTIFACT)
+            dependency?.hasDependency(ANDROIDX_APPCOMPAT_LIB_ARTIFACT) == true ||
+              dependency?.hasDependency(APPCOMPAT_LIB_ARTIFACT) == true
         }
         appCompat
       }
       ANDROIDX_LEANBACK_ARTIFACT -> {
         if (leanback == null) {
           leanback =
-            dependency.hasDependency(ANDROIDX_LEANBACK_ARTIFACT) ||
-              dependency.hasDependency(SdkConstants.LEANBACK_V17_ARTIFACT)
+            dependency?.hasDependency(ANDROIDX_LEANBACK_ARTIFACT) == true ||
+              dependency?.hasDependency(SdkConstants.LEANBACK_V17_ARTIFACT) == true
         }
         leanback
       }
-      else -> if (dependency.hasDependency(artifact)) true else super.dependsOn(id)
+      else -> if (dependency?.hasDependency(artifact) == true) true else super.dependsOn(id)
     }
+  }
+
+  override fun getPartialResultsDir(): java.io.File? {
+    return androidLibrary.partialResultsDir ?: super.getPartialResultsDir()
   }
 }

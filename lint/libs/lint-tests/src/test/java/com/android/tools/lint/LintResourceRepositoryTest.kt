@@ -626,7 +626,7 @@ class LintResourceRepositoryTest {
       .run()
       .expectMatches(
         Pattern.quote(
-          "build/lint-resources-all.xml: Warning: Failed to deserialize cached resource repository.\n" +
+          "build/lint-resources.xml: Warning: Failed to deserialize cached resource repository.\n" +
             "This is an internal lint error which typically means that lint is being passed a\n" +
             "serialized file that was created with an older version of lint or with a different\n" +
             "set of path variable names. Attempting to gracefully recover.\n" +

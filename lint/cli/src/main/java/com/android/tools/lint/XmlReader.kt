@@ -510,8 +510,8 @@ class XmlReader(
       .build()
   }
 
-  private fun getFile(path: String): File {
-    return client.pathVariables.fromPathString(path, project?.dir)
+  private fun getFile(path: String, allowMissingPathVariable: Boolean = false): File {
+    return client.pathVariables.fromPathString(path, project?.dir, allowMissingPathVariable)
   }
 
   private fun readLocation(): Location {
@@ -531,7 +531,7 @@ class XmlReader(
         ATTR_ID -> {
           /* ignore: this is used as attribute key when in a note */
         }
-        ATTR_FILE -> file = getFile(value)
+        ATTR_FILE -> file = getFile(value, allowMissingPathVariable = true)
         ATTR_LINE -> line = value
         ATTR_END_LINE -> endLine = value
         ATTR_COLUMN -> column = value

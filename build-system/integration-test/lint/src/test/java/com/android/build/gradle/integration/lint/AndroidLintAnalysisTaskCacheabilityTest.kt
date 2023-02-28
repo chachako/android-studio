@@ -204,15 +204,15 @@ class AndroidLintAnalysisTaskCacheabilityTest {
                 )
             val lintDefiniteFileName =
                 if (moduleName == ":java-lib") {
-                    "lint-definite-main.xml"
+                    "lint-definite.xml"
                 } else {
-                    "lint-definite-debug.xml"
+                    "lint-definite.xml"
                 }
             val lintPartialFileName =
                 if (moduleName == ":java-lib") {
-                    "lint-partial-main.xml"
+                    "lint-partial.xml"
                 } else {
-                    "lint-partial-debug.xml"
+                    "lint-partial.xml"
                 }
 
             // First check that the contents of partialResultsDir1 and partialResultsDir2 are

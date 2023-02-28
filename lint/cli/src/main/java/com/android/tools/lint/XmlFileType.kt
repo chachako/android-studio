@@ -100,7 +100,5 @@ enum class XmlFileType(private val typeName: String) {
    * Default filename to use for this file. Should be unique among the various types of
    * [XmlFileType].
    */
-  fun getDefaultFileName(variantName: String?): String {
-    return "lint-$typeName${if (variantName != null) "-$variantName" else ""}.xml"
-  }
+  fun getDefaultFileName() = "lint-$typeName.xml"
 }

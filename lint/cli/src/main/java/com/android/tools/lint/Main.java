@@ -50,6 +50,8 @@ import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Incident;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.Lint;
+import com.android.tools.lint.detector.api.LintModelModuleAndroidLibraryProject;
+import com.android.tools.lint.detector.api.LintModelModuleJavaLibraryProject;
 import com.android.tools.lint.detector.api.LintModelModuleProject;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Option;
@@ -59,6 +61,9 @@ import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.SeverityKt;
 import com.android.tools.lint.detector.api.TextFormat;
+import com.android.tools.lint.model.LintModelAndroidLibrary;
+import com.android.tools.lint.model.LintModelJavaLibrary;
+import com.android.tools.lint.model.LintModelLibrary;
 import com.android.tools.lint.model.LintModelModule;
 import com.android.tools.lint.model.LintModelSerialization;
 import com.android.tools.lint.model.LintModelSeverity;
@@ -1656,6 +1661,39 @@ public class Main {
                 assert variant != null;
                 LintModelModuleProject project =
                         new LintModelModuleProject(client, dir, dir, variant, null);
+                // Create and register projects from dependencies with partial results.
+                // This is necessary to allow lint to access partial results from module
+                // dependencies during lint analysis.
+                for (LintModelLibrary lintModelLibrary :
+                        variant.getMainArtifact().getDependencies().getAll()) {
+                    if (lintModelLibrary instanceof LintModelAndroidLibrary) {
+                        LintModelAndroidLibrary lintModelAndroidLibrary =
+                                (LintModelAndroidLibrary) lintModelLibrary;
+                        if (lintModelAndroidLibrary.getPartialResultsDir() != null) {
+                            LintModelModuleAndroidLibraryProject
+                                    lintModelModuleAndroidLibraryProject =
+                                            new LintModelModuleAndroidLibraryProject(
+                                                    client,
+                                                    lintModelAndroidLibrary.getFolder(),
+                                                    lintModelAndroidLibrary.getFolder(),
+                                                    null,
+                                                    lintModelAndroidLibrary);
+                            project.addDirectLibrary(lintModelModuleAndroidLibraryProject);
+                        }
+                    } else if (lintModelLibrary instanceof LintModelJavaLibrary) {
+                        LintModelJavaLibrary lintModelJavaLibrary =
+                                (LintModelJavaLibrary) lintModelLibrary;
+                        List<File> jarFiles = lintModelJavaLibrary.getJarFiles();
+                        File jarFile = jarFiles.isEmpty() ? null : jarFiles.get(0);
+                        if (lintModelJavaLibrary.getPartialResultsDir() != null
+                                && jarFile != null) {
+                            LintModelModuleJavaLibraryProject lintModelModuleJavaLibraryProject =
+                                    new LintModelModuleJavaLibraryProject(
+                                            client, jarFile, jarFile, null, lintModelJavaLibrary);
+                            project.addDirectLibrary(lintModelModuleJavaLibraryProject);
+                        }
+                    }
+                }
                 client.registerProject(project.getDir(), project);
                 projects.add(project);
             }

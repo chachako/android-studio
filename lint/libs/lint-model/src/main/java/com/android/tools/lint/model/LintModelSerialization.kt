@@ -982,6 +982,9 @@ private class LintModelLibrariesWriter(
     if (library is LintModelExternalLibrary) {
       printer.printFiles("jars", library.jarFiles, indent)
       printer.printAttribute("resolved", library.resolvedCoordinates.toString(), indent)
+      library.partialResultsDir?.let {
+        printer.printFile("partialResultsDir", it, indent, relativeTo = null)
+      }
     }
     if (library is LintModelModuleLibrary) {
       library.projectPath.let { printer.printAttribute("project", it, indent) }
@@ -1120,9 +1123,9 @@ private abstract class LintModelReader(
 
   protected fun getName(): String = getRequiredAttribute("name")
 
-  protected fun getOptionalFile(attribute: String): File? {
+  protected fun getOptionalFile(attribute: String, relativeTo: File? = root): File? {
     val path = getOptionalAttribute(attribute) ?: return null
-    return adapter.fromPathString(path, root)
+    return adapter.fromPathString(path, relativeTo)
   }
 
   protected fun getOptionalOutputFile(attribute: String): File? {
@@ -1867,6 +1870,7 @@ private class LintModelLibrariesReader(
     val project = getOptionalAttribute("project")
     val resolved = getOptionalAttribute("resolved")?.toMavenCoordinate()
     val provided = getOptionalBoolean("provided", false)
+    val partialResultsDir = getOptionalFile("partialResultsDir")
 
     // Android library?
 
@@ -1917,14 +1921,16 @@ private class LintModelLibrariesReader(
           externalAnnotations = externalAnnotations!!,
           proguardRules = proguardRules!!,
           provided = provided,
-          resolvedCoordinates = resolved!!
+          resolvedCoordinates = resolved!!,
+          partialResultsDir = partialResultsDir
         )
       else ->
         DefaultLintModelJavaLibrary(
           identifier = identifier,
           jarFiles = jars,
           provided = provided,
-          resolvedCoordinates = resolved!!
+          resolvedCoordinates = resolved!!,
+          partialResultsDir = partialResultsDir
         )
     }
   }

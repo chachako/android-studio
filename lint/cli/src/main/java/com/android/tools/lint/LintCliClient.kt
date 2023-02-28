@@ -676,17 +676,13 @@ open class LintCliClient : LintClient {
     driver.mergeConditionalIncidents(projectContext, provisional)
   }
 
-  /**
-   * Returns the path to the file containing any data of the given [xmlType]. Defaults to the build
-   * folder, possibly with a variant name included.
-   */
+  /** Returns the path to the file containing any data of the given [xmlType]. */
   open fun getSerializationFile(project: Project, xmlType: XmlFileType): File {
     val variant = project.buildVariant
     val dir =
       variant?.partialResultsDir
         ?: variant?.module?.buildFolder ?: project.partialResultsDir ?: File(project.dir, "build")
-    val variantName = variant?.name ?: "all"
-    return File(dir, xmlType.getDefaultFileName(variantName))
+    return File(dir, xmlType.getDefaultFileName())
   }
 
   private fun getBaselineCreationMessage(baselineFile: File): String {
