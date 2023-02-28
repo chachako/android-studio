@@ -159,20 +159,18 @@ internal class DefaultLintTomlParser(
           val keyEnd = offset
           val equals = getToken()
           if (equals != "=") {
-            if (offset == length) {
-              if (validate) {
-                warn("= missing after key `$token`", keyEnd)
-              }
-              break
+            if (validate) {
+              warn("= missing after key `$token`", keyEnd)
             }
-            return null
+            offset = keyEnd
+            continue
           }
           val valueStart = skipToNextToken(true)
           if (offset == length) {
             if (validate) {
               warn("Value missing after =", valueStart)
             }
-            break
+            continue
           }
           val key = keys.lastOrNull() ?: ""
           val into =
@@ -310,7 +308,7 @@ internal class DefaultLintTomlParser(
       first = false
       if (token == ".") {
         continue
-      } else if (token == "=" || token == "]" || token == "]]") {
+      } else if (token == "=" || token == "]" || token == "]]" || token == "}") {
         offset = before
         break
       }

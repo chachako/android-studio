@@ -1060,6 +1060,29 @@ class LintTomlParserTest {
     doTest(toml, expected)
   }
 
+  @Test
+  fun testInvalidResynchronization2() {
+    // Deliberate TOML error below; not showing as TOML since there isn't a way
+    // to turn off this error in nested highlighting for TOML here
+    @Language("TEXT")
+    val toml =
+      """
+            [libraries]
+            junit = { module version }
+            junit5 = { module = "junit:junit", version = "5.14" }
+        """
+        .trimIndent()
+    val expected =
+      mapOf(
+        "libraries" to
+          mapOf(
+            "junit" to mapOf(),
+            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+          )
+      )
+    doTest(toml, expected)
+  }
+
   // ------------------------------------------------
   // Test fixtures only below
   // ------------------------------------------------
