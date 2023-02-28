@@ -17,11 +17,10 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <algorithm>
-#include <cstring>
-#include <fstream>
 #include <set>
-#include <sstream>
 #include <string>
+
+#include "utils.h"
 
 namespace processtracker {
 
@@ -38,7 +37,7 @@ class Scanner {
    */
   void scanProcesses() {
     // Whatever is left in this set needs to be removed from ::processes
-    set<string> markedForRemoval(processes);
+    set<int> markedForRemoval(processes);
 
     DIR* pDir = opendir("/proc");
     while (true) {
@@ -47,47 +46,38 @@ class Scanner {
         break;
       }
 
+      int pid = parseInt(pDirent->d_name, -1);
       // Ignore entries that are not a valid pid
-      if (!isNumber(pDirent->d_name)) {
+      if (pid < 0) {
         continue;
       }
-      string pid(pDirent->d_name);
       markedForRemoval.erase(pid);
       if (processes.find(pid) != processes.end()) {
         continue;
       }
 
       // New process found
-      string path = string("/proc/") + pDirent->d_name + "/cmdline";
+      string path = string("/proc/") + pDirent->d_name;
       const string& name = readCommand(path);
-      if (name.empty()) {
-        // Ignore processes without a name
+      if (name.empty() || startsWith(name, "zygote") ||
+          name == "<pre-initialized>") {
+        // Ignore processes without a name or that haven't initialized yet
         continue;
       }
       processes.insert(pid);
-      printf("+ %s %s\n", pid.c_str(), name.c_str());
+      printf("+ %d %s\n", pid, name.c_str());
     }
     closedir(pDir);
 
-    for (const string& pid : markedForRemoval) {
+    for (const int pid : markedForRemoval) {
       processes.erase(pid);
-      printf("- %s\n", pid.c_str());
+      printf("- %d\n", pid);
     }
     ::fflush(stdout);
   }
 
  private:
-  set<string> processes;
-
-  /** Returns true if the string is comprised of digits */
-  static bool isNumber(const char* s) {
-    for (size_t i = 0, n = strlen(s); i < n; i++) {
-      if (!isdigit(s[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
+  set<int> processes;
 
   /**
    * Gets the name of the command
@@ -101,16 +91,10 @@ class Scanner {
    * else.
    */
   static string readCommand(const string& path) {
-    ifstream t(path);
-    stringstream buffer;
-    buffer << t.rdbuf();
-    const string& cmdline = buffer.str();
+    const string& cmdline = readFile(path + "/cmdline");
     int start = 0;
     uint len = cmdline.length();
     uint end = len;
-    if (cmdline.find("chrome") != string::npos) {
-      end = len;
-    }
     for (int i = 0; i < len; i++) {
       const char& c = cmdline[i];
       if (c == '/') {
@@ -122,14 +106,19 @@ class Scanner {
         break;
       }
     }
-    return cmdline.substr(start, end - start);
+    if (start - end > 0) {
+      return cmdline.substr(start, end - start);
+    }
+    const string& comm = readFile(path + "/comm");
+    return comm.substr(0, comm.find('\n'));
   }
 };
+
 }  // namespace processtracker
 
 using namespace processtracker;
 
-static long intervalMicros = 1000 * 1000;
+static int intervalMicros = 1000 * 1000;
 
 static void printUsageAndExit(const string& message) {
   printf("%s\n", message.c_str());
@@ -145,9 +134,8 @@ static void parseCommandLine(int argc, char** argv) {
       if (i >= argc) {
         printUsageAndExit("Missing argument for '" + arg + "'");
       }
-      char* ptr;
-      intervalMicros = strtol(argv[i], &ptr, 10);
-      if (*ptr != '\0' || intervalMicros <= 0) {
+      intervalMicros = parseInt(argv[i], -1);
+      if (intervalMicros <= 0) {
         printUsageAndExit(string("Invalid interval: ") + argv[i]);
       }
       continue;

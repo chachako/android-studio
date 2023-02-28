@@ -3,7 +3,10 @@ load("//tools/base/bazel:android.bzl", "ANDROID_LINKOPTS", "android_cc_binary")
 
 cc_binary(
     name = "process-tracker",
-    srcs = glob(["**/*.cc"]),
+    srcs = glob([
+        "**/*.cc",
+        "**/*.h",
+    ]),
     linkopts = ANDROID_LINKOPTS,
     stamp = 0,
     tags = [
