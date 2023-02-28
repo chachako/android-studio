@@ -103,6 +103,7 @@ class SourcesDirectoryModelTest : ModelComparator() {
             .fetchModels()
 
         with(result).compareBasicAndroidProject(goldenFile = "SourceDirectories")
+        with(result).compareAndroidProject(goldenFile = "SourceDirectories_AndroidProject")
     }
 
     @Test
@@ -133,6 +134,6 @@ class SourcesDirectoryModelTest : ModelComparator() {
             .fetchModels()
 
         with(result).compareBasicAndroidProject(goldenFile = "SourceDirectories2")
-
+        with(result).compareAndroidProject(goldenFile = "SourceDirectories2_AndroidProject")
     }
 }

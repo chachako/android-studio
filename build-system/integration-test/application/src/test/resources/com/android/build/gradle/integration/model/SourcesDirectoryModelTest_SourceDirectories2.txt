@@ -83,7 +83,6 @@
             - name                    = "debug"
             - manifestFile            = {PROJECT}/src/debug/AndroidManifest.xml{!}
             - javaDirectories:
-               * {PROJECT}/build/java_stubs{!}
                * {PROJECT}/src/debug/java{!}
             - kotlinDirectories:
                * {PROJECT}/src/debug/java{!}
@@ -156,7 +155,6 @@
             - name                    = "release"
             - manifestFile            = {PROJECT}/src/release/AndroidManifest.xml{!}
             - javaDirectories:
-               * {PROJECT}/build/java_stubs{!}
                * {PROJECT}/src/release/java{!}
             - kotlinDirectories:
                * {PROJECT}/src/release/java{!}

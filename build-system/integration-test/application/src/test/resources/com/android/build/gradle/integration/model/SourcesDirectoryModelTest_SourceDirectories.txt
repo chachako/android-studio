@@ -83,7 +83,6 @@
             - name                    = "debug"
             - manifestFile            = {PROJECT}/src/debug/AndroidManifest.xml{!}
             - javaDirectories:
-               * {PROJECT}/build/generated/java/createdebugJavaGenerator{!}
                * {PROJECT}/src/debug/java{!}
                * {PROJECT}/src/debug/static{D}
             - kotlinDirectories:
@@ -96,7 +95,6 @@
             - resDirectories:
                * {PROJECT}/src/debug/res{!}
             - assetsDirectories:
-               * {PROJECT}/build/generated/assets/createdebugAsset{!}
                * {PROJECT}/src/debug/assets{!}
             - jniLibsDirectories:
                * {PROJECT}/src/debug/jniLibs{!}
@@ -158,7 +156,6 @@
             - name                    = "release"
             - manifestFile            = {PROJECT}/src/release/AndroidManifest.xml{!}
             - javaDirectories:
-               * {PROJECT}/build/generated/java/createreleaseJavaGenerator{!}
                * {PROJECT}/src/release/java{!}
                * {PROJECT}/src/release/static{D}
             - kotlinDirectories:
@@ -171,7 +168,6 @@
             - resDirectories:
                * {PROJECT}/src/release/res{!}
             - assetsDirectories:
-               * {PROJECT}/build/generated/assets/createreleaseAsset{!}
                * {PROJECT}/src/release/assets{!}
             - jniLibsDirectories:
                * {PROJECT}/src/release/jniLibs{!}
