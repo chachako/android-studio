@@ -272,14 +272,44 @@ public final class AndroidVersion implements Comparable<AndroidVersion>, Seriali
 
     /**
      * Returns a string representing the API level and/or the code name.
+     *
+     * <p>Note that this does not handle extension level.
+     *
+     * @deprecated Use either {@link #getApiStringWithExtension()}
      */
     @NonNull
+    @Deprecated
     public String getApiString() {
+        return getApiStringWithoutExtension();
+    }
+
+    /**
+     * Returns a string representing the API level and/or the code name.
+     *
+     * <p>This does not include the SDK Extension level.
+     *
+     * @see #getApiStringWithExtension
+     */
+    @NonNull
+    public String getApiStringWithoutExtension() {
         if (mCodename != null) {
             return mCodename;
         }
 
         return Integer.toString(mApiLevel);
+    }
+
+    @NonNull
+    public String getApiStringWithExtension() {
+        if (mCodename != null) {
+            return mCodename;
+        }
+
+        if (mIsBaseExtension) {
+            return Integer.toString(mApiLevel);
+        }
+
+        return String.format(Locale.US, "%1$d-ext%2$d", mApiLevel, mExtensionLevel);
     }
 
     /**

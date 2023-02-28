@@ -16,9 +16,6 @@
 
 package com.android.sdklib;
 
-import com.android.sdklib.AndroidVersion.AndroidVersionException;
-import org.junit.Test;
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,6 +23,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import com.android.sdklib.AndroidVersion.AndroidVersionException;
+import org.junit.Test;
 
 /**
  * Unit tests for {@link AndroidVersion}.
@@ -39,7 +39,8 @@ public class AndroidVersionTest {
         AndroidVersion v = new AndroidVersion(30, null);
         assertFalse(v.isPreview());
         assertNull(v.getCodename());
-        assertEquals("30", v.getApiString());
+        assertEquals("30", v.getApiStringWithoutExtension());
+        assertEquals("30", v.getApiStringWithExtension());
 
         // AndroidVersions that are base SDKs are equal no matter if the extension level is given or
         // not (in the case where the SDK was downloaded by versions of studio before extensions
@@ -60,7 +61,8 @@ public class AndroidVersionTest {
         v = new AndroidVersion(30, null, 4, false);
         assertFalse(v.isPreview());
         assertNull(v.getCodename());
-        assertEquals("30", v.getApiString());
+        assertEquals("30", v.getApiStringWithoutExtension());
+        assertEquals("30-ext4", v.getApiStringWithExtension());
 
         assertTrue(v.isGreaterOrEqualThan(0));
         assertTrue(v.isGreaterOrEqualThan(14));
@@ -89,7 +91,8 @@ public class AndroidVersionTest {
     public final void testAndroidVersion() {
         AndroidVersion v = new AndroidVersion(1, "  CODENAME   ");
         assertEquals(1, v.getApiLevel());
-        assertEquals("CODENAME", v.getApiString());
+        assertEquals("CODENAME", v.getApiStringWithExtension());
+        assertEquals("CODENAME", v.getApiStringWithoutExtension());
         assertTrue(v.isPreview());
         assertEquals("CODENAME", v.getCodename());
         assertEquals("API 1, CODENAME preview", v.toString());
@@ -104,7 +107,8 @@ public class AndroidVersionTest {
 
         v = new AndroidVersion(15, null);
         assertEquals(15, v.getApiLevel());
-        assertEquals("15", v.getApiString());
+        assertEquals("15", v.getApiStringWithExtension());
+        assertEquals("15", v.getApiStringWithoutExtension());
         assertFalse(v.isPreview());
         assertNull(v.getCodename());
         assertTrue(v.equals(15));
@@ -114,12 +118,12 @@ public class AndroidVersionTest {
         v = new AndroidVersion(15, "   ");
         assertFalse(v.isPreview());
         assertNull(v.getCodename());
-        assertEquals("15", v.getApiString());
+        assertEquals("15", v.getApiStringWithExtension());
 
         v = new AndroidVersion(15, "");
         assertFalse(v.isPreview());
         assertNull(v.getCodename());
-        assertEquals("15", v.getApiString());
+        assertEquals("15", v.getApiStringWithExtension());
 
         assertTrue(v.isGreaterOrEqualThan(0));
         assertTrue(v.isGreaterOrEqualThan(14));
@@ -133,7 +137,7 @@ public class AndroidVersionTest {
         // A valid integer is considered an API level
         AndroidVersion v = new AndroidVersion("15");
         assertEquals(15, v.getApiLevel());
-        assertEquals("15", v.getApiString());
+        assertEquals("15", v.getApiStringWithExtension());
         assertFalse(v.isPreview());
         assertNull(v.getCodename());
         assertTrue(v.equals(15));
@@ -141,7 +145,7 @@ public class AndroidVersionTest {
 
         // A valid name is considered a codename
         v = new AndroidVersion("CODE_NAME");
-        assertEquals("CODE_NAME", v.getApiString());
+        assertEquals("CODE_NAME", v.getApiStringWithExtension());
         assertTrue(v.isPreview());
         assertTrue(v.isBaseExtension());
         assertEquals("CODE_NAME", v.getCodename());
