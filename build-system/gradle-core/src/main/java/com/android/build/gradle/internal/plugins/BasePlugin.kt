@@ -31,6 +31,7 @@ import com.android.build.gradle.internal.ApiObjectFactory
 import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.ClasspathVerifier.checkClasspathSanity
+import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.ExtraModelInfo
 import com.android.build.gradle.internal.SdkComponentsBuildService
@@ -109,6 +110,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions.checkState
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import com.google.wireless.android.sdk.stats.GradleBuildProject
+import org.gradle.api.JavaVersion
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -118,6 +120,7 @@ import org.gradle.api.artifacts.repositories.FlatDirectoryArtifactRepository
 import org.gradle.api.component.SoftwareComponentFactory
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.build.event.BuildEventsListenerRegistry
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
@@ -602,7 +605,11 @@ abstract class BasePlugin<
             return
         }
         hasCreatedTasks.set(true)
+
         variantManager.variantApiOperationsRegistrar.executeDslFinalizationBlocks()
+
+        (globalConfig.compileOptions as CompileOptions).finalizeSourceAndTargetCompatibility(project)
+
         if (extension.compileSdkVersion == null) {
             if (SyncOptions.getModelQueryMode(projectServices.projectOptions)
                 == SyncOptions.EvaluationMode.IDE

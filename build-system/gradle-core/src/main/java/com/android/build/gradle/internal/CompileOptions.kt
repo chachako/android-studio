@@ -14,138 +14,112 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal;
+package com.android.build.gradle.internal
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.build.gradle.internal.dsl.decorator.annotation.NonNullableSetter;
-import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
-import java.util.Locale;
-import javax.inject.Inject;
-import org.gradle.api.JavaVersion;
+import com.android.build.api.dsl.CompileOptions
+import com.google.common.base.Charsets
+import org.gradle.api.JavaVersion
+import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginExtension
+import org.jetbrains.annotations.VisibleForTesting
 
 /** Java compilation options. */
-public abstract class CompileOptions implements com.android.build.api.dsl.CompileOptions {
-    private static final String VERSION_PREFIX = "VERSION_";
-
-    @Nullable private Boolean incremental = null;
-
-    @Nullable private Boolean coreLibraryDesugaringEnabled = null;
-
-    /** @see #setDefaultJavaVersion(JavaVersion) */
-    @NonNull @VisibleForTesting JavaVersion defaultJavaVersion = JavaVersion.VERSION_1_8;
-
-    protected void lazyInit() {
-        setEncoding(Charsets.UTF_8.name());
-        setSourceCompatibility(defaultJavaVersion);
-        setTargetCompatibility(defaultJavaVersion);
-    }
-
-    @Inject
-    @WithLazyInitialization(methodName = "lazyInit")
-    public CompileOptions() {}
-
-    public void setSourceCompatibility(@NonNull Object sourceCompatibility) {
-        setSourceCompatibility(convert(sourceCompatibility));
-    }
-
-    @Override
-    public void sourceCompatibility(@NonNull Object sourceCompatibility) {
-        setSourceCompatibility(convert(sourceCompatibility));
-    }
-
-    @Override
-    @NonNullableSetter
-    public abstract void setSourceCompatibility(@NonNull JavaVersion sourceCompatibility);
-
-    @Override
-    @NonNull
-    public abstract JavaVersion getSourceCompatibility();
-
-    public void setTargetCompatibility(@NonNull Object targetCompatibility) {
-        setTargetCompatibility(convert(targetCompatibility));
-    }
-
-    @Override
-    public void targetCompatibility(@NonNull Object targetCompatibility) {
-        setTargetCompatibility(convert(targetCompatibility));
-    }
-
-    @Override
-    @NonNullableSetter
-    public abstract void setTargetCompatibility(@NonNull JavaVersion targetCompatibility);
-
-    @Override
-    @NonNull
-    public abstract JavaVersion getTargetCompatibility();
-
-    @Override
-    @NonNullableSetter
-    public abstract void setEncoding(@NonNull String encoding);
-
-    @Override
-    @NonNull
-    public abstract String getEncoding();
-
-    /**
-     * Default java version, based on the target SDK. Set by the plugin, not meant to be used in
-     * build files by users.
-     */
-    public void setDefaultJavaVersion(@NonNull JavaVersion defaultJavaVersion) {
-        this.defaultJavaVersion = checkNotNull(defaultJavaVersion);
-    }
+abstract class CompileOptions : CompileOptions {
 
     /**
      * Whether Java compilation should be incremental or not.
      *
-     * <p>The default value is {@code true}.
-     *
-     * <p>Note that even if this option is set to {@code true}, Java compilation may still be
-     * non-incremental (e.g., if incremental annotation processing is not yet possible in the
-     * project).
+     * Note that even if this option is set to `true`, Java compilation may still be non-incremental
+     * (e.g., if incremental annotation processing is not yet possible in the project).
      */
-    @Nullable
-    public Boolean getIncremental() {
-        return incremental;
+    var incremental: Boolean? = null
+
+    override var sourceCompatibility: JavaVersion
+        get() = run {
+            check(sourceAndTargetFinalized) { "sourceCompatibility is not yet finalized" }
+            _sourceCompatibility!!
+        }
+        set(value) {
+            check(!sourceAndTargetFinalized) { "sourceCompatibility has been finalized" }
+            _sourceCompatibility = value
+        }
+
+    override var targetCompatibility: JavaVersion
+        get() = run {
+            check(sourceAndTargetFinalized) { "targetCompatibility is not yet finalized" }
+            _targetCompatibility!!
+        }
+        set(value) {
+            check(!sourceAndTargetFinalized) { "targetCompatibility has been finalized" }
+            _targetCompatibility = value
+        }
+
+    override var encoding: String = Charsets.UTF_8.name()
+    override var isCoreLibraryDesugaringEnabled: Boolean = false
+
+    private var _sourceCompatibility: JavaVersion? = null
+    private var _targetCompatibility: JavaVersion? = null
+
+    private var sourceAndTargetFinalized: Boolean = false
+
+    override fun sourceCompatibility(sourceCompatibility: Any) {
+        _sourceCompatibility = parseJavaVersion(sourceCompatibility)
     }
 
-    /** @see #getIncremental() */
-    public void setIncremental(boolean incremental) {
-        this.incremental = incremental;
+    fun setSourceCompatibility(sourceCompatibility: Any) {
+        sourceCompatibility(sourceCompatibility)
     }
 
-    @Nullable
-    public Boolean getCoreLibraryDesugaringEnabled() {
-        return coreLibraryDesugaringEnabled;
+    override fun targetCompatibility(targetCompatibility: Any) {
+        _targetCompatibility = parseJavaVersion(targetCompatibility)
     }
 
-    @Override
-    public boolean isCoreLibraryDesugaringEnabled() {
-        return coreLibraryDesugaringEnabled != null ? coreLibraryDesugaringEnabled : false;
-    }
-
-    @Override
-    public void setCoreLibraryDesugaringEnabled(boolean coreLibraryDesugaringEnabled) {
-        this.coreLibraryDesugaringEnabled = coreLibraryDesugaringEnabled;
+    fun setTargetCompatibility(targetCompatibility: Any) {
+        targetCompatibility(targetCompatibility)
     }
 
     /**
-     * Converts all possible supported way of specifying a Java version to a {@link JavaVersion}.
-     * @param version the user provided java version.
+     * Computes the final sourceCompatibility and targetCompatibility versions based on the
+     * following precedence order (first one wins):
+     *   - Version set from the DSL
+     *   - Toolchain version
+     *   - [DEFAULT_JAVA_VERSION]
      */
-    @NonNull
-    private static JavaVersion convert(@NonNull Object version) {
-        // for backward version reasons, we support setting strings like 'Version_1_6'
-        if (version instanceof String) {
-            final String versionString = (String) version;
-            if (versionString.toUpperCase(Locale.ENGLISH).startsWith(VERSION_PREFIX)) {
-                version = versionString.substring(VERSION_PREFIX.length()).replace('_', '.');
-            }
+    fun finalizeSourceAndTargetCompatibility(toolchainVersion: JavaVersion?) {
+        check(!sourceAndTargetFinalized) { "sourceCompatibility and targetCompatibility have already been finalized" }
+
+        _sourceCompatibility = _sourceCompatibility ?: toolchainVersion ?: DEFAULT_JAVA_VERSION
+        _targetCompatibility = _targetCompatibility ?: toolchainVersion ?: DEFAULT_JAVA_VERSION
+        sourceAndTargetFinalized = true
+    }
+
+    fun finalizeSourceAndTargetCompatibility(project: Project) {
+        val toolchainVersion = project.extensions.getByType(JavaPluginExtension::class.java).toolchain.languageVersion.let {
+            // Finalizing a property's value at configuration time is usually not recommended, but
+            // we have to do it because AGP `CompileOptions` properties are currently not lazy
+            // (bug 271841527).
+            it.finalizeValue()
+            it.orNull?.run { JavaVersion.toVersion(asInt()) }
         }
-        return JavaVersion.toVersion(version);
+        finalizeSourceAndTargetCompatibility(toolchainVersion)
+    }
+
+    companion object {
+
+        private val DEFAULT_JAVA_VERSION = JavaVersion.VERSION_1_8
+
+        private const val VERSION_PREFIX = "VERSION_"
+
+        /** Converts a user-provided Java version of type [Any] to [JavaVersion]. */
+        @VisibleForTesting
+        internal fun parseJavaVersion(version: Any): JavaVersion {
+            // for backward version reasons, we support setting strings like 'Version_1_6'
+            val normalizedVersion =
+                if (version is String && version.uppercase().startsWith(VERSION_PREFIX)) {
+                    version.substring(VERSION_PREFIX.length).replace('_', '.')
+                } else version
+
+            return JavaVersion.toVersion(normalizedVersion)
+        }
     }
 }

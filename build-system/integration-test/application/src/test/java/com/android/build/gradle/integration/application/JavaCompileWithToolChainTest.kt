@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.ScannerSubject
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.OsType
 import com.android.testutils.TestUtils
@@ -30,6 +31,7 @@ class JavaCompileWithToolChainTest {
     @get:Rule
     val project = GradleTestProject.builder()
         .fromTestApp(HelloWorldApp.forPlugin("com.android.application"))
+        .withKotlinGradlePlugin(true)
         .create()
 
     @Test
@@ -78,6 +80,65 @@ class JavaCompileWithToolChainTest {
                 "Compiling with toolchain '${latestJdkLocationFromStdout}'"
             )
         }
+    }
+
+    @Test
+    fun `test source and target compatibility versions when toolchain is configured`() {
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            """
+            org.gradle.java.installations.auto-detect=false
+            org.gradle.java.installations.paths=${latestJdkLocationInGradleFile}
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+            apply plugin: 'org.jetbrains.kotlin.android'
+
+            java.toolchain.languageVersion = JavaLanguageVersion.of($latestJdkVersion)
+            android.kotlinOptions.allWarningsAsErrors = true
+
+            // Reading targetCompatibility early should fail
+            try {
+                println android.compileOptions.targetCompatibility
+                throw new IllegalStateException("Exception was not thrown")
+            } catch (Exception e) {
+                if (e.message != "targetCompatibility is not yet finalized") {
+                    throw new IllegalStateException("Exception message is not as expected: " + e.message)
+                }
+            }
+
+            // Reading targetCompatibility after configuration should succeed
+            afterEvaluate {
+                def targetCompatibility = android.compileOptions.targetCompatibility
+                if (targetCompatibility != JavaVersion.toVersion($latestJdkVersion)) {
+                    throw new IllegalStateException("Unexpected targetCompatibility: " + targetCompatibility)
+                }
+            }
+
+            """.trimIndent()
+        )
+        project.projectDir.resolve("src/main/kotlin/com/example/KotlinClass.kt").also {
+            it.parentFile.mkdirs()
+            it.writeText(
+                """
+                package com.example
+
+                class KotlinClass {
+                }
+                """.trimIndent()
+            )
+        }
+
+        // Compiling should not throw an error (regression test for bug 260059413)
+        project.executor().run("compileDebugJavaWithJavac")
+
+        project.modelV2().fetchModels(variantName = "debug").container.getProject().androidProject!!
+            .javaCompileOptions.let {
+                assertThat(it.sourceCompatibility).isEqualTo(latestJdkVersion.toString())
+                assertThat(it.targetCompatibility).isEqualTo(latestJdkVersion.toString())
+            }
     }
 
     companion object {
