@@ -1,4 +1,5 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 
 # managed by go/iml_to_build
 iml_module(
@@ -59,4 +60,24 @@ genrule(
         ":framework-res-jar-creator_deploy.jar",
     ],
     visibility = ["//visibility:public"],
+)
+
+# Build target to verify that resource-repository builds for tools/base
+kotlin_library(
+    name = "tools.resource-repository",
+    srcs = glob([
+        "main/java/**/*.java",
+        "main/java/**/*.kt",
+    ]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prebuilts/tools/common/lint-psi/intellij-core",
+        "//tools/base/build-system/aapt2-proto",
+        "//tools/base/common:tools.common",
+        "//tools/base/layoutlib-api:tools.layoutlib-api",
+        "//tools/base/sdk-common:tools.sdk-common",
+        "@maven//:com.google.guava.guava",
+        "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:net.sf.kxml.kxml2",
+    ],
 )
