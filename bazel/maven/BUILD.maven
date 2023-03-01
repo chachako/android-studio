@@ -9414,6 +9414,35 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.mockito.mockito-inline_4.8.0",
+    pom = "repository/org/mockito/mockito-inline/4.8.0/mockito-inline-4.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/mockito/mockito-inline/4.8.0",
+    deps = [
+        "org.mockito.mockito-core_4.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.mockito.mockito-inline",
+    classifiers = [],
+    jars = [
+        "repository/org/mockito/mockito-inline/4.8.0/mockito-inline-4.8.0.jar"
+    ],
+    exports = [
+        "org.mockito.mockito-core",
+    ],
+    original_deps = [
+        "org.mockito.mockito-core_4.8.0",
+    ],
+    pom = "repository/org/mockito/mockito-inline/4.8.0/mockito-inline-4.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/mockito/mockito-inline/4.8.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.objenesis.objenesis_3.2",
     pom = "repository/org/objenesis/objenesis/3.2/objenesis-3.2.pom",
     repo_root_path = "repository",

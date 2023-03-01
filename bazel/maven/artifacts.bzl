@@ -151,6 +151,7 @@ ARTIFACTS = [
     "org.jetbrains:markdown:0.2.1",
     "org.java-websocket:Java-WebSocket:1.5.3",
     "org.mockito:mockito-core:4.8.0",
+    "org.mockito:mockito-inline:4.8.0",
     "org.ow2.asm:asm:9.2",
     "org.ow2.asm:asm-analysis:9.2",
     "org.ow2.asm:asm-commons:9.2",
