@@ -23,13 +23,13 @@ import com.android.adblib.shellCommand
 import com.android.adblib.withLineCollector
 import com.android.ddmlib.IDevice
 import com.android.processmonitor.monitor.ProcessNames
+import com.android.processmonitor.utils.EvictingMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Closeable
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
 private const val MAX_PIDS = 1000
@@ -62,7 +62,7 @@ internal class ProcessNameClientMonitor(
      * The map of pid -> [ProcessNames] for currently alive processes, plus recently terminated
      * processes.
      */
-    private val processes = ConcurrentHashMap<Int, ProcessNames>()
+    private val processes = EvictingMap<Int, ProcessNames>(maxPidsBeforeEviction)
     private val deviceProcessUpdater = if (enablePsPolling) DeviceProcessUpdater() else null
 
     private val scope: CoroutineScope =
@@ -70,33 +70,17 @@ internal class ProcessNameClientMonitor(
 
     fun start() {
         scope.launch {
-            // Set of pids corresponding to processes that were (recently) terminated and
-            // are candidates to be removed from [processes] when the latter is full.
-            val evictionList = LinkedHashSet<Int>()
 
             flows.trackClients(device).collect { (addedProcesses, removedProcesses) ->
-                // All terminated processes immediately become candidates for eviction
-                evictionList.addAll(removedProcesses)
+                processes.removeAll(removedProcesses)
 
                 // New processes are stored in the map and removed from (dead processes) eviction
                 // list.
                 addedProcesses.forEach { (pid, names) ->
                     logger.debug { "${device.serialNumber}: Adding client $pid -> $names" }
                     processes[pid] = names
-                    // Do not evict a pid that is being reused
-                    evictionList.remove(pid)
                 }
 
-                // When we have more than maxPidsBeforeEviction entries in the cache, try to evict
-                // dead processes.
-                // Note that we can still end up with more than maxPidsBeforeEviction if they are
-                // all still active.
-                while (processes.size > maxPidsBeforeEviction && evictionList.isNotEmpty()) {
-                    val pid = evictionList.first()
-                    evictionList.remove(pid)
-                    val evicted = processes.remove(pid)
-                    logger.debug { "${device.serialNumber}: Evicting $pid -> $evicted" }
-                }
             }
         }
         if (deviceProcessUpdater != null) {
