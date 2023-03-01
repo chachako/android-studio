@@ -75,6 +75,7 @@ internal class DefaultLintTomlParser(
         "[" -> {
           // Table -- https://toml.io/en/v1.0.0#table
           // (if we were in a value this would be an array, https://toml.io/en/v1.0.0#array)
+          // if we are in an inline table, this is invalid
           val start = offset - 1
           currentArray = parseKey() ?: emptyList()
 
@@ -91,6 +92,13 @@ internal class DefaultLintTomlParser(
               )
             }
           }
+          if (inInlineTable) {
+            if (validate) {
+              warn("cannot define a table in an inline table", start)
+            }
+            continue
+          }
+
           target = parent.create(currentArray, validate)
           if (target.getStartOffset() == -1) {
             target.setStartOffset(start)
@@ -98,6 +106,7 @@ internal class DefaultLintTomlParser(
         }
         "[[" -> {
           // Array of tables -- https://toml.io/en/v1.0.0#array-of-tables
+          // if we are in an inline table, this is invalid
           val start = offset - 1
           currentArray = parseKey() ?: emptyList()
 
@@ -107,6 +116,13 @@ internal class DefaultLintTomlParser(
             if (close != "]]") {
               warn("= missing ]]`", keyEnd)
             }
+          }
+
+          if (inInlineTable) {
+            if (validate) {
+              warn("cannot define an array of tables in an inline table", start)
+            }
+            continue
           }
 
           val arrayStart = skipToNextToken(false)
