@@ -71,7 +71,7 @@ class FeaturesHandler(
 
         if (client.isWaiting) {
             val waitPayload = ByteArray(1)
-            val waitPacket = DdmPacket.create(DdmPacket.encodeChunkType("WAIT"), waitPayload)
+            val waitPacket = DdmPacket.createCommand(client.nextDdmsCommandId(), DdmPacket.encodeChunkType("WAIT"), waitPayload)
             try {
                 waitPacket.write(oStream)
             } catch (e: IOException) {

@@ -72,13 +72,10 @@ class DdmPacket private constructor(
         }
 
         @JvmStatic
-        fun create(chunkType: Int, payload: ByteArray) =
-            DdmPacket(1234, 0.toShort(), chunkType, payload)
-
-        @JvmStatic
         fun createResponse(id: Int, chunkType: Int, payload: ByteArray) =
             DdmPacket(id, 0.toShort(), chunkType, payload, isResponse = true)
 
+        @JvmStatic
         fun createCommand(id: Int, chunkType: Int, payload: ByteArray) =
             DdmPacket(id, errorCode = 0.toShort(), chunkType, payload, isResponse = false)
 

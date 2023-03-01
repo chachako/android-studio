@@ -117,10 +117,53 @@ public class HeloHandler implements DDMPacketHandler {
             return false;
         }
 
+        // Send "APMN" command packet as to simulate Android behavior
+        try {
+            int apnmPayloadLength =
+                    (4 + appName.length() * 2)
+                            + (writeUserId ? 4 : 0)
+                            + (writePackageName ? 4 + packageName.length() * 2 : 0);
+            ByteBuffer apmnPayload = ByteBuffer.allocate(apnmPayloadLength);
+
+            // Process Name
+            apmnPayload.putInt(appName.length());
+            for (char c : appName.toCharArray()) {
+                apmnPayload.putChar(c);
+            }
+
+            // User ID
+            if (writeUserId) {
+                apmnPayload.putInt(client.getUid());
+            }
+
+            // Package Name
+            if (writePackageName) {
+                apmnPayload.putInt(packageName.length());
+                for (char c : packageName.toCharArray()) {
+                    apmnPayload.putChar(c);
+                }
+            }
+
+            DdmPacket apnmPacket =
+                    DdmPacket.createCommand(
+                            client.nextDdmsCommandId(),
+                            DdmPacket.encodeChunkType("APNM"),
+                            apmnPayload.array());
+            apnmPacket.write(oStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Send "WAIT" packet if needed
         if (client.getIsWaiting()) {
 
             byte[] waitPayload = new byte[1];
-            DdmPacket waitPacket = DdmPacket.create(DdmPacket.encodeChunkType("WAIT"), waitPayload);
+            DdmPacket waitPacket =
+                    DdmPacket.createCommand(
+                            client.nextDdmsCommandId(),
+                            DdmPacket.encodeChunkType("WAIT"),
+                            waitPayload);
             try {
                 waitPacket.write(oStream);
             } catch (IOException e) {

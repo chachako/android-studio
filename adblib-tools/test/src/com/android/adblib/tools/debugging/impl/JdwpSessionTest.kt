@@ -24,15 +24,19 @@ import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.clone
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
+import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.firstOrNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -151,7 +155,12 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         jdwpSession.sendPacket(sendPacket)
         fakeDevice.stopClient(10)
 
-        kotlin.runCatching { waitForReplyPacket(jdwpSession, sendPacket) }
+        // runCatching is needed since ADB server maybe still have time to send
+        // packets before its socket is closed (via `stopClient` above)
+        kotlin.runCatching {
+            waitForReplyPacket(jdwpSession, sendPacket)
+            waitForApnmPacket(jdwpSession)
+        }
 
         // Assert
         assertThrows<EOFException> { jdwpSession.receivePacket() }
@@ -171,6 +180,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
         val sendPacket = createHeloDdmsPacket(jdwpSession)
         jdwpSession.sendPacket(sendPacket)
         waitForReplyPacket(jdwpSession, sendPacket)
+        waitForApnmPacket(jdwpSession)
         fakeDevice.stopClient(10)
 
         // Assert
@@ -232,6 +242,24 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
                 null
             }
         }
+    }
+
+    private suspend fun waitForApnmPacket(
+        jdwpSession: JdwpSession,
+    ): JdwpPacketView {
+        return waitNonNull {
+            val r = jdwpSession.receivePacket()
+            if (r.isApnmCommand()) {
+                r
+            } else {
+                null
+            }
+        }
+    }
+
+    private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
+        return isDdmsCommand &&
+                clone().ddmsChunks().firstOrNull { it.type == DdmsChunkTypes.APNM } != null
     }
 
     private suspend fun DdmsChunkView.toBufferedInputChannel(): AdbBufferedInputChannel {

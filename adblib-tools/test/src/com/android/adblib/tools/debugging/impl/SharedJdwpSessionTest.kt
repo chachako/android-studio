@@ -39,6 +39,8 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkTypes
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
+import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.sendDdmsExit
 import com.android.adblib.tools.debugging.sendVmExit
@@ -55,6 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -307,12 +310,14 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             }.flow()
             .map {
                 it.clone()
-                fakeDevice.stopClient(10)
+                if (it.isApnmCommand()) {
+                    fakeDevice.stopClient(10)
+                }
             }
             .toList()
 
-        // Assert
-        assertTrue(packets.count() == 1)
+        // Assert: We received `HELO` and `APNM`
+        assertTrue(packets.count() == 2)
     }
 
     @Test
@@ -332,14 +337,17 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             }.flow()
             .map {
                 it.clone()
-                fakeDevice.stopClient(10)
+                if (it.isApnmCommand()) {
+                    fakeDevice.stopClient(10)
+                }
             }
             .toList()
         val packets2 = jdwpSession.newPacketReceiver().withName("test2").flow().toList()
         val packets3 = jdwpSession.newPacketReceiver().withName("test3").flow().toList()
 
         // Assert
-        assertTrue(packets.count() == 1)
+        // Assert: We received `HELO` and `APNM`
+        assertTrue(packets.count() == 2)
         assertTrue(packets2.isEmpty())
         assertTrue(packets3.isEmpty())
     }
@@ -629,6 +637,11 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
             )
             cur
         }
+    }
+
+    private suspend fun JdwpPacketView.isApnmCommand(): Boolean {
+        return isDdmsCommand &&
+                clone().ddmsChunks().firstOrNull { it.type == DdmsChunkTypes.APNM } != null
     }
 
     class TestJdwpSessionMonitorFactory : SharedJdwpSessionMonitorFactory {
