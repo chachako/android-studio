@@ -69,17 +69,20 @@ public class ComposeSupport {
     }
 
     public static class LiveEditRecomposeError {
+        public final String name;
         public final boolean recoverable;
         public final String cause;
 
         private LiveEditRecomposeError(boolean recoverable, Exception cause) {
             this.recoverable = recoverable;
             this.cause = cause.toString();
+            this.name = cause.getClass().getName();
         }
 
-        private LiveEditRecomposeError(boolean recoverable, String message) {
+        private LiveEditRecomposeError(boolean recoverable, Exception cause, String message) {
             this.recoverable = recoverable;
             this.cause = message;
+            this.name = cause.getClass().getName();
         }
     }
 
@@ -130,6 +133,7 @@ public class ComposeSupport {
                         result[index] =
                                 new LiveEditRecomposeError(
                                         recoverable,
+                                        cause,
                                         "Recomposition error, possibly due to lambda capture change");
                     }
                 } else if (cause instanceof ProxyMissingMethodException) {
@@ -141,6 +145,7 @@ public class ComposeSupport {
                         result[index] =
                                 new LiveEditRecomposeError(
                                         recoverable,
+                                        cause,
                                         "Recomposition error, possibly due to lambda interface change");
                     }
                 } else {

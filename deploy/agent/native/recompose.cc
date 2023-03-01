@@ -131,10 +131,10 @@ bool Recompose::InvalidateGroupsWithKey(jobject reloader,
   return true;
 }
 
-bool Recompose::getCurrentErrors(jobject reloader,
-                                 std::vector<bool>* recoverable,
-                                 std::vector<std::string>* exceptions,
-                                 std::string& error) const {
+bool Recompose::getCurrentErrors(
+    jobject reloader, std::vector<bool>* recoverable,
+    std::vector<std::string>* exception_class_names,
+    std::vector<std::string>* messages, std::string& error) const {
   JniClass support(jni_, Recompose::kComposeSupportClass);
 
   // If this method is called after the app is restarted - which can happen
@@ -182,6 +182,20 @@ bool Recompose::getCurrentErrors(jobject reloader,
     }
     bool re = jni_->GetBooleanField(exception, recoverable_field);
 
+    jfieldID name_field =
+        jni_->GetFieldID(wrapper_class, "name", "Ljava/lang/String;");
+    jstring jname = (jstring)jni_->GetObjectField(exception, name_field);
+
+    if (jni_->ExceptionCheck()) {
+      jni_->ExceptionDescribe();
+      jni_->ExceptionClear();
+      error = "Exception fetching name of a Compose exception.";
+      return false;
+    }
+
+    const char* cName = jni_->GetStringUTFChars(jname, JNI_FALSE);
+    std::string name(cName);
+
     jfieldID exception_field =
         jni_->GetFieldID(wrapper_class, "cause", "Ljava/lang/String;");
     jstring jex = (jstring)jni_->GetObjectField(exception, exception_field);
@@ -192,12 +206,15 @@ bool Recompose::getCurrentErrors(jobject reloader,
       error = "Exception fetching cause of a Compose exception.";
       return false;
     }
-    const char* cresult = jni_->GetStringUTFChars(jex, JNI_FALSE);
-    std::string result(cresult);
+
+    const char* cMessage = jni_->GetStringUTFChars(jex, JNI_FALSE);
+    std::string message(cMessage);
 
     recoverable->push_back(re);
-    exceptions->push_back(result);
-    jni_->ReleaseStringUTFChars(jex, cresult);
+    exception_class_names->push_back(name);
+    messages->push_back(message);
+    jni_->ReleaseStringUTFChars(jname, cName);
+    jni_->ReleaseStringUTFChars(jex, cMessage);
   }
 
   return true;

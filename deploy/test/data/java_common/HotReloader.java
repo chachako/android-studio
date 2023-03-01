@@ -62,10 +62,10 @@ public class HotReloader {
                 // to be called given an invalidation group key. In this mock, we are just
                 // going to hard code some key to Composable calls.
                 switch (key) {
-                    case 1111:
+                    case 0x1111:
                         pkg.LiveEditRecomposeKt.LiveEditRecompose();
                         break;
-                    case 1112:
+                    case 0x1112:
                         pkg.LiveEditRecomposeCrashKt.LiveEditRecomposeCrash();
                         break;
                 }

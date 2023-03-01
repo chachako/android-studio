@@ -52,7 +52,8 @@ class Recompose {
                                std::string& error) const;
 
   bool getCurrentErrors(jobject reloader, std::vector<bool>* recoverable,
-                        std::vector<std::string>* exceptions,
+                        std::vector<std::string>* exception_class_names,
+                        std::vector<std::string>* messages,
                         std::string& error) const;
 
   bool VersionCheck(jobject reloader, std::string* error) const;

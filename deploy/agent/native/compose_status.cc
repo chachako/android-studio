@@ -38,28 +38,30 @@ proto::AgentComposeStatusResponse ComposeStatus(
     return resp;
   }
 
-  std::vector<std::string> exceptions;
+  std::vector<std::string> names;
+  std::vector<std::string> messages;
   std::vector<bool> recoverable;
   std::string error = "";
 
-  bool success =
-      recompose.getCurrentErrors(reloader, &recoverable, &exceptions, error);
+  bool success = recompose.getCurrentErrors(reloader, &recoverable, &names,
+                                            &messages, error);
 
   if (!success) {
     resp.set_status(proto::AgentComposeStatusResponse::ERROR);
     resp.set_error_message("Fail to invoke recompose.getCurrentErrors");
   }
 
-  if (exceptions.size() != recoverable.size()) {
+  if (names.size() != recoverable.size()) {
     resp.set_status(proto::AgentComposeStatusResponse::ERROR);
-    resp.set_error_message("exceptions.size() differs from recoverable.size()");
+    resp.set_error_message("names.size() differs from recoverable.size()");
     return resp;
   }
 
-  for (int i = 0; i < exceptions.size(); i++) {
+  for (int i = 0; i < names.size(); i++) {
     auto proto = resp.add_exceptions();
     proto->set_recoverable(recoverable[i]);
-    proto->set_message(exceptions[i].c_str());
+    proto->set_exception_class_name(names[i].c_str());
+    proto->set_message(messages[i].c_str());
   }
 
   if (error.empty()) {

@@ -336,6 +336,7 @@ message AgentLiveEditResponse {
 message ComposeException {
   bool recoverable = 1;
   string message = 2;
+  string exception_class_name = 3;
 }
 
 message ComposeStatusResponse {
