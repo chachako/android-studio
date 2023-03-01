@@ -200,6 +200,7 @@ DATA = [
     "androidx.appcompat:appcompat:1.3.0-beta01",
     "androidx.appcompat:appcompat:1.4.1",
     "androidx.appcompat:appcompat:1.6.1",
+    "androidx.privacysandbox.plugins:plugins-privacysandbox-library:1.0.0-alpha01",
     "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-SNAPSHOT",  # built locally from androidx-platform-dev
     "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-SNAPSHOT",  # built locally from androidx-platform-dev
     "androidx.privacysandbox.tools:tools:1.0.0-alpha02",

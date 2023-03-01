@@ -18485,6 +18485,21 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.privacysandbox.plugins.plugins-privacysandbox-library_1.0.0-alpha01",
+    pom = "repository/androidx/privacysandbox/plugins/plugins-privacysandbox-library/1.0.0-alpha01/plugins-privacysandbox-library-1.0.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/privacysandbox/plugins/plugins-privacysandbox-library/1.0.0-alpha01",
+    deps = [
+        "com.android.tools.build.gradle_8.0.0-beta03",
+        "com.android.tools.build.gradle-api_8.0.0-alpha07",
+        "com.google.devtools.ksp.symbol-processing-api_1.8.10-1.0.9",
+        "com.google.devtools.ksp.symbol-processing-gradle-plugin_1.8.10-1.0.9",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.privacysandbox.sdkruntime.sdkruntime-client_1.0.0-SNAPSHOT",
     pom = "repository/androidx/privacysandbox/sdkruntime/sdkruntime-client/1.0.0-SNAPSHOT/sdkruntime-client-1.0.0-SNAPSHOT.pom",
     repo_root_path = "repository",
@@ -24664,6 +24679,20 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.tools.build.builder-test-api_8.0.0-alpha07",
+    pom = "repository/com/android/tools/build/builder-test-api/8.0.0-alpha07/builder-test-api-8.0.0-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/build/builder-test-api/8.0.0-alpha07",
+    deps = [
+        "com.android.tools.ddms.ddmlib_31.0.0-alpha07",
+        "com.android.tools.annotations_31.0.0-alpha07",
+        "com.android.tools.common_31.0.0-alpha07",
+        "com.google.guava.guava_31.0.1-jre",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.tools.build.builder-test-api_8.0.0-beta03",
     pom = "repository/com/android/tools/build/builder-test-api/8.0.0-beta03/builder-test-api-8.0.0-beta03.pom",
     repo_root_path = "repository",
@@ -25947,6 +25976,20 @@ maven_artifact(
         "org.ow2.asm.asm_9.2",
         "com.android.tools.build.builder-test-api_7.4.1",
         "com.google.guava.guava_30.1-jre",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.build.gradle-api_8.0.0-alpha07",
+    pom = "repository/com/android/tools/build/gradle-api/8.0.0-alpha07/gradle-api-8.0.0-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/build/gradle-api/8.0.0-alpha07",
+    deps = [
+        "org.ow2.asm.asm_9.2",
+        "com.android.tools.build.builder-test-api_8.0.0-alpha07",
+        "com.google.guava.guava_31.0.1-jre",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
     ],
     visibility = ["//visibility:public"],
@@ -27644,6 +27687,20 @@ maven_artifact(
     deps = [
         "com.android.tools.common_30.4.1",
         "com.google.protobuf.protobuf-java_3.17.2",
+        "net.sf.kxml.kxml2_2.3.0",
+        "org.jetbrains.annotations_13.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.ddms.ddmlib_31.0.0-alpha07",
+    pom = "repository/com/android/tools/ddms/ddmlib/31.0.0-alpha07/ddmlib-31.0.0-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/ddms/ddmlib/31.0.0-alpha07",
+    deps = [
+        "com.android.tools.common_31.0.0-alpha07",
+        "com.google.protobuf.protobuf-java_3.19.2",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.annotations_13.0",
     ],
@@ -31132,6 +31189,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.tools.annotations_31.0.0-alpha07",
+    pom = "repository/com/android/tools/annotations/31.0.0-alpha07/annotations-31.0.0-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/annotations/31.0.0-alpha07",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.tools.annotations_31.0.0-beta03",
     pom = "repository/com/android/tools/annotations/31.0.0-beta03/annotations-31.0.0-beta03.pom",
     repo_root_path = "repository",
@@ -31414,6 +31479,20 @@ maven_artifact(
     deps = [
         "com.android.tools.annotations_30.4.1",
         "com.google.guava.guava_30.1-jre",
+        "net.java.dev.jna.jna-platform_5.6.0",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.common_31.0.0-alpha07",
+    pom = "repository/com/android/tools/common/31.0.0-alpha07/common-31.0.0-alpha07.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/common/31.0.0-alpha07",
+    deps = [
+        "com.android.tools.annotations_31.0.0-alpha07",
+        "com.google.guava.guava_31.0.1-jre",
         "net.java.dev.jna.jna-platform_5.6.0",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.7.10",
     ],
@@ -35221,6 +35300,30 @@ maven_artifact(
     repo_path = "com/google/devtools/ksp/symbol-processing-api/1.7.21-1.0.8",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.7.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.devtools.ksp.symbol-processing-api_1.8.10-1.0.9",
+    pom = "repository/com/google/devtools/ksp/symbol-processing-api/1.8.10-1.0.9/symbol-processing-api-1.8.10-1.0.9.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/devtools/ksp/symbol-processing-api/1.8.10-1.0.9",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.devtools.ksp.symbol-processing-gradle-plugin_1.8.10-1.0.9",
+    pom = "repository/com/google/devtools/ksp/symbol-processing-gradle-plugin/1.8.10-1.0.9/symbol-processing-gradle-plugin-1.8.10-1.0.9.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/devtools/ksp/symbol-processing-gradle-plugin/1.8.10-1.0.9",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.8.10",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.8.10",
     ],
     visibility = ["//visibility:public"],
 )
