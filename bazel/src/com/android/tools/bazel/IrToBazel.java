@@ -149,7 +149,8 @@ public class IrToBazel {
                     Map<String, String> UNMANAGED = ImmutableMap.of(
                             "studio-sdk", "studio-sdk",
                             "studio-plugin", "studio-sdk-plugin",
-                            "intellij-updater", "studio-sdk-updater"
+                            "intellij-updater", "studio-sdk-updater",
+                            "intellij-test-framework", "studio-sdk-test-framework"
                     );
                     IrLibrary library = (IrLibrary) dependency.dependency;
                     JvmImport javaImport = imports.get(library);
