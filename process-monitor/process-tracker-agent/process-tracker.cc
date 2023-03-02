@@ -122,7 +122,7 @@ static int intervalMicros = 1000 * 1000;
 
 static void printUsageAndExit(const string& message) {
   printf("%s\n", message.c_str());
-  printf("Usage: process-tracker [-f|--frequency <milliseconds>]\n");
+  printf("Usage: process-tracker [-i|--interval <milliseconds>]\n");
   exit(EXIT_FAILURE);
 }
 
@@ -134,7 +134,7 @@ static void parseCommandLine(int argc, char** argv) {
       if (i >= argc) {
         printUsageAndExit("Missing argument for '" + arg + "'");
       }
-      intervalMicros = parseInt(argv[i], -1);
+      intervalMicros = parseInt(argv[i], -1) * 1000;
       if (intervalMicros <= 0) {
         printUsageAndExit(string("Invalid interval: ") + argv[i]);
       }
