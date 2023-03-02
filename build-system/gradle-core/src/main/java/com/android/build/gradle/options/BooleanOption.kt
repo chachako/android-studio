@@ -216,6 +216,7 @@ enum class BooleanOption(
 
     VERIFY_AAR_CLASSES("android.experimental.verifyLibraryClasses", false, FeatureStage.Experimental),
     DISABLE_COMPILE_SDK_CHECKS("android.experimental.disableCompileSdkChecks", false, FeatureStage.Experimental),
+    ADDITIONAL_ARTIFACTS_IN_MODEL("android.experimental.additionalArtifactsInModel", false, FeatureStage.Experimental),
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */

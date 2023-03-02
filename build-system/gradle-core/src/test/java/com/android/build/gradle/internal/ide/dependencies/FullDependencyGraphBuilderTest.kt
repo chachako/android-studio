@@ -227,7 +227,8 @@ private fun buildModelGraph(action: DependencyBuilder.() -> Unit): Pair<Artifact
     val builder = FullDependencyGraphBuilder(
         getInputs(resolvedArtifacts),
         getResolutionResultProvider(dependencyResults),
-        libraryService
+        libraryService,
+        true
     )
 
     return builder.build() to libraryService.getAllLibraries().associateBy { it.key }

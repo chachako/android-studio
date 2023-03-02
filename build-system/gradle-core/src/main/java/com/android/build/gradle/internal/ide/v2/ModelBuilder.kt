@@ -819,7 +819,8 @@ class ModelBuilder<
         return FullDependencyGraphBuilder(
             inputs,
             component.variantDependencies,
-            libraryService
+            libraryService,
+            component.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL)
         ).build()
     }
 

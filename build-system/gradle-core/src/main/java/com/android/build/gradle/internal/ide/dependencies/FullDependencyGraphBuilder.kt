@@ -39,7 +39,8 @@ import java.io.File
 class FullDependencyGraphBuilder(
     private val inputs: ArtifactCollectionsInputs,
     private val resolutionResultProvider: ResolutionResultProvider,
-    private val libraryService: LibraryService
+    private val libraryService: LibraryService,
+    private val addAdditionalArtifactsInModel: Boolean
 ) {
 
     private val unresolvedDependencies = mutableMapOf<String, UnresolvedDependency>()
@@ -64,16 +65,9 @@ class FullDependencyGraphBuilder(
 
         val artifactMap = artifacts.associateBy { it.variant.toKey() }
 
-        val javadocArtifacts = resolutionResultProvider
-                .getAdditionalArtifacts(configType, AdditionalArtifactType.JAVADOC)
-                .associate { it.variant.owner to it.file }
-        val sourceArtifacts = resolutionResultProvider
-                .getAdditionalArtifacts(configType, AdditionalArtifactType.SOURCE)
-                .associate { it.variant.owner to it.file }
-
-        val sampleArtifacts = resolutionResultProvider
-                .getAdditionalArtifacts(configType, AdditionalArtifactType.SAMPLE)
-                .associate { it.variant.owner to it.file }
+        val javadocArtifacts = resolveAdditionalArtifact(configType, AdditionalArtifactType.JAVADOC)
+        val sourceArtifacts = resolveAdditionalArtifact(configType, AdditionalArtifactType.SOURCE)
+        val sampleArtifacts = resolveAdditionalArtifact(configType, AdditionalArtifactType.SAMPLE)
 
         // Keep a list of the visited nodes so that we don't revisit them in different branches.
         // This is a map so that we can easy get the matching GraphItem for it,
@@ -259,5 +253,18 @@ class FullDependencyGraphBuilder(
         }
 
         return null
+    }
+
+    private fun resolveAdditionalArtifact(
+            configType: AndroidArtifacts.ConsumedConfigType,
+            additionalArtifactType: AdditionalArtifactType
+    ): Map<ComponentIdentifier, File> {
+        return if (addAdditionalArtifactsInModel) {
+            resolutionResultProvider
+                    .getAdditionalArtifacts(configType, additionalArtifactType)
+                    .associate { it.variant.owner to it.file }
+        } else {
+            mapOf()
+        }
     }
 }

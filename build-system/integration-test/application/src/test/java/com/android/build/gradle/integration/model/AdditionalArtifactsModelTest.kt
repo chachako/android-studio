@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.model.toValueString
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.SyncIssue
 import com.google.common.io.Resources
 import com.google.common.truth.Truth
@@ -54,6 +55,11 @@ class AdditionalArtifactsModelTest {
     fun setUp() {
         app = project.getSubproject(APP_MODULE)
         library = project.getSubproject(LIBRARY_MODULE)
+
+        TestFileUtils.appendToFile(
+                project.gradlePropertiesFile,
+                "${BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL.propertyName} = true"
+        )
 
         TestFileUtils.appendToFile(
                 project.settingsFile,
