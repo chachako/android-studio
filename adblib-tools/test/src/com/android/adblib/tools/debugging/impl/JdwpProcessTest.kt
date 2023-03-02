@@ -44,6 +44,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.ByteBuffer
 import java.time.Duration
+import java.time.Instant
 
 class JdwpProcessTest : AdbLibToolsTestBase() {
 
@@ -110,6 +111,11 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     fun startMonitoringWorks() = runBlockingWithTimeout {
         // Prepare
         val (_, _, process) = createJdwpProcess()
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(2)
+        )
 
         // Act
         process.startMonitoring()
@@ -120,7 +126,9 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertProcessPropertiesComplete(properties)
     }
 
-    @Test
+
+    @Suppress("unused")
+    //@Test // Disabled because of b/271466829
     fun startMonitoringEndsEarlyIfWaitForDebugger() = runBlockingWithTimeout {
         // Prepare
         val (_, _, process) = createJdwpProcess(waitForDebugger = true)
@@ -142,6 +150,29 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         // Assert
         val properties = process.properties
         assertProcessPropertiesComplete(properties)
+    }
+
+    @Test
+    fun startMonitoringDoesNotEndEarlyIfWaitForDebugger() = runBlockingWithTimeout {
+        // Prepare
+        val (_, _, process) = createJdwpProcess(waitForDebugger = true)
+
+        // Act:
+        // Even if the AndroidVM sends a "WAIT" packet, collecting the process properties
+        // should not complete until the timeout is reached
+        val timeout = Duration.ofSeconds(2)
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            timeout
+        )
+        val start = Instant.now()
+        process.startMonitoring()
+        yieldUntil { process.properties.completed }
+        val waitTime = Duration.between(start, Instant.now())
+
+        // Assert: We waited (close to) "timeout" for "completed" to get set
+        assertTrue(waitTime >= timeout.dividedBy(2))
     }
 
     @Test

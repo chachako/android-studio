@@ -156,8 +156,17 @@ internal class JdwpProcessPropertiesCollector(
      * and emits them to [CollectState.propertiesFlow].
      */
     private suspend fun collect(collectState: CollectState) {
-        jdwpSessionRef.withResource { session ->
-            collectWithSession(session, collectState)
+        jdwpSessionRef.withResource { jdwpSession ->
+            collectWithSession(jdwpSession, collectState)
+
+            // See b/271466829: We need to keep the JDWP session open until
+            // the debugger attaches to the Android process.
+            if (collectState.hasCollectedEverything) {
+                if (collectState.waitReceived) {
+                    logger.debug { "Keeping JDWP session open until debugger connects" }
+                    delay(session.property(PROCESS_PROPERTIES_READ_TIMEOUT).toMillis())
+                }
+            }
         }
     }
 
