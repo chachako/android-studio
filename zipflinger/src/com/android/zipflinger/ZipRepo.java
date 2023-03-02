@@ -60,6 +60,10 @@ public class ZipRepo implements Closeable {
         channel.close();
     }
 
+    public boolean isOpen() {
+        return channel.isOpen();
+    }
+
     @NonNull
     private Entry getEntry(@NonNull String entryName) {
         Entry entry = zipMap.getEntries().get(entryName);
