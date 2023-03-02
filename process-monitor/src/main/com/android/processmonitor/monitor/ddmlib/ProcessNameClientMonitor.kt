@@ -23,7 +23,7 @@ import com.android.adblib.shellCommand
 import com.android.adblib.withLineCollector
 import com.android.ddmlib.IDevice
 import com.android.processmonitor.monitor.ProcessNames
-import com.android.processmonitor.utils.EvictingMap
+import com.android.processmonitor.utils.RetainingMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -31,8 +31,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
-
-private const val MAX_PIDS = 1000
 
 private const val DEVICE_PROCESSES_UPDATE_INTERVAL_MS = 2000L
 
@@ -44,8 +42,7 @@ private const val DEVICE_PROCESSES_UPDATE_INTERVAL_MS = 2000L
  * @param device The [IDevice] to monitor
  * @param flows A flow where [ProcessNames] are sent to
  * @param adbSession An [AdbSession]
- * @param maxPidsBeforeEviction The maximum number of entries in the cache before we start evicting
- *        dead processes
+ * @param maxProcessRetention The maximum number of dead pids to retain in the cache
  * @param enablePsPolling If true, use `ps` command to poll device for processes
  */
 internal class ProcessNameClientMonitor(
@@ -54,7 +51,7 @@ internal class ProcessNameClientMonitor(
     private val flows: ProcessNameMonitorFlows,
     private val adbSession: AdbSession,
     private val logger: AdbLogger,
-    private val maxPidsBeforeEviction: Int = MAX_PIDS,
+    private val maxProcessRetention: Int,
     enablePsPolling: Boolean = false,
 ) : Closeable {
 
@@ -62,7 +59,7 @@ internal class ProcessNameClientMonitor(
      * The map of pid -> [ProcessNames] for currently alive processes, plus recently terminated
      * processes.
      */
-    private val processes = EvictingMap<Int, ProcessNames>(maxPidsBeforeEviction)
+    private val processes = RetainingMap<Int, ProcessNames>(maxProcessRetention)
     private val deviceProcessUpdater = if (enablePsPolling) DeviceProcessUpdater() else null
 
     private val scope: CoroutineScope =
@@ -74,8 +71,6 @@ internal class ProcessNameClientMonitor(
             flows.trackClients(device).collect { (addedProcesses, removedProcesses) ->
                 processes.removeAll(removedProcesses)
 
-                // New processes are stored in the map and removed from (dead processes) eviction
-                // list.
                 addedProcesses.forEach { (pid, names) ->
                     logger.debug { "${device.serialNumber}: Adding client $pid -> $names" }
                     processes[pid] = names

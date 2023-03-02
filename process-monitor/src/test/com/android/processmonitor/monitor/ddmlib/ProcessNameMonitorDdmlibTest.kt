@@ -37,6 +37,7 @@ class ProcessNameMonitorDdmlibTest {
   private val device2 = mockDevice("device2")
   private val process1 = ProcessInfo(1, "package1", "process1")
   private val process2 = ProcessInfo(2, "package2", "process2")
+  private val process3 = ProcessInfo(3, "package3", "process3")
 
   private val fakeAdbSession = FakeAdbSession()
 
@@ -63,35 +64,61 @@ class ProcessNameMonitorDdmlibTest {
 
       flows.sendDeviceEvents(Online(device1))
       flows.sendDeviceEvents(Online(device2))
-      flows.sendClientEvents(device1.serialNumber, clientsAddedEvent(process1))
-      flows.sendClientEvents(device2.serialNumber, clientsAddedEvent(process2))
-      advanceUntilIdle()
-      flows.sendDeviceEvents(Disconnected(device1))
+        flows.sendClientEvents(device1.serialNumber, clientsAddedEvent(process1))
+        flows.sendClientEvents(device2.serialNumber, clientsAddedEvent(process2))
+        advanceUntilIdle()
+        flows.sendDeviceEvents(Disconnected(device1))
 
-      advanceUntilIdle()
-      assertThat(monitor.getProcessNames(device2.serialNumber, 2)).isEqualTo(process2.names)
+        advanceUntilIdle()
+        assertThat(monitor.getProcessNames(device2.serialNumber, 2)).isEqualTo(process2.names)
     }
   }
 
-  @Test
-  fun disconnect_terminatesClientFlow(): Unit = runTest {
-    val flows = TerminationTrackingProcessNameMonitorFlows()
-    processNameMonitor(flows)
-    flows.sendDeviceEvents(Online(device1))
-    advanceTimeBy(2000) // Let the flow run a few cycles
-    assertThat(flows.isClientFlowStarted(device1.serialNumber)).isTrue()
+    @Test
+    fun propagatesMaxProcessRetention(): Unit = runTest {
+        FakeProcessNameMonitorFlows().use { flows ->
+            val monitor = processNameMonitor(flows, maxProcessRetention = 1)
 
-    flows.sendDeviceEvents(Disconnected(device1))
+            flows.sendDeviceEvents(Online(device1))
+            flows.sendClientEvents(
+                device1.serialNumber,
+                clientsAddedEvent(process1, process2, process3),
+                clientsRemovedEvent(process1.pid, process2.pid)
+            )
 
-    advanceUntilIdle()
+            advanceUntilIdle()
+            assertThat(monitor.getProcessNames(device1.serialNumber, 1)).isNull()
+            assertThat(monitor.getProcessNames(device1.serialNumber, 2)).isEqualTo(process2.names)
+            assertThat(monitor.getProcessNames(device1.serialNumber, 3)).isEqualTo(process3.names)
+        }
+    }
+
+    @Test
+    fun disconnect_terminatesClientFlow(): Unit = runTest {
+        val flows = TerminationTrackingProcessNameMonitorFlows()
+        processNameMonitor(flows)
+        flows.sendDeviceEvents(Online(device1))
+        advanceTimeBy(2000) // Let the flow run a few cycles
+        assertThat(flows.isClientFlowStarted(device1.serialNumber)).isTrue()
+
+        flows.sendDeviceEvents(Disconnected(device1))
+
+        advanceUntilIdle()
     assertThat(flows.isClientFlowTerminated(device1.serialNumber)).isTrue()
   }
 
-  private fun CoroutineScope.processNameMonitor(
-    flows: ProcessNameMonitorFlows = FakeProcessNameMonitorFlows(),
-  ): ProcessNameMonitorDdmlib {
-    return ProcessNameMonitorDdmlib(this, fakeAdbSession, flows, FakeAdbLoggerFactory().logger).apply {
-      start()
+    private fun CoroutineScope.processNameMonitor(
+        flows: ProcessNameMonitorFlows = FakeProcessNameMonitorFlows(),
+        maxProcessRetention: Int = 1000,
+    ): ProcessNameMonitorDdmlib {
+        return ProcessNameMonitorDdmlib(
+            this,
+            fakeAdbSession,
+            flows,
+            maxProcessRetention,
+            FakeAdbLoggerFactory().logger
+        ).apply {
+            start()
+        }
     }
-  }
 }

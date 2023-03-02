@@ -19,22 +19,22 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 /**
- * Tests for [EvictingMap]
+ * Tests for [RetainingMap]
  */
-class EvictingMapTest {
+class RetainingMapTest {
 
     @Test
     fun noOverflow_doesNotEvict() {
-        val evictingMap = evictingMap(
-            maxSize = 3,
+        val retainingMap = retainingMap(
+            maxRetention = 3,
             1 to "e1",
             2 to "e2",
             3 to "e3",
         )
 
-        evictingMap.removeAll(1, 2, 3)
+        retainingMap.removeAll(1, 2, 3)
 
-        assertThat(evictingMap.asMap()).containsExactly(
+        assertThat(retainingMap.asMap()).containsExactly(
             1, "e1",
             2, "e2",
             3, "e3",
@@ -43,16 +43,16 @@ class EvictingMapTest {
 
     @Test
     fun withOverflow_evicts() {
-        val evictingMap = evictingMap(
-            maxSize = 2,
+        val retainingMap = retainingMap(
+            maxRetention = 2,
             1 to "e1",
             2 to "e2",
             3 to "e3",
         )
 
-        evictingMap.removeAll(1, 2, 3)
+        retainingMap.removeAll(1, 2, 3)
 
-        assertThat(evictingMap.asMap()).containsExactly(
+        assertThat(retainingMap.asMap()).containsExactly(
             2, "e2",
             3, "e3",
         )
@@ -60,16 +60,16 @@ class EvictingMapTest {
 
     @Test
     fun removedFirst_evictedFirst() {
-        val evictingMap = evictingMap(
-            maxSize = 2,
+        val retainingMap = retainingMap(
+            maxRetention = 2,
             1 to "e1",
             2 to "e2",
             3 to "e3",
         )
 
-        evictingMap.removeAll(2, 1, 3)
+        retainingMap.removeAll(2, 1, 3)
 
-        assertThat(evictingMap.asMap()).containsExactly(
+        assertThat(retainingMap.asMap()).containsExactly(
             1, "e1",
             3, "e3",
         )
@@ -77,20 +77,21 @@ class EvictingMapTest {
 
     @Test
     fun addingNewAndRemovingOld() {
-        val evictingMap = evictingMap(
-            maxSize = 3,
+        val retainingMap = retainingMap(
+            maxRetention = 2,
             1 to "e1",
             2 to "e2",
             3 to "e3",
         )
 
-        evictingMap.removeAll(1, 2, 3)
-        evictingMap.addAll(
+        retainingMap.removeAll(1, 2, 3)
+        retainingMap.addAll(
             4 to "e4",
             5 to "e5",
         )
 
-        assertThat(evictingMap.asMap()).containsExactly(
+        assertThat(retainingMap.asMap()).containsExactly(
+            2, "e2",
             3, "e3",
             4, "e4",
             5, "e5",
@@ -98,9 +99,9 @@ class EvictingMapTest {
     }
 
     @Test
-    fun activeKeys_notEvicted() {
-        val evictingMap = evictingMap(
-            maxSize = 3,
+    fun activeKeys_retained() {
+        val retainingMap = retainingMap(
+            maxRetention = 3,
             1 to "e1",
             2 to "e2",
             3 to "e3",
@@ -108,7 +109,7 @@ class EvictingMapTest {
             5 to "e5",
         )
 
-        assertThat(evictingMap.asMap()).containsExactly(
+        assertThat(retainingMap.asMap()).containsExactly(
             1, "e1",
             2, "e2",
             3, "e3",
@@ -118,33 +119,60 @@ class EvictingMapTest {
     }
 
     @Test
-    fun readdedRemovedKey_isNotEvicted() {
-        val evictingMap = evictingMap(
-            maxSize = 3,
+    fun reAddedRemovedKey_retained() {
+        val retainingMap = retainingMap(
+            maxRetention = 3,
             1 to "e1",
             2 to "e2",
             3 to "e3",
         )
 
-        evictingMap.removeAll(1, 2, 3)
-        evictingMap.addAll(
+        retainingMap.removeAll(1, 2, 3)
+        retainingMap.addAll(
             1 to "e1",
             4 to "e4",
         )
 
-        assertThat(evictingMap.asMap()).containsExactly(
+        assertThat(retainingMap.asMap()).containsExactly(
             1, "e1",
+            2, "e2",
             3, "e3",
             4, "e4",
         )
     }
+
+    @Test
+    fun noRetention() {
+        val retainingMap = retainingMap(
+            maxRetention = 0,
+            1 to "e1",
+            2 to "e2",
+            3 to "e3",
+        )
+
+        retainingMap.removeAll(1, 2, 3)
+
+        assertThat(retainingMap.asMap()).isEmpty()
+    }
+
+    @Test
+    fun negativeRetention_doesNotThrow() {
+        val retainingMap = retainingMap(
+            maxRetention = -1,
+            1 to "e1",
+        )
+
+        retainingMap.removeAll(1)
+
+        assertThat(retainingMap.asMap()).isEmpty()
+    }
 }
 
-private fun <K, V> evictingMap(maxSize: Int, vararg items: Pair<K, V>) =
-    EvictingMap<K, V>(maxSize).apply { addAll(*items) }
+private fun <K, V> retainingMap(maxRetention: Int, vararg items: Pair<K, V>) =
+    RetainingMap<K, V>(maxRetention).apply { addAll(*items) }
 
-private fun <K, V> EvictingMap<K, V>.removeAll(vararg keys: K) = removeAll(keys.asList())
+private fun <K, V> RetainingMap<K, V>.removeAll(vararg keys: K) = removeAll(keys.asList())
 
-private fun <K, V> EvictingMap<K, V>.addAll(vararg items: Pair<K, V>) {
+private fun <K, V> RetainingMap<K, V>.addAll(vararg items: Pair<K, V>) {
     items.forEach { this[it.first] = it.second }
 }

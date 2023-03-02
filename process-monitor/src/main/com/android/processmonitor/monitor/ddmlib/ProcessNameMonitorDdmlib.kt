@@ -36,6 +36,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     parentScope: CoroutineScope,
     private val adbSession: AdbSession,
     private val flows: ProcessNameMonitorFlows,
+    private val maxProcessRetention: Int,
     private val logger: AdbLogger,
 ) : ProcessNameMonitor, Closeable {
 
@@ -43,12 +44,14 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
         parentScope: CoroutineScope,
         adbSession: AdbSession,
         adbAdapter: AdbAdapter,
+        maxProcessRetention: Int,
         logger: AdbLogger,
     )
             : this(
         parentScope,
         adbSession,
         ProcessNameMonitorFlowsImpl(adbAdapter, logger, adbSession.ioDispatcher),
+        maxProcessRetention,
         logger,
     )
 
@@ -92,9 +95,10 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     private fun addDevice(device: IDevice) {
         logger.info { "Adding ${device.serialNumber}" }
         devices[device.serialNumber] =
-            ProcessNameClientMonitor(scope, device, flows, adbSession, logger).apply {
-                start()
-            }
+            ProcessNameClientMonitor(scope, device, flows, adbSession, logger, maxProcessRetention)
+                .apply {
+                    start()
+                }
     }
 
     private fun removeDevice(device: IDevice) {
