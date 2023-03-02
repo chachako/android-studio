@@ -54,7 +54,11 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
     val evaluator = ConstantEvaluator().allowFieldInitializers()
 
     val (isProtected, unprotectedActionsList) =
-      checkIsProtectedReceiverAndReturnUnprotectedActions(filterArg, node, evaluator)
+      checkIsProtectedReceiverAndReturnUnprotectedActions(
+        filterArg,
+        node,
+        context.evaluator,
+      )
 
     if (!isProtected) {
       val flags = evaluator.evaluate(flagsArg) as? Int

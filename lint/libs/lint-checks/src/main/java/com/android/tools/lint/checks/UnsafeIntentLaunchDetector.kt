@@ -260,7 +260,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     val receiverArg = UastLintUtils.findArgument(call, method, BROADCAST_RECEIVER_CLASS) ?: return
     if (receiverArg.isNullLiteral()) return
 
-    if (!isRuntimeReceiverProtected(call, method)) {
+    if (!isRuntimeReceiverProtected(call, method, context.evaluator)) {
       val receiverVar = receiverArg.tryResolve() as? PsiVariable ?: return
       val receiverAssignment =
         findLastAssignment(receiverVar, call)?.skipParenthesizedExprDown() ?: return
@@ -271,7 +271,11 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     }
   }
 
-  fun isRuntimeReceiverProtected(call: UCallExpression, method: PsiMethod): Boolean {
+  fun isRuntimeReceiverProtected(
+    call: UCallExpression,
+    method: PsiMethod,
+    javaEvaluator: JavaEvaluator
+  ): Boolean {
     // The parameter positions vary across the various registerReceiver*() methods, so rather
     // than hardcode them we simply look them up based on the parameter name and type.
 
@@ -290,7 +294,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
       BroadcastReceiverUtils.checkIsProtectedReceiverAndReturnUnprotectedActions(
         filterArg,
         call,
-        evaluator
+        javaEvaluator
       )
 
     return isProtected
@@ -528,7 +532,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
             if (call.methodName in registerReceiverMethods) {
               val method = call.resolve() ?: return
 
-              if (!isRuntimeReceiverProtected(call, method)) {
+              if (!isRuntimeReceiverProtected(call, method, context.evaluator)) {
                 result = true
               }
             }

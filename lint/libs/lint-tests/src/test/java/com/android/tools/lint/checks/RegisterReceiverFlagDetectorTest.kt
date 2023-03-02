@@ -100,38 +100,340 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun testSubsequentFilterModification() {
+  fun testIntentFilterIsFieldWithProtectedActions() {
     lint()
       .files(
         java(
-            """
-                    package test.pkg;
-                    import android.content.BroadcastReceiver;
-                    import android.content.Context;
-                    import android.content.Intent;
-                    import android.content.IntentFilter;
-                    public class TestClass1 {
-                        public void testMethod(Context context, BroadcastReceiver receiver) {
-                            IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-                            filter.addAction(Intent.ACTION_BATTERY_LOW);
-                            filter.addAction(Intent.ACTION_BATTERY_OKAY);
-                            context.registerReceiver(receiver, filter);
-                            filter.addAction("querty");
-                            context.registerReceiver(receiver, filter);
-                        }
-                    }
-                   """
-          )
-          .indented(),
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private final IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter();
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+          }
+          """
+        )
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testIntentFilterIsFieldWithProtectedActions_multipleRegisterCalls() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter();
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+              public void testMethodTwo(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+          }
+          """
+        )
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testIntentFilterIsFieldWithProtectedActions_nonPrivate() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter();
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+          }
+          """
+        ),
       )
       .run()
       .expect(
         """
-                src/test/pkg/TestClass1.java:13: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for querty [UnspecifiedRegisterReceiverFlag]
-                        context.registerReceiver(receiver, filter);
-                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                0 errors, 1 warnings
-                """
+        src/test/pkg/TestClass1.java:17: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
+                          mContext.registerReceiver(receiver, myIntentFilter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testIntentFilterIsFieldWithProtectedActions_escapesScope() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter();
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+              public void escape() {
+                UtilClass.utilMethod(myIntentFilter);
+              }
+          }
+          """
+        ),
+        java(
+          """
+          package test.pkg;
+          import android.content.IntentFilter;
+          public class UtilClass {
+              public void utilMethod(IntentFilter filter) {}
+          }
+          """
+        )
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestClass1.java:17: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
+                          mContext.registerReceiver(receiver, myIntentFilter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testIntentFilterIsFieldWithProtectedActions_escapesScopeViaPublicGetter() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter();
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+              public IntentFilter getIntentFilter() {
+                  return myIntentFilter;
+              }
+          }
+          """
+        ),
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestClass1.java:17: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
+                          mContext.registerReceiver(receiver, myIntentFilter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testIntentFilterIsFieldWithProtectedActions_escapesScopeViaPublicSetter() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter();
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_LOW);
+                myIntentFilter.addAction(Intent.ACTION_BATTERY_OKAY);
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+              public void setMyIntentFilter(IntentFilter intentFilter) {
+                myIntentFilter = intentFilter;
+              }
+          }
+          """
+        ),
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestClass1.java:17: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for an IntentFilter that cannot be inspected by lint [UnspecifiedRegisterReceiverFlag]
+                          mContext.registerReceiver(receiver, myIntentFilter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testIntentFilterIsFieldWithUnprotectedActions() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private IntentFilter myIntentFilter;
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter = new IntentFilter("foo");
+                myIntentFilter.addAction("bar");
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+              public void randomMethod() {
+                  myIntentFilter.addAction("baz");
+              }
+          }
+          """
+        )
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestClass1.java:16: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for foo, bar, baz [UnspecifiedRegisterReceiverFlag]
+                          mContext.registerReceiver(receiver, myIntentFilter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testIntentFilterIsFieldWithUnprotectedActions_constructedInline() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              private Context mContext;
+              private IntentFilter myIntentFilter = new IntentFilter("foo");
+              private TestClass1(Context context) {
+                mContext = context;
+                myIntentFilter.addAction("bar");
+              }
+              public void testMethod(BroadcastReceiver receiver) {
+                  mContext.registerReceiver(receiver, myIntentFilter);
+              }
+          }
+          """
+        ),
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestClass1.java:15: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for foo, bar [UnspecifiedRegisterReceiverFlag]
+                          mContext.registerReceiver(receiver, myIntentFilter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testSubsequentFilterModification() {
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          public class TestClass1 {
+              public void testMethod(Context context, BroadcastReceiver receiver) {
+                  IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                  filter.addAction(Intent.ACTION_BATTERY_LOW);
+                  filter.addAction(Intent.ACTION_BATTERY_OKAY);
+                  context.registerReceiver(receiver, filter);
+                  filter.addAction("querty");
+                  context.registerReceiver(receiver, filter);
+              }
+          }
+          """
+        )
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/TestClass1.java:14: Warning: receiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for querty [UnspecifiedRegisterReceiverFlag]
+                          context.registerReceiver(receiver, filter);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
       )
   }
 

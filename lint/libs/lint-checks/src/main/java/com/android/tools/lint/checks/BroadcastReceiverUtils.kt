@@ -15,18 +15,27 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
 import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.isReturningContext
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiVariable
+import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
+import org.jetbrains.uast.UReturnExpression
+import org.jetbrains.uast.UastBinaryOperator
+import org.jetbrains.uast.getContainingUClass
 import org.jetbrains.uast.getContainingUMethod
+import org.jetbrains.uast.skipParenthesizedExprUp
+import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.tryResolve
 
 @SuppressWarnings("WrongTerminology")
@@ -35,33 +44,52 @@ object BroadcastReceiverUtils {
   fun checkIsProtectedReceiverAndReturnUnprotectedActions(
     filterArg: UExpression,
     node: UCallExpression,
-    evaluator: ConstantEvaluator
+    javaEvaluator: JavaEvaluator,
   ): Pair<Boolean, List<String>> { // isProtected, unprotectedActions
+    val constantEvaluator = ConstantEvaluator().allowFieldInitializers()
     val actions = mutableSetOf<String>()
+
+    val filterField = filterArg.tryResolve() as? PsiField
+    if (filterField != null && javaEvaluator.isPrivate(filterField)) {
+      // Special case for class fields.
+      // If a private class field is used for the intent filter, try to evaluate
+      // all the calls in the class, gathering the intent filter's actions but exiting
+      // if the field escapes the class's scope.
+      val clazz = node.getContainingUClass() ?: return Pair(false, listOf())
+      val dfa = IntentFilterFieldDataFlowAnalyzer(filterField, javaEvaluator, constantEvaluator)
+      clazz.accept(dfa)
+      actions.addAll(dfa.actions)
+      val isProtected = actions.all(::isProtectedBroadcast) && !dfa.escaped
+      val unprotected = actions.filterNot(::isProtectedBroadcast)
+      return Pair(isProtected, unprotected)
+    }
+
     val construction = findIntentFilterConstruction(filterArg, node) ?: return Pair(false, listOf())
 
     val constructorActionArg = construction.getArgumentForParameter(0)
-    (constructorActionArg?.let(evaluator::evaluate) as? String)?.let(actions::add)
+    (constructorActionArg?.let(constantEvaluator::evaluate) as? String)?.let(actions::add)
 
-    val actionCollectorVisitor = ActionCollectorVisitor(setOf(construction), node, evaluator)
+    val actionCollectorVisitor =
+      ActionCollectorVisitor(setOf(construction), node, constantEvaluator)
 
     val parent = node.getContainingUMethod()
     parent?.accept(actionCollectorVisitor)
     actions.addAll(actionCollectorVisitor.actions)
 
-    val isProtected =
-      actions.all(::isProtectedBroadcast) && !actionCollectorVisitor.intentFilterEscapesScope
+    val isProtected = actions.all(::isProtectedBroadcast) && !actionCollectorVisitor.escaped
     val unprotectedActionsList = actions.filterNot(::isProtectedBroadcast)
     return Pair(isProtected, unprotectedActionsList)
   }
 
   /**
    * For the supplied expression (e.g. intent filter argument), attempts to find its construction.
-   * This will be an `IntentFilter()` constructor, an `IntentFilter.create()` call, or `null`.
+   * This will be an `IntentFilter()` constructor, an `IntentFilter.create()` call, or `null`. It
+   * will only be found if the intent filter is constructed within the body of the supplied call
+   * expression (as in, it is a local variable defined within the function).
    */
   private fun findIntentFilterConstruction(
     expression: UExpression,
-    node: UCallExpression
+    node: UCallExpression,
   ): UCallExpression? {
     val resolved = expression.tryResolve()
 
@@ -93,17 +121,28 @@ object BroadcastReceiverUtils {
     }
   }
 
-  private fun isIntentFilterFactoryMethod(method: PsiMethod) =
-    (method.containingClass?.qualifiedName == "android.content.IntentFilter" &&
-      (method.returnType?.canonicalText == "android.content.IntentFilter" || method.isConstructor))
+  private fun isIntentFilterFactoryMethod(method: PsiMethod?) =
+    method != null &&
+      (method.containingClass?.qualifiedName == "android.content.IntentFilter" &&
+        (method.returnType?.canonicalText == "android.content.IntentFilter" ||
+          method.isConstructor))
+
+  private fun addActionArg(
+    call: UCallExpression,
+    evaluator: ConstantEvaluator,
+    actions: MutableSet<String>,
+  ) {
+    val actionArg = call.getArgumentForParameter(0) ?: return
+    val action = evaluator.evaluate(actionArg) as? String ?: return
+    actions.add(action)
+  }
 
   private class ActionCollectorVisitor(
     start: Collection<UElement>,
     val functionCall: UCallExpression,
     val evaluator: ConstantEvaluator,
-  ) : DataFlowAnalyzer(start) {
+  ) : EscapeCheckingDataFlowAnalyzer(start) {
     private var finished = false
-    var intentFilterEscapesScope = false
     val actions = mutableSetOf<String>()
 
     override fun argument(call: UCallExpression, reference: UElement) {
@@ -111,19 +150,101 @@ object BroadcastReceiverUtils {
         finished -> return
         // We've reached the registerReceiver*() call in question.
         call == functionCall -> finished = true
-        // The filter 'intentFilterEscapesScope' to a method which could modify it.
-        getMethodName(call)!! !in BROADCAST_RECEIVER_METHOD_NAMES -> intentFilterEscapesScope = true
+        // Suppress escape checking if the intentFilter is passed to a registerReceiver method
+        getMethodName(call)!! !in BROADCAST_RECEIVER_METHOD_NAMES -> super.argument(call, reference)
       }
     }
 
     override fun receiver(call: UCallExpression) {
       if (!finished && getMethodName(call) == "addAction") {
-        val actionArg = call.getArgumentForParameter(0)
-        if (actionArg != null) {
-          val action = evaluator.evaluate(actionArg) as? String
-          if (action != null) actions.add(action)
+        addActionArg(call, evaluator, actions)
+      }
+    }
+  }
+
+  /**
+   * Visits the provided class, accumulating the actions added to `intentFilterField`. Detects if
+   * `intentFilterField` escapes the class's scope.
+   */
+  private class IntentFilterFieldDataFlowAnalyzer(
+    val intentFilterField: PsiField,
+    val javaEvaluator: JavaEvaluator,
+    val constantEvaluator: ConstantEvaluator,
+  ) : EscapeCheckingDataFlowAnalyzer(listOfNotNull(intentFilterField.toUElement())) {
+    val actions: MutableSet<String> = mutableSetOf()
+
+    override fun returns(expression: UReturnExpression) {
+      val method = expression.jumpTarget?.tryResolve() as? PsiMethod
+      if (method != null && javaEvaluator.isPrivate(method)) return
+      super.returns(expression)
+    }
+
+    override fun ignoreArgument(call: UCallExpression, reference: UElement): Boolean {
+      val resolved = call.resolve() ?: return super.ignoreArgument(call, reference)
+      // We don't care about registerReceiver methods (the overarching logic starts with those)
+      if (
+        getMethodName(call) == "registerReceiver" &&
+          javaEvaluator.isMemberInSubClassOf(resolved, "android.content.Context")
+      ) {
+        return true
+      }
+      return super.ignoreArgument(call, reference)
+    }
+
+    override fun returnsSelf(call: UCallExpression): Boolean {
+      if (getMethodName(call) == "addAction") {
+        addActionArg(call, constantEvaluator, actions)
+      }
+      return super.returnsSelf(call)
+    }
+
+    /**
+     * If `intentFilterField` can be set via a public method's parameter, then it escapes the class'
+     * scope because we don't know what actions may have been added externally before passing in
+     * said parameter.
+     */
+    override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+      if (escaped) return super.visitBinaryExpression(node)
+      if (
+        node.operator == UastBinaryOperator.ASSIGN &&
+          node.leftOperand.tryResolve() == intentFilterField
+      ) {
+        val parameter = node.rightOperand.tryResolve() as? PsiParameter
+        val method = parameter?.let { it.declarationScope as? PsiMethod }
+        if (
+          method?.containingClass == intentFilterField.containingClass &&
+            !javaEvaluator.isPrivate(method)
+        ) {
+          escaped = true
         }
       }
+
+      return super.visitBinaryExpression(node)
+    }
+
+    override fun visitCallExpression(node: UCallExpression): Boolean {
+      if (isIntentFilterFieldConstruction(node)) {
+        addActionArg(node, constantEvaluator, actions)
+      }
+
+      return super.visitCallExpression(node)
+    }
+
+    /**
+     * detect if the call is the construction of `intentFilterField` itself, e.g. field = new
+     * IntentFilter("action")
+     */
+    private fun isIntentFilterFieldConstruction(node: UCallExpression): Boolean {
+      if (!isIntentFilterFactoryMethod(node.resolve())) return false
+      val parent =
+        if (node.uastParent is UParenthesizedExpression) {
+          skipParenthesizedExprUp(node.uastParent as? UExpression)
+        } else node.uastParent
+      if (parent?.sourcePsi == intentFilterField) return true
+      return (parent as? UBinaryExpression)?.let {
+        it.operator == UastBinaryOperator.ASSIGN && it.leftOperand.tryResolve() == intentFilterField
+      }
+        ?: false
     }
   }
 
