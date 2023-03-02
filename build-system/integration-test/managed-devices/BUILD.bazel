@@ -43,7 +43,10 @@ TEST_DEPS = [
 
 #keep sorted
 TEST_DATA = downloaded_sdk + [
+    "//prebuilts/studio/sdk:build-tools/latest",
+    "//prebuilts/studio/sdk:platform-tools",
     "//tools/base/build-system:gradle-distrib",
+    "//tools/base/build-system/aapt2:aapt2_for_tests",
     "//tools/base/build-system/integration-test:android_platform_for_tests",
 ]
 
@@ -61,6 +64,16 @@ TEST_MAVEN_REPOS = [
     "//tools/base/build-system/integration-test:utp_plugins",
     "//tools/base/build-system/integration-test/managed-devices:prebuilts",
 ]
+
+gradle_connected_test(
+    name = "ManagedDeviceExtensionTest",
+    srcs = "src/test/java/com/android/build/gradle/integration/manageddevice/application/",
+    avd = None,
+    data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/utp"],
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = TEST_MAVEN_REPOS,
+    deps = TEST_DEPS,
+)
 
 gradle_connected_test(
     name = "UtpManagedDeviceTest",

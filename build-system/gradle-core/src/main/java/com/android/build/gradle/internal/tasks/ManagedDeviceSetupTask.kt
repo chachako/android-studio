@@ -77,6 +77,7 @@ abstract class ManagedDeviceSetupTask : UnsafeOutputsTask(
         override fun configure(task: ManagedDeviceSetupTask) {
             super.configure(task)
 
+            task.variantName = ""
             task.deviceInput.setDisallowChanges(
                 task.objectFactory.newInstance(setupConfigAction).configureTaskInput(dslDevice))
             task.setupAction.setDisallowChanges(setupTaskAction)
