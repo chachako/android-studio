@@ -18,7 +18,9 @@ package com.android.processmonitor.agenttracker
 import ai.grazie.utils.dropPrefix
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.ShellV2Protocol
+import com.android.fakeadbserver.services.ServiceOutput
 import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_PATH
 import kotlinx.coroutines.channels.Channel
@@ -35,7 +37,11 @@ private const val EOF = "EOF"
  *
  * See `//tools/base/process-monitor/process-tracker-agent`
  */
-internal class ProcessTrackerAgentCommandHandler : SimpleShellV2Handler(AGENT_PATH) {
+internal class ProcessTrackerAgentCommandHandler : SimpleShellV2Handler(
+    ShellProtocolType.SHELL_V2,
+    AGENT_PATH
+) {
+
     private val channel = Channel<String>(10)
 
     val invocations = mutableListOf<String>()
@@ -48,23 +54,23 @@ internal class ProcessTrackerAgentCommandHandler : SimpleShellV2Handler(AGENT_PA
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
-        protocol: ShellV2Protocol,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
-        args: String?
+        shellCommand: String,
+        shellCommandArgs: String?
     ) {
-        invocations.add("${device.deviceId}: $args")
-        protocol.writeOkay()
+        invocations.add("${device.deviceId}: $shellCommandArgs")
         runBlocking {
             channel.consumeAsFlow().takeWhile {
                 it != EOF
             }.collect {
                 when {
-                    it.startsWith(STDOUT) -> protocol.writeStdout(it.dropPrefix(STDOUT))
-                    it.startsWith(STDERR) -> protocol.writeStderr(it.dropPrefix(STDERR))
+                    it.startsWith(STDOUT) -> serviceOutput.writeStdout(it.dropPrefix(STDOUT))
+                    it.startsWith(STDERR) -> serviceOutput.writeStderr(it.dropPrefix(STDERR))
                     else -> throw IllegalStateException("Unexpected data: $it")
                 }
             }
         }
-        protocol.writeExitCode(0)
+        serviceOutput.writeExitCode(0)
     }
 }

@@ -15,6 +15,9 @@
  */
 package com.android.fakeadbserver
 
+import com.android.fakeadbserver.services.ExecServiceOutput
+import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellProtocolServiceOutput
 import com.google.common.base.Charsets
 import java.io.EOFException
 import java.io.IOException
@@ -24,6 +27,30 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 private const val HEADER_SIZE = 5
+
+enum class ShellProtocolType {
+    SHELL {
+
+        override val command: String
+            get() = "shell"
+
+        override fun createServiceOutput(socket: Socket): ServiceOutput {
+            return ExecServiceOutput(socket)
+        }
+    },
+    SHELL_V2 {
+
+        override val command: String
+            get() = "shell,v2"
+
+        override fun createServiceOutput(socket: Socket): ServiceOutput {
+            return ShellProtocolServiceOutput(socket)
+        }
+    };
+
+    abstract val command: String
+    abstract fun createServiceOutput(socket: Socket) : ServiceOutput
+}
 
 class ShellV2Protocol(private val socket: Socket) {
 

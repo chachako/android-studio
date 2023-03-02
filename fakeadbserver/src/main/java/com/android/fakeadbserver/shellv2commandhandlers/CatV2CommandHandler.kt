@@ -17,10 +17,8 @@ package com.android.fakeadbserver.shellv2commandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import com.android.fakeadbserver.ShellV2Protocol
-import com.google.common.base.Charsets
-import java.io.ByteArrayOutputStream
-import java.lang.Integer.min
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ServiceOutput
 
 const val STDOUT_PACKET_SIZE = 80
 
@@ -34,51 +32,81 @@ const val STDOUT_PACKET_SIZE = 80
  * If "cat" argument is in the form of "/proc/{pid}/cmdline then it returns a command line
  * which started the process.
  */
-class CatV2CommandHandler : SimpleShellV2Handler("cat") {
+class CatV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+    shellProtocolType,
+    "cat"
+) {
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
-        protocol: ShellV2Protocol,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
-        args: String?
+        shellCommand: String,
+        shellCommandArgs: String?
     ) {
-        protocol.writeOkay()
-
-        if (args.isNullOrEmpty()) {
-            forwardStdinAsStdout(protocol)
+        if (shellCommandArgs.isNullOrEmpty()) {
+            forwardStdinAsStdout(serviceOutput, device)
             return
         }
 
-        if (tryHandleCatProcPidCmdline(protocol, device, args)) {
+        if (tryHandleCatProcPidCmdline(serviceOutput, device, shellCommandArgs)) {
             return
         }
 
-        catRegularFiles(protocol, device, args)
+        catRegularFiles(serviceOutput, device, shellCommandArgs)
     }
 
-    private fun forwardStdinAsStdout(protocol: ShellV2Protocol) {
+    private fun forwardStdinAsStdout(serviceOutput: ServiceOutput, device: DeviceState) {
+        // TODO: Combine v1 and v2 handling
         // Forward `stdin` packets back as `stdout` packets
-        val stdinProcessor = StdinProcessor(protocol)
-        while (true) {
-            val packet = protocol.readPacket()
-            when (packet.kind) {
-                ShellV2Protocol.PacketKind.CLOSE_STDIN -> {
-                    stdinProcessor.flush()
-                    protocol.writeExitCode(0)
-                    break
+        when (shellProtocolType) {
+            ShellProtocolType.SHELL -> {
+                val sb = StringBuilder()
+                while (true) {
+                    // Note: We process each character individually to ensure we send back
+                    // all character without any loss and/or conversion.
+                    val buffer = ByteArray(1)
+                    val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
+                    if (numRead < 0) {
+                        serviceOutput.writeStdout(sb.toString())
+                        serviceOutput.writeExitCode(0)
+                        break
+                    }
+                    val ch = buffer[0].toInt()
+                    if (ch != '\n'.code) {
+                        sb.append(ch.toChar())
+                    } else {
+                        // TODO: Handle '\n'->'\r\n' for older devices in serviceOutput
+                        sb.append(shellNewLine(device))
+                        serviceOutput.writeStdout(sb.toString())
+                        sb.setLength(0)
+                    }
                 }
-                ShellV2Protocol.PacketKind.STDIN -> {
-                    stdinProcessor.process(packet.bytes)
-                }
-                else -> {
-                    // Ignore?
+            }
+
+            ShellProtocolType.SHELL_V2 -> {
+                while (true) {
+                    // Send `stdout` packets of 200 bytes max. so simulate potentially custom
+                    // process on a "real" device
+                    val buffer = ByteArray(STDOUT_PACKET_SIZE)
+                    val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
+                    if (numRead < 0) {
+                        serviceOutput.writeExitCode(0)
+                        break
+                    }
+                    serviceOutput.writeStdout(
+                        if (numRead == buffer.size) buffer else buffer.copyOfRange(
+                            0,
+                            numRead
+                        )
+                    )
                 }
             }
         }
     }
 
     private fun tryHandleCatProcPidCmdline(
-        protocol: ShellV2Protocol,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
         args: String
     ): Boolean {
@@ -91,16 +119,16 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
 
         val profileableClient = device.getProfileableProcess(pid)
         if (profileableClient == null) {
-            protocol.writeStderr("profileableClient with a pid $pid not found")
+            serviceOutput.writeStderr("profileableClient with a pid $pid not found")
             return true
         }
 
-        protocol.writeStdout(profileableClient.commandLine.toByteArray(Charsets.UTF_8))
-        protocol.writeExitCode(0)
+        serviceOutput.writeStdout(profileableClient.commandLine)
+        serviceOutput.writeExitCode(0)
         return true
     }
 
-    private fun catRegularFiles(protocol: ShellV2Protocol, device: DeviceState, args: String) {
+    private fun catRegularFiles(serviceOutput: ServiceOutput, device: DeviceState, args: String) {
         val fileName = args.trim()
         if (fileName.contains("\\s+")) {
             throw NotImplementedError("Multiple files or file names with spaces are not implemented")
@@ -108,31 +136,18 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
 
         val file = device.getFile(fileName)
         if (file == null) {
-            protocol.writeStderr("No such file or directory")
+            serviceOutput.writeStderr("No such file or directory")
         } else {
-            protocol.writeStdout(file.bytes)
+            serviceOutput.writeStdout(file.bytes)
         }
     }
 
-    class StdinProcessor(private val protocol: ShellV2Protocol) {
-        val byteStream = ByteArrayOutputStream()
-
-        fun flush() {
-            if (byteStream.size() > 0) {
-                protocol.writeStdout(byteStream.toByteArray())
-                byteStream.reset()
-            }
-        }
-
-        fun process(bytes: ByteArray) {
-            // Send `stdout` packets of 200 bytes max. so simulate potentially custom
-            // process on a "real" device
-            var offset = 0
-            while (offset < bytes.size) {
-                val endIndex = min(offset + STDOUT_PACKET_SIZE, bytes.size)
-                protocol.writeStdout(bytes.copyOfRange(offset, endIndex))
-                offset = endIndex
-            }
+    private fun shellNewLine(device: DeviceState): String {
+        // Older devices use "\r\n" for newlines (legacy shell protocol only)
+        return if (device.apiLevel <= 23) {
+            "\r\n"
+        } else {
+            "\n"
         }
     }
 }

@@ -17,23 +17,27 @@ package com.android.fakeadbserver.shellv2commandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.ShellV2Protocol
+import com.android.fakeadbserver.services.ServiceOutput
 import java.nio.ByteBuffer
 
 /**
  * A [SimpleShellV2Handler] that replies to `stdout`, `stderr` and `exit` messages sent
- * to its `stdint` stream with the corresponding [ShellV2Protocol.PacketKind] packets
+ * to its `stdin` stream with the corresponding [ShellV2Protocol.PacketKind] packets
  */
-class ShellProtocolEchoV2CommandHandler : SimpleShellV2Handler("shell-protocol-echo") {
+class ShellProtocolEchoV2CommandHandler() : SimpleShellV2Handler(
+    ShellProtocolType.SHELL_V2,
+    "shell-protocol-echo"
+) {
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
-        protocol: ShellV2Protocol,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
-        args: String?
+        shellCommand: String,
+        shellCommandArgs: String?
     ) {
-        protocol.writeOkay()
-
         // Forward `stdin`, `stderr` and `exit` lines as `stdout` packets
         var exitCode = 0
         val stdoutPrefix = "stdout:"
@@ -42,19 +46,19 @@ class ShellProtocolEchoV2CommandHandler : SimpleShellV2Handler("shell-protocol-e
         val stdinProcessor = StdinProcessor { line ->
             when {
                 line.startsWith(stdoutPrefix) -> {
-                    protocol.writeStdout(
+                    serviceOutput.writeStdout(
                         line.takeLast(line.length - stdoutPrefix.length)
                             .trimStart()
-                            .toByteArray(Charsets.UTF_8)
                     )
                 }
+
                 line.startsWith(stderrPrefix) -> {
-                    protocol.writeStderr(
+                    serviceOutput.writeStderr(
                         line.takeLast(line.length - stderrPrefix.length)
                             .trimStart()
-                            .toByteArray(Charsets.UTF_8)
                     )
                 }
+
                 line.startsWith(exitPrefix) -> {
                     exitCode = line.takeLast(line.length - exitPrefix.length)
                         .trimStart()
@@ -63,20 +67,17 @@ class ShellProtocolEchoV2CommandHandler : SimpleShellV2Handler("shell-protocol-e
             }
         }
         while (true) {
-            val packet = protocol.readPacket()
-            when (packet.kind) {
-                ShellV2Protocol.PacketKind.CLOSE_STDIN -> {
-                    stdinProcessor.flush()
-                    protocol.writeExitCode(exitCode)
-                    break
-                }
-                ShellV2Protocol.PacketKind.STDIN -> {
-                    stdinProcessor.process(packet.bytes)
-                }
-                else -> {
-                    // Ignore?
-                }
+            val buffer = ByteArray(100)
+            val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
+            if (numRead < 0) {
+                stdinProcessor.flush()
+                serviceOutput.writeExitCode(exitCode)
+                break
             }
+            stdinProcessor.process(if (numRead == buffer.size) buffer else buffer.copyOfRange(
+                0,
+                numRead
+            ))
         }
     }
 

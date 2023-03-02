@@ -17,7 +17,9 @@ package com.android.processmonitor.agenttracker
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.ShellV2Protocol
+import com.android.fakeadbserver.services.ServiceOutput
 import com.android.fakeadbserver.shellv2commandhandlers.ShellV2Handler
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_DIR
 import java.net.Socket
@@ -25,25 +27,26 @@ import java.net.Socket
 private const val CMD = "mkdir -p $AGENT_DIR; chmod 700 $AGENT_DIR; chown shell:shell $AGENT_DIR"
 
 /** Simulates the execution of the command that creates the directory for the tracking agent */
-internal class MakeAgentDirCommandHandler : ShellV2Handler() {
+internal class MakeAgentDirCommandHandler : ShellV2Handler(ShellProtocolType.SHELL_V2) {
 
     val invocations = mutableListOf<String>()
 
-    override fun accept(
-        server: FakeAdbServer,
-        socket: Socket,
-        device: DeviceState,
-        command: String,
-        args: String
+    override fun shouldExecute(
+        shellCommand: String,
+        shellCommandArgs: String?
     ): Boolean {
-        val accept = (command == "shell,v2" && args == CMD)
-        if (accept) {
-            invocations.add(device.deviceId)
-            val protocol = ShellV2Protocol(socket)
-            protocol.writeOkay()
-            protocol.writeStdout("")
-            protocol.writeExitCode(0)
-        }
-        return accept
+        return "$shellCommand $shellCommandArgs" == CMD
+    }
+
+    override fun execute(
+        fakeAdbServer: FakeAdbServer,
+        serviceOutput: ServiceOutput,
+        device: DeviceState,
+        shellCommand: String,
+        shellCommandArgs: String?
+    ) {
+        invocations.add(device.deviceId)
+        serviceOutput.writeStdout("")
+        serviceOutput.writeExitCode(0)
     }
 }

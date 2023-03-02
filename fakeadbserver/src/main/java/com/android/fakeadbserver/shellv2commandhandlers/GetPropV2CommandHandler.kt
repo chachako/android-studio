@@ -17,23 +17,22 @@ package com.android.fakeadbserver.shellv2commandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import com.android.fakeadbserver.ShellV2Protocol
-import com.google.common.base.Charsets
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ServiceOutput
 
 /**
  * A [SimpleShellV2Handler] that outputs a hard-coded list of lines that follows the format
  * of device properties.
  */
-class GetPropV2CommandHandler : SimpleShellV2Handler("getprop") {
+class GetPropV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(shellProtocolType, "getprop") {
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
-        protocol: ShellV2Protocol,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
-        args: String?
+        shellCommand: String,
+        shellCommandArgs: String?
     ) {
-        protocol.writeOkay()
-
         val buf = StringBuilder()
         buf.append("# This is some build info\n")
         buf.append("# This is more build info\n")
@@ -41,7 +40,7 @@ class GetPropV2CommandHandler : SimpleShellV2Handler("getprop") {
         for (entry in device.properties) {
             buf.append("[${entry.key}]: [${entry.value}]\n")
         }
-        protocol.writeStdout(buf.toString().toByteArray(Charsets.UTF_8))
-        protocol.writeExitCode(0)
+        serviceOutput.writeStdout(buf.toString())
+        serviceOutput.writeExitCode(0)
     }
 }
