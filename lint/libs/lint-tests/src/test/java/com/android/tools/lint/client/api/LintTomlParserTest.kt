@@ -667,19 +667,20 @@ class LintTomlParserTest {
               "[[fruits]] # Not allowed",
           "test.toml: 3:1: Warning: Attempting to append to a statically defined array is not allowed"
       ),
-      Case("# INVALID TOML DOC\n" +
-              "[[fruits]]\n" +
-              "name = \"apple\"\n" +
-              "\n" +
-              "[[fruits.varieties]]\n" +
-              "name = \"red delicious\"\n" +
-              "\n" +
-              "# INVALID: This table conflicts with the previous array of tables\n" +
-              "[fruits.varieties]", "This table conflicts with the previous array of tables",
-          "test.toml: 8:0: Warning: You cannot define a table (`fruits.varieties`) more than once\n" +
-                  "test.toml: 2:0: Warning: Table `fruits` already specified as a value"
-      ),
        */
+      Case(
+        "# INVALID TOML DOC\n" +
+          "[[fruits]]\n" +
+          "name = \"apple\"\n" +
+          "\n" +
+          "[[fruits.varieties]]\n" +
+          "name = \"red delicious\"\n" +
+          "\n" +
+          "# INVALID: This table conflicts with the previous array of tables\n" +
+          "[fruits.varieties]",
+        "test.toml: 8:0: Warning: You cannot define a table (`fruits.varieties`) more than once\n" +
+          "test.toml: 2:0: Warning: Table `fruits` already specified as a value"
+      ),
     )
   }
 
