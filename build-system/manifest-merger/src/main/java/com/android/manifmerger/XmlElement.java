@@ -38,7 +38,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -645,6 +647,15 @@ public class XmlElement extends OrphanXmlElement {
     public void mergeChildren(@NonNull XmlElement lowerPriorityNode,
             @NonNull MergingReport.Builder mergingReport) {
 
+        // find all the child nodes that matches with the lower priority node's children
+        Map<XmlElement, Optional<XmlElement>> matchingChildNodes =
+                lowerPriorityNode.getMergeableElements().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        Function.identity(),
+                                        node ->
+                                                getNodeByTypeAndKey(
+                                                        node.getType(), node.getKey())));
         // read all lower priority mergeable nodes.
         // if the same node is not defined in this document merge it in.
         // if the same is defined, so far, give an error message.
@@ -653,7 +664,8 @@ public class XmlElement extends OrphanXmlElement {
             if (shouldIgnore(lowerPriorityChild, mergingReport)) {
                 continue;
             }
-            mergeChild(lowerPriorityChild, mergingReport);
+            mergeChild(
+                    lowerPriorityChild, mergingReport, matchingChildNodes.get(lowerPriorityChild));
         }
     }
 
@@ -676,8 +688,18 @@ public class XmlElement extends OrphanXmlElement {
         XmlUtils.lookupNamespacePrefix(getXml(), nsUri, defaultPrefix, true);
     }
 
-    // merge a child of a lower priority node into this higher priority node.
-    private void mergeChild(@NonNull XmlElement lowerPriorityChild, @NonNull MergingReport.Builder mergingReport) {
+    /**
+     * Merge a child of a lower priority node into the given child of a higher priority node.
+     *
+     * @param lowerPriorityChild Child of a low priority xml element
+     * @param mergingReport Merge report to record changes
+     * @param thisChildOptional Child of this xml element into which the {@code lowPriorityChild} is
+     *     merged.
+     */
+    private void mergeChild(
+            @NonNull XmlElement lowerPriorityChild,
+            @NonNull MergingReport.Builder mergingReport,
+            Optional<XmlElement> thisChildOptional) {
 
         ILogger logger = mergingReport.getLogger();
 
@@ -687,11 +709,8 @@ public class XmlElement extends OrphanXmlElement {
             return;
         }
 
-        Optional<XmlElement> thisChildOptional =
-                getNodeByTypeAndKey(lowerPriorityChild.getType(),lowerPriorityChild.getKey());
-
         // only in the lower priority document ?
-        if (!thisChildOptional.isPresent()) {
+        if (thisChildOptional.isEmpty()) {
             addElement(lowerPriorityChild, mergingReport);
             return;
         }
