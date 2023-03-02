@@ -124,10 +124,10 @@ class ArtProfileMultipleLibrariesTest(
             )
         }
 
-        val applicationFileContent =
+        val applicationBaselineProfContent =
             """
-                    HSPLcom/google/Foo;->appMethod(II)I
-                    HSPLcom/google/Foo;->appMethod-name-with-hyphens(II)I
+                    Lcom/example/app/HelloWorld;
+                    HSPLcom/example/app/HelloWorld;->onCreate(Landroid/os/Bundle;)V
                 """.trimIndent()
 
         if (addApplicationProfile) {
@@ -138,22 +138,82 @@ class ArtProfileMultipleLibrariesTest(
                 appAndroidAssets,
                 SdkConstants.FN_ART_PROFILE
             ).writeText(
-                applicationFileContent
+                applicationBaselineProfContent
             )
         }
 
+        val libraryBaselineProfContents = mutableListOf<String>()
+        var expectedMergedFileContent = ""
+        var expectedMergedRewrittenFileContent = ""
         for (i in 1..3) {
-            val library = project.getSubproject(":lib$i")
+            val library = project.getSubproject(":lib$i").also {
+                it.buildFile.appendText(
+                    """
+                        android {
+                            defaultConfig {
+                                consumerProguardFile "consumer-rules.pro"
+                            }
+                        }
+                    """.trimIndent()
+                )
+            }
             val androidAssets = library.mainSrcDir.parentFile
             androidAssets.mkdir()
 
-            File(androidAssets,
-                    SdkConstants.FN_ART_PROFILE).writeText(
+            val baselineProfContent =
                     """
-                        HSPLcom/google/Foo$i;->method(II)I
-                        HSPLcom/google/Foo$i;->method-name-with-hyphens(II)I
+                        Lcom/example/lib$i/Foo;
+                        HSPLcom/example/lib$i/Foo;->m(II)I
+                        Lcom/example/lib$i/Bar;
+                        HSPLcom/example/lib$i/Bar;->m()V
+                        Lcom/example/lib$i/Baz;
+                        HSPLcom/example/lib$i/Baz;->m()V
+                    """.trimIndent()
+            libraryBaselineProfContents.add(baselineProfContent)
+            File(androidAssets, SdkConstants.FN_ART_PROFILE).writeText(baselineProfContent)
+            expectedMergedFileContent =
+                    expectedMergedFileContent.plus(baselineProfContent.plus("\n"))
+            expectedMergedRewrittenFileContent =
+                    expectedMergedRewrittenFileContent.plus(
+                            """
+                                Lcom/example/lib$i/a;
+                                HSPLcom/example/lib$i/a;->a(II)I
+                            """.trimIndent().plus("\n"))
+
+            File(library.mainSrcDir, "com/example/lib$i/Foo.java").writeText(
+                    """
+                        package com.example.lib$i;
+                        public class Foo {
+                            public int m(int i, int j) {
+                                return i;
+                            }
+                        }
                     """.trimIndent()
             )
+            File(library.mainSrcDir, "com/example/lib$i/Bar.java").writeText(
+                    """
+                        package com.example.lib$i;
+                        public class Bar {
+                            public void m() {}
+                        }
+                    """.trimIndent()
+            )
+            File(library.projectDir, "consumer-rules.pro").writeText(
+                    """
+                        -keep,allowobfuscation class com.example.lib$i.Foo {
+                            int m(int, int);
+                        }
+                        -keeppackagenames com.example.lib$i
+                        -checkdiscard class com.example.lib$i.Bar
+                    """.trimIndent()
+            )
+        }
+        if (addApplicationProfile) {
+            expectedMergedFileContent =
+                    expectedMergedFileContent.plus(applicationBaselineProfContent.plus("\n"))
+            expectedMergedRewrittenFileContent =
+                    expectedMergedRewrittenFileContent.plus(
+                            applicationBaselineProfContent.plus("\n"))
         }
 
         val result = project.executor()
@@ -166,7 +226,6 @@ class ArtProfileMultipleLibrariesTest(
                 )
         Truth.assertThat(result.failedTasks).isEmpty()
 
-        var finalFileContent = ""
         for (i in 1..3) {
             val libFile = FileUtils.join(
                     project.getSubproject(":lib$i").buildDir,
@@ -175,36 +234,33 @@ class ArtProfileMultipleLibrariesTest(
                     "release",
                     SdkConstants.FN_ART_PROFILE,
             )
-            val expectedFileContent =
-                    """
-                        HSPLcom/google/Foo$i;->method(II)I
-                        HSPLcom/google/Foo$i;->method-name-with-hyphens(II)I
-                    """.trimIndent()
-            finalFileContent = finalFileContent.plus(expectedFileContent.plus("\n"))
-
-            Truth.assertThat(libFile.readText()).isEqualTo(expectedFileContent)
+            val expectedBaselineProfContent = libraryBaselineProfContents.get(i - 1)
+            Truth.assertThat(libFile.readText()).isEqualTo(expectedBaselineProfContent)
 
             // check packaging.
             project.getSubproject(":lib$i").getAar("release") {
                 ArtProfileSingleLibraryTest.checkAndroidArtifact(tempFolder, it, aarEntryName) { fileContent ->
-                    Truth.assertThat(fileContent).isEqualTo(expectedFileContent.toByteArray())
+                    Truth.assertThat(fileContent).isEqualTo(
+                            expectedBaselineProfContent.toByteArray()
+                    )
                 }
             }
-        }
-        if (addApplicationProfile) {
-            finalFileContent = finalFileContent.plus("$applicationFileContent\n")
         }
 
         // if minifyEnabled is true, check that the merged art-profile file exists in a separate
         // folder (as it is the input to the R8 Task)
-        Truth.assertThat(FileUtils.join(
+        val mergedFilePreR8 = FileUtils.join(
             project.getSubproject(":app").buildDir,
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.MERGED_ART_PROFILE.getFolderName(),
             "release",
             "mergeReleaseArtProfile",
             SdkConstants.FN_ART_PROFILE,
-        ).exists()).isEqualTo(minifyEnabled)
+        )
+        Truth.assertThat(mergedFilePreR8.exists()).isEqualTo(minifyEnabled)
+        if (minifyEnabled) {
+            Truth.assertThat(mergedFilePreR8.readText()).isEqualTo(expectedMergedFileContent)
+        }
 
         val mergedFile = FileUtils.join(
                 project.getSubproject(":app").buildDir,
@@ -213,7 +269,14 @@ class ArtProfileMultipleLibrariesTest(
                 "release",
                 SdkConstants.FN_ART_PROFILE,
         )
-        Truth.assertThat(mergedFile.readText()).isEqualTo(finalFileContent)
+        Truth.assertThat(
+                mergedFile.readText()
+        ).isEqualTo(
+                if (withArtProfileR8Rewriting)
+                    expectedMergedRewrittenFileContent
+                else
+                    expectedMergedFileContent
+        )
         Truth.assertThat(
                 HumanReadableProfile(mergedFile) {
                     fail(it)
