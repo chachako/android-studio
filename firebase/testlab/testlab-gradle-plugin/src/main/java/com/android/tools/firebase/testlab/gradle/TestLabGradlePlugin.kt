@@ -39,8 +39,8 @@ class TestLabGradlePlugin : Plugin<Project> {
         project.plugins.withType(AndroidBasePlugin::class.java) {
             val agpVersion =
                 project.extensions.getByType(AndroidComponentsExtension::class.java).pluginVersion
-            if (agpVersion < AndroidPluginVersion(8, 1, 0).alpha(8)) {
-                error("Android Gradle plugin version 8.1.0-alpha08 or higher is required." +
+            if (agpVersion < AndroidPluginVersion(8, 1, 0).alpha(9)) {
+                error("Android Gradle plugin version 8.1.0-alpha09 or higher is required." +
                               " Current version is $agpVersion.")
             }
 
