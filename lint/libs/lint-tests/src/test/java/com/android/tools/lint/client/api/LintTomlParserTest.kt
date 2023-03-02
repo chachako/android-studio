@@ -660,14 +660,10 @@ class LintTomlParserTest {
         "type.name = \"Nail\"\n" + "type = { edible = false }  # INVALID",
         "test.toml: 1:7: Warning: Inline tables cannot be used to add keys or sub-tables to an already-defined table"
       ),
-      /* Not yet validated:
-      Case("# INVALID TOML DOC\n" +
-              "fruits = []\n" +
-              "\n" +
-              "[[fruits]] # Not allowed",
-          "test.toml: 3:1: Warning: Attempting to append to a statically defined array is not allowed"
+      Case(
+        "# INVALID TOML DOC\n" + "fruits = []\n" + "\n" + "[[fruits]] # Not allowed",
+        "test.toml: 3:1: Warning: Attempting to append to a statically defined array is not allowed"
       ),
-       */
       Case(
         "# INVALID TOML DOC\n" +
           "[[fruits]]\n" +

@@ -130,6 +130,9 @@ internal class DefaultLintTomlParser(
           val array = parent.find(currentArray)
           if (array is TomlArrayValue) {
             target = TomlMapValue(array, arrayStart, offset)
+            if (array.isLiteral && validate) {
+              warn("Attempting to append to a statically defined array is not allowed", start)
+            }
             array.add(target)
           } else {
             val into =
@@ -145,7 +148,8 @@ internal class DefaultLintTomlParser(
                 offset,
                 currentArray.lastOrNull() ?: "",
                 start,
-                keyEnd
+                keyEnd,
+                false
               )
             into.put(currentArray.lastOrNull() ?: "", arrayValue)
             target = TomlMapValue(arrayValue, arrayStart, offset)
@@ -241,7 +245,7 @@ internal class DefaultLintTomlParser(
       return parseMap(target, emptyList(), inInlineTable = true)
     } else if (token == "[") {
       val arrayStart = skipToNextToken(false)
-      val arrayValue = TomlArrayValue(parent, arrayStart, offset, key, keyStart, keyEnd)
+      val arrayValue = TomlArrayValue(parent, arrayStart, offset, key, keyStart, keyEnd, true)
       while (offset < length) {
         val elementStart = skipToNextToken(false)
         val elementToken = getToken()
@@ -891,6 +895,7 @@ internal class DefaultLintTomlParser(
     key: String? = null,
     keyStartOffset: Int = -1,
     keyEndOffset: Int = -1,
+    val isLiteral: Boolean = true,
   ) :
     TomlValue(parent, startOffset, endOffset, key, keyStartOffset, keyEndOffset),
     LintTomlArrayValue {
