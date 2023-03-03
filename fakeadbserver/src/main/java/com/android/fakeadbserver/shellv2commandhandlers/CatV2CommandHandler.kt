@@ -49,7 +49,11 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
             return
         }
 
-        handleCatProcPidCmdline(protocol, device, args)
+        if (tryHandleCatProcPidCmdline(protocol, device, args)) {
+            return
+        }
+
+        catRegularFiles(protocol, device, args)
     }
 
     private fun forwardStdinAsStdout(protocol: ShellV2Protocol) {
@@ -73,9 +77,13 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
         }
     }
 
-    private fun handleCatProcPidCmdline(protocol: ShellV2Protocol, device: DeviceState, args: String) {
+    private fun tryHandleCatProcPidCmdline(
+        protocol: ShellV2Protocol,
+        device: DeviceState,
+        args: String
+    ): Boolean {
         val procIdRegex = Regex("/proc/(\\d+)/cmdline")
-        val matchResult = procIdRegex.find(args) ?: return
+        val matchResult = procIdRegex.find(args) ?: return false
         val pid = matchResult.groups[1]!!.value.toInt()
         if (device.getClient(pid) != null) {
             throw NotImplementedError("cmdline for ClientState is not implemented in FakeAdb")
@@ -84,11 +92,26 @@ class CatV2CommandHandler : SimpleShellV2Handler("cat") {
         val profileableClient = device.getProfileableProcess(pid)
         if (profileableClient == null) {
             protocol.writeStderr("profileableClient with a pid $pid not found")
-            return
+            return true
         }
 
         protocol.writeStdout(profileableClient.commandLine.toByteArray(Charsets.UTF_8))
         protocol.writeExitCode(0)
+        return true
+    }
+
+    private fun catRegularFiles(protocol: ShellV2Protocol, device: DeviceState, args: String) {
+        val fileName = args.trim()
+        if (fileName.contains("\\s+")) {
+            throw NotImplementedError("Multiple files or file names with spaces are not implemented")
+        }
+
+        val file = device.getFile(fileName)
+        if (file == null) {
+            protocol.writeStderr("No such file or directory")
+        } else {
+            protocol.writeStdout(file.bytes)
+        }
     }
 
     class StdinProcessor(private val protocol: ShellV2Protocol) {
