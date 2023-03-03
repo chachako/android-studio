@@ -59,6 +59,9 @@ abstract class RangeConstraint {
   companion object {
     fun create(annotation: UAnnotation): RangeConstraint? {
       val qualifiedName = annotation.qualifiedName ?: return null
+      if (annotation.attributeValues.isEmpty()) {
+        return null
+      }
       if (INT_RANGE_ANNOTATION.isEquals(qualifiedName)) {
         return IntRangeConstraint.create(annotation)
       } else if (FLOAT_RANGE_ANNOTATION.isEquals(qualifiedName)) {

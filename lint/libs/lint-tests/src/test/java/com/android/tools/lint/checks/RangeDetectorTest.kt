@@ -1427,4 +1427,130 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
       defaultCharsetField?.set(null, defaultCharset)
     }
   }
+
+  fun testConstraintLayoutAlpha() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            fun bug() {
+                ConstraintSet {
+                    constrain {
+                        alpha = 0.5f
+                    }
+                }
+            }
+            """
+          )
+          .indented(),
+        bytecode(
+          "libs/constraintlayout_compose.jar",
+          kotlin(
+              """
+              package test.pkg
+
+              import androidx.annotation.FloatRange
+
+              class ConstrainScope internal constructor() {
+                  private var a: Float = 0f
+
+                  @FloatRange(from = 0.0, to = 1.0)
+                  var alpha: Float = 1.0f
+                      set(value) {
+                          field = value
+                          a = value
+                      }
+              }
+
+              class ConstraintSetScope internal constructor() {
+                  fun constrain(constrainBlock: ConstrainScope.() -> Unit) = ConstrainScope().apply {
+                      constrainBlock()
+                  }
+              }
+
+              interface ConstraintSet
+
+              fun ConstraintSet(description: ConstraintSetScope.() -> Unit): ConstraintSet = TODO()
+              """
+            )
+            .indented(),
+          0xc1e90cdd,
+          """
+          META-INF/main.kotlin_module:
+          H4sIAAAAAAAA/2NgYGBmYGBgBGIOBijgUuHiKEktLtEryE4XEnDOzysuKUrM
+          zAtOzi9I9S4RYgsBynmXKDFoMQAA2Cn4Qz4AAAA=
+          """,
+          """
+          test/pkg/ConstrainScope.class:
+          H4sIAAAAAAAA/3VS3WoTURD+zu5ms9ms6aat/RWtrdY2ajctXggWtbZEAqlC
+          KqHQq9NkbU+T7Jack9DL4I3v4QMIgiJ4IaGXPo1PIM7ZxOAP7oEzM9/MfDNn
+          Zr/9+PIVwANsMsyqUKrgvHkS7MaRVB0uooN6fB6mwRj8M97jQYtHJ8HL47Ow
+          rtIwGextEQn1mMFcW695SMF2YSHNkOKt81POwEoeMnAzMJBlsNSpkAzzlf9U
+          esTgnIRqZ5hLnCUC5Biw1krrNeLkHqaGnNNUqcdb3ZBhqcKjRicWjYuAR1Gs
+          uBJxFJRaMVdV6lpzW687cdvG6GMwVGw/+f7LyleasWqJKNgPFW9wxSnDaPdM
+          7dSXYw7jWJPwC6GtImkNmtzpoD/tGnOGa/iDvms4WkmTtOcG/S2jyJ6lnUH/
+          8p1t+EY155sLRtE6vHyT04g76FdXfVtDW7af0vKh/bR0ePlWu3PkXrCctO8s
+          W07Gd3W9LZZ0++fkNpqKYbHajZRoh+WoJ6Q4boU740HQ1K3duEFzmqiIKHzR
+          bR+HnVecYhgmK3Gdt2q8I7Q9At2DuNuphyWhjfkRce0fWmzSFiwahUGHlpJo
+          tHDq8C7pPslZQub2MI/FPVyDSQj9JnTfI/82+eg5cAuf4RS8T/A+JAz36c5B
+          jzhF7Bk6KWyQ5Q2jcYW8QB4TSQXNFOjN6PjCR3jvxyR2AmZ+S06Nk/OYHCU/
+          T9oHsoUVakFfV//uI0uJXlJZU80Mw0dUWptJ3mxQHzqvgCLJCiHXKe/GEcwy
+          lsq4WcYyVkjFrTJuY/UITOIO1o6QlchJrEvYElOJMiORkZiQ8CXyEpM/AfrQ
+          xmKqAwAA
+          """,
+          """
+          test/pkg/ConstrainScopeKt.class:
+          H4sIAAAAAAAA/4VTW08TQRT+Zlt6A6QtIqXIRUEpKGwhPllCMFySjQWNRRLD
+          03Q71G23u83sbINv/Bb/hEYTJT76o4xnty1yEXiYc5vvfOfMnrO//3z7AeAF
+          1hgmlPCU3m7W9S3X8ZTkllMx3bZ4reJgDOkG73Dd5k5df1NtCJOiEYbhc6yq
+          CMXwslBuusq2HL3RaenHvmMqixD6bs9aLS2Wr9cJcksM9buS15dvSA4bLfWz
+          3zuWKm3cVmmu7Mq63hCqGgQ9nTuOq3i32r6r9n3bJtRgTXimtNpBPIEkw/SF
+          9ohLSIfbuuEoSRyW6cUxyDBmfhRms0fylkveEgRkWCiUr37B0oVIJSCplxYP
+          hzCMeykMYYQh36tHbEarbYuWoKK1HSldGUeGIbZu0VM3GLYL16mM8v+63RbH
+          3LdV94P4pnLlHpdNIcPKo7ifQhZjDLN3jZEh04fsCcVrXHGKaa1OhPaJBSIR
+          CDCwZmBodHliBVaRrNoqw+bZaS51dprSclpfhScd6vxM+uw0rxXZ2nhay49m
+          o1mtGA3lQDHy63NMS8QCHtrb3M1jzvZbvNj31K07xIKWp/t5OydK0Ghdp09w
+          8CnEZC7/IitNWv3ollsTDCNlyxH7fqsq5AGv2iLowjW5fcilFfi9YLJi1R2u
+          fEn25DvfUVZLGE7H8iy6fvVvHRnmr96eL9UlWKri+tIUu1bAPtHLObzGh1Vo
+          iKI7mgkMIEbeEnklsunxyCxlU1+R/o7sBxZlX/DgZzA9PCMZI0AMOTwne6gL
+          RhLjpJdDTBwrPVSCtE4nznqOhmIoF6k+sEnRHNWbOELEQN7ApIGHmDIwjRkD
+          s3h0BObhMeaOEPcw4GHeQ9LDEw9PPSx4KPwFPliVELgEAAA=
+          """,
+          """
+          test/pkg/ConstraintSet.class:
+          H4sIAAAAAAAA/21OTUvDQBB9s9U2xq9ErcQ/YdrizZMIQqAiGPCS0zZdyzbp
+          pnSnxWN/lwfp2R8lThQ8OQNv3rxh3szn1/sHgBv0CZdsPKfLapbeN87zSlvH
+          ueEeiBDN9UantXaz9GkyN6WoHUI8rhqurUsfDeupZn1LUItNRxyphaAFEKgS
+          /c223UDYdEjo77ZBqBIVqkjYa7LbjtSA2uGIkIz/f0XsxS3+0/KyWZrriglh
+          3qxXpXmwtSFcPa8d24V5sd5OanPnXMOarWx15QD28BsK5z94hgupQ3Hel+wW
+          6GToZQgyHCAUisMMRzguQB4nOC2gPCKP+BucDmzHPAEAAA==
+          """,
+          """
+          test/pkg/ConstraintSetScope.class:
+          H4sIAAAAAAAA/4VUW08TQRT+Zlu6ZUFoi3KVglKVW9lSES8lJGokqSlorGIM
+          D2a6XevQ7S7ZnTb6xm/xF+iTt8QQH/1RxjNLy0VuTXou35z5zpk5Z/bP3x+/
+          ACxhhWFM2oE0d+o187HnBtLnwpVlW5Ytb8fWwRgS27zFTYe7NfNZZdu2pI4I
+          Q2xFuEKuMkSmZzZ70YWYgSh0hqh8LwKG8dI5vAWGbquDMhSmS3VPOsI1t1sN
+          813TtaSgVXOtbS0WZk5h6zBVL9q9kj1zd2fnKzpLYfXcNFMlz6+Z27asKDQw
+          uet6ku+n2vDkRtNxKKrv4FiPHM+qx9HPkD5SHl2C7bvcMYuu9IlGWIGOJMMV
+          671t1ds8z7nPGzYFMtyaLv1//YUjSFmR1AqqAwO4bCCFKwxDZxxCx5CBYdWj
+          9PkXpmOUGizclle3GW6eUsLMSagXVzHegzGkGWYzIsMzWb6z43zMnmx/5uCS
+          MosMrEgFZdTUHOJvm/klhzcqVa6sHMPIOZ2ZvGh6GJKdkHVb8iqXnDCt0YrQ
+          I2BKxJUA1VIn/INQHiXVqlTe673dtKENa4aW2Ns1tLgWOsoMsdAd3tvNazn2
+          SI/v7f7+FCP06UQiMqrlovmhRNfoQCqaIjuUei6mIuJxRZ9nKmmqU9zRitMd
+          8MkHadOceG5n9eXH8NTJ4/ewUJf09h57VepYf0m49kazUbH9l7zi2CqFZ3Fn
+          k/tC+W2wuyxqLpdNn+yxF01XioZddFsiELT88HC8GTL/rx5M6LEwo+w1fcte
+          E4p9pL1n8wQfFqHRt0L9NDo+fTpILpFnqg6Q7pr9iviXcPkOyVgIJrBMsnc/
+          AN0wSCfRQ0g03Nyi6C7S6blU4hsGf2L4zVeMrM9vRJajc9nvmNDwGvOfD1gH
+          w8RJejcpGtoBmt4kxkmrLLPEOUA5JnGNrATluI4pqKlItzMrqx8ZquZuyHgJ
+          99qV9pG+T3+dtR0ND0J5GwXSa4TeoNQ3txAp4lYR00XMYJZMzBUxj+wWWIAF
+          mFvoDmAEyAWIBegJMBWgn+4uRPL/APUI4MjCBQAA
+          """
+        )
+      )
+      .run()
+      .expectClean()
+  }
 }
