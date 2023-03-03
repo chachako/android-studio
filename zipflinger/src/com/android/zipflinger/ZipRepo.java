@@ -93,7 +93,7 @@ public class ZipRepo implements Closeable {
         payloadByteBuffer.rewind();
 
         if (entry.isCompressed()) {
-            return Compressor.inflate(payloadByteBuffer.array());
+            return Compressor.inflate(payloadByteBuffer.array(), entry.getUncompressedSize());
         } else {
             return payloadByteBuffer;
         }

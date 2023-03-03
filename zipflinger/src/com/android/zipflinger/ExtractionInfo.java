@@ -22,9 +22,12 @@ public class ExtractionInfo {
     private final Location location;
     private final boolean isCompressed;
 
-    public ExtractionInfo(@NonNull Location location, boolean isCompressed) {
+    private final long unCompressedSize;
+
+    public ExtractionInfo(@NonNull Location location, boolean isCompressed, long unCompressedSize) {
         this.location = location;
         this.isCompressed = isCompressed;
+        this.unCompressedSize = unCompressedSize;
     }
 
     @NonNull
@@ -34,5 +37,9 @@ public class ExtractionInfo {
 
     public boolean isCompressed() {
         return isCompressed;
+    }
+
+    public long getUnCompressedSize() {
+        return unCompressedSize;
     }
 }

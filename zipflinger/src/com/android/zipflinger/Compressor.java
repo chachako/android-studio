@@ -52,7 +52,13 @@ public class Compressor {
 
     @NonNull
     public static ByteBuffer inflate(@NonNull byte[] bytes) throws IOException {
-        NoCopyByteArrayOutputStream out = new NoCopyByteArrayOutputStream(bytes.length);
+        return inflate(bytes, bytes.length);
+    }
+
+    @NonNull
+    public static ByteBuffer inflate(@NonNull byte[] bytes, long expectedSize) throws IOException {
+        NoCopyByteArrayOutputStream out =
+                new NoCopyByteArrayOutputStream(Math.toIntExact(expectedSize));
         Inflater inflater = new Inflater(true);
 
         try (InflaterOutputStream dout = new InflaterOutputStream(out, inflater)) {

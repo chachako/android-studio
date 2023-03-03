@@ -137,13 +137,15 @@ class CentralDirectory {
     public ExtractionInfo getExtractionInfo(@NonNull String name) {
         Entry entry = entries.get(name);
         if (entry != null) {
-            return new ExtractionInfo(entry.getPayloadLocation(), entry.isCompressed());
+            return new ExtractionInfo(
+                    entry.getPayloadLocation(), entry.isCompressed(), entry.getUncompressedSize());
         }
 
         CentralDirectoryRecord cd = addedEntries.get(name);
         if (cd != null) {
             boolean isCompressed = cd.getCompressionFlag() != LocalFileHeader.COMPRESSION_NONE;
-            return new ExtractionInfo(cd.getPayloadLocation(), isCompressed);
+            return new ExtractionInfo(
+                    cd.getPayloadLocation(), isCompressed, cd.getUncompressedSize());
         }
 
         return null;

@@ -120,7 +120,7 @@ public class ZipArchive implements Archive {
         ByteBuffer payloadByteBuffer = ByteBuffer.allocate(Math.toIntExact(loc.size()));
         reader.read(payloadByteBuffer, loc.first);
         if (extractInfo.isCompressed()) {
-            return Compressor.inflate(payloadByteBuffer.array());
+            return Compressor.inflate(payloadByteBuffer.array(), extractInfo.getUnCompressedSize());
         } else {
             return payloadByteBuffer;
         }

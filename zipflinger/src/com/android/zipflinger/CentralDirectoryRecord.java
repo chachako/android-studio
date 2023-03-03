@@ -134,4 +134,8 @@ class CentralDirectoryRecord {
         buf.rewind();
         return buf;
     }
+
+    long getUncompressedSize() {
+        return uncompressedSize;
+    }
 }
