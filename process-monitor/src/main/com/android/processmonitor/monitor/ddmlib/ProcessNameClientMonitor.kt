@@ -72,7 +72,7 @@ internal class ProcessNameClientMonitor(
                 processes.removeAll(removedProcesses)
 
                 addedProcesses.forEach { (pid, names) ->
-                    logger.debug { "${device.serialNumber}: Adding client $pid -> $names" }
+                    logger.debug { "Adding client $pid -> $names" }
                     processes[pid] = names
                 }
 
@@ -116,9 +116,7 @@ internal class ProcessNameClientMonitor(
                             names[pid] = ProcessNames("", processName)
                         }
                     }
-                logger.debug {
-                    "${device.serialNumber}: Adding ${names.size} processes from ps command"
-                }
+                logger.debug { "Adding ${names.size} processes from ps command" }
                 lastKnownPids.set(names)
             } catch (e: Throwable) {
                 logger.warn(e, "Error listing device processes")
