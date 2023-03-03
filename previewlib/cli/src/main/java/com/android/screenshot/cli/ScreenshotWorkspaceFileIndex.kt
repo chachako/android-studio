@@ -16,6 +16,7 @@
 package com.android.screenshot.cli
 
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.ThreeState
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSet
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetData
@@ -53,6 +54,10 @@ class ScreenshotWorkspaceFileIndex : WorkspaceFileIndex {
     }
 
     override fun isInWorkspace(file: VirtualFile): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun isUrlInContent(url: String): ThreeState {
         TODO("Not yet implemented")
     }
 }
