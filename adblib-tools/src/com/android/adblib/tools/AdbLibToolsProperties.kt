@@ -17,13 +17,14 @@ package com.android.adblib.tools
 
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbSessionHost
+import com.android.adblib.tools.debugging.JdwpProcess
 import java.time.Duration
 
 /**
  * By convention, all [properties][AdbSessionHost.Property] of this module are defined in
  * this singleton.
  */
-internal object AdbLibToolsProperties {
+object AdbLibToolsProperties {
 
     private const val NAME_PREFIX = "com.android.adblib.tools"
 
@@ -62,6 +63,40 @@ internal object AdbLibToolsProperties {
     val JDWP_SESSION_FIRST_PACKET_ID = AdbSessionHost.IntProperty(
         name = "$NAME_PREFIX.jdwp.session.first.packet.id",
         defaultValue = 0x40000000
+    )
+
+    /**
+     * Amount of time to wait before collecting the properties of a [JdwpProcess] after the
+     * process has been discovered, when [PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT] is `false`.
+     *
+     * See [b/271572555](https://issuetracker.google.com/issues/271572555) for more context.
+     */
+    val PROCESS_PROPERTIES_COLLECTOR_DELAY_DEFAULT = AdbSessionHost.DurationProperty(
+        name = "$NAME_PREFIX.process.properties.collector.delay.default",
+        defaultValue = Duration.ofMillis(500)
+    )
+
+    /**
+     * Amount of time to wait before collecting the properties of a [JdwpProcess] after the
+     * process has been discovered, when [PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT] is `true`.
+     *
+     * See [b/271572555](https://issuetracker.google.com/issues/271572555) for more context.
+     */
+    val PROCESS_PROPERTIES_COLLECTOR_DELAY_SHORT = AdbSessionHost.DurationProperty(
+        name = "$NAME_PREFIX.process.properties.collector.delay.short",
+        defaultValue = Duration.ofMillis(0)
+    )
+
+    /**
+     * Where to use [PROCESS_PROPERTIES_COLLECTOR_DELAY_SHORT] or
+     * [PROCESS_PROPERTIES_COLLECTOR_DELAY_DEFAULT] when collecting process properties.
+     *
+     * See [b/271572555](https://issuetracker.google.com/issues/271572555) for more context.
+     */
+    val PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT = AdbSessionHost.BooleanProperty(
+        name = "$NAME_PREFIX.process.properties.collector.delay.use.short",
+        defaultValue = false,
+        isVolatile = true
     )
 
     /**

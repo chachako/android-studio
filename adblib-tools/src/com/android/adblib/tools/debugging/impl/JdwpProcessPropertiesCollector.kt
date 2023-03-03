@@ -21,6 +21,9 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.property
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_DEFAULT
+import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_SHORT
+import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_RETRY_DURATION
 import com.android.adblib.tools.debugging.AtomicStateFlow
@@ -78,6 +81,16 @@ internal class JdwpProcessPropertiesCollector(
      * to the process.
      */
     suspend fun execute(stateFlow: AtomicStateFlow<JdwpProcessProperties>) {
+        // Delay opening the JDWP session for a small amount of time in case
+        // another instance wants to go first.
+        delay(
+            if (session.property(PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT)) {
+                session.property(PROCESS_PROPERTIES_COLLECTOR_DELAY_SHORT).toMillis()
+            } else {
+                session.property(PROCESS_PROPERTIES_COLLECTOR_DELAY_DEFAULT).toMillis()
+            }
+        )
+
         // Opens a JDWP session to the process, and collect as many properties as we
         // can for a short period of time, then close the session and try again
         // later if needed.
@@ -135,13 +148,13 @@ internal class JdwpProcessPropertiesCollector(
                                 "with an error ('${throwable.message}')"
                     }
                 } else {
-                    logger.debug { "Successfully retrieved JDWP process properties: ${stateFlow.value}" }
                     collectState.propertiesFlow.update {
                         it.copy(
                             completed = true,
                             exception = exceptionToRecord
                         )
                     }
+                    logger.debug { "Successfully retrieved JDWP process properties: ${stateFlow.value}" }
                     break
                 }
             }
