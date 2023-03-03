@@ -23,18 +23,18 @@ android {
     defaultConfig {
         // This actual the app version code. Giving ourselves 100,000 values [0, 99999]
         versionCode 123
-        minSdkVersion rootProject.ndk19SupportLibMinSdk
+        minSdkVersion libs.versions.ndk19SupportLibMinSdk.get()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     flavorDimensions 'version'
     productFlavors {
         gingerbread {
-            minSdkVersion rootProject.ndk19SupportLibMinSdk
+            minSdkVersion libs.versions.ndk19SupportLibMinSdk.get()
             versionCode = 1
         }
         icecreamSandwich {
-            minSdkVersion rootProject.ndk19SupportLibMinSdk
+            minSdkVersion libs.versions.ndk19SupportLibMinSdk.get()
             versionCode = 2
         }
     }

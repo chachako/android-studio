@@ -6,7 +6,7 @@ android {
     buildToolsVersion = rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion rootProject.supportLibMinSdk
+        minSdkVersion libs.versions.supportLibMinSdk.get()
         versionCode 42
         versionName "custom"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

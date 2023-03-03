@@ -24,7 +24,7 @@ model {
         compileSdkVersion = rootProject.latestCompileSdk
         buildToolsVersion = rootProject.buildToolsVersion
         defaultConfig {
-            minSdkVersion rootProject.supportLibMinSdk
+            minSdkVersion libs.versions.supportLibMinSdk.get()
         }
     }
 

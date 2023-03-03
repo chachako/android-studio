@@ -49,7 +49,7 @@ android {
     compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION
     lintOptions.checkReleaseBuilds = false
     defaultConfig {
-        minSdkVersion rootProject.supportLibMinSdk
+        minSdkVersion libs.versions.supportLibMinSdk.get()
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 }

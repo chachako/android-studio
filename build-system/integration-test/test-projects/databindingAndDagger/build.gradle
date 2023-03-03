@@ -29,7 +29,7 @@ android {
     buildFeatures {
         dataBinding = true
     }
-    defaultConfig.minSdkVersion rootProject.supportLibMinSdk
+    defaultConfig.minSdkVersion libs.versions.supportLibMinSdk.get()
 }
 
 dependencies {

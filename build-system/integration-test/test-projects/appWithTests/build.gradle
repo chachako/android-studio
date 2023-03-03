@@ -23,7 +23,7 @@ android {
     buildToolsVersion = rootProject.buildToolsVersion
     defaultConfig {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        minSdkVersion rootProject.supportLibMinSdk
+        minSdkVersion libs.versions.supportLibMinSdk.get()
     }
     dependencies {
         androidTestImplementation "com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}"

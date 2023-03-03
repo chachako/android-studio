@@ -44,7 +44,7 @@ class ArtifactReplacementTest {
                     compileSdkVersion 31
                     lintOptions.checkReleaseBuilds = false
                     defaultConfig {
-                        minSdkVersion rootProject.supportLibMinSdk
+                        minSdkVersion libs.versions.supportLibMinSdk.get()
                         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
                     }
                 }

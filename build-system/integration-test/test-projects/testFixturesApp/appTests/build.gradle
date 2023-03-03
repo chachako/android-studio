@@ -10,7 +10,7 @@ android {
     targetProjectPath ':app'
 
     defaultConfig {
-        minSdkVersion rootProject.supportLibMinSdk
+        minSdkVersion libs.versions.supportLibMinSdk.get()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 }

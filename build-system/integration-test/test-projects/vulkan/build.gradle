@@ -12,9 +12,9 @@ android {
 
     defaultConfig {
         applicationId  "com.google.vulkan.tutorials.five"
-        minSdkVersion    rootProject.ndk19SupportLibMinSdk
+        minSdkVersion    libs.versions.ndk19SupportLibMinSdk.get()
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.ndk19SupportLibMinSdk
+        targetSdkVersion libs.versions.ndk19SupportLibMinSdk.get()
         versionCode 1
         versionName "0.0.1"
 

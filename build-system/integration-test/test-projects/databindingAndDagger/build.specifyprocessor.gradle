@@ -35,7 +35,7 @@ android {
                 className 'dagger.internal.codegen.ComponentProcessor'
             }
         }
-        minSdkVersion rootProject.supportLibMinSdk
+        minSdkVersion libs.versions.supportLibMinSdk.get()
     }
 }
 

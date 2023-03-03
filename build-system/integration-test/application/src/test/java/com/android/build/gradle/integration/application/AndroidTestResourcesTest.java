@@ -63,7 +63,7 @@ public class AndroidTestResourcesTest {
                         + DEFAULT_BUILD_TOOL_VERSION
                         + "'\n"
                         + "    defaultConfig {\n"
-                        + "        minSdkVersion rootProject.supportLibMinSdk\n"
+                        + "        minSdkVersion libs.versions.supportLibMinSdk.get()\n"
                         + "        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n"
                         + "    }\n"
                         + "}\n"
@@ -88,7 +88,7 @@ public class AndroidTestResourcesTest {
                         + DEFAULT_BUILD_TOOL_VERSION
                         + "'\n"
                         + "    defaultConfig {\n"
-                        + "        minSdkVersion rootProject.supportLibMinSdk\n"
+                        + "        minSdkVersion libs.versions.supportLibMinSdk.get()\n"
                         + "        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n"
                         + "    }\n"
                         + "}\n"

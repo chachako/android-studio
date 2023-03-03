@@ -23,5 +23,5 @@ dependencies {
     implementation "com.android.support:animated-vector-drawable:$rootProject.supportLibVersion"
     implementation "com.android.support:appcompat-v7:$rootProject.supportLibVersion"
 
-    implementation 'com.android.support.constraint:constraint-layout:' + rootProject.constraintLayoutVersion
+    implementation 'com.android.support.constraint:constraint-layout:' + libs.versions.constraintLayoutVersion.get()
 }

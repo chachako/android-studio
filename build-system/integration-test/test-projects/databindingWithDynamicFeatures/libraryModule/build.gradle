@@ -27,7 +27,7 @@ android {
 
 dependencies {
     api 'com.android.support:appcompat-v7:' + rootProject.supportLibVersion
-    api 'com.android.support.constraint:constraint-layout:' + rootProject.constraintLayoutVersion
+    api 'com.android.support.constraint:constraint-layout:' + libs.versions.constraintLayoutVersion.get()
     // TODO: remove once we are fully on AndroidX
     api 'android.arch.lifecycle:runtime:1.1.0'
 }

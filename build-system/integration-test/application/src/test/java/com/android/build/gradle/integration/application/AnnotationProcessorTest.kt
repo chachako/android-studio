@@ -76,7 +76,7 @@ class AnnotationProcessorTest {
                                 argument "value", "Hello"
                             }
                         }
-                        minSdkVersion rootProject.supportLibMinSdk
+                        minSdkVersion libs.versions.supportLibMinSdk.get()
                         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
                     }
                 }

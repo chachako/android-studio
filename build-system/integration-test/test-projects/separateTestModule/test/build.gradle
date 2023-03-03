@@ -6,7 +6,7 @@ android {
     buildToolsVersion = rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion rootProject.supportLibMinSdk
+        minSdkVersion libs.versions.supportLibMinSdk.get()
         testApplicationId 'com.example.android.testing.blueprint.test'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

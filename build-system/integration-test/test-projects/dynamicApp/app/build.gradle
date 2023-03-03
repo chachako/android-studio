@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support.constraint:constraint-layout:' + rootProject.constraintLayoutVersion
+    implementation 'com.android.support.constraint:constraint-layout:' + libs.versions.constraintLayoutVersion.get()
     implementation files('./foo.jar')
     implementation files('./bar.aar')
 }

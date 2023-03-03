@@ -74,7 +74,7 @@ class DynamicAppLegacyMultidexTest {
             |  flavorDimensions 'foo'
             |  productFlavors {
             |    ics {
-            |      minSdkVersion rootProject.supportLibMinSdk
+            |      minSdkVersion libs.versions.supportLibMinSdk.get()
             |    }
             |    lollipop {
             |      minSdkVersion 21
