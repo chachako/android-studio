@@ -65,8 +65,10 @@ import com.android.tools.lint.checks.GradleDetector.Companion.getNamedDependency
 import com.android.tools.lint.checks.infrastructure.TestFiles.gradleToml
 import com.android.tools.lint.checks.infrastructure.TestIssueRegistry
 import com.android.tools.lint.checks.infrastructure.TestLintTask
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.platformPath
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Project
@@ -79,6 +81,7 @@ import java.util.Calendar
 import java.util.function.Predicate
 import java.util.zip.GZIPOutputStream
 import junit.framework.TestCase
+import org.junit.rules.TemporaryFolder
 import org.mockito.Mockito.mock
 
 /**
@@ -4663,6 +4666,80 @@ class GradleDetectorTest : AbstractCheckTest() {
                 +         minSdkVersion($LOWEST_ACTIVE_API)
                 """
       )
+  }
+
+  fun testTargetEdited() {
+    val temporaryFolder = TemporaryFolder()
+    temporaryFolder.create()
+    try {
+      val rootDirectory = temporaryFolder.root.canonicalFile
+
+      fun createLintTask(targetSdkVersion: Int, name: String = "build.gradle"): TestLintTask {
+        return lint()
+          .rootDirectory(rootDirectory)
+          .files(
+            gradle(
+                name,
+                """
+                apply plugin: 'com.android.application'
+
+                android {
+                    defaultConfig {
+                        targetSdkVersion $targetSdkVersion
+                    }
+                }
+                """
+              )
+              .indented()
+          )
+          .issues(GradleDetector.EDITED_TARGET_SDK_VERSION)
+          .incremental(name)
+          .clientFactory {
+            com.android.tools.lint.checks.infrastructure
+              .TestLintClient(LintClient.CLIENT_STUDIO)
+              .apply { addCleanupDir(rootDirectory) }
+          }
+          .testModes(TestMode.DEFAULT)
+      }
+
+      // Initial edit: no problem
+      createLintTask(31).run().expectClean()
+
+      // Lower version: no problem
+      createLintTask(30).run().expectClean()
+
+      // Higher person: problem
+      createLintTask(32)
+        .run()
+        .expect(
+          """
+          build.gradle:5: Error: It looks like you just edited the targetSdkVersion from 31 to 32 in the editor. Be sure to consult the documentation on the behaviors that change as result of this. The Android SDK Upgrade Assistant can help with safely migrating. [EditedTargetSdkVersion]
+                  targetSdkVersion 32
+                  ~~~~~~~~~~~~~~~~~~~
+          1 errors, 0 warnings
+          """
+        )
+
+      // Ok if you change it back
+      createLintTask(31).run().expectClean()
+
+      // OK on a different file
+      createLintTask(32, "settings.gradle").run().expectClean()
+
+      // ...until we edit it there too
+      createLintTask(33, "settings.gradle")
+        .run()
+        .expect(
+          """
+          settings.gradle:5: Error: It looks like you just edited the targetSdkVersion from 32 to 33 in the editor. Be sure to consult the documentation on the behaviors that change as result of this. The Android SDK Upgrade Assistant can help with safely migrating. [EditedTargetSdkVersion]
+                  targetSdkVersion 33
+                  ~~~~~~~~~~~~~~~~~~~
+          1 errors, 0 warnings
+          """
+        )
+    } finally {
+      temporaryFolder.delete()
+    }
   }
 
   fun testExpiring1() {

@@ -800,7 +800,7 @@ public class TestLintClient extends LintCliClient {
         return super.isProjectDirectory(dir);
     }
 
-    protected void addCleanupDir(@NonNull File dir) {
+    public void addCleanupDir(@NonNull File dir) {
         cleanupDirs.add(dir);
         try {
             cleanupDirs.add(dir.getCanonicalFile());

@@ -164,6 +164,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           GradleDetector.DEPRECATED_LIBRARY,
           GradleDetector.DEV_MODE_OBSOLETE,
           GradleDetector.DUPLICATE_CLASSES,
+          GradleDetector.EDITED_TARGET_SDK_VERSION,
           GradleDetector.EXPIRED_TARGET_SDK_VERSION,
           GradleDetector.EXPIRING_TARGET_SDK_VERSION,
           GradleDetector.GRADLE_GETTER,
@@ -580,7 +581,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
         scope.contains(Scope.JAVA_FILE) -> initialSize += 180
         scope.contains(Scope.CLASS_FILE) -> initialSize += 16
         scope.contains(Scope.MANIFEST) -> initialSize += 80
-        scope.contains(Scope.GRADLE_FILE) -> initialSize += 24
+        scope.contains(Scope.GRADLE_FILE) -> initialSize += 30
       }
       initialSize
     }

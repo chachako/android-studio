@@ -311,6 +311,19 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         }
         if (version > 0) {
           targetSdkVersion = version
+          if (LintClient.isStudio) {
+            //noinspection FileComparisons
+            if (lastTargetSdkVersion == -1 || lastTargetSdkVersionFile != context.file) {
+              lastTargetSdkVersion = version
+              lastTargetSdkVersionFile = context.file
+            } else if (targetSdkVersion > lastTargetSdkVersion) {
+              val message =
+                "It looks like you just edited the `targetSdkVersion` from $lastTargetSdkVersion to $targetSdkVersion in the editor. " +
+                  "Be sure to consult the documentation on the behaviors that change as result of this. " +
+                  "The Android SDK Upgrade Assistant can help with safely migrating."
+              report(context, statementCookie, EDITED_TARGET_SDK_VERSION, message)
+            }
+          }
           checkTargetCompatibility(context)
         } else {
           checkIntegerAsString(context, value, statementCookie, valueCookie)
@@ -2469,6 +2482,15 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
   }
 
   companion object {
+    private var lastTargetSdkVersion: Int = -1
+    private var lastTargetSdkVersionFile: File? = null
+
+    /** If you invoke the target SDK versin migration assistant, stop flagging edits. */
+    fun stopFlaggingTargetSdkEdits() {
+      lastTargetSdkVersion = Integer.MAX_VALUE
+      lastTargetSdkVersionFile = null
+    }
+
     /** Calendar to use to look up the current time (used by tests to set specific time. */
     var calendar: Calendar? = null
 
@@ -2991,6 +3013,43 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         .addMoreInfo(
           "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
         )
+
+    /** targetSdkVersion was manually edited */
+    @JvmField
+    val EDITED_TARGET_SDK_VERSION =
+      Issue.create(
+        id = "EditedTargetSdkVersion",
+        briefDescription = "Manually Edited TargetSdkVersion",
+        explanation =
+          """
+        Updating the `targetSdkVersion` of an app is seemingly easy: just increment the \
+        `targetSdkVersion` number in the manifest file!
+
+        But that's not actually safe. The `targetSdkVersion` controls a wide range of \
+        behaviors that change from release to release, and to update, you should carefully \
+        consult the documentation to see what has changed, how your app may need to adjust, \
+        and then of course, carefully test everything.
+
+        In new versions of Android Studio, there is a special migration assistant, available \
+        from the tools menu (and as a quickfix from this lint warning) which analyzes your \
+        specific app and filters the set of applicable migration steps to those needed for \
+        your app.
+
+        This lint check does something very simple: it just detects whether it looks like \
+        you've manually edited the targetSdkVersion field in a build.gradle file. Obviously, \
+        as part of doing the above careful steps, you may end up editing the value, which \
+        would trigger the check -- and it's safe to ignore it; this lint check *only* runs \
+        in the IDE, not from the command line; it's sole purpose to bring *awareness* to the \
+        (many) developers who haven't been aware of this issue and have just bumped the \
+        targetSdkVersion, recompiled, and uploaded their updated app to the Google Play Store, \
+        sometimes leading to crashes or other problems on newer devices.
+        """,
+        category = Category.CORRECTNESS,
+        priority = 2,
+        severity = Severity.ERROR,
+        androidSpecific = true,
+        implementation = IMPLEMENTATION
+      )
 
     /** Using a deprecated library. */
     @JvmField
