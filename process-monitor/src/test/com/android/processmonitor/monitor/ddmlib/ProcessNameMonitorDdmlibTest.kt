@@ -17,8 +17,10 @@ package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.adblib.testing.FakeAdbSession
+import com.android.processmonitor.agenttracker.AgentProcessTracker
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Online
+import com.android.testutils.TestResources
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +28,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import java.nio.file.Path
 
 /**
  * Tests for [ProcessNameMonitorDdmlib]
@@ -104,17 +107,33 @@ class ProcessNameMonitorDdmlibTest {
         flows.sendDeviceEvents(Disconnected(device1))
 
         advanceUntilIdle()
-    assertThat(flows.isClientFlowTerminated(device1.serialNumber)).isTrue()
-  }
+        assertThat(flows.isClientFlowTerminated(device1.serialNumber)).isTrue()
+    }
+
+    @Test
+    fun createsAgentProcessTracker(): Unit = runTest {
+        FakeProcessNameMonitorFlows().use { flows ->
+            val monitor = processNameMonitor(flows, TestResources.getDirectory("/agent").toPath())
+
+            flows.sendDeviceEvents(Online(device1))
+
+            advanceUntilIdle()
+            assertThat(monitor.devices["device1"]?.processTracker).isInstanceOf(AgentProcessTracker::class.java)
+        }
+    }
 
     private fun CoroutineScope.processNameMonitor(
         flows: ProcessNameMonitorFlows = FakeProcessNameMonitorFlows(),
+        trackerAgentPath: Path? = null,
+        trackerAgentInterval: Int = 1000,
         maxProcessRetention: Int = 1000,
     ): ProcessNameMonitorDdmlib {
         return ProcessNameMonitorDdmlib(
             this,
             fakeAdbSession,
             flows,
+            trackerAgentPath,
+            trackerAgentInterval,
             maxProcessRetention,
             FakeAdbLoggerFactory().logger
         ).apply {

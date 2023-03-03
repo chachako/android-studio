@@ -18,6 +18,7 @@ package com.android.processmonitor.monitor.ddmlib
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.ddmlib.IDevice
+import com.android.processmonitor.agenttracker.AgentProcessTracker
 import com.android.processmonitor.monitor.ProcessNameMonitor
 import com.android.processmonitor.monitor.ProcessNames
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
@@ -26,7 +27,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.annotations.VisibleForTesting
 import java.io.Closeable
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -36,6 +39,8 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     parentScope: CoroutineScope,
     private val adbSession: AdbSession,
     private val flows: ProcessNameMonitorFlows,
+    private val trackerAgentPath: Path?,
+    private val trackerAgentInterval: Int,
     private val maxProcessRetention: Int,
     private val logger: AdbLogger,
 ) : ProcessNameMonitor, Closeable {
@@ -44,13 +49,16 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
         parentScope: CoroutineScope,
         adbSession: AdbSession,
         adbAdapter: AdbAdapter,
+        trackerAgentPath: Path?,
+        trackerAgentInterval: Int,
         maxProcessRetention: Int,
         logger: AdbLogger,
-    )
-            : this(
+    ) : this(
         parentScope,
         adbSession,
         ProcessNameMonitorFlowsImpl(adbAdapter, logger, adbSession.ioDispatcher),
+        trackerAgentPath,
+        trackerAgentInterval,
         maxProcessRetention,
         logger,
     )
@@ -62,7 +70,8 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     private var isStarted = false
 
     // Connected devices.
-    private val devices = ConcurrentHashMap<String, ProcessNameClientMonitor>()
+    @VisibleForTesting
+    internal val devices = ConcurrentHashMap<String, ProcessNameClientMonitor>()
 
     override fun start() {
         if (isStarted) {
@@ -75,6 +84,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
             isStarted = true
         }
         scope.launch {
+            // TODO: Use adbSession.trackDevices and a device cache.
             flows.trackDevices().collect {
                 when (it) {
                     is DeviceMonitorEvent.Online -> addDevice(it.device)
@@ -93,13 +103,33 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     }
 
     private fun addDevice(device: IDevice) {
-        val serialNumber = device.serialNumber
-        logger.info { "Adding $serialNumber" }
-        devices[serialNumber] =
-            ProcessNameClientMonitor(scope, device, flows, adbSession, logger, maxProcessRetention)
+        logger.info { "Adding ${device.serialNumber}" }
+
+        val agentProcessTracker = getProcessTracker(device)
+        devices[device.serialNumber] =
+            ProcessNameClientMonitor(
+                scope,
+                device,
+                flows,
+                agentProcessTracker,
+                logger,
+                maxProcessRetention
+            )
                 .apply {
                     start()
                 }
+    }
+
+    private fun getProcessTracker(device: IDevice): AgentProcessTracker? {
+        // TODO(b/272009795): Investigate further
+        if (device.version.apiLevel < 21 || trackerAgentPath == null) {
+            return null
+        }
+        val serialNumber = device.serialNumber
+        val abi = device.abis.first()
+        return AgentProcessTracker(
+            adbSession, serialNumber, abi, trackerAgentPath, trackerAgentInterval, logger
+        )
     }
 
     private fun removeDevice(device: IDevice) {

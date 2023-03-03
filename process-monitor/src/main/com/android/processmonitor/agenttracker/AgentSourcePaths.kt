@@ -13,14 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.common
+package com.android.processmonitor.agenttracker
 
-import kotlinx.coroutines.flow.Flow
+/** Exposes the locations of the agent source */
+object AgentSourcePaths {
 
-/**
- * Provides a [Flow] of [ProcessEvent]
- */
-internal interface ProcessTracker {
+    /**
+     * Location of the agent binary in a development environment.
+     *
+     * See //tools/base/process-monitor/process-tracker-agent/BUILD
+     */
+    const val AGENT_SOURCE_DEV = "tools/base/process-monitor/process-tracker-agent"
 
-    suspend fun trackProcesses(): Flow<ProcessEvent>
+    /**
+     * Location of the agent binary in production.
+     *
+     * See //tools/base/process-monitor/process-tracker-agent/BUILD
+     */
+    const val AGENT_RESOURCE_PROD = "resources/process-tracker-agent"
 }

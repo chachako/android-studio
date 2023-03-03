@@ -1,5 +1,5 @@
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
-load("//tools/base/bazel:android.bzl", "ANDROID_LINKOPTS", "android_cc_binary")
+load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "android_cc_binary")
 
 cc_binary(
     name = "process-tracker",
@@ -7,6 +7,7 @@ cc_binary(
         "**/*.cc",
         "**/*.h",
     ]),
+    copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
     stamp = 0,
     tags = [

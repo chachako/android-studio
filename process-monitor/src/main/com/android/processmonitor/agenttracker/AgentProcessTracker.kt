@@ -26,6 +26,7 @@ import com.android.adblib.ShellCommandOutputElement.StdoutLine
 import com.android.adblib.shellAsLines
 import com.android.adblib.shellCommand
 import com.android.adblib.syncSend
+import com.android.adblib.withPrefix
 import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.common.ProcessTracker
@@ -54,9 +55,11 @@ internal class AgentProcessTracker(
     private val deviceAbi: String,
     private val agentSourcePath: Path,
     private val intervalMillis: Int,
-    private val logger: AdbLogger,
+    logger: AdbLogger,
     private val context: CoroutineContext = EmptyCoroutineContext,
 ) : ProcessTracker {
+
+    private val logger = logger.withPrefix("${this::class.simpleName}: $serialNumber: ")
 
     override suspend fun trackProcesses()
             : Flow<ProcessEvent> = flow {
@@ -81,7 +84,7 @@ internal class AgentProcessTracker(
         val command = "mkdir -p $AGENT_DIR; chmod 700 $AGENT_DIR; chown shell:shell $AGENT_DIR"
         adbSession.deviceServices.shellAsLines(deviceSelector, command).collect {
             when {
-                it is StderrLine ->
+                it is StderrLine && it.contents.isNotBlank() ->
                     logger.warn("Unable to create $AGENT_DIR dir: ${it.contents.take(200)}")
 
                 it is ExitCode && it.exitCode != 0 ->
@@ -96,6 +99,7 @@ internal class AgentProcessTracker(
     private suspend fun FlowCollector<ProcessEvent>.handleLine(line: String) {
         val event = parseLine(line)
         if (event != null) {
+            logger.verbose { event.toString() }
             emit(event)
         } else {
             logger.warn("Invalid tracker line: '$line'")
@@ -127,7 +131,6 @@ internal class AgentProcessTracker(
 
         @VisibleForTesting
         internal const val AGENT_PATH = "$AGENT_DIR/$AGENT_NAME"
-
     }
 
 }

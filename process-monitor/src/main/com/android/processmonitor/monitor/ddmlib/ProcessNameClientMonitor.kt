@@ -16,57 +16,47 @@
 package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.AdbLogger
-import com.android.adblib.AdbSession
-import com.android.adblib.DeviceSelector
-import com.android.adblib.ShellCommandOutputElement.StdoutLine
-import com.android.adblib.shellCommand
-import com.android.adblib.withLineCollector
 import com.android.adblib.withPrefix
 import com.android.ddmlib.IDevice
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
+import com.android.processmonitor.common.ProcessTracker
 import com.android.processmonitor.monitor.ProcessNames
 import com.android.processmonitor.utils.RetainingMap
+import com.google.common.annotations.VisibleForTesting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.Closeable
-import java.util.concurrent.atomic.AtomicReference
-
-private const val DEVICE_PROCESSES_UPDATE_INTERVAL_MS = 2000L
 
 /**
  * Monitors a device and keeps track of process names.
  *
  * Some process information is kept even after they terminate.
  *
+ * @param parentScope a parent [CoroutineScope] to inherit from
  * @param device The [IDevice] to monitor
  * @param flows A flow where [ProcessNames] are sent to
- * @param adbSession An [AdbSession]
+ * @param processTracker An optional [ProcessTracker]
+ * @param logger An [AdbLogger] to log with
  * @param maxProcessRetention The maximum number of dead pids to retain in the cache
- * @param enablePsPolling If true, use `ps` command to poll device for processes
  */
 internal class ProcessNameClientMonitor(
     parentScope: CoroutineScope,
     private val device: IDevice,
     private val flows: ProcessNameMonitorFlows,
-    private val adbSession: AdbSession,
+    @VisibleForTesting
+    val processTracker: ProcessTracker?,
     private val logger: AdbLogger,
     private val maxProcessRetention: Int,
-    enablePsPolling: Boolean = false,
 ) : Closeable {
 
-    private val thisLogger =
-        logger.withPrefix("${this::class.simpleName}: ${device.serialNumber}: ")
-
-    /**
-     * The map of pid -> [ProcessNames] for currently alive processes, plus recently terminated
-     * processes.
-     */
-    private val processes = RetainingMap<Int, ProcessNames>(maxProcessRetention)
-    private val deviceProcessUpdater = if (enablePsPolling) DeviceProcessUpdater() else null
+    private val thisLogger = logger.withPrefix("${this::class.simpleName}: ${device.serialNumber}: ")
+    @VisibleForTesting
+    val clientProcessNames = RetainingMap<Int, ProcessNames>(maxProcessRetention)
+    @VisibleForTesting
+    val trackerProcessNames = RetainingMap<Int, ProcessNames>(maxProcessRetention)
 
     private val scope: CoroutineScope =
         CoroutineScope(parentScope.coroutineContext + SupervisorJob())
@@ -75,60 +65,33 @@ internal class ProcessNameClientMonitor(
         scope.launch {
             ClientProcessTracker(flows, device, logger).trackProcesses().collect {
                 when (it) {
-                    is ProcessAdded -> processes[it.pid] = it.toProcessNames()
-                    is ProcessRemoved -> processes.remove(it.pid)
+                    is ProcessAdded -> clientProcessNames[it.pid] = it.toProcessNames()
+                    is ProcessRemoved -> clientProcessNames.remove(it.pid)
                 }
                 thisLogger.debug { it.toString() }
             }
         }
-        if (deviceProcessUpdater != null) {
+        if (processTracker != null) {
             scope.launch {
-                while (true) {
-                    deviceProcessUpdater.updateNow()
-                    delay(DEVICE_PROCESSES_UPDATE_INTERVAL_MS)
+                processTracker.trackProcesses().collect {
+                    when (it) {
+                        is ProcessRemoved -> trackerProcessNames.remove(it.pid)
+                        is ProcessAdded -> {
+                            val names = it.toProcessNames()
+                            val pid = it.pid
+                            thisLogger.debug { "Adding process $pid -> $names" }
+                            trackerProcessNames[it.pid] = names
+                        }
+                    }
                 }
             }
         }
     }
 
     fun getProcessNames(pid: Int): ProcessNames? =
-        processes[pid] ?: deviceProcessUpdater?.getPidName(pid)
+        clientProcessNames[pid] ?: trackerProcessNames[pid]
 
     override fun close() {
         scope.cancel()
-    }
-
-    private inner class DeviceProcessUpdater {
-
-        private val lastKnownPids = AtomicReference(mapOf<Int, ProcessNames>())
-
-        suspend fun updateNow() {
-            try {
-                val names = mutableMapOf<Int, ProcessNames>()
-                val deviceSelector = DeviceSelector.fromSerialNumber(device.serialNumber)
-                val command = "ps -A -o PID,NAME"
-                adbSession.deviceServices.shellCommand(deviceSelector, command)
-                    .withLineCollector()
-                    .execute()
-                    .collect shellAsLines@{
-                        //TODO: Check for `stderr` and `exitCode` to report errors
-                        if (it is StdoutLine) {
-                            val split = it.contents.trim().split(" ")
-                            val pid = split[0].toIntOrNull() ?: return@shellAsLines
-                            val processName = split[1]
-                            names[pid] = ProcessNames("", processName)
-                        }
-                    }
-                thisLogger.debug { "Adding ${names.size} processes from ps command" }
-                lastKnownPids.set(names)
-            } catch (e: Throwable) {
-                thisLogger.warn(e, "Error listing device processes")
-                // We have no idea what error to expect here and how long this may last, so safer to
-                // discard old data.
-                lastKnownPids.set(mapOf())
-            }
-        }
-
-        fun getPidName(pid: Int): ProcessNames? = lastKnownPids.get()[pid]
     }
 }

@@ -20,6 +20,7 @@ import com.android.ddmlib.ClientData
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.DeviceState
 import com.android.ddmlib.IDevice.DeviceState.OFFLINE
+import com.android.sdklib.AndroidVersion
 import com.android.testutils.MockitoKt
 import com.android.testutils.MockitoKt.whenever
 
@@ -35,6 +36,8 @@ internal fun mockDevice(serialNumber: String, state: DeviceState = OFFLINE): IDe
     whenever(it.isOnline).thenReturn(state == DeviceState.ONLINE)
     whenever(it.isOffline).thenReturn(state != DeviceState.ONLINE)
     whenever(it.clients).thenReturn(emptyArray())
+    whenever(it.version).thenReturn(AndroidVersion(33))
+    whenever(it.abis).thenReturn(listOf("abi"))
   }
 }
 

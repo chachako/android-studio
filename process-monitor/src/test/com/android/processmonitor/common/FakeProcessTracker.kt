@@ -15,12 +15,22 @@
  */
 package com.android.processmonitor.common
 
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import java.io.Closeable
 
-/**
- * Provides a [Flow] of [ProcessEvent]
- */
-internal interface ProcessTracker {
+/** A fake [ProcessTracker] for tests */
+internal class FakeProcessTracker : ProcessTracker, Closeable {
 
-    suspend fun trackProcesses(): Flow<ProcessEvent>
+    private val channel = Channel<ProcessEvent>(10)
+
+    suspend fun send(vararg events: ProcessEvent) {
+        events.forEach { channel.send(it) }
+    }
+
+    override suspend fun trackProcesses(): Flow<ProcessEvent> = channel.consumeAsFlow()
+    override fun close() {
+        channel.close()
+    }
 }

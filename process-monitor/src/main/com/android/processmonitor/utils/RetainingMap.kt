@@ -15,6 +15,7 @@
  */
 package com.android.processmonitor.utils
 
+import com.google.common.annotations.VisibleForTesting
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -31,8 +32,10 @@ import java.util.concurrent.ConcurrentHashMap
  */
 internal class RetainingMap<K, V>(private val maxRetention: Int) {
 
-    private val map: MutableMap<K, V> = ConcurrentHashMap()
-    private val retentionList: LinkedHashSet<K> = LinkedHashSet()
+    @VisibleForTesting
+    val map: MutableMap<K, V> = ConcurrentHashMap()
+    @VisibleForTesting
+    val retentionList: LinkedHashSet<K> = LinkedHashSet()
 
     operator fun set(key: K, value: V) {
         map[key] = value
