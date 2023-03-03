@@ -7,7 +7,7 @@ dependencies {
     api "com.android.support:support-v4:${rootProject.supportLibVersion}"
     debugApi "com.android.support:support-v13:${rootProject.supportLibVersion}"
 
-    api "com.google.android.gms:play-services-base:${rootProject.playServicesVersion}"
+    api "com.google.android.gms:play-services-base:${libs.versions.playServicesVersion.get()}"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation "com.android.support.test:runner:${project.testSupportLibVersion}"

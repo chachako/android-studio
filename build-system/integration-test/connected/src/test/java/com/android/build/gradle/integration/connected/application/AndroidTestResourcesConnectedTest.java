@@ -66,8 +66,8 @@ public class AndroidTestResourcesConnectedTest {
                         + "    }\n"
                         + "}\n"
                         + "dependencies {\n"
-                        + "    androidTestImplementation \"com.android.support.test:runner:${project.testSupportLibVersion}\"\n"
-                        + "    androidTestImplementation \"com.android.support.test:rules:${project.testSupportLibVersion}\"\n"
+                        + "    androidTestImplementation \"com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}\"\n"
+                        + "    androidTestImplementation \"com.android.support.test:rules:${libs.versions.testSupportLibVersion.get()}\"\n"
                         + "}\n");
         // fail fast if no response
         appProject.addAdbTimeout();

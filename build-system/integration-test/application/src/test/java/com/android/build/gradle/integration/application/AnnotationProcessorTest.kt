@@ -58,7 +58,7 @@ class AnnotationProcessorTest {
 
     @Before
     fun setUp() {
-        val testSupportLibVersion = "\${project.testSupportLibVersion}"
+        val testSupportLibVersion = "\${libs.versions.testSupportLibVersion.get()}"
         val buildScript = ("""
                 apply from: "../../commonHeader.gradle"
                 buildscript { apply from: "../../commonBuildScript.gradle" }

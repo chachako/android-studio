@@ -68,8 +68,8 @@ public class TestWithSameDepAsAppWithClassifier {
                         + "dependencies {\n"
                         + "  implementation 'org.threeten:threetenbp:1.3.3:no-tzdb'\n"
                         + "  androidTestImplementation 'org.threeten:threetenbp:1.3.3'\n"
-                        + "  androidTestImplementation \"com.android.support.test:runner:${project.testSupportLibVersion}\"\n"
-                        + "  androidTestImplementation \"com.android.support.test:rules:${project.testSupportLibVersion}\"\n"
+                        + "  androidTestImplementation \"com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}\"\n"
+                        + "  androidTestImplementation \"com.android.support.test:rules:${libs.versions.testSupportLibVersion.get()}\"\n"
                         + "}\n");
     }
 
