@@ -91,7 +91,7 @@ internal interface JdwpSession : AutoShutdown {
         ): JdwpSession {
             val channel = device.session.deviceServices.jdwp(device.selector, pid)
             channel.closeOnException {
-                return JdwpSessionImpl(device, channel, pid, nextPacketIdBase)
+                return JdwpSessionImpl(device, channel, pid, "device", nextPacketIdBase)
             }
         }
 
@@ -110,7 +110,7 @@ internal interface JdwpSession : AutoShutdown {
             pid: Int,
             nextPacketIdBase: Int?
         ): JdwpSession {
-            return JdwpSessionImpl(device, channel, pid, nextPacketIdBase)
+            return JdwpSessionImpl(device, channel, pid, "debugger", nextPacketIdBase)
         }
     }
 }

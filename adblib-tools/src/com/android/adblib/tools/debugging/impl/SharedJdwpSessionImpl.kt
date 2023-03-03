@@ -18,11 +18,12 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.scope
+import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
-import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.SharedJdwpSession
+import com.android.adblib.tools.debugging.SharedJdwpSessionFilter
 import com.android.adblib.tools.debugging.SharedJdwpSessionMonitor
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
@@ -78,7 +79,7 @@ internal class SharedJdwpSessionImpl(
     override val device: ConnectedDevice
         get() = jdwpSession.device
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
 
     /**
      * The scope used to run coroutines for sending and receiving packets
@@ -156,7 +157,7 @@ internal class SharedJdwpSessionImpl(
     }
 
     override suspend fun addReplayPacket(packet: JdwpPacketView) {
-        logger.verbose { "pid=$pid: Adding JDWP replay packet '$packet'" }
+        logger.verbose { "Adding JDWP replay packet '$packet'" }
         val clone = packet.clone()
         replayPackets.add(clone)
     }
@@ -166,7 +167,7 @@ internal class SharedJdwpSessionImpl(
     }
 
     override fun close() {
-        logger.debug { "pid=$pid: Closing" }
+        logger.debug { "Closing session" }
         val exception = CancellationException("Shared JDWP session closed")
         sessionEndResultStateFlow.value = exception
         scope.cancel(exception)
@@ -177,6 +178,7 @@ internal class SharedJdwpSessionImpl(
 
     private suspend fun addActiveReceiver(name: String): ActiveReceiver {
         val receiver = ActiveReceiver(this, name)
+        logger.debug { "Adding active receiver '${receiver.name}'" }
         activeReceivers.add(receiver)
 
         // Wake up job that sends replay packets to new receivers
@@ -198,6 +200,7 @@ internal class SharedJdwpSessionImpl(
     }
 
     private fun removeActiveReceiver(receiver: ActiveReceiver) {
+        logger.debug { "Removing active receiver '${receiver.name}'" }
         activeReceivers.remove(receiver)
 
         // If this was the last receiver, pause job that reads packets from the underlying
@@ -227,7 +230,7 @@ internal class SharedJdwpSessionImpl(
                 hasReceiversStateFlow.waitUntil(true)
                 sendReplayPlacketsToReceivers()
 
-                logger.verbose { "pid=$pid: Waiting for next JDWP packet from session" }
+                logger.verbose { "Waiting for next JDWP packet from session" }
                 val packet = try {
                     jdwpSession.receivePacket()
                 } catch (t: Throwable) {
@@ -237,7 +240,7 @@ internal class SharedJdwpSessionImpl(
 
                     // Reached EOF, flow terminates
                     if (t is EOFException) {
-                        logger.debug { "pid=$pid: JDWP session has ended with EOF" }
+                        logger.debug { "JDWP session has ended with EOF" }
                     }
                     sessionEndResultStateFlow.value = t
                     activeReceivers.forEach { receiver ->
@@ -258,7 +261,7 @@ internal class SharedJdwpSessionImpl(
                 sendReplayPlacketsToReceivers()
                 jdwpMonitor?.onReceivePacket(localPacket)
                 activeReceivers.forEach { receiver ->
-                    logger.verbose { "pid=$pid: Emitting session packet $localPacket to receiver '${receiver.name}'" }
+                    logger.verbose { "Emitting session packet $localPacket to receiver '${receiver.name}'" }
                     sendPacketResultToReceiver(receiver, Result.success(localPacket))
                 }
                 jdwpFilter.afterReceivePacket(localPacket)
@@ -310,7 +313,7 @@ internal class SharedJdwpSessionImpl(
     private suspend fun sendReplayPlacketsToReceiver(receiver: ActiveReceiver) {
         receiver.replayPackets {
             replayPackets.forEach { packet ->
-                logger.verbose { "pid=$pid: Sending replay packet to receiver '${receiver.name}': $packet" }
+                logger.verbose { "Sending replay packet to receiver '${receiver.name}': $packet" }
                 sendPacketResultToReceiver(receiver, Result.success(packet))
             }
         }
@@ -321,12 +324,12 @@ internal class SharedJdwpSessionImpl(
         packet: Result<JdwpPacketView>
     ) {
         runCatching {
-            logger.verbose { "pid=$pid: Sending packet to receiver '${receiver.name}': $packet" }
+            logger.verbose { "Sending packet to receiver '${receiver.name}': $packet" }
             packet.onSuccess { it.payload.rewind() }
             receiver.sendPacketResult(packet)
         }.onFailure { t ->
             if (t !is CancellationException) {
-                logger.info(t) { "pid=$pid: Failure sending packet to receiver: '${receiver.name}': $packet" }
+                logger.info(t) { "Failure sending packet to receiver: '${receiver.name}': $packet" }
             }
         }
     }
@@ -344,18 +347,15 @@ internal class SharedJdwpSessionImpl(
             private val jdwpSession: SharedJdwpSessionImpl
                 get() = jdwpPacketReceiver.jdwpSession
 
-            private val session: AdbSession
-                get() = jdwpSession.session
-
             private val name: String
                 get() = jdwpPacketReceiver.name
 
             private val filterId: SharedJdwpSessionFilter.FilterId?
                 get() = jdwpPacketReceiver.filterId
 
-            private val receiverLogger = thisLogger(session).withPrefix("receiver for '$name': ")
+            private val receiverLogger = jdwpSession.logger.withPrefix("receiver for '$name': ")
 
-            private val flowLogger = thisLogger(session).withPrefix("flow for '$name': ")
+            private val flowLogger = jdwpSession.logger.withPrefix("flow for '$name': ")
 
             fun flow(): Flow<JdwpPacketView> = flow {
                 // Create channels the "Receiver" and "Flow" use to synchronize processing
@@ -533,10 +533,7 @@ internal class SharedJdwpSessionImpl(
         val name: String
         ) : AutoCloseable {
 
-        private val session
-            get() = jdwpSession.session
-
-        private val logger = thisLogger(session)
+        private val logger = jdwpSession.logger.withPrefix("ActiveReceiver '$name': ")
 
         private val mutex = Mutex()
 

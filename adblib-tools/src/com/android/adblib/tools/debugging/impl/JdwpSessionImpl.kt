@@ -18,9 +18,11 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbInputChannelSlice
+import com.android.adblib.AdbLogger
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.serialNumber
 import com.android.adblib.skipRemaining
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.JdwpSession
@@ -32,6 +34,7 @@ import com.android.adblib.tools.debugging.packets.MutableJdwpPacket
 import com.android.adblib.tools.debugging.packets.parseHeader
 import com.android.adblib.tools.debugging.packets.writeToChannel
 import com.android.adblib.utils.ResizableBuffer
+import com.android.adblib.withPrefix
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.nio.ByteBuffer
@@ -40,19 +43,21 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class JdwpSessionImpl(
     override val device: ConnectedDevice,
     private val channel: AdbChannel,
-    private val pid: Int,
+    pid: Int,
+    peerName: String,
     nextPacketIdBase: Int?
 ) : JdwpSession {
     private val session: AdbSession
         get() = device.session
 
     private val logger = thisLogger(session)
+        .withPrefix("(hash=${hashCode()}, '$peerName') device='${device.serialNumber}' pid=$pid: ")
 
     private val inputChannel = session.channelFactory.createReadAheadChannel(channel)
 
     private val outputChannel = session.channelFactory.createWriteBackChannel(channel)
 
-    private val handshakeHandler = HandshakeHandler(session, pid, inputChannel, outputChannel)
+    private val handshakeHandler = HandshakeHandler(peerName, logger, inputChannel, outputChannel)
 
     private val sender = Sender(outputChannel)
 
@@ -64,14 +69,19 @@ internal class JdwpSessionImpl(
 
     private val atomicPacketId: AtomicInteger? = nextPacketIdBase?.let { AtomicInteger(it) }
 
+    init {
+        logger.debug { "Opening JDWP session" }
+    }
+
     override suspend fun shutdown() {
+        logger.debug { "Shutting down JDWP session" }
         outputChannel.shutdown()
         inputChannel.close()
         channel.close()
     }
 
     override fun close() {
-        logger.debug { "pid=$pid: Closing JDWP session handler (and underlying channel)" }
+        logger.debug { "Closing JDWP session (and underlying channel)" }
         inputChannel.close()
         outputChannel.close()
         channel.close()
@@ -81,7 +91,7 @@ internal class JdwpSessionImpl(
         // We serialize sending packets to the channel so that we always send fully formed packets
         sendMutex.withLock {
             sendHandshake()
-            logger.verbose { "pid=$pid: Sending JDWP packet: $packet" }
+            logger.verbose { "Sending JDWP packet: $packet" }
             sender.sendPacket(packet)
         }
     }
@@ -90,9 +100,9 @@ internal class JdwpSessionImpl(
         // We serialize reading packets from the channel so that we always read fully formed packets
         receiveMutex.withLock {
             waitForHandshake()
-            logger.verbose { "pid=$pid: Waiting for next JDWP packet from channel" }
+            logger.verbose { "Waiting for next JDWP packet from channel" }
             val packet = receiver.receivePacket()
-            logger.verbose { "pid=$pid: Received JDWP packet: $packet" }
+            logger.verbose { "Received JDWP packet: $packet" }
             return packet
         }
     }
@@ -111,13 +121,14 @@ internal class JdwpSessionImpl(
     }
 
     class HandshakeHandler(
-        session: AdbSession,
-        private val pid: Int,
+        private val peerName: String,
+        parentLogger: AdbLogger,
         private val inputChannel: AdbInputChannel,
         private val outputChannel: AdbOutputChannel
     ) {
 
-        private val logger = thisLogger(session)
+        private val logger = parentLogger.withPrefix("HandshakeHandler: ")
+
         private val channelMutex = Mutex()
         private var handshakeSent: Boolean = false
         private var handshakeReceived: Boolean = false
@@ -149,9 +160,9 @@ internal class JdwpSessionImpl(
                     val workBuffer = ResizableBuffer().order(PACKET_BYTE_ORDER)
                     sendHandshakeWorker(workBuffer)
 
-                    logger.debug { "pid=$pid: Waiting for JDWP handshake from Android VM" }
+                    logger.debug { "Waiting for JDWP handshake from $peerName" }
                     receiveJdwpHandshake(workBuffer)
-                    logger.debug { "pid=$pid: JDWP handshake received from Android VM" }
+                    logger.debug { "JDWP handshake received from $peerName" }
 
                     handshakeReceived = true
                 }
@@ -160,7 +171,7 @@ internal class JdwpSessionImpl(
 
         private suspend fun sendHandshakeWorker(workBuffer: ResizableBuffer) {
             if (!handshakeSent) {
-                logger.debug { "pid=$pid: Sending JDWP handshake to Android VM" }
+                logger.debug { "Sending JDWP handshake to $peerName" }
                 workBuffer.clear()
                 workBuffer.appendBytes(HANDSHAKE)
                 val data = workBuffer.forChannelWrite()
@@ -196,7 +207,7 @@ internal class JdwpSessionImpl(
                 packet.parseHeader(buffer)
                 if (packet.length - PACKET_HEADER_LENGTH <= buffer.remaining()) {
                     packet.payload = AdbBufferedInputChannel.forByteBuffer(buffer)
-                    logger.debug { "pid=$pid:  Skipping JDWP packet received before JDWP handshake: $packet" }
+                    logger.debug { "Skipping JDWP packet received before JDWP handshake: $packet" }
                     bytesSoFar.clear()
                 }
             }

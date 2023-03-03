@@ -20,6 +20,7 @@ import com.android.adblib.AdbChannelFactory
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpPacketReceiver
@@ -32,6 +33,7 @@ import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
 import com.android.adblib.tools.debugging.utils.ReferenceCountedResource
 import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.launchCancellable
+import com.android.adblib.withPrefix
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -58,7 +60,7 @@ internal class JdwpSessionProxy(
     private val session: AdbSession
         get() = device.session
 
-    private val logger = thisLogger(session)
+    private val logger = thisLogger(session).withPrefix("device='${device.serialNumber}' pid=$pid: ")
 
     suspend fun execute(processStateFlow: AtomicStateFlow<JdwpProcessProperties>) {
         try {
@@ -69,7 +71,7 @@ internal class JdwpSessionProxy(
                 try {
                     // Retry proxy as long as process is active
                     while (true) {
-                        logger.debug { "pid=$pid: Waiting for debugger connection on port ${socketAddress.port}" }
+                        logger.debug { "Waiting for debugger connection on port ${socketAddress.port}" }
                         acceptOneJdwpConnection(
                             serverSocket,
                             processStateFlow
@@ -93,22 +95,22 @@ internal class JdwpSessionProxy(
         processStateFlow: AtomicStateFlow<JdwpProcessProperties>
     ) {
         serverSocket.accept().use { debuggerSocket ->
-            logger.debug { "pid=$pid: External debugger connection accepted: $debuggerSocket" }
+            logger.debug { "External debugger connection accepted: $debuggerSocket" }
             processStateFlow.updateProxyStatus { it.copy(isExternalDebuggerAttached = true) }
             try {
                 proxyJdwpSession(debuggerSocket)
             } catch (t: Throwable) {
                 t.rethrowCancellation()
-                logger.info(t) { "pid=$pid: Debugger proxy had an error: $t" }
+                logger.info(t) { "Debugger proxy had an error: $t" }
             } finally {
-                logger.debug { "pid=$pid: Debugger proxy has ended proxy connection" }
+                logger.debug { "Debugger proxy has ended proxy connection" }
                 processStateFlow.updateProxyStatus { it.copy(isExternalDebuggerAttached = false) }
             }
         }
     }
 
     private suspend fun proxyJdwpSession(debuggerSocket: AdbChannel) {
-        logger.debug { "pid=$pid: Start proxying socket between external debugger and process on device" }
+        logger.debug { "Start proxying socket between external debugger and process on device" }
         jdwpSessionRef.withResource { deviceSession ->
             // The JDWP Session proxy does not need to send custom JDWP packets,
             // so we pass a `null` value for `nextPacketIdBase`.
@@ -161,7 +163,7 @@ internal class JdwpSessionProxy(
             // Wait until receiver has started to avoid skipping packets
             startStateFlow.first { receiverHasStarted -> receiverHasStarted }
 
-            logger.verbose { "pid=$pid: proxy: debugger->device: Forwarding packet to shared jdwp session" }
+            logger.verbose { "debugger->device: Forwarding packet to shared jdwp session: $packet" }
             deviceSession.sendPacket(packet)
         }
     }
@@ -179,10 +181,10 @@ internal class JdwpSessionProxy(
             .withName("device session forwarder")
             .withNoDdmsPacketFilter()
             .onActivation {
-                logger.verbose { "pid=$pid: device->debugger proxy: Device session is ready to receive packets" }
+                logger.debug { "device->debugger: Device session is ready to receive packets" }
                 startStateFlow.value = true
             }.collect { packet ->
-                logger.verbose { "pid=$pid: device->debugger proxy: Forwarding packet to session" }
+                logger.verbose { "device->debugger: Forwarding packet to session: $packet" }
                 debuggerSession.sendPacket(packet)
             }
     }
