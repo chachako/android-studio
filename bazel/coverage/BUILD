@@ -814,6 +814,17 @@ coverage_report(
     ],
 )
 
+# Coverage report for GMD code completion
+coverage_report(
+    name = "gmd-code-completion",
+    srcpath_include = [
+        "tools/adt/idea/gmd-code-completion/src/com/android/gmdcodecompletion",
+    ],
+    tests = [
+        "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
+    ],
+)
+
 # Coverage report for "Logcat V2" tool window
 coverage_report(
     name = "logcat",
@@ -884,6 +895,7 @@ combine_report_definitions(
         "dsl",
         "dynamic-layout-inspector",
         "fullscreen-heapdump-ui",
+        "gmd-code-completion",
         "gradle-managed-virtual-device",
         "layouteditor",
         "logcat",
@@ -967,6 +979,7 @@ coverage_report(
         "//tools/adt/idea/device-explorer-monitor:intellij.android.device-explorer-monitor.tests_tests",
         "//tools/adt/idea/device-file-explorer-toolwindow:intellij.android.device-file-explorer-toolwindow.tests_tests",
         "//tools/adt/idea/device-manager:intellij.android.device-manager.tests_tests",
+        "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
         "//tools/adt/idea/streaming:intellij.android.streaming.tests_tests",
         "//tools/adt/idea/gradle-dsl:intellij.android.gradle.dsl.tests_tests",
         "//tools/adt/idea/kotlin-integration:kotlin-integration-tests_tests",
