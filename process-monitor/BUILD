@@ -12,6 +12,7 @@ iml_module(
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/adblib:studio.android.sdktools.adblib[module]",
+        "//tools/base/adblib-tools:studio.android.sdktools.adblib.tools[module]",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module]",
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver[module, test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
