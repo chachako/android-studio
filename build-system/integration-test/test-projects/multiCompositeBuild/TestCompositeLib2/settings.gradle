@@ -17,6 +17,4 @@ include 'services:webservice'
 
 rootProject.name = 'composite2'
 
-dependencyResolutionManagement {
-    apply from: "../../commonLocalRepo.gradle", to: it
-}
+apply from : "../settings.gradle"

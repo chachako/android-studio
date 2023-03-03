@@ -32,7 +32,7 @@ android {
 }
 
 dependencies {
-    api "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"
+    api "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
     api "com.android.support.constraint:constraint-layout:${libs.versions.constraintLayoutVersion.get()}"
     api project(':lib')
     testImplementation 'junit:junit:4.12'

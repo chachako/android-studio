@@ -45,7 +45,7 @@ class AsmTransformApiConfigurationCachingTest {
 
                 dependencies {
                     api gradleApi()
-                    api "com.android.tools.build:gradle:${"$"}rootProject.buildVersion"
+                    api "com.android.tools.build:gradle:${"$"}{libs.versions.buildVersion.get()}"
                     implementation "org.ow2.asm:asm-util:9.2"
                 }
 
@@ -62,9 +62,7 @@ class AsmTransformApiConfigurationCachingTest {
 
         FileUtils.writeToFile(project.file("buildSrc/settings.gradle"),
         """
-            dependencyResolutionManagement {
-                apply from: "../../commonLocalRepo.gradle", to: it
-            }
+            apply from: "../settings.gradle"
         """.trimIndent())
 
         FileUtils.writeToFile(

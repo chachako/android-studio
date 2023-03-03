@@ -27,7 +27,7 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"
+    api "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
     testImplementation 'junit:junit:4.12'
     api project(':javalib')
     api project(':mylibrary')

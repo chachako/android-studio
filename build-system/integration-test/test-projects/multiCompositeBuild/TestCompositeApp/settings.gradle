@@ -5,6 +5,4 @@ includeBuild '../TestCompositeLib2'
 includeBuild '../TestCompositeLib3'
 includeBuild '../TestCompositeLib4'
 
-dependencyResolutionManagement {
-    apply from: "../../commonLocalRepo.gradle", to: it
-}
+apply from : "../settings.gradle"

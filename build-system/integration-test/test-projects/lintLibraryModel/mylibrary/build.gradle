@@ -20,7 +20,7 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    api "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"
+    api "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
     implementation project(':transitiveLibrary')
     testImplementation 'junit:junit:4.12'
 }

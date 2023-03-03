@@ -6,7 +6,7 @@ apply plugin: 'maven-publish'
 dependencies {
     api gradleApi()
     api 'com.android.tools.build:transform-api:1.5.0'
-    api "com.android.tools:annotations:${rootProject.baseVersion}"
+    api "com.android.tools:annotations:${libs.versions.baseVersion.get()}"
     api 'com.googlecode.jarjar:jarjar:1.3'
     api 'com.google.guava:guava:19.0'
 }

@@ -82,7 +82,7 @@ class CheckMultiApkLibrariesTaskTest {
                 """
                     android.defaultConfig.minSdkVersion 14
                     dependencies {
-                        implementation 'com.android.support:support-core-utils:' + rootProject.supportLibVersion
+                        implementation 'com.android.support:support-core-utils:' + libs.versions.supportLibVersion.get()
                     }
                     """)
 }

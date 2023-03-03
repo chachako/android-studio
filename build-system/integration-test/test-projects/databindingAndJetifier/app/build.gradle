@@ -17,7 +17,7 @@ android {
 
 dependencies {
     // Basic dependency for MainActivity
-    implementation "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
 
     // Example third-party library that should be jetified and its support library dependencies
     // should be replaced with AndroidX
@@ -56,7 +56,7 @@ afterEvaluate {
                 if (groupAndName == 'com.android.support:preference-v7'
                         || groupAndName == 'com.android.support:support-annotations'
                         || groupAndName == 'com.android.support:support-v4') {
-                    useVersion rootProject.supportLibVersion
+                    useVersion libs.versions.supportLibVersion.get()
                 }
             }
         }

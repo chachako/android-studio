@@ -34,6 +34,6 @@ android {
 }
 
 dependencies {
-    api 'com.android.support:appcompat-v7:' + rootProject.supportLibVersion
+    api 'com.android.support:appcompat-v7:' + libs.versions.supportLibVersion.get()
     api "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
 }

@@ -19,8 +19,8 @@ android {
 }
 
 dependencies {
-    api "com.android.support:support-annotations:${project.supportLibVersion}"
+    api "com.android.support:support-annotations:${libs.versions.supportLibVersion.get()}"
     testImplementation "junit:junit:4.12"
-    androidTestImplementation "com.android.support:support-annotations:${project.supportLibVersion}"
-    androidTestImplementation "com.android.support.test:runner:${project.testSupportLibVersion}"
+    androidTestImplementation "com.android.support:support-annotations:${libs.versions.supportLibVersion.get()}"
+    androidTestImplementation "com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}"
 }

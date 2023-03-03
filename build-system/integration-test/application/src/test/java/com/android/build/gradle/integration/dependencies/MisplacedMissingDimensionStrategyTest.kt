@@ -36,8 +36,7 @@ class MisplacedMissingDimensionStrategyTest {
 
     @Before
     fun setUp() {
-        Files.asCharSink(project.settingsFile, Charsets.UTF_8)
-            .write("include 'app', 'library'")
+        project.setIncludedProjects("app", "library")
 
         // make the app depend on the library
         val appProject = project.getSubproject("app")

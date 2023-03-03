@@ -6,8 +6,8 @@ apply plugin: 'com.android.library'
 
 dependencies {
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation "com.android.support.test:runner:${project.testSupportLibVersion}"
-    androidTestImplementation "com.android.support.test:rules:${project.testSupportLibVersion}"
+    androidTestImplementation "com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}"
+    androidTestImplementation "com.android.support.test:rules:${libs.versions.testSupportLibVersion.get()}"
 
     androidTestImplementation 'com.google.guava:guava:19.0'
 }

@@ -27,6 +27,6 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.android.support:appcompat-v7:$rootProject.supportLibVersion"
+    implementation "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
     api 'com.test.composite:composite4:1.0'
 }

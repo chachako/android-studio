@@ -48,7 +48,7 @@ class ProjectNoJavaSourcesTest(val testProject: MinimalSubProject) {
     @Test
     fun testBuild() {
         executor().run("assemble", "assembleDebugAndroidTest")
-        Truth.assertThat(project.projectDir.walk().filter { it.extension == "java" }
+        Truth.assertThat(project.projectDir.resolve("src").walk().filter { it.extension == "java" }
             .toList()).named("list of Java sources").isEmpty()
     }
 
@@ -66,7 +66,7 @@ class ProjectNoJavaSourcesTest(val testProject: MinimalSubProject) {
         """.trimIndent()
         )
         executor().run("assemble", "assembleDebugAndroidTest")
-        Truth.assertThat(project.projectDir.walk().filter { it.extension == "java" }
+        Truth.assertThat(project.projectDir.resolve("src").walk().filter { it.extension == "java" }
             .toList()).named("list of Java sources").isEmpty()
     }
 
@@ -83,7 +83,7 @@ class ProjectNoJavaSourcesTest(val testProject: MinimalSubProject) {
         """.trimIndent()
         )
         executor().run("assemble", "assembleDebugAndroidTest")
-        Truth.assertThat(project.projectDir.walk().filter { it.extension == "java" }
+        Truth.assertThat(project.projectDir.resolve("src").walk().filter { it.extension == "java" }
             .toList()).named("list of Java sources").isEmpty()
     }
 

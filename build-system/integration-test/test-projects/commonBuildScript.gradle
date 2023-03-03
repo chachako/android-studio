@@ -20,7 +20,7 @@ apply from: "$commonScriptFolder/commonVersions.gradle", to: rootProject.ext
 project.buildscript { buildscript ->
     apply from: "$commonScriptFolder/commonLocalRepo.gradle", to:buildscript
     dependencies {
-        classpath "com.android.tools.build:gradle:$rootProject.buildVersion"
+        classpath "com.android.tools.build:gradle:$libs.versions.buildVersion.get()"
         classpath 'com.android.tools.internal.build.test:devicepool:0.1'
     }
 }

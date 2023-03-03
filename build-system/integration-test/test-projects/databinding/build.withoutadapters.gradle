@@ -35,8 +35,8 @@ dependencies {
     if (useAndroidX == null) {
         throw new IllegalArgumentException("must provide androidX property")
     } else if (useAndroidX == "true") {
-        implementation "androidx.databinding:databinding-runtime:${rootProject.buildVersion}"
+        implementation "androidx.databinding:databinding-runtime:${libs.versions.buildVersion.get()}"
     } else {
-        implementation "com.android.databinding:library:${rootProject.buildVersion}"
+        implementation "com.android.databinding:library:${libs.versions.buildVersion.get()}"
     }
 }

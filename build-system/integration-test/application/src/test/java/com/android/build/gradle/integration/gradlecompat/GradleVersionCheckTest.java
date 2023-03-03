@@ -22,9 +22,12 @@ import com.android.SdkConstants;
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
+import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.google.common.base.Throwables;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /** Tests whether the Gradle version check takes effect. */
 public class GradleVersionCheckTest {
@@ -45,8 +48,12 @@ public class GradleVersionCheckTest {
                     .create();
 
     @Test
-    public void testGradleVersionCheck() {
-
+    public void testGradleVersionCheck() throws IOException {
+        TestFileUtils.replaceLine(
+                project.getSettingsFile(),
+                1,
+                "enableFeaturePreview('VERSION_CATALOGS')"
+        );
 
         try {
             project.executor()

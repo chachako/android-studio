@@ -1,5 +1,3 @@
 include ':app', ':composite1'
 
-dependencyResolutionManagement {
-    apply from: "../../commonLocalRepo.gradle", to: it
-}
+apply from : "../settings.gradle"

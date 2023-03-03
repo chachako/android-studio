@@ -27,6 +27,6 @@ android {
     }
     dependencies {
         androidTestImplementation "com.android.support.test:runner:${libs.versions.testSupportLibVersion.get()}"
-        androidTestImplementation "com.android.support:support-annotations:${project.supportLibVersion}"
+        androidTestImplementation "com.android.support:support-annotations:${libs.versions.supportLibVersion.get()}"
     }
 }

@@ -8,10 +8,10 @@ buildscript {
 apply plugin: 'com.android.application'
 
 dependencies {
-    implementation "com.android.support:support-v4:${rootProject.supportLibVersion}"
-    implementation "com.android.support:support-v13:${rootProject.supportLibVersion}"
-    implementation "com.android.support:cardview-v7:${rootProject.supportLibVersion}"
-    implementation "com.android.support:appcompat-v7:${rootProject.supportLibVersion}"
+    implementation "com.android.support:support-v4:${libs.versions.supportLibVersion.get()}"
+    implementation "com.android.support:support-v13:${libs.versions.supportLibVersion.get()}"
+    implementation "com.android.support:cardview-v7:${libs.versions.supportLibVersion.get()}"
+    implementation "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
 }
 
 // The sample build uses multiple directories to
