@@ -17,11 +17,11 @@ package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
+import com.android.adblib.withPrefix
 import com.android.ddmlib.IDevice
 import com.android.processmonitor.monitor.ProcessNameMonitor
 import com.android.processmonitor.monitor.ProcessNames
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
-import com.android.processmonitor.utils.PrefixLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -96,7 +96,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     private fun addDevice(device: IDevice) {
         val serialNumber = device.serialNumber
         logger.info { "Adding $serialNumber" }
-        val logger = PrefixLogger(logger, serialNumber)
+        val logger = logger.withPrefix("$serialNumber: ")
         devices[serialNumber] =
             ProcessNameClientMonitor(scope, device, flows, adbSession, logger, maxProcessRetention)
                 .apply {
