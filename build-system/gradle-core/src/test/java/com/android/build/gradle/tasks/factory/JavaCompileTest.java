@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty;
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory;
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory;
 import com.android.build.gradle.internal.profile.AnalyticsService;
 import com.android.build.gradle.internal.profile.ProjectData;
 import com.android.build.gradle.internal.profile.TaskMetadata;
@@ -45,7 +44,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.provider.SetProperty;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -133,13 +132,6 @@ public class JavaCompileTest {
 
     private AnalyticsService createAnalyticsService() {
         return new AnalyticsService() {
-            @NotNull
-            @Override
-            @Inject
-            public ProviderFactory getProvider() {
-                return FakeProviderFactory.getFactory();
-            }
-
             @Override
             @Inject
             public Params getParameters() {
@@ -196,6 +188,12 @@ public class JavaCompileTest {
                     @Override
                     public Property<String> getRootProjectPath() {
                         return new FakeGradleProperty("/path");
+                    }
+
+                    @NotNull
+                    @Override
+                    public SetProperty<String> getApplicationId() {
+                        return FakeObjectFactory.getFactory().setProperty(String.class);
                     }
                 };
             }

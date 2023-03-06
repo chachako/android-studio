@@ -52,6 +52,8 @@ import com.google.wireless.android.sdk.stats.GradleTransformExecution
 import org.gradle.api.Project
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.invocation.Gradle
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.SetProperty
 import org.gradle.tooling.events.FinishEvent
 import org.gradle.tooling.events.task.TaskFailureResult
 import org.gradle.tooling.events.task.TaskFinishEvent
@@ -81,6 +83,7 @@ class AnalyticsResourceManager constructor(
     private var profileDir: File?,
     private val taskMetadata: ConcurrentHashMap<String, TaskMetadata>,
     private var rootProjectPath: String?,
+    private var applicationIds: SetProperty<String>?,
     private val nameAnonymizer: NameAnonymizer = NameAnonymizer(),
 ) {
     var initialMemorySample = createMemorySample()
@@ -88,7 +91,6 @@ class AnalyticsResourceManager constructor(
 
     @VisibleForTesting
     val executionSpans = ConcurrentLinkedQueue<GradleBuildProfileSpan>()
-    private val applicationIds = ConcurrentLinkedQueue<String>()
 
     private var lastRecordId: AtomicLong? = null
     private val taskRecords = ConcurrentHashMap<String, TaskProfilingRecord>()
@@ -293,6 +295,7 @@ class AnalyticsResourceManager constructor(
         params.profileDir.set(profileDir)
         params.taskMetadata.set(taskMetadata)
         params.rootProjectPath.set(rootProjectPath)
+        params.applicationId.set(applicationIds)
     }
 
     fun recordGlobalProperties(project: Project) {
@@ -338,8 +341,8 @@ class AnalyticsResourceManager constructor(
         otherEvents.add(event)
     }
 
-    fun recordApplicationId(metadataFile: File) {
-        applicationIds.add(metadataFile.readText())
+    fun recordApplicationId(applicationId: Provider<String>) {
+        applicationIds?.add(applicationId)
     }
 
     private fun getProjectId(projectPath: String) : Long {
@@ -446,9 +449,10 @@ class AnalyticsResourceManager constructor(
                 "*ANONYMIZATION_ERROR*"
             }
 
-        profileBuilder
-            .addAllRawProjectId(applicationIds.toSet().toList().sorted())
-            .setProjectId(anonymizedProjectId)
+        applicationIds?.let {
+            profileBuilder.addAllRawProjectId(it.get().sorted())
+        }
+        profileBuilder.projectId = anonymizedProjectId
 
         return profileBuilder.build()
     }

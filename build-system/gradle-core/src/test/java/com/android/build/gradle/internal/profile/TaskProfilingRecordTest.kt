@@ -41,7 +41,8 @@ class TaskProfilingRecordTest {
                 false,
                 null,
                 ConcurrentHashMap(),
-                null
+                null,
+                null,
             ),
             GradleBuildProfileSpan.newBuilder(),
             "dummy", ":dummy", "variant")

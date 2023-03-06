@@ -62,9 +62,8 @@ class BasicInstantExecutionTest {
         executor().run("assemble")
         assertThat(project.projectDir.resolve(".gradle/configuration-cache")).isDirectory()
         val result = executor().run("assemble")
-        // AnalyticsRecordingTask and AndroidLintTextOutputTask always run
+        // AndroidLintTextOutputTask always run
         Truth.assertThat(result.didWorkTasks).containsExactly(
-            ":app:analyticsRecordingRelease",
             ":app:lintVitalRelease",
             ":app:assembleRelease",
             ":app:assemble")

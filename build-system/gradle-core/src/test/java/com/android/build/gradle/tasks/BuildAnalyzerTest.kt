@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.tasks
 
-import com.android.build.gradle.internal.tasks.AnalyticsRecordingTask
 import com.android.build.gradle.internal.tasks.AndroidVariantTask
 import com.android.build.gradle.internal.tasks.AppPreBuildTask
 import com.android.build.gradle.internal.tasks.BaseTask
@@ -50,7 +49,6 @@ class BuildAnalyzerTest {
             PackageAndroidArtifact::class.java,
             BaseTask::class.java,
             NonIncrementalGlobalTask::class.java,
-            AnalyticsRecordingTask::class.java,
             BuildPrivacySandboxSdkApks::class.java,
             GeneratePrivacySandboxAsar::class.java,
             GeneratePrivacySandboxSdkRuntimeConfigFile::class.java,

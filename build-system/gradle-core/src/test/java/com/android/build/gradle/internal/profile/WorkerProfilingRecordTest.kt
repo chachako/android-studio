@@ -36,7 +36,8 @@ class WorkerProfilingRecordTest {
                 false,
                 null,
                 ConcurrentHashMap(),
-                null
+                null,
+                null,
             ),
             GradleBuildProfileSpan.newBuilder(),
             "dummy",

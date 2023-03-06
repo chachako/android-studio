@@ -32,6 +32,7 @@ import com.google.wireless.android.sdk.stats.GradleTransformExecution
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.provider.SetProperty
 import org.gradle.tooling.events.FinishEvent
 import java.io.File
 import java.util.Base64
@@ -41,9 +42,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * A no-operation implementation of [AnalyticsService] for unit tests.
  */
 class FakeNoOpAnalyticsService : AnalyticsService() {
-    override val provider: ProviderFactory
-        get() = FakeProviderFactory.factory
-
     override fun getParameters(): Params {
         return object: Params {
             override val profile: Property<String>
@@ -65,6 +63,8 @@ class FakeNoOpAnalyticsService : AnalyticsService() {
                     String::class.java, TaskMetadata::class.java)
             override val rootProjectPath: Property<String>
                 get() = FakeGradleProperty("/path")
+            override val applicationId: SetProperty<String>
+                get() = FakeObjectFactory.factory.setProperty(String::class.java)
         }
     }
 

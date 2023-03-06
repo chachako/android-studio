@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal;
 
+import static com.android.build.gradle.internal.services.BuildServicesKt.getBuildService;
+
 import com.android.annotations.NonNull;
 import com.android.build.api.artifact.impl.InternalScopedArtifacts;
 import com.android.build.api.variant.VariantBuilder;
@@ -23,12 +25,13 @@ import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.internal.component.ApkCreationConfig;
 import com.android.build.gradle.internal.component.ApplicationCreationConfig;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
+import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig;
 import com.android.build.gradle.internal.component.TestComponentCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.feature.BundleAllClasses;
+import com.android.build.gradle.internal.profile.AnalyticsConfiguratorService;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
-import com.android.build.gradle.internal.tasks.AnalyticsRecordingTask;
 import com.android.build.gradle.internal.tasks.ApkZipPackagingTask;
 import com.android.build.gradle.internal.tasks.AppClasspathCheckTask;
 import com.android.build.gradle.internal.tasks.AppPreBuildTask;
@@ -85,6 +88,15 @@ public abstract class AbstractAppTaskManager<
 
     protected void createCommonTasks(@NonNull ComponentInfo<VariantBuilderT, VariantT> variant) {
         ApkCreationConfig creationConfig = (ApkCreationConfig) variant.getVariant();
+
+        if (!(creationConfig instanceof DynamicFeatureCreationConfig)
+                && !creationConfig.getDebuggable()) {
+            getBuildService(
+                            project.getGradle().getSharedServices(),
+                            AnalyticsConfiguratorService.class)
+                    .get()
+                    .recordApplicationId(creationConfig.getApplicationId());
+        }
 
         createAnchorTasks(creationConfig);
 
@@ -189,16 +201,6 @@ public abstract class AbstractAppTaskManager<
 
         TaskProvider<? extends Task> task =
                 taskFactory.register(AppPreBuildTask.getCreationAction(creationConfig));
-
-        ApkCreationConfig config = (ApkCreationConfig) creationConfig;
-        // Only record application ids for release artifacts
-        boolean analyticsEnabled =
-                creationConfig.getServices().getProjectOptions().isAnalyticsEnabled();
-        if (!config.getDebuggable() && analyticsEnabled) {
-            TaskProvider<AnalyticsRecordingTask> recordTask =
-                    taskFactory.register(new AnalyticsRecordingTask.CreationAction(config));
-            task.configure(it -> it.finalizedBy(recordTask));
-        }
 
         if (!useDependencyConstraints) {
             TaskProvider<AppClasspathCheckTask> classpathCheck =

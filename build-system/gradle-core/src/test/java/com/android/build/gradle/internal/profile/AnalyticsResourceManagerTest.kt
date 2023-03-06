@@ -77,7 +77,8 @@ class AnalyticsResourceManagerTest {
             true,
             profileDir,
             getTaskMetaData(),
-            null
+            null,
+            null,
         )
     }
 

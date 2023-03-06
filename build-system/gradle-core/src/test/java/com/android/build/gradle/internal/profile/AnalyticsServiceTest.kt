@@ -18,7 +18,6 @@ package com.android.build.gradle.internal.profile
 
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.builder.profile.NameAnonymizer
 import com.android.builder.profile.NameAnonymizerSerializer
 import com.android.builder.profile.Recorder
@@ -29,7 +28,7 @@ import com.google.wireless.android.sdk.stats.GradleBuildProject
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.provider.SetProperty
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -89,9 +88,6 @@ class AnalyticsServiceTest {
 
     private fun createAnalyticsServiceInstance(): AnalyticsService {
         return object : AnalyticsService() {
-            override val provider: ProviderFactory
-                get() = FakeProviderFactory.factory
-
             override fun getParameters(): Params {
                 return object: Params {
                     override val profile: Property<String>
@@ -108,6 +104,8 @@ class AnalyticsServiceTest {
                         get() = getTaskMetaData()
                     override val rootProjectPath: Property<String>
                         get() = FakeGradleProperty("/path")
+                    override val applicationId: SetProperty<String>
+                        get() = FakeObjectFactory.factory.setProperty(String::class.java)
                 }
             }
 
