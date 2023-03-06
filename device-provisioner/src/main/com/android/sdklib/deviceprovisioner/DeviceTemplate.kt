@@ -23,7 +23,11 @@ package com.android.sdklib.deviceprovisioner
 interface DeviceTemplate {
   val displayName: String
 
-  val activationAction: ActivationAction
+  /**
+   * An action that instantiates the template as a specific device. This may involve obtaining a
+   * reservation or creating a device.
+   */
+  val activationAction: TemplateActivationAction
 
   val editAction: EditTemplateAction?
 }

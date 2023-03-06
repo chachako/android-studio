@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
  * disconnected, and reconnected, this DeviceHandle should remain linked to it.
  */
 interface DeviceHandle {
+
   /**
    * A [CoroutineScope] tied to the lifecycle of this [DeviceHandle]: when this [DeviceHandle] goes
    * away, the scope will be cancelled by DeviceProvisioner. (Note that DeviceHandles may or may not
@@ -49,5 +50,12 @@ interface DeviceHandle {
 
   /** An action that allows editing the device, or null if editing is not supported. */
   val editAction: EditAction?
+    get() = null
+
+  /**
+   * An action that allows acquiring or extending a reservation for the device, or null if the
+   * device doesn't use reservations.
+   */
+  val reservationAction: ReservationAction?
     get() = null
 }

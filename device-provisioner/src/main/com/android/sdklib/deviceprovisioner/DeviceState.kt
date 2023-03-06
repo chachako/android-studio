@@ -30,6 +30,9 @@ sealed interface DeviceState {
 
   val properties: DeviceProperties
 
+  /** Information about the current remote device reservation, if any. */
+  val reservation: Reservation?
+
   /** The [ConnectedDevice] provided by adblib, if we are connected. */
   val connectedDevice: ConnectedDevice?
     get() = null
@@ -52,9 +55,17 @@ sealed interface DeviceState {
   open class Disconnected(
     override val properties: DeviceProperties,
     override val isTransitioning: Boolean,
-    override val status: String
+    override val status: String,
+    override val reservation: Reservation? = null,
   ) : DeviceState {
     constructor(properties: DeviceProperties) : this(properties, false, "Offline")
+
+    open fun copy(
+      properties: DeviceProperties = this.properties,
+      isTransitioning: Boolean = this.isTransitioning,
+      status: String = this.status,
+      reservation: Reservation? = this.reservation,
+    ) = Disconnected(properties, isTransitioning, status, reservation)
   }
 
   /**
@@ -65,12 +76,22 @@ sealed interface DeviceState {
     override val properties: DeviceProperties,
     override val isTransitioning: Boolean,
     override val status: String,
-    override val connectedDevice: ConnectedDevice
+    override val connectedDevice: ConnectedDevice,
+    override val reservation: Reservation? = null,
   ) : DeviceState {
     constructor(
       properties: DeviceProperties,
-      connectedDevice: ConnectedDevice
-    ) : this(properties, false, "Connected", connectedDevice)
+      connectedDevice: ConnectedDevice,
+      reservation: Reservation? = null,
+    ) : this(properties, false, "Connected", connectedDevice, reservation)
+
+    open fun copy(
+      properties: DeviceProperties = this.properties,
+      isTransitioning: Boolean = this.isTransitioning,
+      status: String = this.status,
+      connectedDevice: ConnectedDevice = this.connectedDevice,
+      reservation: Reservation? = this.reservation,
+    ) = Connected(properties, isTransitioning, status, connectedDevice, reservation)
   }
 }
 

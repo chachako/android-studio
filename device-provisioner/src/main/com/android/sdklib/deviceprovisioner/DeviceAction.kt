@@ -16,6 +16,8 @@
 package com.android.sdklib.deviceprovisioner
 
 import java.nio.file.Path
+import java.time.Duration
+import java.time.Instant
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -78,3 +80,53 @@ interface EditTemplateAction : DeviceAction {
 interface DeleteAction : DeviceAction {
   suspend fun delete()
 }
+
+interface ReservationAction : DeviceAction {
+  /**
+   * Attempts to reserve the device for the given duration. If there is already an active
+   * reservation, this will attempt to set its remaining duration. The reservation may be cancelled
+   * by setting its duration to zero.
+   *
+   * If the operation is successful, the new state should be reflected in the device's
+   * [Reservation]. If we fail to update an active reservation, but the reservation remains active,
+   * its [ReservationState] should remain ACTIVE, and a [ReservationException] should be thrown.
+   *
+   * If we fail to reserve a device, a [ReservationException] should be thrown, with a
+   * user-appropriate message. Also, the device's [ReservationState] should be set to FAILED.
+   *
+   * @return the new end time of the reservation
+   */
+  suspend fun reserve(duration: Duration): Instant
+}
+
+interface TemplateActivationAction : DeviceAction {
+  /**
+   * Attempts to activate an instance of the template. If a duration is passed, it may be used to
+   * determine the initial length of the device reservation, if applicable. If duration is null, a
+   * default duration value will be used if needed.
+   *
+   * If the operation is successful, the resulting device should be returned.
+   *
+   * If we fail to activate a device, a [DeviceActionException] should be thrown, with a
+   * user-appropriate message. An underlying exception may be passed as the cause.
+   */
+  suspend fun activate(duration: Duration? = null): DeviceHandle
+
+  /** Indicates if the duration argument is relevant. */
+  val durationUsed: Boolean
+}
+
+/**
+ * Indicates a failure in performing a device action.
+ *
+ * @param message a user-visible statement of what went wrong
+ * @param cause the underlying exception; not displayed to user
+ */
+class DeviceActionException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * Indicates that the device action was called when it is not enabled. This may be unavoidable due
+ * to race conditions; callers should recover gracefully.
+ */
+class DeviceActionDisabledException(action: DeviceAction) :
+  Exception("The \"${action.label}\" action is unavailable.")
