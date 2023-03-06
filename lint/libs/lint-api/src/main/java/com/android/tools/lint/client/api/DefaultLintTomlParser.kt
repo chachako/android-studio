@@ -555,7 +555,7 @@ internal class DefaultLintTomlParser(
   }
 
   private inner class TomlDocument : LintTomlDocument {
-    val root: TomlMapValue = TomlMapValue(null, endOffset = source.length)
+    val root: TomlMapValue = TomlMapValue(null, startOffset = 0, endOffset = source.length)
 
     override fun getFile(): File {
       return file

@@ -1152,6 +1152,20 @@ class LintTomlParserTest {
     assertEquals(16, location.end!!.offset)
   }
 
+  @Test
+  fun testRootElementLocation() {
+    val toml =
+      """
+      [bundles]
+      gr = 1
+      """
+        .trimIndent()
+    val res = parseToml(File("test.toml"), toml, false)
+    val location = res.document.getRoot().getFullLocation()
+    assertEquals(0, location.start!!.offset)
+    assertEquals(16, location.end!!.offset)
+  }
+
   // ------------------------------------------------
   // Test fixtures only below
   // ------------------------------------------------
