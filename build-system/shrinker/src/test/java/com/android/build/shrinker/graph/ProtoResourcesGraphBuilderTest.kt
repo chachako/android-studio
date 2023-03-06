@@ -30,6 +30,7 @@ import com.android.build.shrinker.util.addType
 import com.android.build.shrinker.util.arrayEntry
 import com.android.build.shrinker.util.buildResourceTable
 import com.android.build.shrinker.util.externalFile
+import com.android.build.shrinker.util.idEntry
 import com.android.build.shrinker.util.pluralsEntry
 import com.android.build.shrinker.util.stringEntry
 import com.android.build.shrinker.util.writeToFile
@@ -387,6 +388,69 @@ class ProtoResourcesGraphBuilderTest {
         assertThat(model.referencesFor(0x10003)).containsExactly("drawable_1")
         assertThat(messages)
             .containsExactly("File 'res/raw/html.html' can not be processed. Skipping.")
+    }
+
+    @Test
+    fun test_constraint_referenced_ids() {
+        val model = ResourceShrinkerModel(NoDebugReporter, false)
+        model.addResource(STRING, PACKAGE_NAME, "string1", 1)
+        val kept1 = 0x10001
+        val kept2 = 0x10002
+        val kept3 = 0x10003
+        val kept4 = 0x10004
+        val kept5 = 0x10005
+        model.addResource(ID, PACKAGE_NAME, "constraint_referenced_id1", kept1)
+        model.addResource(ID, PACKAGE_NAME, "constraint_referenced_id2", kept2)
+        model.addResource(ID, PACKAGE_NAME, "constraint_referenced_id3", kept3)
+        model.addResource(ID, PACKAGE_NAME, "constraint_referenced_id4", kept4)
+        model.addResource(ID, PACKAGE_NAME, "constraint_referenced_id5", kept5)
+        val nonKeptIdResourceId = 0x10006
+        model.addResource(ID, PACKAGE_NAME, "android_id_only", nonKeptIdResourceId)
+        model.addResource(MENU, PACKAGE_NAME, "my_menu", 0x20001)
+
+        val table = createResourceTable {
+            it.addType(
+                0,
+                "id",
+                idEntry(1, "constraint_referenced_id"),
+                idEntry(2, "android_id_only")
+            )
+            it.addType(
+                1,
+                "menu",
+                xmlFile(1, "my_menu", "res/menu/my_menu.xml")
+            )
+        }
+        xmlElement("menu")
+            .addNamespace("android", ANDROID_NS)
+            .addChild(
+                xmlElement("item1")
+                    .addAttribute("constraint_referenced_ids",
+                                  value ="constraint_referenced_id1")
+            )
+            .addChild(
+                xmlElement("item1")
+                    .addAttribute("constraint_referenced_ids",
+                                  value ="constraint_referenced_id2,constraint_referenced_id3")
+            )
+            .addChild(
+                xmlElement("item1")
+                    // Ensure that we support spaces in the list
+                    .addAttribute("constraint_referenced_ids",
+                                  value ="constraint_referenced_id4 ,  constraint_referenced_id5")
+            )
+            .writeToFile(temporaryFolder.root.toPath().resolve("res/menu/my_menu.xml"))
+
+        ProtoResourcesGraphBuilder(temporaryFolder.root.toPath().resolve("res"), table.toPath())
+            .buildGraph(model)
+
+        assertThat(model.resourceStore.getResource(kept1)!!.isReachable).isTrue()
+        assertThat(model.resourceStore.getResource(kept2)!!.isReachable).isTrue()
+        assertThat(model.resourceStore.getResource(kept3)!!.isReachable).isTrue()
+        assertThat(model.resourceStore.getResource(kept4)!!.isReachable).isTrue()
+        assertThat(model.resourceStore.getResource(kept5)!!.isReachable).isTrue()
+
+        assertThat(model.resourceStore.getResource(nonKeptIdResourceId)!!.isReachable).isFalse()
     }
 
     fun createResourceTable(fn: (Package.Builder) -> Package.Builder): File {
