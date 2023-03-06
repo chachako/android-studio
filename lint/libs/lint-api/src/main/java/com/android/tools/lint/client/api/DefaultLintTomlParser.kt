@@ -223,6 +223,42 @@ internal class DefaultLintTomlParser(
     return true
   }
 
+  private fun parseArrayElements(
+    parent: TomlArrayValue,
+  ): TomlArrayValue {
+    while (offset < length) {
+      val elementStart = skipToNextToken(false)
+      val elementToken = getToken()
+      if (elementToken == ",") {
+        continue
+      } else if (elementToken == "{") {
+        // Inline table -- https://toml.io/en/v1.0.0#inline-table
+        val map = TomlMapValue(parent, elementStart, offset)
+        parseMapElements(map, inInlineTable = true)
+        map.setEndOffset(offset)
+        parent.add(map)
+        continue
+      } else if (elementToken == "[") {
+        val array = TomlArrayValue(parent, elementStart, offset)
+        parseArrayElements(array)
+        array.setEndOffset(offset)
+        parent.add(array)
+        continue
+      }
+      val element = elementToken.removeSuffix(",")
+      if (element == "]") {
+        break
+      }
+
+      if (validate) {
+        validateLiteralValue(element, elementStart)
+      }
+      val value = TomlLiteralValue(parent, element, elementStart, offset)
+      parent.add(value)
+    }
+    return parent
+  }
+
   private fun parseValue(
     parent: TomlMapValue,
     key: String,
@@ -244,30 +280,7 @@ internal class DefaultLintTomlParser(
     } else if (token == "[") {
       val arrayStart = skipToNextToken(false)
       val arrayValue = TomlArrayValue(parent, arrayStart, offset, key, keyStart, keyEnd, true)
-      while (offset < length) {
-        val elementStart = skipToNextToken(false)
-        val elementToken = getToken()
-        if (elementToken == ",") {
-          continue
-        } else if (elementToken == "{") {
-          // Inline table -- https://toml.io/en/v1.0.0#inline-table
-          val map = TomlMapValue(arrayValue, elementStart, offset)
-          parseMapElements(map, inInlineTable = true)
-          map.setEndOffset(offset)
-          arrayValue.add(map)
-          continue
-        }
-        val element = elementToken.removeSuffix(",")
-        if (element == "]") {
-          break
-        }
-
-        if (validate) {
-          validateLiteralValue(element, elementStart)
-        }
-        val value = TomlLiteralValue(arrayValue, element, elementStart, offset)
-        arrayValue.add(value)
-      }
+      parseArrayElements(arrayValue)
       arrayValue.setEndOffset(offset)
       return arrayValue
     } else {

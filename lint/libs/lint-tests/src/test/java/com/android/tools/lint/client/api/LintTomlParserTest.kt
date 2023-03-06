@@ -1166,6 +1166,19 @@ class LintTomlParserTest {
     assertEquals(16, location.end!!.offset)
   }
 
+  @Test
+  fun testNestedArrays() {
+    val toml =
+      """
+        [libraries]
+        data = [ [ "delta", "phi" ], [ 3.14 ] ]
+      """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("data" to listOf(listOf("delta", "phi"), listOf(3.14))))
+    doTest(toml, expected)
+  }
+
   // ------------------------------------------------
   // Test fixtures only below
   // ------------------------------------------------
