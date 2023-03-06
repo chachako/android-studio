@@ -55,15 +55,11 @@ internal class DefaultLintTomlParser(
     onProblem?.invoke(Severity.WARNING, Location.create(file, source, at, at), message)
   }
 
-  private fun parseMap(
-    parent: TomlMapValue,
-    initialCurrentArray: List<String> = emptyList(),
-    inInlineTable: Boolean = false
-  ): TomlMapValue? {
+  private fun parseMap(parent: TomlMapValue, inInlineTable: Boolean = false): TomlMapValue {
     val mapStart = offset
-    var currentArray = initialCurrentArray
+    var currentArray: List<String>
 
-    var target: TomlMapValue = parent.create(currentArray, validate)
+    var target: TomlMapValue = parent
     var lastValue: TomlValue? = null
 
     while (offset < length) {
@@ -204,13 +200,11 @@ internal class DefaultLintTomlParser(
               target
             }
           val value = parseValue(into, key, keyStart, keyEnd, valueStart)
-          if (value != null) {
-            if (validate && into.map[key] != null && into.map[key] !is TomlMapValue) {
-              warn("Defining a key (`$key`) multiple times is invalid", offset)
-            }
-            value.setKeyRange(keyStart, keyEnd)
-            into.put(key, value)
+          if (validate && into.map[key] != null && into.map[key] !is TomlMapValue) {
+            warn("Defining a key (`$key`) multiple times is invalid", offset)
           }
+          value.setKeyRange(keyStart, keyEnd)
+          into.put(key, value)
           lastValue = value
         }
       }
@@ -235,7 +229,7 @@ internal class DefaultLintTomlParser(
     keyStart: Int,
     keyEnd: Int,
     valueStart: Int
-  ): TomlValue? {
+  ): TomlValue {
     val token = getToken(breakOnDot = false)
     if (token == "{") {
       // Inline table -- https://toml.io/en/v1.0.0#inline-table
@@ -246,7 +240,7 @@ internal class DefaultLintTomlParser(
         )
       }
       val target = parent.create(key)
-      return parseMap(target, emptyList(), inInlineTable = true)
+      return parseMap(target, inInlineTable = true)
     } else if (token == "[") {
       val arrayStart = skipToNextToken(false)
       val arrayValue = TomlArrayValue(parent, arrayStart, offset, key, keyStart, keyEnd, true)
@@ -258,11 +252,9 @@ internal class DefaultLintTomlParser(
         } else if (elementToken == "{") {
           // Inline table -- https://toml.io/en/v1.0.0#inline-table
           val map = TomlMapValue(arrayValue, elementStart, offset)
-          val element = parseMap(map, inInlineTable = true)
+          parseMap(map, inInlineTable = true)
           map.setEndOffset(offset)
-          if (element != null) {
-            arrayValue.add(map)
-          }
+          arrayValue.add(map)
           continue
         }
         val element = elementToken.removeSuffix(",")
