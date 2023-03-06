@@ -16,20 +16,22 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.AdbDeviceServices
-import com.android.adblib.AdbSessionHost
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.DeviceState
-import com.android.adblib.scope
-import com.android.adblib.tools.debugging.impl.AppProcessTrackerImpl
+import com.android.adblib.deviceProperties
 import com.android.adblib.flowWhenOnline
 import com.android.adblib.property
-import com.android.adblib.tools.AdbLibToolsProperties
+import com.android.adblib.scope
+import com.android.adblib.selector
+import com.android.adblib.serialNumber
+import com.android.adblib.thisLogger
 import com.android.adblib.tools.AdbLibToolsProperties.APP_PROCESS_TRACKER_RETRY_DELAY
+import com.android.adblib.tools.debugging.impl.AppProcessTrackerImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import java.time.Duration
+import kotlinx.coroutines.flow.first
 
 /**
  * Tracks the list of active [AppProcess] processes on a given [ConnectedDevice].
@@ -108,3 +110,22 @@ val ConnectedDevice.appProcessFlow: Flow<List<AppProcess>>
     get() = flowWhenOnline(session.property(APP_PROCESS_TRACKER_RETRY_DELAY)) {
         it.appProcessTracker.appProcessFlow
     }
+
+suspend fun ConnectedDevice.isAppProcessTrackerSupported(): Boolean {
+    // Only supported on API 31+ (Android "S")
+    if (deviceProperties().api() < 31) {
+        return false
+    }
+
+    // Check `track-app` works at least once in case there is a problem with it
+    return runCatching {
+        session.deviceServices.trackApp(selector).first()
+        true
+    }.onFailure { throwable ->
+        thisLogger(session).warn(
+            throwable,
+            "There was an error invoking the `track-app` service on device $serialNumber, " +
+                    "falling back to `track-jdwp`"
+        )
+    }.getOrDefault(false)
+}

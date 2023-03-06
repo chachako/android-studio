@@ -22,12 +22,11 @@ import com.android.adblib.DeviceSelector
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.ddmlibcompatibility.AdbLibDdmlibCompatibilityProperties.DEVICE_TRACKER_WAIT_TIMEOUT
 import com.android.adblib.ddmlibcompatibility.debugging.ProcessTrackerHost.ClientUpdateKind
-import com.android.adblib.deviceProperties
 import com.android.adblib.property
 import com.android.adblib.scope
-import com.android.adblib.selector
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.debugging.isAppProcessTrackerSupported
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
@@ -116,7 +115,7 @@ internal class AdbLibDeviceClientManager(
 
     private suspend fun launchProcessTracking(device: ConnectedDevice) {
         val host = ProcessTrackerHostImpl(device)
-        if (trackAppIsSupported(device)) {
+        if (device.isAppProcessTrackerSupported()) {
             AppProcessTracker(host).startTracking()
         } else {
             JdwpTracker(host).startTracking()
@@ -148,27 +147,6 @@ internal class AdbLibDeviceClientManager(
             processed.complete(Unit)
         }
         return processed
-    }
-
-    private suspend fun trackAppIsSupported(device: ConnectedDevice): Boolean {
-        // Only supported on API 31+ (Android "S")
-        if (device.deviceProperties().api() < 31) {
-            return false
-        }
-
-        // Check `track-app` works at least once in case there is a problem with it
-        // b/266699981: This also helps with making tests pass until FakeAdbServer
-        // supports `track-app`.
-        return runCatching {
-            device.session.deviceServices.trackApp(device.selector).first()
-            true
-        }.onFailure { throwable ->
-            logger.warn(
-                throwable,
-                "There was an error invoking the `track-app` service on this " +
-                        "device, falling back to `track-jdwp`"
-            )
-        }.getOrDefault(false)
     }
 
     class DdmlibEventQueue(logger: AdbLogger, name: String) {
