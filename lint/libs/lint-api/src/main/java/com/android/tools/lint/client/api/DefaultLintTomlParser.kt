@@ -77,6 +77,7 @@ internal class DefaultLintTomlParser(
           // (if we were in a value this would be an array, https://toml.io/en/v1.0.0#array)
           // if we are in an inline table, this is invalid
           val start = offset - 1
+          val keyStart = offset
           currentArray = parseKey() ?: emptyList()
 
           val keyEnd = offset
@@ -102,6 +103,9 @@ internal class DefaultLintTomlParser(
           target = parent.create(currentArray, validate)
           if (target.getStartOffset() == -1) {
             target.setStartOffset(start)
+            if (target.getKey() != null) {
+              target.setKeyRange(keyStart, keyEnd)
+            }
           }
         }
         "[[" -> {
@@ -686,7 +690,8 @@ internal class DefaultLintTomlParser(
       return Location.create(
         file,
         source,
-        if (key != null) keyStartOffset else startOffset,
+        if (key != null && keyStartOffset > -1 && keyStartOffset < startOffset) keyStartOffset
+        else startOffset,
         endOffset
       )
     }
