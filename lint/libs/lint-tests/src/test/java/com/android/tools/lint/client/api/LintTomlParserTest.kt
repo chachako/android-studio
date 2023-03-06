@@ -331,14 +331,14 @@ class LintTomlParserTest {
                 oct1=0o01234567, Long = 342391
                 oct2=0o755, Long = 493
                 bin1=0b11010110, Long = 214
-                flt1=+1.0, Float = 1.0
-                flt2=3.1415, Float = 3.1415
-                flt3=-0.01, Float = -0.01
+                flt1=+1.0, Double = 1.0
+                flt2=3.1415, Double = 3.1415
+                flt3=-0.01, Double = -0.01
                 flt4=5e+22, Double = 4.9999999999999996E22
                 flt5=1e06, Double = 1000000.0
                 flt6=-2E-2, Double = -0.02
                 flt7=6.626e-34, Double = 6.626E-34
-                flt8=224_617.445_991_228, Float = 224617.45
+                flt8=224_617.445_991_228, Double = 224617.445991228
                 sf1=inf, Double = Infinity
                 sf2=+inf, Double = Infinity
                 sf3=-inf, Double = -Infinity

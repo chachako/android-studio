@@ -978,11 +978,7 @@ internal class DefaultLintTomlParser(
           if (text.contains('e', true)) {
             return digits.toDouble()
           } else if (text.contains('.')) {
-            return try {
-              digits.toFloat()
-            } catch (e: NumberFormatException) {
-              digits.toDouble()
-            }
+            return digits.toDouble()
           }
           return try {
             digits.toInt()
