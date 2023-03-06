@@ -1126,6 +1126,18 @@ class LintTomlParserTest {
     doTest(toml, expected)
   }
 
+  @Test
+  fun testInvalidFuzzed1() {
+    @Language("TEXT")
+    val toml =
+      """
+      [bundles]
+      g]r = [[abc]"gr-c", "gr-j", { na = "gr-n" } ]
+      """
+        .trimIndent()
+    parseToml(File("test.toml"), toml, true)
+  }
+
   // ------------------------------------------------
   // Test fixtures only below
   // ------------------------------------------------

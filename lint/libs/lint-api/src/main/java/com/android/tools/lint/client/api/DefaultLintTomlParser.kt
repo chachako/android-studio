@@ -577,7 +577,7 @@ internal class DefaultLintTomlParser(
   private open inner class TomlValue(
     val parent: TomlValue?,
     private var startOffset: Int = -1,
-    private var endOffset: Int = -1,
+    private var endOffset: Int = parent?.getEndOffset() ?: -1,
     private var key: String? = null,
     private var keyStartOffset: Int = -1,
     private var keyEndOffset: Int = -1
@@ -724,7 +724,7 @@ internal class DefaultLintTomlParser(
   private inner class TomlMapValue(
     parent: TomlValue?,
     startOffset: Int = -1,
-    endOffset: Int = -1,
+    endOffset: Int = parent?.getEndOffset() ?: -1,
     key: String? = null,
     keyStartOffset: Int = -1,
     keyEndOffset: Int = -1
@@ -891,7 +891,7 @@ internal class DefaultLintTomlParser(
   private inner class TomlArrayValue(
     parent: TomlValue?,
     startOffset: Int = -1,
-    endOffset: Int = -1,
+    endOffset: Int = parent?.getEndOffset() ?: -1,
     key: String? = null,
     keyStartOffset: Int = -1,
     keyEndOffset: Int = -1,
@@ -922,7 +922,7 @@ internal class DefaultLintTomlParser(
     parent: TomlValue?,
     private val text: String,
     startOffset: Int = -1,
-    endOffset: Int = -1,
+    endOffset: Int = parent?.getEndOffset() ?: -1,
     key: String? = null,
     keyStartOffset: Int = -1,
     keyEndOffset: Int = -1,
