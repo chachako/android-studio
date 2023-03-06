@@ -141,7 +141,9 @@ class BuiltArtifactsImpl @JvmOverloads constructor(
                                     attributes = builtArtifact.attributes
 
                             )
-                        }.toList(),
+                        }
+                        .sortedBy { it.outputFile } // sort after converting path to relative
+                        .toList(),
                 elementType())
         return StringWriter().also {
             JsonWriter(it).use { jsonWriter ->
