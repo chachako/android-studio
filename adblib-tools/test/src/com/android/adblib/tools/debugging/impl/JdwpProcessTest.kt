@@ -208,27 +208,27 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertProcessPropertiesComplete(properties)
     }
 
+    /**
+     * Regression test for [b/271466829](https://issuetracker.google.com/issues/271466829)
+     */
     @Test
-    fun startMonitoringDoesNotEndEarlyIfWaitForDebugger() = runBlockingWithTimeout {
+    fun startMonitoringDoesNotReleaseJdwpSessionIfWaitForDebugger() = runBlockingWithTimeout {
         // Prepare
         val (_, _, process) = createJdwpProcess(waitForDebugger = true)
 
-        // Act:
-        // Even if the AndroidVM sends a "WAIT" packet, collecting the process properties
-        // should not complete until the timeout is reached
-        val timeout = Duration.ofSeconds(2)
+        // Act: When the AndroidVM sends a "WAIT" packet, "completed" is set early,
+        // but the SharedJDWPSession should be retained
         setHostPropertyValue(
             process.device.session.host,
             AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
-            timeout
+            Duration.ofSeconds(60) // long timeout
         )
-        val start = Instant.now()
         process.startMonitoring()
         yieldUntil { process.properties.completed }
-        val waitTime = Duration.between(start, Instant.now())
+        delay(500) // give JDWP session holder time to launch
 
-        // Assert: We waited (close to) "timeout" for "completed" to get set
-        assertTrue(timeoutExceeded(waitTime, timeout))
+        // Assert: The JDWP session should still be in-use, since we received a `WAIT` packet
+        assertTrue(process.isJdwpSessionRetained)
     }
 
     @Test

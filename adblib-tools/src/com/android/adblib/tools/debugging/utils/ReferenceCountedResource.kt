@@ -18,6 +18,7 @@ package com.android.adblib.tools.debugging.utils
 import com.android.adblib.AdbSession
 import com.android.adblib.AutoShutdown
 import com.android.adblib.thisLogger
+import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.useShutdown
 import com.android.adblib.utils.createChildScope
 import kotlinx.coroutines.CoroutineScope
@@ -80,6 +81,12 @@ internal class ReferenceCountedResource<T : AutoShutdown>(
     private var currentFactoryJob: Deferred<T>? = null
 
     private var closed: Boolean = false
+
+    /**
+     * Whether the resource currently in use (testing only)
+     */
+    internal val isRetained: Boolean
+        get() = referenceCount > 0
 
     /**
      * Increment the reference count, after creating an new instance of the resource if

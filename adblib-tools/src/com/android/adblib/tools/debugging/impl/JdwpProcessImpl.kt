@@ -76,9 +76,15 @@ internal class JdwpProcessImpl(
             }
     }
 
-    private val propertyCollector = JdwpProcessPropertiesCollector(device, pid, jdwpSessionRef)
+    private val propertyCollector = JdwpProcessPropertiesCollector(device, scope, pid, jdwpSessionRef)
 
     private val jdwpSessionProxy = JdwpSessionProxy(device, pid, jdwpSessionRef)
+
+    /**
+     * Whether the [SharedJdwpSession] is currently in use (testing only)
+     */
+    val isJdwpSessionRetained: Boolean
+        get() = jdwpSessionRef.isRetained
 
     fun startMonitoring() {
         scope.launch {

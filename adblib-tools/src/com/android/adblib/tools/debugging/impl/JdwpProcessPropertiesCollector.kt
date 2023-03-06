@@ -51,11 +51,15 @@ import com.android.adblib.tools.debugging.utils.withResource
 import com.android.adblib.utils.ResizableBuffer
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.io.EOFException
 import java.nio.ByteBuffer
@@ -65,6 +69,7 @@ import java.nio.ByteBuffer
  */
 internal class JdwpProcessPropertiesCollector(
     private val device: ConnectedDevice,
+    private val processScope: CoroutineScope,
     private val pid: Int,
     private val jdwpSessionRef: ReferenceCountedResource<SharedJdwpSession>
 ) {
@@ -172,12 +177,13 @@ internal class JdwpProcessPropertiesCollector(
         jdwpSessionRef.withResource { jdwpSession ->
             collectWithSession(jdwpSession, collectState)
 
-            // See b/271466829: We need to keep the JDWP session open until
-            // the debugger attaches to the Android process.
             if (collectState.hasCollectedEverything) {
                 if (collectState.waitReceived) {
-                    logger.debug { "Keeping JDWP session open until debugger connects" }
-                    delay(session.property(PROCESS_PROPERTIES_READ_TIMEOUT).toMillis())
+                    // See b/271466829: We need to keep the JDWP session open until an external
+                    // debugger attaches to the Android process, because a JDWP session in a
+                    // `WAIT` state needs to remain open until at least one "real" JDWP command
+                    // is sent to eh Android debugger.
+                    launchJdwpSessionHolder(collectState.propertiesFlow)
                 }
             }
         }
@@ -404,6 +410,36 @@ internal class JdwpProcessPropertiesCollector(
         }
     }
 
+    private suspend fun launchJdwpSessionHolder(propertiesFlow: AtomicStateFlow<JdwpProcessProperties>) {
+        logger.debug { "JDWP session holder: launching coroutine" }
+        val deferred = CompletableDeferred<Unit>()
+        processScope.launch {
+            jdwpSessionRef.withResource {
+                logger.debug { "JDWP session holder: JDWP session has been acquired" }
+
+                // Ok to exit function now, as session has been acquired
+                deferred.complete(Unit)
+
+                // Wait until a debugger is attached, then keep session open as long as
+                // debugger is attached. This gives time for the external debugger
+                // to acquire its own SharedJdwpSession and keep it open as long as
+                // it is active. If/when the external debugger detaches from the process,
+                // we also release the SharedJdwpSession in case another debug session
+                // needs to be started later on.
+                with(propertiesFlow.asStateFlow()) {
+                    waitUntil { jdwpSessionProxyStatus.isExternalDebuggerAttached }
+                    waitWhile { jdwpSessionProxyStatus.isExternalDebuggerAttached }
+                }
+
+                logger.debug { "JDWP session holder: JDWP session about to be released as debugger has detached" }
+            }
+        }
+
+        // Wait until session has been acquired
+        deferred.await()
+        logger.debug { "JDWP session holder: successfully started" }
+    }
+
     private suspend fun <R> processJdwpPacket(
         packet: JdwpPacketView,
         packetName: String,
@@ -429,6 +465,16 @@ internal class JdwpProcessPropertiesCollector(
         } catch (t: Throwable) {
             throw JdwpProtocolErrorException("Invalid '$packetName' ddms packet: unsupported format", t)
         }
+    }
+
+    private suspend fun <T> StateFlow<T>.waitUntil(predicate: T.() -> Boolean) {
+        if (!value.predicate()) {
+            first { it.predicate() }
+        }
+    }
+
+    private suspend fun <T> StateFlow<T>.waitWhile(predicate: T.() -> Boolean) {
+        takeWhile { it.predicate() }.collect()
     }
 
     /**
