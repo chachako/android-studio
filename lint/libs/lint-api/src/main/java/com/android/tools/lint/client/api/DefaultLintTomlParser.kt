@@ -67,7 +67,7 @@ internal class DefaultLintTomlParser(
       if (offset == length) {
         break
       }
-      when (val token = getToken()) {
+      when (val token = getToken(arrayTableAllowed = !inInlineTable)) {
         "[" -> {
           // Table -- https://toml.io/en/v1.0.0#table
           // (if we were in a value this would be an array, https://toml.io/en/v1.0.0#array)
@@ -93,6 +93,7 @@ internal class DefaultLintTomlParser(
             if (validate) {
               warn("cannot define a table in an inline table", start)
             }
+            offset = keyStart
             continue
           }
 
@@ -107,11 +108,12 @@ internal class DefaultLintTomlParser(
         "[[" -> {
           // Array of tables -- https://toml.io/en/v1.0.0#array-of-tables
           // if we are in an inline table, this is invalid
-          val start = offset - 1
+          val start = offset - 2
+          val keyStart = offset
           currentArray = parseKey() ?: emptyList()
 
           val keyEnd = offset
-          val close = getToken()
+          val close = getToken(arrayTableAllowed = true)
           if (validate) {
             if (close != "]]") {
               warn("= missing ]]`", keyEnd)
@@ -122,6 +124,7 @@ internal class DefaultLintTomlParser(
             if (validate) {
               warn("cannot define an array of tables in an inline table", start)
             }
+            offset = keyStart
             continue
           }
 
@@ -162,6 +165,15 @@ internal class DefaultLintTomlParser(
         }
         "," -> {
           // processing inline table entries
+          continue
+        }
+        "]",
+        "]]" -> {
+          // invalid states.
+          if (validate) {
+            warn("Close found without a corresponding open: `$token`", offset - token.length)
+          }
+          // attempt to resynchronize
           continue
         }
         else -> {
@@ -354,21 +366,25 @@ internal class DefaultLintTomlParser(
     }
   }
 
-  private fun getToken(breakAtNewline: Boolean = false, breakOnDot: Boolean = true): String {
+  private fun getToken(
+    breakAtNewline: Boolean = false,
+    breakOnDot: Boolean = true,
+    arrayTableAllowed: Boolean = false
+  ): String {
     skipToNextToken(breakAtNewline)
     if (offset == length || breakAtNewline && source[offset] == '\n') {
       return ""
     }
     when (source[offset++]) {
       '[' -> {
-        if (source.startsWith("[", offset)) {
+        if (arrayTableAllowed && source.startsWith("[", offset)) {
           offset += 1
           return "[["
         }
         return "["
       }
       ']' -> {
-        if (source.startsWith("]", offset)) {
+        if (arrayTableAllowed && source.startsWith("]", offset)) {
           offset += 1
           return "]]"
         }

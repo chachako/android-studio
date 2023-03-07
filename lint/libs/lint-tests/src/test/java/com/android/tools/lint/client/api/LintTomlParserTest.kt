@@ -662,7 +662,7 @@ class LintTomlParserTest {
       ),
       Case(
         "# INVALID TOML DOC\n" + "fruits = []\n" + "\n" + "[[fruits]] # Not allowed",
-        "test.toml: 3:1: Warning: Attempting to append to a statically defined array is not allowed"
+        "test.toml: 3:0: Warning: Attempting to append to a statically defined array is not allowed"
       ),
       Case(
         "# INVALID TOML DOC\n" +
@@ -676,6 +676,14 @@ class LintTomlParserTest {
           "[fruits.varieties]",
         "test.toml: 8:0: Warning: You cannot define a table (`fruits.varieties`) more than once\n" +
           "test.toml: 2:0: Warning: Table `fruits` already specified as a value"
+      ),
+      Case(
+        "# Invalid TOML DOC\n" + "[floats]\n" + "flt3 = 2.718\n" + "]",
+        "test.toml: 3:0: Warning: Close found without a corresponding open: `]`"
+      ),
+      Case(
+        "# Invalid TOML DOC\n" + "[floats]\n" + "flt3 = 2.718\n" + "]]",
+        "test.toml: 3:0: Warning: Close found without a corresponding open: `]]`"
       ),
     )
   }
@@ -1172,6 +1180,19 @@ class LintTomlParserTest {
       """
         [libraries]
         data = [ [ "delta", "phi" ], [ 3.14 ] ]
+      """
+        .trimIndent()
+    val expected =
+      mapOf("libraries" to mapOf("data" to listOf(listOf("delta", "phi"), listOf(3.14))))
+    doTest(toml, expected)
+  }
+
+  @Test
+  fun testNestedArraysNoWhitespace() {
+    val toml =
+      """
+        [libraries]
+        data = [["delta","phi"],[3.14]]
       """
         .trimIndent()
     val expected =
