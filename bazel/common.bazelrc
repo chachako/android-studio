@@ -8,9 +8,9 @@ common --enable_platform_specific_config
 # Remote Build Execution requires a strong hash function, such as SHA256.
 startup --host_jvm_args=-Dbazel.DigestFunction=SHA256
 
-# resource_jars are removed in Bazel 5.0, prevent new usages from being added.
-# Once Bazel is upgraded (b/220902606) this can be removed.
-build --incompatible_disallow_resource_jars
+# Building runfile trees is unnecessary, unless executing binaries in bazel-bin/ manually (use 'bazel run' instead)
+# See: https://github.com/bazelbuild/bazel/commit/03246077f948f2790a83520e7dccc2625650e6df
+build --nobuild_runfile_links
 
 # Enforces UTF-8 encoding in bazel tests.
 test --test_env='LC_ALL=en_US.UTF-8'
@@ -128,9 +128,6 @@ build:_remote_base --bes_timeout=240s
 build:_remote_base --google_default_credentials
 build:_remote_base --remote_cache=remotebuildexecution.googleapis.com
 build:_remote_base --remote_instance_name=projects/google.com:android-studio-alphasource/instances/default_instance
-# Building runfile trees is unnecessary, unless executing binaries in bazel-bin/ manually (use 'bazel run' instead)
-# See: https://github.com/bazelbuild/bazel/commit/03246077f948f2790a83520e7dccc2625650e6df
-build:_remote_base --nobuild_runfile_links
 # Input file attribute affects the output of zipper. It should always run
 # locally (b/198297058#comment42)
 build:_remote_base --strategy=zipper=local
