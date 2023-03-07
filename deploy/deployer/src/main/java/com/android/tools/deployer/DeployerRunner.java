@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -86,7 +85,7 @@ public class DeployerRunner {
                         MOBILE_INSTALL_DEFAULTS,
                         new File(DEPLOY_DB_PATH),
                         new File(DEX_DB_PATH),
-                        new CommandLineService());
+                        new AlwaysYesService());
         return runner.run(args);
     }
 
@@ -336,18 +335,14 @@ public class DeployerRunner {
         }
     }
 
-    static class CommandLineService implements UIService {
+    // MI has no way for users to respond to a prompt; just always proceed.
+    static class AlwaysYesService implements UIService {
         @Override
-        public boolean prompt(String message) {
-            System.err.println(message + ". Y/N?");
-            try (Scanner scanner = new Scanner(System.in)) {
-                return scanner.nextLine().equalsIgnoreCase("y");
-            }
+        public boolean prompt(String result) {
+            return true;
         }
 
         @Override
-        public void message(String message) {
-            System.err.println(message);
-        }
+        public void message(String message) {}
     }
 }
