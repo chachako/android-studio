@@ -89,16 +89,20 @@ import com.android.build.gradle.options.SyncOptions
 import com.android.repository.Revision
 import com.android.tools.r8.Version
 import com.google.common.collect.Maps
+import org.gradle.api.Action
 import org.gradle.api.ActionConfiguration
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
+import org.gradle.api.specs.Spec
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
 
@@ -538,10 +542,17 @@ class DependencyConfigurator(
                         params.kotlinCompiler.from(kotlinCompiler)
                         params.requireServices.set(
                                 projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES])
-                        params.runtimeDependencies.from(project.configurations.detachedConfiguration(
+                        val configuration = project.configurations.detachedConfiguration(
                                 *runtimeDependenciesForShimSdk.map {
                                     project.dependencies.create(it)
-                                }.toTypedArray()))
+                                }.toTypedArray())
+                        params.runtimeDependencies.from(configuration.incoming.artifactView { config: ArtifactView.ViewConfiguration ->
+                            config.attributes { container: AttributeContainer ->
+                                container.attribute(AndroidArtifacts.ARTIFACT_TYPE,
+                                        AndroidArtifacts.ArtifactType.CLASSES_JAR.type)
+                            }
+                            config.componentFilter { true }
+                        }.artifacts.artifactFiles.files)
                     }
 
             fun registerExtractSdkShimTransform(usage: String) {
