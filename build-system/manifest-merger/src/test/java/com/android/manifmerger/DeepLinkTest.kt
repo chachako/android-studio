@@ -89,7 +89,8 @@ class DeepLinkTest {
 
         assertThat(DeepLink.fromUri("\${foo}", UNKNOWN, false).host).isEqualTo("\${foo}")
 
-        assertThat(DeepLink.fromUri("*.example.com", UNKNOWN, false).host).isNull()
+        // Regression test for b/268128036
+        assertThat(DeepLink.fromUri("*.example.com", UNKNOWN, false).host).isEqualTo("*.example.com")
 
         assertThat(DeepLink.fromUri("file:///foo", UNKNOWN, false).host).isNull()
 
@@ -101,6 +102,13 @@ class DeepLinkTest {
 
         try {
             DeepLink.fromUri("http://www.{placeholder}.com", UNKNOWN, false)
+            fail("Expecting DeepLinkException")
+        } catch (e: DeepLinkException) {
+            // should throw DeepLinkException because host wildcards must be at beginning of host
+        }
+
+        try {
+            DeepLink.fromUri("http://www.*.com", UNKNOWN, false)
             fail("Expecting DeepLinkException")
         } catch (e: DeepLinkException) {
             // should throw DeepLinkException because host wildcards must be at beginning of host
@@ -163,6 +171,10 @@ class DeepLinkTest {
 
         assertThat(DeepLink.fromUri("file:/foo\${foo}", UNKNOWN, false).path)
             .isEqualTo("/foo\${foo}")
+
+        // Not explicitly supported, but won't break users who are using this pattern with fix for
+        // b/268128036
+        assertThat(DeepLink.fromUri("file:/fo*", UNKNOWN, false).path).isEqualTo("/fo*")
     }
 
     @Test

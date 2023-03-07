@@ -131,6 +131,7 @@ data class DeepLink(
                 val openBracketEncoder = chooseEncoder(uri, 'c', 'd')
                 val closeBracketEncoder = chooseEncoder(uri, 'e', 'f')
                 val wildcardEncoder = chooseEncoder(uri, 'g', 'h')
+                val hostWildcardEncoder = chooseEncoder(uri, 'i', 'j')
                 // If encodedUri doesn't contain regex "^[^/]*:/" (which would indicate it contains
                 // a scheme) or start with "/" (which would indicate it's just a path), then we want
                 // the first part of the uri to be interpreted as the host, but java.net.URI will
@@ -140,6 +141,7 @@ data class DeepLink(
                         .replace(OPEN_BRACKET, openBracketEncoder)
                         .replace(CLOSE_BRACKET, closeBracketEncoder)
                         .replace(WILDCARD, wildcardEncoder)
+                        .replace(HOST_WILDCARD, hostWildcardEncoder)
                         .let {
                             if (!Pattern.compile("^[^/]*:/").matcher(it).find()
                                     && !it.startsWith("/")) {
@@ -182,7 +184,8 @@ data class DeepLink(
                 val schemes = when {
                     decodedScheme == null -> DEFAULT_SCHEMES
                     PATH_WILDCARD.containsMatchIn(decodedScheme) ||
-                            wildcardEncoder in decodedScheme ->
+                            wildcardEncoder in decodedScheme ||
+                            hostWildcardEncoder in decodedScheme ->
                         throw DeepLinkException(
                             "Improper use of wildcards and/or placeholders in deeplink URI scheme")
                     else -> ImmutableList.of(decodedScheme)
@@ -198,6 +201,8 @@ data class DeepLink(
                     decodedHost?.let {
                         if (it.startsWith(wildcardEncoder)) {
                             HOST_WILDCARD + it.substring(wildcardEncoder.length)
+                        } else if (it.startsWith(hostWildcardEncoder)) {
+                            HOST_WILDCARD + it.substring(hostWildcardEncoder.length)
                         } else {
                             it
                         }
@@ -220,6 +225,7 @@ data class DeepLink(
                             .replace(closeBracketEncoder, CLOSE_BRACKET)
                             .replace(PATH_WILDCARD, WILDCARD)
                             .replace(wildcardEncoder, WILDCARD)
+                            .replace(hostWildcardEncoder, HOST_WILDCARD)
                             .let {
                                 if (it.startsWith("/")) it else "/" + it
                             }
@@ -231,6 +237,8 @@ data class DeepLink(
                         ?.replace(openBracketEncoder, OPEN_BRACKET)
                         ?.replace(closeBracketEncoder, CLOSE_BRACKET)
                         ?.replace(PATH_WILDCARD, WILDCARD)
+                        ?.replace(wildcardEncoder, WILDCARD)
+                        ?.replace(hostWildcardEncoder, HOST_WILDCARD)
 
                 return DeepLinkUri(schemes, host, compliantUri.port, path, query)
             }
