@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.publishing
 
 import com.android.Version
 import com.android.build.api.attributes.AgpVersionAttr
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.TestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
@@ -237,14 +236,7 @@ class LibraryPublishingTest {
             |        "org.gradle.usage": "java-api"
             |      },
             """.trimMargin())
-        // todo re-enable config caching b/247126887
-        val configCacheOption =
-            if (Runtime.version().feature() == 17)
-                BaseGradleExecutor.ConfigurationCaching.OFF
-            else
-                BaseGradleExecutor.ConfigurationCaching.ON
-        val failure = app.executor().withConfigurationCaching(configCacheOption)
-            .expectFailure().run("clean", "assembleInternalDebug")
+        val failure = app.executor().expectFailure().run("clean", "assembleInternalDebug")
         failure.stderr.use {
             ScannerSubject.assertThat(it).contains("Could not resolve com.example.android:myLib:1.0")
         }
