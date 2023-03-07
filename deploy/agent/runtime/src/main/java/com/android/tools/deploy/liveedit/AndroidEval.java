@@ -553,6 +553,7 @@ class AndroidEval implements Eval {
             msg.append(".");
             msg.append(m.getName());
             msg.append(Arrays.toString(m.getParameterTypes()));
+            msg.append(m.getReturnType());
             msg.append("\n");
         }
         return msg.toString();
