@@ -119,7 +119,6 @@ class IncrementalBuildWithOnlyEmptySrcDirsTaskStatesTest {
                         ":app:mergeDebugNativeLibs",
                         ":app:processDebugJavaRes",
                         ":app:stripDebugDebugSymbols",
-                        ":lib:bundleLibResDebug",
                         ":lib:compileDebugJavaWithJavac",
                         ":lib:compileDebugShaders",
                         ":lib:mergeDebugNativeLibs",

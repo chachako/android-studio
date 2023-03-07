@@ -30,7 +30,6 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.AarMetadataTask
 import com.android.build.gradle.internal.tasks.BundleLibraryClassesDir
 import com.android.build.gradle.internal.tasks.BundleLibraryClassesJar
-import com.android.build.gradle.internal.tasks.BundleLibraryJavaRes
 import com.android.build.gradle.internal.tasks.LibraryAarJarsTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
@@ -189,8 +188,6 @@ class TestFixturesTaskManager(
 
         // Also create a directory containing the same classes for incremental dexing
         taskFactory.register(BundleLibraryClassesDir.CreationAction(testFixturesComponent))
-
-        taskFactory.register(BundleLibraryJavaRes.CreationAction(testFixturesComponent))
 
         // Add a task to create the AAR metadata file
         taskFactory.register(AarMetadataTask.CreationAction(testFixturesComponent))

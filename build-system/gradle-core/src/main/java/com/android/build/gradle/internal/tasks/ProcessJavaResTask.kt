@@ -15,18 +15,21 @@
  */
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
+import java.util.concurrent.Callable
 
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.JAVA_RESOURCES)
@@ -74,10 +77,43 @@ abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
         ) {
             super.configure(task)
 
-            creationConfig.sources.resources {
-                task.from(it.getAsFileTrees())
-            }
+            task.from(
+                getProjectJavaRes(creationConfig).asFileTree.matching(MergeJavaResourceTask.patternSet)
+            )
             task.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+
+        private fun getProjectJavaRes(
+            creationConfig: ComponentCreationConfig
+        ): FileCollection {
+            val javaRes = creationConfig.services.fileCollection()
+            creationConfig.sources.resources {
+                javaRes.from(it.getAsFileTrees())
+            }
+            // use lazy file collection here in case an annotationProcessor dependency is add via
+            // Configuration.defaultDependencies(), for example.
+            javaRes.from(
+                Callable {
+                    if (projectHasAnnotationProcessors(creationConfig)) {
+                        creationConfig.artifacts.get(InternalArtifactType.JAVAC)
+                    } else {
+                        listOf<File>()
+                    }
+                }
+            )
+            creationConfig.oldVariantApiLegacySupport?.variantData?.allPreJavacGeneratedBytecode?.let {
+                javaRes.from(it)
+            }
+            creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode?.let {
+                javaRes.from(it)
+            }
+            if (creationConfig.global.namespacedAndroidResources) {
+                javaRes.from(creationConfig.artifacts.get(InternalArtifactType.RUNTIME_R_CLASS_CLASSES))
+            }
+            if ((creationConfig as? ApkCreationConfig)?.packageJacocoRuntime == true) {
+                javaRes.from(creationConfig.artifacts.get(InternalArtifactType.JACOCO_CONFIG_RESOURCES))
+            }
+            return javaRes
         }
     }
 }

@@ -104,6 +104,8 @@ class CacheabilityTest {
             TaskInfo(DID_WORK, "map", "SourceSetPaths", listOf("Debug", "Release")),
             /* b/181142260 */
             TaskInfo(DID_WORK, "merge", "JavaResource", listOf("Debug", "Release")),
+            TaskInfo(DID_WORK, "process", "JavaRes",
+                listOf("Debug")),
             TaskInfo(FROM_CACHE, "merge", "Resources", listOf("Debug", "Release")),
             /* Bug 74595859 */
             TaskInfo(DID_WORK, "package", "", listOf("Debug", "Release")),
@@ -128,7 +130,7 @@ class CacheabilityTest {
             TaskInfo(SKIPPED, "merge", "NativeDebugMetadata", listOf("Debug", "Release")),
             TaskInfo(SKIPPED, "merge", "NativeLibs", listOf("Debug", "Release")),
             TaskInfo(SKIPPED, "process", "JavaRes",
-                    listOf("Debug", "DebugUnitTest","Release", "ReleaseUnitTest")),
+                    listOf("DebugUnitTest","Release", "ReleaseUnitTest")),
             TaskInfo(SKIPPED, "strip", "DebugSymbols", listOf("Debug", "Release"))
     ).plus(
         if (BooleanOption.GENERATE_MANIFEST_CLASS.defaultValue) {

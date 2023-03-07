@@ -87,8 +87,8 @@ public class BytecodeGenerationHooksTest {
                     it.contains("META-INF/post-lib.kotlin_module");
                 });
 
-        File resJar = project.file("library/build/intermediates/library_java_res/debug/res.jar");
-        assertThat(resJar).isFile();
+        File resDir = project.file("library/build/intermediates/java_res/debug/out");
+        assertThat(resDir).exists();
         assertThat(
                 classesJar,
                 it -> {

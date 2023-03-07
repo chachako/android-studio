@@ -49,7 +49,6 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.FULL_JAR
 import com.android.build.gradle.internal.scope.InternalArtifactType.GLOBAL_SYNTHETICS_MERGED
 import com.android.build.gradle.internal.scope.InternalArtifactType.JAVA_RES
 import com.android.build.gradle.internal.scope.InternalArtifactType.LIBRARY_ASSETS
-import com.android.build.gradle.internal.scope.InternalArtifactType.LIBRARY_JAVA_RES
 import com.android.build.gradle.internal.scope.InternalArtifactType.LIBRARY_JNI
 import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_MODEL
 import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_MODEL_METADATA
@@ -249,7 +248,7 @@ class PublishingSpecs {
                 runtime(PACKAGED_RES, ArtifactType.ANDROID_RES)
                 runtime(PUBLIC_RES, ArtifactType.PUBLIC_RES)
                 runtime(COMPILE_SYMBOL_LIST, ArtifactType.COMPILE_SYMBOL_LIST)
-                runtime(LIBRARY_JAVA_RES, ArtifactType.JAVA_RES)
+                runtime(JAVA_RES, ArtifactType.JAVA_RES)
                 runtime(CONSUMER_PROGUARD_DIR, ArtifactType.UNFILTERED_PROGUARD_RULES)
                 runtime(LIBRARY_JNI, ArtifactType.JNI)
                 runtime(NAVIGATION_JSON, ArtifactType.NAVIGATION_JSON)
@@ -295,7 +294,7 @@ class PublishingSpecs {
                 runtime(PACKAGED_RES, ArtifactType.ANDROID_RES)
                 runtime(PUBLIC_RES, ArtifactType.PUBLIC_RES)
                 runtime(COMPILE_SYMBOL_LIST, ArtifactType.COMPILE_SYMBOL_LIST)
-                runtime(LIBRARY_JAVA_RES, ArtifactType.JAVA_RES)
+                runtime(JAVA_RES, ArtifactType.JAVA_RES)
                 runtime(NAVIGATION_JSON, ArtifactType.NAVIGATION_JSON)
                 runtime(COMPILED_LOCAL_RESOURCES, ArtifactType.COMPILED_DEPENDENCIES_RESOURCES)
                 runtime(AAR_METADATA, ArtifactType.AAR_METADATA)

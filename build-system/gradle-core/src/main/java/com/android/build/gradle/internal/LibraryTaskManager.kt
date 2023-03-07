@@ -39,7 +39,6 @@ import com.android.build.gradle.internal.services.DokkaParallelBuildService
 import com.android.build.gradle.internal.tasks.AarMetadataTask
 import com.android.build.gradle.internal.tasks.BundleLibraryClassesDir
 import com.android.build.gradle.internal.tasks.BundleLibraryClassesJar
-import com.android.build.gradle.internal.tasks.BundleLibraryJavaRes
 import com.android.build.gradle.internal.tasks.CheckManifest
 import com.android.build.gradle.internal.tasks.ExportConsumerProguardFilesTask
 import com.android.build.gradle.internal.tasks.JacocoTask
@@ -211,7 +210,6 @@ class LibraryTaskManager(
 
         // Also create a directory containing the same classes for incremental dexing
         taskFactory.register(BundleLibraryClassesDir.CreationAction(libraryVariant))
-        taskFactory.register(BundleLibraryJavaRes.CreationAction(libraryVariant))
 
         // Create a jar with both classes and java resources.  This artifact is not
         // used by the Android application plugin and the task usually don't need to

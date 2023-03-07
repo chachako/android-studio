@@ -37,11 +37,11 @@ class ZipMergingTaskTest {
     @Test
     @Throws(IOException::class)
     fun merge() {
-        val zip1 = temporaryFolder.newFile("file1.zip")
-        val zip2 = temporaryFolder.newFile("file2.zip")
+        val zip = temporaryFolder.newFile("file1.zip")
+        val folder = temporaryFolder.newFolder("file2")
 
-        createZip(zip1, "foo.txt", "foo")
-        createZip(zip2, "bar.txt", "bar")
+        createZip(zip, "foo.txt", "foo")
+        File(folder, "bar.txt").writeText("bar")
 
         val testDir = temporaryFolder.newFolder()
         val project = ProjectBuilder.builder().withProjectDir(testDir).build()
@@ -49,8 +49,8 @@ class ZipMergingTaskTest {
         val output = File(temporaryFolder.newFolder(), "output.zip")
         val task = project.tasks.create("test", ZipMergingTask::class.java)
 
-        task.libraryInputFile.set(zip1)
-        task.javaResInputFile.set(zip2)
+        task.libraryInputFile.set(zip)
+        task.javaResDirectory.set(folder)
         task.outputFile.set(output)
         task.doTaskAction()
 
@@ -64,11 +64,11 @@ class ZipMergingTaskTest {
 
     @Test
     fun mergeDuplicates() {
-        val zip1 = temporaryFolder.newFile("file1.zip")
-        val zip2 = temporaryFolder.newFile("file2.zip")
+        val zip = temporaryFolder.newFile("file1.zip")
+        val folder = temporaryFolder.newFolder("file2")
 
-        createZip(zip1, "foo.txt", "foo")
-        createZip(zip2, "foo.txt", "foo")
+        createZip(zip, "foo.txt", "foo")
+        File(folder, "foo.txt").writeText("foo")
 
         val testDir = temporaryFolder.newFolder()
         val project = ProjectBuilder.builder().withProjectDir(testDir).build()
@@ -76,8 +76,8 @@ class ZipMergingTaskTest {
         val output = File(temporaryFolder.newFolder(), "output.zip")
         val task = project.tasks.create("test", ZipMergingTask::class.java)
 
-        task.libraryInputFile.set(zip1)
-        task.javaResInputFile.set(zip2)
+        task.libraryInputFile.set(zip)
+        task.javaResDirectory.set(folder)
         task.outputFile.set(output)
         task.doTaskAction()
 

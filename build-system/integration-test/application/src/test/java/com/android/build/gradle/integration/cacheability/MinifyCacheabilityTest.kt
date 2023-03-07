@@ -85,6 +85,7 @@ class MinifyCacheabilityTest {
             ":generateMinifiedJacocoPropertiesFile", /** Intentionally not cacheable. See [com.android.build.gradle.internal.coverage.JacocoPropertiesTask] */
             ":mapMinifiedSourceSetPaths", /* Intentionally not cacheable */
             ":mergeMinifiedJavaResource", /* Bug 181142260 */
+            ":processMinifiedJavaRes",
             ":mergeMinifiedArtProfile", /** Intentionally not cacheable see [com.android.build.gradle.internal.tasks.MergeArtProfileTask] */
             ":mergeMinifiedGeneratedProguardFiles", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.MergeGeneratedProguardFilesCreationAction] */
             ":packageMinified",
@@ -97,7 +98,6 @@ class MinifyCacheabilityTest {
             ":compileMinifiedShaders",
             ":mergeMinifiedNativeDebugMetadata",
             ":mergeMinifiedNativeLibs",
-            ":processMinifiedJavaRes",
             ":stripMinifiedDebugSymbols",
         ),
         FAILED to setOf()

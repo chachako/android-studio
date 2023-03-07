@@ -115,13 +115,12 @@ public class LibraryIntermediateArtifactPublishingTest {
                     it.doesNotContain("foo.txt");
                 });
 
-        File resJar = project.getSubproject(":lib").getIntermediateFile("library_java_res/debug/res.jar");
-        assertThat(
-                resJar,
-                it -> {
-                    it.doesNotContain("com/example/helloworld/HelloWorld.class");
-                    it.contains("foo.txt");
-                });
+        File resDir = project.getSubproject(":lib").getIntermediateFile("java_res/debug/out");
+        Truth.assertThat(
+                        FileUtils.join(resDir, "com", "example", "helloworld", "HelloWorld.class")
+                                .exists())
+                .isFalse();
+        Truth.assertThat(FileUtils.join(resDir, "foo.txt").exists()).isTrue();
     }
 
     private File getJar(String fileName) {
