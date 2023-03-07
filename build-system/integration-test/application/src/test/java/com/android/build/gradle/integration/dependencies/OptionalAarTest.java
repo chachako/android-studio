@@ -70,7 +70,6 @@ public class OptionalAarTest {
         // doesn't build the aar anymore.
 
         project.executor()
-                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
                 .run("clean", ":app:assembleDebug", "library:assembleDebug");
         models = project.model().withFullDependencies().fetchAndroidProjects();
         helper = new LibraryGraphHelper(models);

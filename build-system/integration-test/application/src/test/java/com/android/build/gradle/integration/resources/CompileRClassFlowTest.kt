@@ -108,20 +108,10 @@ class CompileRClassFlowTest {
             ":lib2:assembleDebugAndroidTest"
         )
 
-        // Given a project (lib2) that references things in the runtime classpath not on the compile
-        // classpath
-        // When compiled with the COMPILE_CLASSPATH_LIBRARY_R_CLASSES flag disabled
-        // then everything should work:
-        project.executor()
-                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, false)
-                .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
-            .run(tasks)
-
         // When compiled with the flag is enabled,
         // then the build should fail:
         val result = project.executor()
                 .expectFailure()
-                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
             .run(tasks)
         assertThat(result.stderr)
@@ -138,14 +128,12 @@ class CompileRClassFlowTest {
         // When compiled with the flag is enabled,
         // then the build should succeed:
         project.executor()
-                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
                 .run(tasks)
 
         // Ids should be used as constants though
         val result2 = project.executor()
                 .expectFailure()
-                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
                 .run(tasks)
         assertThat(result2.stderr)
@@ -170,7 +158,6 @@ class CompileRClassFlowTest {
 
         // Non-constant use should be OK though
         project.executor()
-                .with(BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES, true)
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
                 .run(tasks)
 

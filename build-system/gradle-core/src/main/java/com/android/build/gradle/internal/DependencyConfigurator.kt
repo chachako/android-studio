@@ -314,12 +314,7 @@ class DependencyConfigurator(
             )
             reg.parameters { params: AarToClassTransform.Params ->
                 params.forCompileUse.set(true)
-                params.generateRClassJar
-                    .set(
-                        projectOptions.get(
-                            BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES
-                        )
-                    )
+                params.generateRClassJar.set(true)
             }
         }
         // Produce a single runtime jar from the AAR.

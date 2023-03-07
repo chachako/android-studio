@@ -239,9 +239,7 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
         override fun configure(task: BundleLibraryClassesJar) {
             super.configure(task)
             val packageRClass =
-                creationConfig.services.projectOptions[BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES] &&
-                        publishedType == PublishedConfigType.API_ELEMENTS &&
-                        creationConfig.buildFeatures.androidResources
+                    publishedType == PublishedConfigType.API_ELEMENTS && creationConfig.buildFeatures.androidResources
 
             val inputs = creationConfig.artifacts
                     .forScope(ScopedArtifacts.Scope.PROJECT)

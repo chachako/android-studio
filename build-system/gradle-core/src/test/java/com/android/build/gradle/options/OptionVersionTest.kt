@@ -42,7 +42,6 @@ class OptionVersionTest {
          */
         private val KNOWN_VIOLATING_DEPRECATED_OPTIONS: List<Option<*>> = listOf(
             BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM,
-            BooleanOption.COMPILE_CLASSPATH_LIBRARY_R_CLASSES,
             BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM,
             BooleanOption.ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM,
             BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS,
