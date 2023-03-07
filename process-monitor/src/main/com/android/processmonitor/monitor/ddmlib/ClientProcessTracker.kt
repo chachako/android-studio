@@ -48,7 +48,7 @@ internal class ClientProcessTracker(
                 ProcessAdded(pid, names.applicationId, names.processName)
             }
             (removed + added).forEach { event ->
-                logger.debug { event.toString() }
+                logger.verbose { event.toString() }
                 emit(event)
             }
         }

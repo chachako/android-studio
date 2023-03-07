@@ -21,7 +21,10 @@ import com.android.adblib.DeviceSelector
 import com.android.adblib.ShellCommandOutputElement.StdoutLine
 import com.android.adblib.shellCommand
 import com.android.adblib.withLineCollector
+import com.android.adblib.withPrefix
 import com.android.ddmlib.IDevice
+import com.android.processmonitor.common.ProcessEvent.ProcessAdded
+import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.monitor.ProcessNames
 import com.android.processmonitor.utils.RetainingMap
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +58,9 @@ internal class ProcessNameClientMonitor(
     enablePsPolling: Boolean = false,
 ) : Closeable {
 
+    private val thisLogger =
+        logger.withPrefix("${this::class.simpleName}: ${device.serialNumber}: ")
+
     /**
      * The map of pid -> [ProcessNames] for currently alive processes, plus recently terminated
      * processes.
@@ -67,15 +73,12 @@ internal class ProcessNameClientMonitor(
 
     fun start() {
         scope.launch {
-
-            flows.trackClients(device).collect { (addedProcesses, removedProcesses) ->
-                processes.removeAll(removedProcesses)
-
-                addedProcesses.forEach { (pid, names) ->
-                    logger.debug { "Adding client $pid -> $names" }
-                    processes[pid] = names
+            ClientProcessTracker(flows, device, logger).trackProcesses().collect {
+                when (it) {
+                    is ProcessAdded -> processes[it.pid] = it.toProcessNames()
+                    is ProcessRemoved -> processes.remove(it.pid)
                 }
-
+                thisLogger.debug { it.toString() }
             }
         }
         if (deviceProcessUpdater != null) {
@@ -116,10 +119,10 @@ internal class ProcessNameClientMonitor(
                             names[pid] = ProcessNames("", processName)
                         }
                     }
-                logger.debug { "Adding ${names.size} processes from ps command" }
+                thisLogger.debug { "Adding ${names.size} processes from ps command" }
                 lastKnownPids.set(names)
             } catch (e: Throwable) {
-                logger.warn(e, "Error listing device processes")
+                thisLogger.warn(e, "Error listing device processes")
                 // We have no idea what error to expect here and how long this may last, so safer to
                 // discard old data.
                 lastKnownPids.set(mapOf())
