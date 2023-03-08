@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.plugins
+package com.android.build.api.dsl
 
-import org.gradle.api.Project
-
-/**
- * extension to call afterEvaluate on a plugin directly. This also works around the
- * package visibility of createAndroidTasks for testing.
- */
-fun BasePlugin<*, *, *, *, *, *, *, *, *, *, *>.runAfterEvaluate(
-    project: Project,
-    force: Boolean = false
-) {
-    this.createAndroidTasks(project)
-}
+interface DynamicFeatureAndroidResources : AndroidResources

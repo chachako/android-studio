@@ -78,8 +78,9 @@ class BasicKotlinDslTest {
             android {
                 namespace = "com.example.app"
                 compileSdkVersion(${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION})
-                // TODO (b/272139789): update this to curly-brace notation
-                androidResources.generateLocaleConfig = true
+                androidResources {
+                    generateLocaleConfig = true
+                }
             }
         """.trimIndent())
 

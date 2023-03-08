@@ -31,7 +31,7 @@ import com.android.build.gradle.internal.services.DslServices
 import org.gradle.api.Action
 
 abstract class AndroidComponentsExtensionImpl<
-        DslExtensionT: CommonExtension<*, *, *, *>,
+        DslExtensionT: CommonExtension<*, *, *, *, *>,
         VariantBuilderT: VariantBuilder,
         VariantT: Variant>(
         private val dslServices: DslServices,

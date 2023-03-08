@@ -136,11 +136,13 @@ abstract class BasePlugin<
                 BuildTypeT: com.android.build.api.dsl.BuildType,
                 DefaultConfigT: com.android.build.api.dsl.DefaultConfig,
                 ProductFlavorT: com.android.build.api.dsl.ProductFlavor,
+                AndroidResourcesT: com.android.build.api.dsl.AndroidResources,
                 AndroidT: CommonExtension<
                         BuildFeaturesT,
                         BuildTypeT,
                         DefaultConfigT,
-                        ProductFlavorT>,
+                        ProductFlavorT,
+                        AndroidResourcesT>,
                 AndroidComponentsT:
                         AndroidComponentsExtension<
                                 in AndroidT,
@@ -164,11 +166,13 @@ abstract class BasePlugin<
             BuildTypeT: com.android.build.api.dsl.BuildType,
             DefaultConfigT: com.android.build.api.dsl.DefaultConfig,
             ProductFlavorT: com.android.build.api.dsl.ProductFlavor,
+            AndroidResourcesT: com.android.build.api.dsl.AndroidResources,
             AndroidT: CommonExtension<
                     out BuildFeaturesT,
                     out BuildTypeT,
                     out DefaultConfigT,
-                    out ProductFlavorT>>(
+                    out ProductFlavorT,
+                    out AndroidResourcesT>>(
         val oldExtension: BaseExtension,
         val newExtension: AndroidT,
         val bootClasspathConfig: BootClasspathConfigImpl,
@@ -214,7 +218,7 @@ abstract class BasePlugin<
             GlobalTaskCreationConfigImpl(
                 project,
                 extension,
-                (newExtension as CommonExtensionImpl<*, *, *, *>),
+                (newExtension as CommonExtensionImpl<*, *, *, *, *>),
                 dslServices,
                 versionedSdkLoaderService,
                 bootClasspathConfig,
@@ -319,7 +323,7 @@ abstract class BasePlugin<
         buildOutputs: NamedDomainObjectContainer<com.android.build.gradle.api.BaseVariantOutput>,
         extraModelInfo: ExtraModelInfo,
         versionedSdkLoaderService: VersionedSdkLoaderService
-    ): ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidT>
+    ): ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidResourcesT, AndroidT>
 
     protected abstract fun createComponentExtension(
         dslServices: DslServices,
@@ -517,7 +521,7 @@ abstract class BasePlugin<
         project: Project,
         registry: ToolingModelBuilderRegistry,
         variantInputModel: VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>,
-        extensionData: ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidT>,
+        extensionData: ExtensionData<BuildFeaturesT, BuildTypeT, DefaultConfigT, ProductFlavorT, AndroidResourcesT, AndroidT>,
         extraModelInfo: ExtraModelInfo,
         globalConfig: GlobalTaskCreationConfig
     ) {

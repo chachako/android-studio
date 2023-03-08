@@ -63,7 +63,7 @@ import org.gradle.api.provider.Provider
 class GlobalTaskCreationConfigImpl(
     project: Project,
     private val oldExtension: BaseExtension,
-    private val extension: CommonExtensionImpl<*, *, *, *>,
+    private val extension: CommonExtensionImpl<*, *, *, *, *>,
     override val services: BaseServices,
     private val versionedSdkLoaderService: VersionedSdkLoaderService,
     bootClasspathConfig: BootClasspathConfigImpl,

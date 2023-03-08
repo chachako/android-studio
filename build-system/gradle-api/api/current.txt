@@ -443,7 +443,7 @@ package com.android.build.api.dsl {
   public interface ApplicationDefaultConfig extends com.android.build.api.dsl.ApplicationBaseFlavor com.android.build.api.dsl.DefaultConfig {
   }
 
-  public interface ApplicationExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.ApplicationBuildFeatures,com.android.build.api.dsl.ApplicationBuildType,com.android.build.api.dsl.ApplicationDefaultConfig,com.android.build.api.dsl.ApplicationProductFlavor> com.android.build.api.dsl.ApkExtension com.android.build.api.dsl.TestedExtension {
+  public interface ApplicationExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.ApplicationBuildFeatures,com.android.build.api.dsl.ApplicationBuildType,com.android.build.api.dsl.ApplicationDefaultConfig,com.android.build.api.dsl.ApplicationProductFlavor,com.android.build.api.dsl.ApplicationAndroidResources> com.android.build.api.dsl.ApkExtension com.android.build.api.dsl.TestedExtension {
     method public void bundle(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Bundle,kotlin.Unit> action);
     method public void dependenciesInfo(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DependenciesInfo,kotlin.Unit> action);
     method public com.android.build.api.dsl.ApplicationAndroidResources getAndroidResources();
@@ -771,10 +771,10 @@ package com.android.build.api.dsl {
     property public abstract java.util.Set<java.lang.String> targets;
   }
 
-  public interface CommonExtension<BuildFeaturesT extends com.android.build.api.dsl.BuildFeatures, BuildTypeT extends com.android.build.api.dsl.BuildType, DefaultConfigT extends com.android.build.api.dsl.DefaultConfig, ProductFlavorT extends com.android.build.api.dsl.ProductFlavor> {
+  public interface CommonExtension<BuildFeaturesT extends com.android.build.api.dsl.BuildFeatures, BuildTypeT extends com.android.build.api.dsl.BuildType, DefaultConfigT extends com.android.build.api.dsl.DefaultConfig, ProductFlavorT extends com.android.build.api.dsl.ProductFlavor, AndroidResourcesT extends com.android.build.api.dsl.AndroidResources> {
     method @Deprecated public void aaptOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AaptOptions,kotlin.Unit> action);
     method @Deprecated public void adbOptions(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AdbOptions,kotlin.Unit> action);
-    method public void androidResources(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidResources,kotlin.Unit> action);
+    method public void androidResources(kotlin.jvm.functions.Function1<? super AndroidResourcesT,kotlin.Unit> action);
     method public void buildFeatures(kotlin.jvm.functions.Function1<? super BuildFeaturesT,kotlin.Unit> action);
     method @Deprecated public void buildToolsVersion(String buildToolsVersion);
     method public void buildTypes(kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<BuildTypeT>,kotlin.Unit> action);
@@ -790,7 +790,7 @@ package com.android.build.api.dsl {
     method @Deprecated public void flavorDimensions(java.lang.String... dimensions);
     method @Deprecated public com.android.build.api.dsl.AaptOptions getAaptOptions();
     method @Deprecated public com.android.build.api.dsl.AdbOptions getAdbOptions();
-    method public com.android.build.api.dsl.AndroidResources getAndroidResources();
+    method public AndroidResourcesT getAndroidResources();
     method public BuildFeaturesT getBuildFeatures();
     method public String getBuildToolsVersion();
     method public org.gradle.api.NamedDomainObjectContainer<? extends BuildTypeT> getBuildTypes();
@@ -849,7 +849,7 @@ package com.android.build.api.dsl {
     method public void viewBinding(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ViewBinding,kotlin.Unit> action);
     property @Deprecated public abstract com.android.build.api.dsl.AaptOptions aaptOptions;
     property @Deprecated public abstract com.android.build.api.dsl.AdbOptions adbOptions;
-    property public abstract com.android.build.api.dsl.AndroidResources androidResources;
+    property public abstract AndroidResourcesT androidResources;
     property public abstract BuildFeaturesT buildFeatures;
     property public abstract String buildToolsVersion;
     property public abstract org.gradle.api.NamedDomainObjectContainer<? extends BuildTypeT> buildTypes;
@@ -978,6 +978,9 @@ package com.android.build.api.dsl {
     property public abstract org.gradle.api.provider.Property<java.lang.String> instantDeliveryType;
   }
 
+  public interface DynamicFeatureAndroidResources extends com.android.build.api.dsl.AndroidResources {
+  }
+
   public interface DynamicFeatureBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.DynamicFeatureVariantDimension {
   }
 
@@ -999,7 +1002,7 @@ package com.android.build.api.dsl {
   public interface DynamicFeatureDefaultConfig extends com.android.build.api.dsl.DynamicFeatureBaseFlavor com.android.build.api.dsl.DefaultConfig {
   }
 
-  public interface DynamicFeatureExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.DynamicFeatureBuildFeatures,com.android.build.api.dsl.DynamicFeatureBuildType,com.android.build.api.dsl.DynamicFeatureDefaultConfig,com.android.build.api.dsl.DynamicFeatureProductFlavor> com.android.build.api.dsl.ApkExtension com.android.build.api.dsl.TestedExtension {
+  public interface DynamicFeatureExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.DynamicFeatureBuildFeatures,com.android.build.api.dsl.DynamicFeatureBuildType,com.android.build.api.dsl.DynamicFeatureDefaultConfig,com.android.build.api.dsl.DynamicFeatureProductFlavor,com.android.build.api.dsl.DynamicFeatureAndroidResources> com.android.build.api.dsl.ApkExtension com.android.build.api.dsl.TestedExtension {
   }
 
   public interface DynamicFeatureProductFlavor extends com.android.build.api.dsl.DynamicFeatureBaseFlavor com.android.build.api.dsl.ProductFlavor {
@@ -1115,6 +1118,9 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void ignoreExternalDependencies(java.lang.String... ids);
   }
 
+  public interface LibraryAndroidResources extends com.android.build.api.dsl.AndroidResources {
+  }
+
   public interface LibraryBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.LibraryVariantDimension {
     method @Deprecated public Integer? getTargetSdk();
     method @Deprecated public String? getTargetSdkPreview();
@@ -1151,7 +1157,7 @@ package com.android.build.api.dsl {
   public interface LibraryDefaultConfig extends com.android.build.api.dsl.LibraryBaseFlavor com.android.build.api.dsl.DefaultConfig {
   }
 
-  public interface LibraryExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.LibraryBuildFeatures,com.android.build.api.dsl.LibraryBuildType,com.android.build.api.dsl.LibraryDefaultConfig,com.android.build.api.dsl.LibraryProductFlavor> com.android.build.api.dsl.TestedExtension {
+  public interface LibraryExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.LibraryBuildFeatures,com.android.build.api.dsl.LibraryBuildType,com.android.build.api.dsl.LibraryDefaultConfig,com.android.build.api.dsl.LibraryProductFlavor,com.android.build.api.dsl.LibraryAndroidResources> com.android.build.api.dsl.TestedExtension {
     method @org.gradle.api.Incubating public java.util.Collection<java.lang.String>? getAidlPackagedList();
     method @org.gradle.api.Incubating public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> getPrefab();
     method public com.android.build.api.dsl.LibraryPublishing getPublishing();
@@ -1683,6 +1689,9 @@ package com.android.build.api.dsl {
     property public abstract java.util.Collection<java.lang.String> densityFilters;
   }
 
+  public interface TestAndroidResources extends com.android.build.api.dsl.AndroidResources {
+  }
+
   public interface TestBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.TestVariantDimension {
     method public Integer? getMaxSdk();
     method public Integer? getTargetSdk();
@@ -1720,7 +1729,7 @@ package com.android.build.api.dsl {
   public interface TestDefaultConfig extends com.android.build.api.dsl.TestBaseFlavor com.android.build.api.dsl.DefaultConfig {
   }
 
-  public interface TestExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.TestBuildFeatures,com.android.build.api.dsl.TestBuildType,com.android.build.api.dsl.TestDefaultConfig,com.android.build.api.dsl.TestProductFlavor> {
+  public interface TestExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.TestBuildFeatures,com.android.build.api.dsl.TestBuildType,com.android.build.api.dsl.TestDefaultConfig,com.android.build.api.dsl.TestProductFlavor,com.android.build.api.dsl.TestAndroidResources> {
     method public String? getTargetProjectPath();
     method public void setTargetProjectPath(String? targetProjectPath);
     property public abstract String? targetProjectPath;
@@ -2056,7 +2065,7 @@ package com.android.build.api.variant {
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.Integer> minCompileSdkExtension;
   }
 
-  public interface AndroidComponentsExtension<DslExtensionT extends com.android.build.api.dsl.CommonExtension<?, ?, ?, ?>, VariantBuilderT extends com.android.build.api.variant.VariantBuilder, VariantT extends com.android.build.api.variant.Variant> extends com.android.build.api.variant.DslLifecycle<DslExtensionT> {
+  public interface AndroidComponentsExtension<DslExtensionT extends com.android.build.api.dsl.CommonExtension<?, ?, ?, ?, ?>, VariantBuilderT extends com.android.build.api.variant.VariantBuilder, VariantT extends com.android.build.api.variant.Variant> extends com.android.build.api.variant.DslLifecycle<DslExtensionT> {
     method public void beforeVariants(optional com.android.build.api.variant.VariantSelector selector, kotlin.jvm.functions.Function1<? super VariantBuilderT,kotlin.Unit> callback);
     method public void beforeVariants(optional com.android.build.api.variant.VariantSelector selector, org.gradle.api.Action<VariantBuilderT> callback);
     method @Deprecated public void finalizeDSl(org.gradle.api.Action<DslExtensionT> callback);

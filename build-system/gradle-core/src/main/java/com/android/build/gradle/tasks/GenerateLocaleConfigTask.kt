@@ -26,7 +26,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
-import com.android.ide.common.resources.generateLocaleConfig
+import com.android.ide.common.resources.writeLocaleConfig
 import com.android.ide.common.resources.mergeLocaleLists
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -92,7 +92,7 @@ abstract class GenerateLocaleConfigTask : NonIncrementalTask() {
                 File(localeConfigFolder, "xml${File.separator}$LOCALE_CONFIG_FILE_NAME.xml")
             localeConfigFile.parentFile.mkdirs()
 
-            generateLocaleConfig(output = localeConfigFile, mergedLocaleList)
+            writeLocaleConfig(output = localeConfigFile, mergedLocaleList)
         }
     }
 

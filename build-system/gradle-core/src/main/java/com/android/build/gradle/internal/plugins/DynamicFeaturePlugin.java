@@ -69,6 +69,7 @@ public class DynamicFeaturePlugin
                 com.android.build.api.dsl.DynamicFeatureBuildType,
                 com.android.build.api.dsl.DynamicFeatureDefaultConfig,
                 com.android.build.api.dsl.DynamicFeatureProductFlavor,
+                com.android.build.api.dsl.DynamicFeatureAndroidResources,
                 com.android.build.api.dsl.DynamicFeatureExtension,
                 DynamicFeatureAndroidComponentsExtension,
                 DynamicFeatureVariantBuilder,
@@ -107,18 +108,21 @@ public class DynamicFeaturePlugin
     @NonNull
     @Override
     protected ExtensionData<
-            DynamicFeatureBuildFeatures,
-            com.android.build.api.dsl.DynamicFeatureBuildType,
-            com.android.build.api.dsl.DynamicFeatureDefaultConfig,
-            com.android.build.api.dsl.DynamicFeatureProductFlavor,
-            com.android.build.api.dsl.DynamicFeatureExtension> createExtension(
-            @NonNull DslServices dslServices,
-            @NonNull
-                    DslContainerProvider<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
-                            dslContainers,
-            @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
-            @NonNull ExtraModelInfo extraModelInfo,
-            VersionedSdkLoaderService versionedSdkLoaderService) {
+                    DynamicFeatureBuildFeatures,
+                    com.android.build.api.dsl.DynamicFeatureBuildType,
+                    com.android.build.api.dsl.DynamicFeatureDefaultConfig,
+                    com.android.build.api.dsl.DynamicFeatureProductFlavor,
+                    com.android.build.api.dsl.DynamicFeatureAndroidResources,
+                    com.android.build.api.dsl.DynamicFeatureExtension>
+            createExtension(
+                    @NonNull DslServices dslServices,
+                    @NonNull
+                            DslContainerProvider<
+                                            DefaultConfig, BuildType, ProductFlavor, SigningConfig>
+                                    dslContainers,
+                    @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
+                    @NonNull ExtraModelInfo extraModelInfo,
+                    VersionedSdkLoaderService versionedSdkLoaderService) {
         DynamicFeatureExtensionImpl dynamicFeatureExtension =
                 dslServices.newDecoratedInstance(
                         DynamicFeatureExtensionImpl.class, dslServices, dslContainers);

@@ -110,7 +110,7 @@ import java.util.stream.Collectors
 /** Class to create, manage variants.  */
 @Suppress("UnstableApiUsage")
 class VariantManager<
-        CommonExtensionT: CommonExtension<*, *, *, *>,
+        CommonExtensionT: CommonExtension<*, *, *, *, *>,
         VariantBuilderT : VariantBuilder,
         VariantDslInfoT: VariantDslInfo,
         VariantT : VariantCreationConfig>(

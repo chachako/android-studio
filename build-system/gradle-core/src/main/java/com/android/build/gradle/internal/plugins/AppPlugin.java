@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.plugins;
 
 import com.android.annotations.NonNull;
+import com.android.build.api.dsl.ApplicationAndroidResources;
 import com.android.build.api.dsl.ApplicationBuildFeatures;
 import com.android.build.api.dsl.ApplicationBuildType;
 import com.android.build.api.dsl.ApplicationDefaultConfig;
@@ -73,6 +74,7 @@ public class AppPlugin
                 ApplicationBuildType,
                 ApplicationDefaultConfig,
                 ApplicationProductFlavor,
+                ApplicationAndroidResources,
                 com.android.build.api.dsl.ApplicationExtension,
                 ApplicationAndroidComponentsExtension,
                 ApplicationVariantBuilder,
@@ -106,18 +108,21 @@ public class AppPlugin
     @NonNull
     @Override
     protected ExtensionData<
-            ApplicationBuildFeatures,
-            ApplicationBuildType,
-            ApplicationDefaultConfig,
-            ApplicationProductFlavor,
-            ApplicationExtension> createExtension(
-            @NonNull DslServices dslServices,
-            @NonNull
-                    DslContainerProvider<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
-                            dslContainers,
-            @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
-            @NonNull ExtraModelInfo extraModelInfo,
-            @NonNull VersionedSdkLoaderService versionedSdkLoaderService) {
+                    ApplicationBuildFeatures,
+                    ApplicationBuildType,
+                    ApplicationDefaultConfig,
+                    ApplicationProductFlavor,
+                    ApplicationAndroidResources,
+                    ApplicationExtension>
+            createExtension(
+                    @NonNull DslServices dslServices,
+                    @NonNull
+                            DslContainerProvider<
+                                            DefaultConfig, BuildType, ProductFlavor, SigningConfig>
+                                    dslContainers,
+                    @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
+                    @NonNull ExtraModelInfo extraModelInfo,
+                    @NonNull VersionedSdkLoaderService versionedSdkLoaderService) {
         ApplicationExtensionImpl applicationExtension =
                 dslServices.newDecoratedInstance(ApplicationExtensionImpl.class, dslServices, dslContainers);
 

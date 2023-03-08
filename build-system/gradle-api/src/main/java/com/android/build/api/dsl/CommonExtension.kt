@@ -30,7 +30,8 @@ interface CommonExtension<
         BuildFeaturesT : BuildFeatures,
         BuildTypeT : BuildType,
         DefaultConfigT : DefaultConfig,
-        ProductFlavorT : ProductFlavor> {
+        ProductFlavorT : ProductFlavor,
+        AndroidResourcesT : AndroidResources> {
 
     /**
      * Specifies options for the Android Asset Packaging Tool (AAPT).
@@ -55,14 +56,14 @@ interface CommonExtension<
      *
      * For more information about the properties you can configure in this block, see [AndroidResources].
      */
-    val androidResources: AndroidResources
+    val androidResources: AndroidResourcesT
 
     /**
      * Specifies options related to the processing of Android Resources.
      *
      * For more information about the properties you can configure in this block, see [AndroidResources].
      */
-    fun androidResources(action: AndroidResources.() -> Unit)
+    fun androidResources(action: AndroidResourcesT.() -> Unit)
 
     /**
      * Specifies options for the

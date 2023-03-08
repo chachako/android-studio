@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.ide.v2
 
 import com.android.SdkConstants
 import com.android.Version
+import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BuildFeatures
 import com.android.build.api.dsl.BuildType
@@ -112,11 +113,13 @@ class ModelBuilder<
         BuildTypeT : BuildType,
         DefaultConfigT : DefaultConfig,
         ProductFlavorT : ProductFlavor,
+        AndroidResourcesT : AndroidResources,
         ExtensionT : CommonExtension<
                 BuildFeaturesT,
                 BuildTypeT,
                 DefaultConfigT,
-                ProductFlavorT>>(
+                ProductFlavorT,
+                AndroidResourcesT>>(
     private val project: Project,
     private val variantModel: VariantModel,
     private val extension: ExtensionT,
@@ -467,7 +470,7 @@ class ModelBuilder<
                 } else null
 
         val extensionImpl =
-            extension as? CommonExtensionImpl<*, *, *, *>
+            extension as? CommonExtensionImpl<*, *, *, *, *>
                 ?: throw RuntimeException("Wrong extension provided to v2 ModelBuilder")
         val compileSdkVersion = extensionImpl.compileSdkVersion ?: "unknown"
 

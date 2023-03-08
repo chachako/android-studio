@@ -68,6 +68,7 @@ public class LibraryPlugin
                 com.android.build.api.dsl.LibraryBuildType,
                 com.android.build.api.dsl.LibraryDefaultConfig,
                 com.android.build.api.dsl.LibraryProductFlavor,
+                com.android.build.api.dsl.LibraryAndroidResources,
                 LibraryExtension,
                 LibraryAndroidComponentsExtension,
                 LibraryVariantBuilder,
@@ -86,18 +87,21 @@ public class LibraryPlugin
     @NonNull
     @Override
     protected ExtensionData<
-            LibraryBuildFeatures,
-            com.android.build.api.dsl.LibraryBuildType,
-            com.android.build.api.dsl.LibraryDefaultConfig,
-            com.android.build.api.dsl.LibraryProductFlavor,
-            LibraryExtension> createExtension(
-            @NonNull DslServices dslServices,
-            @NonNull
-                    DslContainerProvider<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
-                            dslContainers,
-            @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
-            @NonNull ExtraModelInfo extraModelInfo,
-            VersionedSdkLoaderService versionedSdkLoaderService) {
+                    LibraryBuildFeatures,
+                    com.android.build.api.dsl.LibraryBuildType,
+                    com.android.build.api.dsl.LibraryDefaultConfig,
+                    com.android.build.api.dsl.LibraryProductFlavor,
+                    com.android.build.api.dsl.LibraryAndroidResources,
+                    LibraryExtension>
+            createExtension(
+                    @NonNull DslServices dslServices,
+                    @NonNull
+                            DslContainerProvider<
+                                            DefaultConfig, BuildType, ProductFlavor, SigningConfig>
+                                    dslContainers,
+                    @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
+                    @NonNull ExtraModelInfo extraModelInfo,
+                    VersionedSdkLoaderService versionedSdkLoaderService) {
         LibraryExtensionImpl libraryExtension =
                 dslServices.newDecoratedInstance(
                         LibraryExtensionImpl.class, dslServices, dslContainers);

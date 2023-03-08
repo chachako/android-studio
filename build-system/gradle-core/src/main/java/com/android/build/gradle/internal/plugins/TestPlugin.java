@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.plugins;
 import com.android.AndroidProjectTypes;
 import com.android.annotations.NonNull;
 import com.android.build.api.dsl.SdkComponents;
+import com.android.build.api.dsl.TestAndroidResources;
 import com.android.build.api.dsl.TestBuildFeatures;
 import com.android.build.api.dsl.TestBuildType;
 import com.android.build.api.dsl.TestDefaultConfig;
@@ -72,6 +73,7 @@ public class TestPlugin
                 TestBuildType,
                 TestDefaultConfig,
                 TestProductFlavor,
+                TestAndroidResources,
                 com.android.build.api.dsl.TestExtension,
                 TestAndroidComponentsExtension,
                 TestVariantBuilder,
@@ -99,18 +101,21 @@ public class TestPlugin
     @NonNull
     @Override
     protected ExtensionData<
-            TestBuildFeatures,
-            TestBuildType,
-            TestDefaultConfig,
-            TestProductFlavor,
-            com.android.build.api.dsl.TestExtension> createExtension(
-            @NonNull DslServices dslServices,
-            @NonNull
-                    DslContainerProvider<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
-                            dslContainers,
-            @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
-            @NonNull ExtraModelInfo extraModelInfo,
-            VersionedSdkLoaderService versionedSdkLoaderService) {
+                    TestBuildFeatures,
+                    TestBuildType,
+                    TestDefaultConfig,
+                    TestProductFlavor,
+                    TestAndroidResources,
+                    com.android.build.api.dsl.TestExtension>
+            createExtension(
+                    @NonNull DslServices dslServices,
+                    @NonNull
+                            DslContainerProvider<
+                                            DefaultConfig, BuildType, ProductFlavor, SigningConfig>
+                                    dslContainers,
+                    @NonNull NamedDomainObjectContainer<BaseVariantOutput> buildOutputs,
+                    @NonNull ExtraModelInfo extraModelInfo,
+                    VersionedSdkLoaderService versionedSdkLoaderService) {
         TestExtensionImpl testExtension =
                 dslServices.newDecoratedInstance(
                         TestExtensionImpl.class, dslServices, dslContainers);

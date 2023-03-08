@@ -28,7 +28,8 @@ interface ApplicationExtension :
             ApplicationBuildFeatures,
             ApplicationBuildType,
             ApplicationDefaultConfig,
-            ApplicationProductFlavor>,
+            ApplicationProductFlavor,
+            ApplicationAndroidResources>,
     ApkExtension,
     TestedExtension {
     // TODO(b/140406102)

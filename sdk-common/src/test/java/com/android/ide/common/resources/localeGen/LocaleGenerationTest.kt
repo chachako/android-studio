@@ -16,7 +16,7 @@
 package com.android.ide.common.resources.localeGen
 
 import com.android.ide.common.resources.configuration.FolderConfiguration
-import com.android.ide.common.resources.generateLocaleConfig
+import com.android.ide.common.resources.writeLocaleConfig
 import com.android.ide.common.resources.generateLocaleConfigManifestAttribute
 import com.android.ide.common.resources.generateLocaleList
 import com.android.ide.common.resources.generateLocaleString
@@ -84,7 +84,7 @@ class LocaleGenerationTest {
     @Test
     fun `Test that locale config xml is correctly generated`() {
         val outfile = temporaryFolder.newFile("locale_config.xml")
-        generateLocaleConfig(
+        writeLocaleConfig(
             output = outfile,
             locales = listOf("en-US", "ru-RU", "es-ES", "pt-BR", "zh-Hans-SG", "en-GB")
         )

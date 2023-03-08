@@ -91,7 +91,7 @@ fun validateLocale(locale: String): String? {
     return localeQualifier?.run { generateLocaleString(localeQualifier) }
 }
 
-fun generateLocaleConfig(output: File, locales: Collection<String>) {
+fun writeLocaleConfig(output: File, locales: Collection<String>) {
     val localeSet = locales.toMutableSet()
     val outLines = mutableListOf<String>()
     outLines.add("<locale-config xmlns:android=\"http://schemas.android.com/apk/res/android\">")

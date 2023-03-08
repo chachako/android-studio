@@ -37,7 +37,7 @@ class BootClasspathConfigImpl(
     private val projectServices: ProjectServices,
     private val versionedSdkLoaderService: VersionedSdkLoaderService,
     // TODO: Remove dependency on common extension
-    private val extension: CommonExtensionImpl<*,*,*,*>?,
+    private val extension: CommonExtensionImpl<*,*,*,*,*>?,
     private val forUnitTest: Boolean
 ): BootClasspathConfig {
 
