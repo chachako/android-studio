@@ -17,8 +17,12 @@ package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
+import com.android.adblib.withPrefix
 import com.android.ddmlib.IDevice
 import com.android.processmonitor.agenttracker.AgentProcessTracker
+import com.android.processmonitor.common.ProcessTracker
+import com.android.processmonitor.monitor.MergedProcessTracker
+import com.android.processmonitor.monitor.PerDeviceMonitor
 import com.android.processmonitor.monitor.ProcessNameMonitor
 import com.android.processmonitor.monitor.ProcessNames
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
@@ -71,7 +75,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
 
     // Connected devices.
     @VisibleForTesting
-    internal val devices = ConcurrentHashMap<String, ProcessNameClientMonitor>()
+    internal val devices = ConcurrentHashMap<String, PerDeviceMonitor>()
 
     override fun start() {
         if (isStarted) {
@@ -104,23 +108,24 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
 
     private fun addDevice(device: IDevice) {
         logger.info { "Adding ${device.serialNumber}" }
-
-        val agentProcessTracker = getProcessTracker(device)
+        val processTracker = createProcessTracker(device)
+        val logger = logger.withPrefix("PerDeviceMonitor: ${device.serialNumber}: ")
         devices[device.serialNumber] =
-            ProcessNameClientMonitor(
-                scope,
-                device,
-                flows,
-                agentProcessTracker,
-                logger,
-                maxProcessRetention
-            )
-                .apply {
-                    start()
-                }
+            PerDeviceMonitor(scope, logger, maxProcessRetention, processTracker).apply {
+                start()
+            }
     }
 
-    private fun getProcessTracker(device: IDevice): AgentProcessTracker? {
+    private fun createProcessTracker(device: IDevice): ProcessTracker {
+        val agentTracker = createAgentProcessTracker(device)
+        val clientTracker = ClientProcessTracker(flows, device, logger)
+        return when (agentTracker) {
+            null -> clientTracker
+            else -> MergedProcessTracker(clientTracker, agentTracker)
+        }
+    }
+
+    private fun createAgentProcessTracker(device: IDevice): AgentProcessTracker? {
         // TODO(b/272009795): Investigate further
         if (device.version.apiLevel < 21 || trackerAgentPath == null) {
             return null

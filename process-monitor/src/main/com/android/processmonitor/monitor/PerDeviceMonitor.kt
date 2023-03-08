@@ -16,8 +16,6 @@
 package com.android.processmonitor.monitor
 
 import com.android.adblib.AdbLogger
-import com.android.adblib.withPrefix
-import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.common.ProcessTracker
@@ -26,31 +24,22 @@ import com.google.common.annotations.VisibleForTesting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import java.io.Closeable
 
 /**
  * Monitors process names on a devices.
  *
- * If the merged trackers have conflicting data, it will prefer data that has a non-null
+ * If the added processes have conflicting data, it will prefer data that has a non-null
  * applicationId over a null applicationId.
  */
 internal class PerDeviceMonitor(
     parentScope: CoroutineScope,
-    logger: AdbLogger,
+    private val logger: AdbLogger,
     maxProcessRetention: Int,
-    vararg processTrackers: ProcessTracker,
-) : Closeable {
-
-    private val logger = logger.withPrefix("${this::class.simpleName}: ")
-
     @VisibleForTesting
-    val processTracker = when (processTrackers.size) {
-        1 -> processTrackers[0]
-        else -> MergedTracker(processTrackers.asList())
-    }
+    val processTracker: ProcessTracker,
+) : Closeable {
 
     private val scope: CoroutineScope =
         CoroutineScope(parentScope.coroutineContext + SupervisorJob())
@@ -114,9 +103,4 @@ internal class PerDeviceMonitor(
         scope.cancel()
     }
 
-    private class MergedTracker(private val trackers: List<ProcessTracker>) : ProcessTracker {
-
-        override suspend fun trackProcesses(): Flow<ProcessEvent> =
-            merge(*trackers.map { it.trackProcesses() }.toTypedArray())
-    }
 }

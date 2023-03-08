@@ -39,16 +39,13 @@ class PerDeviceMonitorTest {
     private val logger = FakeAdbLoggerFactory().logger
 
     @Test
-    fun tracksAllTrackers() = runTest {
-        val tracker1 = Tracker()
-        val tracker2 = Tracker()
-        val tracker3 = Tracker()
+    fun newProcesses() = runTest {
+        val tracker = Tracker()
+        val monitor = perDeviceMonitor(tracker)
 
-        val monitor = perDeviceMonitor(tracker1, tracker2, tracker3)
-
-        tracker1.send(ProcessAdded(1, null, "process1"))
-        tracker2.send(ProcessAdded(2, "package2", "process2"))
-        tracker3.send(ProcessAdded(3, "package3", "process3"))
+        tracker.send(ProcessAdded(1, null, "process1"))
+        tracker.send(ProcessAdded(2, "package2", "process2"))
+        tracker.send(ProcessAdded(3, "package3", "process3"))
         advanceUntilIdle()
 
         assertThat(monitor.getProcessNames(1)).isEqualTo(ProcessNames("process1", "process1"))
@@ -58,14 +55,12 @@ class PerDeviceMonitorTest {
 
     @Test
     fun noApplicationId_doesNotReplace() = runTest {
-        val tracker1 = Tracker()
-        val tracker2 = Tracker()
+        val tracker = Tracker()
+        val monitor = perDeviceMonitor(tracker)
 
-        val monitor = perDeviceMonitor(tracker1, tracker2)
-
-        tracker1.send(ProcessAdded(1, "package1", "process1"))
+        tracker.send(ProcessAdded(1, "package1", "process1"))
         advanceUntilIdle()
-        tracker2.send(ProcessAdded(1, null, "process1"))
+        tracker.send(ProcessAdded(1, null, "process1"))
         advanceUntilIdle()
 
         assertThat(monitor.getProcessNames(1)).isEqualTo(ProcessNames("package1", "process1"))
@@ -73,14 +68,12 @@ class PerDeviceMonitorTest {
 
     @Test
     fun noApplicationId_differentProcessName_doesReplace() = runTest {
-        val tracker1 = Tracker()
-        val tracker2 = Tracker()
+        val tracker = Tracker()
+        val monitor = perDeviceMonitor(tracker)
 
-        val monitor = perDeviceMonitor(tracker1, tracker2)
-
-        tracker1.send(ProcessAdded(1, "package1", "process1"))
+        tracker.send(ProcessAdded(1, "package1", "process1"))
         advanceUntilIdle()
-        tracker2.send(ProcessAdded(1, null, "process2"))
+        tracker.send(ProcessAdded(1, null, "process2"))
         advanceUntilIdle()
 
         assertThat(monitor.getProcessNames(1)).isEqualTo(ProcessNames("process2", "process2"))
@@ -88,31 +81,21 @@ class PerDeviceMonitorTest {
 
     @Test
     fun noApplicationId_isReplaceByApplicationId() = runTest {
-        val tracker1 = Tracker()
-        val tracker2 = Tracker()
+        val tracker = Tracker()
+        val monitor = perDeviceMonitor(tracker)
 
-        val monitor = perDeviceMonitor(tracker1, tracker2)
-
-        tracker1.send(ProcessAdded(1, null, "process1"))
+        tracker.send(ProcessAdded(1, null, "process1"))
         advanceUntilIdle()
-        tracker2.send(ProcessAdded(1, "package1", "process1"))
+        tracker.send(ProcessAdded(1, "package1", "process1"))
         advanceUntilIdle()
 
         assertThat(monitor.getProcessNames(1)).isEqualTo(ProcessNames("package1", "process1"))
     }
 
     @Test
-    fun singleTracker_doesNotUseMergedTracker() = runTest {
-        val tracker = Tracker()
-        val monitor = perDeviceMonitor(tracker)
-
-        assertThat(monitor.processTracker).isSameAs(tracker)
-    }
-
-    @Test
     fun propagatesMaxProcessRetention() = runTest {
         val tracker = Tracker()
-        val monitor = perDeviceMonitor(retention = 1,  tracker)
+        val monitor = perDeviceMonitor(tracker, retention = 1)
 
         tracker.send(ProcessAdded(1, null, "process1"))
         tracker.send(ProcessAdded(2, null, "process2"))
@@ -125,12 +108,9 @@ class PerDeviceMonitorTest {
     }
 
     private fun CoroutineScope.perDeviceMonitor(
+        tracker: ProcessTracker,
         retention: Int = 10,
-        vararg trackers: ProcessTracker,
-    ): PerDeviceMonitor = PerDeviceMonitor(this, logger, retention, *trackers).apply { start() }
-
-    private fun CoroutineScope.perDeviceMonitor(vararg trackers: ProcessTracker) =
-        perDeviceMonitor(10, *trackers)
+    ): PerDeviceMonitor = PerDeviceMonitor(this, logger, retention, tracker).apply { start() }
 
     private class Tracker : ProcessTracker {
 

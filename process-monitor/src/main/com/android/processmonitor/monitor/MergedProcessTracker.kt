@@ -13,23 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.monitor.ddmlib
+package com.android.processmonitor.monitor
 
-import com.android.ddmlib.IDevice
+import com.android.processmonitor.common.ProcessEvent
+import com.android.processmonitor.common.ProcessTracker
+import com.google.common.annotations.VisibleForTesting
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 
-/**
- * Creates [Flow]'s used by [ProcessNameMonitorDdmlib] & [ClientProcessTracker].
- */
-internal interface ProcessNameMonitorFlows {
+/** A [ProcessTracker] that merges multiple trackers into one flow */
+internal class MergedProcessTracker(
+    @VisibleForTesting
+    vararg val trackers: ProcessTracker,
+) : ProcessTracker {
 
-    /**
-     * Track devices connecting and disconnecting.
-     */
-    fun trackDevices(): Flow<DeviceMonitorEvent>
-
-    /**
-     * Track clients being added & removed.
-     */
-    fun trackClients(device: IDevice): Flow<ClientMonitorEvent>
+    override suspend fun trackProcesses(): Flow<ProcessEvent> =
+        merge(*trackers.map { it.trackProcesses() }.toTypedArray())
 }

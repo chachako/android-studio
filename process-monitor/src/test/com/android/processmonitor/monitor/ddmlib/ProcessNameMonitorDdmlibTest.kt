@@ -18,6 +18,7 @@ package com.android.processmonitor.monitor.ddmlib
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.adblib.testing.FakeAdbSession
 import com.android.processmonitor.agenttracker.AgentProcessTracker
+import com.android.processmonitor.monitor.MergedProcessTracker
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Online
 import com.android.testutils.TestResources
@@ -36,46 +37,47 @@ import java.nio.file.Path
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalCoroutinesApi::class) // runTest is experimental (replaced runTestTest)
 class ProcessNameMonitorDdmlibTest {
-  private val device1 = mockDevice("device1")
-  private val device2 = mockDevice("device2")
-  private val process1 = ProcessInfo(1, "package1", "process1")
-  private val process2 = ProcessInfo(2, "package2", "process2")
-  private val process3 = ProcessInfo(3, "package3", "process3")
 
-  private val fakeAdbSession = FakeAdbSession()
+    private val device1 = mockDevice("device1")
+    private val device2 = mockDevice("device2")
+    private val process1 = ProcessInfo(1, "package1", "process1")
+    private val process2 = ProcessInfo(2, "package2", "process2")
+    private val process3 = ProcessInfo(3, "package3", "process3")
 
-  @Test
-  fun devicesOnline(): Unit = runTest {
-    FakeProcessNameMonitorFlows().use { flows ->
-      val monitor = processNameMonitor(flows)
+    private val fakeAdbSession = FakeAdbSession()
 
-      flows.sendDeviceEvents(Online(device1))
-      flows.sendDeviceEvents(Online(device2))
-      flows.sendClientEvents(device1.serialNumber, clientsAddedEvent(process1))
-      flows.sendClientEvents(device2.serialNumber, clientsAddedEvent(process2))
+    @Test
+    fun devicesOnline(): Unit = runTest {
+        FakeProcessNameMonitorFlows().use { flows ->
+            val monitor = processNameMonitor(flows)
 
-      advanceUntilIdle()
-      assertThat(monitor.getProcessNames(device1.serialNumber, 1)).isEqualTo(process1.names)
-      assertThat(monitor.getProcessNames(device2.serialNumber, 2)).isEqualTo(process2.names)
+            flows.sendDeviceEvents(Online(device1))
+            flows.sendDeviceEvents(Online(device2))
+            flows.sendClientEvents(device1.serialNumber, clientsAddedEvent(process1))
+            flows.sendClientEvents(device2.serialNumber, clientsAddedEvent(process2))
+
+            advanceUntilIdle()
+            assertThat(monitor.getProcessNames(device1.serialNumber, 1)).isEqualTo(process1.names)
+            assertThat(monitor.getProcessNames(device2.serialNumber, 2)).isEqualTo(process2.names)
+        }
     }
-  }
 
-  @Test
-  fun deviceDisconnected(): Unit = runTest {
-    FakeProcessNameMonitorFlows().use { flows ->
-      val monitor = processNameMonitor(flows)
+    @Test
+    fun deviceDisconnected(): Unit = runTest {
+        FakeProcessNameMonitorFlows().use { flows ->
+            val monitor = processNameMonitor(flows)
 
-      flows.sendDeviceEvents(Online(device1))
-      flows.sendDeviceEvents(Online(device2))
-        flows.sendClientEvents(device1.serialNumber, clientsAddedEvent(process1))
-        flows.sendClientEvents(device2.serialNumber, clientsAddedEvent(process2))
-        advanceUntilIdle()
-        flows.sendDeviceEvents(Disconnected(device1))
+            flows.sendDeviceEvents(Online(device1))
+            flows.sendDeviceEvents(Online(device2))
+            flows.sendClientEvents(device1.serialNumber, clientsAddedEvent(process1))
+            flows.sendClientEvents(device2.serialNumber, clientsAddedEvent(process2))
+            advanceUntilIdle()
+            flows.sendDeviceEvents(Disconnected(device1))
 
-        advanceUntilIdle()
-        assertThat(monitor.getProcessNames(device2.serialNumber, 2)).isEqualTo(process2.names)
+            advanceUntilIdle()
+            assertThat(monitor.getProcessNames(device2.serialNumber, 2)).isEqualTo(process2.names)
+        }
     }
-  }
 
     @Test
     fun propagatesMaxProcessRetention(): Unit = runTest {
@@ -111,14 +113,32 @@ class ProcessNameMonitorDdmlibTest {
     }
 
     @Test
-    fun createsAgentProcessTracker(): Unit = runTest {
+    fun withAgentConfig_usesAgentProcessTracker(): Unit = runTest {
         FakeProcessNameMonitorFlows().use { flows ->
             val monitor = processNameMonitor(flows, TestResources.getDirectory("/agent").toPath())
 
             flows.sendDeviceEvents(Online(device1))
 
             advanceUntilIdle()
-            assertThat(monitor.devices["device1"]?.processTracker).isInstanceOf(AgentProcessTracker::class.java)
+            val tracker = monitor.devices["device1"]?.processTracker as? MergedProcessTracker
+            assertThat(tracker?.trackers?.map { it::class })
+                .containsExactly(
+                    ClientProcessTracker::class,
+                    AgentProcessTracker::class,
+                )
+        }
+    }
+
+    @Test
+    fun withoutAgentConfig_doesNotUseAgentProcessTracker(): Unit = runTest {
+        FakeProcessNameMonitorFlows().use { flows ->
+            val monitor = processNameMonitor(flows, trackerAgentPath = null)
+
+            flows.sendDeviceEvents(Online(device1))
+
+            advanceUntilIdle()
+            assertThat(monitor.devices["device1"]?.processTracker)
+                .isInstanceOf(ClientProcessTracker::class.java)
         }
     }
 
