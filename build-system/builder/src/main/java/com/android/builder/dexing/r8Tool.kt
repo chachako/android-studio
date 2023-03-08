@@ -87,7 +87,7 @@ fun getR8Version(): String = Version.getVersionString()
 fun runR8(
     inputClasses: Collection<Path>,
     output: Path,
-    inputJavaResources: Collection<Path>,
+    inputJavaResJar: Path,
     javaResourcesJar: Path,
     libraries: Collection<Path>,
     classpath: Collection<Path>,
@@ -113,7 +113,7 @@ fun runR8(
         logger.fine("Proguard config: $proguardConfig")
         logger.fine("Tool config: $toolConfig")
         logger.fine("Program classes: $inputClasses")
-        logger.fine("Java resources: $inputJavaResources")
+        logger.fine("Java resources: $inputJavaResJar")
         logger.fine("Library classes: $libraries")
         logger.fine("Classpath classes: $classpath")
     }
@@ -249,18 +249,11 @@ fun runR8(
         }
     }
 
-    val dirResources = inputJavaResources.filter {
-        if (!Files.isDirectory(it)) {
-            val resourceOnlyProvider =
-                ResourceOnlyProvider(ArchiveResourceProvider.fromArchive(it, true))
-            r8ProgramResourceProvider.dataResourceProviders.add(resourceOnlyProvider.dataResourceProvider)
-            false
-        } else {
-            true
-        }
-    }
-
-    r8ProgramResourceProvider.dataResourceProviders.add(R8DataResourceProvider(dirResources))
+    r8ProgramResourceProvider.dataResourceProviders.add(
+        ResourceOnlyProvider(
+            ArchiveResourceProvider.fromArchive(inputJavaResJar, true)
+        ).dataResourceProvider
+    )
 
     r8CommandBuilder.addProgramResourceProvider(r8ProgramResourceProvider)
 

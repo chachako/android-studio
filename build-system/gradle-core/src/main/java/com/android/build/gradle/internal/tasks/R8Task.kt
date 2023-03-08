@@ -84,7 +84,7 @@ import javax.inject.Inject
  * Task that uses R8 to convert class files to dex. In case of a library variant, this
  * task outputs class files.
  *
- * R8 task inputs are: program class files, library class files (e.g. android.jar), java resources,
+ * R8 task inputs are: program class files, library class files (e.g. android.jar), java resourcesJar,
  * Proguard configuration files, main dex list configuration files, other tool-specific parameters.
  * Output is dex or class files, depending on whether we are building an APK, or AAR.
  */
@@ -289,10 +289,9 @@ abstract class R8Task @Inject constructor(
                 }
             }
 
-            creationConfig.artifacts.setInitialProvider(
-                taskProvider,
-                R8Task::outputResources
-            ).withName("shrunkJavaRes.jar").on(InternalArtifactType.SHRUNK_JAVA_RES)
+            creationConfig.artifacts.use(taskProvider)
+                .wiredWithFiles(R8Task::resourcesJar, R8Task::outputResources)
+                .toTransform(InternalArtifactType.MERGED_JAVA_RES)
 
             if (creationConfig is ApkCreationConfig) {
                 when {
@@ -483,12 +482,12 @@ abstract class R8Task @Inject constructor(
                 else -> outputDex
             }
 
-        // Check for duplicate java resources if there are dynamic features. We allow duplicate
+        // Check for duplicate java resourcesJar if there are dynamic features. We allow duplicate
         // META-INF/services/** entries.
         val featureJavaResourceJarsList = featureJavaResourceJars.toList()
         if (featureJavaResourceJarsList.isNotEmpty()) {
             val paths: MutableSet<String> = mutableSetOf()
-            resources.toList().plus(featureJavaResourceJarsList).forEach { file ->
+            featureJavaResourceJarsList.plus(resourcesJar.asFile.get()).forEach { file ->
                 ZipArchive(file.toPath()).use { jar ->
                     jar.listEntries().forEach { path ->
                         if (!path.startsWith("META-INF/services/") && !paths.add(path)) {
@@ -597,7 +596,7 @@ abstract class R8Task @Inject constructor(
                 } else {
                     classes.toList()
                 })
-            it.resources.from(resources.toList())
+            it.resourcesJar.set(resourcesJar)
             it.mappingFile.set(mappingFile.get().asFile)
             it.proguardSeedsOutput.set(getProguardSeedsOutput().get())
             it.proguardUsageOutput.set(getProguardUsageOutput().get())
@@ -648,7 +647,7 @@ abstract class R8Task @Inject constructor(
             useFullR8: Boolean,
             referencedInputs: List<File>,
             classes: List<File>,
-            resources: List<File>,
+            resourcesJar: File,
             proguardConfigurationFiles: Collection<File>,
             inputProguardMapping: File?,
             proguardConfigurations: MutableList<String>,
@@ -733,7 +732,7 @@ abstract class R8Task @Inject constructor(
             runR8(
                 filterMissingFiles(classes, logger),
                 output.toPath(),
-                filterMissingFiles(resources, logger),
+                resourcesJar.toPath(),
                 outputResources.toPath(),
                 bootClasspath.map { it.toPath() },
                 filterMissingFiles(referencedInputs, logger),
@@ -781,7 +780,7 @@ abstract class R8Task @Inject constructor(
             abstract val useFullR8: Property<Boolean>
             abstract val referencedInputs: ConfigurableFileCollection
             abstract val classes: ConfigurableFileCollection
-            abstract val resources: ConfigurableFileCollection
+            abstract val resourcesJar: RegularFileProperty
             abstract val proguardConfigurationFiles: ConfigurableFileCollection
             abstract val inputProguardMapping: RegularFileProperty
             abstract val proguardConfigurations: ListProperty<String>
@@ -820,7 +819,7 @@ abstract class R8Task @Inject constructor(
                 parameters.useFullR8.get(),
                 parameters.referencedInputs.files.toList(),
                 parameters.classes.files.toList(),
-                parameters.resources.files.toList(),
+                parameters.resourcesJar.asFile.get(),
                 parameters.proguardConfigurationFiles.files.toList(),
                 parameters.inputProguardMapping.orNull?.asFile,
                 parameters.proguardConfigurations.get(),

@@ -54,6 +54,12 @@ class R8ToolTest {
         ProguardOutputFiles(fakeOutput, fakeOutput, fakeOutput, fakeOutput, fakeOutput)
     }
 
+    private val emptyJavaResources by lazy {
+        tmp.root.toPath().resolve("java_resources.jar").also {
+            TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+        }
+    }
+
     @Test
     fun testClassesFromDir() {
         val proguardConfig = ProguardConfig(listOf(), null, listOf(), emptyProguardOutputFiles)
@@ -75,7 +81,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -113,7 +119,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -142,16 +148,24 @@ class R8ToolTest {
             r8OutputType = R8OutputType.DEX
         )
 
-        val classes = tmp.newFolder().toPath().resolve("classes")
-        TestInputsGenerator.dirWithEmptyClasses(classes, listOf("test/A", "test/B"))
-        Files.createFile(classes.resolve("res.txt"))
+        val classes = tmp.newFolder().toPath().resolve("classes.jar")
+        ZipOutputStream(classes.toFile().outputStream()).use { zip ->
+            zip.putNextEntry(ZipEntry("test/A.class"))
+            zip.write(TestClassesGenerator.emptyClass("test", "A"));
+            zip.closeEntry()
+            zip.putNextEntry(ZipEntry("test/B.class"))
+            zip.write(TestClassesGenerator.emptyClass("test", "B"));
+            zip.closeEntry()
+            zip.putNextEntry(ZipEntry("res.txt"))
+            zip.closeEntry()
+        }
 
         val output = tmp.newFolder().toPath()
         val javaRes = tmp.root.resolve("res.jar").toPath()
         runR8(
             listOf(classes),
             output,
-            listOf(classes),
+            classes,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -189,16 +203,24 @@ class R8ToolTest {
             r8OutputType = R8OutputType.DEX
         )
 
-        val classes = tmp.newFolder().toPath().resolve("classes")
-        TestInputsGenerator.dirWithEmptyClasses(classes, listOf("test/A", "test/B"))
-        Files.createFile(classes.resolve("res.txt"))
+        val classes = tmp.newFolder().toPath().resolve("classes.jar")
+        ZipOutputStream(classes.toFile().outputStream()).use { zip ->
+            zip.putNextEntry(ZipEntry("test/A.class"))
+            zip.write(TestClassesGenerator.emptyClass("test", "A"));
+            zip.closeEntry()
+            zip.putNextEntry(ZipEntry("test/B.class"))
+            zip.write(TestClassesGenerator.emptyClass("test", "B"));
+            zip.closeEntry()
+            zip.putNextEntry(ZipEntry("res.txt"))
+            zip.closeEntry()
+        }
 
         val output = tmp.newFolder().toPath()
         val javaRes = tmp.root.resolve("res.jar").toPath()
         runR8(
             listOf(classes),
             output,
-            listOf(classes),
+            classes,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -243,7 +265,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -283,7 +305,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -323,7 +345,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -390,7 +412,7 @@ class R8ToolTest {
         runR8(
             listOf(testClasses),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             programClasspath,
@@ -446,7 +468,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -489,7 +511,7 @@ class R8ToolTest {
             runR8(
                 listOf(),
                 output,
-                listOf(),
+                emptyJavaResources,
                 javaRes,
                 bootClasspath,
                 emptyList(),
@@ -539,7 +561,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -597,7 +619,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(javaResJar),
+            javaResJar,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -656,7 +678,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -681,7 +703,7 @@ class R8ToolTest {
         runR8(
             listOf(classes),
             output,
-            listOf(),
+            emptyJavaResources,
             javaRes,
             bootClasspath,
             emptyList(),
@@ -740,7 +762,7 @@ class R8ToolTest {
             runR8(
                 listOf(classes),
                 output,
-                listOf(),
+                emptyJavaResources,
                 javaRes,
                 bootClasspath,
                 emptyList(),

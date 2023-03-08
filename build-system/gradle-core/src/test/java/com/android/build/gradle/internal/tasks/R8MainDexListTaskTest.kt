@@ -37,6 +37,7 @@ import org.mockito.Mockito
 import org.objectweb.asm.Type
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.createFile
 
 /**
  * Testing scenarios for R8 task processing class files which outputs DEX.
@@ -68,7 +69,9 @@ class R8MainDexListTaskTest {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
+            resourcesJar = tmp.root.toPath().resolve("resources.jar").also {
+                TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+            },
             mainDexRulesFiles = listOf(mainDexRuleFile),
             minSdkVersion = 19,
             r8Keep = "class **",
@@ -106,7 +109,9 @@ class R8MainDexListTaskTest {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
+            resourcesJar = tmp.root.toPath().resolve("resources.jar").also {
+                TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+            },
             mainDexRulesFiles = listOf(mainDexRuleFile),
             minSdkVersion = 19,
             dexingType = DexingType.MONO_DEX,
@@ -132,7 +137,7 @@ class R8MainDexListTaskTest {
 
 fun runR8(
     classes: List<File>,
-    resources: List<File>,
+    resourcesJar: Path,
     referencedInputs: List<File> = listOf(),
     mainDexRulesFiles: List<File> = listOf(),
     minSdkVersion: Int = 21,
@@ -174,7 +179,7 @@ fun runR8(
         useFullR8 = false,
         referencedInputs = referencedInputs,
         classes = classes,
-        resources = resources,
+        resourcesJar = resourcesJar.toFile(),
         mappingFile = mappingFile,
         proguardSeedsOutput = proguardOutputDir.resolve("seeds.txt"),
         proguardUsageOutput = proguardOutputDir.resolve("usage.txt"),

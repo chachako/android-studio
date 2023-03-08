@@ -23,7 +23,6 @@ import static com.android.build.gradle.internal.publishing.AndroidArtifacts.Cons
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.MODULE_PATH;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.COMPRESSED_ASSETS;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.MERGED_JAVA_RES;
-import static com.android.build.gradle.internal.scope.InternalArtifactType.SHRUNK_JAVA_RES;
 import static com.android.build.gradle.internal.scope.InternalArtifactType.SIGNING_CONFIG_VERSIONS;
 
 import com.android.SdkConstants;
@@ -122,7 +121,6 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileType;
-import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.ListProperty;
@@ -197,8 +195,6 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
     /**
      * List of folders and/or jars that contain the merged java resources.
-     *
-     * <p>FileCollection because of the legacy Transform API.
      */
     @Classpath
     @Incremental
@@ -418,9 +414,8 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
 
         return (builtArtifact, directory, parameter) -> {
             VariantOutputImpl.SerializedForm variantOutput =
-                    outputsHandler
-                            .getOutput(((BuiltArtifactImpl) builtArtifact)
-                                    .getVariantOutputConfiguration());
+                    outputsHandler.getOutput(
+                            ((BuiltArtifactImpl) builtArtifact).getVariantOutputConfiguration());
 
             parameter.getVariantOutput().set(variantOutput);
 
@@ -435,8 +430,7 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                             outputsHandler.computeUniqueDirForSplit(
                                     getIncrementalFolder().get().getAsFile(),
                                     variantOutput,
-                                    variantName
-                            ));
+                                    variantName));
             parameter.getAndroidResourcesFile().set(new File(builtArtifact.getOutputFile()));
             parameter
                     .getAndroidResourcesChanged()
@@ -1198,7 +1192,9 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
             if (featureDexFolder != null) {
                 packageAndroidArtifact.getFeatureDexFolder().from(featureDexFolder);
             }
-            packageAndroidArtifact.getJavaResourceFiles().from(getJavaResources(creationConfig));
+            packageAndroidArtifact.getJavaResourceFiles().from(
+                    creationConfig.getArtifacts().get(MERGED_JAVA_RES.INSTANCE));
+            packageAndroidArtifact.getJavaResourceFiles().disallowChanges();
             @Nullable
             FileCollection featureJavaResources =
                     getFeatureJavaResources(creationConfig, projectPath);
@@ -1395,17 +1391,6 @@ public abstract class PackageAndroidArtifact extends NewIncrementalTask {
                                 artifacts.getAll(InternalMultipleArtifactType.DEX.INSTANCE),
                                 getDesugarLibDexIfExists(creationConfig),
                                 getGlobalSyntheticsDex(creationConfig));
-            }
-        }
-
-        @NonNull
-        private Provider<RegularFile> getJavaResources(@NonNull ApkCreationConfig creationConfig) {
-            ArtifactsImpl artifacts = creationConfig.getArtifacts();
-
-            if (creationConfig.getOptimizationCreationConfig().getMinifiedEnabled()) {
-                return artifacts.get(SHRUNK_JAVA_RES.INSTANCE);
-            } else {
-                return artifacts.get(MERGED_JAVA_RES.INSTANCE);
             }
         }
 

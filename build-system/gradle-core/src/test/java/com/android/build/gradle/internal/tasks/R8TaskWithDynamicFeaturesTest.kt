@@ -100,7 +100,9 @@ class R8TaskWithDynamicFeaturesTest {
 
         runR8(
             classes = listOf(classesJar.toFile()),
-            resources = listOf(),
+            resourcesJar = tmp.root.toPath().resolve("resources.jar").also {
+                TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+            },
             mainDexRulesFiles = listOf(mainDexRuleFile),
             minSdkVersion = 19,
             r8Keep = "class **",
@@ -158,7 +160,9 @@ class R8TaskWithDynamicFeaturesTest {
 
         runR8(
             classes = listOf(classesJar.toFile()),
-            resources = listOf(),
+            resourcesJar = tmp.root.toPath().resolve("resources.jar").also {
+                TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+            },
             mainDexRulesFiles = listOf(mainDexRuleFile),
             minSdkVersion = 19,
             dexingType = DexingType.MONO_DEX,

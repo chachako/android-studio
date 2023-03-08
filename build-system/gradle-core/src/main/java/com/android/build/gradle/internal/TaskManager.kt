@@ -780,7 +780,9 @@ abstract class TaskManager(
     protected fun createMergeJavaResTask(creationConfig: ConsumableCreationConfig) {
         // Compute the scopes that need to be merged.
         taskFactory.register(
-            MergeJavaResourceTask.CreationAction(javaResMergingScopes, creationConfig)
+            MergeJavaResourceTask.CreationAction(
+                javaResMergingScopes, creationConfig.packaging, creationConfig
+            )
         )
     }
 

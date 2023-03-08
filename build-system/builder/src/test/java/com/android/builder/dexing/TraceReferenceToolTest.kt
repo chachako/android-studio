@@ -59,7 +59,9 @@ class TraceReferenceToolTest {
         runR8(
             inputClasses = listOf(programJar),
             output = dexOutput,
-            inputJavaResources = listOf(),
+            inputJavaResJar = tmp.root.toPath().resolve("java_resources.jar").also {
+                TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+            },
             javaResourcesJar = javaRes,
             libraries = listOf(),
             classpath = listOf(androidJar),

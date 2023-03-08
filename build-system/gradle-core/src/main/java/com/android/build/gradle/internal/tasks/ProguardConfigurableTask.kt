@@ -54,6 +54,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
@@ -91,9 +92,9 @@ abstract class ProguardConfigurableTask(
     @get:Classpath
     abstract val classes: ConfigurableFileCollection
 
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val resources: ConfigurableFileCollection
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract val resourcesJar: RegularFileProperty
 
     @get:Classpath
     abstract val referencedClasses: ConfigurableFileCollection
@@ -210,14 +211,12 @@ abstract class ProguardConfigurableTask(
         // Override to make this true in proguard
         protected open val defaultObfuscate: Boolean = false
 
-        // These filters assume a file can't be class and resources at the same time.
+        // These filters assume a file can't be class and resourcesJar at the same time.
         private val referencedClasses: FileCollection
 
         private val referencedResources: FileCollection
 
         private val classes: FileCollection
-
-        private val resources: FileCollection
 
         private val externalInputScopes =
             when {
@@ -267,17 +266,6 @@ abstract class ProguardConfigurableTask(
                     it.from(
                         creationConfig.artifacts.forScope(scope)
                             .getFinalArtifacts(ScopedArtifact.CLASSES)
-                    )
-                }
-            }
-            resources = creationConfig.services.fileCollection().also {
-                it.from(creationConfig.artifacts.forScope(
-                    Scope.PROJECT
-                ).getFinalArtifacts(ScopedArtifact.JAVA_RES))
-                externalInputScopes.forEach { scope ->
-                    it.from(
-                        creationConfig.artifacts.forScope(scope)
-                            .getFinalArtifacts(ScopedArtifact.JAVA_RES)
                     )
                 }
             }
@@ -357,8 +345,6 @@ abstract class ProguardConfigurableTask(
                     )
                 }
             }
-
-            task.resources.from(resources)
 
             task.referencedClasses.from(referencedClasses)
 

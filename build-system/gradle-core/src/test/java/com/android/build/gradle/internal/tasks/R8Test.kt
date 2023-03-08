@@ -53,17 +53,17 @@ import org.objectweb.asm.Type
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Collectors
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
-import kotlin.streams.toList
 
 /**
  * Testing the basic scenarios for R8 task processing class files. Both dex and class file
  * backend are tested.
  */
 @RunWith(Parameterized::class)
-class R8Test(val r8OutputType: R8OutputType) {
+class R8Test(private val r8OutputType: R8OutputType) {
     @get: Rule
     val tmp: TemporaryFolder = TemporaryFolder()
     private lateinit var outputDir: Path
@@ -92,7 +92,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             r8Keep = "class **"
         )
 
@@ -114,7 +113,7 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(classes.toFile()),
+            resourcesJar = classes,
             r8Keep = "class test.A"
         )
 
@@ -142,7 +141,7 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(classes.toFile()),
+            resourcesJar = classes,
             r8Keep = "class test.A"
         )
 
@@ -170,7 +169,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             r8Keep = "class test.A"
         )
 
@@ -188,7 +186,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             referencedInputs = listOf(libraryClasses.toFile()),
             r8Keep = "class **"
         )
@@ -207,7 +204,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             disableTreeShaking = true,
             r8Keep = "class ***"
@@ -245,7 +241,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             proguardRulesFiles = listOf(proguardConfiguration)
         )
@@ -258,7 +253,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             r8Keep = "class " + CarbonForm::class.java.name
         )
@@ -285,7 +279,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             proguardRulesFiles = listOf(proguardConfiguration),
             useFullR8 = true
@@ -299,7 +292,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             useFullR8 = true,
             r8Keep = "class " + CarbonForm::class.java.name
@@ -338,7 +330,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             proguardRulesFiles = listOf(proguardConfiguration),
             featureClassJars = listOf(featureClassesJar.toFile()),
@@ -376,7 +367,6 @@ class R8Test(val r8OutputType: R8OutputType) {
         // run again in full R8 mode
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             proguardRulesFiles = listOf(proguardConfiguration),
             featureClassJars = listOf(featureClassesJar.toFile()),
@@ -414,7 +404,6 @@ class R8Test(val r8OutputType: R8OutputType) {
         // run again with different keep rules such that we expect no classes in feature
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             java8Support = Java8LangSupport.R8,
             r8Keep = "class " + CarbonForm::class.java.name,
             featureClassJars = listOf(featureClassesJar.toFile()),
@@ -451,7 +440,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             r8Keep = "class " + nonAsciiName.replace("/", ".")
         )
 
@@ -466,7 +454,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile()),
-            resources = listOf(),
             disableMinification = false,
             outputProguardMapping = outputMapping,
             r8Keep = "class **"
@@ -477,14 +464,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
     @Test
     fun testJavaResourcesCopied() {
-        val resources = tmp.root.toPath().resolve("java_res.jar")
-        ZipOutputStream(resources.toFile().outputStream()).use { zip ->
-            zip.putNextEntry(ZipEntry("metadata1.txt"))
-            zip.closeEntry()
-            zip.putNextEntry(ZipEntry("metadata2.txt"))
-            zip.closeEntry()
-        }
-
         val mixedResources = tmp.root.toPath().resolve("classes_and_res.jar")
         ZipOutputStream(mixedResources.toFile().outputStream()).use { zip ->
             zip.putNextEntry(ZipEntry("data/metadata.txt"))
@@ -494,11 +473,15 @@ class R8Test(val r8OutputType: R8OutputType) {
             zip.putNextEntry(ZipEntry("test/A.class"))
             zip.write(TestClassesGenerator.emptyClass("test", "A"));
             zip.closeEntry()
+            zip.putNextEntry(ZipEntry("metadata1.txt"))
+            zip.closeEntry()
+            zip.putNextEntry(ZipEntry("metadata2.txt"))
+            zip.closeEntry()
         }
 
         runR8(
             classes = listOf(mixedResources.toFile()),
-            resources = listOf(mixedResources.toFile(), resources.toFile()),
+            resourcesJar = mixedResources,
             r8Keep = "class **"
         )
 
@@ -582,22 +565,21 @@ class R8Test(val r8OutputType: R8OutputType) {
 
     @Test
     fun testClassesIgnoredFromResources() {
-        val resDir = tmp.root.resolve("res_dir").also {
-            it.mkdir()
-            it.resolve("res.txt").createNewFile()
-            it.resolve("A.class").createNewFile()
+        val resJar = tmp.root.toPath().resolve("res.jar")
+        ZipOutputStream(resJar.toFile().outputStream()).use {
+            it.putNextEntry(ZipEntry("data.txt"))
+            it.closeEntry()
+            it.putNextEntry(ZipEntry("B.class"))
+            it.closeEntry()
+            it.putNextEntry(ZipEntry("res.txt"))
+            it.closeEntry()
+            it.putNextEntry(ZipEntry("A.class"))
+            it.closeEntry()
         }
-        val resJar = tmp.root.resolve("res.jar")
-            ZipOutputStream(resJar.outputStream()).use {
-                it.putNextEntry(ZipEntry("data.txt"))
-                it.closeEntry()
-                it.putNextEntry(ZipEntry("B.class"))
-                it.closeEntry()
-            }
 
         runR8(
             classes = listOf(),
-            resources = listOf(resDir, resJar)
+            resourcesJar = resJar
         )
 
         assertThat(outputDir.resolve("main/classes.dex")).doesNotExist()
@@ -617,7 +599,6 @@ class R8Test(val r8OutputType: R8OutputType) {
 
         runR8(
             classes = listOf(classes.toFile(), tmp.root.resolve("non_existing")),
-            resources = listOf(),
             r8Keep = "class **"
         )
 
@@ -625,7 +606,8 @@ class R8Test(val r8OutputType: R8OutputType) {
     }
 
     private fun getDex(): Dex {
-        val dexFiles = Files.walk(outputDir).filter { it.toString().endsWith(".dex") }.toList()
+        val dexFiles = Files.walk(outputDir).filter { it.toString().endsWith(".dex") }.collect(
+            Collectors.toList())
         return Dex(dexFiles.single())
     }
 
@@ -646,7 +628,9 @@ class R8Test(val r8OutputType: R8OutputType) {
 
     private fun runR8(
         classes: List<File>,
-        resources: List<File>,
+        resourcesJar: Path = outputDir.resolve("resources.jar").also {
+            TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+        },
         mainDexRulesFiles: List<File> = listOf(),
         java8Support: Java8LangSupport = Java8LangSupport.UNUSED,
         proguardRulesFiles: List<File> = listOf(),
@@ -661,8 +645,7 @@ class R8Test(val r8OutputType: R8OutputType) {
         featureJavaResourceJars: List<File> = listOf(),
         featureDexDir: File? = null,
         featureJavaResourceOutputDir: File? = null,
-        libConfiguration: String? = null,
-        outputKeepRulesDir: File? = null
+        libConfiguration: String? = null
     ) {
         val proguardConfigurations: MutableList<String> = mutableListOf(
             "-ignorewarnings")
@@ -706,7 +689,7 @@ class R8Test(val r8OutputType: R8OutputType) {
             useFullR8 = useFullR8,
             referencedInputs = referencedInputs,
             classes = classes,
-            resources = resources,
+            resourcesJar = resourcesJar.toFile(),
             mappingFile = outputProguardMapping,
             proguardSeedsOutput = tmp.root.resolve("seeds.txt"),
             proguardUsageOutput = tmp.root.resolve("usage.txt"),
@@ -726,6 +709,4 @@ class R8Test(val r8OutputType: R8OutputType) {
             inputProfileForDexStartupOptimization = null,
         )
     }
-
-    private val lineSeparator: String = System.lineSeparator()
 }

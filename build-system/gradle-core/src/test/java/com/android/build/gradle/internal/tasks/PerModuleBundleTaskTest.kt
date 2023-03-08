@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.testutils.TestInputsGenerator
 import com.android.testutils.truth.ZipFileSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -55,6 +56,11 @@ class PerModuleBundleTaskTest {
         }
         task.resFiles.set(resFile)
         task.fileName.set("bar.zip")
+        task.javaResJar.set(
+            testFolder.root.toPath().resolve("java_resources.jar").also {
+                TestInputsGenerator.jarWithEmptyClasses(it, listOf())
+            }.toFile()
+        )
         task.outputDir.set(testFolder.newFolder("out"))
     }
 

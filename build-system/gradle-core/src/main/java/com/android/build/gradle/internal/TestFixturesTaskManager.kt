@@ -31,6 +31,7 @@ import com.android.build.gradle.internal.tasks.AarMetadataTask
 import com.android.build.gradle.internal.tasks.BundleLibraryClassesDir
 import com.android.build.gradle.internal.tasks.BundleLibraryClassesJar
 import com.android.build.gradle.internal.tasks.LibraryAarJarsTask
+import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
 import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
@@ -67,6 +68,13 @@ class TestFixturesTaskManager(
 
         // java resources tasks
         createProcessJavaResTask(testFixturesComponent)
+
+        // java resources merging task
+        taskFactory.register(
+            MergeJavaResourceTask.CreationAction(
+                javaResMergingScopes, testFixturesComponent.mainVariant.packaging, testFixturesComponent
+            )
+        )
 
         // android resources tasks
         if (testFixturesComponent.buildFeatures.androidResources) {

@@ -17,10 +17,10 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.variant.Packaging
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
-import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
 import com.android.build.gradle.internal.packaging.defaultExcludes
@@ -187,8 +187,9 @@ abstract class MergeJavaResourceTask
 
     class CreationAction(
         private val mergeScopes: Set<InternalScopedArtifacts.InternalScope>,
-        creationConfig: ConsumableCreationConfig
-    ) : VariantTaskCreationAction<MergeJavaResourceTask, ConsumableCreationConfig>(
+        private val packaging: Packaging,
+        creationConfig: ComponentCreationConfig,
+    ) : VariantTaskCreationAction<MergeJavaResourceTask, ComponentCreationConfig>(
         creationConfig
     ) {
 
@@ -261,9 +262,9 @@ abstract class MergeJavaResourceTask
 
             task.mergeScopes.addAll(mergeScopes)
             task.mergeScopes.disallowChanges()
-            task.excludes.setDisallowChanges(creationConfig.packaging.resources.excludes)
-            task.pickFirsts.setDisallowChanges(creationConfig.packaging.resources.pickFirsts)
-            task.merges.setDisallowChanges(creationConfig.packaging.resources.merges)
+            task.excludes.setDisallowChanges(packaging.resources.excludes)
+            task.pickFirsts.setDisallowChanges(packaging.resources.pickFirsts)
+            task.merges.setDisallowChanges(packaging.resources.merges)
             task.intermediateDir =
                 creationConfig.paths.getIncrementalDir("${creationConfig.name}-mergeJavaRes")
             task.cacheDir = File(task.intermediateDir, "zip-cache")

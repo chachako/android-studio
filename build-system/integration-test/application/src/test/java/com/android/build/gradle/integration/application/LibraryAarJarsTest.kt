@@ -51,8 +51,8 @@ class LibraryAarJarsTest {
             "local/empty2.jar",
             "main/empty1.jar",
             "main/empty2.jar",
-            "resource/empty1.jar",
-            "resource/empty2.jar")
+            "resource/empty.jar"
+        )
 
         val excludeJarPaths = listOf(
             "excludes/empty1.jar",
@@ -130,13 +130,6 @@ class LibraryAarJarsTest {
             jars["excludes/empty2.jar"]!!,
             folders["main/folder"]!!)
 
-        val mainResources = mutableSetOf(
-            jars["resource/empty1.jar"]!!,
-            jars["resource/empty2.jar"]!!,
-            jars["excludes/empty1.jar"]!!,
-            jars["excludes/empty2.jar"]!!,
-            folders["resource/folder"]!!)
-
         // Exclude excludes from final jar
         val excludes = Predicate { archivePath: String ->
             !archivePath.toLowerCase(Locale.US).startsWith("exclude")
@@ -146,7 +139,7 @@ class LibraryAarJarsTest {
             localJars,
             folders["localOutput"]!!,
             mainJars,
-            mainResources,
+            jars["resource/empty.jar"]!!,
             jars["classes.jar"]!!,
             excludes,
             null,
@@ -160,11 +153,7 @@ class LibraryAarJarsTest {
             // resource classes
             "/class4.txt",
             "/Class4.class",
-            "/class5.txt",
-            "/Class5.class",
             // folder classes
-            "/ResourceClass1.class",
-            "/ResourceClass2.class",
             "/MainClass1.class",
             "/MainClass2.class"
         )
