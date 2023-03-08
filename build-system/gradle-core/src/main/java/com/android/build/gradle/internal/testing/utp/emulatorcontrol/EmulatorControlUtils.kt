@@ -30,6 +30,20 @@ private val LOG = Logger.getLogger("EmulatorAccessUtils")
 
 data class JwtConfig(val token: String, val jwkPath: String)
 
+fun createTokenConfig(aud: Set<String>, validForSeconds: Int, iss: String, info: EmulatorGrpcInfo?): JwtConfig {
+    // Backwards compatible scenario where:
+    //
+    // - We have explicitly disabled security
+    // - We are running an older (unprotected) emulator
+    // - We are running an older emulator protected by a studio token
+    if (info?.jwks.isNullOrEmpty()) {
+        LOG.warning("Running in backwards compatibility mode, this provides reduced security.")
+        val token = info?.token ?: ""
+        return JwtConfig(token, "")
+    }
+
+    return createJwtConfig(aud, validForSeconds, iss, info?.jwks)
+}
 fun createJwtConfig(aud: Set<String>, validForSeconds: Int, iss: String, jwkDirectory: String?): JwtConfig {
     if (jwkDirectory.isNullOrEmpty()) {
         return JwtConfig("", "")

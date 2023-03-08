@@ -373,11 +373,11 @@ class UtpConfigFactory {
             if (emulatorControlConfig.enabled) {
                 // Looks like emulator access is on the menu.
                 val cfg =
-                    createJwtConfig(
+                    createTokenConfig(
                         emulatorControlConfig.allowedEndpoints,
                         emulatorControlConfig.secondsValid,
                         "gradle-utp-emulator-control",
-                        grpcInfo?.jwks
+                        grpcInfo
                     )
 
                 additionalTestParams["grpc.port"] = grpcInfo?.port.toString()

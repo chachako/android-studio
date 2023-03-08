@@ -112,4 +112,71 @@ class EmulatorControlUtilsTest {
         val verifiedJwt = verifier.verifyAndDecode(jwtConfig.token, validator)
         assertThat(verifiedJwt.jwtId).isNotEmpty()
     }
+
+    @Test
+    fun fallsBackToReducedSecurityWithStudioToken() {
+        // Verify that we fallback to the studio token if the emulator does not support
+        // jwks.
+        val aud = setOf("ignored")
+        val info = EmulatorGrpcInfo(123, "android-studio", null,  null)
+        val jwtConfig = createTokenConfig(aud, 20, "ignored", info)
+        assertThat(jwtConfig.token).isEqualTo(info.token)
+    }
+
+    @Test
+    fun fallsBackToReducedSecurityUnprotected() {
+        // Verify that we fallback to use no security if the emulator does not support jwks
+        // and is not configured with a studio token
+        val aud = setOf("ignored")
+        val info = EmulatorGrpcInfo(123, null, null,  null)
+        val jwtConfig = createTokenConfig(aud, 20, "ignored", info)
+        assertThat(jwtConfig.token).isEqualTo("")
+    }
+
+    @Test
+    fun noFallbackIfJwksAndTokenIsPresent() {
+        // Verify that we actually call the method that creates a proper token if jwk
+        // is active, even though a studio-token is also active!
+        JwtSignatureConfig.register()
+
+        val aud = setOf("a", "b")
+        val info = EmulatorGrpcInfo(123, "studio-token", null,  testDir.root.absolutePath)
+        val jwtConfig = createTokenConfig(aud, 20, iss, info)
+        assertThat(jwtConfig.token).isNotEmpty()
+        assertThat(jwtConfig.token).isNotEqualTo(info.token!!)
+
+        // We actually have a valid JWT token
+        val publicKeysetHandle =
+            JwkSetConverter.toPublicKeysetHandle(File(jwtConfig.jwkPath).readText(Charsets.UTF_8))
+
+        val validator = JwtValidator.newBuilder().ignoreAudiences().expectIssuer(iss).build()
+        val verifier = publicKeysetHandle.getPrimitive(JwtPublicKeyVerify::class.java)
+        val verifiedJwt = verifier.verifyAndDecode(jwtConfig.token, validator)
+
+        assertThat(verifiedJwt.audiences.size).isEqualTo(2)
+        assertThat(verifiedJwt.audiences).contains("a")
+        assertThat(verifiedJwt.audiences).contains("b")
+    }
+
+
+    @Test
+    fun noFallbackIfJwksAndNoTokenIsPresent() {
+        JwtSignatureConfig.register()
+
+        val aud = setOf("a", "b")
+        val info = EmulatorGrpcInfo(123, null, null,  testDir.root.absolutePath)
+        val jwtConfig = createTokenConfig(aud, 20, iss, info)
+        assertThat(jwtConfig.token).isNotEmpty()
+
+        val publicKeysetHandle =
+            JwkSetConverter.toPublicKeysetHandle(File(jwtConfig.jwkPath).readText(Charsets.UTF_8))
+
+        val validator = JwtValidator.newBuilder().ignoreAudiences().expectIssuer(iss).build()
+        val verifier = publicKeysetHandle.getPrimitive(JwtPublicKeyVerify::class.java)
+        val verifiedJwt = verifier.verifyAndDecode(jwtConfig.token, validator)
+
+        assertThat(verifiedJwt.audiences.size).isEqualTo(2)
+        assertThat(verifiedJwt.audiences).contains("a")
+        assertThat(verifiedJwt.audiences).contains("b")
+    }
 }
