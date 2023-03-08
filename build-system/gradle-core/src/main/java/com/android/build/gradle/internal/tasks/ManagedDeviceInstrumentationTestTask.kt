@@ -190,7 +190,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
     @get: PathSensitive(PathSensitivity.RELATIVE)
     abstract val buddyApks: ConfigurableFileCollection
 
-    private var hasFailures: Boolean = false
     private var shouldIgnore: Boolean = false
 
     // For analytics only
@@ -201,11 +200,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
 
     @get: Nested
     abstract val device: Property<ManagedVirtualDevice>
-
-    @Internal
-    override fun getTestFailed(): Boolean {
-        return hasFailures
-    }
 
     @get:Classpath
     @get:Optional
@@ -326,7 +320,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 analyticsService.get())
 
         if (!success) {
-            hasFailures = true
             val reportUrl = ConsoleRenderer().asClickableFileUrl(
                     File(reportOutDir, "index.html"))
             val message = "There were failing tests. See the report at: $reportUrl"
@@ -337,8 +330,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 throw GradleException(message)
             }
         }
-
-        hasFailures = false
     }
 
     /**

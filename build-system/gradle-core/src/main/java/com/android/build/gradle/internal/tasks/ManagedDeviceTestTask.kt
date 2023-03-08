@@ -97,8 +97,6 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val buddyApks: ConfigurableFileCollection
 
-    private var hasFailures: Boolean = false
-
     /** Whether failing tests should fail the build */
     private var shouldIgnore: Boolean = false
 
@@ -107,9 +105,6 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
     @get:VisibleForTesting
     lateinit var dependencies: ArtifactCollection
         private set
-
-    @Internal
-    override fun getTestFailed(): Boolean = hasFailures
 
     @get:Classpath
     @get:Optional
@@ -219,7 +214,6 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
             analyticsService.get())
 
         if (!success) {
-            hasFailures = true
             val reportUrl = ConsoleRenderer().asClickableFileUrl(
                 File(reportOutDir, "index.html"))
             val message = """
@@ -233,8 +227,6 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
                 throw GradleException(message)
             }
         }
-
-        hasFailures = false
     }
 
     /**

@@ -103,7 +103,6 @@ class ManagedDeviceTestTaskTest {
         val task = createTask(testRunTaskActionResult = true)
 
         task.doTaskAction()
-        assertFalse(task.testFailed)
     }
 
     @Test
@@ -141,7 +140,6 @@ class ManagedDeviceTestTaskTest {
             `when`(mockTestRunTaskAction.runTests(any())).thenReturn(testRunTaskActionResult)
 
             // We call real method for testing.
-            `when`(testFailed).thenCallRealMethod()
             `when`(doTaskAction()).thenCallRealMethod()
         }
     }

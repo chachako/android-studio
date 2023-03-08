@@ -296,7 +296,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
     }
 
     private boolean ignoreFailures;
-    private boolean testFailed;
 
     // For analytics only
     private ArtifactCollection dependencies;
@@ -414,7 +413,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                 getAnalyticsService().get());
 
         if (!success) {
-            testFailed = true;
             String reportUrl = new ConsoleRenderer().asClickableFileUrl(
                     new File(reportOutDir, "index.html"));
             String message = "There were failing tests. See the report at: " + reportUrl;
@@ -426,8 +424,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                 throw new GradleException(message);
             }
         }
-
-        testFailed = false;
     }
 
     public static void checkForNonApks(
@@ -575,12 +571,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
     @Override
     public void setIgnoreFailures(boolean ignoreFailures) {
         this.ignoreFailures = ignoreFailures;
-    }
-
-    @Override
-    @Internal // This is the result after running this task
-    public boolean getTestFailed() {
-        return testFailed;
     }
 
     @InputFiles

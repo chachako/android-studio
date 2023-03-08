@@ -419,8 +419,6 @@ class ManagedDeviceInstrumentationTestTaskTest {
             dependencyApks = any()
         )
         verifyNoMoreInteractions(testRunner)
-
-        assertThat(task.getTestFailed()).isFalse()
     }
 
     @Test
@@ -480,8 +478,6 @@ class ManagedDeviceInstrumentationTestTaskTest {
             dependencyApks = any()
         )
         verifyNoMoreInteractions(testRunner)
-
-        assertThat(task.getTestFailed()).isTrue()
     }
 
     @Test
@@ -517,7 +513,5 @@ class ManagedDeviceInstrumentationTestTaskTest {
         task.doTaskAction()
 
         verifyNoInteractions(testRunner)
-
-        assertThat(task.getTestFailed()).isFalse()
     }
 }
