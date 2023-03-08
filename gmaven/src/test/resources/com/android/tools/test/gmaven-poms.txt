@@ -362,6 +362,8 @@ com.android.tools.apkparser:apkanalyzer
     com.android.tools:common (runtime)
     com.android.tools:sdk-common (runtime)
     com.android.tools:sdklib (runtime)
+    com.android.tools.smali:smali-baksmali (runtime)
+    com.android.tools.smali:smali-dexlib2 (runtime)
     com.google.guava:guava (runtime)
     org.smali:baksmali (runtime)
     org.smali:dexlib2 (runtime)

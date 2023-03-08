@@ -159,6 +159,8 @@ ARTIFACTS = [
     "org.slf4j:slf4j-simple:1.7.2",
     "org.smali:baksmali:2.5.2",
     "org.smali:dexlib2:2.5.2",
+    "com.android.tools.smali:smali-baksmali:3.0.0",
+    "com.android.tools.smali:smali-dexlib2:3.0.0",
     "org.tensorflow:tensorflow-lite-metadata:0.1.0-rc2",
     "org.xerial:sqlite-jdbc:3.21.0.1",
     "xerces:xercesImpl:2.12.0",
