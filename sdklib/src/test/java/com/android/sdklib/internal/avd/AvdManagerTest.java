@@ -78,6 +78,7 @@ public final class AvdManagerTest {
     private SystemImage mSystemImageWear25;
     private SystemImage mSystemImageWearChina;
     private SystemImage mSystemImageChromeOs;
+    private SystemImage mSystemImage33ext4;
     private final FileSystem mMockFs = InMemoryFileSystems.createInMemoryFileSystem();
 
     @Before
@@ -93,6 +94,7 @@ public final class AvdManagerTest {
         recordWearSysImg25(root);
         recordWearSysImgChina(root);
         recordChromeOsSysImg(root);
+        recordPlayStoreSysImg33ext4(root);
         Path prefsRoot = root.resolve(ANDROID_PREFS_ROOT);
         mAndroidSdkHandler = new AndroidSdkHandler(root.resolve("sdk"), prefsRoot);
         mAvdManager =
@@ -125,7 +127,11 @@ public final class AvdManagerTest {
             } else if ("google_apis".equals(tagId)) {
                 mSystemImageGoogle = si;
             } else if ("google_apis_playstore".equals(tagId)) {
-                mSystemImagePlay = si;
+                if (si.getAndroidVersion().getApiLevel() == 33) {
+                    mSystemImage33ext4 = si;
+                } else {
+                    mSystemImagePlay = si;
+                }
             } else if ("android-wear".equals(tagId)) {
                 if (si.getTag().getDisplay().contains("China")) {
                     mSystemImageWearChina = si;
@@ -140,14 +146,15 @@ public final class AvdManagerTest {
                 fail("Created unexpected system image: " + tagId);
             }
         }
-        assertNotNull(mSystemImageAosp);
-        assertNotNull(mSystemImageApi21);
-        assertNotNull(mSystemImageGoogle);
-        assertNotNull(mSystemImagePlay);
-        assertNotNull(mSystemImageWear24);
-        assertNotNull(mSystemImageWear25);
-        assertNotNull(mSystemImageWearChina);
-        assertNotNull(mSystemImageChromeOs);
+        assertThat(mSystemImageAosp).named("AOSP image").isNotNull();
+        assertThat(mSystemImageApi21).named("API 21 image").isNotNull();
+        assertThat(mSystemImageGoogle).named("Google image").isNotNull();
+        assertThat(mSystemImagePlay).named("PlayStore image").isNotNull();
+        assertThat(mSystemImageWear24).named("Wear24 image").isNotNull();
+        assertThat(mSystemImageWear25).named("Wear25 image").isNotNull();
+        assertThat(mSystemImageWearChina).named("Wear China image").isNotNull();
+        assertThat(mSystemImageChromeOs).named("ChromeOS image").isNotNull();
+        assertThat(mSystemImage33ext4).named("API 33ext4 image").isNotNull();
     }
 
     @Test
@@ -893,6 +900,38 @@ public final class AvdManagerTest {
         assertThat(emptyInfo.getStatus()).isEqualTo(AvdInfo.AvdStatus.ERROR_CORRUPTED_INI);
     }
 
+    @Test
+    public void parseAvdInfoWithExtensionLevel() throws Exception {
+        mAvdManager.createAvd(
+                mAvdFolder,
+                name.getMethodName(),
+                mSystemImage33ext4,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                false,
+                false);
+
+        // Check a valid AVD .ini file
+        Path parentFolder = mAvdFolder.getParent();
+        String avdIniName = name.getMethodName() + ".ini";
+        Path avdIniFile = parentFolder.resolve(avdIniName).toAbsolutePath();
+        assertTrue("Expected AVD .ini in " + parentFolder, Files.exists(avdIniFile));
+        AvdInfo avdInfo = mAvdManager.parseAvdInfo(avdIniFile);
+        assertThat(avdInfo.getStatus()).isEqualTo(AvdInfo.AvdStatus.OK);
+        PathSubject.assertThat(avdInfo.getDataFolderPath()).isEqualTo(mAvdFolder);
+
+        // check that the properties of the AVD contain the extension
+        String extension = avdInfo.getProperty(AvdManager.AVD_INI_ANDROID_EXTENSION);
+        String isBaseExtension = avdInfo.getProperty(AvdManager.AVD_INI_ANDROID_IS_BASE_EXTENSION);
+
+        assertThat(extension).isEqualTo("4");
+        assertThat(isBaseExtension).isEqualTo("false");
+    }
+
     private static void recordSysImg21(Path root) {
         InMemoryFileSystems.recordExistingFile(
                 root.resolve("sdk/system-images/android-21/default/x86/system.img"));
@@ -1120,5 +1159,32 @@ public final class AvdManagerTest {
                         + "    <display-name>Chrome OS m60 System Image</display-name>"
                         + "  </localPackage>"
                         + "</ns3:sdk-sys-img>\n");
+    }
+
+    private static void recordPlayStoreSysImg33ext4(Path root) throws IOException {
+        InMemoryFileSystems.recordExistingFile(
+                root.resolve(
+                        "sdk/system-images/android-33-ext4/google_apis_playstore/x86_64/system.img"));
+        Files.createDirectories(
+                root.resolve(
+                        "sdk/system-images/android-33-ext4/google_apis_playstore/x86_64/data"));
+        InMemoryFileSystems.recordExistingFile(
+                root.resolve(
+                        "sdk/system-images/android-33-ext4/google_apis_playstore/x86_64/package.xml"),
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<sys-img:sdk-sys-img xmlns:sys-img=\"http://schemas.android.com/sdk/android/repo/sys-img2/03\" "
+                        + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+                        + "<license id=\"license-9A5C00D5\" type=\"text\">Terms and Conditions\n"
+                        + "</license><localPackage "
+                        + "path=\"system-images;android-33-ext4;google_apis_playstore;x86_64\" "
+                        + "obsolete=\"false\"><type-details xsi:type=\"sys-img:sysImgDetailsType\">"
+                        + "<api-level>33</api-level>"
+                        + "<extension-level>4</extension-level><base-extension>false</base-extension>"
+                        + "<tag><id>google_apis_playstore</id><display>Google Play</display></tag>"
+                        + "<vendor><id>google</id><display>Google Inc.</display></vendor>"
+                        + "<abi>x86_64</abi></type-details><revision><major>9</major></revision>"
+                        + "<display-name>Google APIs with Playstore Intel x86 Atom System Image</display-name>"
+                        + "<uses-license ref=\"license-9A5C00D5\"/></localPackage>"
+                        + "</sys-img:sdk-sys-img>\n");
     }
 }
