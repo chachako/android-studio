@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     parentScope: CoroutineScope,
-    private val flows: ProcessNameMonitorFlows,
+    private val deviceTracker: DeviceTracker,
     private val processTrackerFactory: ProcessTrackerFactory<IDevice>,
     private val maxProcessRetention: Int,
     private val logger: AdbLogger,
@@ -55,7 +55,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
         logger: AdbLogger,
     ) : this(
         parentScope,
-        ProcessNameMonitorFlowsImpl(adbAdapter, logger, adbSession.ioDispatcher),
+        DeviceTrackerImpl(adbAdapter, logger, adbSession.ioDispatcher),
         ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, trackerAgentPath, trackerAgentInterval, logger),
         maxProcessRetention,
         logger,
@@ -82,8 +82,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
             isStarted = true
         }
         scope.launch {
-            // TODO: Use adbSession.trackDevices and a device cache.
-            flows.trackDevices().collect {
+            deviceTracker.trackDevices().collect {
                 when (it) {
                     is DeviceMonitorEvent.Online -> addDevice(it.device)
                     is Disconnected -> removeDevice(it.device)

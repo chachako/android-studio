@@ -38,20 +38,20 @@ import org.junit.Test
 import java.io.Closeable
 
 /**
- * Tests for [ProcessNameMonitorFlowsImpl]
+ * Tests for [DeviceTrackerImpl]
  */
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalCoroutinesApi::class) // runTest is experimental (replaced runTestTest)
-class ProcessNameMonitorFlowsImplTest {
+class DeviceTrackerImplTest {
   private val adbAdapter = FakeAdbAdapter()
 
-  private val processNameMonitorFlows = ProcessNameMonitorFlowsImpl(adbAdapter, FakeAdbLoggerFactory().logger)
+  private val deviceTracker = DeviceTrackerImpl(adbAdapter, FakeAdbLoggerFactory().logger)
 
   private val eventChannel = Channel<String>(1)
 
   @Test
   fun trackDevices_noInitialDevices(): Unit = runTest {
-    collectFlowToChannel(processNameMonitorFlows.trackDevices(), eventChannel).use {
+    collectFlowToChannel(deviceTracker.trackDevices(), eventChannel).use {
       advanceUntilIdle()
 
       adbAdapter.fireDeviceConnected(mockDevice("device1", ONLINE))
@@ -70,7 +70,7 @@ class ProcessNameMonitorFlowsImplTest {
 
   @Test
   fun trackDevices_noInitialDevices1(): Unit = runTest {
-    val job = async { processNameMonitorFlows.trackDevices().take(3).toList() }
+    val job = async { deviceTracker.trackDevices().take(3).toList() }
     advanceUntilIdle()
 
     adbAdapter.fireDeviceConnected(mockDevice("device1", ONLINE))
@@ -92,7 +92,7 @@ class ProcessNameMonitorFlowsImplTest {
       mockDevice("device2", ONLINE),
     )
 
-    collectFlowToChannel(processNameMonitorFlows.trackDevices(), eventChannel).use {
+    collectFlowToChannel(deviceTracker.trackDevices(), eventChannel).use {
       assertThat(eventChannel.receive()).isEqualTo("Online(device=device2)")
     }
   }
@@ -104,7 +104,7 @@ class ProcessNameMonitorFlowsImplTest {
       mockDevice("device2", ONLINE),
     )
 
-    collectFlowToChannel(processNameMonitorFlows.trackDevices(), eventChannel).use {
+    collectFlowToChannel(deviceTracker.trackDevices(), eventChannel).use {
       assertThat(eventChannel.receive()).isEqualTo("Online(device=device2)")
 
       adbAdapter.fireDeviceConnected(mockDevice("device1", ONLINE))
@@ -114,7 +114,7 @@ class ProcessNameMonitorFlowsImplTest {
 
   @Test
   fun trackDevices_jobCanceled_unregisters(): Unit = runTest {
-    val job = launch { processNameMonitorFlows.trackDevices().collect { } }
+    val job = launch { deviceTracker.trackDevices().collect { } }
     advanceUntilIdle()
     assertThat(adbAdapter.deviceChangeListeners).isNotEmpty()
 

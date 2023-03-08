@@ -27,14 +27,15 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Implementation of ProcessNameMonitorFlows
+ * Production implementation of [DeviceTracker]
+ *
+ * Uses a [com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener] to track events.
  */
-@Suppress("EXPERIMENTAL_API_USAGE") // Not experimental in main
-internal class ProcessNameMonitorFlowsImpl(
+internal class DeviceTrackerImpl(
     private val adbAdapter: AdbAdapter,
     private val logger: AdbLogger,
     private val context: CoroutineContext = EmptyCoroutineContext,
-) : ProcessNameMonitorFlows {
+) : DeviceTracker {
 
     override fun trackDevices(): Flow<DeviceMonitorEvent> = callbackFlow {
         val listener = DevicesMonitorListener(this, logger)

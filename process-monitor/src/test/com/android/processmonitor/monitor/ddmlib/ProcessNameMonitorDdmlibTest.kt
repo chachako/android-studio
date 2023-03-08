@@ -46,11 +46,12 @@ class ProcessNameMonitorDdmlibTest {
 
     @Test
     fun devicesOnline(): Unit = runTest {
-        FakeProcessNameMonitorFlows().use { flows ->
-            val monitor = processNameMonitor(flows, trackerFactory = fakeProcessTrackerFactory)
+        FakeDeviceTracker().use { deviceTracker ->
+            val monitor =
+                processNameMonitor(deviceTracker, trackerFactory = fakeProcessTrackerFactory)
 
-            flows.sendDeviceEvents(Online(mockDevice("device1")))
-            flows.sendDeviceEvents(Online(mockDevice("device2")))
+            deviceTracker.sendDeviceEvents(Online(mockDevice("device1")))
+            deviceTracker.sendDeviceEvents(Online(mockDevice("device2")))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
@@ -66,19 +67,19 @@ class ProcessNameMonitorDdmlibTest {
 
     @Test
     fun deviceDisconnected(): Unit = runTest {
-        FakeProcessNameMonitorFlows().use { flows ->
-            val monitor = processNameMonitor(flows)
+        FakeDeviceTracker().use { deviceTracker ->
+            val monitor = processNameMonitor(deviceTracker)
 
             val device1 = mockDevice("device1")
-            flows.sendDeviceEvents(Online(device1))
-            flows.sendDeviceEvents(Online(mockDevice("device2")))
+            deviceTracker.sendDeviceEvents(Online(device1))
+            deviceTracker.sendDeviceEvents(Online(mockDevice("device2")))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
             fakeProcessTrackerFactory.send("device2", ProcessAdded(2, "package2", "process2"))
             advanceUntilIdle()
 
-            flows.sendDeviceEvents(Disconnected(device1))
+            deviceTracker.sendDeviceEvents(Disconnected(device1))
             advanceUntilIdle()
 
             assertThat(monitor.getProcessNames("device1", 1)).isNull()
@@ -89,9 +90,9 @@ class ProcessNameMonitorDdmlibTest {
 
     @Test
     fun propagatesMaxProcessRetention(): Unit = runTest {
-        FakeProcessNameMonitorFlows().use { flows ->
-            val monitor = processNameMonitor(flows, maxProcessRetention = 1)
-            flows.sendDeviceEvents(Online(mockDevice("device1")))
+        FakeDeviceTracker().use { deviceTracker ->
+            val monitor = processNameMonitor(deviceTracker, maxProcessRetention = 1)
+            deviceTracker.sendDeviceEvents(Online(mockDevice("device1")))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
@@ -112,14 +113,14 @@ class ProcessNameMonitorDdmlibTest {
 
     @Test
     fun disconnect_closesPerDeviceMonitor(): Unit = runTest {
-        FakeProcessNameMonitorFlows().use { flows ->
-            val monitor = processNameMonitor(flows)
+        FakeDeviceTracker().use { deviceTracker ->
+            val monitor = processNameMonitor(deviceTracker)
             val device = mockDevice("device1")
-            flows.sendDeviceEvents(Online(device))
+            deviceTracker.sendDeviceEvents(Online(device))
             advanceTimeBy(2000) // Let the flow run a few cycles
             val perDeviceMonitor = monitor.devices["device1"]
 
-            flows.sendDeviceEvents(Disconnected(device))
+            deviceTracker.sendDeviceEvents(Disconnected(device))
             advanceUntilIdle()
 
             assertThat(perDeviceMonitor?.scope?.isActive).isFalse()
@@ -127,13 +128,13 @@ class ProcessNameMonitorDdmlibTest {
     }
 
     private fun CoroutineScope.processNameMonitor(
-        flows: ProcessNameMonitorFlows = FakeProcessNameMonitorFlows(),
+        deviceTracker: DeviceTracker = FakeDeviceTracker(),
         trackerFactory: ProcessTrackerFactory<IDevice> = fakeProcessTrackerFactory,
         maxProcessRetention: Int = 1000,
     ): ProcessNameMonitorDdmlib {
         return ProcessNameMonitorDdmlib(
             this,
-            flows,
+            deviceTracker,
             trackerFactory,
             maxProcessRetention,
             FakeAdbLoggerFactory().logger

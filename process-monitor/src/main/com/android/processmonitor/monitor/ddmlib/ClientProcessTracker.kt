@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.transform
 
 /**
- * A [ProcessTracker] that tracks clients using a [ProcessNameMonitorFlows]
+ * A [ProcessTracker] that tracks clients Ddmlib [Client]s
  */
 internal class ClientProcessTracker(
     private val device: IDevice,
