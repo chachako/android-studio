@@ -15,6 +15,7 @@
  */
 package com.android.fakeadbserver.services
 
+import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ShellV2Protocol
 import java.io.EOFException
 import java.net.Socket
@@ -48,17 +49,17 @@ interface ServiceOutput {
  * Implementation of [ServiceOutput] that write stdout/stderr directly to
  * [Socket.getOutputStream], and ignores exit code.
  */
-class ExecServiceOutput(socket: Socket) : ServiceOutput {
+class ExecServiceOutput(socket: Socket, val device: DeviceState) : ServiceOutput {
 
     private val input = socket.getInputStream()
     private val output = socket.getOutputStream()
 
     override fun writeStdout(bytes: ByteArray) {
-        output.write(bytes)
+        output.write(bytes.replaceNewLineForOlderDevices(device))
     }
 
     override fun writeStderr(bytes: ByteArray) {
-        output.write(bytes)
+        output.write(bytes.replaceNewLineForOlderDevices(device))
     }
 
     override fun writeExitCode(exitCode: Int) {
@@ -68,6 +69,25 @@ class ExecServiceOutput(socket: Socket) : ServiceOutput {
     override fun readStdin(bytes: ByteArray, offset: Int, length: Int): Int {
         return input.read(bytes, offset, length)
     }
+}
+
+/** Replaces '\n'->'\r\n' for older devices */
+fun ByteArray.replaceNewLineForOlderDevices(device: DeviceState): ByteArray {
+    val newLineByte = '\n'.code.toByte()
+    if (device.apiLevel > 23 || !contains(newLineByte)) {
+        return this
+    }
+
+    val newLineCount = this.count { it == newLineByte }
+    val result = ByteArray(size + newLineCount)
+    var outputIndex = 0
+    for (byte in this) {
+        if (byte == newLineByte) {
+            result[outputIndex++] = '\r'.code.toByte()
+        }
+        result[outputIndex++] = byte
+    }
+    return result
 }
 
 /**

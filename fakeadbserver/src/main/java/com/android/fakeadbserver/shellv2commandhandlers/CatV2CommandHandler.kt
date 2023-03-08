@@ -19,8 +19,7 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceOutput
-
-const val STDOUT_PACKET_SIZE = 80
+import java.io.ByteArrayOutputStream
 
 /**
  * A [SimpleShellV2Handler] that supports the following behaviors.
@@ -45,7 +44,7 @@ class CatV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2H
         shellCommandArgs: String?
     ) {
         if (shellCommandArgs.isNullOrEmpty()) {
-            forwardStdinAsStdout(serviceOutput, device)
+            forwardStdinAsStdout(serviceOutput)
             return
         }
 
@@ -56,51 +55,25 @@ class CatV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2H
         catRegularFiles(serviceOutput, device, shellCommandArgs)
     }
 
-    private fun forwardStdinAsStdout(serviceOutput: ServiceOutput, device: DeviceState) {
-        // TODO: Combine v1 and v2 handling
-        // Forward `stdin` packets back as `stdout` packets
-        when (shellProtocolType) {
-            ShellProtocolType.SHELL -> {
-                val sb = StringBuilder()
-                while (true) {
-                    // Note: We process each character individually to ensure we send back
-                    // all character without any loss and/or conversion.
-                    val buffer = ByteArray(1)
-                    val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
-                    if (numRead < 0) {
-                        serviceOutput.writeStdout(sb.toString())
-                        serviceOutput.writeExitCode(0)
-                        break
-                    }
-                    val ch = buffer[0].toInt()
-                    if (ch != '\n'.code) {
-                        sb.append(ch.toChar())
-                    } else {
-                        // TODO: Handle '\n'->'\r\n' for older devices in serviceOutput
-                        sb.append(shellNewLine(device))
-                        serviceOutput.writeStdout(sb.toString())
-                        sb.setLength(0)
-                    }
-                }
+    /** Outputs all characters received from `stdin` back to `stdout`, one
+     * line at a time, i.e. characters are written back to `stdout` only when a newline ("\n")
+     * character is received from `stdin`.
+     **/
+    private fun forwardStdinAsStdout(serviceOutput: ServiceOutput) {
+        val stdoutStream = ByteArrayOutputStream()
+        val buffer = ByteArray(1)
+        while (true) {
+            val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
+            if (numRead < 0) {
+                serviceOutput.writeStdout(stdoutStream.toByteArray())
+                serviceOutput.writeExitCode(0)
+                break
             }
-
-            ShellProtocolType.SHELL_V2 -> {
-                while (true) {
-                    // Send `stdout` packets of 200 bytes max. so simulate potentially custom
-                    // process on a "real" device
-                    val buffer = ByteArray(STDOUT_PACKET_SIZE)
-                    val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
-                    if (numRead < 0) {
-                        serviceOutput.writeExitCode(0)
-                        break
-                    }
-                    serviceOutput.writeStdout(
-                        if (numRead == buffer.size) buffer else buffer.copyOfRange(
-                            0,
-                            numRead
-                        )
-                    )
-                }
+            val ch = buffer[0].toInt()
+            stdoutStream.write(ch)
+            if (ch == '\n'.code) {
+                serviceOutput.writeStdout(stdoutStream.toByteArray())
+                stdoutStream.reset()
             }
         }
     }
@@ -139,15 +112,6 @@ class CatV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2H
             serviceOutput.writeStderr("No such file or directory")
         } else {
             serviceOutput.writeStdout(file.bytes)
-        }
-    }
-
-    private fun shellNewLine(device: DeviceState): String {
-        // Older devices use "\r\n" for newlines (legacy shell protocol only)
-        return if (device.apiLevel <= 23) {
-            "\r\n"
-        } else {
-            "\n"
         }
     }
 }

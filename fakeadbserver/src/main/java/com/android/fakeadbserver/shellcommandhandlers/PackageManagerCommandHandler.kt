@@ -21,14 +21,14 @@ import com.android.fakeadbserver.services.ExecServiceOutput
 import java.net.Socket
 
 class PackageManagerCommandHandler : SimpleShellHandler("pm") {
-  override fun execute(fakeAdbServer: FakeAdbServer, respSocket: Socket, state: DeviceState, args: String?) {
+  override fun execute(fakeAdbServer: FakeAdbServer, respSocket: Socket, device: DeviceState, args: String?) {
       writeOkay(respSocket.getOutputStream())
 
-      val serviceOutput = ExecServiceOutput(respSocket)
+      val serviceOutput = ExecServiceOutput(respSocket, device)
 
       // Save command to logs so tests can consult them.
       args?.let {
-          state.addPmLog(it)
+          device.addPmLog(it)
       }
 
       // Create a service request
@@ -36,7 +36,7 @@ class PackageManagerCommandHandler : SimpleShellHandler("pm") {
       args?.let{
           params.addAll(it.split(" "))
       }
-      state.serviceManager.processCommand(params, serviceOutput)
+      device.serviceManager.processCommand(params, serviceOutput)
   }
 
 

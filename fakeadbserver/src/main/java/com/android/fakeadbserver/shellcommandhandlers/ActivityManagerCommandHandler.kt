@@ -39,7 +39,7 @@ class ActivityManagerCommandHandler : SimpleShellHandler("am") {
 
         CommandHandler.writeOkay(output)
 
-        val serviceOutput = ExecServiceOutput(responseSocket)
+        val serviceOutput = ExecServiceOutput(responseSocket, device)
 
         // Create a service request
         val params = mutableListOf(ServiceManager.ACTIVITY_MANAGER_SERVICE_NAME)

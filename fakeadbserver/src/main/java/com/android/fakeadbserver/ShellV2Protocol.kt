@@ -34,8 +34,8 @@ enum class ShellProtocolType {
         override val command: String
             get() = "shell"
 
-        override fun createServiceOutput(socket: Socket): ServiceOutput {
-            return ExecServiceOutput(socket)
+        override fun createServiceOutput(socket: Socket, device: DeviceState): ServiceOutput {
+            return ExecServiceOutput(socket, device)
         }
     },
     SHELL_V2 {
@@ -43,13 +43,13 @@ enum class ShellProtocolType {
         override val command: String
             get() = "shell,v2"
 
-        override fun createServiceOutput(socket: Socket): ServiceOutput {
+        override fun createServiceOutput(socket: Socket, device: DeviceState): ServiceOutput {
             return ShellProtocolServiceOutput(socket)
         }
     };
 
     abstract val command: String
-    abstract fun createServiceOutput(socket: Socket) : ServiceOutput
+    abstract fun createServiceOutput(socket: Socket, device: DeviceState) : ServiceOutput
 }
 
 class ShellV2Protocol(private val socket: Socket) {

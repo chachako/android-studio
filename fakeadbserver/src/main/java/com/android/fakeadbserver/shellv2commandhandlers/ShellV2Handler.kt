@@ -48,7 +48,7 @@ abstract class ShellV2Handler protected constructor(protected val shellProtocolT
             socket.getOutputStream().write("OKAY".toByteArray(Charsets.UTF_8))
             execute(
                 server,
-                shellProtocolType.createServiceOutput(socket),
+                shellProtocolType.createServiceOutput(socket, device),
                 device,
                 shellCommand,
                 shellCommandArgs
