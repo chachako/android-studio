@@ -41,7 +41,8 @@ internal class PerDeviceMonitor(
     val processTracker: ProcessTracker,
 ) : Closeable {
 
-    private val scope: CoroutineScope =
+    @VisibleForTesting
+    val scope: CoroutineScope =
         CoroutineScope(parentScope.coroutineContext + SupervisorJob())
 
     private val processes = RetainingMap<Int, ProcessNames>(maxProcessRetention)

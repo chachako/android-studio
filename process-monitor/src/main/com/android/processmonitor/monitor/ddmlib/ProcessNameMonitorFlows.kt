@@ -15,11 +15,10 @@
  */
 package com.android.processmonitor.monitor.ddmlib
 
-import com.android.ddmlib.IDevice
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Creates [Flow]'s used by [ProcessNameMonitorDdmlib] & [ClientProcessTracker].
+ * Creates a [Flow] used by [ProcessNameMonitorDdmlib]
  */
 internal interface ProcessNameMonitorFlows {
 
@@ -27,9 +26,4 @@ internal interface ProcessNameMonitorFlows {
      * Track devices connecting and disconnecting.
      */
     fun trackDevices(): Flow<DeviceMonitorEvent>
-
-    /**
-     * Track clients being added & removed.
-     */
-    fun trackClients(device: IDevice): Flow<ClientMonitorEvent>
 }

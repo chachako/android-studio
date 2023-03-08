@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.common
+package com.android.processmonitor.monitor
 
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import java.io.Closeable
+import com.android.processmonitor.common.ProcessTracker
 
-/** A fake [ProcessTracker] for tests */
-internal class FakeProcessTracker : ProcessTracker, Closeable {
-
-    private val channel = Channel<ProcessEvent>(10)
-
-    suspend fun send(vararg events: ProcessEvent) {
-        events.forEach { channel.send(it) }
-    }
-
-    override suspend fun trackProcesses(): Flow<ProcessEvent> = channel.consumeAsFlow()
-
-    override fun close() {
-        channel.close()
-    }
+/**
+ * Creates a [ProcessTracker] for a device.
+ *
+ * This makes it possible to test a monitor without having to simulate the underlying trackers it
+ * uses.
+ *
+ * We use a generic device type so that we can later reuse it when we introduce a monitor that uses
+ * Adblib with a ConnectedDevice.
+ */
+internal fun interface ProcessTrackerFactory<T> {
+    fun createProcessTracker(device: T) : ProcessTracker
 }

@@ -15,34 +15,24 @@
  */
 package com.android.processmonitor.monitor.ddmlib
 
-import com.android.ddmlib.IDevice
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import java.io.Closeable
 
 internal class FakeProcessNameMonitorFlows : ProcessNameMonitorFlows, Closeable {
-  private val deviceEventsChannel = Channel<DeviceMonitorEvent>(10)
-  private val clientEventsChannels = mutableMapOf<String, Channel<ClientMonitorEvent>>()
 
-  suspend fun sendDeviceEvents(vararg events: DeviceMonitorEvent) {
-    events.forEach {
-      deviceEventsChannel.send(it)
+    private val deviceEventsChannel = Channel<DeviceMonitorEvent>(10)
+
+    suspend fun sendDeviceEvents(vararg events: DeviceMonitorEvent) {
+        events.forEach {
+            deviceEventsChannel.send(it)
+        }
     }
-  }
 
-  suspend fun sendClientEvents(serialNumber: String, vararg events: ClientMonitorEvent) {
-    val channel = clientEventsChannels.getOrPut(serialNumber) { Channel(Channel.UNLIMITED) }
-    events.forEach { channel.send(it) }
-  }
+    override fun trackDevices(): Flow<DeviceMonitorEvent> = deviceEventsChannel.consumeAsFlow()
 
-  override fun trackDevices(): Flow<DeviceMonitorEvent> = deviceEventsChannel.consumeAsFlow()
-
-  override fun trackClients(device: IDevice): Flow<ClientMonitorEvent> =
-    clientEventsChannels.getOrPut(device.serialNumber) { Channel(Channel.UNLIMITED) }.consumeAsFlow()
-
-  override fun close() {
-    deviceEventsChannel.close()
-    clientEventsChannels.values.forEach { it.close() }
-  }
+    override fun close() {
+        deviceEventsChannel.close()
+    }
 }

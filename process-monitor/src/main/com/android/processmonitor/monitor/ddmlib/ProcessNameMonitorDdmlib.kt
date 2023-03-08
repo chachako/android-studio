@@ -19,12 +19,10 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.withPrefix
 import com.android.ddmlib.IDevice
-import com.android.processmonitor.agenttracker.AgentProcessTracker
-import com.android.processmonitor.common.ProcessTracker
-import com.android.processmonitor.monitor.MergedProcessTracker
 import com.android.processmonitor.monitor.PerDeviceMonitor
 import com.android.processmonitor.monitor.ProcessNameMonitor
 import com.android.processmonitor.monitor.ProcessNames
+import com.android.processmonitor.monitor.ProcessTrackerFactory
 import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -41,10 +39,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     parentScope: CoroutineScope,
-    private val adbSession: AdbSession,
     private val flows: ProcessNameMonitorFlows,
-    private val trackerAgentPath: Path?,
-    private val trackerAgentInterval: Int,
+    private val processTrackerFactory: ProcessTrackerFactory<IDevice>,
     private val maxProcessRetention: Int,
     private val logger: AdbLogger,
 ) : ProcessNameMonitor, Closeable {
@@ -59,10 +55,8 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
         logger: AdbLogger,
     ) : this(
         parentScope,
-        adbSession,
         ProcessNameMonitorFlowsImpl(adbAdapter, logger, adbSession.ioDispatcher),
-        trackerAgentPath,
-        trackerAgentInterval,
+        ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, trackerAgentPath, trackerAgentInterval, logger),
         maxProcessRetention,
         logger,
     )
@@ -108,33 +102,12 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
 
     private fun addDevice(device: IDevice) {
         logger.info { "Adding ${device.serialNumber}" }
-        val processTracker = createProcessTracker(device)
+        val processTracker = processTrackerFactory.createProcessTracker(device)
         val logger = logger.withPrefix("PerDeviceMonitor: ${device.serialNumber}: ")
         devices[device.serialNumber] =
             PerDeviceMonitor(scope, logger, maxProcessRetention, processTracker).apply {
                 start()
             }
-    }
-
-    private fun createProcessTracker(device: IDevice): ProcessTracker {
-        val agentTracker = createAgentProcessTracker(device)
-        val clientTracker = ClientProcessTracker(flows, device, logger)
-        return when (agentTracker) {
-            null -> clientTracker
-            else -> MergedProcessTracker(clientTracker, agentTracker)
-        }
-    }
-
-    private fun createAgentProcessTracker(device: IDevice): AgentProcessTracker? {
-        // TODO(b/272009795): Investigate further
-        if (device.version.apiLevel < 21 || trackerAgentPath == null) {
-            return null
-        }
-        val serialNumber = device.serialNumber
-        val abi = device.abis.first()
-        return AgentProcessTracker(
-            adbSession, serialNumber, abi, trackerAgentPath, trackerAgentInterval, logger
-        )
     }
 
     private fun removeDevice(device: IDevice) {

@@ -49,7 +49,7 @@ class ClientProcessTrackerTest {
     val adbRule = FakeAdbRule()
 
     private val logger = FakeAdbLoggerFactory().logger
-    private val flows get() = ProcessNameMonitorFlowsImpl(adbRule.adbAdapter(), logger)
+    private val adbAdapter get() = AdbAdapterImpl(Futures.immediateFuture(adbRule.bridge))
 
     @Test
     fun initialClients() = runTest {
@@ -59,7 +59,7 @@ class ClientProcessTrackerTest {
         val iDevice = device.iDevice()
         runBlocking { yieldUntil(Duration.ofSeconds(1)) { iDevice.clients.count() == 2 } }
 
-        val tracker = ClientProcessTracker(flows, iDevice, logger)
+        val tracker = ClientProcessTracker(iDevice, adbAdapter, logger)
 
         tracker.trackProcesses().toChannel(this).use { channel ->
             assertThat(channel.take(2)).containsExactly(
@@ -72,7 +72,7 @@ class ClientProcessTrackerTest {
     @Test
     fun clientListChanged(): Unit = runTest {
         val device = adbRule.setupDevice("device1")
-        val tracker = ClientProcessTracker(flows, device.iDevice(), logger)
+        val tracker = ClientProcessTracker(device.iDevice(), adbAdapter, logger)
 
         tracker.trackProcesses().toChannel(this).use { channel ->
             device.startClient(pid = 101, "package1", "process1")
@@ -96,7 +96,7 @@ class ClientProcessTrackerTest {
     fun clientListChanged_otherDevice(): Unit = runTest {
         val device1 = adbRule.setupDevice("device1")
         val device2 = adbRule.setupDevice("device2")
-        val tracker = ClientProcessTracker(flows, device1.iDevice(), logger)
+        val tracker = ClientProcessTracker(device1.iDevice(), adbAdapter, logger)
 
         tracker.trackProcesses().toChannel(this).use { channel ->
             device1.startClient(pid = 101, "package1", "process1")
@@ -110,8 +110,6 @@ class ClientProcessTrackerTest {
     private fun DeviceState.iDevice(): IDevice =
         adbRule.bridge.devices.first { it.serialNumber == this.deviceId }
 }
-
-private fun FakeAdbRule.adbAdapter() = AdbAdapterImpl(Futures.immediateFuture(bridge))
 
 private fun FakeAdbRule.setupDevice(serialNumber: String): DeviceState {
     return attachDevice(serialNumber, "", "", "13", "33")
@@ -146,7 +144,6 @@ internal class FlowChannel<T>(scope: CoroutineScope, flow: Flow<T>) : Closeable 
         job.cancel()
     }
 }
-
 
 internal fun <T> Flow<T>.toChannel(scope: CoroutineScope): FlowChannel<T> {
     return FlowChannel(scope, this)
