@@ -18,43 +18,25 @@ package com.android.processmonitor.monitor.ddmlib
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.ddmlib.IDevice
-import com.android.processmonitor.agenttracker.AgentProcessTracker
 import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
 import com.android.processmonitor.common.ProcessTracker
-import com.android.processmonitor.monitor.MergedProcessTracker
+import com.android.processmonitor.monitor.BaseProcessTrackerFactory
 import com.android.processmonitor.monitor.ProcessTrackerFactory
 
 /** A [ProcessTrackerFactory] for [ProcessNameMonitorDdmlib] */
 internal class ProcessTrackerFactoryDdmlib(
-    private val adbSession: AdbSession,
+    adbSession: AdbSession,
     private val adbAdapter: AdbAdapter,
-    private val agentConfig: AgentProcessTrackerConfig?,
+    agentConfig: AgentProcessTrackerConfig?,
     private val logger: AdbLogger,
-) : ProcessTrackerFactory<IDevice> {
+) : BaseProcessTrackerFactory<IDevice>(adbSession, agentConfig, logger) {
 
-    override fun createProcessTracker(device: IDevice): ProcessTracker {
-        val agentTracker = createAgentProcessTracker(device)
-        val clientTracker = ClientProcessTracker(device, adbAdapter, logger)
-        return when (agentTracker) {
-            null -> clientTracker
-            else -> MergedProcessTracker(clientTracker, agentTracker)
-        }
-    }
+    override fun createMainTracker(device: IDevice): ProcessTracker =
+        ClientProcessTracker(device, adbAdapter, logger)
 
-    private fun createAgentProcessTracker(device: IDevice): AgentProcessTracker? {
-        // TODO(b/272009795): Investigate further
-        if (device.version.apiLevel < 21 || agentConfig == null) {
-            return null
-        }
-        val serialNumber = device.serialNumber
-        val abi = device.abis.first()
-        return AgentProcessTracker(
-            adbSession,
-            serialNumber,
-            abi,
-            agentConfig.sourcePath,
-            agentConfig.pollingIntervalMillis,
-            logger
-        )
-    }
+    override suspend fun getDeviceApiLevel(device: IDevice): Int = device.version.apiLevel
+
+    override suspend fun getDeviceAbi(device: IDevice): String? = device.abis.firstOrNull()
+
+    override fun getDeviceSerialNumber(device: IDevice): String = device.serialNumber
 }

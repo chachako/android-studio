@@ -27,5 +27,5 @@ import com.android.processmonitor.common.ProcessTracker
  * Adblib with a ConnectedDevice.
  */
 internal fun interface ProcessTrackerFactory<T> {
-    fun createProcessTracker(device: T) : ProcessTracker
+    suspend fun createProcessTracker(device: T) : ProcessTracker
 }

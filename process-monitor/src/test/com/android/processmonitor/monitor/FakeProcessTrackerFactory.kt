@@ -24,7 +24,7 @@ internal abstract class FakeProcessTrackerFactory<T> : ProcessTrackerFactory<T> 
 
     private val devices = mutableMapOf<String, FakeProcessTracker>()
 
-    override fun createProcessTracker(device: T): ProcessTracker {
+    override suspend fun createProcessTracker(device: T): ProcessTracker {
         val tracker = FakeProcessTracker()
         devices[getSerialNumber(device)] = tracker
         return tracker

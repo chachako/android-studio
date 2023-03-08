@@ -18,54 +18,27 @@ package com.android.processmonitor.monitor.ddmlib
 import com.android.adblib.AdbSession
 import com.android.adblib.AdbSessionHost
 import com.android.adblib.testing.FakeAdbLoggerFactory
-import com.android.processmonitor.agenttracker.AgentProcessTracker
-import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
-import com.android.processmonitor.monitor.MergedProcessTracker
-import com.android.testutils.TestResources
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 /**
- * Tests for [com.android.processmonitor.monitor.ddmlib.ProcessTrackerFactoryDdmlib]
+ * Tests for [ProcessTrackerFactoryDdmlib]
  */
 class ProcessTrackerFactoryDdmlibTest {
 
     private val adbSession = AdbSession.create(AdbSessionHost())
     private val adbAdapter = FakeAdbAdapter()
-    private val trackerAgentPath = TestResources.getDirectory("/agent").toPath()
-    private val trackerAgentInterval = 1000
     private val logger = FakeAdbLoggerFactory().logger
 
     @Test
-    fun withAgentConfig_usesAgentProcessTracker() {
-        val factory =
-            ProcessTrackerFactoryDdmlib(
-                adbSession,
-                adbAdapter,
-                AgentProcessTrackerConfig(trackerAgentPath, trackerAgentInterval),
-                logger
-            )
+    fun providesData(): Unit = runBlocking {
+        val device = mockDevice("device1", apiLevel = 25, abi = "x86")
+        val factory = ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, null, logger)
 
-        val tracker = factory.createProcessTracker(mockDevice("device1")) as? MergedProcessTracker
-        assertThat(tracker?.trackers?.map { it::class })
-            .containsExactly(
-                ClientProcessTracker::class,
-                AgentProcessTracker::class,
-            )
-    }
-
-    @Test
-    fun withoutAgentConfig_doesNotUseAgentProcessTracker() {
-        val factory =
-            ProcessTrackerFactoryDdmlib(
-                adbSession,
-                adbAdapter,
-                agentConfig = null,
-                logger
-            )
-
-        val tracker = factory.createProcessTracker(mockDevice("device1"))
-
-        assertThat(tracker).isInstanceOf(ClientProcessTracker::class.java)
+        assertThat(factory.getDeviceSerialNumber(device)).isEqualTo("device1")
+        assertThat(factory.getDeviceApiLevel(device)).isEqualTo(25)
+        assertThat(factory.getDeviceAbi(device)).isEqualTo("x86")
+        assertThat(factory.createProcessTracker(device)).isInstanceOf(ClientProcessTracker::class.java)
     }
 }

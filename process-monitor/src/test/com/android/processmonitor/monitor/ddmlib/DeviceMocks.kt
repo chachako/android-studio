@@ -24,53 +24,50 @@ import com.android.sdklib.AndroidVersion
 import com.android.testutils.MockitoKt
 import com.android.testutils.MockitoKt.whenever
 
-
 /**
  * Mocks for [IDevice] and [Client]
  */
-internal fun mockDevice(serialNumber: String, state: DeviceState = OFFLINE): IDevice {
-  return MockitoKt.mock<IDevice>().also {
-    whenever(it.serialNumber).thenReturn(serialNumber)
-    whenever(it.toString()).thenReturn(serialNumber)
-    whenever(it.state).thenReturn(state)
-    whenever(it.isOnline).thenReturn(state == DeviceState.ONLINE)
-    whenever(it.isOffline).thenReturn(state != DeviceState.ONLINE)
-    whenever(it.clients).thenReturn(emptyArray())
-    whenever(it.version).thenReturn(AndroidVersion(33))
-    whenever(it.abis).thenReturn(listOf("abi"))
-  }
+internal fun mockDevice(
+    serialNumber: String,
+    state: DeviceState = OFFLINE,
+    apiLevel: Int = 33,
+    abi: String = "abi",
+): IDevice {
+    return MockitoKt.mock<IDevice>().also {
+        whenever(it.serialNumber).thenReturn(serialNumber)
+        whenever(it.toString()).thenReturn(serialNumber)
+        whenever(it.state).thenReturn(state)
+        whenever(it.isOnline).thenReturn(state == DeviceState.ONLINE)
+        whenever(it.isOffline).thenReturn(state != DeviceState.ONLINE)
+        whenever(it.clients).thenReturn(emptyArray())
+        whenever(it.version).thenReturn(AndroidVersion(apiLevel))
+        whenever(it.abis).thenReturn(listOf(abi))
+    }
 }
 
 internal fun IDevice.setState(state: DeviceState): IDevice {
-  whenever(this.state).thenReturn(state)
-  return this
+    whenever(this.state).thenReturn(state)
+    return this
 }
 
 internal fun IDevice.withClients(vararg clients: Client): IDevice {
-  whenever(this.clients).thenReturn(clients)
-  clients.forEach { whenever(it.device).thenReturn(this) }
-  return this
+    whenever(this.clients).thenReturn(clients)
+    clients.forEach { whenever(it.device).thenReturn(this) }
+    return this
 }
 
 internal fun mockClient(pid: Int, packageName: String?, processName: String?): Client {
-  val clientData = mockClientData(pid, packageName, processName)
-  val client = MockitoKt.mock<Client>()
-  whenever(client.clientData).thenReturn(clientData)
-  whenever(client.toString()).thenReturn("pid=$pid packageName=$packageName")
-  return client
+    val clientData = mockClientData(pid, packageName, processName)
+    val client = MockitoKt.mock<Client>()
+    whenever(client.clientData).thenReturn(clientData)
+    whenever(client.toString()).thenReturn("pid=$pid packageName=$packageName")
+    return client
 }
-
 
 private fun mockClientData(pid: Int, packageName: String?, processName: String?): ClientData {
-  return MockitoKt.mock<ClientData>().also {
-    whenever(it.pid).thenReturn(pid)
-    whenever(it.packageName).thenReturn(packageName)
-    whenever(it.clientDescription).thenReturn(processName)
-  }
-}
-
-internal fun Client.withNames(packageName: String, processName: String): Client {
-  whenever(clientData.packageName).thenReturn(packageName)
-  whenever(clientData.clientDescription).thenReturn(processName)
-  return this
+    return MockitoKt.mock<ClientData>().also {
+        whenever(it.pid).thenReturn(pid)
+        whenever(it.packageName).thenReturn(packageName)
+        whenever(it.clientDescription).thenReturn(processName)
+    }
 }

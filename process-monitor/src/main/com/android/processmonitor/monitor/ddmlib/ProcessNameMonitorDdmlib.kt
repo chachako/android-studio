@@ -96,7 +96,7 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
         scope.cancel()
     }
 
-    private fun addDevice(device: IDevice) {
+    private suspend fun addDevice(device: IDevice) {
         logger.info { "Adding ${device.serialNumber}" }
         val processTracker = processTrackerFactory.createProcessTracker(device)
         val logger = logger.withPrefix("PerDeviceMonitor: ${device.serialNumber}: ")
