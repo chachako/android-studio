@@ -25,11 +25,9 @@ private const val OBJECT = "Ljava/lang/Object;"
 
 class DexFileParserTest {
 
-    private val PATH = "tools/base/profgen/profgen/testData/hello.jar"
-
     @Test
     fun test() {
-        val apk = Apk(TestUtils.resolveWorkspacePath(PATH).toFile())
+        val apk = Apk(TestUtils.resolveWorkspacePath(Path).toFile())
         assertThat(apk.dexes).hasSize(1)
         val dex = apk.dexes[0]
 
@@ -61,5 +59,9 @@ class DexFileParserTest {
         assertThat(splitParameters("[I[[La/B;IJ[B")).isEqualTo(
             listOf("[I", "[[La/B;", "I", "J", "[B")
         )
+    }
+
+    companion object {
+        private const val Path = "tools/base/profgen/profgen/testData/hello.apk"
     }
 }

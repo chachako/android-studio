@@ -25,20 +25,33 @@ import java.io.InputStreamReader
 import kotlin.test.fail
 
 class WildcardExpansionTest {
+
     @Test
-    fun test() {
+    fun testClassFile() {
         val classFileResource = object : ClassFileResource {
             override fun getByteStream(): InputStream =
-                TestUtils.resolveWorkspacePath(Path).toFile().inputStream()
+                TestUtils.resolveWorkspacePath(ClassFilePath).toFile().inputStream()
         }
-        runTest("LHello;", "LHello;", classFileResource)
-        runTest("LHell?;", "LHello;", classFileResource)
-        runTest("L*;", "LHello;", classFileResource)
-        runTest("L**;", "LHello;", classFileResource)
-        runTest("HSPLHello;->voidMethod()V", "HSPLHello;->voidMethod()V", classFileResource)
-        runTest("HSPLHello;->voidMetho?()V", "HSPLHello;->voidMethod()V", classFileResource)
-        runTest("HSPLHello;->void*()V", "HSPLHello;->voidMethod()V", classFileResource)
-        runTest("HSPLHello;->void**()V", "HSPLHello;->voidMethod()V", classFileResource)
+        runTests(listOf(classFileResource))
+    }
+
+    @Test
+    fun testJarArchive() {
+        val archive = TestUtils.resolveWorkspacePath(JarArchivePath)
+        ArchiveClassFileResourceProvider(archive).use {
+            runTests(it.getClassFileResources())
+        }
+    }
+
+    private fun runTests(classFileResources: Collection<ClassFileResource>) {
+        runTest("LHello;", "LHello;", classFileResources)
+        runTest("LHell?;", "LHello;", classFileResources)
+        runTest("L*;", "LHello;", classFileResources)
+        runTest("L**;", "LHello;", classFileResources)
+        runTest("HSPLHello;->voidMethod()V", "HSPLHello;->voidMethod()V", classFileResources)
+        runTest("HSPLHello;->voidMetho?()V", "HSPLHello;->voidMethod()V", classFileResources)
+        runTest("HSPLHello;->void*()V", "HSPLHello;->voidMethod()V", classFileResources)
+        runTest("HSPLHello;->void**()V", "HSPLHello;->voidMethod()V", classFileResources)
         runTest(
             "HSP**->**(**)**",
             """
@@ -46,7 +59,7 @@ class WildcardExpansionTest {
                 HSPLHello;->method(Ljava/lang/String;)I
                 HSPLHello;->voidMethod()V
             """.trimIndent(),
-            classFileResource)
+            classFileResources)
         runTest(
             """
                 H**;->**(**)**
@@ -58,23 +71,24 @@ class WildcardExpansionTest {
                 HSPLHello;->method(Ljava/lang/String;)I
                 HSPLHello;->voidMethod()V
             """.trimIndent(),
-            classFileResource)
+            classFileResources)
     }
 
     private fun runTest(
             profile: String,
             expectedProfile: String,
-            classFileResource: ClassFileResource) {
+            classFileResources: Collection<ClassFileResource>) {
         val reader = InputStreamReader(ByteArrayInputStream(profile.toByteArray()))
         val hrp = HumanReadableProfile(reader) { _, _, _ -> fail("Unable to parse HRF") }
         require(hrp != null)
-        val expandedHrp = hrp.expandWildcards(listOf(classFileResource))
+        val expandedHrp = hrp.expandWildcards(classFileResources)
         val expandedProfile = StringBuilder()
         expandedHrp.printExact(expandedProfile)
         assertThat(expandedProfile.toString()).isEqualTo(expectedProfile.plus('\n'))
     }
 
     companion object {
-        private const val Path = "tools/base/profgen/profgen/testData/Hello.class"
+        private const val ClassFilePath = "tools/base/profgen/profgen/testData/Hello.class"
+        private const val JarArchivePath = "tools/base/profgen/profgen/testData/hello.jar"
     }
 }

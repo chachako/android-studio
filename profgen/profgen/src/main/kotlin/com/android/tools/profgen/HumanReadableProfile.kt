@@ -16,13 +16,14 @@
 
 package com.android.tools.profgen
 
+import java.io.File
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.PrintWriter
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
-import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
 
 internal const val HOT = 'H'
 internal const val STARTUP = 'S'
@@ -38,16 +39,6 @@ internal const val CLOSE_PAREN = ')'
 internal const val METHOD_SEPARATOR_START = '-'
 internal const val METHOD_SEPARATOR_END = '>'
 internal const val INLINE_CACHE_SEPARATOR = '+'
-
-interface ClassFileResource {
-    fun getByteStream(): InputStream
-
-    fun getBytes(): ByteArray {
-        getByteStream().use {
-            return it.readBytes()
-        }
-    }
-}
 
 /**
  * The in-memory representation of a human-readable set of profile rules.
