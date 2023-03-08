@@ -35,6 +35,8 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.work.DisableCachingByDefault
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
 
 @DisableCachingByDefault(because = "The Setup Task is expected to get values external to " +
         "the Gradle Project. As such, it can never be considered up-to-date.")
@@ -56,8 +58,28 @@ abstract class ManagedDeviceSetupTask : UnsafeOutputsTask(
     abstract val setupResultDir: DirectoryProperty
 
     public override fun doTaskAction() {
-        (objectFactory.newInstance(setupAction.get()) as DeviceSetupTaskAction<DeviceSetupInput>)
-            .setup(deviceInput.get(), setupResultDir.get())
+        workerExecutor.noIsolation().submit(SetupTaskWorkAction::class.java) { params ->
+            params.setupAction.setDisallowChanges(
+                objectFactory.newInstance(
+                    setupAction.get()) as DeviceSetupTaskAction<DeviceSetupInput>)
+            params.deviceInput.setDisallowChanges(deviceInput)
+            params.setupResultDir.setDisallowChanges(setupResultDir)
+        }
+    }
+
+    interface SetupTaskWorkParameters : WorkParameters {
+        val setupAction: Property<DeviceSetupTaskAction<DeviceSetupInput>>
+        val deviceInput: Property<DeviceSetupInput>
+        val setupResultDir: DirectoryProperty
+    }
+
+    abstract class SetupTaskWorkAction : WorkAction<SetupTaskWorkParameters> {
+        override fun execute() {
+            val setupAction = parameters.setupAction.get()
+            val deviceInput = parameters.deviceInput.get()
+            val setupResultDir = parameters.setupResultDir.get()
+            setupAction.setup(deviceInput, setupResultDir)
+        }
     }
 
     class CreationAction<DeviceT: Device>(
