@@ -30,17 +30,23 @@ class StatCommandHandler : SimpleShellHandler("stat") {
     ) {
         val output = responseSocket.getOutputStream()
 
-        if (args == null) {
+        val appId = getAppId(device, args)
+        if (appId == null) {
             writeFail(output)
             return
         }
 
         writeOkay(output)
-
-        val matchResult = PROC_ID_REG.find(args) ?: return
-        val pid = matchResult.groups[1]!!.value.toInt()
-        val appId = device.getClient(pid)?.processName ?: writeFail(output)
-
         writeString(output, "package:$appId ")
+    }
+
+    private fun getAppId(device: DeviceState, args: String?): String? {
+        if (args == null) {
+            return null
+        }
+
+        val matchResult = PROC_ID_REG.find(args) ?: return null
+        val pid = matchResult.groups[1]!!.value.toInt()
+        return device.getClient(pid)?.processName
     }
 }
