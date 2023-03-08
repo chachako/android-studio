@@ -16,7 +16,12 @@
 
 package com.android.tools.profgen
 
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
 import java.io.File
+import java.io.InputStream
 import java.io.InputStreamReader
 
 internal const val HOT = 'H'
@@ -33,6 +38,16 @@ internal const val CLOSE_PAREN = ')'
 internal const val METHOD_SEPARATOR_START = '-'
 internal const val METHOD_SEPARATOR_END = '>'
 internal const val INLINE_CACHE_SEPARATOR = '+'
+
+interface ClassFileResource {
+    fun getByteStream(): InputStream
+
+    fun getBytes(): ByteArray {
+        getByteStream().use {
+            return it.readBytes()
+        }
+    }
+}
 
 /**
  * The in-memory representation of a human-readable set of profile rules.
@@ -67,11 +82,104 @@ class HumanReadableProfile internal constructor(
     }
 
     internal fun match(type: String): Int {
-        if (type in exactTypes) return MethodFlags.STARTUP
+        if (type in exactTypes) {
+            return MethodFlags.STARTUP
+        }
+        return fuzzyMatch(type)
+    }
+
+    internal fun fuzzyMatch(type: String): Int {
         val fuzzy = fuzzyTypes.firstOrNull(type) {
             it.target.matches(type)
         }
         return fuzzy?.flags ?: 0
+    }
+
+    fun expandWildcards(classFileResources: Collection<ClassFileResource>): HumanReadableProfile {
+        val newExactMethods = mutableMapOf<DexMethod, Int>()
+        newExactMethods.putAll(exactMethods)
+
+        val newExactTypes =  mutableSetOf<String>()
+        newExactTypes += exactTypes
+
+        val classVisitor = object : ClassVisitor(Opcodes.ASM9) {
+            private lateinit var classDescriptor: String
+
+            override fun visit(
+                    version: Int,
+                    access: Int,
+                    name: String,
+                    signature: String?,
+                    superName: String?,
+                    interfaces: Array<String>?): Unit {
+                classDescriptor = "L$name;"
+                if (classDescriptor !in newExactTypes
+                        && fuzzyMatch(classDescriptor) == MethodFlags.STARTUP) {
+                    newExactTypes += classDescriptor
+                }
+            }
+
+            override fun visitMethod(
+                    access: Int,
+                    name: String,
+                    desc: String,
+                    signature: String?,
+                    exceptions: Array<String>?): MethodVisitor? {
+                val closeParenIndex = desc.indexOf(CLOSE_PAREN)
+                val parameters = desc.substring(1, closeParenIndex)
+                val returnTypeDescriptor = desc.substring(closeParenIndex + 1)
+                val method = DexMethod(
+                    classDescriptor,
+                    name,
+                    DexPrototype(returnTypeDescriptor, splitParameters(parameters))
+                )
+                val flags = match(method)
+                if (flags != 0) {
+                    newExactMethods[method] = flags
+                }
+                return null
+            }
+        }
+        val parsingOptions: Int =
+            ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES
+        for (classFileResource in classFileResources) {
+            ClassReader(classFileResource.getBytes()).accept(classVisitor, parsingOptions)
+        }
+
+        return HumanReadableProfile(
+            newExactMethods,
+            newExactTypes,
+            MutablePrefixTree(),
+            MutablePrefixTree(),
+        )
+    }
+
+    fun printExact(os: Appendable): Unit {
+        val app = mutableMapOf<String, MutableList<DexMethod>>()
+        for (classDescriptor in exactTypes) {
+            app.getOrPut(classDescriptor) { mutableListOf() }
+        }
+        for (method in exactMethods.keys) {
+            app.getOrPut(method.parent) { mutableListOf() }
+                    .add(method)
+        }
+        val classDescriptors = mutableListOf<String>()
+        classDescriptors.addAll(app.keys)
+        classDescriptors.sort()
+        for (classDescriptor in classDescriptors) {
+            if (classDescriptor in exactTypes) {
+                os.append(classDescriptor)
+                os.append('\n')
+            }
+            val methods = app.getValue(classDescriptor)
+            methods.sortWith(DexMethod.Comparator)
+            for (method in methods) {
+                val flags = exactMethods.getValue(method)
+                MethodData.printFlags(flags, os)
+                method.print(os)
+                os.append('\n')
+            }
+        }
     }
 }
 

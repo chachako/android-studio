@@ -6,8 +6,7 @@ kotlin_library(
         "src/main/kotlin/**/*.kt",
     ]),
     visibility = ["//visibility:public"],
-    deps = [
-    ],
+    deps = ["@maven//:org.ow2.asm.asm"],
 )
 
 kotlin_test(
@@ -48,5 +47,10 @@ iml_module(
     lint_baseline = "lint_baseline.xml",
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
-    deps = ["//prebuilts/studio/intellij-sdk:studio-sdk"],
+    exports = ["//tools/adt/idea/.idea/libraries:asm-tools"],
+    # do not sort: must match IML order
+    deps = [
+        "//tools/adt/idea/.idea/libraries:asm-tools",
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+    ],
 )

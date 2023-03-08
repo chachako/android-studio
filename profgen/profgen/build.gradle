@@ -2,6 +2,7 @@ apply plugin: 'com.android.tools.java-library'
 apply plugin: 'com.android.tools.kotlin'
 
 dependencies {
+    implementation libs.asm
     implementation libs.kotlin_stdlib
 
     testImplementation libs.kotlin_test
