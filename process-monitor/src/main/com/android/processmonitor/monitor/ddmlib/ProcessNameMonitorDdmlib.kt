@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.annotations.VisibleForTesting
 import java.io.Closeable
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -49,15 +48,13 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
         parentScope: CoroutineScope,
         adbSession: AdbSession,
         adbAdapter: AdbAdapter,
-        trackerAgentPath: Path?,
-        trackerAgentInterval: Int,
-        maxProcessRetention: Int,
+        config: ProcessNameMonitor.Config,
         logger: AdbLogger,
     ) : this(
         parentScope,
         DeviceTrackerImpl(adbAdapter, logger, adbSession.ioDispatcher),
-        ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, trackerAgentPath, trackerAgentInterval, logger),
-        maxProcessRetention,
+        ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, config.agentConfig, logger),
+        config.maxProcessRetention,
         logger,
     )
 

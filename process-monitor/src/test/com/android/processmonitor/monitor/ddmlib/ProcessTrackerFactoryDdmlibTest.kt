@@ -19,6 +19,7 @@ import com.android.adblib.AdbSession
 import com.android.adblib.AdbSessionHost
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.processmonitor.agenttracker.AgentProcessTracker
+import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
 import com.android.processmonitor.monitor.MergedProcessTracker
 import com.android.testutils.TestResources
 import com.google.common.truth.Truth.assertThat
@@ -41,8 +42,7 @@ class ProcessTrackerFactoryDdmlibTest {
             ProcessTrackerFactoryDdmlib(
                 adbSession,
                 adbAdapter,
-                trackerAgentPath,
-                trackerAgentInterval,
+                AgentProcessTrackerConfig(trackerAgentPath, trackerAgentInterval),
                 logger
             )
 
@@ -60,8 +60,7 @@ class ProcessTrackerFactoryDdmlibTest {
             ProcessTrackerFactoryDdmlib(
                 adbSession,
                 adbAdapter,
-                trackerAgentPath = null,
-                trackerAgentInterval,
+                agentConfig = null,
                 logger
             )
 

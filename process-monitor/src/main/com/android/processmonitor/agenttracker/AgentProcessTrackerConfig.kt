@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.monitor
+package com.android.processmonitor.agenttracker
 
-import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
+import java.nio.file.Path
 
-/**
- * Monitors devices and keeps track of process names.
- */
-interface ProcessNameMonitor {
-
-    /**
-     * Starts the monitor if not already started
-     */
-    fun start()
-
-    /**
-     * Returns a [ProcessNames] for a given pid or null if not found.
-     */
-    fun getProcessNames(serialNumber: String, pid: Int): ProcessNames?
-
-    class Config(val maxProcessRetention: Int, val agentConfig: AgentProcessTrackerConfig?)
-}
+/** Configuration of a  [AgentProcessTracker] */
+class AgentProcessTrackerConfig(val sourcePath: Path, val pollingIntervalMillis: Int)

@@ -19,17 +19,16 @@ import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.ddmlib.IDevice
 import com.android.processmonitor.agenttracker.AgentProcessTracker
+import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
 import com.android.processmonitor.common.ProcessTracker
 import com.android.processmonitor.monitor.MergedProcessTracker
 import com.android.processmonitor.monitor.ProcessTrackerFactory
-import java.nio.file.Path
 
 /** A [ProcessTrackerFactory] for [ProcessNameMonitorDdmlib] */
 internal class ProcessTrackerFactoryDdmlib(
     private val adbSession: AdbSession,
     private val adbAdapter: AdbAdapter,
-    private val trackerAgentPath: Path?,
-    private val trackerAgentInterval: Int,
+    private val agentConfig: AgentProcessTrackerConfig?,
     private val logger: AdbLogger,
 ) : ProcessTrackerFactory<IDevice> {
 
@@ -44,13 +43,18 @@ internal class ProcessTrackerFactoryDdmlib(
 
     private fun createAgentProcessTracker(device: IDevice): AgentProcessTracker? {
         // TODO(b/272009795): Investigate further
-        if (device.version.apiLevel < 21 || trackerAgentPath == null) {
+        if (device.version.apiLevel < 21 || agentConfig == null) {
             return null
         }
         val serialNumber = device.serialNumber
         val abi = device.abis.first()
         return AgentProcessTracker(
-            adbSession, serialNumber, abi, trackerAgentPath, trackerAgentInterval, logger
+            adbSession,
+            serialNumber,
+            abi,
+            agentConfig.sourcePath,
+            agentConfig.pollingIntervalMillis,
+            logger
         )
     }
 }
