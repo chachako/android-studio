@@ -24,7 +24,8 @@ import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-private const val CLASS_EXTENSION = ".class"
+const val CLASS_EXTENSION = ".class"
+const val JAR_EXTENSION = ".jar"
 private const val MODULE_INFO_CLASS = "module-info.class"
 
 interface ClassFileResource {
@@ -37,7 +38,15 @@ interface ClassFileResource {
     }
 }
 
-internal class ArchiveClassFileResourceProvider (
+fun ClassFileResource(classFile: Path): ClassFileResource {
+    return object : ClassFileResource {
+        override fun getByteStream(): InputStream {
+            return classFile.toFile().inputStream()
+        }
+    }
+}
+
+class ArchiveClassFileResourceProvider (
     private val archive: Path,
     private var zipFile: ZipFile? = null
 ): Closeable {

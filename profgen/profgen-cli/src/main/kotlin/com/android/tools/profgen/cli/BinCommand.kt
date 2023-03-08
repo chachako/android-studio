@@ -150,7 +150,7 @@ class ProfileDumpCommand: Subcommand("dumpProfile", "Dump a binary profile to a 
     }
 }
 
-private fun readHumanReadableProfileOrExit(hrpFile: File): HumanReadableProfile {
+internal fun readHumanReadableProfileOrExit(hrpFile: File): HumanReadableProfile {
     val hrp = HumanReadableProfile(hrpFile, StdErrorDiagnostics)
     if (hrp == null) {
         System.err.println("Failed to parse $hrpFile.")
