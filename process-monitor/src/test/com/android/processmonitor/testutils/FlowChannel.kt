@@ -44,7 +44,8 @@ internal class FlowChannel<E>(scope: CoroutineScope, flow: Flow<E>) : Closeable 
 
     suspend fun receive(): E = channel.receive()
 
-    suspend fun receiveOrNull(timeout: Long = 1000): E? = withTimeoutOrNull(timeout) { receive() }
+    suspend fun receiveOrNull(timeout: Long = 1000): E? =
+        withTimeoutOrNull(timeout) { channel.receive() }
 
     suspend fun take(count: Int): List<E> {
         val list = mutableListOf<E>()
