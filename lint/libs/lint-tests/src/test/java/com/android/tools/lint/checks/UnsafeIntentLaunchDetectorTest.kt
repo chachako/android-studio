@@ -1096,6 +1096,56 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testRegisterReceiverWithPermissionProtected() {
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+
+                import android.app.Activity
+                import android.content.Intent
+                import android.content.Context
+                import android.content.BroadcastReceiver
+                import android.os.Bundle
+
+                class TestActivity: Activity {
+
+                    @Override
+                    override fun onCreate(savedInstanceState: Bundle) {
+                        registerReceiver(object: BroadcastReceiver() {
+                            override fun onReceive(context: Context?, broadcastIntent: Intent) {
+                                val confirmIntent = broadcastIntent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)
+                                if (confirmIntent != null) {
+                                    startActivity(confirmIntent)
+                                }
+                            }
+                        }, IntentFilter("abc"), "com.example.MY_PERMISSION", null, Context.RECEIVER_EXPORTED)
+                    }
+                }
+                """
+          )
+          .indented(),
+        manifest(
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                        package="test.pkg">
+                    <permission android:name="com.example.MY_PERMISSION" android:protectionLevel="signature" />
+                    <uses-permission android:name="com.example.MY_PERMISSION" />
+                    <application>
+                        <activity android:name=".TestActivity" android:exported="true" />
+                    </application>
+                </manifest>
+                """
+          )
+          .indented(),
+        *stubs
+      )
+      .issues(UnsafeIntentLaunchDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
+
   fun testKotlin() {
     lint()
       .files(
@@ -1326,7 +1376,8 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
 
             public abstract Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter);
             public abstract Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, int flags);
-
+            public abstract Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter,
+                        String broadcastPermission, Handler scheduler, int flags);
             public abstract void startActivity(@RequiresPermission Intent intent);
             public void startActivityForResult(
                 @NonNull String who, Intent intent, int requestCode, @Nullable Bundle options) {}

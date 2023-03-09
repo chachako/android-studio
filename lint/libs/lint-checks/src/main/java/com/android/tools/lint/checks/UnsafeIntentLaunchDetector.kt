@@ -22,6 +22,7 @@ import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.ATTR_PERMISSION
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.TYPE_INT
+import com.android.tools.lint.client.api.TYPE_STRING
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ConstantEvaluator
 import com.android.tools.lint.detector.api.Context
@@ -229,36 +230,46 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
   private fun processRuntimeReceiver(
     context: JavaContext,
-    node: UCallExpression,
+    call: UCallExpression,
     method: PsiMethod
   ) {
-    // The parameter positions vary across the various registerReceiver*() methods, so rather
-    // than hardcode them we simply look them up based on the parameter name and type.
-    val receiverArg = UastLintUtils.findArgument(node, method, BROADCAST_RECEIVER_CLASS) ?: return
+    val receiverArg = UastLintUtils.findArgument(call, method, BROADCAST_RECEIVER_CLASS) ?: return
     if (receiverArg.isNullLiteral()) return
-    val filterArg =
-      UastLintUtils.findArgument(node, method, "android.content.IntentFilter") ?: return
-    val flagsArg = UastLintUtils.findArgument(node, method, TYPE_INT)
 
-    val evaluator = ConstantEvaluator().allowFieldInitializers()
-    val flags = evaluator.evaluate(flagsArg) as? Int
-    if (flags != null && (flags and RECEIVER_NOT_EXPORTED) != 0) return
-
-    val (isProtected, _) =
-      BroadcastReceiverUtils.checkIsProtectedReceiverAndReturnUnprotectedActions(
-        filterArg,
-        node,
-        evaluator
-      )
-    if (!isProtected) {
+    if (!isRuntimeReceiverProtected(call, method)) {
       val receiverVar = receiverArg.tryResolve() as? PsiVariable ?: return
       val receiverAssignment =
-        findLastAssignment(receiverVar, node)?.skipParenthesizedExprDown() ?: return
+        findLastAssignment(receiverVar, call)?.skipParenthesizedExprDown() ?: return
       val receiverConstructor = receiverAssignment.findSelector() as? UCallExpression
       val unprotectedReceiverClassName =
         receiverConstructor?.classReference.getQualifiedName() ?: return
       storeUnprotectedComponents(context, unprotectedReceiverClassName)
     }
+  }
+
+  fun isRuntimeReceiverProtected(call: UCallExpression, method: PsiMethod): Boolean {
+    // The parameter positions vary across the various registerReceiver*() methods, so rather
+    // than hardcode them we simply look them up based on the parameter name and type.
+
+    val flagsArg = UastLintUtils.findArgument(call, method, TYPE_INT)
+    val evaluator = ConstantEvaluator().allowFieldInitializers()
+    val flags = evaluator.evaluate(flagsArg) as? Int
+    if (flags != null && (flags and RECEIVER_NOT_EXPORTED) != 0) return true
+
+    val permissionArg = UastLintUtils.findArgument(call, method, TYPE_STRING)
+    val permission = evaluator.evaluate(permissionArg) as? String
+    if (isProbablyProtectedBySignaturePermission(permission)) return true
+
+    val filterArg =
+      UastLintUtils.findArgument(call, method, "android.content.IntentFilter") ?: return true
+    val (isProtected, _) =
+      BroadcastReceiverUtils.checkIsProtectedReceiverAndReturnUnprotectedActions(
+        filterArg,
+        call,
+        evaluator
+      )
+
+    return isProtected
   }
 
   private fun storeUnprotectedComponents(context: Context, unprotectedComponentName: String) {
@@ -488,22 +499,8 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
           override fun argument(call: UCallExpression, reference: UElement) {
             if (call.methodName in registerReceiverMethods) {
               val method = call.resolve() ?: return
-              if (!context.evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)) return
-              val filterArg =
-                UastLintUtils.findArgument(call, method, "android.content.IntentFilter") ?: return
-              val flagsArg = UastLintUtils.findArgument(call, method, TYPE_INT)
 
-              val evaluator = ConstantEvaluator().allowFieldInitializers()
-              val flags = evaluator.evaluate(flagsArg) as? Int
-              if (flags != null && (flags and RECEIVER_NOT_EXPORTED) != 0) return
-
-              val (isProtected, _) =
-                BroadcastReceiverUtils.checkIsProtectedReceiverAndReturnUnprotectedActions(
-                  filterArg,
-                  call,
-                  evaluator
-                )
-              if (!isProtected) {
+              if (!isRuntimeReceiverProtected(call, method)) {
                 result = true
               }
             }
