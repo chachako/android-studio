@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.monitor.ddmlib
+package com.android.processmonitor.monitor
 
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.ddmlib.IDevice
@@ -22,9 +22,8 @@ import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.common.DeviceTracker
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
-import com.android.processmonitor.monitor.FakeProcessTrackerFactory
-import com.android.processmonitor.monitor.ProcessNames
-import com.android.processmonitor.monitor.ProcessTrackerFactory
+import com.android.processmonitor.monitor.ddmlib.FakeDeviceTracker
+import com.android.processmonitor.monitor.ddmlib.mockDevice
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,11 +34,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 /**
- * Tests for [ProcessNameMonitorDdmlib]
+ * Tests for [ProcessNameMonitorImpl]
  */
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalCoroutinesApi::class) // runTest is experimental (replaced runTestTest)
-class ProcessNameMonitorDdmlibTest {
+class ProcessNameMonitorImplTest {
 
     private val fakeProcessTrackerFactory = object : FakeProcessTrackerFactory<IDevice>() {
         override fun getSerialNumber(device: IDevice) = device.serialNumber
@@ -132,8 +131,8 @@ class ProcessNameMonitorDdmlibTest {
         deviceTracker: DeviceTracker<IDevice> = FakeDeviceTracker(),
         trackerFactory: ProcessTrackerFactory<IDevice> = fakeProcessTrackerFactory,
         maxProcessRetention: Int = 1000,
-    ): ProcessNameMonitorDdmlib {
-        return ProcessNameMonitorDdmlib(
+    ): ProcessNameMonitorImpl {
+        return ProcessNameMonitorImpl(
             this,
             deviceTracker,
             trackerFactory,

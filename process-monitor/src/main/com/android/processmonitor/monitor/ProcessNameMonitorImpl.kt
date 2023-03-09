@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.monitor.ddmlib
+package com.android.processmonitor.monitor
 
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.withPrefix
 import com.android.ddmlib.IDevice
-import com.android.processmonitor.monitor.PerDeviceMonitor
-import com.android.processmonitor.monitor.ProcessNameMonitor
-import com.android.processmonitor.monitor.ProcessNames
-import com.android.processmonitor.monitor.ProcessTrackerFactory
 import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
 import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.common.DeviceTracker
+import com.android.processmonitor.monitor.ddmlib.AdbAdapter
+import com.android.processmonitor.monitor.ddmlib.DeviceTrackerDdmlib
+import com.android.processmonitor.monitor.ddmlib.ProcessTrackerFactoryDdmlib
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Implementation of ProcessNameMonitor
  */
-class ProcessNameMonitorDdmlib @TestOnly internal constructor(
+class ProcessNameMonitorImpl @TestOnly internal constructor(
     parentScope: CoroutineScope,
     private val deviceTracker: DeviceTracker<IDevice>,
     private val processTrackerFactory: ProcessTrackerFactory<IDevice>,
@@ -46,22 +46,29 @@ class ProcessNameMonitorDdmlib @TestOnly internal constructor(
     private val logger: AdbLogger,
 ) : ProcessNameMonitor, Closeable {
 
-    constructor(
-        parentScope: CoroutineScope,
-        adbSession: AdbSession,
-        adbAdapter: AdbAdapter,
-        config: ProcessNameMonitor.Config,
-        logger: AdbLogger,
-    ) : this(
-        parentScope,
-        DeviceTrackerDdmlib(adbAdapter, logger, adbSession.ioDispatcher),
-        ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, config.agentConfig, logger),
-        config.maxProcessRetention,
-        logger,
-    )
+    companion object {
+
+        fun forDdmlib(
+            parentScope: CoroutineScope,
+            adbSession: AdbSession,
+            adbAdapter: AdbAdapter,
+            config: ProcessNameMonitor.Config,
+            logger: AdbLogger,
+        ) = ProcessNameMonitorImpl(
+            parentScope,
+            DeviceTrackerDdmlib(adbAdapter, logger, adbSession.ioDispatcher),
+            ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, config.agentConfig, logger),
+            config.maxProcessRetention,
+            logger,
+        )
+    }
+
+    private val exceptionHandler = CoroutineExceptionHandler { _, t ->
+        logger.warn(t, "Error in a coroutine: ${t.message}")
+    }
 
     private val scope: CoroutineScope =
-        CoroutineScope(parentScope.coroutineContext + SupervisorJob())
+        CoroutineScope(parentScope.coroutineContext + SupervisorJob() + exceptionHandler)
 
     @Volatile
     private var isStarted = false

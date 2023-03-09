@@ -23,7 +23,7 @@ import com.android.processmonitor.common.ProcessTracker
 import com.android.processmonitor.monitor.BaseProcessTrackerFactory
 import com.android.processmonitor.monitor.ProcessTrackerFactory
 
-/** A [ProcessTrackerFactory] for [ProcessNameMonitorDdmlib] */
+/** A [ProcessTrackerFactory] for the Ddmlib monitor */
 internal class ProcessTrackerFactoryDdmlib(
     adbSession: AdbSession,
     private val adbAdapter: AdbAdapter,
