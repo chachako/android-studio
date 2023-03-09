@@ -129,11 +129,9 @@ internal data class DexMethod(
     val prototype: DexPrototype,
 ): Comparator<DexMethod> by Comparator {
     companion object {
-        val Comparator = compareBy<DexMethod>(
-                { it.parent },
-                { it.name },
-                { it.prototype.toComparable() }
-        )
+        val Comparator: java.util.Comparator<DexMethod> =
+                compareBy<DexMethod>({ it.parent }, { it.name })
+                        .thenBy(DexPrototype.Comparator) { it.prototype }
     }
 
     val returnType: String get() = prototype.returnType
@@ -158,34 +156,26 @@ internal data class DexMethod(
 internal data class DexPrototype(
         val returnType: String,
         val parameters: List<String>
-) : Comparator<DexPrototype> by Comparator {
+): Comparator<DexPrototype> by Comparator {
     companion object {
-        val Comparator = compareBy<DexPrototype>(
-                { it.parameters.listComparable() },
-                { it.returnType }
-        )
+
+        val Comparator =
+            compareBy<DexPrototype, List<String>>(listComparator()) { it.parameters }
+                .thenBy { it.returnType }
     }
 }
 
-internal fun <T : Comparable<T>> List<T>.listComparable(): Comparable<List<T>> {
-    return object : Comparable<List<T>> {
-        override fun compareTo(other: List<T>): Int {
-            val minSize = min(this@listComparable.size, other.size)
-            for (i in 0..minSize) {
-                val comparison = compareValues(this@listComparable[i], other[i])
+internal fun <T: Comparable<T>> listComparator(): Comparator<List<T>> {
+    return object : Comparator<List<T>> {
+        override fun compare(list: List<T>, other: List<T>): Int {
+            val minSize = min(list.size, other.size)
+            for (i in 0 until minSize) {
+                val comparison = compareValues(list[i], other[i])
                 if (comparison != 0) {
                     return comparison
                 }
             }
-            return this@listComparable.size - other.size
-        }
-    }
-}
-
-internal fun <T : Comparator<T>> T.toComparable(): Comparable<T> {
-    return object : Comparable<T> {
-        override fun compareTo(other: T): Int {
-            return this@toComparable.compare(this@toComparable, other)
+            return list.size - other.size
         }
     }
 }
