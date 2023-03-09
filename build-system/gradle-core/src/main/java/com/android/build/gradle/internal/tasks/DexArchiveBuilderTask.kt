@@ -412,6 +412,8 @@ abstract class DexArchiveBuilderTask : NewIncrementalTask() {
             }
 
             val detachedExtConf = services.configurations.detachedConfiguration()
+            detachedExtConf.isCanBeConsumed = false
+            detachedExtConf.isCanBeResolved = true
             detachedExtConf.dependencies.add(services.dependencies.create(externalLibraryClasses))
 
             return detachedExtConf.incoming.artifactView {

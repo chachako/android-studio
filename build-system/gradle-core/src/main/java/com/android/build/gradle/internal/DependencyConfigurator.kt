@@ -89,7 +89,6 @@ import com.android.build.gradle.options.SyncOptions
 import com.android.repository.Revision
 import com.android.tools.r8.Version
 import com.google.common.collect.Maps
-import org.gradle.api.Action
 import org.gradle.api.ActionConfiguration
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactView
@@ -102,7 +101,6 @@ import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Usage
 import org.gradle.api.internal.artifacts.ArtifactAttributes
-import org.gradle.api.specs.Spec
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
 
@@ -520,9 +518,12 @@ class DependencyConfigurator(
                                 ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
 
                         val params = reg.parameters
-                        params.apiGenerator.setFrom(
-                                project.configurations.detachedConfiguration(
-                                        project.dependencies.create(apigeneratorArtifact)))
+                        val apiGeneratorConfiguration =
+                            project.configurations.detachedConfiguration(
+                                project.dependencies.create(apigeneratorArtifact))
+                        apiGeneratorConfiguration.isCanBeConsumed = false
+                        apiGeneratorConfiguration.isCanBeResolved = true
+                        params.apiGenerator.setFrom(apiGeneratorConfiguration)
                         params.buildTools.initialize(
                                 projectServices.buildServiceRegistry,
                                 compileSdkHashString,
@@ -534,6 +535,8 @@ class DependencyConfigurator(
                         val kotlinCompiler = project.configurations.detachedConfiguration(
                                 project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
                         )
+                        kotlinCompiler.isCanBeConsumed = false
+                        kotlinCompiler.isCanBeResolved = true
                         params.kotlinCompiler.from(kotlinCompiler)
                         params.requireServices.set(
                                 projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES])
@@ -541,6 +544,8 @@ class DependencyConfigurator(
                                 *runtimeDependenciesForShimSdk.map {
                                     project.dependencies.create(it)
                                 }.toTypedArray())
+                        configuration.isCanBeConsumed = false
+                        configuration.isCanBeResolved = true
                         params.runtimeDependencies.from(configuration.incoming.artifactView { config: ArtifactView.ViewConfiguration ->
                             config.attributes { container: AttributeContainer ->
                                 container.attribute(AndroidArtifacts.ARTIFACT_TYPE,

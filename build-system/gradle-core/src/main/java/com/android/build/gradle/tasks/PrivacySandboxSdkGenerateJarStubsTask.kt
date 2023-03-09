@@ -127,6 +127,8 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
                     .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER)?.split(",")
                     ?: listOf(PLAY_SDK_API_PACKAGER_ARTIFACT)
             val apiPackager = creationConfig.services.configurations.detachedConfiguration()
+            apiPackager.isCanBeConsumed = false
+            apiPackager.isCanBeResolved = true
             val apiPackagerDeps = apiPackagerCoordinates.map {
                 creationConfig.services.dependencies.create(it)
             }

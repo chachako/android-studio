@@ -485,7 +485,10 @@ abstract class BasePlugin<
             ).get()
 
             val fakeDependency = project.dependencies.create(project.files(fakeJarService.lazyCachedFakeJar))
-            return project.configurations.detachedConfiguration(fakeDependency)
+            val configuration = project.configurations.detachedConfiguration(fakeDependency)
+            configuration.isCanBeConsumed = false
+            configuration.isCanBeResolved = true
+            return configuration
         }
     }
 

@@ -1921,6 +1921,7 @@ class LintFromMaven(val files: FileCollection, val version: String) {
                 )
             )
             config.isTransitive = true
+            config.isCanBeConsumed = false
             config.isCanBeResolved = true
             return LintFromMaven(config, lintVersion)
         }
