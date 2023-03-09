@@ -19,41 +19,42 @@ import com.android.adblib.AdbLogger
 import com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.DeviceState.ONLINE
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Online
+import com.android.processmonitor.common.DeviceEvent
+import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
+import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.trySendBlocking
 
 /**
- * Used to create a [kotlinx.coroutines.flow.Flow] of [DeviceMonitorEvent] from a
+ * Used to create a [kotlinx.coroutines.flow.Flow] of [DeviceEvent] from a
  * [IDeviceChangeListener]
  *
  * Only connect/disconnect events are of interest.
  */
 internal class DevicesMonitorListener(
     @Suppress("EXPERIMENTAL_API_USAGE") // Not experimental in main
-    private val producerScope: ProducerScope<DeviceMonitorEvent>,
+    private val producerScope: ProducerScope<DeviceEvent<IDevice>>,
     private val logger: AdbLogger,
 ) : IDeviceChangeListener {
 
     override fun deviceConnected(device: IDevice) {
         if (device.state == ONLINE) {
-            send(Online(device))
+            send(DeviceOnline(device))
         }
     }
 
     override fun deviceDisconnected(device: IDevice) {
-        send(Disconnected(device))
+        send(DeviceDisconnected(device.serialNumber))
     }
 
     override fun deviceChanged(device: IDevice, changeMask: Int) {
         if (changeMask and IDevice.CHANGE_STATE != 0 && device.state == ONLINE) {
-            send(Online(device))
+            send(DeviceOnline(device))
         }
     }
 
-    private fun send(event: DeviceMonitorEvent) {
+    private fun send(event: DeviceEvent<IDevice>) {
         @Suppress("EXPERIMENTAL_API_USAGE") // Not experimental in main
         producerScope.trySendBlocking(event).onFailure {
             logger.warn(it, "Failed to send DeviceMonitorEvent")

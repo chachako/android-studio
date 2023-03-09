@@ -16,6 +16,7 @@
 package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.testing.FakeAdbLoggerFactory
+import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.CHANGE_BUILD_INFO
 import com.android.ddmlib.IDevice.CHANGE_CLIENT_LIST
 import com.android.ddmlib.IDevice.CHANGE_STATE
@@ -24,8 +25,9 @@ import com.android.ddmlib.IDevice.DeviceState.FASTBOOTD
 import com.android.ddmlib.IDevice.DeviceState.OFFLINE
 import com.android.ddmlib.IDevice.DeviceState.ONLINE
 import com.android.ddmlib.IDevice.DeviceState.UNAUTHORIZED
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Online
+import com.android.processmonitor.common.DeviceEvent
+import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
+import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -39,117 +41,118 @@ import org.junit.Test
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
 class DevicesMonitorListenerTest {
-  private val logger = FakeAdbLoggerFactory().logger
 
-  @Test
-  fun deviceConnected() {
-    runBlocking {
-      val flow = callbackFlow {
-        val monitor = DevicesMonitorListener(this, logger)
+    private val logger = FakeAdbLoggerFactory().logger
 
-        monitor.deviceConnected(mockDevice("device1", ONLINE))
-        monitor.deviceConnected(mockDevice("device2", ONLINE))
-        monitor.deviceConnected(mockDevice("device3", FASTBOOTD))
-        monitor.deviceConnected(mockDevice("device3", OFFLINE))
-        monitor.deviceConnected(mockDevice("device4", DISCONNECTED))
+    @Test
+    fun deviceConnected() {
+        runBlocking {
+            val flow = callbackFlow {
+                val monitor = DevicesMonitorListener(this, logger)
 
-        close()
-        awaitClose { }
-      }
+                monitor.deviceConnected(mockDevice("device1", ONLINE))
+                monitor.deviceConnected(mockDevice("device2", ONLINE))
+                monitor.deviceConnected(mockDevice("device3", FASTBOOTD))
+                monitor.deviceConnected(mockDevice("device3", OFFLINE))
+                monitor.deviceConnected(mockDevice("device4", DISCONNECTED))
 
-      assertThat(flow.toEventList()).containsExactly(
-        "device1 connected",
-        "device2 connected",
-      ).inOrder()
+                close()
+                awaitClose { }
+            }
+
+            assertThat(flow.toEventList()).containsExactly(
+                "device1 connected",
+                "device2 connected",
+            ).inOrder()
+        }
     }
-  }
 
-  @Test
-  fun deviceDisconnected() {
-    runBlocking {
-      val flow = callbackFlow {
-        val monitor = DevicesMonitorListener(this, logger)
+    @Test
+    fun deviceDisconnected() {
+        runBlocking {
+            val flow = callbackFlow {
+                val monitor = DevicesMonitorListener(this, logger)
 
-        monitor.deviceDisconnected(mockDevice("device1", ONLINE))
-        monitor.deviceDisconnected(mockDevice("device2", FASTBOOTD))
-        monitor.deviceDisconnected(mockDevice("device3", OFFLINE))
-        monitor.deviceDisconnected(mockDevice("device4", DISCONNECTED))
+                monitor.deviceDisconnected(mockDevice("device1", ONLINE))
+                monitor.deviceDisconnected(mockDevice("device2", FASTBOOTD))
+                monitor.deviceDisconnected(mockDevice("device3", OFFLINE))
+                monitor.deviceDisconnected(mockDevice("device4", DISCONNECTED))
 
-        close()
-        awaitClose { }
-      }
+                close()
+                awaitClose { }
+            }
 
-      assertThat(flow.toEventList()).containsExactly(
-        "device1 disconnected",
-        "device2 disconnected",
-        "device3 disconnected",
-        "device4 disconnected",
-      ).inOrder()
+            assertThat(flow.toEventList()).containsExactly(
+                "device1 disconnected",
+                "device2 disconnected",
+                "device3 disconnected",
+                "device4 disconnected",
+            ).inOrder()
+        }
     }
-  }
 
-  @Test
-  fun deviceChanged() {
-    runBlocking {
-      val flow = callbackFlow {
-        val monitor = DevicesMonitorListener(this, logger)
+    @Test
+    fun deviceChanged() {
+        runBlocking {
+            val flow = callbackFlow {
+                val monitor = DevicesMonitorListener(this, logger)
 
-        monitor.deviceChanged(mockDevice("device1", ONLINE), CHANGE_STATE)
-        monitor.deviceChanged(mockDevice("device2", ONLINE), CHANGE_STATE)
-        monitor.deviceChanged(mockDevice("device3", ONLINE), CHANGE_CLIENT_LIST)
-        monitor.deviceChanged(mockDevice("device4", ONLINE), CHANGE_BUILD_INFO)
-        monitor.deviceChanged(mockDevice("device5", FASTBOOTD), CHANGE_STATE)
-        monitor.deviceChanged(mockDevice("device6", OFFLINE), CHANGE_STATE)
-        monitor.deviceChanged(mockDevice("device7", DISCONNECTED), CHANGE_STATE)
+                monitor.deviceChanged(mockDevice("device1", ONLINE), CHANGE_STATE)
+                monitor.deviceChanged(mockDevice("device2", ONLINE), CHANGE_STATE)
+                monitor.deviceChanged(mockDevice("device3", ONLINE), CHANGE_CLIENT_LIST)
+                monitor.deviceChanged(mockDevice("device4", ONLINE), CHANGE_BUILD_INFO)
+                monitor.deviceChanged(mockDevice("device5", FASTBOOTD), CHANGE_STATE)
+                monitor.deviceChanged(mockDevice("device6", OFFLINE), CHANGE_STATE)
+                monitor.deviceChanged(mockDevice("device7", DISCONNECTED), CHANGE_STATE)
 
-        close()
-        awaitClose { }
-      }
+                close()
+                awaitClose { }
+            }
 
-      assertThat(flow.toEventList()).containsExactly(
-        "device1 connected",
-        "device2 connected",
-      ).inOrder()
+            assertThat(flow.toEventList()).containsExactly(
+                "device1 connected",
+                "device2 connected",
+            ).inOrder()
+        }
     }
-  }
 
-  @Test
-  fun realisticLyfecycle() {
-    runBlocking {
-      val flow = callbackFlow {
-        val monitor = DevicesMonitorListener(this, logger)
+    @Test
+    fun realisticLyfecycle() {
+        runBlocking {
+            val flow = callbackFlow {
+                val monitor = DevicesMonitorListener(this, logger)
 
-        val device = mockDevice("device1", OFFLINE)
+                val device = mockDevice("device1", OFFLINE)
 
-        monitor.deviceConnected(device.setState(OFFLINE))
-        monitor.deviceChanged(device.setState(UNAUTHORIZED), CHANGE_STATE)
-        monitor.deviceChanged(device.setState(ONLINE), CHANGE_STATE)
-        monitor.deviceChanged(device.setState(OFFLINE), CHANGE_STATE)
-        monitor.deviceDisconnected(device.setState(DISCONNECTED))
-        monitor.deviceConnected(device.setState(OFFLINE))
-        monitor.deviceChanged(device.setState(UNAUTHORIZED), CHANGE_STATE)
-        monitor.deviceChanged(device.setState(ONLINE), CHANGE_STATE)
+                monitor.deviceConnected(device.setState(OFFLINE))
+                monitor.deviceChanged(device.setState(UNAUTHORIZED), CHANGE_STATE)
+                monitor.deviceChanged(device.setState(ONLINE), CHANGE_STATE)
+                monitor.deviceChanged(device.setState(OFFLINE), CHANGE_STATE)
+                monitor.deviceDisconnected(device.setState(DISCONNECTED))
+                monitor.deviceConnected(device.setState(OFFLINE))
+                monitor.deviceChanged(device.setState(UNAUTHORIZED), CHANGE_STATE)
+                monitor.deviceChanged(device.setState(ONLINE), CHANGE_STATE)
 
-        close()
-        awaitClose { }
-      }
+                close()
+                awaitClose { }
+            }
 
-      assertThat(flow.toEventList()).containsExactly(
-        "device1 connected",
-        "device1 disconnected",
-        "device1 connected",
-      ).inOrder()
+            assertThat(flow.toEventList()).containsExactly(
+                "device1 connected",
+                "device1 disconnected",
+                "device1 connected",
+            ).inOrder()
+        }
     }
-  }
 
 }
 
-private suspend fun Flow<DeviceMonitorEvent>.toEventList(): List<String> {
-  return toList().map {
-    @Suppress("NO_ELSE_IN_WHEN") // Problem with detecting sealed class
-    when (it) {
-      is Online -> "${it.device.serialNumber} connected"
-      is Disconnected -> "${it.device.serialNumber} disconnected"
+private suspend fun Flow<DeviceEvent<IDevice>>.toEventList(): List<String> {
+    return toList().map {
+        @Suppress("NO_ELSE_IN_WHEN") // Problem with detecting sealed class
+        when (it) {
+            is DeviceOnline -> "${it.device.serialNumber} connected"
+            is DeviceDisconnected -> "${it.serialNumber} disconnected"
+        }
     }
-  }
 }

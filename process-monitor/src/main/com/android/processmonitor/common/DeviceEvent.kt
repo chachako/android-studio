@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.monitor.ddmlib
-
-import kotlinx.coroutines.flow.Flow
+package com.android.processmonitor.common
 
 /**
- * Creates a [Flow] of devices connecting & disconnecting
+ * Device tracking events
  */
-internal interface DeviceTracker {
+internal sealed class DeviceEvent<T> {
 
     /**
-     * Track devices connecting and disconnecting.
+     * Sent when a device is and ready to accept ADB request.
      */
-    fun trackDevices(): Flow<DeviceMonitorEvent>
+    data class DeviceOnline<T>(val device: T) : DeviceEvent<T>()
+
+    /**
+     * Sent when a device is disconnected. Note that there is no guarantee this is invoked in all
+     * cases. Also note this can be invoked even if a [DeviceOnline] was never sent.
+     */
+    data class DeviceDisconnected<T>(val serialNumber: String) : DeviceEvent<T>()
 }

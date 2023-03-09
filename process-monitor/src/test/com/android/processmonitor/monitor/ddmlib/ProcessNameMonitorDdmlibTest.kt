@@ -17,13 +17,14 @@ package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.ddmlib.IDevice
+import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
+import com.android.processmonitor.common.DeviceEvent.DeviceOnline
+import com.android.processmonitor.common.DeviceTracker
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.monitor.FakeProcessTrackerFactory
 import com.android.processmonitor.monitor.ProcessNames
 import com.android.processmonitor.monitor.ProcessTrackerFactory
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Disconnected
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Online
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,8 +51,8 @@ class ProcessNameMonitorDdmlibTest {
             val monitor =
                 processNameMonitor(deviceTracker, trackerFactory = fakeProcessTrackerFactory)
 
-            deviceTracker.sendDeviceEvents(Online(mockDevice("device1")))
-            deviceTracker.sendDeviceEvents(Online(mockDevice("device2")))
+            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device1")))
+            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device2")))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
@@ -71,15 +72,15 @@ class ProcessNameMonitorDdmlibTest {
             val monitor = processNameMonitor(deviceTracker)
 
             val device1 = mockDevice("device1")
-            deviceTracker.sendDeviceEvents(Online(device1))
-            deviceTracker.sendDeviceEvents(Online(mockDevice("device2")))
+            deviceTracker.sendDeviceEvents(DeviceOnline(device1))
+            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device2")))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
             fakeProcessTrackerFactory.send("device2", ProcessAdded(2, "package2", "process2"))
             advanceUntilIdle()
 
-            deviceTracker.sendDeviceEvents(Disconnected(device1))
+            deviceTracker.sendDeviceEvents(DeviceDisconnected(device1.serialNumber))
             advanceUntilIdle()
 
             assertThat(monitor.getProcessNames("device1", 1)).isNull()
@@ -92,7 +93,7 @@ class ProcessNameMonitorDdmlibTest {
     fun propagatesMaxProcessRetention(): Unit = runTest {
         FakeDeviceTracker().use { deviceTracker ->
             val monitor = processNameMonitor(deviceTracker, maxProcessRetention = 1)
-            deviceTracker.sendDeviceEvents(Online(mockDevice("device1")))
+            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device1")))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
@@ -116,11 +117,11 @@ class ProcessNameMonitorDdmlibTest {
         FakeDeviceTracker().use { deviceTracker ->
             val monitor = processNameMonitor(deviceTracker)
             val device = mockDevice("device1")
-            deviceTracker.sendDeviceEvents(Online(device))
+            deviceTracker.sendDeviceEvents(DeviceOnline(device))
             advanceTimeBy(2000) // Let the flow run a few cycles
             val perDeviceMonitor = monitor.devices["device1"]
 
-            deviceTracker.sendDeviceEvents(Disconnected(device))
+            deviceTracker.sendDeviceEvents(DeviceDisconnected(device.serialNumber))
             advanceUntilIdle()
 
             assertThat(perDeviceMonitor?.scope?.isActive).isFalse()
@@ -128,7 +129,7 @@ class ProcessNameMonitorDdmlibTest {
     }
 
     private fun CoroutineScope.processNameMonitor(
-        deviceTracker: DeviceTracker = FakeDeviceTracker(),
+        deviceTracker: DeviceTracker<IDevice> = FakeDeviceTracker(),
         trackerFactory: ProcessTrackerFactory<IDevice> = fakeProcessTrackerFactory,
         maxProcessRetention: Int = 1000,
     ): ProcessNameMonitorDdmlib {

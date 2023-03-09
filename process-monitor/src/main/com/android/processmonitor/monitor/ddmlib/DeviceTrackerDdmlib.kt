@@ -16,7 +16,10 @@
 package com.android.processmonitor.monitor.ddmlib
 
 import com.android.adblib.AdbLogger
-import com.android.processmonitor.monitor.ddmlib.DeviceMonitorEvent.Online
+import com.android.ddmlib.IDevice
+import com.android.processmonitor.common.DeviceEvent
+import com.android.processmonitor.common.DeviceEvent.DeviceOnline
+import com.android.processmonitor.common.DeviceTracker
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.trySendBlocking
@@ -31,20 +34,20 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * Uses a [com.android.ddmlib.AndroidDebugBridge.IDeviceChangeListener] to track events.
  */
-internal class DeviceTrackerImpl(
+internal class DeviceTrackerDdmlib(
     private val adbAdapter: AdbAdapter,
     private val logger: AdbLogger,
     private val context: CoroutineContext = EmptyCoroutineContext,
-) : DeviceTracker {
+) : DeviceTracker<IDevice> {
 
-    override fun trackDevices(): Flow<DeviceMonitorEvent> = callbackFlow {
+    override fun trackDevices(): Flow<DeviceEvent<IDevice>> = callbackFlow {
         val listener = DevicesMonitorListener(this, logger)
         adbAdapter.addDeviceChangeListener(listener)
 
         // Adding a listener does not fire events about existing devices, so we have to add them
         // manually.
         adbAdapter.getDevices().filter { it.isOnline }.forEach {
-            trySendBlocking(Online(it))
+            trySendBlocking(DeviceOnline(it))
                 .onFailure { e -> logger.warn(e, "Failed to send a DeviceMonitorEvent") }
         }
 
