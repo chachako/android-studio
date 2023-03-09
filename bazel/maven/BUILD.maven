@@ -14541,6 +14541,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.databinding.viewbinding_7.4.1",
+    pom = "repository/androidx/databinding/viewbinding/7.4.1/viewbinding-7.4.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/databinding/viewbinding/7.4.1",
+    deps = [
+        "androidx.annotation.annotation_1.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.documentfile.documentfile_1.0.0",
     pom = "repository/androidx/documentfile/documentfile/1.0.0/documentfile-1.0.0.pom",
     repo_root_path = "repository",
@@ -21511,6 +21522,14 @@ maven_artifact(
     pom = "repository/com/android/tools/build/aapt2/7.4.0-alpha09-8841542/aapt2-7.4.0-alpha09-8841542.pom",
     repo_root_path = "repository",
     repo_path = "com/android/tools/build/aapt2/7.4.0-alpha09-8841542",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.build.aapt2_7.4.1-8841542",
+    pom = "repository/com/android/tools/build/aapt2/7.4.1-8841542/aapt2-7.4.1-8841542.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/build/aapt2/7.4.1-8841542",
     visibility = ["//visibility:public"],
 )
 

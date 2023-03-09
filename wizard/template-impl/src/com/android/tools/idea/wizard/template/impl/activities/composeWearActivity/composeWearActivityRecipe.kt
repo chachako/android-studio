@@ -58,9 +58,9 @@ private fun RecipeExecutor.commonComposeRecipe(
     // Add Compose Wear dependencies; the Compose BOM doesn't include Wear.
     val wearComposeVersionVarName =
         getDependencyVarName("androidx.wear.compose:compose-material", "wear_compose_version")
-    setExtVar(wearComposeVersionVarName, "1.0.0")
-    addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:\${$wearComposeVersionVarName}")
-    addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:\${$wearComposeVersionVarName}")
+    val wearComposeVersion = getExtVar(wearComposeVersionVarName, "1.0.0")
+    addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:$wearComposeVersion")
+    addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:$wearComposeVersion")
 
     addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
     addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
@@ -154,21 +154,20 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
         defaultPreview
     )
 
+    val wearTilesVersionVarName =
+        getDependencyVarName("androidx.wear.tiles:tiles", "wear_tiles_version")
+    val wearTilesVersion = getExtVar(wearTilesVersionVarName, "1.1.0")
+    addDependency(mavenCoordinate = "androidx.wear.tiles:tiles:$wearTilesVersion")
+    addDependency(mavenCoordinate = "androidx.wear.tiles:tiles-material:$wearTilesVersion")
+
     val horologistVersionVarName =
         getDependencyVarName(
             "com.google.android.horologist:horologist-compose-tools",
             "horologist_version"
         )
-    setExtVar(horologistVersionVarName, "0.1.5")
-
-    val wearTilesVersionVarName =
-        getDependencyVarName("androidx.wear.tiles:tiles", "wear_tiles_version")
-    setExtVar(wearTilesVersionVarName, "1.1.0")
-
-    addDependency(mavenCoordinate = "androidx.wear.tiles:tiles:\${$wearTilesVersionVarName}")
-    addDependency(mavenCoordinate = "androidx.wear.tiles:tiles-material:\${$wearTilesVersionVarName}")
-    addDependency(mavenCoordinate = "com.google.android.horologist:horologist-compose-tools:\${$horologistVersionVarName}")
-    addDependency(mavenCoordinate = "com.google.android.horologist:horologist-tiles:\${$horologistVersionVarName}")
+    val horologistVersion = getExtVar(horologistVersionVarName, "0.1.5")
+    addDependency(mavenCoordinate = "com.google.android.horologist:horologist-compose-tools:$horologistVersion")
+    addDependency(mavenCoordinate = "com.google.android.horologist:horologist-tiles:$horologistVersion")
 
     addDependency(mavenCoordinate = "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1")
 

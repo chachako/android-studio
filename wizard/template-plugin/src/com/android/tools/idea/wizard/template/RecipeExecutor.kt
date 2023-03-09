@@ -125,6 +125,14 @@ interface RecipeExecutor {
   fun setExtVar(name: String, value: String)
 
   /**
+   * Returns the variable with [name] in the ext block of global Gradle build file.
+   *
+   * @return the value of the variable. Returns [valueIfNotFound] if the variable with [name] isn't
+   * found in the ext block.
+   */
+  fun getExtVar(name: String, valueIfNotFound: String): String
+
+  /**
    * Looks for the given classpath dependency coordinate, in the project base, and returns the version variable name on it.
    * For example if the base project has a classpath dependency of 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version'
    * this function returns 'kotlin_version'.
