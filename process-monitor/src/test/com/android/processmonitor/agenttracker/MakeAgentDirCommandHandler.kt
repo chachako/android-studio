@@ -18,11 +18,10 @@ package com.android.processmonitor.agenttracker
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.ShellV2Protocol
 import com.android.fakeadbserver.services.ServiceOutput
 import com.android.fakeadbserver.shellv2commandhandlers.ShellV2Handler
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_DIR
-import java.net.Socket
 
 private const val CMD = "mkdir -p $AGENT_DIR; chmod 700 $AGENT_DIR; chown shell:shell $AGENT_DIR"
 
@@ -40,11 +39,13 @@ internal class MakeAgentDirCommandHandler : ShellV2Handler(ShellProtocolType.SHE
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
         serviceOutput: ServiceOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
+        statusWriter.writeOk()
         invocations.add(device.deviceId)
         serviceOutput.writeStdout("")
         serviceOutput.writeExitCode(0)

@@ -29,8 +29,10 @@ import java.net.Socket
  *
  * TODO: Rename to reflect this can handle both "shell" and "shell,v2" protocol.
  */
-abstract class ShellV2Handler protected constructor(protected val shellProtocolType: ShellProtocolType
+abstract class ShellV2Handler protected constructor(
+    protected val shellProtocolType: ShellProtocolType
 ) : DeviceCommandHandler(shellProtocolType.command) {
+
     override fun accept(
         server: FakeAdbServer,
         socket: Socket,
@@ -45,14 +47,16 @@ abstract class ShellV2Handler protected constructor(protected val shellProtocolT
         val shellCommand = split[0]
         val shellCommandArgs = if (split.size > 1) split[1] else null
         if (shouldExecute(shellCommand, shellCommandArgs)) {
-            socket.getOutputStream().write("OKAY".toByteArray(Charsets.UTF_8))
+            val statusWriter = StatusWriter(socket)
             execute(
                 server,
+                statusWriter,
                 shellProtocolType.createServiceOutput(socket, device),
                 device,
                 shellCommand,
-                shellCommandArgs
+                shellCommandArgs,
             )
+            statusWriter.verifyStatusWritten()
             return true
         }
         return false
@@ -79,9 +83,32 @@ abstract class ShellV2Handler protected constructor(protected val shellProtocolT
      */
     abstract fun execute(
         fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
         serviceOutput: ServiceOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     )
+}
+
+class StatusWriter(val socket: Socket) {
+
+    private val writeOkCalled = false
+    private val writeFailCalled = false
+
+    fun writeOk() {
+        assert(!writeOkCalled)
+        socket.getOutputStream().write("OKAY".toByteArray(Charsets.UTF_8))
+    }
+
+    fun writeFail() {
+        assert(!writeFailCalled)
+        socket.getOutputStream().write("FAIL".toByteArray(Charsets.UTF_8))
+    }
+
+    fun verifyStatusWritten() {
+        assert(writeOkCalled != writeFailCalled) {
+            "OKAY or FAIL message, but not both should be written to output stream"
+        }
+    }
 }

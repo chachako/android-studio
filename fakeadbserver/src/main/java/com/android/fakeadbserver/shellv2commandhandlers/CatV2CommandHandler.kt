@@ -38,11 +38,13 @@ class CatV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2H
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
         serviceOutput: ServiceOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
+        statusWriter.writeOk()
         if (shellCommandArgs.isNullOrEmpty()) {
             forwardStdinAsStdout(serviceOutput)
             return

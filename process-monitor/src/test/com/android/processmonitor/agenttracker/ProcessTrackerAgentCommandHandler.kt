@@ -19,9 +19,9 @@ import ai.grazie.utils.dropPrefix
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.ShellV2Protocol
 import com.android.fakeadbserver.services.ServiceOutput
 import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_PATH
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -54,11 +54,13 @@ internal class ProcessTrackerAgentCommandHandler : SimpleShellV2Handler(
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
         serviceOutput: ServiceOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
+        statusWriter.writeOk()
         invocations.add("${device.deviceId}: $shellCommandArgs")
         runBlocking {
             channel.consumeAsFlow().takeWhile {

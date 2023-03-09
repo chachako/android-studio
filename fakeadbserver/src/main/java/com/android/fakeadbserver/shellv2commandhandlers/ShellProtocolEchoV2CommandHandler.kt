@@ -33,12 +33,14 @@ class ShellProtocolEchoV2CommandHandler() : SimpleShellV2Handler(
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
         serviceOutput: ServiceOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
         // Forward `stdin`, `stderr` and `exit` lines as `stdout` packets
+        statusWriter.writeOk()
         var exitCode = 0
         val stdoutPrefix = "stdout:"
         val stderrPrefix = "stderr:"

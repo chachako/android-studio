@@ -28,11 +28,13 @@ class GetPropV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShel
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
         serviceOutput: ServiceOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
+        statusWriter.writeOk()
         val buf = StringBuilder()
         buf.append("# This is some build info\n")
         buf.append("# This is more build info\n")
