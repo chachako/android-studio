@@ -39,8 +39,8 @@ class WatchFaceEditorDetector : Detector(), XmlScanner {
         briefDescription = "Watch face editor must use launchMode=\"standard\"",
         explanation =
           """
-                Watch face editor activities must be able to launch in the Wear OS app activity task \
-                in order to work correctly. Thus only `launchMode="standard"` is allowed. The watch \
+                Watch face editor activities must be able to launch in the Wear OS companion app activity \
+                task in order to work correctly. Thus only `launchMode="standard"` is allowed. The watch \
                 face will not be shown on the watch if it does not satisfy this requirement.
             """,
         category = Category.CORRECTNESS,
