@@ -87,16 +87,27 @@ internal class VariantSelectorImplTest {
 
     @Test
     fun testWithProductFlavor() {
-        val variantSelector = VariantSelectorImpl()
+        val flavorAndDimensionVariantSelector = VariantSelectorImpl()
                 .withFlavor("dim1" to "flavor1") as VariantSelectorImpl
+        val flavorOnlyVariantSelector = VariantSelectorImpl()
+                .withFlavor("flavor1") as VariantSelectorImpl
         val flavor1Variant = Mockito.mock(ApplicationVariantBuilder::class.java)
+        val flavor2variant = Mockito.mock(ApplicationVariantBuilder::class.java)
+        val flavor1Dim3Variant = Mockito.mock(ApplicationVariantBuilder::class.java)
+
         Mockito.`when`(flavor1Variant.productFlavors).thenReturn(
                 listOf("dim1" to "flavor1", "dim2" to "flavor2"))
-        val flavor2variant = Mockito.mock(ApplicationVariantBuilder::class.java)
         Mockito.`when`(flavor2variant.productFlavors).thenReturn(
                 listOf("dim2" to "flavor2", "dim3" to "flavor3"))
-        Truth.assertThat(variantSelector.appliesTo(flavor1Variant)).isTrue()
-        Truth.assertThat(variantSelector.appliesTo(flavor2variant)).isFalse()
+        Mockito.`when`(flavor1Dim3Variant.productFlavors).thenReturn(
+                listOf("dim3" to "flavor1"))
+
+        Truth.assertThat(flavorAndDimensionVariantSelector.appliesTo(flavor1Variant)).isTrue()
+        Truth.assertThat(flavorAndDimensionVariantSelector.appliesTo(flavor2variant)).isFalse()
+
+        Truth.assertThat(flavorOnlyVariantSelector.appliesTo(flavor1Dim3Variant)).isTrue()
+        Truth.assertThat(flavorOnlyVariantSelector.appliesTo(flavor1Variant)).isTrue()
+        Truth.assertThat(flavorOnlyVariantSelector.appliesTo(flavor2variant)).isFalse()
     }
 
     @Test

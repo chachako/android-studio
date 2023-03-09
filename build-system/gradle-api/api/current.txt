@@ -2743,6 +2743,7 @@ package com.android.build.api.variant {
     method public com.android.build.api.variant.VariantSelector all();
     method public com.android.build.api.variant.VariantSelector withBuildType(String buildType);
     method public com.android.build.api.variant.VariantSelector withFlavor(kotlin.Pair<java.lang.String,java.lang.String> flavorToDimension);
+    method public com.android.build.api.variant.VariantSelector withFlavor(String flavorName);
     method public com.android.build.api.variant.VariantSelector withName(java.util.regex.Pattern pattern);
     method public com.android.build.api.variant.VariantSelector withName(String name);
   }
