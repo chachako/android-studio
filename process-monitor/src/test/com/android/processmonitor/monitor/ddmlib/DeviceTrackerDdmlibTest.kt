@@ -25,6 +25,7 @@ import com.android.ddmlib.IDevice.DeviceState.OFFLINE
 import com.android.ddmlib.IDevice.DeviceState.ONLINE
 import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
 import com.android.processmonitor.common.DeviceEvent.DeviceOnline
+import com.android.processmonitor.testutils.toChannel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch

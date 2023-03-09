@@ -23,19 +23,14 @@ import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
+import com.android.processmonitor.testutils.toChannel
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.Futures
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Rule
 import org.junit.Test
-import java.io.Closeable
 import java.time.Duration
 
 /**
@@ -121,30 +116,4 @@ private fun DeviceState.startClient(
     processName: String
 ): ClientState {
     return startClient(pid, 0, processName, packageName, false)
-}
-
-internal class FlowChannel<T>(scope: CoroutineScope, flow: Flow<T>) : Closeable {
-
-    private val channel = Channel<T>(10)
-    private val job = scope.launch { flow.collect { channel.send(it) } }
-
-    suspend fun receive(): T = channel.receive()
-
-    suspend fun receiveOrNull(): T? = withTimeoutOrNull(1000) { receive() }
-
-    suspend fun take(count: Int): List<T> {
-        return buildList {
-            repeat(count) {
-                add(receive())
-            }
-        }
-    }
-
-    override fun close() {
-        job.cancel()
-    }
-}
-
-internal fun <T> Flow<T>.toChannel(scope: CoroutineScope): FlowChannel<T> {
-    return FlowChannel(scope, this)
 }
