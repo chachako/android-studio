@@ -92,7 +92,14 @@ It copies the build apk to the specified directory.
             val task = task(":app:copydebugApks")
             assertNotNull(task)
             Truth.assertThat(task.outcome).isEqualTo(TaskOutcome.SUCCESS)
-            val outFolder = File(testProjectDir.root, "${testName.methodName}/app/build/intermediates/apk/copydebugApks")
+
+            // AGP package application output
+            val agpOutFolder = File(testProjectDir.root, "${testName.methodName}/app/build/intermediates/apk/debug/packageDebug")
+            Truth.assertThat(agpOutFolder.listFiles()?.asList()?.map { it.name }).containsExactly(
+                "app-debug.apk", BuiltArtifactsImpl.METADATA_FILE_NAME
+            )
+            // final output
+            val outFolder = File(testProjectDir.root, "${testName.methodName}/app/build/outputs/apk/debug/")
             Truth.assertThat(outFolder.listFiles()?.asList()?.map { it.name }).containsExactly(
                 "app-debug.apk", BuiltArtifactsImpl.METADATA_FILE_NAME
             )

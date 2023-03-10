@@ -149,7 +149,7 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
 
         // set the output location, so public uses of the API do not have to do it.
         taskProvider.configure { task ->
-            into(task).set(type.getOutputPath(artifacts.buildDirectory, taskProvider.name))
+            into(task).set(artifacts.calculateOutputPath(type, task))
         }
 
         // if this is a public type with an associated listing file used by studio, automatically
@@ -171,7 +171,7 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
         )
     }
 
-    fun <ArtifactTypeT, ArtifactTypeU> toTransformMany(
+    internal fun <ArtifactTypeT, ArtifactTypeU> toTransformMany(
         sourceType: ArtifactTypeT,
         targetType: ArtifactTypeU,
         atLocation: String? = null
