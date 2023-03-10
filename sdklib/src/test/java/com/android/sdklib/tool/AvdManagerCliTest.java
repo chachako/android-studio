@@ -428,6 +428,9 @@ public class AvdManagerCliTest {
                         "P pixel_5\n",
                         "P pixel_6\n",
                         "P pixel_6_pro\n",
+                        "P pixel_6a\n",
+                        "P pixel_7\n",
+                        "P pixel_7_pro\n",
                         "P pixel_c\n",
                         "P pixel_xl\n",
                         "P resizable\n",
@@ -477,11 +480,11 @@ public class AvdManagerCliTest {
                         .join(mLogger.getMessages())
                         .contains(
                                 "P ---------\n"
-                                        + "P id: 47 or \"4in WVGA (Nexus S)\"\n"
+                                        + "P id: 50 or \"4in WVGA (Nexus S)\"\n"
                                         + "P     Name: 4\" WVGA (Nexus S)\n"
                                         + "P     OEM : Generic\n"
                                         + "P ---------\n"
-                                        + "P id: 48 or \"4.65in 720p (Galaxy Nexus)\"\n"
+                                        + "P id: 51 or \"4.65in 720p (Galaxy Nexus)\"\n"
                                         + "P     Name: 4.65\" 720p (Galaxy Nexus)\n"
                                         + "P     OEM : Generic\n"
                                         + "P ---------"));
