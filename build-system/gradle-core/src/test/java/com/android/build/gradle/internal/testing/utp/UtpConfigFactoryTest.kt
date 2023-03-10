@@ -21,7 +21,10 @@ import com.android.build.gradle.internal.SdkComponentsBuildService.VersionedSdkL
 import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
+import com.android.build.gradle.internal.test.ApkBundlesFinder
+import com.android.build.gradle.internal.test.ApksFinder
 import com.android.build.gradle.internal.testing.StaticTestData
+import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.builder.testing.api.DeviceConnector
 import com.android.sdklib.BuildToolInfo
 import com.google.common.truth.Truth.assertThat
@@ -88,9 +91,12 @@ class UtpConfigFactoryTest {
         flavorName = "",
         testApk = mockFile("testApk.apk"),
         testDirectories = emptyList(),
-        testedApkFinder = { emptyList() },
-        privacySandboxInstallBundlesFinder = {
-            listOf(listOf(mockPath("mockDependencyApkPath")))
+        testedApks = object: ApksFinder {
+            override fun findApks(deviceConfigProvider: DeviceConfigProvider) = emptyList<File>()
+        },
+        privacySandboxApks = object: ApkBundlesFinder {
+            override fun findBundles(deviceConfigProvider: DeviceConfigProvider) =
+                listOf(listOf(mockPath("mockDependencyApkPath")))
         }
     )
 

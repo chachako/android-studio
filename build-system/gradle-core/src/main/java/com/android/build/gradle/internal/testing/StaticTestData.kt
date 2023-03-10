@@ -17,8 +17,11 @@
 package com.android.build.gradle.internal.testing
 
 import com.android.build.api.variant.AndroidVersion
+import com.android.build.gradle.internal.test.ApkBundlesFinder
+import com.android.build.gradle.internal.test.ApksFinder
 import com.android.builder.testing.api.DeviceConfigProvider
 import java.io.File
+import java.io.Serializable
 import java.nio.file.Path
 
 /**
@@ -58,12 +61,18 @@ data class StaticTestData(
 
     override val testDirectories: List<File?>,
 
+    val testedApks: ApksFinder,
+
+    val privacySandboxApks: ApkBundlesFinder
+) : com.android.build.api.instrumentation.StaticTestData, Serializable {
+
     /**
      *
      * Returns APK files to install based on given density and abis. If none match,
      * empty list is returned.
      */
-    override val testedApkFinder: (DeviceConfigProvider) -> List<File>,
+    override val testedApkFinder: (DeviceConfigProvider) -> List<File>
+        get() = testedApks::findApks
 
     /**
      * TODO: Pending migration from extractApkFilesBypassingBundleTool to getApkFiles (Currently unused)
@@ -71,4 +80,6 @@ data class StaticTestData(
      * Returns extracted dependency APK files to install for privacy sandbox apps.
      */
     override val privacySandboxInstallBundlesFinder: (DeviceConfigProvider) -> List<List<Path>>
-) : com.android.build.api.instrumentation.StaticTestData
+        get() = privacySandboxApks::findBundles
+
+}

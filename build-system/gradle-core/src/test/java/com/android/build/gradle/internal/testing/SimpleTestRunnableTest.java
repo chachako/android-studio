@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.android.annotations.NonNull;
-import com.android.build.api.variant.AndroidVersion;
 import com.android.build.api.variant.impl.AndroidVersionImpl;
 import com.android.builder.testing.api.DeviceConfigProvider;
 import com.android.builder.testing.api.DeviceConnector;
@@ -81,7 +80,7 @@ public class SimpleTestRunnableTest {
     @NonNull private List<File> testDirectories;
     @NonNull private Map<String, String> instrumentationRunnerArguments;
 
-    @NonNull private AndroidVersion minSdkVersion;
+    @NonNull private AndroidVersionImpl minSdkVersion;
 
     private int apiVersion;
 

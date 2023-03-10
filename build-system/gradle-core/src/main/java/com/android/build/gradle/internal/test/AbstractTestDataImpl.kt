@@ -32,9 +32,11 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import java.io.File
 import java.nio.file.Path
 import java.util.zip.ZipFile
 
@@ -58,6 +60,30 @@ abstract class AbstractTestDataImpl(
 ) : TestData {
 
     private var extraInstrumentationTestRunnerArgs: Map<String, String> = mutableMapOf()
+
+    @get:Internal
+    val privacyInstallBundlesFinder: ApkBundlesFinder
+        get() = _privacyInstallBundlesFinder ?:
+            object: ApkBundlesFinder {
+                val privacySandboxApks: Set<File>? = privacySandboxSdkApks?.files
+
+                override fun findBundles(
+                    deviceConfigProvider: DeviceConfigProvider
+                ): List<List<Path>> {
+                    privacySandboxApks ?: return emptyList()
+                    val privacySandboxInstallBundles = ImmutableList.builder<List<Path>>()
+                    privacySandboxApks.forEach {  apk ->
+                        privacySandboxInstallBundles.add(
+                            extractApkFilesBypassingBundleTool(apk.toPath()))
+                    }
+                    return privacySandboxInstallBundles.build()
+                }
+            }.also { _privacyInstallBundlesFinder = it }
+
+    private var _privacyInstallBundlesFinder: ApkBundlesFinder? = null
+
+    @get:Internal
+    abstract val testedApksFinder: ApksFinder
 
     override val applicationId = creationConfig.applicationId
 
@@ -119,8 +145,8 @@ abstract class AbstractTestDataImpl(
                 flavorName.get(),
                 getTestApk().get(),
                 testDirectories.files.toList(),
-                this::findTestedApks,
-                this::privacySandboxInstallBundlesFinder
+                testedApksFinder,
+                privacyInstallBundlesFinder
         )
     }
 
@@ -177,13 +203,10 @@ abstract class AbstractTestDataImpl(
                 false
             }
 
+    override fun findTestedApks(deviceConfigProvider: DeviceConfigProvider): List<File> =
+        testedApksFinder.findApks(deviceConfigProvider)
+
     override fun privacySandboxInstallBundlesFinder(
-        deviceConfigProvider: DeviceConfigProvider): List<List<Path>> {
-        privacySandboxSdkApks?: return emptyList()
-        val privacySandboxInstallBundles = ImmutableList.builder<List<Path>>()
-        privacySandboxSdkApks.forEach {  apk ->
-            privacySandboxInstallBundles.add(extractApkFilesBypassingBundleTool(apk.toPath()))
-        }
-        return privacySandboxInstallBundles.build()
-    }
+        deviceConfigProvider: DeviceConfigProvider): List<List<Path>> =
+        privacyInstallBundlesFinder.findBundles(deviceConfigProvider)
 }

@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.testing
 
 import java.io.File
 import org.gradle.api.file.Directory
+import java.io.Serializable
 
 /**
  * Implementation of the TestRunData for use by
@@ -44,4 +45,4 @@ data class TestRunData(
     override val projectPath: String,
 
     override val testData: StaticTestData
-): com.android.build.api.instrumentation.manageddevice.TestRunData
+): com.android.build.api.instrumentation.manageddevice.TestRunData, Serializable
