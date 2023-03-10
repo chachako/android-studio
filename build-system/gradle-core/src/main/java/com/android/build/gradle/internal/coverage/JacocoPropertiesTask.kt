@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle.internal.coverage
 
+import com.android.build.gradle.internal.caching.DisabledCachingReason.FAST_TASK
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -34,14 +35,8 @@ import org.gradle.workers.WorkParameters
  * Writes the java resource file for jacoco to work out of the box.
  *
  * See https://issuetracker.google.com/151471144 for context
- *
- * Caching disabled by default for this task because the task does very little work.
- * The taskAction does no complex processing -- it just writes a file to disk with some
- *  statically determinate content.
- * Calculating cache hit/miss and fetching results is likely more expensive than
- *  simply executing the task.
  */
-@DisableCachingByDefault
+@DisableCachingByDefault(because = FAST_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST)
 abstract class JacocoPropertiesTask : NonIncrementalTask() {
 

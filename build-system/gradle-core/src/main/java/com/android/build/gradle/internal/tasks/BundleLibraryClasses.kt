@@ -18,8 +18,8 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.FN_CLASSES_JAR
 import com.android.build.api.artifact.ScopedArtifact
-import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.databinding.DataBindingExcludeDelegate
 import com.android.build.gradle.internal.databinding.configureFrom
@@ -33,7 +33,6 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedCo
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.toSerializable
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.isJarFile
@@ -58,7 +57,6 @@ import org.gradle.work.DisableCachingByDefault
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
-import java.lang.IllegalStateException
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.zip.Deflater
@@ -125,13 +123,8 @@ private fun BundleLibraryClassesInputs.configureWorkerActionParams(
 
 /**
  * Bundles all library classes to a directory.
- *
- * Caching disabled by default for this task because the task does very little work.
- * Input files are copied, unchanged, to an Output directory.
- * Calculating cache hit/miss and fetching results is likely more expensive than
- * simply executing the task.
  */
-@DisableCachingByDefault
+@DisableCachingByDefault(because = SIMPLE_MERGING_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.COMPILED_CLASSES, secondaryTaskCategories = [TaskCategory.ZIPPING])
 abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClassesInputs {
 
@@ -180,13 +173,8 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
 
 /**
  * Bundles all library classes to a jar.
- *
- * Caching disabled by default for this task because the task does very little work.
- * Input files are collected, unchanged, into a new Jar file.
- * Calculating cache hit/miss and fetching results is likely more expensive than
- * simply executing the task.
  */
-@DisableCachingByDefault
+@DisableCachingByDefault(because = SIMPLE_MERGING_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.COMPILED_CLASSES, secondaryTaskCategories = [TaskCategory.ZIPPING])
 abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClassesInputs {
 

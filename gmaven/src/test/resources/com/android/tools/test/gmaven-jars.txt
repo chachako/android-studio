@@ -418,6 +418,7 @@ com/android/tools/build/gradle
   com/android/build/gradle/internal/api/artifact/
   com/android/build/gradle/internal/attributes/
   com/android/build/gradle/internal/attribution/
+  com/android/build/gradle/internal/caching/
   com/android/build/gradle/internal/component/
   com/android/build/gradle/internal/component/features/
   com/android/build/gradle/internal/component/legacy/

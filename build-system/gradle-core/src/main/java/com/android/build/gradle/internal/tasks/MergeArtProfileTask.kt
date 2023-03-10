@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.api.BaselineProfiles
+import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -35,7 +36,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
 
-@DisableCachingByDefault
+@DisableCachingByDefault(because = SIMPLE_MERGING_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ART_PROFILE, secondaryTaskCategories = [TaskCategory.MERGING])
 abstract class MergeArtProfileTask: MergeFileTask() {
 

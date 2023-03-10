@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.utils.FileUtils
 import com.google.common.base.Charsets
@@ -31,13 +32,8 @@ import java.io.IOException
 
 /**
  * Task to merge files. This appends all the files together into an output file.
- *
- * Caching disabled by default for this task because the task does very little work.
- * Concatenates the registered Inputs into a single Output file, requiring no computation.
- * Calculating cache hit/miss and fetching results is likely more expensive than
- * simply executing the task.
  */
-@DisableCachingByDefault
+@DisableCachingByDefault(because = SIMPLE_MERGING_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.MISC, secondaryTaskCategories = [TaskCategory.MERGING])
 abstract class MergeFileTask : NonIncrementalTask() {
 

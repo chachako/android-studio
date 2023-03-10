@@ -17,6 +17,7 @@
 package com.android.build.gradle.tasks
 
 import com.android.SdkConstants.FN_INTERMEDIATE_FULL_JAR
+import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -27,18 +28,18 @@ import com.android.builder.packaging.JarFlinger
 import com.android.utils.FileUtils
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.work.DisableCachingByDefault
 import java.util.function.Predicate
 import java.util.zip.Deflater
 
 /** Task to merge the res/classes intermediate jars from a library into a single one  */
-@CacheableTask
+@DisableCachingByDefault(because = SIMPLE_MERGING_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.MISC, secondaryTaskCategories = [TaskCategory.ZIPPING, TaskCategory.MERGING])
 abstract class ZipMergingTask : NonIncrementalTask() {
 
