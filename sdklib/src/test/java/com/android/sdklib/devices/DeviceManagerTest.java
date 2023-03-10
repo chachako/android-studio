@@ -33,6 +33,7 @@ import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.sdklib.repository.targets.SystemImage;
 import com.android.testutils.NoErrorsOrWarningsLogger;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -577,6 +578,45 @@ public class DeviceManagerTest {
                         "Pixel 6a",
                         "Pixel 7",
                         "Pixel 7 Pro");
+    }
+
+    @Test
+    public void getDevicesCanonicalDeviceDefinitionsEnabled() {
+        // Arrange
+        EnumSet<DeviceFilter> filters = EnumSet.of(DeviceFilter.DEFAULT);
+
+        // Act
+        Collection<Device> actualDevices = dm.getDevices(filters, property -> true);
+
+        // Assert
+        Object expectedNames =
+                Arrays.asList(
+                        "Resizable (Experimental)",
+                        "13.5\" Freeform",
+                        "7.6\" Fold-in with outer display",
+                        "8\" Fold-out",
+                        "6.7\" Horizontal Fold-in",
+                        "7.4\" Rollable",
+                        "2.7\" QVGA",
+                        "2.7\" QVGA slider",
+                        "3.2\" HVGA slider (ADP1)",
+                        "3.2\" QVGA (ADP2)",
+                        "3.3\" WQVGA",
+                        "3.4\" WQVGA",
+                        "3.7\" WVGA (Nexus One)",
+                        "3.7\" FWVGA slider",
+                        "4\" WVGA (Nexus S)",
+                        "4.65\" 720p (Galaxy Nexus)",
+                        "4.7\" WXGA",
+                        "5.1\" WVGA",
+                        "5.4\" FWVGA",
+                        "7\" WSVGA (Tablet)",
+                        "10.1\" WXGA (Tablet)",
+                        "Small Phone",
+                        "Medium Phone",
+                        "Medium Tablet");
+
+        assertThat(listDisplayNames(actualDevices)).isEqualTo(expectedNames);
     }
 
     @Test

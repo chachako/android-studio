@@ -34,6 +34,7 @@ import com.android.sdklib.repository.LoggerProgressIndicatorWrapper;
 import com.android.sdklib.repository.PkgProps;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.utils.ILogger;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -61,8 +62,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -239,6 +242,14 @@ public class DeviceManager {
      */
     @NonNull
     public Collection<Device> getDevices(@NonNull EnumSet<DeviceFilter> deviceFilter) {
+        return getDevices(deviceFilter, Boolean::getBoolean);
+    }
+
+    @NonNull
+    @VisibleForTesting
+    Collection<Device> getDevices(
+            @NonNull EnumSet<DeviceFilter> deviceFilter,
+            @NonNull Function<String, Boolean> getBoolean) {
         initDevicesLists();
         Table<String, String, Device> devices = HashBasedTable.create();
         if (mUserDevices != null && (deviceFilter.contains(DeviceFilter.USER))) {
@@ -253,7 +264,15 @@ public class DeviceManager {
         if (mSysImgDevices != null && (deviceFilter.contains(DeviceFilter.SYSTEM_IMAGES))) {
             devices.putAll(mSysImgDevices);
         }
-        return Collections.unmodifiableCollection(devices.values());
+
+        boolean enabled = getBoolean.apply("canonical.device.definitions.enabled");
+
+        Collection<Device> deviceCollection =
+                devices.values().stream()
+                        .filter(device -> enabled || !isCanonical(device))
+                        .collect(Collectors.toList());
+
+        return Collections.unmodifiableCollection(deviceCollection);
     }
 
     private void initDevicesLists() {
@@ -440,6 +459,17 @@ public class DeviceManager {
             }
         }
         return false;
+    }
+
+    private static boolean isCanonical(@NonNull Device device) {
+        switch (device.getId()) {
+            case "SmallPhone":
+            case "MediumPhone":
+            case "MediumTablet":
+                return true;
+            default:
+                return false;
+        }
     }
 
     public void addUserDevice(@NonNull Device d) {
