@@ -33,7 +33,7 @@ class LoggingEval implements Eval {
     @NonNull
     @Override
     public Value newArray(Type type, int length) {
-        Log.v("live.deploy", "newArray: " + type + "[" + length + "]");
+        InterpreterLogger.v("newArray: " + type + "[" + length + "]");
         return receiver.newArray(type, length);
     }
 
@@ -46,46 +46,46 @@ class LoggingEval implements Eval {
     @NonNull
     @Override
     public Value getArrayElement(Value array, @NonNull Value index) {
-        Log.v("live.deploy", "getArrayElement: " + index);
+        InterpreterLogger.v("getArrayElement: " + index);
         return receiver.getArrayElement(array, index);
     }
 
     @Override
     public void setArrayElement(Value array, Value index, @NonNull Value newValue) {
-        Log.v("live.deploy", "setArrayElement: " + index);
+        InterpreterLogger.v("setArrayElement: " + index);
         receiver.setArrayElement(array, index, newValue);
     }
 
     @NonNull
     @Override
     public Value getArrayLength(@NonNull Value array) {
-        Log.v("live.deploy", "getArrayLength");
+        InterpreterLogger.v("getArrayLength");
         return receiver.getArrayLength(array);
     }
 
     @NonNull
     @Override
     public Value getField(@NonNull Value value, FieldDescription description) {
-        Log.v("live.deploy", "getField: " + description);
+        InterpreterLogger.v("getField: " + description);
         return receiver.getField(value, description);
     }
 
     @NonNull
     @Override
     public Value getStaticField(FieldDescription description) {
-        Log.v("live.deploy", "getStaticField: " + description);
+        InterpreterLogger.v("getStaticField: " + description);
         return receiver.getStaticField(description);
     }
 
     @Override
     public void setField(@NonNull Value owner, FieldDescription description, Value value) {
-        Log.v("live.deploy", "setField: " + description);
+        InterpreterLogger.v("setField: " + description);
         receiver.setField(owner, description, value);
     }
 
     @Override
     public void setStaticField(FieldDescription description, @NonNull Value value) {
-        Log.v("live.deploy", "setStaticField: " + description);
+        InterpreterLogger.v("setStaticField: " + description);
         receiver.setStaticField(description, value);
     }
 
@@ -95,7 +95,7 @@ class LoggingEval implements Eval {
             @NonNull Value target,
             MethodDescription methodDesc,
             @NonNull List<? extends Value> args) {
-        Log.v("live.deploy", "invokeInterface: " + methodDesc);
+        InterpreterLogger.v("invokeInterface: " + methodDesc);
         return receiver.invokeInterface(target, methodDesc, args);
     }
 
@@ -105,7 +105,7 @@ class LoggingEval implements Eval {
             @NonNull Value target,
             MethodDescription methodDesc,
             @NonNull List<? extends Value> args) {
-        Log.v("live.deploy", "invokeMethod: " + methodDesc);
+        InterpreterLogger.v("invokeMethod: " + methodDesc);
         return receiver.invokeMethod(target, methodDesc, args);
     }
 
@@ -113,7 +113,7 @@ class LoggingEval implements Eval {
     @Override
     public Value invokeStaticMethod(
             MethodDescription description, @NonNull List<? extends Value> args) {
-        Log.v("live.deploy", "invokeStaticMethod: " + description);
+        InterpreterLogger.v("invokeStaticMethod: " + description);
         return receiver.invokeStaticMethod(description, args);
     }
 
@@ -123,7 +123,7 @@ class LoggingEval implements Eval {
             @NonNull Value target,
             MethodDescription methodDesc,
             @NonNull List<? extends Value> args) {
-        Log.v("live.deploy", "invokeSpecial: " + methodDesc);
+        InterpreterLogger.v("invokeSpecial: " + methodDesc);
         return receiver.invokeSpecial(target, methodDesc, args);
     }
 

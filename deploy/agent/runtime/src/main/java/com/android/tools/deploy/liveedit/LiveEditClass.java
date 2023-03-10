@@ -110,7 +110,7 @@ class LiveEditClass {
     // Returns a new proxy instance that implements all the proxied class' interfaces. Can only be
     // called if the LiveEditClass represents a proxiable class.
     public Object getProxy() {
-        Log.v("studio.deploy", "New proxy: " + getClassInternalName());
+        InterpreterLogger.v("New proxy: " + getClassInternalName());
         if (proxyClass == null) {
             throw new LiveEditException(
                     "Cannot create a proxy object for a non-proxy LiveEdit class");

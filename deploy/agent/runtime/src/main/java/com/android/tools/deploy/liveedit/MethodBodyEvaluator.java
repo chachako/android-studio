@@ -83,13 +83,8 @@ public class MethodBodyEvaluator {
                     localIndex++, new ObjectValue(thisObject, Type.getObjectType(objectType)));
         }
 
-        Log.v(
-                "live.deploy",
-                "Interpreting: '"
-                        + method.getOwnerInternalName()
-                        + "."
-                        + target.name
-                        + target.desc);
+        String location = method.getOwnerInternalName() + "." + target.name + target.desc;
+        InterpreterLogger.enter(location);
 
         Type[] argTypes = Type.getArgumentTypes(target.desc);
         for (int i = 0; i < argTypes.length; i++) {
@@ -107,6 +102,8 @@ public class MethodBodyEvaluator {
         }
 
         InterpreterResult result = ByteCodeInterpreter.interpreterLoop(method, init, evaluator);
+
+        InterpreterLogger.exit(location);
         if (result instanceof ValueReturned) {
             Value value = ((ValueReturned) result).getResult();
             return value.obj();

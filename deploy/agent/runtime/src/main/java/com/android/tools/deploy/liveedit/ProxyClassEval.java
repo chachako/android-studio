@@ -38,7 +38,7 @@ class ProxyClassEval extends BackPorterEval {
     @Override
     public Value getField(@NonNull Value target, FieldDescription field) {
         if (target.obj() instanceof ProxyClass) {
-            Log.v("live.deploy.lambda", "getField: " + field);
+            InterpreterLogger.v("(lambda)getField: " + field);
             ProxyClassHandler handler =
                     (ProxyClassHandler) Proxy.getInvocationHandler(target.obj());
             return makeValue(handler.getField(field.getName()), Type.getType(field.getDesc()));
@@ -50,7 +50,7 @@ class ProxyClassEval extends BackPorterEval {
     @Override
     public void setField(@NonNull Value target, FieldDescription field, Value value) {
         if (target.obj() instanceof ProxyClass) {
-            Log.v("live.deploy.lambda", "setField: " + field);
+            InterpreterLogger.v("(lambda)setField: " + field);
             ProxyClassHandler handler =
                     (ProxyClassHandler) Proxy.getInvocationHandler(target.obj());
             handler.setField(field.getName(), value.obj());
@@ -64,9 +64,9 @@ class ProxyClassEval extends BackPorterEval {
     public Value getStaticField(FieldDescription field) {
         LiveEditClass clazz = context.getClass(field.getOwnerInternalName());
         if (isProxyClass(clazz)) {
-            Log.v("live.deploy.lambda", "getStaticField: " + field);
+            InterpreterLogger.v("(lambda)getStaticField: " + field);
             Object value = clazz.getStaticField(field.getName());
-            Log.v("live.deploy.lambda", "\tfield_type=" + value.getClass());
+            InterpreterLogger.v("        \tfield_type=" + value.getClass());
             return makeValue(value, Type.getType(field.getDesc()));
         }
 
@@ -77,9 +77,9 @@ class ProxyClassEval extends BackPorterEval {
     public void setStaticField(FieldDescription field, @NonNull Value value) {
         LiveEditClass clazz = context.getClass(field.getOwnerInternalName());
         if (isProxyClass(clazz)) {
-            Log.v("live.deploy.lambda", "setStaticField: " + field);
+            InterpreterLogger.v("(lambda)setStaticField: " + field);
             clazz.setStaticField(field.getName(), value.obj());
-            Log.v("live.deploy.lambda", "\tfield_type=" + value.obj().getClass());
+            InterpreterLogger.v("        \tfield_type=" + value.obj().getClass());
         } else {
             super.setStaticField(field, value);
         }
@@ -98,7 +98,7 @@ class ProxyClassEval extends BackPorterEval {
         if (method.isConstructor()) {
             // We're calling a super() constructor.
             if (target.obj() instanceof ProxyClass) {
-                Log.v("live.deploy.lambda", "invokeSpecial(targetProxy): " + method);
+                InterpreterLogger.v("(lambda)invokeSpecial(targetProxy): " + method);
 
                 Type[] parameterType = Type.getArgumentTypes(methodDesc);
                 Object[] args = new Object[argsValues.size()];
@@ -115,7 +115,7 @@ class ProxyClassEval extends BackPorterEval {
             // If we're calling the constructor of a proxied class, set up a new proxy instance.
             LiveEditClass clazz = context.getClass(ownerInternalName);
             if (isProxyClass(clazz)) {
-                Log.v("live.deploy.lambda", "invokeSpecial(isProxy): " + method);
+                InterpreterLogger.v("(lambda)invokeSpecial(isProxy): " + method);
 
                 ObjectValue objTarget = (ObjectValue) target;
                 Object proxy = clazz.getProxy();
@@ -124,7 +124,7 @@ class ProxyClassEval extends BackPorterEval {
                 return Value.VOID_VALUE;
             }
         } else if (target.obj() instanceof ProxyClass) {
-            Log.v("live.deploy.lambda", "invokeSpecial(targetProxy): " + method);
+            InterpreterLogger.v("(lambda)invokeSpecial(targetProxy): " + method);
             Object result = invokeProxy(target.obj(), methodName, methodDesc, argsValues);
             return makeValue(result, Type.getReturnType(methodDesc));
         }
@@ -140,7 +140,7 @@ class ProxyClassEval extends BackPorterEval {
         final String methodDesc = method.getDesc();
 
         if (target.obj() instanceof ProxyClass) {
-            Log.v("live.deploy.lambda", "invokeInterface: " + method);
+            InterpreterLogger.v("(lambda)invokeInterface: " + method);
             Object result = invokeProxy(target.obj(), methodName, methodDesc, args);
             return makeValue(result, Type.getReturnType(methodDesc));
         }
@@ -156,7 +156,7 @@ class ProxyClassEval extends BackPorterEval {
         final String methodDesc = method.getDesc();
 
         if (target.obj() instanceof ProxyClass) {
-            Log.v("live.deploy.lambda", "invokeMethod: " + method);
+            InterpreterLogger.v("(lambda)invokeMethod: " + method);
             Object result = invokeProxy(target.obj(), methodName, methodDesc, args);
             return makeValue(result, Type.getReturnType(methodDesc));
         }
@@ -178,7 +178,7 @@ class ProxyClassEval extends BackPorterEval {
 
         // We interpret *all* static methods of proxy classes.
         if (clazz.isProxyClass()) {
-            Log.v("live.deploy.lambda", "invokeStaticMethod: " + method);
+            InterpreterLogger.v("(lambda)invokeStaticMethod: " + method);
             Object result =
                     clazz.invokeDeclaredMethod(
                             methodName, methodDesc, null, valueToObj(args, methodDesc));
@@ -193,7 +193,7 @@ class ProxyClassEval extends BackPorterEval {
             Method originalMethod =
                     methodLookup(internalName, methodName, parameterTypes, returnType);
             if (originalMethod == null) {
-                Log.v("live.deploy.lambda", "invokeStaticMethod: " + method);
+                InterpreterLogger.v("(lambda)invokeStaticMethod: " + method);
                 Object result =
                         clazz.invokeDeclaredMethod(
                                 methodName, methodDesc, null, valueToObj(args, methodDesc));
