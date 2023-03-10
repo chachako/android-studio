@@ -81,7 +81,7 @@ internal class AgentProcessTracker(
 
     // TODO(aalbert): Support multiple ABI's?
     private suspend fun pushAgent(deviceSelector: DeviceSelector, deviceAbi: String) {
-        val command = "mkdir -p $AGENT_DIR; chmod 700 $AGENT_DIR; chown shell:shell $AGENT_DIR"
+        val command = "mkdir -p $AGENT_DIR; chmod 755 $AGENT_DIR; chown shell:shell $AGENT_DIR"
         adbSession.deviceServices.shellAsLines(deviceSelector, command).collect {
             when {
                 it is StderrLine && it.contents.isNotBlank() ->

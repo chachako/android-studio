@@ -23,7 +23,7 @@ import com.android.fakeadbserver.shellv2commandhandlers.ShellV2Handler
 import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_DIR
 
-private const val CMD = "mkdir -p $AGENT_DIR; chmod 700 $AGENT_DIR; chown shell:shell $AGENT_DIR"
+private const val CMD = "mkdir -p $AGENT_DIR; chmod 755 $AGENT_DIR; chown shell:shell $AGENT_DIR"
 
 /** Simulates the execution of the command that creates the directory for the tracking agent */
 internal class MakeAgentDirCommandHandler : ShellV2Handler(ShellProtocolType.SHELL_V2) {
