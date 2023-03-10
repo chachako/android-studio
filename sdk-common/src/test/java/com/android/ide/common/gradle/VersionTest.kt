@@ -246,14 +246,38 @@ class VersionTest {
     @Test
     fun testPrefixInfimumComparison() {
         listOf("1+dev-dev_dev", "1.dev-dev", "1+dev", "1").let { vss ->
-            vss.forEachIndexed { i1, v1s ->
+            vss.forEach { v1s ->
                 val v1 = Version.parse(v1s)
-                vss.forEachIndexed { i2, v2s ->
+                vss.forEach { v2s ->
                     val v2 = Version.prefixInfimum(v2s)
                     assertThat(v1).isGreaterThan(v2)
                     assertThat(v2).isLessThan(v1)
                     assertThat(v1).isNotEqualTo(v2)
                     assertThat(v2).isNotEqualTo(v1)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testPrefixInfimumOrdering() {
+        listOf("dev", "0.9", "1", "1.0", "1.1.1", "1.9").let { vss ->
+            vss.forEachIndexed { i1, v1s ->
+                val v1 = Version.parse(v1s)
+                vss.forEachIndexed { i2, v2s ->
+                    val v2 = Version.prefixInfimum(v2s)
+                    if (i1 >= i2) {
+                        assertThat(v1).isGreaterThan(v2)
+                        assertThat(v2).isLessThan(v1)
+                        assertThat(v1).isNotEqualTo(v2)
+                        assertThat(v2).isNotEqualTo(v1)
+                    }
+                    else {
+                        assertThat(v1).isLessThan(v2)
+                        assertThat(v2).isGreaterThan(v1)
+                        assertThat(v1).isNotEqualTo(v2)
+                        assertThat(v2).isNotEqualTo(v1)
+                    }
                 }
             }
         }

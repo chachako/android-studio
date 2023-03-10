@@ -131,18 +131,20 @@ class Version: Comparable<Version> {
         // longer prefix with the implicit DEVs in the shortest; if one is a prefix infimum,
         // we have exhausted the explicit parts of the non-infimum.
         if (this.isPrefixInfimum && other.isPrefixInfimum) return 0
-        if (this.isPrefixInfimum) return -1
-        if (other.isPrefixInfimum) return 1
 
-        if (parts.size == other.parts.size) return 0
-        return if (parts.size > other.parts.size) {
-            when (parts[other.parts.size]) {
+        if (thisParts.size == otherParts.size) return when {
+            this.isPrefixInfimum -> -1
+            other.isPrefixInfimum -> 1
+            else -> 0
+        }
+        return if (thisParts.size > otherParts.size) {
+            when (thisParts[otherParts.size]) {
                 is Numeric -> 1
                 else -> -1
             }
         }
         else {
-            when (other.parts[parts.size]) {
+            when (otherParts[thisParts.size]) {
                 is Numeric -> -1
                 else -> 1
             }
