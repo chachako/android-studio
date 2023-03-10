@@ -15,19 +15,25 @@
  */
 package com.android.fakeadbserver.shellcommandhandlers
 
-import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.io.IOException
-import java.net.Socket
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 
-class WindowManagerCommandHandler : SimpleShellHandler("wm") {
+class WindowManagerCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+    shellProtocolType, "wm"
+) {
 
-  override fun execute(fakeAdbServer: FakeAdbServer, responseSocket: Socket, device: DeviceState, args: String?) {
-    try {
-      val output = responseSocket.getOutputStream()
-      CommandHandler.writeOkay(output)
-    } catch(ignored: IOException) {
+    override fun execute(
+        fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
+        serviceOutput: ServiceOutput,
+        device: DeviceState,
+        shellCommand: String,
+        shellCommandArgs: String?
+    ) {
+        statusWriter.writeOk()
     }
-  }
 }

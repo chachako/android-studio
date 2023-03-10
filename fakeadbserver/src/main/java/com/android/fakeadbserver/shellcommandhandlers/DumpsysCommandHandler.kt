@@ -15,35 +15,42 @@
  */
 package com.android.fakeadbserver.shellcommandhandlers
 
-import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 import java.io.IOException
-import java.net.Socket
 
-class DumpsysCommandHandler : SimpleShellHandler("dumpsys") {
+class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+    shellProtocolType,"dumpsys") {
 
-  override fun execute(fakeAdbServer: FakeAdbServer, responseSocket: Socket, device: DeviceState, args: String?) {
-    try {
-      val output = responseSocket.getOutputStream()
+    override fun execute(
+        fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
+        serviceOutput: ServiceOutput,
+        device: DeviceState,
+        shellCommand: String,
+        shellCommandArgs: String?
+    ) {
+        try {
+            if (shellCommandArgs == null) {
+                statusWriter.writeFail()
+                return
+            }
 
-      if (args == null) {
-        CommandHandler.writeFail(output)
-        return
-      }
+            statusWriter.writeOk()
 
-      CommandHandler.writeOkay(output)
+            val response: String = when {
+                shellCommandArgs.startsWith("package") -> packageCommandHandler()
+                else -> ""
+            }
 
-      val response: String = when {
-        args.startsWith("package") -> packageCommandHandler()
-        else -> ""
-      }
-
-      CommandHandler.writeString(output, response)
-    } catch (ignored: IOException) {
+            serviceOutput.writeStdout(response)
+        } catch (ignored: IOException) {
+        }
     }
-    return
-  }
 
   private fun packageCommandHandler(): String {
     // Treat all packages as not installed:

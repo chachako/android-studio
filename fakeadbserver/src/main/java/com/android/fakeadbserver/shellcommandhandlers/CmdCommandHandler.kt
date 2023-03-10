@@ -15,44 +15,54 @@
  */
 package com.android.fakeadbserver.shellcommandhandlers
 
-import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
+import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.PackageManager
+import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 import java.io.IOException
-import java.net.Socket
 
-class CmdCommandHandler : SimpleShellHandler("cmd") {
+class CmdCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+    shellProtocolType,"cmd") {
 
-  override fun execute(fakeAdbServer: FakeAdbServer, respSocket: Socket, state: DeviceState, args: String?) {
-    try {
-      val output = respSocket.getOutputStream()
+    override fun execute(
+        fakeAdbServer: FakeAdbServer,
+        statusWriter: StatusWriter,
+        serviceOutput: ServiceOutput,
+        device: DeviceState,
+        shellCommand: String,
+        shellCommandArgs: String?
+    ) {
+        try {
+            if (shellCommandArgs == null) {
+                statusWriter.writeFail()
+                return
+            }
 
-      if (args == null) {
-        CommandHandler.writeFail(output)
+            // Save command to logs so tests can consult them.
+            shellCommandArgs.let {
+                device.addCmdLog(shellCommandArgs)
+            }
+
+            statusWriter.writeOk()
+
+            val response: String = when {
+                shellCommandArgs.split(" ")
+                    .contains(PackageManager.BAD_FLAG) -> "Error: (requested to fail via -BAD_FAG)"
+
+                shellCommandArgs.startsWith("package install-create") -> installMultiple()
+                shellCommandArgs.startsWith("package install-commit") -> installCommit()
+                else -> ""
+            }
+
+            serviceOutput.writeStdout(response)
+        } catch (ignored: IOException) {
+        }
+
         return
-      }
-
-      // Save command to logs so tests can consult them.
-      args.let{
-        state.addCmdLog(args)
-      }
-
-      CommandHandler.writeOkay(output)
-
-      val response: String = when {
-        args.split(" ").contains(PackageManager.BAD_FLAG) -> "Error: (requested to fail via -BAD_FAG)"
-        args.startsWith("package install-create") -> installMultiple()
-        args.startsWith("package install-commit") -> installCommit()
-        else -> ""
-      }
-
-      CommandHandler.writeString(output, response)
-    } catch(ignored: IOException) {
     }
-
-    return
-  }
 
   /**
    * Handler for commands that look like:

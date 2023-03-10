@@ -17,36 +17,30 @@ package com.android.fakeadbserver.shellcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import com.google.common.base.Charsets
-import java.io.IOException
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.net.Socket
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 
-/**
- * A [ShellHandler] that outputs all characters received from `stdin` back to `stdout`, one
- * line at a time, i.e. characters are written back to `stdout` only when a newline ("\n")
- * character is received from `stdin`.
- */
-class RmCommandHandler : SimpleShellHandler("rm") {
+class RmCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+    shellProtocolType, "rm"
+) {
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
-        responseSocket: Socket,
+        statusWriter: StatusWriter,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
-        args: String?
+        shellCommand: String,
+        shellCommandArgs: String?
     ) {
-        val output = responseSocket.getOutputStream()
-        writeOkay(output)
+        statusWriter.writeOk()
 
-        if (args == null) {
-            writeOkayResponse(output, "usage: rm [-f | -i] [-dIPRrvWx] file ...\n" + "       unlink [--] file\n")
+        if (shellCommandArgs == null) {
+            serviceOutput.writeStderr("rm: Needs 1 argument (see \"rm --help\")")
             return
         }
-        val parameters = args.split(" ")
+        val parameters = shellCommandArgs.split(" ")
         device.deleteFile(parameters.last())
-        writeOkayResponse(output, "")
-
-        return
     }
 }

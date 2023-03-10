@@ -17,44 +17,35 @@ package com.android.fakeadbserver.shellcommandhandlers;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.fakeadbserver.CommandHandler;
 import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.FakeAdbServer;
-import com.google.common.base.Charsets;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
+import com.android.fakeadbserver.ShellProtocolType;
+import com.android.fakeadbserver.services.ServiceOutput;
+import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler;
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter;
 
 /** shell:write-no-stop continuously write to the output stream without stopping. */
-public class WriteNoStopCommandHandler extends SimpleShellHandler {
+public class WriteNoStopCommandHandler extends SimpleShellV2Handler {
 
-    public WriteNoStopCommandHandler() {
-        super("write-no-stop");
+    public WriteNoStopCommandHandler(ShellProtocolType shellProtocolType) {
+        super(shellProtocolType, "write-no-stop");
     }
 
     @Override
     public void execute(
             @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
+            @NonNull StatusWriter statusWriter,
+            @NonNull ServiceOutput serviceOutput,
             @NonNull DeviceState device,
-            @Nullable String args) {
-        OutputStream stream = null;
+            @NonNull String shellCommand,
+            @Nullable String shellCommandArgs) {
         try {
-            try {
-                stream = responseSocket.getOutputStream();
-                CommandHandler.writeOkay(stream); // Send ok first.
-                String testMessage = "write-no-stop test in progress" + shellNewLine(device);
-                while (true) {
-                    stream.write(testMessage.getBytes(Charsets.UTF_8));
-                    Thread.sleep(200);
-                }
-            } finally {
-                if (stream != null) {
-                    stream.flush();
-                    stream.close();
-                }
+            statusWriter.writeOk(); // Send ok first.
+            while (true) {
+                serviceOutput.writeStdout("write-no-stop test in progress\n");
+                Thread.sleep(200);
             }
-        } catch (IOException | InterruptedException ignored) {
+        } catch (InterruptedException ignored) {
         }
     }
 }

@@ -21,10 +21,11 @@ import com.android.annotations.Nullable;
 import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.DeviceState.LogcatChangeHandlerSubscriptionResult;
 import com.android.fakeadbserver.FakeAdbServer;
+import com.android.fakeadbserver.ShellProtocolType;
+import com.android.fakeadbserver.services.ServiceOutput;
+import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler;
+import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter;
 import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -35,19 +36,23 @@ import java.util.concurrent.Callable;
  * implementation, the command handler can be driven to send messages to the client of the fake ADB
  * Server.
  */
-public class LogcatCommandHandler extends SimpleShellHandler {
+public class LogcatCommandHandler extends SimpleShellV2Handler {
 
-    public LogcatCommandHandler() {
-        super("logcat");
+    public LogcatCommandHandler(ShellProtocolType shellProtocolType) {
+        super(shellProtocolType, "logcat");
     }
 
     @Override
     public void execute(
             @NonNull FakeAdbServer fakeAdbServer,
-            @NonNull Socket responseSocket,
+            @NonNull StatusWriter statusWriter,
+            @NonNull ServiceOutput serviceOutput,
             @NonNull DeviceState device,
-            @Nullable String args) {
-        List<String> parsedArgs = Arrays.asList(args == null ? new String[0] : args.split(" +"));
+            @NonNull String shellCommand,
+            @Nullable String shellCommandArgs) {
+        List<String> parsedArgs =
+                Arrays.asList(
+                        shellCommandArgs == null ? new String[0] : shellCommandArgs.split(" +"));
 
         int formatIndex = parsedArgs.indexOf("-v");
         if (formatIndex + 1 > parsedArgs.size()) {
@@ -57,13 +62,7 @@ public class LogcatCommandHandler extends SimpleShellHandler {
         String format = parsedArgs.get(formatIndex + 1);
         // TODO format the output according {@code format} argument.
 
-        OutputStream stream;
-        try {
-            stream = responseSocket.getOutputStream();
-            writeOkay(stream); // Send ok first.
-        } catch (IOException ignored) {
-            return;
-        }
+        statusWriter.writeOk();
 
         LogcatChangeHandlerSubscriptionResult subscriptionResult =
                 device.subscribeLogcatChangeHandler(
@@ -85,11 +84,8 @@ public class LogcatCommandHandler extends SimpleShellHandler {
                             public Callable<HandlerResult> createLogcatMessageAdditionHandler(
                                     @NonNull String message) {
                                 return () -> {
-                                    try {
-                                        stream.write(message.getBytes(Charset.defaultCharset()));
-                                    } catch (IOException ignored) {
-                                        return new HandlerResult(false);
-                                    }
+                                    serviceOutput.writeStdout(
+                                            message.getBytes(Charset.defaultCharset()));
                                     return new HandlerResult(true);
                                 };
                             }
@@ -101,7 +97,7 @@ public class LogcatCommandHandler extends SimpleShellHandler {
 
         try {
             for (String message : subscriptionResult.mLogcatContents) {
-                writeString(stream, message);
+                serviceOutput.writeStdout(message);
             }
             while (true) {
                 try {
