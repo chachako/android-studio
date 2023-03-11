@@ -173,7 +173,8 @@ class ExtractNativeLibsPackagingTest(
         task: String,
         apkType: ApkType
     ) {
-        project.executor().run(task).stdout.use {
+        val result = project.executor().run(task)
+        result.stdout.use {
             val resolvedUseLegacyPackaging: Boolean = useLegacyPackaging ?: (minSdk < 23)
             when {
                 resolvedUseLegacyPackaging && expectedCompression == ZipEntry.STORED -> {
@@ -187,6 +188,13 @@ class ExtractNativeLibsPackagingTest(
                     )
                 }
                 else -> assertThat(it).doesNotContain("PackagingOptions.jniLibs.useLegacyPackaging")
+            }
+        }
+        result.stdout.use {
+            if (sourceManifestValue != null) {
+                assertThat(it).contains("android:extractNativeLibs should not be specified")
+            } else {
+                assertThat(it).doesNotContain("android:extractNativeLibs should not be specified")
             }
         }
         val apk = project.getApk(apkType)

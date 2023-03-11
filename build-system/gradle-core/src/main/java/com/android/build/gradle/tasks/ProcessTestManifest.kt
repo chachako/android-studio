@@ -254,7 +254,8 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                     .setNamespace(namespace)
                     .withFeatures(
                         ManifestMerger2.Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK,
-                        ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST
+                        ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST,
+                        ManifestMerger2.Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES
                     )
 
                 instrumentationRunner?.let {

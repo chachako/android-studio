@@ -16,7 +16,9 @@
 
 package com.android.manifmerger;
 
+import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.manifmerger.ManifestMerger2.COMPATIBLE_SCREENS_SUB_MANIFEST;
+import static com.android.manifmerger.ManifestMerger2.MergeType.APPLICATION;
 import static com.android.manifmerger.ManifestMerger2.WEAR_APP_SUB_MANIFEST;
 import static com.android.manifmerger.MergingReport.Record.Severity.ERROR;
 import static com.android.manifmerger.MergingReport.Record.Severity.WARNING;
@@ -63,19 +65,27 @@ public class PreValidator {
      *       notified, merging should not be attempted
      * </ul>
      *
-     * A successful validation does not mean that the merging will be successful, it only means that
-     * the {@link SdkConstants#TOOLS_URI} instructions are correct and consistent.
+     * A successful validation does not mean that the merging will be successful.
      *
      * @param mergingReport report to log warnings and errors.
      * @param xmlDocument the loaded xml part.
+     * @param mergeType the merge type.
+     * @param validateApplicationElementAttributes whether to validate the application element's
+     *     attributes
      * @return one the {@link MergingReport.Result} value.
      */
     @NonNull
     public static MergingReport.Result validate(
-            @NonNull MergingReport.Builder mergingReport, @NonNull XmlDocument xmlDocument) {
+            @NonNull MergingReport.Builder mergingReport,
+            @NonNull XmlDocument xmlDocument,
+            @NonNull ManifestMerger2.MergeType mergeType,
+            boolean validateApplicationElementAttributes) {
 
-        validateManifestAttribute(
+        validatePackageAttribute(
                 mergingReport, xmlDocument.getRootNode(), xmlDocument.getFileType());
+        if (validateApplicationElementAttributes) {
+            validateApplicationElementAttributes(mergingReport, xmlDocument, mergeType);
+        }
         return validate(mergingReport, xmlDocument.getRootNode());
     }
 
@@ -163,8 +173,10 @@ public class PreValidator {
         }
     }
 
-    private static void validateManifestAttribute(
-            @NonNull MergingReport.Builder mergingReport, @NonNull XmlElement manifest, XmlDocument.Type fileType) {
+    private static void validatePackageAttribute(
+            @NonNull MergingReport.Builder mergingReport,
+            @NonNull XmlElement manifest,
+            XmlDocument.Type fileType) {
         Attr attributeNode = manifest.getAttributeNode(AndroidManifest.ATTRIBUTE_PACKAGE);
         // it's ok for other manifest types to have no package name, but it's an error for
         // library manifest types.
@@ -178,6 +190,66 @@ public class PreValidator {
                             "Missing 'package' declaration in manifest at %1$s",
                             manifest.printPosition()));
         }
+    }
+
+    /**
+     * Warn if users set android:extractNativeLibs or android:useEmbeddedDex in their MAIN or
+     * OVERLAY manifests.
+     */
+    private static void validateApplicationElementAttributes(
+            @NonNull MergingReport.Builder mergingReport,
+            @NonNull XmlDocument xmlDocument,
+            @NonNull ManifestMerger2.MergeType mergeType) {
+        // Don't warn for manifests coming from dependencies because there is no simple fix.
+        if (xmlDocument.getFileType() == XmlDocument.Type.LIBRARY) {
+            return;
+        }
+        Optional<XmlElement> applicationElement =
+                xmlDocument.getByTypeAndKey(ManifestModel.NodeTypes.APPLICATION, null);
+        applicationElement.ifPresent(
+                element -> {
+                    maybeWarnAboutAttribute(
+                            mergingReport,
+                            element,
+                            SdkConstants.ATTR_EXTRACT_NATIVE_LIBS,
+                            "https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs",
+                            mergeType);
+                    maybeWarnAboutAttribute(
+                            mergingReport,
+                            element,
+                            SdkConstants.ATTR_USE_EMBEDDED_DEX,
+                            "https://d.android.com/topic/security/dex",
+                            mergeType);
+                });
+    }
+
+    private static void maybeWarnAboutAttribute(
+            @NonNull MergingReport.Builder mergingReport,
+            @NonNull XmlElement xmlElement,
+            @NonNull String attributeLocalName,
+            @NonNull String link,
+            @NonNull ManifestMerger2.MergeType mergeType) {
+        Optional<XmlAttribute> xmlAttribute =
+                xmlElement.getAttribute(
+                        XmlNode.fromNSName(ANDROID_URI, "android", attributeLocalName));
+        xmlAttribute.ifPresent(
+                it -> {
+                    String warning =
+                            String.format(
+                                    "android:%1$s should not be specified in source "
+                                            + "AndroidManifest.xml files. See %2$s for more "
+                                            + "information.",
+                                    attributeLocalName, link);
+                    if (mergeType == APPLICATION) {
+                        warning +=
+                                " The AGP Upgrade Assistant can remove the attribute "
+                                        + "from the AndroidManifest.xml file and "
+                                        + "update the build file accordingly. See "
+                                        + "https://d.android.com/studio/build/agp-upgrade-assistant "
+                                        + "for more information.";
+                    }
+                    mergingReport.addMessage(it, WARNING, warning);
+                });
     }
 
     private static boolean isSubManifest(@NonNull XmlElement manifest) {
