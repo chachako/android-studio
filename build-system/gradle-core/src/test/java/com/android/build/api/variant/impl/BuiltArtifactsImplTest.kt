@@ -448,58 +448,6 @@ class BuiltArtifactsImplTest {
     }
 
     @Test
-    fun testArtifactSortingByRelativeFilePath() {
-        val result = tmpFolder.newFile()
-
-        createBuiltArtifacts(
-            BuiltArtifactImpl.make(tmpFolder.newFile("app-x86_64-debug.apk").absolutePath),
-            BuiltArtifactImpl.make(tmpFolder.newFile("app-x86-debug.apk").absolutePath),
-            BuiltArtifactImpl.make(tmpFolder.newFile("app-arm64-v8a-debug.apk").absolutePath),
-            BuiltArtifactImpl.make(tmpFolder.newFile("app-armeabi-v7a-debug.apk").absolutePath)
-        ).saveToFile(result)
-        val content = result.readText(Charsets.UTF_8)
-        Truth.assertThat(content).isEqualTo("""
-            {
-              "version": 3,
-              "artifactType": {
-                "type": "APK",
-                "kind": "Directory"
-              },
-              "applicationId": "com.android.test",
-              "variantName": "debug",
-              "elements": [
-                {
-                  "type": "SINGLE",
-                  "filters": [],
-                  "attributes": [],
-                  "outputFile": "app-arm64-v8a-debug.apk"
-                },
-                {
-                  "type": "SINGLE",
-                  "filters": [],
-                  "attributes": [],
-                  "outputFile": "app-armeabi-v7a-debug.apk"
-                },
-                {
-                  "type": "SINGLE",
-                  "filters": [],
-                  "attributes": [],
-                  "outputFile": "app-x86-debug.apk"
-                },
-                {
-                  "type": "SINGLE",
-                  "filters": [],
-                  "attributes": [],
-                  "outputFile": "app-x86_64-debug.apk"
-                }
-              ],
-              "elementType": "File"
-            }
-        """.trimIndent())
-
-    }
-
-    @Test
     fun testMixedFileTypes() {
         val folder = tmpFolder.newFolder()
         val file = tmpFolder.newFile()
