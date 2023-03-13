@@ -19,6 +19,7 @@ import com.android.SdkConstants.ANNOTATIONS_LIB_ARTIFACT_ID
 import com.android.SdkConstants.MATERIAL2_PKG
 import com.android.SdkConstants.SUPPORT_LIB_GROUP_ID
 import com.android.ide.common.gradle.Version
+import com.android.ide.common.gradle.VersionRange
 
 private const val FIREBASE_GROUP_ID = "com.google.firebase"
 private const val GOOGLE_MOBILE_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -68,7 +69,7 @@ enum class KnownVersionStability {
    *
    * For a given minimum [version] return the maximum or expiration [version] of a
    * dependency with a given stability. This is used to generate the exclusive upper
-   * bound in a [GradleVersionRange].
+   * bound in a [VersionRange], and should always be a prefixInfimum [Version].
    */
   fun expiration(version: Version): Version =
         when (this) {

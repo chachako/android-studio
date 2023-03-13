@@ -32,7 +32,7 @@ import com.google.common.collect.Range
  * This is intended to support string specifiers of artifact versions in Gradle build files.  It
  * does not attempt to model directly the strictly/required/preferred hierarchy of specifications.
  */
-class VersionRange private constructor(private val range: Range<Version>) {
+class VersionRange(private val range: Range<Version>) {
     fun hasLowerBound() = range.hasLowerBound()
     fun lowerEndpoint() = range.lowerEndpoint()
     fun lowerBoundType() = range.lowerBoundType()
@@ -48,6 +48,11 @@ class VersionRange private constructor(private val range: Range<Version>) {
     fun gap(other: VersionRange) = VersionRange(range.gap(other.range))
     fun span(other: VersionRange) = VersionRange(range.span(other.range))
     fun canonical(domain: DiscreteDomain<Version>) = VersionRange(range.canonical(domain))
+
+    @Deprecated("Use lowerEndpoint() instead", replaceWith = ReplaceWith("lowerEndpoint()"))
+    val min get() = lowerEndpoint()
+    @Deprecated("Use upperEndpoint() instead", replaceWith = ReplaceWith("upperEndpoint()"))
+    val max get() = upperEndpoint()
 
     override fun equals(other: Any?) = other is VersionRange && range == other.range
     override fun hashCode() = range.hashCode()
