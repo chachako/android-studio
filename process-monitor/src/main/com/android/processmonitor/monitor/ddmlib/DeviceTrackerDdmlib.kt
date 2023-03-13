@@ -55,4 +55,6 @@ internal class DeviceTrackerDdmlib(
             adbAdapter.removeDeviceChangeListener(listener)
         }
     }.flowOn(context)
+
+    override fun getDeviceSerialNumber(device: IDevice): String = device.serialNumber
 }

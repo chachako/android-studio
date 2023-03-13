@@ -18,13 +18,15 @@ package com.android.processmonitor.monitor
 import com.android.adblib.AdbLogger
 import com.android.adblib.AdbSession
 import com.android.adblib.withPrefix
-import com.android.ddmlib.IDevice
 import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
 import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.common.DeviceTracker
+import com.android.processmonitor.monitor.adblib.DeviceTrackerAdblib
+import com.android.processmonitor.monitor.adblib.ProcessTrackerFactoryAdblib
 import com.android.processmonitor.monitor.ddmlib.AdbAdapter
 import com.android.processmonitor.monitor.ddmlib.DeviceTrackerDdmlib
 import com.android.processmonitor.monitor.ddmlib.ProcessTrackerFactoryDdmlib
+import com.android.sdklib.deviceprovisioner.DeviceProvisioner
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -38,30 +40,13 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Implementation of ProcessNameMonitor
  */
-class ProcessNameMonitorImpl @TestOnly internal constructor(
+class ProcessNameMonitorImpl<T> @TestOnly internal constructor(
     parentScope: CoroutineScope,
-    private val deviceTracker: DeviceTracker<IDevice>,
-    private val processTrackerFactory: ProcessTrackerFactory<IDevice>,
+    private val deviceTracker: DeviceTracker<T>,
+    private val processTrackerFactory: ProcessTrackerFactory<T>,
     private val maxProcessRetention: Int,
     private val logger: AdbLogger,
 ) : ProcessNameMonitor, Closeable {
-
-    companion object {
-
-        fun forDdmlib(
-            parentScope: CoroutineScope,
-            adbSession: AdbSession,
-            adbAdapter: AdbAdapter,
-            config: ProcessNameMonitor.Config,
-            logger: AdbLogger,
-        ) = ProcessNameMonitorImpl(
-            parentScope,
-            DeviceTrackerDdmlib(adbAdapter, logger, adbSession.ioDispatcher),
-            ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, config.agentConfig, logger),
-            config.maxProcessRetention,
-            logger,
-        )
-    }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, t ->
         logger.warn(t, "Error in a coroutine: ${t.message}")
@@ -105,11 +90,12 @@ class ProcessNameMonitorImpl @TestOnly internal constructor(
         scope.cancel()
     }
 
-    private suspend fun addDevice(device: IDevice) {
-        logger.info { "Adding ${device.serialNumber}" }
+    private suspend fun addDevice(device: T) {
+        val serialNumber = deviceTracker.getDeviceSerialNumber(device)
+        logger.info { "Adding $serialNumber" }
         val processTracker = processTrackerFactory.createProcessTracker(device)
-        val logger = logger.withPrefix("PerDeviceMonitor: ${device.serialNumber}: ")
-        devices[device.serialNumber] =
+        val logger = logger.withPrefix("PerDeviceMonitor: $serialNumber: ")
+        devices[serialNumber] =
             PerDeviceMonitor(scope, logger, maxProcessRetention, processTracker).apply {
                 start()
             }
@@ -119,5 +105,36 @@ class ProcessNameMonitorImpl @TestOnly internal constructor(
         logger.info { ("Removing $serialNumber") }
         val clientMonitor = devices.remove(serialNumber)
         clientMonitor?.close()
+    }
+
+    companion object {
+
+        fun forDdmlib(
+            parentScope: CoroutineScope,
+            adbSession: AdbSession,
+            adbAdapter: AdbAdapter,
+            config: ProcessNameMonitor.Config,
+            logger: AdbLogger,
+        ) = ProcessNameMonitorImpl(
+            parentScope,
+            DeviceTrackerDdmlib(adbAdapter, logger, adbSession.ioDispatcher),
+            ProcessTrackerFactoryDdmlib(adbSession, adbAdapter, config.agentConfig, logger),
+            config.maxProcessRetention,
+            logger,
+        )
+
+        fun forAdblib(
+            parentScope: CoroutineScope,
+            adbSession: AdbSession,
+            deviceProvisioner: DeviceProvisioner,
+            config: ProcessNameMonitor.Config,
+            logger: AdbLogger,
+        ) = ProcessNameMonitorImpl(
+            parentScope,
+            DeviceTrackerAdblib(deviceProvisioner, logger),
+            ProcessTrackerFactoryAdblib(adbSession, config.agentConfig, logger),
+            config.maxProcessRetention,
+            logger,
+        )
     }
 }

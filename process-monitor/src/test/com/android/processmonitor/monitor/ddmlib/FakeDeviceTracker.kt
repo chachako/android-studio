@@ -15,7 +15,6 @@
  */
 package com.android.processmonitor.monitor.ddmlib
 
-import com.android.ddmlib.IDevice
 import com.android.processmonitor.common.DeviceEvent
 import com.android.processmonitor.common.DeviceTracker
 import kotlinx.coroutines.channels.Channel
@@ -26,17 +25,18 @@ import java.io.Closeable
 /**
  * A test implementation of [DeviceTracker]
  */
-internal class FakeDeviceTracker : DeviceTracker<IDevice>, Closeable {
+internal class FakeDeviceTracker : DeviceTracker<String>, Closeable {
 
-    private val deviceEventsChannel = Channel<DeviceEvent<IDevice>>(10)
+    private val deviceEventsChannel = Channel<DeviceEvent<String>>(10)
 
-    suspend fun sendDeviceEvents(vararg events: DeviceEvent<IDevice>) {
+    suspend fun sendDeviceEvents(vararg events: DeviceEvent<String>) {
         events.forEach {
             deviceEventsChannel.send(it)
         }
     }
 
-    override fun trackDevices(): Flow<DeviceEvent<IDevice>> = deviceEventsChannel.consumeAsFlow()
+    override fun trackDevices(): Flow<DeviceEvent<String>> = deviceEventsChannel.consumeAsFlow()
+    override fun getDeviceSerialNumber(device: String): String = device
 
     override fun close() {
         deviceEventsChannel.close()

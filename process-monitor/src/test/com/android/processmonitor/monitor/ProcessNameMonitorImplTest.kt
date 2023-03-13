@@ -16,14 +16,12 @@
 package com.android.processmonitor.monitor
 
 import com.android.adblib.testing.FakeAdbLoggerFactory
-import com.android.ddmlib.IDevice
 import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
 import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.common.DeviceTracker
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
 import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.monitor.ddmlib.FakeDeviceTracker
-import com.android.processmonitor.monitor.ddmlib.mockDevice
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,8 +38,8 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class) // runTest is experimental (replaced runTestTest)
 class ProcessNameMonitorImplTest {
 
-    private val fakeProcessTrackerFactory = object : FakeProcessTrackerFactory<IDevice>() {
-        override fun getSerialNumber(device: IDevice) = device.serialNumber
+    private val fakeProcessTrackerFactory = object : FakeProcessTrackerFactory<String>() {
+        override fun getSerialNumber(device: String) = device
     }
 
     @Test
@@ -50,8 +48,8 @@ class ProcessNameMonitorImplTest {
             val monitor =
                 processNameMonitor(deviceTracker, trackerFactory = fakeProcessTrackerFactory)
 
-            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device1")))
-            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device2")))
+            deviceTracker.sendDeviceEvents(DeviceOnline("device1"))
+            deviceTracker.sendDeviceEvents(DeviceOnline("device2"))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
@@ -70,16 +68,15 @@ class ProcessNameMonitorImplTest {
         FakeDeviceTracker().use { deviceTracker ->
             val monitor = processNameMonitor(deviceTracker)
 
-            val device1 = mockDevice("device1")
-            deviceTracker.sendDeviceEvents(DeviceOnline(device1))
-            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device2")))
+            deviceTracker.sendDeviceEvents(DeviceOnline("device1"))
+            deviceTracker.sendDeviceEvents(DeviceOnline("device2"))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
             fakeProcessTrackerFactory.send("device2", ProcessAdded(2, "package2", "process2"))
             advanceUntilIdle()
 
-            deviceTracker.sendDeviceEvents(DeviceDisconnected(device1.serialNumber))
+            deviceTracker.sendDeviceEvents(DeviceDisconnected("device1"))
             advanceUntilIdle()
 
             assertThat(monitor.getProcessNames("device1", 1)).isNull()
@@ -92,7 +89,7 @@ class ProcessNameMonitorImplTest {
     fun propagatesMaxProcessRetention(): Unit = runTest {
         FakeDeviceTracker().use { deviceTracker ->
             val monitor = processNameMonitor(deviceTracker, maxProcessRetention = 1)
-            deviceTracker.sendDeviceEvents(DeviceOnline(mockDevice("device1")))
+            deviceTracker.sendDeviceEvents(DeviceOnline("device1"))
             advanceUntilIdle()
 
             fakeProcessTrackerFactory.send("device1", ProcessAdded(1, "package1", "process1"))
@@ -115,12 +112,12 @@ class ProcessNameMonitorImplTest {
     fun disconnect_closesPerDeviceMonitor(): Unit = runTest {
         FakeDeviceTracker().use { deviceTracker ->
             val monitor = processNameMonitor(deviceTracker)
-            val device = mockDevice("device1")
+            val device = "device1"
             deviceTracker.sendDeviceEvents(DeviceOnline(device))
             advanceTimeBy(2000) // Let the flow run a few cycles
             val perDeviceMonitor = monitor.devices["device1"]
 
-            deviceTracker.sendDeviceEvents(DeviceDisconnected(device.serialNumber))
+            deviceTracker.sendDeviceEvents(DeviceDisconnected(device))
             advanceUntilIdle()
 
             assertThat(perDeviceMonitor?.scope?.isActive).isFalse()
@@ -128,10 +125,10 @@ class ProcessNameMonitorImplTest {
     }
 
     private fun CoroutineScope.processNameMonitor(
-        deviceTracker: DeviceTracker<IDevice> = FakeDeviceTracker(),
-        trackerFactory: ProcessTrackerFactory<IDevice> = fakeProcessTrackerFactory,
+        deviceTracker: DeviceTracker<String> = FakeDeviceTracker(),
+        trackerFactory: ProcessTrackerFactory<String> = fakeProcessTrackerFactory,
         maxProcessRetention: Int = 1000,
-    ): ProcessNameMonitorImpl {
+    ): ProcessNameMonitorImpl<String> {
         return ProcessNameMonitorImpl(
             this,
             deviceTracker,

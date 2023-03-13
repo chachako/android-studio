@@ -59,6 +59,9 @@ internal class DeviceTrackerAdblib(
                 }
             }
     }
+
+    override fun getDeviceSerialNumber(device: DeviceState.Connected): String =
+        device.connectedDevice.serialNumber
 }
 
 private fun DeviceState.asOnline() = takeIf { it.isOnline() } as? DeviceState.Connected

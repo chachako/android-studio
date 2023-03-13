@@ -26,4 +26,6 @@ internal interface DeviceTracker<T> {
      * Track devices connecting and disconnecting.
      */
     fun trackDevices(): Flow<DeviceEvent<T>>
+
+    fun getDeviceSerialNumber(device: T): String
 }
