@@ -22,7 +22,6 @@ import org.gradle.api.Incubating
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
-import org.gradle.api.provider.Provider
 import java.io.Serializable
 
 /**
@@ -90,6 +89,10 @@ interface Variant : Component, HasAndroidResources {
     /**
      * Variant's [UnitTest], or null if the unit tests for this variant are disabled.
      */
+    @Deprecated(
+        "Will be removed in v9.0",
+        replaceWith = ReplaceWith("(Variant.Subtype).unitTest where available")
+    )
     val unitTest: UnitTest?
 
     /**

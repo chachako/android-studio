@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.api.variant
 
+import com.android.build.api.component.UnitTest
+
 /**
- * [VariantBuilder] type for library projects
+ * Variants that optionally have unit test component
  */
-interface LibraryVariantBuilder : VariantBuilder,
-    HasAndroidTestBuilder,
-    HasUnitTestBuilder,
-    HasTestFixturesBuilder,
-    CanMinifyCodeBuilder
+interface HasUnitTest {
+    /**
+     * Variant's [UnitTest], or null if the unit tests for this variant are disabled.
+     */
+    val unitTest: UnitTest?
+}
