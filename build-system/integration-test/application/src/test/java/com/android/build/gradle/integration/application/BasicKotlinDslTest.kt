@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
+import com.android.utils.FileUtils
 import org.junit.Rule
 import org.junit.Test
 
@@ -60,6 +61,30 @@ class BasicKotlinDslTest {
         project.file("gradle.properties").appendText("""
             android.debug.obsoleteApi=true
         """.trimIndent())
+
+        project.executor().run("assembleDebug")
+    }
+
+    @Test
+    fun testGenerateLocaleConfig() {
+        project.buildFile.delete()
+
+        project.file("build.gradle.kts").writeText("""
+            apply(from = "../commonHeader.gradle")
+            plugins {
+                id("com.android.application")
+            }
+
+            android {
+                namespace = "com.example.app"
+                compileSdkVersion(${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION})
+                // TODO (b/272139789): update this to curly-brace notation
+                androidResources.generateLocaleConfig = true
+            }
+        """.trimIndent())
+
+        FileUtils.createFile(project.file("src/main/res/resources.properties"),
+            "unqualifiedResLocale=en-US")
 
         project.executor().run("assembleDebug")
     }

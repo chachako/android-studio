@@ -49,7 +49,7 @@ abstract class ExtractSupportedLocalesTask : NonIncrementalTask() {
     @get:OutputFile
     abstract val localeList: RegularFileProperty
 
-    // TODO (b/269504885): replace this with a res map
+    // TODO (b/273374246): replace this with a res map
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:IgnoreEmptyDirectories
@@ -73,9 +73,8 @@ abstract class ExtractSupportedLocalesTask : NonIncrementalTask() {
         if (fromAppModule.get()) {
             // Find resources.properties file
             val propFiles = mainResSet.files.map { File(it, "resources.properties") }.filter { it.exists() }
-
-            // TODO (b/269504885): Add links to the error message here and below
-            val noResourcesPropertiesMessage = "No resources.properties file found."
+            val noResourcesPropertiesMessage = "No resources.properties file found. " +
+                "See https://developer.android.com/r/studio-ui/build/automatic-per-app-languages"
             if (propFiles.isEmpty() && resources.isNotEmpty()) { // Mandate a resource property file
                 logger.error(noResourcesPropertiesMessage)
                 throw RuntimeException(noResourcesPropertiesMessage)
@@ -84,14 +83,16 @@ abstract class ExtractSupportedLocalesTask : NonIncrementalTask() {
             val defaultLocale = readResourcesPropertiesFile(propFiles)
 
             if (defaultLocale == null) {
-                val noDefaultLocaleMessage = "No locale is set for unqualified res."
+                val noDefaultLocaleMessage = "No locale is set for unqualified res. " +
+                    "See https://developer.android.com/r/studio-ui/build/automatic-per-app-languages"
                 logger.error(noDefaultLocaleMessage)
                 throw RuntimeException(noDefaultLocaleMessage)
             }
 
             validatedDefaultLocale = validateLocale(defaultLocale) ?:
                 throw RuntimeException("The default locale \"$defaultLocale\" from the file " +
-                        "\"${propFiles.first().path}\" is invalid. Please choose a valid locale.")
+                    "\"${propFiles.first().path}\" is invalid. Please choose a valid locale. " +
+                    "See https://developer.android.com/r/studio-ui/build/automatic-per-app-languages")
         }
 
         writeSupportedLocales(this.localeList.get().asFile, localeList, validatedDefaultLocale)

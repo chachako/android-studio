@@ -112,9 +112,9 @@ fun readResourcesPropertiesFile(inputFiles: Collection<File>): String? {
         if (properties.containsKey("unqualifiedResLocale")) {
             val unqualifiedResLocale: String? = properties.getProperty("unqualifiedResLocale")
             if (defaultLocale != null && defaultLocale != unqualifiedResLocale) {
-                // TODO (b/269504885): Add link to the error message below
                 throw RuntimeException("Multiple resources.properties files found with " +
-                        "different unqualifiedResLocale values.")
+                        "different unqualifiedResLocale values. " +
+                        "See https://developer.android.com/r/studio-ui/build/automatic-per-app-languages")
             } else {
                 defaultLocale = unqualifiedResLocale
             }
