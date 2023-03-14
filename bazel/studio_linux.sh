@@ -214,6 +214,7 @@ function collect_logs() {
     ${CONFIG_OPTIONS} \
     -- \
     -bes "${DIST_DIR}/bazel-${BUILD_NUMBER}.bes" \
+    -error_log "$DIST_DIR/logs/build_error.log" \
     -module_info "${DIST_DIR}" \
     ${perfgate_arg}
 }

@@ -136,6 +136,7 @@ setlocal
   --config=ci ^
   -- ^
   -bes %DISTDIR%\bazel-%BUILDNUMBER%.bes ^
+  -error_log %DISTDIR%\logs\build_error.log ^
   %PERFGATE_ARG%
 endlocal
 
