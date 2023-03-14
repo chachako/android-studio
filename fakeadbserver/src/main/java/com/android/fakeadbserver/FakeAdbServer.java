@@ -592,7 +592,7 @@ public final class FakeAdbServer implements AutoCloseable {
             addDeviceHandler(new DumpsysCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new CatV2CommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new CatV2CommandHandler(ShellProtocolType.SHELL_V2));
-            addDeviceHandler(new EchoCommandHandler());
+            addDeviceHandler(new EchoCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new ShellProtocolEchoV2CommandHandler());
             addDeviceHandler(new AbbCommandHandler());
             addDeviceHandler(new AbbExecCommandHandler());
