@@ -93,16 +93,18 @@ abstract class ShellV2Handler protected constructor(
 
 class StatusWriter(val socket: Socket) {
 
-    private val writeOkCalled = false
-    private val writeFailCalled = false
+    private var writeOkCalled = false
+    private var writeFailCalled = false
 
     fun writeOk() {
         assert(!writeOkCalled)
+        writeOkCalled = true
         socket.getOutputStream().write("OKAY".toByteArray(Charsets.UTF_8))
     }
 
     fun writeFail() {
         assert(!writeFailCalled)
+        writeFailCalled = true
         socket.getOutputStream().write("FAIL".toByteArray(Charsets.UTF_8))
     }
 
