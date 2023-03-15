@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.shellv2commandhandlers
+package com.android.fakeadbserver.shellcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
@@ -29,7 +29,7 @@ import java.net.Socket
  *
  * TODO: Rename to reflect this can handle both "shell" and "shell,v2" protocol.
  */
-abstract class ShellV2Handler protected constructor(
+abstract class ShellHandler protected constructor(
     protected val shellProtocolType: ShellProtocolType
 ) : DeviceCommandHandler(shellProtocolType.command) {
 

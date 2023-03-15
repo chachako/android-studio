@@ -19,11 +19,9 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceOutput
-import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
-import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 import java.io.IOException
 
-class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,"dumpsys") {
 
     override fun execute(

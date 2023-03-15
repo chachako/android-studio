@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.shellv2commandhandlers
+package com.android.fakeadbserver.shellcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
@@ -23,10 +23,10 @@ import com.android.fakeadbserver.services.ServiceOutput
 import java.nio.ByteBuffer
 
 /**
- * A [SimpleShellV2Handler] that replies to `stdout`, `stderr` and `exit` messages sent
+ * A [SimpleShellHandler] that replies to `stdout`, `stderr` and `exit` messages sent
  * to its `stdin` stream with the corresponding [ShellV2Protocol.PacketKind] packets
  */
-class ShellProtocolEchoV2CommandHandler() : SimpleShellV2Handler(
+class ShellProtocolEchoCommandHandler() : SimpleShellHandler(
     ShellProtocolType.SHELL_V2,
     "shell-protocol-echo"
 ) {

@@ -20,10 +20,8 @@ import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceManager
 import com.android.fakeadbserver.services.ServiceOutput
-import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
-import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 
-class ActivityManagerCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+class ActivityManagerCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,"am") {
 
     override fun execute(

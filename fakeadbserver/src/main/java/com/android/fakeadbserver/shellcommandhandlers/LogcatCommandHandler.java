@@ -23,8 +23,6 @@ import com.android.fakeadbserver.DeviceState.LogcatChangeHandlerSubscriptionResu
 import com.android.fakeadbserver.FakeAdbServer;
 import com.android.fakeadbserver.ShellProtocolType;
 import com.android.fakeadbserver.services.ServiceOutput;
-import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler;
-import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter;
 import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -36,7 +34,7 @@ import java.util.concurrent.Callable;
  * implementation, the command handler can be driven to send messages to the client of the fake ADB
  * Server.
  */
-public class LogcatCommandHandler extends SimpleShellV2Handler {
+public class LogcatCommandHandler extends SimpleShellHandler {
 
     public LogcatCommandHandler(ShellProtocolType shellProtocolType) {
         super(shellProtocolType, "logcat");

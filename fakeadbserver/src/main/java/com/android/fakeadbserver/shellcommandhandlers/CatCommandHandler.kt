@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.shellv2commandhandlers
+package com.android.fakeadbserver.shellcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
@@ -22,7 +22,7 @@ import com.android.fakeadbserver.services.ServiceOutput
 import java.io.ByteArrayOutputStream
 
 /**
- * A [SimpleShellV2Handler] that supports the following behaviors.
+ * A [SimpleShellHandler] that supports the following behaviors.
  *
  * If there are no arguments to the "cat" command then it outputs all characters received from `stdin` back to `stdout`,
  * one line at a time, i.e. characters are written back to `stdout` only when a newline ("\n")
@@ -31,7 +31,7 @@ import java.io.ByteArrayOutputStream
  * If "cat" argument is in the form of "/proc/{pid}/cmdline then it returns a command line
  * which started the process.
  */
-class CatV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+class CatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,
     "cat"
 ) {

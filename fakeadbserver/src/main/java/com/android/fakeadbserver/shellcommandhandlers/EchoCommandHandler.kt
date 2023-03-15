@@ -19,13 +19,11 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceOutput
-import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
-import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
 
 /**
  * A shell command handler that writes its argument(s) to `stdout`, followed by a newline
  */
-class EchoCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(
+class EchoCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType, "echo"
 ) {
 

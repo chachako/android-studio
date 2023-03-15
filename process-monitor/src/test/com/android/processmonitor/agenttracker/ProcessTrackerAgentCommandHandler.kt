@@ -20,8 +20,8 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceOutput
-import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler
-import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter
+import com.android.fakeadbserver.shellcommandhandlers.SimpleShellHandler
+import com.android.fakeadbserver.shellcommandhandlers.StatusWriter
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_PATH
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -37,7 +37,7 @@ private const val EOF = "EOF"
  *
  * See `//tools/base/process-monitor/process-tracker-agent`
  */
-internal class ProcessTrackerAgentCommandHandler : SimpleShellV2Handler(
+internal class ProcessTrackerAgentCommandHandler : SimpleShellHandler(
     ShellProtocolType.SHELL_V2,
     AGENT_PATH
 ) {

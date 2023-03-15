@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.shellv2commandhandlers
+package com.android.fakeadbserver.shellcommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
@@ -21,10 +21,10 @@ import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceOutput
 
 /**
- * A [SimpleShellV2Handler] that outputs a hard-coded list of lines that follows the format
+ * A [SimpleShellHandler] that outputs a hard-coded list of lines that follows the format
  * of device properties.
  */
-class GetPropV2CommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellV2Handler(shellProtocolType, "getprop") {
+class GetPropCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(shellProtocolType, "getprop") {
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,

@@ -21,11 +21,9 @@ import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.FakeAdbServer;
 import com.android.fakeadbserver.ShellProtocolType;
 import com.android.fakeadbserver.services.ServiceOutput;
-import com.android.fakeadbserver.shellv2commandhandlers.SimpleShellV2Handler;
-import com.android.fakeadbserver.shellv2commandhandlers.StatusWriter;
 
 /** shell:write-no-stop continuously write to the output stream without stopping. */
-public class WriteNoStopCommandHandler extends SimpleShellV2Handler {
+public class WriteNoStopCommandHandler extends SimpleShellHandler {
 
     public WriteNoStopCommandHandler(ShellProtocolType shellProtocolType) {
         super(shellProtocolType, "write-no-stop");
