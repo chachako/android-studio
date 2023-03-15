@@ -49,11 +49,6 @@ class VersionRange(private val range: Range<Version>) {
     fun span(other: VersionRange) = VersionRange(range.span(other.range))
     fun canonical(domain: DiscreteDomain<Version>) = VersionRange(range.canonical(domain))
 
-    @Deprecated("Use lowerEndpoint() instead", replaceWith = ReplaceWith("lowerEndpoint()"))
-    val min get() = lowerEndpoint()
-    @Deprecated("Use upperEndpoint() instead", replaceWith = ReplaceWith("upperEndpoint()"))
-    val max get() = upperEndpoint()
-
     override fun equals(other: Any?) = other is VersionRange && range == other.range
     override fun hashCode() = range.hashCode()
     override fun toString(): String {

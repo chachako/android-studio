@@ -229,14 +229,14 @@ class GoogleMavenRepositoryTest : BaseTestCase() {
             GradleCoordinate.parseCoordinateString("com.android.support:support-fragment:25.3.1"),
             GradleCoordinate.parseCoordinateString("com.android.support:recyclerview-v7:[25.3.1.4.5,25.4.0)"),
             GradleCoordinate.parseCoordinateString("androidx.recyclerview:recyclerview:2.0.0"))
-        assertThat(dependencies[3].versionRange?.min).isEqualTo(Version.parse("25.3.1"))
-        assertThat(dependencies[3].versionRange?.max).isEqualTo(Version.prefixInfimum("25.3.2"))
+        assertThat(dependencies[3].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("25.3.1"))
+        assertThat(dependencies[3].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("25.3.2"))
         // TODO(b/242691473): reliance on GradleCoordinate parsing maven-style version ranges,
         //  which it doesn't really.
-        // assertThat(dependencies[4].versionRange?.min).isEqualTo(Version.parse("25.3.1.4.5"))
-        // assertThat(dependencies[4].versionRange?.max).isEqualTo(Version.prefixInfimum("25.4.0"))
-        assertThat(dependencies[5].versionRange?.min).isEqualTo(Version.parse("2.0.0"))
-        assertThat(dependencies[5].versionRange?.max).isEqualTo(Version.prefixInfimum("3"))
+        // assertThat(dependencies[4].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("25.3.1.4.5"))
+        // assertThat(dependencies[4].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("25.4.0"))
+        assertThat(dependencies[5].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("2.0.0"))
+        assertThat(dependencies[5].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("3"))
     }
 
     @Test
