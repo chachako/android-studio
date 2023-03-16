@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <org.chromium.net>
-  <cronet-api versions="95.4638.50,98.4758.101"/>
-  <cronet-common versions="95.4638.50,98.4758.101"/>
-  <cronet-embedded versions="95.4638.50,98.4758.101"/>
-  <cronet-fallback versions="95.4638.50,98.4758.101"/>
+  <cronet-api versions="106.5249.126,108.5359.79"/>
+  <cronet-common versions="106.5249.126,108.5359.79"/>
+  <cronet-embedded versions="106.5249.126,108.5359.79"/>
+  <cronet-fallback versions="106.5249.126,108.5359.79"/>
 </org.chromium.net>
 

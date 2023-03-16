@@ -1,19 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <com.android.tools.build>
-  <aapt2 versions="4.2.2-7147631,7.1.2-7984345,7.3.0-alpha07-8248216"/>
-  <aapt2-proto versions="4.2.2-7147631,7.1.2-7984345,7.3.0-alpha07-8248216"/>
-  <aaptcompiler versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <apksig versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <apkzlib versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <builder versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <builder-model versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <builder-test-api versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <bundletool versions="0.15.0,1.9.0"/>
-  <gradle versions="4.2.2,7.1.2,7.3.0-alpha07"/>
-  <gradle-api versions="4.2.2,7.1.2,7.3.0-alpha07"/>
+  <aapt2 versions="4.2.2-7147631,7.4.2-8841542,8.1.0-alpha10-9603961"/>
+  <aapt2-proto versions="4.2.2-7147631,7.4.2-8841542,8.1.0-alpha10-9603961"/>
+  <aaptcompiler versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <apksig versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <apkzlib versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <builder versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <builder-model versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <builder-test-api versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <bundletool versions="0.15.0,1.14.0"/>
+  <gradle versions="4.2.2,7.4.2,8.1.0-alpha10"/>
+  <gradle-api versions="4.2.2,7.4.2,8.1.0-alpha10"/>
   <gradle-core versions="3.1.4,3.2.0-alpha10"/>
   <gradle-experimental versions="0.11.1"/>
-  <manifest-merger versions="27.2.2,30.1.2,30.3.0-alpha07"/>
+  <gradle-settings versions="7.4.2,8.1.0-alpha10"/>
+  <gradle-settings-api versions="7.4.2,8.1.0-alpha10"/>
+  <manifest-merger versions="27.2.2,30.4.2,31.1.0-alpha10"/>
   <transform-api versions="2.0.0-deprecated-use-gradle-api"/>
 </com.android.tools.build>
 

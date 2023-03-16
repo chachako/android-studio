@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.google.firebase.testlab>
+  <com.google.firebase.testlab.gradle.plugin versions="0.0.1-alpha01"/>
+  <testlab-gradle-plugin versions="0.0.1-alpha01"/>
+</com.google.firebase.testlab>
+

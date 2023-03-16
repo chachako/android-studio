@@ -1,19 +1,24 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <com.android.tools.utp>
-  <android-device-provider-ddmlib versions="30.1.2,30.3.0-alpha07"/>
-  <android-device-provider-ddmlib-proto versions="30.1.2,30.3.0-alpha07"/>
-  <android-device-provider-gradle versions="30.1.2,30.3.0-alpha07"/>
-  <android-device-provider-gradle-proto versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-additional-test-output versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-additional-test-output-proto versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-coverage versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-coverage-proto versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-device-info versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-device-info-proto versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-logcat versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-retention versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-host-retention-proto versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-result-listener-gradle versions="30.1.2,30.3.0-alpha07"/>
-  <android-test-plugin-result-listener-gradle-proto versions="30.1.2,30.3.0-alpha07"/>
+  <android-device-provider-ddmlib versions="30.4.2,31.1.0-alpha10"/>
+  <android-device-provider-ddmlib-proto versions="30.4.2,31.1.0-alpha10"/>
+  <android-device-provider-gradle versions="30.4.2,31.1.0-alpha10"/>
+  <android-device-provider-gradle-proto versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-additional-test-output versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-additional-test-output-proto versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-apk-installer versions="31.1.0-alpha10"/>
+  <android-test-plugin-host-apk-installer-proto versions="31.1.0-alpha10"/>
+  <android-test-plugin-host-coverage versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-coverage-proto versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-device-info versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-device-info-proto versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-emulator-control versions="31.1.0-alpha10"/>
+  <android-test-plugin-host-emulator-control-proto versions="31.1.0-alpha10"/>
+  <android-test-plugin-host-logcat versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-logcat-proto versions="31.1.0-alpha10"/>
+  <android-test-plugin-host-retention versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-host-retention-proto versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-result-listener-gradle versions="30.4.2,31.1.0-alpha10"/>
+  <android-test-plugin-result-listener-gradle-proto versions="30.4.2,31.1.0-alpha10"/>
 </com.android.tools.utp>
 

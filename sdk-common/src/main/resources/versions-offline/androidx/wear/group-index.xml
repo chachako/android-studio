@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.wear>
-  <wear versions="1.2.0,1.3.0-alpha02"/>
+  <wear versions="1.2.0,1.3.0-alpha04"/>
   <wear-complications-data versions="1.0.0-alpha22"/>
   <wear-complications-data-source versions="1.0.0-alpha22"/>
   <wear-complications-data-source-ktx versions="1.0.0-alpha22"/>

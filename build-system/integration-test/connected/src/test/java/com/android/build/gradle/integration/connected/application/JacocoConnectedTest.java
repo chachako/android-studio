@@ -101,9 +101,9 @@ public class JacocoConnectedTest {
                         + "android.defaultConfig.testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n"
                         + "android.defaultConfig.testInstrumentationRunnerArguments package: 'com.example.helloworld'\n"
                         + (enableClearPackageDataOption
-                            ? "android.defaultConfig.testInstrumentationRunnerArguments clearPackageData: 'true'\n"
-                            + "android.defaultConfig.testInstrumentationRunnerArguments useTestStorageService: 'true'\n"
-                            : "")
+                                ? "android.defaultConfig.testInstrumentationRunnerArguments clearPackageData: 'true'\n"
+                                        + "android.defaultConfig.testInstrumentationRunnerArguments useTestStorageService: 'true'\n"
+                                : "")
                         + "android.testOptions.execution 'ANDROIDX_TEST_ORCHESTRATOR'\n"
                         // Orchestrator requires some setup time and it usually takes
                         // about an minute. Increase the timeout for running "am instrument" command

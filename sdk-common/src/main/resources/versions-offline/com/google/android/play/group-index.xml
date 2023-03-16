@@ -1,7 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <com.google.android.play>
+  <app-update versions="2.0.1"/>
+  <app-update-ktx versions="2.0.1"/>
+  <asset-delivery versions="2.0.2"/>
+  <asset-delivery-ktx versions="2.0.1"/>
   <core versions="1.10.3"/>
+  <core-common versions="2.0.2"/>
   <core-ktx versions="1.8.1"/>
-  <integrity versions="1.0.1"/>
+  <feature-delivery versions="2.0.1"/>
+  <feature-delivery-ktx versions="2.0.1"/>
+  <integrity versions="1.1.0"/>
+  <review versions="2.0.1"/>
+  <review-ktx versions="2.0.1"/>
 </com.google.android.play>
 

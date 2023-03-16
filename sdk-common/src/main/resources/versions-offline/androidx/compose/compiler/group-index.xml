@@ -1,5 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.compose.compiler>
-  <compiler versions="1.1.1,1.2.0-alpha06"/>
+  <compiler versions="1.4.4"/>
+  <compiler-daemon versions="1.4.4"/>
+  <compiler-hosted versions="1.4.4"/>
 </androidx.compose.compiler>
 

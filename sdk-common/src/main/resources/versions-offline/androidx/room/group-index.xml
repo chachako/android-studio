@@ -1,17 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.room>
-  <room-common versions="2.4.2,2.5.0-alpha01"/>
-  <room-compiler versions="2.4.2,2.5.0-alpha01"/>
-  <room-compiler-processing versions="2.4.2,2.5.0-alpha01"/>
-  <room-compiler-processing-testing versions="2.4.2,2.5.0-alpha01"/>
+  <room-common versions="2.5.1,2.6.0-alpha01"/>
+  <room-compiler versions="2.5.1,2.6.0-alpha01"/>
+  <room-compiler-processing versions="2.5.1,2.6.0-alpha01"/>
+  <room-compiler-processing-testing versions="2.5.1,2.6.0-alpha01"/>
   <room-coroutines versions="2.1.0-alpha04"/>
-  <room-guava versions="2.4.2,2.5.0-alpha01"/>
-  <room-ktx versions="2.4.2,2.5.0-alpha01"/>
-  <room-migration versions="2.4.2,2.5.0-alpha01"/>
-  <room-paging versions="2.4.2,2.5.0-alpha01"/>
-  <room-runtime versions="2.4.2,2.5.0-alpha01"/>
-  <room-rxjava2 versions="2.4.2,2.5.0-alpha01"/>
-  <room-rxjava3 versions="2.4.2,2.5.0-alpha01"/>
-  <room-testing versions="2.4.2,2.5.0-alpha01"/>
+  <room-guava versions="2.5.1,2.6.0-alpha01"/>
+  <room-ktx versions="2.5.1,2.6.0-alpha01"/>
+  <room-migration versions="2.5.1,2.6.0-alpha01"/>
+  <room-paging versions="2.5.1,2.6.0-alpha01"/>
+  <room-paging-guava versions="2.5.1,2.6.0-alpha01"/>
+  <room-paging-rxjava2 versions="2.5.1,2.6.0-alpha01"/>
+  <room-paging-rxjava3 versions="2.5.1,2.6.0-alpha01"/>
+  <room-runtime versions="2.5.1,2.6.0-alpha01"/>
+  <room-rxjava2 versions="2.5.1,2.6.0-alpha01"/>
+  <room-rxjava3 versions="2.5.1,2.6.0-alpha01"/>
+  <room-testing versions="2.5.1,2.6.0-alpha01"/>
 </androidx.room>
 

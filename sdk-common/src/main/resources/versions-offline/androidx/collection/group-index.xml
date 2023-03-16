@@ -1,6 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.collection>
-  <collection versions="1.2.0"/>
-  <collection-ktx versions="1.2.0"/>
+  <collection versions="1.2.0,1.3.0-alpha04"/>
+  <collection-iosarm64 versions="1.3.0-alpha04"/>
+  <collection-iossimulatorarm64 versions="1.3.0-alpha04"/>
+  <collection-iosx64 versions="1.3.0-alpha04"/>
+  <collection-jvm versions="1.3.0-alpha04"/>
+  <collection-ktx versions="1.2.0,1.3.0-alpha04"/>
+  <collection-linuxx64 versions="1.3.0-alpha04"/>
+  <collection-macosarm64 versions="1.3.0-alpha04"/>
+  <collection-macosx64 versions="1.3.0-alpha04"/>
 </androidx.collection>
 

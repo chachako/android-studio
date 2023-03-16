@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.compose.runtime>
-  <runtime versions="1.1.1,1.2.0-alpha06"/>
+  <runtime versions="1.4.0,1.5.0-alpha01"/>
   <runtime-dispatch versions="1.0.0-alpha12"/>
-  <runtime-livedata versions="1.1.1,1.2.0-alpha06"/>
-  <runtime-rxjava2 versions="1.1.1,1.2.0-alpha06"/>
-  <runtime-rxjava3 versions="1.1.1,1.2.0-alpha06"/>
-  <runtime-saveable versions="1.1.1,1.2.0-alpha06"/>
+  <runtime-livedata versions="1.4.0,1.5.0-alpha01"/>
+  <runtime-rxjava2 versions="1.4.0,1.5.0-alpha01"/>
+  <runtime-rxjava3 versions="1.4.0,1.5.0-alpha01"/>
+  <runtime-saveable versions="1.4.0,1.5.0-alpha01"/>
   <runtime-saved-instance-state versions="1.0.0-alpha11"/>
+  <runtime-tracing versions="1.0.0-alpha03"/>
 </androidx.compose.runtime>
 

@@ -1,8 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <com.google.mediapipe>
-  <facedetection versions="0.8.9-alpha-5"/>
-  <facemesh versions="0.8.9-alpha-5"/>
-  <hands versions="0.8.9-alpha-5"/>
-  <solution-core versions="0.8.9-alpha-5"/>
+  <facedetection versions="0.9.2"/>
+  <facemesh versions="0.9.2"/>
+  <hands versions="0.9.2"/>
+  <solution-core versions="0.9.2"/>
+  <tasks-audio versions="0.1.0-alpha-6"/>
+  <tasks-core versions="0.1.0-alpha-6"/>
+  <tasks-text versions="0.1.0-alpha-6"/>
+  <tasks-vision versions="0.1.0-alpha-6"/>
 </com.google.mediapipe>
 

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<androidx.privacysandbox.ads>
+  <ads-adservices versions="1.0.0-beta02"/>
+  <ads-adservices-java versions="1.0.0-beta02"/>
+</androidx.privacysandbox.ads>
+

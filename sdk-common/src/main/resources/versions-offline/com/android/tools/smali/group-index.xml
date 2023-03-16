@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.android.tools.smali>
+  <smali versions="3.0.2"/>
+  <smali-baksmali versions="3.0.2"/>
+  <smali-dexlib2 versions="3.0.2"/>
+  <smali-util versions="3.0.2"/>
+</com.android.tools.smali>
+

@@ -41,13 +41,14 @@ private fun RecipeExecutor.commonComposeRecipe(
     isLauncher: Boolean,
     greeting: String,
     wearAppName: String,
-    defaultPreview: String
+    defaultPreview: String,
+    composeBomVersion: String = COMPOSE_BOM_VERSION
 ) {
     addAllKotlinDependencies(moduleData)
 
     // Add Compose dependencies, using the BOM to set versions
-    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION")
-    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION", "androidTestImplementation")
+    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion")
+    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion", "androidTestImplementation")
 
     addDependency(mavenCoordinate = "androidx.compose.ui:ui")
     addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
@@ -151,7 +152,8 @@ fun RecipeExecutor.composeWearActivityWithTileAndComplicationRecipe(
         isLauncher,
         greeting,
         wearAppName,
-        defaultPreview
+        defaultPreview,
+        composeBomVersion = "2022.10.00" // TODO: 2023.03.00 makes the MainTileService broken
     )
 
     val wearTilesVersionVarName =

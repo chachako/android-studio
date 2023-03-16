@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <androidx.compose.material3>
-  <material3 versions="1.0.0-alpha08"/>
+  <material3 versions="1.0.1,1.1.0-beta01"/>
+  <material3-window-size-class versions="1.0.1,1.1.0-beta01"/>
 </androidx.compose.material3>
 

@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <com.google.android.fhir>
-  <common versions="0.1.0-alpha02"/>
-  <data-capture versions="0.1.0-beta02"/>
-  <engine versions="0.1.0-alpha06"/>
-  <workflow versions="0.1.0-alpha01"/>
+  <common versions="0.1.0-alpha03"/>
+  <data-capture versions="1.0.0"/>
+  <engine versions="0.1.0-beta02"/>
+  <workflow versions="0.1.0-alpha02"/>
 </com.google.android.fhir>
 

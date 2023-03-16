@@ -39,8 +39,8 @@ fun RecipeExecutor.composeActivityRecipe(
   val (_, srcOut, resOut, _) = moduleData
   addAllKotlinDependencies(moduleData)
 
-  addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-  addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.5.1")
+  addDependency(mavenCoordinate = "androidx.lifecycle:lifecycle-runtime-ktx:+")
+  addDependency(mavenCoordinate = "androidx.activity:activity-compose:+")
 
   // Add Compose dependencies, using the BOM to set versions
   addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION")

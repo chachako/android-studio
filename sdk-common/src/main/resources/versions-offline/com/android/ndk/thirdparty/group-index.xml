@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <com.android.ndk.thirdparty>
-  <curl versions="7.79.1-beta-1"/>
+  <curl versions="7.85.0-beta-1"/>
   <googletest versions="1.11.0-beta-1"/>
   <jsoncpp versions="1.9.5-beta-1"/>
   <libpng versions="1.6.37-alpha-1"/>

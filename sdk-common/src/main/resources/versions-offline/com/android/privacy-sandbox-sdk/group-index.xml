@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.android.privacy-sandbox-sdk>
+  <com.android.privacy-sandbox-sdk.gradle.plugin versions="7.4.2,8.1.0-alpha10"/>
+</com.android.privacy-sandbox-sdk>
+

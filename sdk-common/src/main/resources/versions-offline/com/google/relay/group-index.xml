@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.google.relay>
+  <com.google.relay.gradle.plugin versions="0.3.04"/>
+  <relay-gradle-plugin versions="0.3.04"/>
+</com.google.relay>
+
