@@ -27,9 +27,6 @@ import com.android.fakeadbserver.devicecommandhandlers.JdwpCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ReverseForwardCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.TrackAppCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.TrackJdwpCommandHandler;
-import com.android.fakeadbserver.execcommandhandlers.CatExecCommandHandler;
-import com.android.fakeadbserver.execcommandhandlers.CmdExecCommandHandler;
-import com.android.fakeadbserver.execcommandhandlers.GetPropExecCommandHandler;
 import com.android.fakeadbserver.execcommandhandlers.PackageExecCommandHandler;
 import com.android.fakeadbserver.execcommandhandlers.PingExecCommandHandler;
 import com.android.fakeadbserver.hostcommandhandlers.FeaturesCommandHandler;
@@ -574,22 +571,22 @@ public final class FakeAdbServer implements AutoCloseable {
             addDeviceHandler(new ReverseForwardCommandHandler());
 
             // Exec commands
-            addDeviceHandler(new CatExecCommandHandler());
-            addDeviceHandler(new CmdExecCommandHandler());
-            addDeviceHandler(new GetPropExecCommandHandler());
             addDeviceHandler(new PackageExecCommandHandler());
             addDeviceHandler(new PingExecCommandHandler());
             addDeviceHandler(new RmCommandHandler(ShellProtocolType.SHELL));
 
             addDeviceHandler(new LogcatCommandHandler(ShellProtocolType.SHELL));
+            addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.EXEC));
             addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.SHELL_V2));
             addDeviceHandler(new SetPropCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new WriteNoStopCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new PackageManagerCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new WindowManagerCommandHandler(ShellProtocolType.SHELL));
+            addDeviceHandler(new CmdCommandHandler(ShellProtocolType.EXEC));
             addDeviceHandler(new CmdCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new DumpsysCommandHandler(ShellProtocolType.SHELL));
+            addDeviceHandler(new CatCommandHandler(ShellProtocolType.EXEC));
             addDeviceHandler(new CatCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new CatCommandHandler(ShellProtocolType.SHELL_V2));
             addDeviceHandler(new EchoCommandHandler(ShellProtocolType.SHELL));
