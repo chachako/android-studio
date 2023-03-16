@@ -20,6 +20,7 @@ import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_EXPORTED
 import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.ATTR_PERMISSION
+import com.android.tools.lint.checks.BroadcastReceiverUtils.BROADCAST_RECEIVER_METHOD_NAMES
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.TYPE_INT
 import com.android.tools.lint.client.api.TYPE_STRING
@@ -68,12 +69,7 @@ import org.w3c.dom.Element
 
 class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
-  private val registerReceiverMethods =
-    listOf(
-      "registerReceiver",
-      "registerReceiverAsUser",
-      "registerReceiverForAllUsers",
-    )
+  private val registerReceiverMethods = BROADCAST_RECEIVER_METHOD_NAMES
 
   override fun getApplicableMethodNames() =
     listOf(
@@ -215,17 +211,22 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
   }
 
   private fun isUnParcellingIntentMethods(evaluator: JavaEvaluator, method: PsiMethod): Boolean {
-    return (method.name == "getParcelableExtra") &&
-      evaluator.isMemberInSubClassOf(method, INTENT_CLASS) ||
-      method.name == "getParcelable" &&
-        evaluator.isMemberInSubClassOf(method, "android.os.Bundle") ||
-      method.name == "getIntent" && evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)
+    return when (method.name) {
+      "getParcelableExtra" ->
+        evaluator.isMemberInSubClassOf(method, INTENT_CLASS) ||
+          evaluator.isMemberInClass(method, INTENT_COMPAT_CLASS)
+      "getParcelable" ->
+        evaluator.isMemberInSubClassOf(method, BUNDLE_CLASS) ||
+          evaluator.isMemberInClass(method, BUNDLE_COMPAT_CLASS)
+      "getIntent" -> evaluator.isMemberInSubClassOf(method, CONTEXT_CLASS)
+      else -> false
+    }
   }
 
   private fun isUnParcellingStringMethods(evaluator: JavaEvaluator, method: PsiMethod): Boolean {
     return (method.name == "getStringExtra") &&
       evaluator.isMemberInSubClassOf(method, INTENT_CLASS) ||
-      method.name == "getString" && evaluator.isMemberInSubClassOf(method, "android.os.Bundle")
+      method.name == "getString" && evaluator.isMemberInSubClassOf(method, BUNDLE_CLASS)
   }
 
   private fun processRuntimeReceiver(
@@ -431,58 +432,45 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     }
 
     private fun isIntentLaunchedBySystem(evaluator: JavaEvaluator, call: UCallExpression): Boolean {
-      return isIntentLaunchedByContextMethods(evaluator, call) ||
-        isIntentLaunchedByActivityMethods(evaluator, call) ||
-        isIntentLaunchedByBroadcastReceiver(evaluator, call) ||
-        isIntentLaunchedByPendingIntentMethods(evaluator, call) ||
-        isIntentLaunchedByFragmentMethods(evaluator, call)
+      val method = call.resolve() ?: return false
+      return isIntentLaunchedByContextMethods(evaluator, method) ||
+        isIntentLaunchedByActivityMethods(evaluator, method) ||
+        isIntentLaunchedByBroadcastReceiver(evaluator, method) ||
+        isIntentLaunchedByPendingIntentMethods(evaluator, method)
     }
 
     private fun isIntentLaunchedByContextMethods(
       evaluator: JavaEvaluator,
-      call: UCallExpression
+      method: PsiMethod
     ): Boolean {
-      val method = call.resolve()
-      return method?.containingClass?.qualifiedName == CONTEXT_CLASS ||
-        method?.findSuperMethods(evaluator.findClass(CONTEXT_CLASS))?.isNotEmpty() ?: false
+      return method.containingClass?.qualifiedName == CONTEXT_CLASS ||
+        method.containingClass?.qualifiedName == CONTEXT_COMPAT_CLASS ||
+        method.findSuperMethods(evaluator.findClass(CONTEXT_CLASS)).isNotEmpty()
     }
 
     private fun isIntentLaunchedByActivityMethods(
       evaluator: JavaEvaluator,
-      call: UCallExpression
+      method: PsiMethod
     ): Boolean {
-      return call.methodName in ACTIVITY_INTENT_LAUNCH_METHODS &&
-        evaluator.extendsClass(evaluator.getTypeClass(call.receiverType), ACTIVITY_CLASS, true)
+      return method.name in ACTIVITY_INTENT_LAUNCH_METHODS &&
+        (evaluator.isMemberInSubClassOf(method, ACTIVITY_CLASS) ||
+          evaluator.isMemberInClass(method, ACTIVITY_COMPAT_CLASS))
     }
 
     private fun isIntentLaunchedByBroadcastReceiver(
       evaluator: JavaEvaluator,
-      call: UCallExpression
+      method: PsiMethod
     ): Boolean {
-      return call.methodName == "peekService" &&
-        evaluator.extendsClass(
-          evaluator.getTypeClass(call.receiverType),
-          BROADCAST_RECEIVER_CLASS,
-          true
-        )
-    }
-
-    private fun isIntentLaunchedByFragmentMethods(
-      evaluator: JavaEvaluator,
-      call: UCallExpression
-    ): Boolean {
-      val receiverClass = evaluator.getTypeClass(call.receiverType)
-      return call.methodName in FRAGMENT_INTENT_LAUNCH_METHODS &&
-        (evaluator.extendsClass(receiverClass, FRAGMENT_CLASS, true) ||
-          evaluator.extendsClass(receiverClass, ANDROIDX_FRAGMENT_CLASS, true))
+      return method.name == "peekService" &&
+        evaluator.isMemberInSubClassOf(method, BROADCAST_RECEIVER_CLASS)
     }
 
     private fun isIntentLaunchedByPendingIntentMethods(
       evaluator: JavaEvaluator,
-      call: UCallExpression
+      method: PsiMethod
     ): Boolean {
-      return call.methodName in PENDING_INTENT_LAUNCH_METHODS &&
-        evaluator.isMemberInClass(call.resolve(), PENDING_INTENT_CLASS)
+      return method.name in PENDING_INTENT_LAUNCH_METHODS &&
+        evaluator.isMemberInClass(method, PENDING_INTENT_CLASS)
     }
 
     private fun handleAnonymousBroadcastReceiver(call: UCallExpression): Boolean {
@@ -592,10 +580,14 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     private const val ACTIVITY_CLASS = "android.app.Activity"
     private const val SERVICE_CLASS = "android.app.Service"
     private const val BROADCAST_RECEIVER_CLASS = "android.content.BroadcastReceiver"
-    private const val FRAGMENT_CLASS = "android.app.Fragment"
-    private const val ANDROIDX_FRAGMENT_CLASS = "androidx.fragment.app.Fragment"
     private const val PENDING_INTENT_CLASS = "android.app.PendingIntent"
     private const val INTENT_CLASS = "android.content.Intent"
+    private const val BUNDLE_CLASS = "android.os.Bundle"
+    private const val INTENT_COMPAT_CLASS = "androidx.core.content.IntentCompat"
+    private const val BUNDLE_COMPAT_CLASS = "androidx.core.os.BundleCompat"
+    private const val CONTEXT_COMPAT_CLASS = "androidx.core.content.ContextCompat"
+    private const val ACTIVITY_COMPAT_CLASS = "androidx.core.app.ActivityCompat"
+
     private const val MAX_CALL_DEPTH = 3
 
     private val UNSAFE_INTENT_AS_PARAMETER_METHODS =
@@ -621,9 +613,6 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         "startNextMatchingActivity",
         "setResult"
       )
-
-    private val FRAGMENT_INTENT_LAUNCH_METHODS =
-      listOf("startActivity", "startActivityForResult", "startIntentSenderForResult")
 
     private val PENDING_INTENT_LAUNCH_METHODS =
       listOf("getActivity", "getBroadcast", "getService", "getForegroundService")
