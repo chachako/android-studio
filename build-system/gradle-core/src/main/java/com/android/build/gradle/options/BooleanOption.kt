@@ -23,8 +23,7 @@ import com.android.build.gradle.options.Version.VERSION_4_0
 import com.android.build.gradle.options.Version.VERSION_4_1
 import com.android.build.gradle.options.Version.VERSION_4_2
 import com.android.build.gradle.options.Version.VERSION_7_0
-import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_0
-import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_1
+import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_8_2
 import com.android.build.gradle.internal.errors.DeprecationReporter.DeprecationTarget.VERSION_9_0
 import com.android.build.gradle.options.Version.VERSION_7_2
 import com.android.build.gradle.options.Version.VERSION_7_3
@@ -222,11 +221,11 @@ enum class BooleanOption(
      */
     ENABLE_RESOURCE_OPTIMIZATIONS("android.enableResourceOptimizations", true, FeatureStage.SoftlyEnforced(VERSION_9_0)),
 
-    ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
+    ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM("android.experimental.androidTest.useUnifiedTestPlatform", true, FeatureStage.SoftlyEnforced(VERSION_9_0)),
 
-    ENABLE_DEXING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-    ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform.desugaring", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
-    ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS("android.enableDexingArtifactTransformForExternalLibs", true, FeatureStage.SoftlyEnforced(VERSION_8_0)),
+    ENABLE_DEXING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform", true, FeatureStage.SoftlyEnforced(VERSION_8_2)),
+    ENABLE_DEXING_DESUGARING_ARTIFACT_TRANSFORM("android.enableDexingArtifactTransform.desugaring", true, FeatureStage.SoftlyEnforced(VERSION_8_2)),
+    ENABLE_DEXING_ARTIFACT_TRANSFORM_FOR_EXTERNAL_LIBS("android.enableDexingArtifactTransformForExternalLibs", true, FeatureStage.SoftlyEnforced(VERSION_8_2)),
 
     /* -------------------
      * DEPRECATED FEATURES
@@ -528,7 +527,7 @@ enum class BooleanOption(
     ENABLE_INCREMENTAL_DATA_BINDING(
         "android.databinding.incremental",
         true,
-        FeatureStage.Enforced(Version.VERSION_8_0)
+        FeatureStage.Enforced(Version.VERSION_8_1)
     ),
 
     ENABLE_NEW_RESOURCE_SHRINKER("android.enableNewResourceShrinker",
@@ -539,7 +538,7 @@ enum class BooleanOption(
     ENABLE_R_TXT_RESOURCE_SHRINKING(
             "android.enableRTxtResourceShrinking",
             true,
-            FeatureStage.Enforced(Version.VERSION_8_0)
+            FeatureStage.Enforced(Version.VERSION_8_1)
     ),
 
     @Suppress("unused")
