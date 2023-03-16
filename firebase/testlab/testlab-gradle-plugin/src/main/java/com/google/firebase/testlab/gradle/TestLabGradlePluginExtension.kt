@@ -26,7 +26,6 @@ import org.gradle.api.file.RegularFileProperty
  */
 @Incubating
 interface TestLabGradlePluginExtension {
-
     /**
      * A path to a JSON file that contains service account credentials to access to
      * a Firebase TestLab project.
@@ -43,4 +42,12 @@ interface TestLabGradlePluginExtension {
     @get:Incubating
     val managedDevices: NamedDomainObjectContainer<ManagedDevice>
 
+    /**
+     * A configuration block for test options.
+     */
+    @get:Incubating
+    val testOptions: TestOptions
+
+    @Incubating
+    fun testOptions(action: TestOptions.() -> Unit)
 }

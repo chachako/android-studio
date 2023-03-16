@@ -19,8 +19,9 @@ package com.android.tools.firebase.testlab.gradle
 import com.android.build.api.dsl.ManagedDevices
 import com.google.firebase.testlab.gradle.ManagedDevice
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
+import com.google.firebase.testlab.gradle.TestOptions
+import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
@@ -28,10 +29,6 @@ abstract class TestLabGradlePluginExtensionImpl @Inject constructor(
     objectFactory: ObjectFactory,
     devicesBlock: ManagedDevices
 ): TestLabGradlePluginExtension {
-
-    override val serviceAccountCredentials: RegularFileProperty =
-        objectFactory.fileProperty()
-
     override val managedDevices: NamedDomainObjectContainer<ManagedDevice> =
         objectFactory.domainObjectContainer(
             ManagedDevice::class.java,
@@ -41,5 +38,14 @@ abstract class TestLabGradlePluginExtensionImpl @Inject constructor(
                 devicesBlock.devices.add(device)
             }
         }
+    override val testOptions: TestOptions = objectFactory.newInstance(TestOptionsImpl::class.java)
 
+    override fun testOptions(action: TestOptions.() -> Unit) {
+        testOptions.action()
+    }
+
+    // Runtime only for groovy decorator to generate the closure based block.
+    fun testOptions(action: Action<TestOptions>) {
+        action.execute(testOptions)
+    }
 }
