@@ -89,9 +89,9 @@ interface ReservationAction : DeviceAction {
    *
    * If the operation is successful, the new state should be reflected in the device's
    * [Reservation]. If we fail to update an active reservation, but the reservation remains active,
-   * its [ReservationState] should remain ACTIVE, and a [ReservationException] should be thrown.
+   * its [ReservationState] should remain ACTIVE, and a [DeviceActionException] should be thrown.
    *
-   * If we fail to reserve a device, a [ReservationException] should be thrown, with a
+   * If we fail to reserve a device, a [DeviceActionException] should be thrown, with a
    * user-appropriate message. Also, the device's [ReservationState] should be set to FAILED.
    *
    * @return the new end time of the reservation
