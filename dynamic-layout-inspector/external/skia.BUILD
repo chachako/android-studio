@@ -562,13 +562,12 @@ cc_library(
         ],
     }) + glob(["src/**/*.h"]),
     hdrs = glob(["include/**/*.h"]),
-    textual_hdrs = glob(["src/sksl/generated/*.sksl"]),
     copts = [
         "-DATRACE_TAG=ATRACE_TAG_VIEW",
         "-DSKIA_IMPLEMENTATION=1",
         "-DSK_PRINT_CODEC_MESSAGES",
         "-DFORTIFY_SOURCE=1",
-        "-DSK_USER_CONFIG_HEADER=\\\"StudioConfig.h\\\"",
+        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
     ] + select({
         "windows": ["/DSK_BUILD_FOR_WIN"],  # TODO: anything else needed here?
         "mac": ["-DSK_BUILD_FOR_MAC"],  # TODO: anything else needed here?
@@ -586,10 +585,6 @@ cc_library(
             "-fPIC",
         ],
     }),
-    linkopts = select({"mac": [
-        "-framework CoreGraphics",
-        "-framework CoreText",
-    ], "//conditions:default": []}),
     includes = [
         "include/atlastext/",
         "include/c/",
@@ -627,7 +622,18 @@ cc_library(
         "src/xml/",
         "third_party/etc1/",
         "third_party/gif/",
-    ] + select({"mac": ["include/utils/mac"], "//conditions:default": []}),
+    ] + select({
+        "mac": ["include/utils/mac"],
+        "//conditions:default": [],
+    }),
+    linkopts = select({
+        "mac": [
+            "-framework CoreGraphics",
+            "-framework CoreText",
+        ],
+        "//conditions:default": [],
+    }),
+    textual_hdrs = glob(["src/sksl/generated/*.sksl"]),
     visibility = ["//visibility:public"],
     deps = [
         "@freetype_repo//:libft2",

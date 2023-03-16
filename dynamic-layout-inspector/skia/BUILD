@@ -35,7 +35,7 @@ kotlin_test(
 cc_binary(
     name = "skia-grpc-server",
     copts = [
-        "-DSK_USER_CONFIG_HEADER=\\\"StudioConfig.h\\\"",
+        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
         "-UFORTIFY_SOURCE",
         "-DATRACE_TAG=ATRACE_TAG_VIEW",
         "-DSKIA_IMPLEMENTATION=1",
@@ -68,7 +68,7 @@ cc_library(
         "src/main/native/*.h",
     ]) + ["src/main/native/server.cc"],
     copts = [
-        "-DSK_USER_CONFIG_HEADER=\\\"StudioConfig.h\\\"",
+        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
         "-UFORTIFY_SOURCE",
         "-DATRACE_TAG=ATRACE_TAG_VIEW",
         "-DSKIA_IMPLEMENTATION=1",
@@ -116,7 +116,7 @@ cc_library(
     name = "skiaparser_test_support",
     srcs = ["src/test/native/testing/skia_parser_test_java_jni.cc"],
     copts = [
-        "-DSK_USER_CONFIG_HEADER=\\\"StudioConfig.h\\\"",
+        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
     ],
     linkstatic = 1,
     deps = [
