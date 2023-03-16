@@ -73,7 +73,11 @@ class EmulatorControlUtilsTest {
         val jwt = File(jwtConfig.jwkPath).readText(Charsets.UTF_8)
         val publicKeysetHandle = JwkSetConverter.toPublicKeysetHandle(jwt)
 
-        val validator = JwtValidator.newBuilder().ignoreAudiences().expectIssuer("gradle-utp-emulator-control").build()
+        val validator =
+            JwtValidator.newBuilder()
+                .ignoreAudiences()
+                .expectIssuer("gradle-utp-emulator-control")
+                .build()
         val verifier = publicKeysetHandle.getPrimitive(JwtPublicKeyVerify::class.java)
         val verifiedJwt = verifier.verifyAndDecode(signedToken, validator)
         val seconds = ChronoUnit.SECONDS.between(Instant.now(), verifiedJwt.expiration)
@@ -114,23 +118,29 @@ class EmulatorControlUtilsTest {
     }
 
     @Test
-    fun fallsBackToReducedSecurityWithStudioToken() {
-        // Verify that we fallback to the studio token if the emulator does not support
-        // jwks.
+    fun invalidConfigIfNoJWKAndAllowListPresent() {
         val aud = setOf("ignored")
-        val info = EmulatorGrpcInfo(123, "android-studio", null,  null)
+        val info = EmulatorGrpcInfo(123, "android-studio", null, null, null)
         val jwtConfig = createTokenConfig(aud, 20, "ignored", info)
-        assertThat(jwtConfig.token).isEqualTo(info.token)
+        assertThat(jwtConfig).isEqualTo(INVALID_JWT_CONFIG)
     }
 
     @Test
-    fun fallsBackToReducedSecurityUnprotected() {
+    fun invalidConfigIfNoJWK() {
+        val aud = setOf("ignored")
+        val info = EmulatorGrpcInfo(123, "android-studio", null, null, "some-fake-allowlist-path")
+        val jwtConfig = createTokenConfig(aud, 20, "ignored", info)
+        assertThat(jwtConfig).isEqualTo(INVALID_JWT_CONFIG)
+    }
+
+    @Test
+    fun invalidConfigIfNoAllowListPresent() {
         // Verify that we fallback to use no security if the emulator does not support jwks
         // and is not configured with a studio token
         val aud = setOf("ignored")
-        val info = EmulatorGrpcInfo(123, null, null,  null)
+        val info = EmulatorGrpcInfo(123, null, null, "some_fake_path", null)
         val jwtConfig = createTokenConfig(aud, 20, "ignored", info)
-        assertThat(jwtConfig.token).isEqualTo("")
+        assertThat(jwtConfig).isEqualTo(INVALID_JWT_CONFIG)
     }
 
     @Test
@@ -140,7 +150,9 @@ class EmulatorControlUtilsTest {
         JwtSignatureConfig.register()
 
         val aud = setOf("a", "b")
-        val info = EmulatorGrpcInfo(123, "studio-token", null,  testDir.root.absolutePath)
+        val info = EmulatorGrpcInfo(
+            123, "studio-token", null, testDir.root.absolutePath, "some_fake_allowlist_path"
+        )
         val jwtConfig = createTokenConfig(aud, 20, iss, info)
         assertThat(jwtConfig.token).isNotEmpty()
         assertThat(jwtConfig.token).isNotEqualTo(info.token!!)
@@ -158,13 +170,14 @@ class EmulatorControlUtilsTest {
         assertThat(verifiedJwt.audiences).contains("b")
     }
 
-
     @Test
     fun noFallbackIfJwksAndNoTokenIsPresent() {
         JwtSignatureConfig.register()
 
         val aud = setOf("a", "b")
-        val info = EmulatorGrpcInfo(123, null, null,  testDir.root.absolutePath)
+        val info = EmulatorGrpcInfo(
+            123, null, null, testDir.root.absolutePath, "some-fake-access-list-path"
+        )
         val jwtConfig = createTokenConfig(aud, 20, iss, info)
         assertThat(jwtConfig.token).isNotEmpty()
 

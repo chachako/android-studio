@@ -48,6 +48,11 @@ private val protoPrinter: ProtoPrinter = ProtoPrinter(listOf(
     PathProto.Path::class.java,
 ))
 
+fun printProto(runnerConfig: RunnerConfigProto.RunnerConfig) : String{
+    return protoPrinter.printToString(runnerConfig)
+}
+
+
 /**
  * Asserts that a given [runnerConfig] matches to a given list of configurations.
  */

@@ -26,8 +26,8 @@ import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_DEVICE_INFO_PLUGIN
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_LOGCAT_PLUGIN
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN
-import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_HOST_EMULATOR_CONTROL
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_APK_INSTALLER
+import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_HOST_EMULATOR_CONTROL
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_HOST_RETENTION
 import com.android.build.gradle.internal.testing.utp.UtpDependency.ANDROID_TEST_PLUGIN_RESULT_LISTENER_GRADLE
 import com.android.builder.testing.api.DeviceConnector
@@ -372,23 +372,32 @@ class UtpConfigFactory {
 
             if (emulatorControlConfig.enabled) {
                 // Looks like emulator access is on the menu.
-                val cfg =
-                    createTokenConfig(
-                        emulatorControlConfig.allowedEndpoints,
-                        emulatorControlConfig.secondsValid,
-                        "gradle-utp-emulator-control",
-                        grpcInfo
-                    )
-
-                additionalTestParams["grpc.port"] = grpcInfo?.port.toString()
-                additionalTestParams["grpc.token"] = cfg.token
-                addHostPlugin(
-                    createEmulatorControlPlugin(
-                        grpcInfo?.port,
-                        cfg.token,
-                        cfg.jwkPath, utpDependencies, emulatorControlConfig
-                    )
+                val cfg = createTokenConfig(
+                    emulatorControlConfig.allowedEndpoints,
+                    emulatorControlConfig.secondsValid,
+                    "gradle-utp-emulator-control",
+                    grpcInfo
                 )
+
+                if (cfg != INVALID_JWT_CONFIG) {
+                    additionalTestParams["grpc.port"] = grpcInfo?.port.toString()
+                    additionalTestParams["grpc.token"] = cfg.token
+                    addHostPlugin(
+                        createEmulatorControlPlugin(
+                            grpcInfo?.port,
+                            cfg.token,
+                            cfg.jwkPath,
+                            utpDependencies,
+                            emulatorControlConfig
+                        )
+                    )
+                } else {
+                    logger.warn(
+                        "Control of the emulator is not supported for emulators without " +
+                                "security features enabled. Please upgrade to a " +
+                                "later version of the emulator."
+                    )
+                }
             }
 
             val debug =

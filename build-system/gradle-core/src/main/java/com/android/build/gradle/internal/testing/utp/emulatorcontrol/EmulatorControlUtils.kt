@@ -30,23 +30,28 @@ private val LOG = Logger.getLogger("EmulatorAccessUtils")
 
 data class JwtConfig(val token: String, val jwkPath: String)
 
+val INVALID_JWT_CONFIG = JwtConfig("", "")
 fun createTokenConfig(aud: Set<String>, validForSeconds: Int, iss: String, info: EmulatorGrpcInfo?): JwtConfig {
-    // Backwards compatible scenario where:
-    //
-    // - We have explicitly disabled security
-    // - We are running an older (unprotected) emulator
-    // - We are running an older emulator protected by a studio token
-    if (info?.jwks.isNullOrEmpty()) {
-        LOG.warning("Running in backwards compatibility mode, this provides reduced security.")
-        val token = info?.token ?: ""
-        return JwtConfig(token, "")
+
+    if (info == null) {
+        return INVALID_JWT_CONFIG;
+    }
+    // We do not want to enable this feature if:
+    // - The emulator is not using jwks. We won't be able to authenticate properly as
+    //   the emulator might be using the `older` -use-grpc-token used by the embedded-emulator
+    //   this token which gives blanket access.
+    // - The emulator is not supporting allowlists. In this case it is unclear which
+    //   methods are (in)accessible.
+    if (info.jwks.isNullOrEmpty() || info.allowlist.isNullOrEmpty()) {
+        LOG.severe("This emulator is not protected with an allowlist, or jwt enabled")
+        return INVALID_JWT_CONFIG
     }
 
-    return createJwtConfig(aud, validForSeconds, iss, info?.jwks)
+    return createJwtConfig(aud, validForSeconds, iss, info.jwks)
 }
 fun createJwtConfig(aud: Set<String>, validForSeconds: Int, iss: String, jwkDirectory: String?): JwtConfig {
     if (jwkDirectory.isNullOrEmpty()) {
-        return JwtConfig("", "")
+        return INVALID_JWT_CONFIG;
     }
     JwtSignatureConfig.register();
 

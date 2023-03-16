@@ -36,6 +36,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
@@ -44,7 +45,10 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import kotlin.io.path.absolutePathString
 
 /**
@@ -52,6 +56,7 @@ import kotlin.io.path.absolutePathString
  */
 class UtpConfigFactoryTest {
     @get:Rule var mockitoJUnitRule: MockitoRule = MockitoJUnit.rule()
+    @get:Rule var temporaryFolder = TemporaryFolder()
 
     @Mock private lateinit var versionedSdkLoader: VersionedSdkLoader
     @Mock private lateinit var mockAppApk: File
@@ -77,6 +82,8 @@ class UtpConfigFactoryTest {
     private lateinit var testResultListenerServerMetadata: UtpTestResultListenerServerMetadata
     private lateinit var testExtractedSdkApks: List<List<Path>>
     private lateinit var testTargetApkConfigBundle: TargetApkConfigBundle
+
+
 
     private val testData = StaticTestData(
         testedApplicationId = "com.example.application",
@@ -288,18 +295,55 @@ class UtpConfigFactoryTest {
 
     @Test
     fun createRunnerConfigProtoWithEmulatorAccess() {
+        // First we write a "fake" discover file
+        // That indicate we have security features enabled
+        val discoveryDirectory = computeRegistrationDirectoryContainer()!!.resolve("avd/running/")
+        if (!discoveryDirectory.toFile().exists()) {
+            discoveryDirectory.toFile().mkdirs()
+        }
+        val filePath = discoveryDirectory.resolve("pid_123.ini")
+        val jwkFolder = temporaryFolder.newFolder("jwks")
+        val content = """
+            port.serial=mockDeviceSerialNumber
+            grpc.port=1234
+            grpc.jwks=${jwkFolder}
+            grpc.allowlist=/unused/access.json
+        """.trimIndent()
+        Files.writeString(filePath, content, StandardCharsets.UTF_8, StandardOpenOption.CREATE)
+
         `when`(mockemulatorControlConfig.enabled).thenReturn(true)
         `when`(mockemulatorControlConfig.secondsValid).thenReturn(100)
+        `when`(mockDevice.serialNumber).thenReturn("emulator-mockDeviceSerialNumber")
 
         assertThat(mockemulatorControlConfig.enabled).isTrue()
 
         val runnerConfigProto = createForLocalDevice()
+
+        // Next we extract the token and jkwfile as those
+        // are dynamically created.
+        val printed = printProto(runnerConfigProto)
+        val tokenRegex = "token: \"(.*)\""
+        val jwkfileRegex = "jwk_file: \"(.*)\""
+
+        // Both the token and the location where we wrote the file
+        // should be set.
+        assertThat(printed).containsMatch(tokenRegex)
+        assertThat(printed).containsMatch(jwkfileRegex)
+
+        // Let's extract them
+        val token = tokenRegex.toRegex().find(printed)?.groupValues?.getOrNull(1) ?: "Not Found"
+        val jwkfile = jwkfileRegex.toRegex().find(printed)?.groupValues?.getOrNull(1) ?: "Not found"
+
         assertRunnerConfigProto(
             runnerConfigProto,
-            instrumentationArgs = mapOf("grpc.port" to "8554", "grpc.token" to ""),
+            deviceId = "emulator-mockDeviceSerialNumber",
+            instrumentationArgs = mapOf("grpc.port" to "1234", "grpc.token" to token),
             emulatorControlConfig = """
-                emulator_grpc_port: 8554
-            """)
+                emulator_grpc_port: 1234
+                token: "${token}"
+                jwk_file: "${jwkfile}"
+            """
+        )
     }
 
     @Test
