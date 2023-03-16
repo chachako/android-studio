@@ -46,10 +46,11 @@ interface ServiceOutput {
 }
 
 /**
- * Implementation of [ServiceOutput] that write stdout/stderr directly to
- * [Socket.getOutputStream], and ignores exit code.
+ * Implementation of [ServiceOutput] that writes stdout/stderr directly to
+ * [Socket.getOutputStream], and ignores exit code. This corresponds to how
+ * the legacy "shell:" ADB service works.
  */
-class ExecServiceOutput(socket: Socket, val device: DeviceState) : ServiceOutput {
+class LegacyShellOutput(socket: Socket, val device: DeviceState) : ServiceOutput {
 
     private val input = socket.getInputStream()
     private val output = socket.getOutputStream()
@@ -60,6 +61,33 @@ class ExecServiceOutput(socket: Socket, val device: DeviceState) : ServiceOutput
 
     override fun writeStderr(bytes: ByteArray) {
         output.write(bytes.replaceNewLineForOlderDevices(device))
+    }
+
+    override fun writeExitCode(exitCode: Int) {
+        // This is not implemented for this version of the protocol
+    }
+
+    override fun readStdin(bytes: ByteArray, offset: Int, length: Int): Int {
+        return input.read(bytes, offset, length)
+    }
+}
+
+/**
+ * Implementation of [ServiceOutput] that writes stdout/stderr directly to
+ * [Socket.getOutputStream], and ignores exit code. This corresponds to how
+ * the legacy "exec:" ADB service works
+ */
+class ExecOutput(socket: Socket) : ServiceOutput {
+
+    private val input = socket.getInputStream()
+    private val output = socket.getOutputStream()
+
+    override fun writeStdout(bytes: ByteArray) {
+        output.write(bytes)
+    }
+
+    override fun writeStderr(bytes: ByteArray) {
+        output.write(bytes)
     }
 
     override fun writeExitCode(exitCode: Int) {
@@ -92,9 +120,9 @@ fun ByteArray.replaceNewLineForOlderDevices(device: DeviceState): ByteArray {
 
 /**
  * Implementation of [ServiceOutput] that read and writes from/to the underlying socket
- * using the [ShellV2Protocol].
+ * using the [ShellV2Protocol]. This corresponds to how the "shell,v2:" ADB service works.
  */
-class ShellProtocolServiceOutput(socket: Socket) : ServiceOutput {
+class ShellV2Output(socket: Socket) : ServiceOutput {
 
     private val protocol = ShellV2Protocol(socket)
 

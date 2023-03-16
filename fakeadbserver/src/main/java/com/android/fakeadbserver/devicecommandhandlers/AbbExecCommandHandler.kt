@@ -17,7 +17,7 @@ package com.android.fakeadbserver.devicecommandhandlers
 
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import com.android.fakeadbserver.services.ExecServiceOutput
+import com.android.fakeadbserver.services.ExecOutput
 import java.net.Socket
 
 class AbbExecCommandHandler : DeviceCommandHandler("abb_exec") {
@@ -41,7 +41,7 @@ class AbbExecCommandHandler : DeviceCommandHandler("abb_exec") {
         device.addAbbLog(args.trim())
 
         // Wrap stdin/stdout and execute abb command
-        val serviceOutput = ExecServiceOutput(socket, device)
+        val serviceOutput = ExecOutput(socket)
         device.serviceManager.processCommand(args.split("\u0000"), serviceOutput)
     }
 }

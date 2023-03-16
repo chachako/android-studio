@@ -15,9 +15,10 @@
  */
 package com.android.fakeadbserver
 
-import com.android.fakeadbserver.services.ExecServiceOutput
+import com.android.fakeadbserver.services.ExecOutput
+import com.android.fakeadbserver.services.LegacyShellOutput
 import com.android.fakeadbserver.services.ServiceOutput
-import com.android.fakeadbserver.services.ShellProtocolServiceOutput
+import com.android.fakeadbserver.services.ShellV2Output
 import com.google.common.base.Charsets
 import java.io.EOFException
 import java.io.IOException
@@ -35,7 +36,16 @@ enum class ShellProtocolType {
             get() = "shell"
 
         override fun createServiceOutput(socket: Socket, device: DeviceState): ServiceOutput {
-            return ExecServiceOutput(socket, device)
+            return LegacyShellOutput(socket, device)
+        }
+    },
+    EXEC {
+
+        override val command: String
+            get() = "exec"
+
+        override fun createServiceOutput(socket: Socket, device: DeviceState): ServiceOutput {
+            return ExecOutput(socket)
         }
     },
     SHELL_V2 {
@@ -44,7 +54,7 @@ enum class ShellProtocolType {
             get() = "shell,v2"
 
         override fun createServiceOutput(socket: Socket, device: DeviceState): ServiceOutput {
-            return ShellProtocolServiceOutput(socket)
+            return ShellV2Output(socket)
         }
     };
 
