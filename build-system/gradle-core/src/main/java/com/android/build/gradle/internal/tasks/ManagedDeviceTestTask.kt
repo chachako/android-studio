@@ -26,15 +26,18 @@ import com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskActi
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
+import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask.checkForNonApks
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
+import com.android.build.gradle.internal.test.gatherTestLibraries
 import com.android.build.gradle.internal.test.recordCrashedInstrumentedTestRun
 import com.android.build.gradle.internal.test.recordOkInstrumentedTestRun
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.test.report.TestReport
+import com.android.build.gradle.internal.testing.StaticTestData
 import com.android.build.gradle.internal.testing.TestData
 import com.android.build.gradle.internal.testing.TestRunData
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -43,12 +46,14 @@ import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.model.TestOptions
 import com.android.utils.FileUtils
 import com.google.common.annotations.VisibleForTesting
+import com.google.wireless.android.sdk.stats.TestLibraries
 import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.ListProperty
@@ -103,8 +108,9 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
     // For analytics only
     @get:Internal
     @get:VisibleForTesting
+    @set:VisibleForTesting
     lateinit var dependencies: ArtifactCollection
-        private set
+        protected set
 
     @get:Classpath
     @get:Optional
@@ -152,11 +158,9 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
             throw InvalidUserDataException(message)
         }
 
-        val resultsOutDir = resultsDir.get()
-        FileUtils.cleanOutputDir(resultsOutDir.asFile)
+        FileUtils.cleanOutputDir(resultsDir.get().asFile)
 
-        val codeCoverageOutDir = getCoverageDirectory().get()
-        FileUtils.cleanOutputDir(codeCoverageOutDir.asFile)
+        FileUtils.cleanOutputDir(getCoverageDirectory().get().asFile)
 
         val additionalTestOutputDir = if (getAdditionalTestOutputEnabled().get()) {
             getAdditionalTestOutputDir().get().also {
@@ -166,66 +170,30 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
             null
         }
 
-        val success = if (!testsFound()) {
-            logger.info("No tests found, nothing to do.")
-            true
-        } else {
-            try {
-                val testRunParams = object: DeviceTestRunParameters<DeviceTestRunInput> {
-                    override val deviceInput = this@ManagedDeviceTestTask.deviceInput.get()
-                    override val setupResult = this@ManagedDeviceTestTask.setupResult
-                    override val testRunData = TestRunData(
-                        testData.get().flavorName.get(),
-                        path,
-                        deviceDslName.get(),
-                        resultsOutDir,
-                        codeCoverageOutDir,
-                        additionalTestOutputDir,
-                        installOptions.getOrElse(listOf()),
-                        buddyApks.files,
-                        projectPath.get(),
-                        testData.get().getAsStaticData()
-                    )
-                }
-                val action = objectFactory.newInstance(testAction.get())
-                        as DeviceTestRunTaskAction<DeviceTestRunInput>
-                action.runTests(testRunParams)
-            } catch (e: Exception) {
-                recordCrashedInstrumentedTestRun(
-                    dependencies,
-                    executionEnum.get(),
-                    false,
-                    analyticsService.get())
-                throw e
-            }
-        }
+        workerExecutor.noIsolation().submit(ManagedDeviceTestRunnable::class.java) { params ->
+            val testRunTaskAction = objectFactory.newInstance(testAction.get())
+                as DeviceTestRunTaskAction<DeviceTestRunInput>
 
-        val reportOutDir = getReportsDir().get().asFile
-        FileUtils.cleanOutputDir(reportOutDir)
-
-        val report = TestReport(ReportType.SINGLE_FLAVOR, resultsOutDir.asFile, reportOutDir)
-        val results = report.generateReport()
-
-        recordOkInstrumentedTestRun(
-            dependencies,
-            executionEnum.get(),
-            false,
-            results.testCount,
-            analyticsService.get())
-
-        if (!success) {
-            val reportUrl = ConsoleRenderer().asClickableFileUrl(
-                File(reportOutDir, "index.html"))
-            val message = """
-                There were failing tests for Device: ${deviceDslName.get()}.
-                See the report at: $reportUrl
-                """.trimIndent()
-            if (ignoreFailures) {
-                logger.warn(message)
-                return
-            } else {
-                throw GradleException(message)
-            }
+            params.initializeWith(projectPath, path, analyticsService)
+            params.testsFound.setDisallowChanges(testsFound())
+            params.deviceInput.setDisallowChanges(deviceInput)
+            params.setupResult.setDisallowChanges(setupResult)
+            params.testData.setDisallowChanges(testData.get().getAsStaticData())
+            params.testRunAction.setDisallowChanges(testRunTaskAction)
+            params.path.setDisallowChanges(path)
+            params.flavorName.setDisallowChanges(testData.get().flavorName)
+            params.deviceDslName.setDisallowChanges(deviceDslName)
+            params.resultsOutDir.setDisallowChanges(resultsDir)
+            params.codeCoverageOutDir.setDisallowChanges(getCoverageDirectory())
+            params.additionalTestOutputDir.setDisallowChanges(additionalTestOutputDir)
+            params.reportsDir.setDisallowChanges(getReportsDir())
+            params.installOptions.setDisallowChanges(installOptions)
+            params.buddyApks.setFrom(buddyApks)
+            params.testLibraries.setDisallowChanges(
+                gatherTestLibraries(dependencies)
+            )
+            params.ignoreFailures.setDisallowChanges(ignoreFailures)
+            params.executionEnum.setDisallowChanges(executionEnum)
         }
     }
 
@@ -239,6 +207,95 @@ abstract class ManagedDeviceTestTask: NonIncrementalTask(), AndroidTestTask {
             .get()
             .hasTests(classes, rClasses, buildConfigClasses)
             .get()
+    }
+
+    abstract class ManagedDeviceTestRunnable :
+        ProfileAwareWorkAction<ManagedDeviceTestRunnableParameters>() {
+
+        @get:Inject
+        abstract val logger: Logger
+
+        override fun run() {
+            val success = if (!parameters.testsFound.get()) {
+                logger.info("No tests found, nothing to do.")
+                true
+            } else {
+                try {
+                    val testRunParams = object: DeviceTestRunParameters<DeviceTestRunInput> {
+                        override val deviceInput = parameters.deviceInput.get()
+                        override val setupResult = parameters.setupResult
+                        override val testRunData = TestRunData(
+                            parameters.flavorName.get(),
+                            parameters.path.get(),
+                            parameters.deviceDslName.get(),
+                            parameters.resultsOutDir.get(),
+                            parameters.codeCoverageOutDir.get(),
+                            parameters.additionalTestOutputDir.get(),
+                            parameters.installOptions.getOrElse(listOf()),
+                            parameters.buddyApks.files,
+                            parameters.projectPath.get(),
+                            parameters.testData.get()
+                        )
+                    }
+                    parameters.testRunAction.get().runTests(testRunParams)
+                } catch (e: Exception) {
+                    recordCrashedInstrumentedTestRun(
+                        parameters.testLibraries.get(),
+                        parameters.executionEnum.get(),
+                        false,
+                        parameters.analyticsService.get())
+                    throw e
+                }
+            }
+
+            val reportOutDir = parameters.reportsDir.get().asFile
+            FileUtils.cleanOutputDir(reportOutDir)
+
+            val report = TestReport(
+                ReportType.SINGLE_FLAVOR, parameters.resultsOutDir.get().asFile, reportOutDir)
+            val results = report.generateReport()
+
+            recordOkInstrumentedTestRun(
+                parameters.testLibraries.get(),
+                parameters.executionEnum.get(),
+                false,
+                results.testCount,
+                parameters.analyticsService.get())
+
+            if (!success) {
+                val reportUrl = ConsoleRenderer().asClickableFileUrl(
+                    File(reportOutDir, "index.html"))
+                val message = """
+                    There were failing tests for Device: ${parameters.deviceDslName.get()}.
+                    See the report at: $reportUrl
+                    """.trimIndent()
+                if (parameters.ignoreFailures.get()) {
+                    logger.warn(message)
+                    return
+                } else {
+                    throw GradleException(message)
+                }
+            }
+        }
+    }
+    abstract class ManagedDeviceTestRunnableParameters : ProfileAwareWorkAction.Parameters() {
+        abstract val testsFound: Property<Boolean>
+        abstract val deviceInput: Property<DeviceTestRunInput>
+        abstract val setupResult: DirectoryProperty
+        abstract val testData: Property<StaticTestData>
+        abstract val testRunAction: Property<DeviceTestRunTaskAction<DeviceTestRunInput>>
+        abstract val path: Property<String>
+        abstract val flavorName: Property<String>
+        abstract val deviceDslName: Property<String>
+        abstract val resultsOutDir: DirectoryProperty
+        abstract val codeCoverageOutDir: DirectoryProperty
+        abstract val additionalTestOutputDir: DirectoryProperty
+        abstract val reportsDir: DirectoryProperty
+        abstract val installOptions: ListProperty<String>
+        abstract val buddyApks: ConfigurableFileCollection
+        abstract val testLibraries: Property<TestLibraries>
+        abstract val ignoreFailures: Property<Boolean>
+        abstract val executionEnum: Property<TestOptions.Execution>
     }
 
     class CreationAction<DeviceT: Device>(
