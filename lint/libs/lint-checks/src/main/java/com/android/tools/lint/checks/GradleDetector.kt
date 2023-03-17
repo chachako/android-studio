@@ -26,6 +26,7 @@ import com.android.SdkConstants.PLATFORM_WINDOWS
 import com.android.SdkConstants.SUPPORT_LIB_GROUP_ID
 import com.android.SdkConstants.TAG_USES_FEATURE
 import com.android.SdkConstants.currentPlatform
+import com.android.ide.common.gradle.Component
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
@@ -1326,10 +1327,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
         .toPath()
         .resolve(dependency.groupId + File.separator + dependency.artifactId)
     return if (CancellableFileIo.exists(versionDir)) {
+      val component =
+        Component(dependency.groupId, dependency.artifactId, Version.parse(dependency.revision))
       MavenRepositories.getHighestVersion(
         versionDir,
         filter,
-        MavenRepositories.isPreview(dependency)
+        MavenRepositories.isPreview(component)
       )
     } else null
   }

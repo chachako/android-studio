@@ -46,8 +46,8 @@ import com.android.SdkConstants.TAG_USES_SDK
 import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.VALUE_FALSE
 import com.android.SdkConstants.VALUE_TRUE
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.rendering.api.ResourceNamespace
-import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.MavenRepositories
 import com.android.ide.common.repository.SdkMavenRepository
 import com.android.resources.ResourceUrl
@@ -497,7 +497,7 @@ class ManifestDetector : Detector(), XmlScanner {
     const val MISSING_FULL_BACKUP_CONTENT_RESOURCE = "Missing `<full-backup-content>` resource"
     const val MISSING_EXTRACTION_RESOURCE = "Missing `data-extraction-rules` resource"
 
-    private val MIN_WEARABLE_GMS_VERSION = GradleCoordinate.parseVersionOnly("8.2.0")
+    private val MIN_WEARABLE_GMS_VERSION = Version.parse("8.2.0")
     private const val PLAY_SERVICES_WEARABLE =
       GradleDetector.GMS_GROUP_ID + ":play-services-wearable"
     private const val ATTR_DATA_EXTRACTION_RULES = "dataExtractionRules"
@@ -1142,14 +1142,11 @@ class ManifestDetector : Detector(), XmlScanner {
                 null,
                 false
               )
-            if (
-              max != null &&
-                GradleCoordinate.COMPARE_PLUS_HIGHER.compare(max, MIN_WEARABLE_GMS_VERSION) > 0
-            ) {
+            if (max != null && max.version > MIN_WEARABLE_GMS_VERSION) {
               message =
                 "The `com.google.android.gms.wearable.BIND_LISTENER` " +
                   "action is deprecated. Please upgrade to the latest available" +
-                  " version of play-services-wearable: `${max.revision}`"
+                  " version of play-services-wearable: `${max.version}`"
             }
           }
           val location = context.getLocation(bindListenerAttr)
@@ -1464,8 +1461,8 @@ class ManifestDetector : Detector(), XmlScanner {
         as? LintModelExternalLibrary
         ?: return false
     val mc = library.resolvedCoordinates
-    val gc = GradleCoordinate.parseVersionOnly(mc.version)
-    return GradleCoordinate.COMPARE_PLUS_HIGHER.compare(gc, MIN_WEARABLE_GMS_VERSION) >= 0
+    val version = Version.parse(mc.version)
+    return version >= MIN_WEARABLE_GMS_VERSION
   }
 
   private fun checkMipmapIcon(context: XmlContext, element: Element) {

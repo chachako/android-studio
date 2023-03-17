@@ -15,12 +15,12 @@
  */
 package com.android.ide.common.repository;
 
-import static com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_HIGHER;
 import static java.io.File.separator;
 import static java.io.File.separatorChar;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.ide.common.gradle.Component;
 import com.android.ide.common.gradle.Version;
 import com.android.io.CancellableFileIo;
 import com.android.repository.io.FileOpUtils;
@@ -37,7 +37,7 @@ public class MavenRepositories {
     private MavenRepositories() {}
 
     /**
-     * Finds the best matching {@link GradleCoordinate}.
+     * Finds the best matching {@link Component}.
      *
      * @param groupId the artifact group id
      * @param artifactId the artifact id
@@ -47,7 +47,7 @@ public class MavenRepositories {
      * @return the best (highest version) matching coordinate, or null if none were found
      */
     @Nullable
-    public static GradleCoordinate getHighestInstalledVersion(
+    public static Component getHighestInstalledVersion(
             @NonNull String groupId,
             @NonNull String artifactId,
             @NonNull Path repository,
@@ -55,32 +55,23 @@ public class MavenRepositories {
             boolean allowPreview) {
         Path versionDir = getArtifactIdDirectory(repository, groupId, artifactId);
         Path[] versions = FileOpUtils.listFiles(versionDir);
-        GradleCoordinate maxVersion = null;
+        Component highest = null;
         for (Path dir : versions) {
             if (!CancellableFileIo.isDirectory(dir)) {
                 continue;
             }
-            GradleCoordinate gc =
-                    GradleCoordinate.parseCoordinateString(
-                            groupId + ":" + artifactId + ":" + dir.getFileName());
-
-            if (gc != null && (allowPreview || !isPreview(gc))
-                    && (maxVersion == null || COMPARE_PLUS_HIGHER.compare(gc, maxVersion) > 0)
-                    && (applyVersionPredicate(gc.getRevision(), filter))) {
-                maxVersion = gc;
+            Version version = Version.Companion.parse(dir.getFileName().toString());
+            Component component = new Component(groupId, artifactId, version);
+            if (allowPreview || !isPreview(component)) {
+                if (filter == null || filter.test(version)) {
+                    if (highest == null || version.compareTo(highest.getVersion()) > 0) {
+                        highest = component;
+                    }
+                }
             }
         }
 
-        return maxVersion;
-    }
-
-    private static boolean applyVersionPredicate(@NonNull String revision,
-            @Nullable Predicate<Version> predicate) {
-        if (predicate == null) {
-            return true;
-        }
-        Version version = Version.Companion.parse(revision);
-        return predicate.test(version);
+        return highest;
     }
 
     /**
@@ -119,20 +110,20 @@ public class MavenRepositories {
     }
 
     /**
-     * Decides whether a given {@link GradleCoordinate} is considered preview.
+     * Decides whether a given {@link Component} is considered preview.
      *
-     * <p>This is mostly compatible with {@link GradleCoordinate#isPreview()}, but there is one edge
+     * <p>This is mostly compatible with {@link Version#isPreview()}, but there is one edge
      * case that we need to handle, related to Play Services. (See https://b.android.com/75292)
      */
-    public static boolean isPreview(GradleCoordinate coordinate) {
+    public static boolean isPreview(Component component) {
         //noinspection SimplifiableIfStatement
-        if (coordinate.isPreview()) {
+        if (component.getVersion().isPreview()) {
             return true;
         }
 
-        return "com.google.android.gms".equals(coordinate.getGroupId())
-                && "play-services".equals(coordinate.getArtifactId())
-                && "5.2.08".equals(coordinate.getRevision());
+        return "com.google.android.gms".equals(component.getGroup())
+                && "play-services".equals(component.getName())
+                && component.getVersion().equals(Version.Companion.parse("5.2.08"));
     }
 
     /**
@@ -148,12 +139,11 @@ public class MavenRepositories {
     }
 
     public static Path getArtifactDirectory(
-            @NonNull Path repository, @NonNull GradleCoordinate coordinate) {
+            @NonNull Path repository, @NonNull Component component) {
         Path artifactIdDirectory =
-                getArtifactIdDirectory(
-                        repository, coordinate.getGroupId(), coordinate.getArtifactId());
+                getArtifactIdDirectory(repository, component.getGroup(), component.getName());
 
-        return artifactIdDirectory.resolve(coordinate.getRevision());
+        return artifactIdDirectory.resolve(component.getVersion().toString());
     }
 
     public static Path getMavenMetadataFile(
