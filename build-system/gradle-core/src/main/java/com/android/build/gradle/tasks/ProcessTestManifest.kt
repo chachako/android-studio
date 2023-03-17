@@ -120,6 +120,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             navJsons,
             jniLibsUseLegacyPackaging.orNull,
             debuggable.get(),
+            validateApplicationElementAttributes.get(),
             manifestOutputFile,
             tmpDir.get().asFile
         )
@@ -159,6 +160,8 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
      * will be injected in the manifest's application tag, unless that attribute is already
      * explicitly set. If true, nothing if injected.
      * @param debuggable whether the variant is debuggable
+     * @param validateApplicationElementAttributes whether the application element attributes will
+     * be validated for the source manifest.
      * @param outManifest the output location for the merged manifest
      * @param tmpDir temporary dir used for processing
      */
@@ -178,6 +181,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
         navigationJsons: Collection<File>,
         jniLibsUseLegacyPackaging: Boolean?,
         debuggable: Boolean,
+        validateApplicationElementAttributes: Boolean,
         outManifest: File,
         tmpDir: File
     ) {
@@ -254,8 +258,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                     .setNamespace(namespace)
                     .withFeatures(
                         ManifestMerger2.Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK,
-                        ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST,
-                        ManifestMerger2.Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES
+                        ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST
                     )
 
                 instrumentationRunner?.let {
@@ -280,6 +283,11 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 targetSdkVersionOrNull?.let {
                     intermediateInvoker.setOverride(
                         ManifestSystemProperty.UsesSdk.TARGET_SDK_VERSION, it
+                    )
+                }
+                if (validateApplicationElementAttributes) {
+                    intermediateInvoker.withFeatures(
+                        ManifestMerger2.Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES
                     )
                 }
                 tempFile2 = File.createTempFile("tempFile2ProcessTestManifest", ".xml", tmpDir)
@@ -414,6 +422,9 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
     @get:InputFiles
     abstract val manifestOverlays: ListProperty<File>
 
+    @get:Input
+    abstract val validateApplicationElementAttributes: Property<Boolean>
+
     /**
      * Compute the final list of providers based on the manifest file collection.
      * @return the list of providers.
@@ -535,6 +546,8 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 }
             }
             task.debuggable.setDisallowChanges(creationConfig.debuggable)
+            task.validateApplicationElementAttributes
+                .setDisallowChanges(creationConfig.componentType.isSeparateTestProject)
         }
     }
 

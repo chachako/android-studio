@@ -85,9 +85,6 @@ fun mergeManifests(
                 ManifestMerger2.Invoker.Feature.CHECK_IF_PACKAGE_IN_MAIN_MANIFEST
             )
         }
-        manifestMergerInvoker.withFeatures(
-            ManifestMerger2.Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES
-        )
 
         val isAppMerge = mergeType == ManifestMerger2.MergeType.APPLICATION
         val injectProfileable = isAppMerge && profileable

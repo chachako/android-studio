@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.manifest
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor.ConfigurationCaching.ON
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
@@ -64,5 +65,29 @@ class ProcessManifestTest {
         FileUtils.deleteIfExists(manifestFile)
         PathSubject.assertThat(manifestFile).doesNotExist()
         project.executor().withConfigurationCaching(ON).run("processDebugManifest")
+    }
+
+    // This should eventually be a warning, but not until there's AUA support (b/272815813)
+    @Test
+    fun testNoWarningsForApplicationAttributes() {
+        val manifestFile = project.file("src/main/AndroidManifest.xml")
+        FileUtils.deleteIfExists(manifestFile)
+        FileUtils.createFile(
+            manifestFile,
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <application
+                        android:extractNativeLibs="true"
+                        android:useEmbeddedDex="false">
+                    </application>
+                </manifest>
+            """.trimIndent())
+        val result = project.executor().run("assembleDebug")
+        result.stdout.use {
+            ScannerSubject.assertThat(it).doesNotContain("android:extractNativeLibs should not be specified")
+        }
+        result.stdout.use {
+            ScannerSubject.assertThat(it).doesNotContain("android:useEmbeddedDex should not be specified")
+        }
     }
 }

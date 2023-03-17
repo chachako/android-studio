@@ -19,8 +19,7 @@ package com.android.build.gradle.integration.manifest
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.ApkSubject.getManifestContent
-import com.android.build.gradle.integration.common.truth.ScannerSubject
-import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import org.junit.Assert.fail
@@ -229,9 +228,30 @@ class ProcessTestManifestTest {
             """.trimIndent())
         val result = project.executor().run("processDebugAndroidTestManifest")
         result.stdout.use {
-            ScannerSubject.assertThat(it).doesNotContain("Namespace 'allowedNonUnique.test' used in:")
+            assertThat(it).doesNotContain("Namespace 'allowedNonUnique.test' used in:")
         }
+    }
 
+    // This should eventually be a warning, but not until there's AUA support (b/272815813)
+    @Test
+    fun testNoWarningsForApplicationAttributes() {
+        FileUtils.createFile(
+            project.file("src/androidTest/AndroidManifest.xml"),
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                    <application
+                        android:extractNativeLibs="true"
+                        android:useEmbeddedDex="false">
+                    </application>
+                </manifest>
+            """.trimIndent())
+        val result = project.executor().run("assembleDebugAndroidTest")
+        result.stdout.use {
+            assertThat(it).doesNotContain("android:extractNativeLibs should not be specified")
+        }
+        result.stdout.use {
+            assertThat(it).doesNotContain("android:useEmbeddedDex should not be specified")
+        }
     }
 
     @Test

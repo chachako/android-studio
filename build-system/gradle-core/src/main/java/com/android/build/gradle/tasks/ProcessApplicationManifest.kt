@@ -596,6 +596,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             if (creationConfig.services.projectOptions[BooleanOption.DISABLE_MINSDKLIBRARY_CHECK]) {
                 features.add(Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK)
             }
+            features.add(Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES)
             return if (features.isEmpty())
                 EnumSet.noneOf(Invoker.Feature::class.java)
             else EnumSet.copyOf(features)
