@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.common.fixture;
 
-import static com.google.common.truth.Truth.assertThat;
 
 import com.android.annotations.NonNull;
 import com.android.testutils.TestUtils;
@@ -44,8 +43,8 @@ public final class GradleTaskExecutor extends BaseGradleExecutor<GradleTaskExecu
     private boolean isExpectingFailure = false;
     private ImmutableMap<String, String> env;
 
-    GradleTaskExecutor(
-            @NonNull GradleTestProject gradleTestProject,
+    public GradleTaskExecutor(
+            @NonNull GradleTestRule gradleTestProject,
             @NonNull ProjectConnection projectConnection) {
         super(
                 gradleTestProject,

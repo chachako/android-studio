@@ -49,7 +49,7 @@ class ProjectLocation(
     }
 }
 
-internal fun initializeProjectLocation(
+fun initializeProjectLocation(
     testClass: Class<*>,
     methodName: String?,
     projectName: String

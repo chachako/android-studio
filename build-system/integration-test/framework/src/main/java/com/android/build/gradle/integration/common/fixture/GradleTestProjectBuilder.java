@@ -41,7 +41,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-public final class GradleTestProjectBuilder {
+public class GradleTestProjectBuilder {
 
     public static final Path DEFAULT_PROFILE_DIR = Paths.get("build", "android-profile");
 

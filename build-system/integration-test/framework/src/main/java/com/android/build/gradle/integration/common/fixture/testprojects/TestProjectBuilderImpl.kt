@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.common.fixture.testprojects
 
-import com.android.Version
 import com.android.build.gradle.integration.common.fixture.TestProject
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.MavenRepoGenerator

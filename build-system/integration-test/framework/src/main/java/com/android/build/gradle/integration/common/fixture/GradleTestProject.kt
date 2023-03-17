@@ -86,7 +86,7 @@ import com.android.SdkConstants.NDK_DEFAULT_VERSION
  * The test directory is always deleted if it already exists at the start of the test to ensure a
  * clean environment.
  */
-class GradleTestProject @JvmOverloads internal constructor(
+open class GradleTestProject @JvmOverloads constructor(
     /** Return the name of the test project.  */
     val name: String = DEFAULT_TEST_PROJECT_NAME,
     val rootProjectName: String? = null,
@@ -94,9 +94,9 @@ class GradleTestProject @JvmOverloads internal constructor(
     private val targetGradleVersion: String?,
     private val targetGradleInstallation: File?,
     private val withDependencyChecker: Boolean,
-    val withConfigurationCaching: BaseGradleExecutor.ConfigurationCaching,
+    override val withConfigurationCaching: BaseGradleExecutor.ConfigurationCaching,
     private val gradleProperties: Collection<String>,
-    val heapSize: MemoryRequirement,
+    override val heapSize: MemoryRequirement,
     private val compileSdkVersion: String = DEFAULT_COMPILE_SDK_VERSION,
     private val profileDirectory: Path?,
     // CMake's version to be used
@@ -114,7 +114,7 @@ class GradleTestProject @JvmOverloads internal constructor(
     private val withIncludedBuilds: List<String>,
     private var mutableProjectLocation: ProjectLocation? = null,
     private val additionalMavenRepo: MavenRepoGenerator?,
-    val androidSdkDir: File?,
+    override val androidSdkDir: File?,
     val androidNdkDir: File,
     private val gradleDistributionDirectory: File,
     private val gradleBuildCacheDirectory: File?,
@@ -124,7 +124,7 @@ class GradleTestProject @JvmOverloads internal constructor(
     private val openConnections: MutableList<ProjectConnection>? = mutableListOf(),
     /** root project if one exist. This is null for the actual root */
     private val _rootProject: GradleTestProject? = null
-) : TestRule {
+) : GradleTestRule {
     companion object {
         const val ENV_CUSTOM_REPO = "CUSTOM_REPO"
 
@@ -347,10 +347,10 @@ class GradleTestProject @JvmOverloads internal constructor(
         relativeNdkSymlinkPath?.let { location.testLocation.buildDir.resolve(it).canonicalFile }
     }
 
-    val androidNdkSxSRootSymlink: File?
+    override val androidNdkSxSRootSymlink: File?
         get() = ndkSymlinkPath?.resolve(SdkConstants.FD_NDK_SIDE_BY_SIDE)
 
-    val location: ProjectLocation
+    override val location: ProjectLocation
         get() = mutableProjectLocation ?: error("Project location has not been initialized yet")
 
     val buildFile: File
@@ -371,7 +371,7 @@ class GradleTestProject @JvmOverloads internal constructor(
 
     private var _additionalMavenRepoDir: Path? = null
 
-    val additionalMavenRepoDir: Path?
+    override val additionalMavenRepoDir: Path?
         get() = _additionalMavenRepoDir
 
     /** \Returns the latest build result.  */
@@ -419,7 +419,7 @@ class GradleTestProject @JvmOverloads internal constructor(
      * @param subProject name of the subProject, or the subProject's gradle project path
      * @param rootProject root GradleTestProject.
      */
-    private constructor(
+    constructor(
         subProject: String,
         rootProject: GradleTestProject
     ) :
@@ -767,7 +767,7 @@ allprojects { proj ->
      * profiles may not be generated, though setting [ ][com.android.build.gradle.options.StringOption.PROFILE_OUTPUT_DIR] in gradle.properties will
      * induce profile generation without affecting this return value
      */
-    fun getProfileDirectory(): Path? {
+    override fun getProfileDirectory(): Path? {
         return if (profileDirectory == null || profileDirectory.isAbsolute) {
             profileDirectory
         } else {
@@ -1418,7 +1418,7 @@ allprojects { proj ->
         return model().fetchAndroidProjects()
     }
 
-    fun setLastBuildResult(lastBuildResult: GradleBuildResult) {
+    override fun setLastBuildResult(lastBuildResult: GradleBuildResult) {
         _buildResult = lastBuildResult
     }
 

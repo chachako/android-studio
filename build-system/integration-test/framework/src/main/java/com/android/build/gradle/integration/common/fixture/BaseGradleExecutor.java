@@ -105,7 +105,7 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
 
     @NonNull
     final ProjectConnection projectConnection;
-    @Nullable protected final GradleTestProject project;
+    @Nullable protected final GradleTestRule project;
     @NonNull public final ProjectLocation projectLocation;
     @NonNull final Consumer<GradleBuildResult> lastBuildResultConsumer;
     @NonNull private final List<String> arguments = Lists.newArrayList();
@@ -119,7 +119,7 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
     private ConfigurationCaching configurationCaching;
 
     BaseGradleExecutor(
-            @Nullable GradleTestProject project,
+            @Nullable GradleTestRule project,
             @NonNull ProjectLocation projectLocation,
             @NonNull ProjectConnection projectConnection,
             @NonNull Consumer<GradleBuildResult> lastBuildResultConsumer,
