@@ -23,7 +23,7 @@ import static com.android.SdkConstants.ATTR_TAG;
 import static com.android.manifmerger.AttributeModel.AND_MERGING_POLICY;
 import static com.android.manifmerger.AttributeModel.Hexadecimal32BitsWithMinimumValue;
 import static com.android.manifmerger.AttributeModel.OR_MERGING_POLICY;
-import static com.android.manifmerger.AttributeModel.STRICT_MERGING_POLICY;
+import static com.android.manifmerger.AttributeModel.STRICT_MAIN_OR_OVERLAY_MERGING_POLICY;
 import static com.android.manifmerger.AttributeModel.SeparatedValuesValidator;
 
 import com.android.SdkConstants;
@@ -336,29 +336,9 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
                                     }
                                 }),
                 AttributeModel.newModel(SdkConstants.ATTR_LOCALE_CONFIG)
-                        .setMergingPolicy(
-                                new AttributeModel.MergingPolicy() {
-                                    @Override
-                                    public boolean shouldMergeDefaultValues() {
-                                        return false;
-                                    }
-
-                                    @Override
-                                    public boolean canMergeWithLowerPriority(
-                                            @NonNull XmlDocument document) {
-                                        return EnumSet.of(Type.MAIN, Type.OVERLAY)
-                                                .contains(document.getFileType());
-                                    }
-
-                                    @Nullable
-                                    @Override
-                                    public String merge(
-                                            @NonNull String higherPriority,
-                                            @NonNull String lowerPriority) {
-                                        return STRICT_MERGING_POLICY.merge(
-                                                higherPriority, lowerPriority);
-                                    }
-                                })),
+                        .setMergingPolicy(STRICT_MAIN_OR_OVERLAY_MERGING_POLICY),
+                AttributeModel.newModel(SdkConstants.ATTR_USE_EMBEDDED_DEX)
+                        .setMergingPolicy(STRICT_MAIN_OR_OVERLAY_MERGING_POLICY)),
 
         /**
          * Category (contained in intent-filter, intent) <br>

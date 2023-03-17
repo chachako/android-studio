@@ -151,6 +151,7 @@ public class ManifestMerger2Test {
                 "103_attribution_node.xml",
                 "104_merging_privacy_sandbox_tagged_permissions.xml",
                 "104b_merging_privacy_sandbox_tagged_permissions_all_untagged.xml",
+                "105_ignore_use_embedded_dex_from_library.xml"
             };
 
     private static final Multimap<Predicate<String>, ManifestMerger2.Invoker.Feature>
