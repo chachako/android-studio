@@ -47,14 +47,14 @@ internal abstract class BaseProcessTrackerFactory<T>(
 
     abstract fun getDeviceSerialNumber(device: T): String
 
-    private suspend fun createAgentProcessTracker(device: T): AgentProcessTracker? {
+    private suspend fun createAgentProcessTracker(device: T): ProcessTracker? {
         // The agent is a native executable, and we don't have the ability build it for API<21
         if (getDeviceApiLevel(device) < 21 || agentConfig == null) {
             return null
         }
         val serialNumber = getDeviceSerialNumber(device)
         val abi = getDeviceAbi(device) ?: return null
-        return AgentProcessTracker(
+        val agentProcessTracker = AgentProcessTracker(
             adbSession,
             serialNumber,
             abi,
@@ -62,5 +62,8 @@ internal abstract class BaseProcessTrackerFactory<T>(
             agentConfig.pollingIntervalMillis,
             logger,
         )
+
+        // Don't let failures in the agent tracker to fail the main tracker
+        return SafeProcessTracker(agentProcessTracker, "Agent tracker error", logger)
     }
 }
