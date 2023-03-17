@@ -16,28 +16,35 @@
 package com.android.ide.common.repository
 
 import com.google.common.base.CaseFormat
+import java.util.TreeSet
+import com.google.common.annotations.VisibleForTesting
 
-public fun GradleCoordinate.isAndroidX(): Boolean = groupId.startsWith("androidx.")
+private fun GradleCoordinate.isAndroidX(): Boolean = groupId.startsWith("androidx.")
 
-public fun String.toSafeKey(): String {
-    // Should filter to set of valid characters in an unquoted key; see `unquoted-key-char` in
-    // https://github.com/toml-lang/toml/blob/main/toml.abnf .
-    // In practice this seems close enough to Java's isLetterOrDigit definition.
-    if (all { it.isLetterOrDigit() || it == '-' || it == '_' }) {
-        return this
-    }
-    val sb = StringBuilder()
-    for (c in this) {
-        sb.append(if (c.isLetterOrDigit() || c == '-') c else if (c == '.') '-' else '_')
-    }
-    return sb.toString()
-}
-
-public fun pickLibraryVariableName(
+/**
+ * Pick name with next steps. Each step generates name and check whether it
+ * exists in reserved set where comparison is done in case-insensitive way.
+ * If same name already exists, it tries the next step. Steps defined as follows:
+ * - if artifact is androidx and any reserved alias has androidx prefix - add
+ *   "androidx-" prefix;
+ * - in other case just use artifactID
+ *   "org.jetbrains.kotlin:kotlin-reflect" => "kotlin-reflect";
+ * - if name already exists - add group suffix if it's not similar to name
+ *   "com.google.libraries:guava" => "libraries-guava";
+ * - if already exists - add group prefix
+ *   "org.jetbrains.kotlin:kotlin-reflect" => "jetbrains-kotlin-reflect";
+ * - if already exists - add group
+ *   "org.jetbrains.kotlin:kotlin-reflect" => "jetbrains-kotlin-kotlin-reflect";
+ * - if already exists - add number at the end until no such name in reserved
+ *   "jetbrains-kotlin-reflect" => "jetbrains-kotlin-reflect2".
+ */
+fun pickLibraryVariableName(
     gc: GradleCoordinate,
     includeVersionInKey: Boolean,
-    reserved: Set<String>
+    caseSensitiveReserved: Set<String>
 ): String {
+    val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
+    reserved.addAll(caseSensitiveReserved)
     val versionSuffix =
         if (includeVersionInKey) "-" + gc.revision.replace('.', '_').toSafeKey() else ""
 
@@ -56,11 +63,11 @@ public fun pickLibraryVariableName(
         return artifactKey
     }
 
-    // Normally the groupId suffix plus artifact is used, e.g.
-    //  "org.jetbrains.kotlin:kotlin-reflect" => "kotlin-kotlin-reflect"
+    // Normally the groupId suffix plus artifact is used if it's not similar to artifact, e.g.
+    // "com.google.libraries:guava" => "libraries-guava"
     val groupSuffix = gc.groupId.substringAfterLast('.').toSafeKey()
+    val withGroupSuffix = "$groupSuffix-$artifactId$versionSuffix"
     if (!(artifactId.startsWith(groupSuffix))) {
-        val withGroupSuffix = "$groupSuffix-$artifactId$versionSuffix"
         if (!reserved.contains(withGroupSuffix)) {
             return withGroupSuffix
         }
@@ -89,6 +96,21 @@ public fun pickLibraryVariableName(
     }
 }
 
+@VisibleForTesting
+internal fun String.toSafeKey(): String {
+    // Should filter to set of valid characters in an unquoted key; see `unquoted-key-char` in
+    // https://github.com/toml-lang/toml/blob/main/toml.abnf .
+    // In practice this seems close enough to Java's isLetterOrDigit definition.
+    if (all { it.isLetterOrDigit() || it == '-' || it == '_' }) {
+        return this
+    }
+    val sb = StringBuilder()
+    for (c in this) {
+        sb.append(if (c.isLetterOrDigit() || c == '-') c else if (c == '.') '-' else '_')
+    }
+    return sb.toString()
+}
+
 private fun getGroupPrefix(gc: GradleCoordinate): String {
     // For com.google etc., use "google" instead of "com"
     val groupPrefix = gc.groupId.substringBefore('.').toSafeKey()
@@ -98,9 +120,27 @@ private fun getGroupPrefix(gc: GradleCoordinate): String {
     return groupPrefix.toSafeKey()
 }
 
-public fun pickVersionVariableName(gc: GradleCoordinate, reserved: Set<String>): String {
+/**
+ * Variable name generator takes artifact id as a base. It analyses reserved
+ * aliases and chose same notation. This can be a lower camel, lower hyphen,
+ * lower camel with Version suffix. Alias will have hyphen, and to lower camel
+ * notation otherwise. Picking variable happens in steps. Each step generates
+ * some name around updated artifact id and check whether it's reserved with
+ * case-insensitive set. If yes, jumping to the next step.
+ * Steps defined as follows:
+ * - use artifactId + "Version" suffix if this is the style;
+ * - use artifactId as variable name;
+ * - use artifactId + "Version" suffix if it's not a hyphen notation;
+ * - use group prefix + "-" + artifactId;
+ * - use group prefix + "-" + artifactId + "Version";
+ * - use group name + "-" + artifactId;
+ * - use group name + "-" + artifactId + /number/.
+ */
+ fun pickVersionVariableName(gc: GradleCoordinate, caseSensitiveReserved: Set<String>): String {
     // If using the artifactVersion convention, follow that
     val artifact = gc.artifactId.toSafeKey()
+    val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
+    reserved.addAll(caseSensitiveReserved)
 
     if (reserved.isEmpty()) {
         return artifact
@@ -135,8 +175,7 @@ public fun pickVersionVariableName(gc: GradleCoordinate, reserved: Set<String>):
     }
 
     // Default convention listed in https://docs.gradle.org/current/userguide/platforms.html seems to
-    // be to just
-    // use the artifact name
+    // be to just use the artifact name
     if (!reserved.contains(artifactName)) {
         return artifactName
     }

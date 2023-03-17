@@ -21,7 +21,6 @@ import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.pickLibraryVariableName
 import com.android.ide.common.repository.pickVersionVariableName
-import com.android.ide.common.repository.toSafeKey
 import com.android.tools.lint.client.api.LintTomlDocument
 import com.android.tools.lint.client.api.LintTomlLiteralValue
 import com.android.tools.lint.client.api.LintTomlMapValue
@@ -749,13 +748,4 @@ private fun getReservedQuickfixNames(key: String): MutableSet<String> {
       }
   return reservedQuickfixNames[key]
     ?: mutableSetOf<String>().also { reservedQuickfixNames[key] = it }
-}
-
-private fun getGroupPrefix(gc: GradleCoordinate): String {
-  // For com.google etc., use "google" instead of "com"
-  val groupPrefix = gc.groupId.substringBefore('.').toSafeKey()
-  if (groupPrefix == "com" || groupPrefix == "org" || groupPrefix == "io") {
-    return gc.groupId.substringAfter('.').substringBefore('.').toSafeKey()
-  }
-  return groupPrefix.toSafeKey()
 }
