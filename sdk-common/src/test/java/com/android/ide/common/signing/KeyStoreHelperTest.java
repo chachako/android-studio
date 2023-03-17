@@ -25,9 +25,15 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.utils.ILogger;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import junit.framework.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -94,6 +100,66 @@ public class KeyStoreHelperTest {
         c.add(Calendar.HOUR, 5);
         assertFalse("30 year and few hours expiration failed",
                 certificate.getNotAfter().compareTo(c.getTime()) > 0);
+    }
+
+    @Test
+    public void testAppendNewKeyToExistingKeyStore() throws Exception {
+        File tempFolder = mTemporaryFolder.newFolder();
+        File keystoreFile = new File(tempFolder, "debug.keystore");
+        keystoreFile.deleteOnExit();
+
+        // b/185013369: Make sure the password can start with a '-' and have special characters
+        String storePass = "-V8<Q:j|YiP/f+'0VP]a~Z8LG storePass \"!#";
+        String keyPass = "-V8<Q:j|YiP/f+'0VP]a~Z8LG \"quote\" keyPass";
+        String keyAlias1 = "AndroidDebugKey1";
+        String keyAlias2 = "AndroidDebugKey2";
+
+        FakeLogger fakeLogger = new FakeLogger();
+
+        // create the keystore
+        KeystoreHelper.createDebugStore(
+                null, keystoreFile, storePass, keyPass, keyAlias1, fakeLogger);
+        // Add one more alias
+        KeystoreHelper.createDebugStore(
+                null, keystoreFile, storePass, keyPass, keyAlias2, fakeLogger);
+
+        InputStream is = new FileInputStream(keystoreFile);
+        final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keyStore.load(is, storePass.toCharArray());
+
+        // Keys are actually lower-cased
+        Assert.assertEquals(
+                Arrays.asList(keyAlias1.toLowerCase(), keyAlias2.toLowerCase()),
+                Collections.list(keyStore.aliases()));
+    }
+
+    @Test
+    public void testAppendNewKeyWithWrongPassword() throws Exception {
+        File tempFolder = mTemporaryFolder.newFolder();
+        File keystoreFile = new File(tempFolder, "debug.keystore");
+        keystoreFile.deleteOnExit();
+
+        // b/185013369: Make sure the password can start with a '-' and have special characters
+        String storePass = "-V8<Q:j|YiP/f+'0VP]a~Z8LG storePass \"!#";
+        String keyPass = "-V8<Q:j|YiP/f+'0VP]a~Z8LG \"quote\" keyPass";
+        String keyAlias1 = "AndroidDebugKey1";
+        String keyAlias2 = "AndroidDebugKey2";
+
+        FakeLogger fakeLogger = new FakeLogger();
+
+        // create the keystore
+        KeystoreHelper.createDebugStore(
+                null, keystoreFile, storePass, keyPass, keyAlias1, fakeLogger);
+
+        try {
+            // Add one more alias using wrong keystore password
+            KeystoreHelper.createDebugStore(
+                    null, keystoreFile, "wrong", keyPass, keyAlias2, fakeLogger);
+            Assert.fail("Should not reach here, exception should be thrown.");
+        } catch (KeytoolException e) {
+            Assert.assertEquals(
+                    "Failed to load keystore: keystore password was incorrect", e.getMessage());
+        }
     }
 
     private static class FakeLogger implements ILogger {
