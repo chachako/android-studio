@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.execcommandhandlers
+package com.android.fakeadbserver.shellcommandhandlers
 
-import com.android.fakeadbserver.CommandHandler
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
-import java.net.Socket
+import com.android.fakeadbserver.ShellProtocolType
+import com.android.fakeadbserver.services.ServiceOutput
 
-class PingExecCommandHandler : SimpleExecHandler(PING_EXEC) {
-
+class PingCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
+    shellProtocolType, "ping"
+) {
     companion object {
-
-        const val PING_EXEC = "ping"
-        const val PING_EXEC_OUTPUT = "pong"
+        const val PING_COMMAND_FAKE_OUTPUT = "pong"
     }
 
     override fun execute(
         fakeAdbServer: FakeAdbServer,
-        responseSocket: Socket,
+        statusWriter: StatusWriter,
+        serviceOutput: ServiceOutput,
         device: DeviceState,
-        args: String?
+        shellCommand: String,
+        shellCommandArgs: String?
     ) {
-        val output = responseSocket.getOutputStream()
-        CommandHandler.writeOkay(output)
-
-        val response = PING_EXEC_OUTPUT
-        CommandHandler.writeString(output, response)
+        statusWriter.writeOk()
+        serviceOutput.writeStdout(PING_COMMAND_FAKE_OUTPUT)
     }
 }

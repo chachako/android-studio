@@ -27,8 +27,6 @@ import com.android.fakeadbserver.devicecommandhandlers.JdwpCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.ReverseForwardCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.TrackAppCommandHandler;
 import com.android.fakeadbserver.devicecommandhandlers.TrackJdwpCommandHandler;
-import com.android.fakeadbserver.execcommandhandlers.PackageExecCommandHandler;
-import com.android.fakeadbserver.execcommandhandlers.PingExecCommandHandler;
 import com.android.fakeadbserver.hostcommandhandlers.FeaturesCommandHandler;
 import com.android.fakeadbserver.hostcommandhandlers.ForwardCommandHandler;
 import com.android.fakeadbserver.hostcommandhandlers.GetDevPathCommandHandler;
@@ -55,6 +53,7 @@ import com.android.fakeadbserver.shellcommandhandlers.EchoCommandHandler;
 import com.android.fakeadbserver.shellcommandhandlers.GetPropCommandHandler;
 import com.android.fakeadbserver.shellcommandhandlers.LogcatCommandHandler;
 import com.android.fakeadbserver.shellcommandhandlers.PackageManagerCommandHandler;
+import com.android.fakeadbserver.shellcommandhandlers.PingCommandHandler;
 import com.android.fakeadbserver.shellcommandhandlers.RmCommandHandler;
 import com.android.fakeadbserver.shellcommandhandlers.SetPropCommandHandler;
 import com.android.fakeadbserver.shellcommandhandlers.ShellProtocolEchoCommandHandler;
@@ -570,11 +569,8 @@ public final class FakeAdbServer implements AutoCloseable {
             addDeviceHandler(new FakeSyncCommandHandler());
             addDeviceHandler(new ReverseForwardCommandHandler());
 
-            // Exec commands
-            addDeviceHandler(new PackageExecCommandHandler());
-            addDeviceHandler(new PingExecCommandHandler());
+            addDeviceHandler(new PingCommandHandler(ShellProtocolType.EXEC));
             addDeviceHandler(new RmCommandHandler(ShellProtocolType.SHELL));
-
             addDeviceHandler(new LogcatCommandHandler(ShellProtocolType.SHELL));
             addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.EXEC));
             addDeviceHandler(new GetPropCommandHandler(ShellProtocolType.SHELL));
