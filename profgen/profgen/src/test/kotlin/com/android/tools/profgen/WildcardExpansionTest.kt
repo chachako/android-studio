@@ -16,7 +16,6 @@
 
 package com.android.tools.profgen
 
-import com.android.testutils.TestUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.ByteArrayInputStream
@@ -29,15 +28,14 @@ class WildcardExpansionTest {
     @Test
     fun testClassFile() {
         val classFileResource = object : ClassFileResource {
-            override fun getByteStream(): InputStream =
-                TestUtils.resolveWorkspacePath(ClassFilePath).toFile().inputStream()
+            override fun getByteStream(): InputStream = testData(ClassFilePath).inputStream()
         }
         runTests(listOf(classFileResource))
     }
 
     @Test
     fun testJarArchive() {
-        val archive = TestUtils.resolveWorkspacePath(JarArchivePath)
+        val archive = testData(JarArchivePath).toPath()
         ArchiveClassFileResourceProvider(archive).use {
             runTests(it.getClassFileResources())
         }
@@ -88,7 +86,7 @@ class WildcardExpansionTest {
     }
 
     companion object {
-        private const val ClassFilePath = "tools/base/profgen/profgen/testData/Hello.class"
-        private const val JarArchivePath = "tools/base/profgen/profgen/testData/hello.jar"
+        private const val ClassFilePath = "Hello.class"
+        private const val JarArchivePath = "hello.jar"
     }
 }

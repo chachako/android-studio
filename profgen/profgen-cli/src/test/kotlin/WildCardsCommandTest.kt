@@ -16,30 +16,29 @@
 
 package com.android.tools.profgen.cli
 
-import com.android.testutils.TestUtils
 import com.google.common.truth.Truth.assertThat
-import kotlin.io.path.createTempFile
 import kotlinx.cli.ExperimentalCli
 import org.junit.Test
+import kotlin.io.path.createTempFile
 
 @ExperimentalCli
-class ExpandWildcardsCommandTest {
+class WildCardsCommandTest {
 
     @Test
-    fun test() {
+    fun expandWildCardsTest() {
         val command = ExpandWildcardsCommand()
-        val profile = createTempFile(suffix=".txt").toFile()
+        val profile = createTempFile(suffix = ".txt").toFile()
         profile.writeText("L*;")
-        val output = createTempFile(suffix=".txt").toFile()
+        val output = createTempFile(suffix = ".txt").toFile()
         command.parse(
                 arrayOf(
                         "--profile", profile.toString(),
                         "--output", output.toString(),
-                        TestUtils.resolveWorkspacePath(ClassFilePath).toString(),
-                        TestUtils.resolveWorkspacePath(JarArchivePath).toString()))
+                        testData(ClassFilePath).toString(),
+                        testData(JarArchivePath).toString()))
         command.execute()
         assertThat(output.readText()).isEqualTo(
-            """
+                """
                 LHello;
                 LWorld;
             """.trimIndent().plus('\n')
@@ -47,7 +46,8 @@ class ExpandWildcardsCommandTest {
     }
 
     companion object {
-        private const val ClassFilePath = "tools/base/profgen/profgen-cli/testData/Hello.class"
-        private const val JarArchivePath = "tools/base/profgen/profgen-cli/testData/world.jar"
+
+        private const val ClassFilePath = "Hello.class"
+        private const val JarArchivePath = "world.jar"
     }
 }

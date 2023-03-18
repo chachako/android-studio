@@ -17,15 +17,15 @@
 package com.android.tools.profgen.cli
 
 import com.android.tools.profgen.ArchiveClassFileResourceProvider
-import com.android.tools.profgen.ClassFileResource
 import com.android.tools.profgen.CLASS_EXTENSION
+import com.android.tools.profgen.ClassFileResource
 import com.android.tools.profgen.JAR_EXTENSION
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import kotlinx.cli.required
 import kotlinx.cli.vararg
-import java.io.File
+import kotlin.io.path.Path
 
 @ExperimentalCli
 class ExpandWildcardsCommand: Subcommand("expandWildcards", "Dump a binary profile to a HRF") {
@@ -39,14 +39,14 @@ class ExpandWildcardsCommand: Subcommand("expandWildcards", "Dump a binary profi
     val programPaths by argument(ArgType.String, "program", "File paths to program sources")
             .vararg()
     override fun execute() {
-        val hrpFile = File(hrpPath)
+        val hrpFile = Path(hrpPath).toFile()
         require(hrpFile.exists()) { "File not found: $hrpPath" }
 
-        val outFile = File(outPath)
+        val outFile = Path(outPath).toFile()
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
-        require(!programPaths.isEmpty()) { "Must pass at least one program source" }
-        val programFiles = programPaths.map { File(it) }
+        require(programPaths.isNotEmpty()) { "Must pass at least one program source" }
+        val programFiles = programPaths.map { Path(it).toFile() }
         for (programFile in programFiles) {
             require(programFile.exists()) { "File not found: $programFile" }
         }

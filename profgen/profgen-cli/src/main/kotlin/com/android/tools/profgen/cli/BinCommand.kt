@@ -29,6 +29,7 @@ import kotlinx.cli.Subcommand
 import kotlinx.cli.default
 import kotlinx.cli.required
 import java.io.File
+import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
 @ExperimentalCli
@@ -50,23 +51,23 @@ class BinCommand : Subcommand("bin", "Generate Binary Profile") {
     val artProfileFormat by option(ArgType.Choice<ArtProfileFormat>(), "profile-format", "pf", "The ART profile format version").default(ArtProfileFormat.V0_1_0_P)
 
     override fun execute() {
-        val hrpFile = File(hrpPath)
+        val hrpFile = Path(hrpPath).toFile()
         require(hrpFile.exists()) { "File not found: $hrpPath" }
 
-        val apkFile = File(apkPath)
+        val apkFile = Path(apkPath).toFile()
         require(apkFile.exists()) { "File not found: $apkPath" }
 
-        val obfFile = obfPath?.let { File(it) }
+        val obfFile = obfPath?.let { Path(it).toFile() }
         require(obfFile?.exists() != false) { "File not found: $obfPath" }
 
-        val metaFile = metaPath?.let { File(it) }
+        val metaFile = metaPath?.let { Path(it).toFile() }
         if (metaFile != null) {
             require(metaFile.parentFile.exists()) {
                 "Directory does not exist: ${metaFile.parent}"
             }
         }
 
-        val outFile = File(outPath)
+        val outFile = Path(outPath).toFile()
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
         val hrp = readHumanReadableProfileOrExit(hrpFile)
@@ -91,7 +92,7 @@ class BinCommand : Subcommand("bin", "Generate Binary Profile") {
 class ValidateCommand : Subcommand("validate", "Validate Profile") {
     val hrpPath by argument(ArgType.String, "profile", "File path to Human Readable profile")
     override fun execute() {
-        val hrpFile = File(hrpPath)
+        val hrpFile = Path(hrpPath).toFile()
         require(hrpFile.exists()) { "File not found: $hrpPath" }
         HumanReadableProfile(hrpFile, StdErrorDiagnostics)
     }
@@ -104,16 +105,16 @@ class PrintCommand : Subcommand("print", "Print methods matching profile") {
     val outPath by option(ArgType.String, "output", "o", "File path to generated binary profile").required()
     val obfPath by option(ArgType.String, "map", "m", "File path to name obfuscation map")
     override fun execute() {
-        val hrpFile = File(hrpPath)
+        val hrpFile = Path(hrpPath).toFile()
         require(hrpFile.exists()) { "File not found: $hrpPath" }
 
-        val apkFile = File(apkPath)
+        val apkFile = Path(apkPath).toFile()
         require(apkFile.exists()) { "File not found: $apkPath" }
 
-        val obfFile = obfPath?.let { File(it) }
+        val obfFile = obfPath?.let { Path(it).toFile() }
         require(obfFile?.exists() != false) { "File not found: $obfPath" }
 
-        val outFile = File(outPath)
+        val outFile = Path(outPath).toFile()
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
         val hrp = readHumanReadableProfileOrExit(hrpFile)
@@ -131,16 +132,16 @@ class ProfileDumpCommand: Subcommand("dumpProfile", "Dump a binary profile to a 
     val strictMode by option(ArgType.Boolean, "strict", "s", "Strict mode").default(value = true)
     val outPath by option(ArgType.String, "output", "o", "File path for the HRF").required()
     override fun execute() {
-        val binFile = File(binPath)
+        val binFile = Path(binPath).toFile()
         require(binFile.exists()) { "File not found: $binPath" }
 
-        val apkFile = File(apkPath)
+        val apkFile = Path(apkPath).toFile()
         require(apkFile.exists()) { "File not found: $apkPath" }
 
-        val obfFile = obfPath?.let { File(it) }
+        val obfFile = obfPath?.let { Path(it).toFile() }
         require(obfFile?.exists() != false) { "File not found: $obfPath" }
 
-        val outFile = File(outPath)
+        val outFile = Path(outPath).toFile()
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
         val profile = ArtProfile(binFile)!!
