@@ -258,7 +258,7 @@ public class PreValidatorTest extends TestCase {
         assertEquals(MergingReport.Result.SUCCESS, validated);
     }
 
-    public void testValidateApplicationElementAttributes()
+    public void testValidateExtractNativeLibsAttribute()
             throws ParserConfigurationException, SAXException, IOException {
         MockLog mockLog = new MockLog();
         String input =
@@ -266,9 +266,7 @@ public class PreValidatorTest extends TestCase {
                         + "<manifest\n"
                         + "    xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
                         + "\n"
-                        + "     <application\n"
-                        + "             android:extractNativeLibs=\"true\"\n"
-                        + "             android:useEmbeddedDex=\"true\"/>\n"
+                        + "     <application android:extractNativeLibs=\"true\"/>\n"
                         + "\n"
                         + "</manifest>";
 
@@ -286,9 +284,6 @@ public class PreValidatorTest extends TestCase {
         assertStringPresenceInLogRecords(
                 mergingReport,
                 "android:extractNativeLibs should not be specified in source AndroidManifest.xml files.");
-        assertStringPresenceInLogRecords(
-                mergingReport,
-                "android:useEmbeddedDex should not be specified in source AndroidManifest.xml files.");
         assertStringPresenceInLogRecords(
                 mergingReport, " The AGP Upgrade Assistant can remove the attribute");
     }

@@ -1172,7 +1172,7 @@ public class ManifestMerger2 {
                         lowerPriorityDocument.getXmlDocument(),
                         mMergeType,
                         mOptionalFeatures.contains(
-                                Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES));
+                                Invoker.Feature.VALIDATE_EXTRACT_NATIVE_LIBS_ATTRIBUTE));
 
         if (validationResult == MergingReport.Result.ERROR
                 && !mOptionalFeatures.contains(Invoker.Feature.KEEP_GOING_AFTER_ERRORS)) {
@@ -1825,12 +1825,12 @@ public class ManifestMerger2 {
             KEEP_GOING_AFTER_ERRORS,
 
             /**
-             * Warn if the {@link SdkConstants#ATTR_EXTRACT_NATIVE_LIBS} or {@link
-             * SdkConstants#ATTR_USE_EMBEDDED_DEX} attribute is present in a source manifest.
+             * Warn if the {@link SdkConstants#ATTR_EXTRACT_NATIVE_LIBS} attribute is present in a
+             * source manifest.
              *
              * <p>This is used in AGP because users must migrate to the new useLegacyPackaging APIs.
              */
-            VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES
+            VALIDATE_EXTRACT_NATIVE_LIBS_ATTRIBUTE
         }
 
         /**

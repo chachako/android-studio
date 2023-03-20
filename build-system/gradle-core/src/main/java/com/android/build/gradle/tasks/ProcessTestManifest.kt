@@ -120,7 +120,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
             navJsons,
             jniLibsUseLegacyPackaging.orNull,
             debuggable.get(),
-            validateApplicationElementAttributes.get(),
+            validateExtractNativeLibsAttribute.get(),
             manifestOutputFile,
             tmpDir.get().asFile
         )
@@ -160,8 +160,8 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
      * will be injected in the manifest's application tag, unless that attribute is already
      * explicitly set. If true, nothing if injected.
      * @param debuggable whether the variant is debuggable
-     * @param validateApplicationElementAttributes whether the application element attributes will
-     * be validated for the source manifest.
+     * @param validateExtractNativeLibsAttribute whether the application element's
+     * [SdkConstants.ATTR_EXTRACT_NATIVE_LIBS] attribute will be validated for the source manifest.
      * @param outManifest the output location for the merged manifest
      * @param tmpDir temporary dir used for processing
      */
@@ -181,7 +181,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
         navigationJsons: Collection<File>,
         jniLibsUseLegacyPackaging: Boolean?,
         debuggable: Boolean,
-        validateApplicationElementAttributes: Boolean,
+        validateExtractNativeLibsAttribute: Boolean,
         outManifest: File,
         tmpDir: File
     ) {
@@ -285,9 +285,9 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                         ManifestSystemProperty.UsesSdk.TARGET_SDK_VERSION, it
                     )
                 }
-                if (validateApplicationElementAttributes) {
+                if (validateExtractNativeLibsAttribute) {
                     intermediateInvoker.withFeatures(
-                        ManifestMerger2.Invoker.Feature.VALIDATE_APPLICATION_ELEMENT_ATTRIBUTES
+                        ManifestMerger2.Invoker.Feature.VALIDATE_EXTRACT_NATIVE_LIBS_ATTRIBUTE
                     )
                 }
                 tempFile2 = File.createTempFile("tempFile2ProcessTestManifest", ".xml", tmpDir)
@@ -423,7 +423,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
     abstract val manifestOverlays: ListProperty<File>
 
     @get:Input
-    abstract val validateApplicationElementAttributes: Property<Boolean>
+    abstract val validateExtractNativeLibsAttribute: Property<Boolean>
 
     /**
      * Compute the final list of providers based on the manifest file collection.
@@ -546,7 +546,7 @@ abstract class ProcessTestManifest : ManifestProcessorTask() {
                 }
             }
             task.debuggable.setDisallowChanges(creationConfig.debuggable)
-            task.validateApplicationElementAttributes
+            task.validateExtractNativeLibsAttribute
                 .setDisallowChanges(creationConfig.componentType.isSeparateTestProject)
         }
     }

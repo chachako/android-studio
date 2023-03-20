@@ -70,8 +70,8 @@ public class PreValidator {
      * @param mergingReport report to log warnings and errors.
      * @param xmlDocument the loaded xml part.
      * @param mergeType the merge type.
-     * @param validateApplicationElementAttributes whether to validate the application element's
-     *     attributes
+     * @param validateExtractNativeLibsAttribute whether to validate the application element's
+     *     {@link SdkConstants#ATTR_EXTRACT_NATIVE_LIBS} attribute
      * @return one the {@link MergingReport.Result} value.
      */
     @NonNull
@@ -79,12 +79,12 @@ public class PreValidator {
             @NonNull MergingReport.Builder mergingReport,
             @NonNull XmlDocument xmlDocument,
             @NonNull ManifestMerger2.MergeType mergeType,
-            boolean validateApplicationElementAttributes) {
+            boolean validateExtractNativeLibsAttribute) {
 
         validatePackageAttribute(
                 mergingReport, xmlDocument.getRootNode(), xmlDocument.getFileType());
-        if (validateApplicationElementAttributes) {
-            validateApplicationElementAttributes(mergingReport, xmlDocument, mergeType);
+        if (validateExtractNativeLibsAttribute) {
+            validateExtractNativeLibsAttribute(mergingReport, xmlDocument, mergeType);
         }
         return validate(mergingReport, xmlDocument.getRootNode());
     }
@@ -192,11 +192,8 @@ public class PreValidator {
         }
     }
 
-    /**
-     * Warn if users set android:extractNativeLibs or android:useEmbeddedDex in their MAIN or
-     * OVERLAY manifests.
-     */
-    private static void validateApplicationElementAttributes(
+    /** Warn if android:extractNativeLibs is set in the MAIN or OVERLAY manifests. */
+    private static void validateExtractNativeLibsAttribute(
             @NonNull MergingReport.Builder mergingReport,
             @NonNull XmlDocument xmlDocument,
             @NonNull ManifestMerger2.MergeType mergeType) {
@@ -213,12 +210,6 @@ public class PreValidator {
                             element,
                             SdkConstants.ATTR_EXTRACT_NATIVE_LIBS,
                             "https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs",
-                            mergeType);
-                    maybeWarnAboutAttribute(
-                            mergingReport,
-                            element,
-                            SdkConstants.ATTR_USE_EMBEDDED_DEX,
-                            "https://d.android.com/topic/security/dex",
                             mergeType);
                 });
     }

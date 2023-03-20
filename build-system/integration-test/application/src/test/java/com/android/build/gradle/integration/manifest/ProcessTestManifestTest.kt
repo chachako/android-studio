@@ -239,18 +239,12 @@ class ProcessTestManifestTest {
             project.file("src/androidTest/AndroidManifest.xml"),
             """
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-                    <application
-                        android:extractNativeLibs="true"
-                        android:useEmbeddedDex="false">
-                    </application>
+                    <application android:extractNativeLibs="true"/>
                 </manifest>
             """.trimIndent())
         val result = project.executor().run("assembleDebugAndroidTest")
         result.stdout.use {
             assertThat(it).doesNotContain("android:extractNativeLibs should not be specified")
-        }
-        result.stdout.use {
-            assertThat(it).doesNotContain("android:useEmbeddedDex should not be specified")
         }
     }
 

@@ -117,8 +117,7 @@ class UseEmbeddedDexPackagingTest(
 
     @Test
     fun testDexIsPackagedCorrectly() {
-        val result = project.executor().run("assembleDebug")
-        result.stdout.use {
+        project.executor().run("assembleDebug").stdout.use {
             val resolvedUseLegacyPackaging: Boolean = useLegacyPackaging ?: (minSdk < P)
             if (resolvedUseLegacyPackaging && expectedCompression == ZipEntry.STORED) {
                 assertThat(it).contains(
@@ -126,13 +125,6 @@ class UseEmbeddedDexPackagingTest(
                 )
             } else {
                 assertThat(it).doesNotContain("PackagingOptions.dex.useLegacyPackaging")
-            }
-        }
-        result.stdout.use {
-            if (sourceManifestValue != null) {
-                assertThat(it).contains("android:useEmbeddedDex should not be specified")
-            } else {
-                assertThat(it).doesNotContain("android:useEmbeddedDex should not be specified")
             }
         }
         val apk = project.getApk(GradleTestProject.ApkType.DEBUG)
