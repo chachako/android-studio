@@ -48,7 +48,8 @@ public class PseudoApiChangesTest {
                     "StandardOutErrMessageReceiver",
                     "ToolsRevisionUtils",
                     "ComponentType",
-                    "ComponentTypeImpl");
+                    "ComponentTypeImpl",
+                    "DefaultAidl");
 
     @Test
     public void stableImplementationClassesTest() throws IOException {

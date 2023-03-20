@@ -1629,10 +1629,12 @@ package com.android.build.api.dsl {
 
   public interface SdkComponents {
     method public org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> getAdb();
+    method @org.gradle.api.Incubating public org.gradle.api.provider.Provider<com.android.build.api.variant.Aidl> getAidl();
     method public org.gradle.api.provider.Provider<java.util.List<org.gradle.api.file.RegularFile>> getBootClasspath();
     method public org.gradle.api.provider.Provider<org.gradle.api.file.Directory> getNdkDirectory();
     method public org.gradle.api.provider.Provider<org.gradle.api.file.Directory> getSdkDirectory();
     property public abstract org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> adb;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Provider<com.android.build.api.variant.Aidl> aidl;
     property public abstract org.gradle.api.provider.Provider<java.util.List<org.gradle.api.file.RegularFile>> bootClasspath;
     property public abstract org.gradle.api.provider.Provider<org.gradle.api.file.Directory> ndkDirectory;
     property public abstract org.gradle.api.provider.Provider<org.gradle.api.file.Directory> sdkDirectory;
@@ -2067,6 +2069,15 @@ package com.android.build.api.variant {
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.String> minAgpVersion;
     property public abstract org.gradle.api.provider.Property<java.lang.Integer> minCompileSdk;
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.Integer> minCompileSdkExtension;
+  }
+
+  @org.gradle.api.Incubating public interface Aidl {
+    method @org.gradle.api.tasks.Internal public org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> getExecutable();
+    method @org.gradle.api.tasks.InputFile @org.gradle.api.tasks.PathSensitive(org.gradle.api.tasks.PathSensitivity.NAME_ONLY) public org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> getFramework();
+    method @org.gradle.api.tasks.Input public org.gradle.api.provider.Provider<java.lang.String> getVersion();
+    property @org.gradle.api.tasks.Internal public abstract org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> executable;
+    property @org.gradle.api.tasks.InputFile @org.gradle.api.tasks.PathSensitive(org.gradle.api.tasks.PathSensitivity.NAME_ONLY) public abstract org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> framework;
+    property @org.gradle.api.tasks.Input public abstract org.gradle.api.provider.Provider<java.lang.String> version;
   }
 
   public interface AndroidComponentsExtension<DslExtensionT extends com.android.build.api.dsl.CommonExtension<?, ?, ?, ?, ?>, VariantBuilderT extends com.android.build.api.variant.VariantBuilder, VariantT extends com.android.build.api.variant.Variant> extends com.android.build.api.variant.DslLifecycle<DslExtensionT> {
