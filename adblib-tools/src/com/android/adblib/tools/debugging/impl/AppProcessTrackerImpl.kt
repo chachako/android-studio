@@ -46,7 +46,9 @@ internal class AppProcessTrackerImpl(
 
     private val processesMutableFlow = MutableStateFlow<List<AppProcess>>(emptyList())
 
-    private val trackProcessesJob: Job by lazy {
+    private val deviceProcessMap = device.jdwpProcessImplMap()
+
+    private val trackProcessesJob: Job by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         scope.launch {
             trackProcesses()
         }
@@ -62,7 +64,15 @@ internal class AppProcessTrackerImpl(
         }
 
     private suspend fun trackProcesses() {
-        val processMap = ProcessMap<AppProcessImpl>()
+        val processMap = ProcessMap<AppProcessImpl>(
+            onRemove = { appProcess ->
+                appProcess.jdwpProcess?.also {
+                    logger.debug { "Removing process ${appProcess.pid} from process map" }
+                    deviceProcessMap.release(appProcess.pid)
+                }
+                appProcess.close()
+            }
+        )
         var deviceDisconnected = false
         try {
             session.deviceServices
@@ -109,7 +119,14 @@ internal class AppProcessTrackerImpl(
         val pids = list.map { it.pid }
         map.update(pids, valueFactory = { pid ->
             logger.debug { "Adding process $pid to process map" }
-            AppProcessImpl(session, device, list.first { it.pid == pid }).also {
+
+            val entry = list.first { it.pid == pid }
+            val jdwpProcess = when (entry.debuggable) {
+                true -> deviceProcessMap.retain(pid)
+                false -> null
+            }
+
+            AppProcessImpl(session, device, entry, jdwpProcess).also {
                 it.startMonitoring()
             }
         })

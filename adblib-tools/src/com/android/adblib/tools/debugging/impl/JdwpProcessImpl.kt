@@ -37,9 +37,9 @@ import kotlinx.coroutines.launch
  * Implementation of [JdwpProcess]
  */
 internal class JdwpProcessImpl(
-  private val session: AdbSession,
-  override val device: ConnectedDevice,
-  override val pid: Int
+    session: AdbSession,
+    override val device: ConnectedDevice,
+    override val pid: Int
 ) : JdwpProcess, AutoCloseable {
 
     private val logger = thisLogger(session)
@@ -80,6 +80,15 @@ internal class JdwpProcessImpl(
 
     private val jdwpSessionProxy = JdwpSessionProxy(device, pid, jdwpSessionRef)
 
+    private val lazyStartMonitoring by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        scope.launch {
+            jdwpSessionProxy.execute(stateFlow)
+        }
+        scope.launch {
+            propertyCollector.execute(stateFlow)
+        }
+    }
+
     /**
      * Whether the [SharedJdwpSession] is currently in use (testing only)
      */
@@ -87,12 +96,7 @@ internal class JdwpProcessImpl(
         get() = jdwpSessionRef.isRetained
 
     fun startMonitoring() {
-        scope.launch {
-            jdwpSessionProxy.execute(stateFlow)
-        }
-        scope.launch {
-            propertyCollector.execute(stateFlow)
-        }
+        lazyStartMonitoring
     }
 
     override suspend fun <T> withJdwpSession(block: suspend SharedJdwpSession.() -> T): T {

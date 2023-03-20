@@ -23,7 +23,6 @@ import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.thisLogger
 import com.android.adblib.tools.debugging.AppProcess
-import com.android.adblib.tools.debugging.JdwpProcess
 
 /**
  * Implementation of [AppProcess]
@@ -32,18 +31,10 @@ internal class AppProcessImpl(
     session: AdbSession,
     override val device: ConnectedDevice,
     val process: AppProcessEntry,
+    override val jdwpProcess: JdwpProcessImpl?
 ) : AppProcess, AutoCloseable {
 
     private val logger = thisLogger(session)
-
-    private val jdwpProcessImpl: JdwpProcessImpl? = if (process.debuggable) {
-        // TODO: Make sure to use a single instance shared for the device, so
-        // JdwpProcessTracker and AppProcessImpl don't both try to open
-        // a JDWP session to a device
-        JdwpProcessImpl(session, device, process.pid)
-    } else {
-        null
-    }
 
     override val cache = CoroutineScopeCache.create(device.scope)
 
@@ -59,18 +50,14 @@ internal class AppProcessImpl(
     override val architecture: String
         get() = process.architecture
 
-    override val jdwpProcess: JdwpProcess?
-        get() = jdwpProcessImpl
-
     fun startMonitoring() {
-        jdwpProcessImpl?.startMonitoring()
+        jdwpProcess?.startMonitoring()
     }
 
     override fun close() {
         val msg = "Closing coroutine scope of JDWP process $pid"
         logger.debug { msg }
         cache.close()
-        jdwpProcessImpl?.close()
     }
 
     override fun toString(): String {

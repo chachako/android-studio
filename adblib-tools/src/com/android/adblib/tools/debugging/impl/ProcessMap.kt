@@ -20,14 +20,13 @@ import java.util.TreeMap
 
 /**
  * A custom collection similar to a map of [Int] to [T], with the intent of storing a collection
- * of unique process IDs associated to arbitrary values of type [T], which are [AutoCloseable].
+ * of unique process IDs associated to arbitrary values of type [T].
  *
- * [AutoCloseable.close] is automatically called for every instance [T] discarded from
- * the collection.
+ * [onRemove] is called for every instance [T] discarded from the collection.
  *
  * Note: This collection is **not** thread-safe.
  */
-internal class ProcessMap<T> where T: AutoCloseable {
+internal class ProcessMap<T>(private val onRemove: (T) -> Unit) {
 
     /**
      * Use a [SortedMap] (as opposed to a regular [Map]) merely for convenience,
@@ -52,7 +51,7 @@ internal class ProcessMap<T> where T: AutoCloseable {
      * from [keys], adding and removing [T] values as needed so that [pids] == [keys].
      *
      * * When adding an entry, [valueFactory] is invoked to create the corresponding [T] value.
-     * * When removing an existing entry, [AutoCloseable.close] is invoked on the corresponding
+     * * When removing an existing entry, [onRemove] is invoked on the corresponding
      *   [T] value.
      */
     fun update(keys: Iterable<Int>, valueFactory: (Int) -> T) {
@@ -71,12 +70,12 @@ internal class ProcessMap<T> where T: AutoCloseable {
     }
 
     /**
-     * Remove all entries of this collection, calling [AutoCloseable.close] on each [T] value.
+     * Remove all entries of this collection, calling [onRemove] for each [T] value.
      */
     fun clear() {
         // Close all processes
         map.values.forEach {
-            it.close()
+            onRemove(it)
         }
         map.clear()
     }
@@ -84,12 +83,12 @@ internal class ProcessMap<T> where T: AutoCloseable {
     private fun add(pid: Int, item: T) {
         map.put(pid, item)?.also {
             // This is a serious internal error: we have 2 entries with the same pid.
-            it.close()
+            onRemove(it)
             throw IllegalStateException("Error adding an entry for pid $pid: the collection contained an existing entry ($it)")
         }
     }
 
     private fun remove(pid: Int) {
-        map.remove(pid)?.close()
+        map.remove(pid)?.also { onRemove(it) }
     }
 }
