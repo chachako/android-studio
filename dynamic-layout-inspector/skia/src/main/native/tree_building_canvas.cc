@@ -17,13 +17,11 @@
 
 #include <memory>
 #include <stack>
-#include "include/core/SkClipOp.h"
-#include "include/core/SkImageInfo.h"
+#include "SkClipOp.h"
+#include "SkImageInfo.h"
 
-#include "include/core/SkImage.h"
-#include "include/core/SkRRect.h"
-#include "include/core/SkImageEncoder.h"
-#include "include/encode/SkPngEncoder.h"
+#include "SkImage.h"
+#include "SkRRect.h"
 
 namespace v1 {
 TreeBuildingCanvas::~TreeBuildingCanvas() {
@@ -47,7 +45,7 @@ SkImageInfo TreeBuildingCanvas::onImageInfo() const {
   return real_canvas->imageInfo();
 }
 
-bool TreeBuildingCanvas::onGetProps(SkSurfaceProps* props, bool top) const {
+bool TreeBuildingCanvas::onGetProps(SkSurfaceProps* props) const {
   return real_canvas->getProps(props);
 }
 
