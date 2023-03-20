@@ -38,7 +38,8 @@ readonly config_options="--config=release --config=ants"
         --worker_quit_after_build \
         "${conditional_flags[@]}" \
         -- \
-        //tools/base/bazel/...
+        //tools/base/bazel/... \
+        //tools/base/dynamic-layout-inspector/skia:skia-grpc-server
 
 readonly bazel_status=$?
 
