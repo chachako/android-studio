@@ -19,8 +19,8 @@ import com.android.adblib.AdbSession
 import com.android.adblib.AdbSessionHost
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
-import com.android.processmonitor.common.FakeProcessTracker
 import com.android.processmonitor.common.ProcessTracker
+import com.android.processmonitor.monitor.testing.FakeProcessTracker
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.Test

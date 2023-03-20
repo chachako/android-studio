@@ -20,7 +20,7 @@ import com.android.processmonitor.monitor.ProcessNames
 /**
  * An event representing processes being added and removed.
  */
-internal sealed class ProcessEvent(open val pid: Int) {
+sealed class ProcessEvent(open val pid: Int) {
 
     data class ProcessAdded(
         override val pid: Int,

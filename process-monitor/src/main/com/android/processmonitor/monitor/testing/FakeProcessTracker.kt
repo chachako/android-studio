@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.processmonitor.common
+package com.android.processmonitor.monitor.testing
 
+import com.android.processmonitor.common.ProcessEvent
+import com.android.processmonitor.common.ProcessTracker
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import java.io.Closeable
 
 /** A fake [ProcessTracker] for tests */
-internal class FakeProcessTracker : ProcessTracker, Closeable {
+class FakeProcessTracker : ProcessTracker, Closeable {
 
     private val channel = Channel<ProcessEvent>(10)
 

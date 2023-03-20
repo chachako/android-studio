@@ -16,6 +16,8 @@
 package com.android.processmonitor.monitor
 
 import com.android.processmonitor.agenttracker.AgentProcessTrackerConfig
+import com.android.processmonitor.common.ProcessEvent
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Monitors devices and keeps track of process names.
@@ -31,6 +33,11 @@ interface ProcessNameMonitor {
      * Returns a [ProcessNames] for a given pid or null if not found.
      */
     fun getProcessNames(serialNumber: String, pid: Int): ProcessNames?
+
+    /**
+     * Track processes on a device.
+     */
+    suspend fun trackDeviceProcesses(serialNumber: String) : Flow<ProcessEvent>
 
     class Config(val maxProcessRetention: Int, val agentConfig: AgentProcessTrackerConfig?)
 }

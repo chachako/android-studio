@@ -15,10 +15,9 @@
  */
 package com.android.processmonitor.monitor
 
-import com.android.processmonitor.common.FakeProcessTracker
 import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessTracker
-import java.lang.IllegalArgumentException
+import com.android.processmonitor.monitor.testing.FakeProcessTracker
 
 internal abstract class FakeProcessTrackerFactory<T> : ProcessTrackerFactory<T> {
 

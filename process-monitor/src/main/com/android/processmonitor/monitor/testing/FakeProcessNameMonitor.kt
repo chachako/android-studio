@@ -15,8 +15,10 @@
  */
 package com.android.processmonitor.monitor.testing
 
+import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.monitor.ProcessNameMonitor
 import com.android.processmonitor.monitor.ProcessNames
+import kotlinx.coroutines.flow.Flow
 import org.jetbrains.annotations.TestOnly
 
 /**
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.TestOnly
 class FakeProcessNameMonitor : ProcessNameMonitor {
 
     private val deviceToProcessesMap = mutableMapOf<String, MutableMap<Int, ProcessNames>>()
+    private val deviceToProcessTrackerMap = mutableMapOf<String, FakeProcessTracker>()
 
     fun addProcessName(serialNumber: String, pid: Int, applicationId: String, processName: String) {
         deviceToProcessesMap.computeIfAbsent(serialNumber) { mutableMapOf() }[pid] =
@@ -36,4 +39,12 @@ class FakeProcessNameMonitor : ProcessNameMonitor {
 
     override fun getProcessNames(serialNumber: String, pid: Int): ProcessNames? =
         deviceToProcessesMap[serialNumber]?.get(pid)
+
+    override suspend fun trackDeviceProcesses(serialNumber: String): Flow<ProcessEvent> {
+        val tracker = getProcessTracker(serialNumber)
+        return tracker.trackProcesses()
+    }
+
+    fun getProcessTracker(serialNumber: String) =
+        deviceToProcessTrackerMap.getOrPut(serialNumber) { FakeProcessTracker() }
 }

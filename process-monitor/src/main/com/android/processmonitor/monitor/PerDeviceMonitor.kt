@@ -37,7 +37,6 @@ internal class PerDeviceMonitor(
     parentScope: CoroutineScope,
     private val logger: AdbLogger,
     maxProcessRetention: Int,
-    @VisibleForTesting
     val processTracker: ProcessTracker,
 ) : Closeable {
 

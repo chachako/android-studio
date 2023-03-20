@@ -21,6 +21,7 @@ import com.android.adblib.withPrefix
 import com.android.processmonitor.common.DeviceEvent.DeviceDisconnected
 import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.common.DeviceTracker
+import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.monitor.adblib.DeviceTrackerAdblib
 import com.android.processmonitor.monitor.adblib.ProcessTrackerFactoryAdblib
 import com.android.processmonitor.monitor.ddmlib.AdbAdapter
@@ -31,6 +32,8 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.annotations.VisibleForTesting
@@ -80,6 +83,15 @@ class ProcessNameMonitorImpl<T> @TestOnly internal constructor(
                 }
             }
         }
+    }
+
+    override suspend fun trackDeviceProcesses(serialNumber: String): Flow<ProcessEvent> {
+        val processTracker = devices[serialNumber]?.processTracker
+        if (processTracker == null) {
+            logger.warn("Device $serialNumber is not available")
+            return emptyFlow()
+        }
+        return processTracker.trackProcesses()
     }
 
     override fun getProcessNames(serialNumber: String, pid: Int): ProcessNames? {
