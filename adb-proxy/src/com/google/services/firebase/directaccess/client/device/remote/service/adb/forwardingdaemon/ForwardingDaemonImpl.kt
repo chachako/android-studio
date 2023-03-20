@@ -96,7 +96,12 @@ internal class ForwardingDaemonImpl(
                 }
               }
             reverseService =
-              ReverseService("localhost:$devicePort", scope, localAdbChannel, adbSession)
+              ReverseService(
+                "localhost:$devicePort",
+                scope,
+                ResponseWriter(localAdbChannel),
+                adbSession
+              )
 
             while (true) {
               ensureActive()

@@ -15,15 +15,12 @@
  */
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
-import com.android.adblib.AdbChannel
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.testing.FakeAdbSession
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -92,7 +89,7 @@ class ForwardingDaemonTest {
     assertThat(forwardingDaemon.devicePort).isEqualTo(testSocket.localAddress()?.port)
     fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!).use { channel ->
       inputList.forEach { channel.writeExactly(it) }
-      // CNXN respon
+      // CNXN response
       channel.assertCommand(CNXN)
       // OPEN response
       channel.assertCommand(OKAY, 1, 1)
@@ -100,36 +97,5 @@ class ForwardingDaemonTest {
       channel.assertCommand(OKAY, 1, 1)
     }
     assertThat(payloadAssertException.get()).isEqualTo(null)
-  }
-}
-
-private suspend fun AdbChannel.assertCommand(vararg values: Int) {
-  val buffer = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN)
-  readExactly(buffer)
-  // Read payload so that next assertCommand call will read the next command written to channel
-  val payloadBuffer = ByteBuffer.allocate(buffer.getInt(12)).order(ByteOrder.LITTLE_ENDIAN)
-  readExactly(payloadBuffer)
-  values.forEachIndexed { index, value -> assertThat(buffer.getInt(index * 4)).isEqualTo(value) }
-}
-
-private fun createByteBuffer(
-  command: Int,
-  firstArg: Int = 0,
-  secondArg: Int = 0,
-  payloadSize: Int = 0,
-  payload: String? = null
-): ByteBuffer {
-  val bufferSize = 24 + payloadSize
-  return ByteBuffer.allocate(bufferSize).apply {
-    order(ByteOrder.LITTLE_ENDIAN)
-    putInt(command)
-    putInt(firstArg)
-    putInt(secondArg)
-    putInt(payloadSize)
-    putInt(0) // crc - unused
-    putInt(0) // magic - unused
-    payload?.let { put(payload.toByteArray()) }
-    position(bufferSize)
-    flip()
   }
 }
