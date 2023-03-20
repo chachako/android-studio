@@ -25,38 +25,33 @@ srcs = glob(["src/**/*.h"]) + [
     "src/pshinter/pshinter.c",
     "src/psnames/psnames.c",
     "src/raster/raster.c",
-    "src/sdf/ftbsdf.c",
-    "src/sdf/ftsdf.c",
-    "src/sdf/ftsdfcommon.c",
-    "src/sdf/ftsdfrend.c",
     "src/sfnt/sfnt.c",
     "src/smooth/smooth.c",
-    "src/svg/ftsvg.c",
     "src/truetype/truetype.c",
     "src/type1/type1.c",
 ]
 
 cc_library(
-    name = "freetype",
+    name = "libft2",
     srcs = srcs,
+    textual_hdrs = glob(["src/**/*.c"], exclude = srcs),
     hdrs = glob(["include/**/*.h"]),
-    copts = [
-        "-W",
-        "-Wall",
-        "-Wno-implicit-fallthrough",
-        "-DDARWIN_NO_CARBON",
-        "-DFT2_BUILD_LIBRARY",
-        "-O2",
-        "-Wno-unused-parameter",
-        "-Wno-unused-variable",
-    ],
+    copts = ["-DFT2_BUILD_LIBRARY"] + select({
+        "windows": [],  #TODO: anything needed?
+        "//conditions:default": [
+            "-W",
+            "-Wall",
+            "-Werror",
+            "-Wno-implicit-fallthrough",
+            "-DDARWIN_NO_CARBON",
+            "-O2",
+            "-Wno-unused-parameter",
+            "-Wno-unused-variable",
+        ],
+    }),
     includes = [
         "include",
     ],
-    textual_hdrs = glob(
-        ["src/**/*.c"],
-        exclude = srcs,
-    ),
     visibility = ["//visibility:public"],
     deps = [
         "@libpng_repo//:libpng",

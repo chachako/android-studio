@@ -30,18 +30,15 @@ cc_library(
         "pngwrite.c",
         "pngwtran.c",
         "pngwutil.c",
-    ] + glob(
-        ["*.h"],
-        exclude = ["png.h"],
-    ),
+    ] + glob(["*.h"], exclude = ["png.h"]),
     hdrs = ["png.h"],
     copts = select({
-        "windows": [
+        "windows": [],
+        "darwin": [
             "-std=gnu89",
             "-Wall",
-            "-Wno-error",
+            "-Werror",
             "-Wno-unused-parameter",
-            "-Wno-unused-but-set-variable",
         ],
         "//conditions:default": [
             "-std=gnu89",
