@@ -164,7 +164,10 @@ cc_toolchain_config(
         # (https://www.mail-archive.com/llvm-bugs@lists.llvm.org/msg49229.html)
         "-Wno-elaborated-enum-base",
         "-fno-omit-frame-pointer",
-    ],
+    ] + select({
+        "@platforms//cpu:arm64": ["--target=arm64-apple-macos11"],
+        "@platforms//cpu:x86_64": ["--target=x86_64-apple-macos11"],
+    }),
     compiler = "compiler",
     coverage_compile_flags = [],  # ?
     coverage_link_flags = [],  # ?
@@ -193,7 +196,10 @@ cc_toolchain_config(
         # Force using the old arguments when calling linker (/usr/bin/ld)
         # Needed as BYOB uses old system (10.13) with old commandline tools (9.2)
         "-mlinker-version=405",
-    ],
+    ] + select({
+        "@platforms//cpu:arm64": ["--target=arm64-apple-macos11"],
+        "@platforms//cpu:x86_64": ["--target=x86_64-apple-macos11"],
+    }),
     link_libs = [],  # ?
     opt_compile_flags = [
         "-g0",
