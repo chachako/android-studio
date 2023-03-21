@@ -124,6 +124,7 @@ ARTIFACTS = [
     "org.bouncycastle:bcprov-jdk15on:1.67",
     "org.bytedeco:ffmpeg:5.1.2-1.5.8",
     "org.codehaus.groovy:groovy-all:pom:3.0.10",
+    "org.commonmark:commonmark:0.20.0",
     "org.easymock:easymock:3.3",
     "org.eclipse.aether:aether-connector-basic:1.0.2.v20150114",
     "org.eclipse.aether:aether-transport-file:1.0.2.v20150114",
