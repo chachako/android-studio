@@ -48,7 +48,7 @@ studio_data(
         "@platforms//os:windows": [],
     }),
     mappings = {
-        "tools/adt/idea/process-monitor/process-tracker-agent/native/": "process-tracker/",
+        "tools/base/process-monitor/process-tracker-agent/": "process-tracker-agent/",
     },
     visibility = ["//visibility:public"],
 )
