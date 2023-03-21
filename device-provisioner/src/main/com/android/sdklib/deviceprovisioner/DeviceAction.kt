@@ -84,8 +84,7 @@ interface DeleteAction : DeviceAction {
 interface ReservationAction : DeviceAction {
   /**
    * Attempts to reserve the device for the given duration. If there is already an active
-   * reservation, this will attempt to set its remaining duration. The reservation may be cancelled
-   * by setting its duration to zero.
+   * reservation, this will attempt to extend the reservation for the given duration.
    *
    * If the operation is successful, the new state should be reflected in the device's
    * [Reservation]. If we fail to update an active reservation, but the reservation remains active,
