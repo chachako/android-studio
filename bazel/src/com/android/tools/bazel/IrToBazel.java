@@ -169,9 +169,21 @@ public class IrToBazel {
                                     unmanagedEntry.getValue());
                             UnmanagedRule rule = unmanaged.get(newName);
                             if (rule == null) {
-                                rule = new UnmanagedRule(
-                                        bazel.findPackage("prebuilts/studio/intellij-sdk"),
-                                        newName);
+                                if (newName.equals("studio-sdk-plugin-rust")) {
+                                    // Rust is not currently part of IntelliJ SDK so treat as a
+                                    // special case.
+                                    rule =
+                                            new UnmanagedRule(
+                                                    bazel.findPackage(
+                                                            "prebuilts/tools/common/rust-plugin"),
+                                                    "rust-plugin");
+                                } else {
+                                    rule =
+                                            new UnmanagedRule(
+                                                    bazel.findPackage(
+                                                            "prebuilts/studio/intellij-sdk"),
+                                                    newName);
+                                }
                                 unmanaged.put(newName, rule);
                             }
                             imlModule.addDependency(rule, dependency.exported, scopes);
