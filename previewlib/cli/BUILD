@@ -7,5 +7,10 @@ iml_module(
     srcs = ["src/main/java"],
     iml_files = ["android.sdktools.screenshot.cli.iml"],
     visibility = ["//visibility:public"],
-    deps = ["//prebuilts/studio/intellij-sdk:studio-sdk"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/base/lint:studio.android.sdktools.lint-api[module]",
+        "//tools/base/lint/cli:studio.android.sdktools.lint.cli[module]",
+    ],
 )
