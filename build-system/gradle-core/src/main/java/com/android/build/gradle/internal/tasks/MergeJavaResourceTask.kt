@@ -76,11 +76,6 @@ abstract class MergeJavaResourceTask
     @get:Classpath
     @get:Incremental
     @get:Optional
-    abstract val projectJavaResAsJars: ConfigurableFileCollection
-
-    @get:Classpath
-    @get:Incremental
-    @get:Optional
     abstract val subProjectJavaRes: ConfigurableFileCollection
 
     @get:Classpath
@@ -127,7 +122,6 @@ abstract class MergeJavaResourceTask
             doIncrementalTaskAction(
                     listOf(
                             inputChanges.getChangesInSerializableForm(projectJavaRes),
-                            inputChanges.getChangesInSerializableForm(projectJavaResAsJars),
                             inputChanges.getChangesInSerializableForm(subProjectJavaRes),
                             inputChanges.getChangesInSerializableForm(externalLibJavaRes),
                             inputChanges.getChangesInSerializableForm(featureJavaRes)
@@ -325,7 +319,6 @@ abstract class MergeJavaResourceTask
 
             // No sources in fused library projects, so none of the below need set.
             task.projectJavaRes.disallowChanges()
-            task.projectJavaResAsJars.disallowChanges()
             task.featureJavaRes.disallowChanges()
         }
 
@@ -377,7 +370,6 @@ abstract class MergeJavaResourceTask
 
             // No sources in fused library projects, so none of the below need set.
             task.projectJavaRes.disallowChanges()
-            task.projectJavaResAsJars.disallowChanges()
             task.featureJavaRes.disallowChanges()
         }
 

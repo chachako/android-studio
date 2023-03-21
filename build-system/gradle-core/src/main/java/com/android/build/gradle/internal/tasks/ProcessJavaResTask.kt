@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle.internal.tasks
 
+import com.android.SdkConstants.DOT_JAR
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -80,6 +81,7 @@ abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
             task.from(
                 getProjectJavaRes(creationConfig).asFileTree.matching(MergeJavaResourceTask.patternSet)
             )
+            task.fromProjectJavaResJars(creationConfig)
             task.duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
 
@@ -101,11 +103,15 @@ abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
                     }
                 }
             )
-            creationConfig.oldVariantApiLegacySupport?.variantData?.allPreJavacGeneratedBytecode?.let {
-                javaRes.from(it)
-            }
-            creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode?.let {
-                javaRes.from(it)
+            listOfNotNull(
+                creationConfig.oldVariantApiLegacySupport?.variantData?.allPreJavacGeneratedBytecode,
+                creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode
+            ).forEach {
+                javaRes.from(
+                    it.filter { file ->
+                        !file.isFile || !file.name.endsWith(DOT_JAR)
+                    }
+                )
             }
             if (creationConfig.global.namespacedAndroidResources) {
                 javaRes.from(creationConfig.artifacts.get(InternalArtifactType.RUNTIME_R_CLASS_CLASSES))
@@ -114,6 +120,27 @@ abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
                 javaRes.from(creationConfig.artifacts.get(InternalArtifactType.JACOCO_CONFIG_RESOURCES))
             }
             return javaRes
+        }
+
+        private fun ProcessJavaResTask.fromProjectJavaResJars(
+            creationConfig: ComponentCreationConfig
+        ) {
+            listOfNotNull(
+                creationConfig.oldVariantApiLegacySupport?.variantData?.allPreJavacGeneratedBytecode,
+                creationConfig.oldVariantApiLegacySupport?.variantData?.allPostJavacGeneratedBytecode
+            ).forEach {
+                from(
+                    it.filter { file ->
+                        file.isFile && file.name.endsWith(DOT_JAR)
+                    }.elements.map { jars ->
+                        jars.map { jar ->
+                            project.zipTree(jar.asFile).matching(
+                                MergeJavaResourceTask.patternSet
+                            )
+                        }
+                    }
+                )
+            }
         }
     }
 }
