@@ -32,9 +32,9 @@ dependencies {
 
 android {
     namespace "com.example.android.basicrenderscript"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 
-    buildToolsVersion rootProject.buildToolsVersion
+    buildToolsVersion libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         applicationId "com.example.basicrenderscript"

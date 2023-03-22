@@ -10,8 +10,8 @@ apply plugin: 'com.android.application'
 
 android {
   namespace "com.android.tests.basic"
-  compileSdkVersion 24 // TODO: b/120411432 (was rootProject.latestCompileSdk)
-  buildToolsVersion = rootProject.buildToolsVersion
+  compileSdkVersion 24 // TODO: b/120411432 (was libs.versions.latestCompileSdk.get())
+  buildToolsVersion = libs.versions.buildToolsVersion.get()
 
   defaultConfig {
     versionCode 12

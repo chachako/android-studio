@@ -21,7 +21,7 @@ plugins {
 
 android {
     namespace "simple.app"
-    compileSdkVersion = rootProject.latestCompileSdk
+    compileSdkVersion = libs.versions.latestCompileSdk.get().toInteger()
 
     flavorDimensions 'api', 'version'
     productFlavors {

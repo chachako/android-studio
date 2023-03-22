@@ -3,8 +3,8 @@ apply plugin: 'com.example.compiler'
 
 android {
     namespace "com.example.app"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()

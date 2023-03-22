@@ -8,7 +8,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.google.vulkan.tutorials.five"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         applicationId  "com.google.vulkan.tutorials.five"

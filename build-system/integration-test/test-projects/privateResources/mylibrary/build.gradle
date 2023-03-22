@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.android.tools.test.mylibrary"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
     resourcePrefix 'mylib_'
 
     defaultConfig {

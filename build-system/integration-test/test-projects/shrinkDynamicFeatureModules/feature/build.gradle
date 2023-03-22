@@ -3,8 +3,8 @@ apply plugin: 'com.android.dynamic-feature'
 android {
 
     namespace "com.android.tests.shrink.feature"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion 26

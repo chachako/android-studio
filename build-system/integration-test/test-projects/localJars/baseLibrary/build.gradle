@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.example.android.multiproject.library.base"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     packagingOptions {
         exclude 'META-INF/exclude.txt'

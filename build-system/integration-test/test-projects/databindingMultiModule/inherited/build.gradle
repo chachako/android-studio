@@ -18,8 +18,8 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "android.databinding.multimodule.inherited"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
     defaultConfig {
         minSdkVersion 23
         versionCode 1

@@ -3,7 +3,7 @@ apply plugin: "kotlin"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${libs.versions.kotlinVersion.get()}"
     testImplementation "junit:junit:4.12"
 }
 

@@ -7,8 +7,8 @@ project.ext['android.useDeprecatedNdk'] = true
 
 android {
     namespace "com.example.SanAngeles"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion libs.versions.ndk19SupportLibMinSdk.get()

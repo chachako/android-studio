@@ -76,7 +76,7 @@ internal enum class BuildSystem {
         }
         if (withKotlinGradlePlugin) {
             script.append(
-                "        classpath \"org.jetbrains.kotlin:kotlin-gradle-plugin:\$rootProject.kotlinVersion\"\n"
+                "        classpath \"org.jetbrains.kotlin:kotlin-gradle-plugin:\${libs.versions.kotlinVersion.get()}\"\n"
             )
         }
         if (withDeviceProvider) {

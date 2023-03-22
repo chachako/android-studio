@@ -8,11 +8,12 @@ dependencies {
 
 android {
     namespace "com.android.tests.basic"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
-        minSdkVersion rootProject.latestCompileSdk
-        targetSdkVersion rootProject.latestCompileSdk
+        minSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+        targetSdkVersion libs.versions.latestCompileSdk.get()
+
     }
 }

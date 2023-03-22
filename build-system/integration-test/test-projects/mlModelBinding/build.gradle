@@ -5,12 +5,12 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.example.app"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         applicationId "com.example.app"
         minSdkVersion 26
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
         versionCode 1
         versionName "1.0"
 

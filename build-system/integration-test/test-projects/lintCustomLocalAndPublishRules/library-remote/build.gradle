@@ -3,8 +3,8 @@ apply plugin: 'maven-publish'
 
 android {
     namespace "com.example.library"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion 16

@@ -6,6 +6,6 @@ buildscript {
     apply from: "../commonBuildScript.gradle"
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$rootProject.kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}"
     }
 }

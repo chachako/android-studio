@@ -2,8 +2,8 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "noapkrebuilt.tests.android.com.b220425"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion libs.versions.buildToolsVersion.get()
     defaultConfig {
         applicationId "noapkrebuilt.tests.android.com.b220425"
         minSdkVersion 19

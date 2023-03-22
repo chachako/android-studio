@@ -3,8 +3,8 @@ apply plugin: 'com.android.library'
 android {
     namespace "com.android.tests.libstest.lib2b"
     resourcePrefix 'lib2b_'
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

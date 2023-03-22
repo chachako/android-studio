@@ -5,7 +5,7 @@ buildscript {
     apply from: "../commonBuildScript.gradle"
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$rootProject.kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}"
     }
 }
 
@@ -14,8 +14,8 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "com.android.tests"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     testOptions {
         unitTests.all {
@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-    api "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
+    api "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlinVersion.get()}"
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:4.8.0'

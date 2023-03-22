@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.android.tests.flavorlib.lib"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()

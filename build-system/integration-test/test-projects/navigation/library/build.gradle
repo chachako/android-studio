@@ -19,13 +19,14 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "com.example.android.navigation.library"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion 15
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
+
     }
 
     sourceSets {
@@ -37,7 +38,7 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlinVersion.get()}"
     implementation 'android.arch.navigation:navigation-fragment:1.0.0'
     implementation 'com.android.support:support-fragment:27.1.1'
 }

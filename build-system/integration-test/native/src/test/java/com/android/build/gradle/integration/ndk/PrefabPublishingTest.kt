@@ -324,12 +324,13 @@ class PrefabPublishingTest(
 
             android {
                 namespace "com.example.foo"
-                compileSdkVersion rootProject.latestCompileSdk
-                buildToolsVersion = rootProject.buildToolsVersion
+                compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+                buildToolsVersion = libs.versions.buildToolsVersion.get()
 
                 defaultConfig {
                     minSdkVersion 16
-                    targetSdkVersion rootProject.latestCompileSdk
+                    targetSdkVersion libs.versions.latestCompileSdk.get()
+
 
                     externalNativeBuild {
                         if (!project.hasProperty("ndkBuild")) {
@@ -456,12 +457,13 @@ class PrefabPublishingTest(
 
             android {
                 namespace "com.example.foo"
-                compileSdkVersion rootProject.latestCompileSdk
-                buildToolsVersion = rootProject.buildToolsVersion
+                compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+                buildToolsVersion = libs.versions.buildToolsVersion.get()
 
                 defaultConfig {
                     minSdkVersion 16
-                    targetSdkVersion rootProject.latestCompileSdk
+                    targetSdkVersion libs.versions.latestCompileSdk.get()
+
 
                     externalNativeBuild {
                         if (!project.hasProperty("ndkBuild")) {

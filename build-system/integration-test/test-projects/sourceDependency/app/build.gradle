@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.example.android.multiproject"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()

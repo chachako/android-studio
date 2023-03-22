@@ -6,8 +6,8 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.example.hellojni.app"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

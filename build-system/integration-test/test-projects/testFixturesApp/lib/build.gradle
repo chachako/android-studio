@@ -21,7 +21,7 @@ plugins {
 
 android {
     namespace "com.example.lib"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
     testFixtures {
         enable true
         androidResources true

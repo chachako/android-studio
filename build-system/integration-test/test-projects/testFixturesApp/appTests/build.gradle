@@ -4,8 +4,8 @@ plugins {
 
 android {
     namespace = "com.example.apptests"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     targetProjectPath ':app'
 

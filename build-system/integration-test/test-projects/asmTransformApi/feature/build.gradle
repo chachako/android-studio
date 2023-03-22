@@ -22,7 +22,7 @@ plugins {
 
 android {
     namespace "com.example.feature"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()

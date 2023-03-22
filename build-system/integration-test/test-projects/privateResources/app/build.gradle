@@ -2,8 +2,8 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.android.tools.test.publicsymbols"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         applicationId "com.android.tools.test.publicsymbols"

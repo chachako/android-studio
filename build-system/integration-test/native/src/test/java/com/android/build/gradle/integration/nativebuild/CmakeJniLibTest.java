@@ -65,8 +65,8 @@ public class CmakeJniLibTest {
                         + "apply plugin: 'com.android.library'\n"
                         + "android {\n"
                         + "    namespace \"com.example.hellojni\"\n"
-                        + "    compileSdkVersion rootProject.latestCompileSdk\n"
-                        + "    buildToolsVersion = rootProject.buildToolsVersion\n"
+                        + "    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()\n"
+                        + "    buildToolsVersion = libs.versions.buildToolsVersion.get()\n"
                         + "}\n");
 
         // Convert externalNativeBuild { ndkbuild { path "Android.mk" } } to

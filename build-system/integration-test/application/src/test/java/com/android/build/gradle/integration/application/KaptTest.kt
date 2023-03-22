@@ -85,7 +85,7 @@ buildscript {
     apply from: "../../commonBuildScript.gradle"
     dependencies {
         // Provides the 'android-kotlin' build plugin for the app
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${"$"}rootProject.kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${"$"}{libs.versions.kotlinVersion.get()}"
     }
 }
 

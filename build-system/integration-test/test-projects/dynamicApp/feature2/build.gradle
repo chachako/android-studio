@@ -2,7 +2,7 @@ apply plugin: 'com.android.dynamic-feature'
 
 android {
     namespace "com.example.feature2"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         minSdkVersion 18

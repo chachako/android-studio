@@ -2,14 +2,15 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.android.test.lint"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         applicationId "com.android.test.project"
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
+
         signingConfig signingConfigs.debug
     }
 

@@ -24,7 +24,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':composite1')
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlinVersion"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:${libs.versions.kotlinVersion.get()}"
     implementation "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
     implementation "com.android.support.constraint:constraint-layout:${libs.versions.constraintLayoutVersion.get()}"
     implementation 'com.test.composite:composite3:1.0'

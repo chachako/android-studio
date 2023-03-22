@@ -7,7 +7,7 @@ android {
     namespace "com.example.hellojni.app"
     // Set to a version that does not support 64-bits (b.android.com/237833)
     compileSdkVersion 19
-    buildToolsVersion = rootProject.buildToolsVersion
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()
     }

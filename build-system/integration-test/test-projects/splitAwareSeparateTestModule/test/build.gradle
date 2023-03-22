@@ -2,8 +2,8 @@ apply plugin: 'com.android.test'
 
 android {
     namespace "com.android.tests.basic.test"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

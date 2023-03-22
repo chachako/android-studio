@@ -6,8 +6,8 @@ dependencies {
 android {
     namespace "com.android.tests.libstest.lib"
     resourcePrefix 'lib_'
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()

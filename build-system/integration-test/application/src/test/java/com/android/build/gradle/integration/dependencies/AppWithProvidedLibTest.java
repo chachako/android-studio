@@ -59,7 +59,7 @@ public class AppWithProvidedLibTest {
                                 + "\n"
                                 + "android {\n"
                                 + "    namespace 'com.example.android.multiproject.library.base'\n"
-                                + "    compileSdkVersion rootProject.latestCompileSdk\n"
+                                + "    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()\n"
                                 + "\n"
                                 + "}\n");
         final File mainFolder = new File(libFolder, "src/main");

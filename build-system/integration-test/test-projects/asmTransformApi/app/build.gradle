@@ -8,8 +8,8 @@ plugins {
 android {
     namespace "com.example.myapplication"
     dynamicFeatures = [":feature"]
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion 26
@@ -35,7 +35,7 @@ dependencies {
     implementation(fileTree("libs") { include("*.jar", "*.aar") })
     implementation project(':instrumentationLib')
     implementation project(':lib')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlinVersion.get()}"
 
     testImplementation 'junit:junit:4.12'
 }

@@ -20,13 +20,13 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "com.example.android.lint.kotlin"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion 24
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
     }
 
     lintOptions {
@@ -49,6 +49,6 @@ android {
 
 dependencies {
     implementation project(':library')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlinVersion.get()}"
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
 }

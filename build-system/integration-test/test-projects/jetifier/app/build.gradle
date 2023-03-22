@@ -2,11 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.example.app"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
     defaultConfig {
         minSdkVersion 23
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
+
     }
 }
 

@@ -21,13 +21,13 @@ apply plugin: 'kotlin-kapt'
 
 android {
     namespace "com.example.android.kotlin"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
     }
 
     sourceSets {
@@ -49,5 +49,5 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).config
 
 dependencies {
     implementation project(':library')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlinVersion.get()}"
 }

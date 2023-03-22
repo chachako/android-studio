@@ -19,8 +19,8 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "com.example.android.lint.kotlin.library"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     buildFeatures {
         buildConfig = false
@@ -29,7 +29,7 @@ android {
     defaultConfig {
         minSdkVersion 15
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
-        targetSdkVersion rootProject.latestCompileSdk
+        targetSdkVersion libs.versions.latestCompileSdk.get()
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
@@ -38,5 +38,5 @@ android {
 
 dependencies {
     api 'com.android.support:appcompat-v7:' + libs.versions.supportLibVersion.get()
-    api "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
+    api "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlinVersion.get()}"
 }

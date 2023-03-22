@@ -4,8 +4,8 @@ apply from: "../../commonHeader.gradle"
 android {
     namespace "com.android.tests.testprojecttest.app"
     testNamespace "com.android.tests.testprojecttest.test"
-    compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion = rootProject.buildToolsVersion
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
+    buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
         minSdkVersion libs.versions.supportLibMinSdk.get()

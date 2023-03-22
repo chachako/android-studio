@@ -20,7 +20,7 @@ plugins {
 
 android {
     namespace "com.example.lib2"
-    compileSdkVersion rootProject.latestCompileSdk
+    compileSdkVersion libs.versions.latestCompileSdk.get().toInteger()
 }
 
 dependencies {
