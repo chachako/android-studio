@@ -15,6 +15,7 @@
  */
 package com.android.ide.common.gradle
 
+import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -22,23 +23,37 @@ class VersionRangeTest {
     @Test
     fun testParseAll() {
         assertThat(VersionRange.parse("+").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("+").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("[,]").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("[,]").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("(,]").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("(,]").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("],]").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("],]").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("[,)").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("[,)").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("(,)").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("(,)").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("],)").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("],)").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("[,[").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("[,[").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("(,[").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("(,[").toIdentifier()).isEqualTo("+")
         assertThat(VersionRange.parse("],[").toString()).isEqualTo("+")
+        assertThat(VersionRange.parse("],[").toIdentifier()).isEqualTo("+")
     }
 
     @Test
     fun testParsePrefixRange() {
         assertThat(VersionRange.parse("1.+").toString()).isEqualTo("1.+")
+        assertThat(VersionRange.parse("1.+").toIdentifier()).isEqualTo("1.+")
         assertThat(VersionRange.parse("1.2.+").toString()).isEqualTo("1.2.+")
+        assertThat(VersionRange.parse("1.2.+").toIdentifier()).isEqualTo("1.2.+")
         assertThat(VersionRange.parse("1.rc.0.sp.dev.+").toString()).isEqualTo("1.rc.0.sp.dev.+")
+        assertThat(VersionRange.parse("1.rc.0.sp.dev.+").toIdentifier()).isEqualTo("1.rc.0.sp.dev.+")
         assertThat(VersionRange.parse(".+").toString()).isEqualTo(".+")
+        assertThat(VersionRange.parse(".+").toIdentifier()).isEqualTo(".+")
     }
 
     @Test
@@ -49,16 +64,23 @@ class VersionRangeTest {
             for (close in listOf(']', '[', ')')) {
                 assertThat(VersionRange.parse("${open}1.0,${close}").toString())
                     .isEqualTo("${open.canonicalOpen()}1.0,)")
+                assertThat(VersionRange.parse("${open}1.0,${close}").toIdentifier())
+                    .isEqualTo("${open.canonicalOpen()}1.0,)")
                 assertThat(VersionRange.parse("${open},2.0${close}").toString())
                     .isEqualTo("(,2.0${close.canonicalClose()}")
+                assertThat(VersionRange.parse("${open},2.0${close}").toIdentifier())
+                    .isEqualTo("(,2.0${close.canonicalClose()}")
                 assertThat(VersionRange.parse("${open}1.0,2.0${close}").toString())
+                    .isEqualTo("${open.canonicalOpen()}1.0,2.0${close.canonicalClose()}")
+                assertThat(VersionRange.parse("${open}1.0,2.0${close}").toIdentifier())
                     .isEqualTo("${open.canonicalOpen()}1.0,2.0${close.canonicalClose()}")
                 // test also the edge case where the top is the next prefix (1.0 -> 1.1)
                 assertThat(VersionRange.parse("${open}1.0,1.1${close}").toString())
                     .isEqualTo("${open.canonicalOpen()}1.0,1.1${close.canonicalClose()}")
+                assertThat(VersionRange.parse("${open}1.0,1.1${close}").toIdentifier())
+                    .isEqualTo("${open.canonicalOpen()}1.0,1.1${close.canonicalClose()}")
             }
         }
-        assertThat(VersionRange.parse(""))
     }
 
     @Test
@@ -319,5 +341,25 @@ class VersionRangeTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testUnrepresentableIdentifiers() {
+        // [,1.0) is a prefix upper bound
+        assertThat(VersionRange(Range.lessThan(Version.parse("1.0"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.lessThan(Version.parse("1.0"))).toString()).matches("^VersionRange\\(.*\\)$")
+        // can't construct prefix lower bounds with an upper bound unless the upper bound is the
+        // next prefix
+        assertThat(VersionRange(Range.open(Version.prefixInfimum("1.0"), Version.parse("2.0"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.open(Version.prefixInfimum("1.0"), Version.parse("2.0"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.closed(Version.prefixInfimum("1.0"), Version.parse("2.0"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.closed(Version.prefixInfimum("1.0"), Version.parse("2.0"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.open(Version.prefixInfimum("1.0"), Version.prefixInfimum("2.0"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.open(Version.prefixInfimum("1.0"), Version.prefixInfimum("2.0"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.closed(Version.prefixInfimum("1.0"), Version.prefixInfimum("2.0"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.closed(Version.prefixInfimum("1.0"), Version.prefixInfimum("2.0"))).toString()).matches("^VersionRange\\(.*\\)$")
+        // Can't have closed prefix upper bounds
+        assertThat(VersionRange(Range.closed(Version.parse("1.0"), Version.prefixInfimum("2.0"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.closed(Version.parse("1.0"), Version.prefixInfimum("2.0"))).toString()).matches("^VersionRange\\(.*\\)$")
     }
 }

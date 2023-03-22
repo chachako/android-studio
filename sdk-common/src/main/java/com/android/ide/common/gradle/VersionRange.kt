@@ -51,7 +51,11 @@ class VersionRange(private val range: Range<Version>) {
 
     override fun equals(other: Any?) = other is VersionRange && range == other.range
     override fun hashCode() = range.hashCode()
-    override fun toString(): String {
+    /**
+     * Return a string that will produce the same [VersionRange] when parsed, or `null`
+     * if no such identifier exists.
+     */
+    fun toIdentifier(): String? {
         if (!hasLowerBound() && !hasUpperBound()) return "+"
         if (isPrefixRange()) {
             return "${lowerEndpoint().prefixVersion()}.+"
@@ -79,9 +83,12 @@ class VersionRange(private val range: Range<Version>) {
             }
             return sb.toString()
         }
-        // fallback: we shouldn't be able to construct this VersionRange using the factories,
-        // but just in case try to provide some sensible printed information.
-        return range.toString()
+        // No way to represent this VersionRange as a String which we can later parse.
+        return null
+    }
+    override fun toString() = when(val id = toIdentifier()) {
+        is String -> id
+        else -> "VersionRange(range=$range)"
     }
 
     private fun isPrefixRange() =
@@ -105,6 +112,11 @@ class VersionRange(private val range: Range<Version>) {
          * more non-commas, a comma, zero or more non-commas, and a closing range indicator.
          */
         private val MAVEN_STYLE_REGEX = "^[\\[(\\]][^,]*,[^,]*[\\[)\\]]$".toRegex()
+        /**
+         * Parse a string as a [VersionRange].  All strings are valid version ranges: they are
+         * one of: the universal range `+`; a Maven-style range; a prefix range; or a range
+         * consisting of a single [Version].
+         */
         fun parse(string: String): VersionRange {
             val range = when {
                 string == "+" -> Range.all()
