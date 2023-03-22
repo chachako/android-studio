@@ -57,6 +57,12 @@ class VersionRangeTest {
     }
 
     @Test
+    fun testParsePrefixRangeWithoutFinalSeparator() {
+        assertThat(VersionRange.parse("1+").toString()).isEqualTo("1.+")
+        assertThat(VersionRange.parse("1+").toIdentifier()).isEqualTo("1.+")
+    }
+
+    @Test
     fun testParseMavenRange() {
         fun Char.canonicalOpen() = if (this == '[') '[' else '('
         fun Char.canonicalClose() = if (this == ']') ']' else ')'
@@ -79,8 +85,53 @@ class VersionRangeTest {
                     .isEqualTo("${open.canonicalOpen()}1.0,1.1${close.canonicalClose()}")
                 assertThat(VersionRange.parse("${open}1.0,1.1${close}").toIdentifier())
                     .isEqualTo("${open.canonicalOpen()}1.0,1.1${close.canonicalClose()}")
+                // test an edge case with acceptable metacharacters
+                assertThat(VersionRange.parse("${open}[]()+,1[]()${close}").toString())
+                    .isEqualTo("${open.canonicalOpen()}[]()+,1[]()${close.canonicalClose()}")
+                assertThat(VersionRange.parse("${open}[]()+,1[]()${close}").toIdentifier())
+                    .isEqualTo("${open.canonicalOpen()}[]()+,1[]()${close.canonicalClose()}")
             }
         }
+    }
+
+    @Test
+    fun testParseSingletonRange() {
+        assertThat(VersionRange.parse("1.0").toIdentifier()).isEqualTo("1.0")
+        assertThat(VersionRange.parse("1.0").toString()).isEqualTo("1.0")
+        assertThat(VersionRange.parse("1.0").contains(Version.parse("1.0"))).isTrue()
+        assertThat(VersionRange.parse("1.0-alpha3").toIdentifier()).isEqualTo("1.0-alpha3")
+        assertThat(VersionRange.parse("1.0-alpha3").toString()).isEqualTo("1.0-alpha3")
+        assertThat(VersionRange.parse("1.0-alpha3").contains(Version.parse("1.0-alpha3"))).isTrue()
+        assertThat(VersionRange.parse(")(").toIdentifier()).isEqualTo(")(")
+        assertThat(VersionRange.parse(")(").toString()).isEqualTo(")(")
+        assertThat(VersionRange.parse(")(").contains(Version.parse(")("))).isTrue()
+        assertThat(VersionRange.parse("dev").toIdentifier()).isEqualTo("dev")
+        assertThat(VersionRange.parse("dev").toString()).isEqualTo("dev")
+        assertThat(VersionRange.parse("dev").contains(Version.parse("dev"))).isTrue()
+        assertThat(VersionRange.parse("").toIdentifier()).isEqualTo("")
+        assertThat(VersionRange.parse("").toString()).isEqualTo("")
+        assertThat(VersionRange.parse("").contains(Version.parse(""))).isTrue()
+        assertThat(VersionRange.parse("[)").toIdentifier()).isEqualTo("[)")
+        assertThat(VersionRange.parse("[)").toString()).isEqualTo("[)")
+        assertThat(VersionRange.parse("[)").contains(Version.parse("[)"))).isTrue()
+        assertThat(VersionRange.parse("[a,b,c)").toIdentifier()).isEqualTo("[a,b,c)")
+        assertThat(VersionRange.parse("[a,b,c)").toString()).isEqualTo("[a,b,c)")
+        assertThat(VersionRange.parse("[a,b,c)").contains(Version.parse("[a,b,c)"))).isTrue()
+    }
+
+    @Test
+    fun testParseInvalidMavenRange() {
+        assertThat(VersionRange.parse("[2.0,1.0]").isEmpty()).isTrue()
+        assertThat(VersionRange.parse("[2.0,1.0]").toIdentifier()).isEqualTo("[2.0,2.0)")
+        assertThat(VersionRange.parse("[2.0,1.0]").toString()).isEqualTo("[2.0,2.0)")
+        // 1.0+ is [1, 0, ""] which is less than 1.0
+        assertThat(VersionRange.parse("[1.0,1.0+]").isEmpty()).isTrue()
+        assertThat(VersionRange.parse("[1.0,1.0+]").toIdentifier()).isEqualTo("[1.0,1.0)")
+        assertThat(VersionRange.parse("[1.0,1.0+]").toString()).isEqualTo("[1.0,1.0)")
+        // Test that the canonical form round-trips
+        assertThat(VersionRange.parse("[1.0,1.0)").isEmpty()).isTrue()
+        assertThat(VersionRange.parse("[1.0,1.0)").toIdentifier()).isEqualTo("[1.0,1.0)")
+        assertThat(VersionRange.parse("[1.0,1.0)").toString()).isEqualTo("[1.0,1.0)")
     }
 
     @Test
@@ -361,5 +412,24 @@ class VersionRangeTest {
         // Can't have closed prefix upper bounds
         assertThat(VersionRange(Range.closed(Version.parse("1.0"), Version.prefixInfimum("2.0"))).toIdentifier()).isNull()
         assertThat(VersionRange(Range.closed(Version.parse("1.0"), Version.prefixInfimum("2.0"))).toString()).matches("^VersionRange\\(.*\\)$")
+        // Can't have Version of "" in lower or upper bound
+        assertThat(VersionRange(Range.atLeast(Version.parse(""))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.atLeast(Version.parse(""))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.atMost(Version.parse(""))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.atMost(Version.parse(""))).toString()).matches("^VersionRange\\(.*\\)$")
+        // Can't have a Version containing a comma in the lower or upper bound
+        assertThat(VersionRange(Range.atLeast(Version.parse("abc,def"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.atLeast(Version.parse("abc,def"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.atMost(Version.parse("abc,def"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.atMost(Version.parse("abc,def"))).toString()).matches("^VersionRange\\(.*\\)$")
+        // Can't have a singleton range with versions that look like other kinds of range
+        assertThat(VersionRange(Range.singleton(Version.parse("+"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.singleton(Version.parse("+"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.singleton(Version.parse("[,]"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.singleton(Version.parse("[,]"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.singleton(Version.parse("[1,3)"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.singleton(Version.parse("[1,3)"))).toString()).matches("^VersionRange\\(.*\\)$")
+        assertThat(VersionRange(Range.singleton(Version.parse("1.0.+"))).toIdentifier()).isNull()
+        assertThat(VersionRange(Range.singleton(Version.parse("1.0.+"))).toString()).matches("^VersionRange\\(.*\\)$")
     }
 }

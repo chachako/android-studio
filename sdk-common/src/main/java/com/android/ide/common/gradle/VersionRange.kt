@@ -57,13 +57,24 @@ class VersionRange(private val range: Range<Version>) {
      */
     fun toIdentifier(): String? {
         if (!hasLowerBound() && !hasUpperBound()) return "+"
+        if (isSingletonRange()) {
+            val id = "${lowerEndpoint()}"
+            return when {
+                id.endsWith('+') -> null
+                MAVEN_STYLE_REGEX.matches(id) -> null
+                else -> id
+            }
+        }
         if (isPrefixRange()) {
             return "${lowerEndpoint().prefixVersion()}.+"
         }
-        if (validLowerBoundForMavenRange() && validUpperBoundForMavenRange()) {
+        if (isEmpty() || (validLowerBoundForMavenRange() && validUpperBoundForMavenRange())) {
             val sb = StringBuilder()
             if (!hasLowerBound()) {
                 sb.append("(")
+            }
+            else if (lowerEndpoint().toString().let { it.contains(',') || it.isEmpty() }) {
+                return null
             }
             else if (lowerBoundType() == BoundType.OPEN) {
                 sb.append("(${lowerEndpoint()}")
@@ -74,6 +85,9 @@ class VersionRange(private val range: Range<Version>) {
             sb.append(",")
             if (!hasUpperBound()) {
                 sb.append(")")
+            }
+            else if (upperEndpoint().toString().let { it.contains(',') || it.isEmpty() }) {
+                return null
             }
             else if (upperBoundType() == BoundType.OPEN) {
                 sb.append("${upperEndpoint().prefixVersion()})")
@@ -99,6 +113,13 @@ class VersionRange(private val range: Range<Version>) {
                     upperBoundType() == BoundType.OPEN && upper.isPrefixInfimum &&
                     lower.nextPrefix() == upper
         }
+    private fun isSingletonRange() =
+        hasLowerBound() && hasUpperBound() && let {
+            val lower = lowerEndpoint()
+            val upper = upperEndpoint()
+            lowerBoundType() == BoundType.CLOSED && !lower.isPrefixInfimum &&
+                    upperBoundType() == BoundType.CLOSED && lower == upper
+        }
     private fun validLowerBoundForMavenRange() =
         !hasLowerBound() || !lowerEndpoint().isPrefixInfimum
     private fun validUpperBoundForMavenRange() =
@@ -115,7 +136,9 @@ class VersionRange(private val range: Range<Version>) {
         /**
          * Parse a string as a [VersionRange].  All strings are valid version ranges: they are
          * one of: the universal range `+`; a Maven-style range; a prefix range; or a range
-         * consisting of a single [Version].
+         * consisting of a single [Version].  Maven-style ranges representing an invalid range
+         * (e.g. because the lower bound is higher than the upper bound) are treated as an empty
+         * range.
          */
         fun parse(string: String): VersionRange {
             val range = when {
@@ -145,14 +168,23 @@ class VersionRange(private val range: Range<Version>) {
                     false -> Range.lessThan(Version.prefixInfimum(higherString))
                 }
             }
+            val lowerVersion = Version.parse(lowerString)
+            val higherVersion = higherString
+                .let { if (higherClosed) Version.parse(it) else Version.prefixInfimum(it) }
             return when {
-                lowerClosed && higherClosed -> Range.closed(Version.parse(lowerString), Version.parse(higherString))
-                lowerClosed && !higherClosed -> Range.closedOpen(Version.parse(lowerString), Version.prefixInfimum(higherString))
-                !lowerClosed && higherClosed -> Range.openClosed(Version.parse(lowerString), Version.parse(higherString))
+                // Ordinarily we would have to care about the equality case for a both-open
+                // interval.  However, since an open upper bound is a prefix exclude, but the
+                // lower bound is a regular version, the two versions cannot be equal in parsing a
+                // both-open interval.
+                lowerVersion > higherVersion -> emptyRange(lowerVersion)
+                lowerClosed && higherClosed -> Range.closed(lowerVersion, higherVersion)
+                lowerClosed && !higherClosed -> Range.closedOpen(lowerVersion, higherVersion)
+                !lowerClosed && higherClosed -> Range.openClosed(lowerVersion, higherVersion)
                 // !lowerClosed && !higherClosed
-                else -> Range.open(Version.parse(lowerString), Version.prefixInfimum(higherString))
+                else -> Range.open(lowerVersion, higherVersion)
             }
         }
+        private fun emptyRange(version: Version) = Range.closedOpen(version, version)
         private fun parsePrefixRange(string: String): Range<Version> {
             // It's not clear from the documentation, but I think implied in it is that the
             // range denoted by `1+` and the range denoted by `1.+` should be the same: in each
