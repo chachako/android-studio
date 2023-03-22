@@ -115,9 +115,9 @@ public class DeviceManagerTest {
         // cf /sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
         assertThat(listDisplayNames(dm.getDevices(DeviceFilter.VENDOR)))
                 .containsExactly(
-                        "Android TV (4K)",
-                        "Android TV (1080p)",
-                        "Android TV (720p)",
+                        "Television (4K)",
+                        "Television (1080p)",
+                        "Television (720p)",
                         "Large Desktop",
                         "Medium Desktop",
                         "Small Desktop",
@@ -182,9 +182,9 @@ public class DeviceManagerTest {
                         "8\" Fold-out",
                         "13.5\" Freeform",
                         "Resizable (Experimental)",
-                        "Android TV (4K)",
-                        "Android TV (1080p)",
-                        "Android TV (720p)",
+                        "Television (4K)",
+                        "Television (1080p)",
+                        "Television (720p)",
                         "Large Desktop",
                         "Medium Desktop",
                         "Small Desktop",
@@ -297,9 +297,9 @@ public class DeviceManagerTest {
         // cf /sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
         assertThat(listDisplayNames(dm2.getDevices(DeviceFilter.VENDOR)))
                 .containsExactly(
-                        "Android TV (4K)",
-                        "Android TV (1080p)",
-                        "Android TV (720p)",
+                        "Television (4K)",
+                        "Television (1080p)",
+                        "Television (720p)",
                         "Large Desktop",
                         "Medium Desktop",
                         "Small Desktop",
@@ -362,9 +362,9 @@ public class DeviceManagerTest {
                         "8\" Fold-out",
                         "13.5\" Freeform",
                         "Resizable (Experimental)",
-                        "Android TV (4K)",
-                        "Android TV (1080p)",
-                        "Android TV (720p)",
+                        "Television (4K)",
+                        "Television (1080p)",
+                        "Television (720p)",
                         "Large Desktop",
                         "Medium Desktop",
                         "Small Desktop",
@@ -471,9 +471,9 @@ public class DeviceManagerTest {
         // cf /sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
         assertThat(listDisplayNames(dm.getDevices(DeviceFilter.VENDOR)))
                 .containsExactly(
-                        "Android TV (4K)",
-                        "Android TV (1080p)",
-                        "Android TV (720p)",
+                        "Television (4K)",
+                        "Television (1080p)",
+                        "Television (720p)",
                         "Large Desktop",
                         "Medium Desktop",
                         "Small Desktop",
@@ -536,9 +536,9 @@ public class DeviceManagerTest {
                         "8\" Fold-out",
                         "13.5\" Freeform",
                         "Resizable (Experimental)",
-                        "Android TV (4K)",
-                        "Android TV (1080p)",
-                        "Android TV (720p)",
+                        "Television (4K)",
+                        "Television (1080p)",
+                        "Television (720p)",
                         "Large Desktop",
                         "Medium Desktop",
                         "Small Desktop",

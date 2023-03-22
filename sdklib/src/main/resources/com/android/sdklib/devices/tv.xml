@@ -17,7 +17,7 @@
 <d:devices xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xmlns:d="http://schemas.android.com/sdk/devices/1">
     <d:device>
-        <d:name>Android TV (4K)</d:name>
+        <d:name>Television (4K)</d:name>
         <d:id>tv_4k</d:id>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>
@@ -85,7 +85,7 @@
     </d:device>
 
     <d:device>
-        <d:name>Android TV (1080p)</d:name>
+        <d:name>Television (1080p)</d:name>
         <d:id>tv_1080p</d:id>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>
@@ -156,7 +156,7 @@
     </d:device>
 
     <d:device>
-        <d:name>Android TV (720p)</d:name>
+        <d:name>Television (720p)</d:name>
         <d:id>tv_720p</d:id>
         <d:manufacturer>Google</d:manufacturer>
         <d:hardware>

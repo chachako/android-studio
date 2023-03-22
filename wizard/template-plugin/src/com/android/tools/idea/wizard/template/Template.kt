@@ -42,7 +42,7 @@ enum class Category {
 enum class FormFactor(val displayName: String) {
   Mobile("Phone and Tablet"),
   Wear("Wear OS"),
-  Tv("Android TV"),
+  Tv("Television"),
   Automotive("Automotive"),
   Generic("Generic");
 

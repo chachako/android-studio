@@ -123,7 +123,8 @@ public class HardwareConfigHelperTest extends TestCase {
         assertFalse(isMobile(tv1080p));
         assertFalse(isAutomotive(tv1080p));
         assertFalse(tv1080p.isScreenRound());
-        assertEquals("Android TV (1080p) (55.0\", 1920 \u00d7 1080, xhdpi)", getNexusLabel(tv1080p));
+        assertEquals(
+                "Television (1080p) (55.0\", 1920 \u00d7 1080, xhdpi)", getNexusLabel(tv1080p));
         assertEquals("1080p, 1920 \u00d7 1080, xhdpi (TV)", getNexusMenuLabel(tv1080p));
 
         Device tv720p = deviceManager.getDevice("tv_720p", "Google");
