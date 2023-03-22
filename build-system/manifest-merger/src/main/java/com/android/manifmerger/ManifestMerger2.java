@@ -801,7 +801,8 @@ public class ManifestMerger2 {
                             .hasAttributeNS(
                                     SdkConstants.ANDROID_URI, SdkConstants.ATTR_LOCALE_CONFIG)) {
                         String message =
-                                "Locale config generation was requested but user locale config is present in manifest";
+                                "Locale config generation was requested but user locale config is present in manifest. "
+                                        + "See https://developer.android.com/r/studio-ui/build/automatic-per-app-languages";
                         mLogger.error(null, message);
                         throw new RuntimeException(message);
                     } else {
