@@ -39,7 +39,7 @@ readonly config_options="--config=release --config=ants"
         "${conditional_flags[@]}" \
         -- \
         //tools/base/bazel/... \
-        //tools/base/dynamic-layout-inspector/skia:skia-grpc-server
+        //tools/base/dynamic-layout-inspector/skia:skiaparser
 
 readonly bazel_status=$?
 
