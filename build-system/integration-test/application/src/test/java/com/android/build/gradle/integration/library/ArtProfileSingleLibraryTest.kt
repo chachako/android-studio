@@ -153,7 +153,7 @@ class ArtProfileSingleLibraryTest {
                 SdkConstants.FN_ART_PROFILE,
         )
         val expectedContent = if (addApplicationProfile) {
-            "$libraryFileContent\n$applicationFileContent\n"
+            "$libraryFileContent\n$applicationFileContent"
         } else libraryFileContent
 
         Truth.assertThat(mergedFile.readText()).isEqualTo(expectedContent)

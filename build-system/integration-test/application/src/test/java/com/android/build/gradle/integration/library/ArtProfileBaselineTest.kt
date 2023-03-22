@@ -125,9 +125,9 @@ class ArtProfileBaselineTest {
         )
 
         val expectedContent = if (addOldBaselineProfile) {
-            "$mainBaselineProfileFileContent\n$releaseBaselineProfileFileContent\n$oldBaselineProfileFileContent\n"
+            "$mainBaselineProfileFileContent\n$releaseBaselineProfileFileContent\n$oldBaselineProfileFileContent"
         } else {
-            "$mainBaselineProfileFileContent\n$releaseBaselineProfileFileContent\n"
+            "$mainBaselineProfileFileContent\n$releaseBaselineProfileFileContent"
         }
 
         Truth.assertThat(mergedFile.readText()).isEqualTo(expectedContent)

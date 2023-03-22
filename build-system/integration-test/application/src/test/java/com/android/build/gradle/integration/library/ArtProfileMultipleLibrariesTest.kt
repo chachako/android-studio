@@ -215,6 +215,8 @@ class ArtProfileMultipleLibrariesTest(
                     expectedMergedRewrittenFileContent.plus(
                             applicationBaselineProfContent.plus("\n"))
         }
+        expectedMergedFileContent = expectedMergedFileContent.trimEnd()
+        expectedMergedRewrittenFileContent = expectedMergedRewrittenFileContent.trimEnd()
 
         val result = project.executor()
                 .run(
@@ -270,7 +272,7 @@ class ArtProfileMultipleLibrariesTest(
                 SdkConstants.FN_ART_PROFILE,
         )
         Truth.assertThat(
-                mergedFile.readText()
+                mergedFile.readText().trimEnd() // R8 seems to add a newline at the end
         ).isEqualTo(
                 if (withArtProfileR8Rewriting)
                     expectedMergedRewrittenFileContent

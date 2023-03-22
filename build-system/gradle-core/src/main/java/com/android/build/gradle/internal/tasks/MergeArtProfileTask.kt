@@ -30,6 +30,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -40,8 +41,7 @@ import org.gradle.work.DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ART_PROFILE, secondaryTaskCategories = [TaskCategory.MERGING])
 abstract class MergeArtProfileTask: MergeFileTask() {
 
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Classpath // The order of `inputFiles` is important
     abstract override val inputFiles: ConfigurableFileCollection
 
     // Use InputFiles rather than InputFile to allow the file not to exist
@@ -77,7 +77,7 @@ abstract class MergeArtProfileTask: MergeFileTask() {
         }
 
         override fun run() {
-            mergeFiles(parameters.inputFiles.files, parameters.outputFile.get().asFile)
+            mergeFiles(parameters.inputFiles.files.filter { it.isFile }, parameters.outputFile.get().asFile)
         }
     }
 

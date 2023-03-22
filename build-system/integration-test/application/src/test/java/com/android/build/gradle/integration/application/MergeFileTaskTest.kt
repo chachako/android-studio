@@ -44,6 +44,7 @@ class MergeFileTaskTest {
             totalTxt += txt + "\n"
             inputs.add(file)
         }
+        totalTxt = totalTxt.trimEnd()
 
         val output = tmp.root.resolve("output.txt")
 

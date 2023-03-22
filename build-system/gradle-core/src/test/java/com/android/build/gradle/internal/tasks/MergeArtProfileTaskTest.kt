@@ -102,7 +102,7 @@ internal class MergeArtProfileTaskTest {
         )
         task.taskAction()
         assertThat(task.outputFile.get().asFile.readText()).isEqualTo(
-            "${singleFile.readText()}\n${artProfileSourceFile.asFile.get().readText()}\n"
+            "${singleFile.readText()}\n${artProfileSourceFile.asFile.get().readText()}"
         )
     }
 
@@ -118,7 +118,7 @@ internal class MergeArtProfileTaskTest {
 
         val expectedResult = StringBuilder().apply {
             repeat(5) { this.append("file $it - line 1\n") }
-        }.toString()
+        }.toString().trimEnd()
         assertThat(task.outputFile.get().asFile.readText()).isEqualTo(expectedResult)
     }
 
@@ -146,7 +146,7 @@ internal class MergeArtProfileTaskTest {
         val expectedResult = StringBuilder().apply {
             this.append("${singleFile.readText()}\n")
             repeat(5) { this.append("file $it - line 1\n") }
-            this.append("${artProfileSourceFile.asFile.get().readText()}\n")
+            this.append("${artProfileSourceFile.asFile.get().readText()}")
         }.toString()
 
         assertThat(task.outputFile.get().asFile.readText()).isEqualTo(expectedResult)
