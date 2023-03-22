@@ -193,6 +193,7 @@ class PrivacySandboxSdkTest {
             .create()
 
     private fun executor() = project.executor()
+            .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
             .withPerTestPrefsRoot(true)
             .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
 
@@ -457,6 +458,7 @@ class PrivacySandboxSdkTest {
     @Test
     fun testNoServiceDefinedInModuleUsedBySdk() {
         project.executor()
+                .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, true)
                 .expectFailure()
                 .run(":example-app:assembleDebug")
@@ -466,6 +468,7 @@ class PrivacySandboxSdkTest {
                 }
 
         project.executor()
+                .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
                 .run(":example-app:assembleDebug")
     }

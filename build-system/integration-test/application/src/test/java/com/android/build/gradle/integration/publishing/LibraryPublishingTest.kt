@@ -119,7 +119,7 @@ class LibraryPublishingTest {
         val result = library.executor().expectFailure().run("publish")
         result.stderr.use {
             ScannerSubject.assertThat(it).contains("""
-                Could not get unknown property 'release' for SoftwareComponentInternal
+                Could not get unknown property 'release' for SoftwareComponent
             """.trimIndent())
         }
     }
@@ -140,7 +140,7 @@ class LibraryPublishingTest {
         )
         val result = library.executor().expectFailure().run("help")
         assertThat(result.failureMessage).contains("" +
-                "Could not get unknown property 'release' for SoftwareComponentInternal")
+                "Could not get unknown property 'release' for SoftwareComponent")
     }
 
     @Test

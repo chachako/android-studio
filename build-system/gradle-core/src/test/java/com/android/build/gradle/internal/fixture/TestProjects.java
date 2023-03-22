@@ -238,6 +238,6 @@ public class TestProjects {
         ((DefaultProject) project)
                 .getServices()
                 .get(GradlePropertiesController.class)
-                .loadGradlePropertiesFrom(project.getProjectDir());
+                .loadGradlePropertiesFrom(project.getProjectDir(), false);
     }
 }
