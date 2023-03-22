@@ -26,12 +26,12 @@ import com.android.tools.apk.analyzer.dex.tree.DexPackageNode;
 import com.android.tools.proguard.ProguardMap;
 import com.android.tools.proguard.ProguardSeedsMap;
 import com.android.tools.proguard.ProguardUsagesMap;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import javax.swing.tree.TreeModel;
-import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 import org.junit.Test;
 
 public class FilteredTreeModelTest {

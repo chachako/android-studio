@@ -16,11 +16,11 @@
 package com.android.tools.apk.analyzer.dex;
 
 import com.android.annotations.NonNull;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedClassDef;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
 import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.Set;
-import org.jf.dexlib2.dexbacked.DexBackedClassDef;
-import org.jf.dexlib2.dexbacked.DexBackedDexFile;
 
 public class DexFileStats {
     public final int classCount;

@@ -20,8 +20,8 @@ import com.android.annotations.Nullable;
 import com.android.tools.apk.analyzer.dex.PackageTreeCreator;
 import com.android.tools.proguard.ProguardMap;
 import com.android.tools.proguard.ProguardSeedsMap;
-import org.jf.dexlib2.iface.reference.FieldReference;
-import org.jf.dexlib2.immutable.reference.ImmutableFieldReference;
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference;
 
 public class DexFieldNode extends DexElementNode {
     private long size;

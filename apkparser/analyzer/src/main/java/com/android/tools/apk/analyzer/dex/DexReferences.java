@@ -17,24 +17,24 @@ package com.android.tools.apk.analyzer.dex;
 
 import com.android.annotations.NonNull;
 import com.android.tools.apk.analyzer.dex.tree.*;
+import com.android.tools.smali.dexlib2.dexbacked.*;
+import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedFieldReference;
+import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedMethodReference;
+import com.android.tools.smali.dexlib2.dexbacked.reference.DexBackedTypeReference;
+import com.android.tools.smali.dexlib2.iface.Annotation;
+import com.android.tools.smali.dexlib2.iface.AnnotationElement;
+import com.android.tools.smali.dexlib2.iface.instruction.DualReferenceInstruction;
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction;
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
+import com.android.tools.smali.dexlib2.iface.reference.Reference;
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference;
+import com.android.tools.smali.dexlib2.iface.value.*;
+import com.android.tools.smali.dexlib2.immutable.reference.*;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.*;
-import org.jf.dexlib2.dexbacked.*;
-import org.jf.dexlib2.dexbacked.reference.DexBackedFieldReference;
-import org.jf.dexlib2.dexbacked.reference.DexBackedMethodReference;
-import org.jf.dexlib2.dexbacked.reference.DexBackedTypeReference;
-import org.jf.dexlib2.iface.Annotation;
-import org.jf.dexlib2.iface.AnnotationElement;
-import org.jf.dexlib2.iface.instruction.DualReferenceInstruction;
-import org.jf.dexlib2.iface.instruction.Instruction;
-import org.jf.dexlib2.iface.instruction.ReferenceInstruction;
-import org.jf.dexlib2.iface.reference.FieldReference;
-import org.jf.dexlib2.iface.reference.MethodReference;
-import org.jf.dexlib2.iface.reference.Reference;
-import org.jf.dexlib2.iface.reference.TypeReference;
-import org.jf.dexlib2.iface.value.*;
-import org.jf.dexlib2.immutable.reference.*;
 
 public class DexReferences {
 

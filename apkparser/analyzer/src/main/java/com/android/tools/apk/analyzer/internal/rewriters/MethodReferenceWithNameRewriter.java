@@ -17,9 +17,9 @@
 package com.android.tools.apk.analyzer.internal.rewriters;
 
 import com.android.annotations.NonNull;
-import org.jf.dexlib2.iface.reference.MethodReference;
-import org.jf.dexlib2.rewriter.MethodReferenceRewriter;
-import org.jf.dexlib2.rewriter.Rewriters;
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
+import com.android.tools.smali.dexlib2.rewriter.MethodReferenceRewriter;
+import com.android.tools.smali.dexlib2.rewriter.Rewriters;
 
 public abstract class MethodReferenceWithNameRewriter extends MethodReferenceRewriter {
 

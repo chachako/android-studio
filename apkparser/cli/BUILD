@@ -13,8 +13,8 @@ coverage_java_library(
         "//tools/base/profgen/profgen",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
+        "@maven//:com.android.tools.smali.smali-dexlib2",
         "@maven//:net.sf.jopt-simple.jopt-simple",
-        "@maven//:org.smali.dexlib2",
     ],
 )
 

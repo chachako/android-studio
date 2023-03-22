@@ -16,13 +16,13 @@
 package com.android.tools.apk.analyzer.dex;
 
 import com.android.annotations.NonNull;
+import com.android.tools.smali.dexlib2.Opcodes;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
+import com.android.tools.smali.dexlib2.dexbacked.raw.HeaderItem;
+import com.android.tools.smali.dexlib2.util.DexUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.jf.dexlib2.Opcodes;
-import org.jf.dexlib2.dexbacked.DexBackedDexFile;
-import org.jf.dexlib2.dexbacked.raw.HeaderItem;
-import org.jf.dexlib2.util.DexUtil;
 
 public final class DexFiles {
 

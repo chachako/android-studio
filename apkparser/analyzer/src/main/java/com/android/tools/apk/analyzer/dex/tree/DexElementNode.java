@@ -19,11 +19,11 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.proguard.ProguardMap;
 import com.android.tools.proguard.ProguardSeedsMap;
+import com.android.tools.smali.dexlib2.iface.reference.Reference;
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableReference;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.jf.dexlib2.iface.reference.Reference;
-import org.jf.dexlib2.immutable.reference.ImmutableReference;
 
 public abstract class DexElementNode extends DefaultMutableTreeNode {
 

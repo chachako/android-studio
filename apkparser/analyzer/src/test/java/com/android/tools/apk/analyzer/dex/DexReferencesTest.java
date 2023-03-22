@@ -21,10 +21,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.android.annotations.NonNull;
 import com.android.tools.apk.analyzer.dex.tree.DexElementNode;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference;
+import com.android.tools.smali.dexlib2.util.ReferenceUtil;
 import java.io.IOException;
-import org.jf.dexlib2.dexbacked.DexBackedDexFile;
-import org.jf.dexlib2.immutable.reference.ImmutableTypeReference;
-import org.jf.dexlib2.util.ReferenceUtil;
 import org.junit.Test;
 
 public class DexReferencesTest {

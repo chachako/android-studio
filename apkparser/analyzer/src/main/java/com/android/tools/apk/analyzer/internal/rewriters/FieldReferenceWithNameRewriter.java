@@ -16,9 +16,9 @@
 package com.android.tools.apk.analyzer.internal.rewriters;
 
 import com.android.annotations.NonNull;
-import org.jf.dexlib2.iface.reference.FieldReference;
-import org.jf.dexlib2.rewriter.FieldReferenceRewriter;
-import org.jf.dexlib2.rewriter.Rewriters;
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
+import com.android.tools.smali.dexlib2.rewriter.FieldReferenceRewriter;
+import com.android.tools.smali.dexlib2.rewriter.Rewriters;
 
 public abstract class FieldReferenceWithNameRewriter extends FieldReferenceRewriter {
 
