@@ -36,7 +36,6 @@ interface Component: ComponentIdentity {
     /**
      * Access to variant's source files.
      */
-    @get:Incubating
     val sources: Sources
 
     /**
@@ -80,7 +79,6 @@ interface Component: ComponentIdentity {
      *
      * The returned [Configuration] should not be resolved until execution time.
      */
-    @get:Incubating
     val compileConfiguration: Configuration
 
     /**
@@ -89,7 +87,6 @@ interface Component: ComponentIdentity {
      *
      * The returned [Configuration] should not be resolved until execution time.
      */
-    @get:Incubating
     val runtimeConfiguration: Configuration
 
     /**
@@ -98,6 +95,5 @@ interface Component: ComponentIdentity {
      *
      * The returned [Configuration] should not be resolved until execution time.
      */
-    @get:Incubating
     val annotationProcessorConfiguration: Configuration
 }

@@ -2228,26 +2228,26 @@ package com.android.build.api.variant {
   }
 
   public interface Component extends com.android.build.api.variant.ComponentIdentity {
-    method @org.gradle.api.Incubating public org.gradle.api.artifacts.Configuration getAnnotationProcessorConfiguration();
+    method public org.gradle.api.artifacts.Configuration getAnnotationProcessorConfiguration();
     method public com.android.build.api.artifact.Artifacts getArtifacts();
     method @org.gradle.api.Incubating public org.gradle.api.file.FileCollection getCompileClasspath();
-    method @org.gradle.api.Incubating public org.gradle.api.artifacts.Configuration getCompileConfiguration();
+    method public org.gradle.api.artifacts.Configuration getCompileConfiguration();
     method public com.android.build.api.variant.Instrumentation getInstrumentation();
     method @org.gradle.api.Incubating public com.android.build.api.variant.JavaCompilation getJavaCompilation();
     method public org.gradle.api.provider.Provider<java.lang.String> getNamespace();
-    method @org.gradle.api.Incubating public org.gradle.api.artifacts.Configuration getRuntimeConfiguration();
-    method @org.gradle.api.Incubating public com.android.build.api.variant.Sources getSources();
+    method public org.gradle.api.artifacts.Configuration getRuntimeConfiguration();
+    method public com.android.build.api.variant.Sources getSources();
     method @Deprecated public void setAsmFramesComputationMode(com.android.build.api.instrumentation.FramesComputationMode mode);
     method @Deprecated public <ParamT extends com.android.build.api.instrumentation.InstrumentationParameters> void transformClassesWith(Class<? extends com.android.build.api.instrumentation.AsmClassVisitorFactory<ParamT>> classVisitorFactoryImplClass, com.android.build.api.instrumentation.InstrumentationScope scope, kotlin.jvm.functions.Function1<? super ParamT,kotlin.Unit> instrumentationParamsConfig);
-    property @org.gradle.api.Incubating public abstract org.gradle.api.artifacts.Configuration annotationProcessorConfiguration;
+    property public abstract org.gradle.api.artifacts.Configuration annotationProcessorConfiguration;
     property public abstract com.android.build.api.artifact.Artifacts artifacts;
     property @org.gradle.api.Incubating public abstract org.gradle.api.file.FileCollection compileClasspath;
-    property @org.gradle.api.Incubating public abstract org.gradle.api.artifacts.Configuration compileConfiguration;
+    property public abstract org.gradle.api.artifacts.Configuration compileConfiguration;
     property public abstract com.android.build.api.variant.Instrumentation instrumentation;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.JavaCompilation javaCompilation;
     property public abstract org.gradle.api.provider.Provider<java.lang.String> namespace;
-    property @org.gradle.api.Incubating public abstract org.gradle.api.artifacts.Configuration runtimeConfiguration;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.Sources sources;
+    property public abstract org.gradle.api.artifacts.Configuration runtimeConfiguration;
+    property public abstract com.android.build.api.variant.Sources sources;
   }
 
   public interface ComponentBuilder extends com.android.build.api.variant.ComponentIdentity {
