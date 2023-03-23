@@ -219,7 +219,6 @@ public enum SdkMavenRepository {
                 revisionFilter,
                 coordinate.isPreview(),
                 Version.Companion::parse,
-                Comparator.naturalOrder(),
                 progress);
     }
 
@@ -245,7 +244,6 @@ public enum SdkMavenRepository {
                 revisionFilter,
                 coordinate.isPreview(),
                 Version.Companion::parse,
-                Comparator.naturalOrder(),
                 progress);
     }
 

@@ -28,7 +28,6 @@ import com.android.testutils.TestUtils;
 import com.android.testutils.file.InMemoryFileSystems;
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import junit.framework.TestCase;
@@ -57,128 +56,110 @@ public class AndroidSdkHandlerTest extends TestCase {
         RepositoryPackages packages = new RepositoryPackages();
         packages.setLocalPkgInfos(ImmutableList.of(p1_1, p1_20, p2_1, p2_2_rc3, qr2_0, qr2_1));
 
-        LocalPackage latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("p"),
-                null,
-                false, // allowPreview
-                Revision::parseRevision,
-                Comparator.<Revision>naturalOrder());
+        LocalPackage latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        null,
+                        false, // allowPreview
+                        Revision::parseRevision);
         assertNotNull(latest);
         assertEquals("p;2.1", latest.getPath());
 
-        LocalPackage earliest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("p"),
-                null,
-                false, // allowPreview
-                Revision::parseRevision,
-                Comparator.<Revision>reverseOrder());
-        assertNotNull(earliest);
-        assertEquals("p;1.1", earliest.getPath());
-
-        LocalPackage longest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("p"),
-                null,
-                false, // allowPreview
-                String::length,
-                Comparator.naturalOrder());
+        LocalPackage longest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        null,
+                        false, // allowPreview
+                        String::length);
         assertNotNull(longest);
         assertEquals("p;1.20", longest.getPath());
 
-        longest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("p"),
-                null,
-                true, // allowPreview
-                String::length,
-                Comparator.naturalOrder());
+        longest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        null,
+                        true, // allowPreview
+                        String::length);
         assertNotNull(longest);
         assertEquals("p;2.2-rc3", longest.getPath());
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("p"),
-                null,
-                true, // allowPreview
-                Revision::parseRevision,
-                Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        null,
+                        true, // allowPreview
+                        Revision::parseRevision);
         assertNotNull(latest);
         assertEquals("p;2.2-rc3", latest.getPath());
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("q;r"),
-                null,
-                true, // allowPreview
-                Revision::parseRevision,
-                Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("q;r"),
+                        null,
+                        true, // allowPreview
+                        Revision::parseRevision);
         assertNotNull(latest);
         assertEquals("q;r;2.1", latest.getPath());
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-                packages.getLocalPackagesForPrefix("o"),
-                null,
-                true, // allowPreview
-                Revision::parseRevision,
-                Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("o"),
+                        null,
+                        true, // allowPreview
+                        Revision::parseRevision);
         assertNull(latest);
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("p"),
-          (revision) -> revision.getMinor() != 1,
-          false, // allowPreview
-          Revision::parseRevision,
-          Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        (revision) -> revision.getMinor() != 1,
+                        false, // allowPreview
+                        Revision::parseRevision);
         assertNotNull(latest);
         assertEquals("p;1.20", latest.getPath());
 
-        earliest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("p"),
-          (revision) -> revision.getMinor() != 1,
-          false, // allowPreview
-          Revision::parseRevision,
-          Comparator.<Revision>reverseOrder());
-        assertNotNull(earliest);
-        assertEquals("p;1.20", earliest.getPath());
-
-        longest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("p"),
-          (revision) -> revision.getMajor() != 1,
-          false, // allowPreview
-          String::length,
-          Comparator.naturalOrder());
+        longest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        (revision) -> revision.getMajor() != 1,
+                        false, // allowPreview
+                        String::length);
         assertNotNull(longest);
         assertEquals("p;2.1", longest.getPath());
 
-        longest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("p"),
-          (revision) -> revision.getMajor() != 2,
-          true, // allowPreview
-          String::length,
-          Comparator.naturalOrder());
+        longest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        (revision) -> revision.getMajor() != 2,
+                        true, // allowPreview
+                        String::length);
         assertNotNull(longest);
         assertEquals("p;1.20", longest.getPath());
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("p"),
-          (revision) -> !revision.isPreview(),
-          true, // allowPreview
-          Revision::parseRevision,
-          Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("p"),
+                        (revision) -> !revision.isPreview(),
+                        true, // allowPreview
+                        Revision::parseRevision);
         assertNotNull(latest);
         assertEquals("p;2.1", latest.getPath());
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("q;r"),
-          (revision) -> revision.getMinor() != 1,
-          true, // allowPreview
-          Revision::parseRevision,
-          Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("q;r"),
+                        (revision) -> revision.getMinor() != 1,
+                        true, // allowPreview
+                        Revision::parseRevision);
         assertNotNull(latest);
         assertEquals("q;r;2.0", latest.getPath());
 
-        latest = AndroidSdkHandler.getLatestPackageFromPrefixCollection(
-          packages.getLocalPackagesForPrefix("o"),
-          (revision) -> revision.getMajor() == 3,
-          true, // allowPreview
-          Revision::parseRevision,
-          Comparator.<Revision>naturalOrder());
+        latest =
+                AndroidSdkHandler.getLatestPackageFromPrefixCollection(
+                        packages.getLocalPackagesForPrefix("o"),
+                        (revision) -> revision.getMajor() == 3,
+                        true, // allowPreview
+                        Revision::parseRevision);
         assertNull(latest);
     }
 
@@ -196,8 +177,7 @@ public class AndroidSdkHandlerTest extends TestCase {
                     packages.getLocalPackagesForPrefix("p"),
                     null,
                     false, // allowPreview
-                    Revision::parseRevision,
-                    Comparator.<Revision>naturalOrder());
+                    Revision::parseRevision);
             fail();
         } catch (NumberFormatException ignored) {
         }
