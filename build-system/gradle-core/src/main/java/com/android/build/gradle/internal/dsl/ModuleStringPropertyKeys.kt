@@ -18,14 +18,20 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.gradle.options.StringOption
 
-enum class ModuleStringPropertyKeys(private val keyValue: String, private val defaultValue: String?) {
+enum class ModuleStringPropertyKeys(private val _keyValue: String, private val _defaultValue: String?) {
 
-    ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR.propertyName, null),
+    ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR(
+            StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR.propertyName,
+            null),
 
-    ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.propertyName, null),
+    ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES(
+            StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.propertyName,
+            null),
     ;
 
-   fun getValueAsString(properties: Map<String, Any>) : String? {
-       return properties[keyValue]?.toString() ?: defaultValue
-   }
+    fun getValueAsType(properties: Map<String, Any>): String? {
+        return properties[keyValue]?.toString() ?: _defaultValue
+    }
+
+    val keyValue: String get() = _keyValue
 }

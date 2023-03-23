@@ -92,6 +92,7 @@ import org.gradle.api.ActionConfiguration
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.TransformAction
 import org.gradle.api.artifacts.transform.TransformSpec
@@ -502,24 +503,30 @@ class DependencyConfigurator(
                     { reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->
                         val experimentalProperties = variant.experimentalProperties
                         experimentalProperties.finalizeValue()
-                        val apigeneratorArtifact =
-                                ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR
-                                        .getValueAsString(experimentalProperties.get())
-                                        ?: projectServices.projectOptions
-                                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
-                                        ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
-                        val runtimeDependenciesForShimSdk =
-                                (ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES
-                                        .getValueAsString(experimentalProperties.get())
-                                        ?: projectServices.projectOptions
-                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES))
-                                ?.split(",")
-                                ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")
+
+                        val experimentalPropertiesApiGenerator =
+                                experimentalProperties.get()[ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR.keyValue] as Dependency?
+                        val apigeneratorArtifact: Dependency =
+                                experimentalPropertiesApiGenerator
+                                        ?: project.dependencies.create(
+                                                projectServices.projectOptions.get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
+                                                        ?: "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha02"
+                                        ) as Dependency
+
+                        val experimentalPropertiesRuntimeApigeneratorDependencies =
+                                experimentalProperties.get()[ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.keyValue] as ArrayList<Dependency>?
+                        val runtimeDependenciesForShimSdk: List<Dependency> =
+                                experimentalPropertiesRuntimeApigeneratorDependencies
+                                        ?: (projectServices.projectOptions
+                                                .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES)
+                                                ?.split(",")
+                                                ?: listOf("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1")).map {
+                                            project.dependencies.create(it)
+                                        }
 
                         val params = reg.parameters
                         val apiGeneratorConfiguration =
-                            project.configurations.detachedConfiguration(
-                                project.dependencies.create(apigeneratorArtifact))
+                            project.configurations.detachedConfiguration(apigeneratorArtifact)
                         apiGeneratorConfiguration.isCanBeConsumed = false
                         apiGeneratorConfiguration.isCanBeResolved = true
                         params.apiGenerator.setFrom(apiGeneratorConfiguration)
@@ -540,9 +547,7 @@ class DependencyConfigurator(
                         params.requireServices.set(
                                 projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES])
                         val configuration = project.configurations.detachedConfiguration(
-                                *runtimeDependenciesForShimSdk.map {
-                                    project.dependencies.create(it)
-                                }.toTypedArray())
+                                *runtimeDependenciesForShimSdk.toTypedArray())
                         configuration.isCanBeConsumed = false
                         configuration.isCanBeResolved = true
                         params.runtimeDependencies.from(configuration.incoming.artifactView { config: ArtifactView.ViewConfiguration ->
