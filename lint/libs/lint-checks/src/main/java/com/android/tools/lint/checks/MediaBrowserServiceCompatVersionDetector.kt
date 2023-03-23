@@ -16,8 +16,7 @@
 package com.android.tools.lint.checks
 
 import com.android.SdkConstants.SUPPORT_LIB_ARTIFACT
-import com.android.ide.common.repository.GradleCoordinate
-import com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_HIGHER
+import com.android.ide.common.gradle.Version
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -59,7 +58,7 @@ class MediaBrowserServiceCompatVersionDetector : Detector(), SourceCodeScanner {
      * Minimum recommended support library version that has the necessary fixes to ensure that
      * MediaBrowserServiceCompat is forward compatible with N.
      */
-    val MIN_SUPPORT_V4_VERSION: GradleCoordinate = GradleCoordinate.parseVersionOnly("24.0.0")
+    val MIN_SUPPORT_V4_VERSION = Version.parse("24.0.0")
 
     const val MEDIA_BROWSER_SERVICE_COMPAT = "android.support.v4.media.MediaBrowserServiceCompat"
   }
@@ -79,8 +78,8 @@ class MediaBrowserServiceCompatVersionDetector : Detector(), SourceCodeScanner {
         ?: return
     val mc = library.resolvedCoordinates
     if (mc.version.isNotBlank()) {
-      val libVersion = GradleCoordinate.parseVersionOnly(mc.version)
-      if (COMPARE_PLUS_HIGHER.compare(libVersion, MIN_SUPPORT_V4_VERSION) < 0) {
+      val libVersion = Version.parse(mc.version)
+      if (libVersion < MIN_SUPPORT_V4_VERSION) {
         val location = GradleDetector.getDependencyLocation(context, mc)
         val message = "Using a version of the class that is not forward compatible"
         context.report(ISSUE, location, message)
