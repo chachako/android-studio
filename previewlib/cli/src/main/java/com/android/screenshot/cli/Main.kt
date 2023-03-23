@@ -20,6 +20,8 @@ import com.android.annotations.Nullable
 import com.android.tools.lint.CliConfiguration
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.LintCliFlags
+import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
+import com.android.tools.lint.LintCliFlags.ERRNO_INVALID_ARGS
 import com.android.tools.lint.ProjectMetadata
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.ConfigurationHierarchy
@@ -36,7 +38,10 @@ import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.guessGradleLocation
+import com.android.tools.lint.detector.api.isJreFolder
+import com.android.tools.lint.detector.api.splitPath
 import com.android.tools.lint.model.LintModelModule
+import com.android.tools.lint.model.LintModelSerialization
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.XmlUtils
 import com.google.common.io.ByteStreams
@@ -53,6 +58,15 @@ import java.util.zip.ZipFile
 
 class Main {
 
+    private val ARG_CLIENT_ID = "--client-id"
+    private val ARG_CLIENT_NAME = "--client-name"
+    private val ARG_CLIENT_VERSION = "--client-version"
+    private val ARG_SDK_HOME = "--sdk-home"
+    private val ARG_JDK_HOME = "--jdk-home"
+    private val ARG_LINT_MODEL = "--lint-model"
+    private val ARG_LINT_RULE_JARS = "--lint-rule-jars"
+    private val ARG_CACHE_DIR = "--cache-dir"
+
     private var sdkHomePath: File? = null
     private var jdkHomePath: File? = null
 
@@ -67,6 +81,138 @@ class Main {
     fun run(args: Array<String>) {
         val argumentState = ArgumentState()
         val client: LintCliClient = MainLintClient(flags, argumentState)
+        parseArguments(args, client, argumentState)
+    }
+
+    private fun parseArguments(
+        args: Array<String>,
+        client: LintCliClient,
+        argumentState: ArgumentState
+    ): Int {
+        var index = 0
+        while (index < args.size) {
+            val arg = args[index]
+            if (arg == ARG_CLIENT_ID) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing client id")
+                    return ERRNO_INVALID_ARGS
+                }
+
+            } else if (arg == ARG_CLIENT_NAME) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing client name")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.clientName = args[++index]
+            } else if (arg == ARG_CLIENT_VERSION) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing client version")
+                    return ERRNO_INVALID_ARGS
+                }
+                argumentState.clientVersion = args[++index]
+            } else if (arg == ARG_SDK_HOME) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing SDK home directory")
+                    return ERRNO_INVALID_ARGS
+                }
+                sdkHomePath = File(args[++index])
+                if (!sdkHomePath!!.isDirectory) {
+                    System.err.println(sdkHomePath.toString() + " is not a directory")
+                    return ERRNO_INVALID_ARGS
+                }
+            } else if (arg == ARG_JDK_HOME) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing JDK home directory")
+                    return ERRNO_INVALID_ARGS
+                }
+                jdkHomePath = File(args[++index])
+                if (!jdkHomePath!!.isDirectory) {
+                    System.err.println(jdkHomePath.toString() + " is not a directory")
+                    return ERRNO_INVALID_ARGS
+                }
+                if (!isJreFolder(jdkHomePath!!)) {
+                    System.err.println(jdkHomePath.toString() + " is not a JRE/JDK")
+                    return ERRNO_INVALID_ARGS
+                }
+            } else if (arg == ARG_LINT_MODEL) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing lint model argument after $ARG_LINT_MODEL")
+                    return ERRNO_INVALID_ARGS
+                }
+                val paths = args[++index]
+                for (path: String in splitPath(paths)) {
+                    val input: File = getInArgumentPath(path)
+                    if (!input.exists()) {
+                        System.err.println("Lint model $input does not exist.")
+                        return ERRNO_INVALID_ARGS
+                    }
+                    if (!input.isDirectory) {
+                        System.err.println(
+                            "Lint model "
+                                    + input
+                                    + " should be a folder containing the XML descriptor files"
+                                    + if (input.isDirectory) ", not a file" else ""
+                        )
+                        return ERRNO_INVALID_ARGS
+                    }
+                    try {
+                        val reader = LintModelSerialization
+                        val module = reader.readModule(input, null, true, client.pathVariables)
+                        argumentState.modules.add(module)
+                    } catch (error: Throwable) {
+                        System.err.println(
+                            ("Could not deserialize "
+                                    + input
+                                    + " to a lint model: "
+                                    + error.toString())
+                        )
+                        return ERRNO_INVALID_ARGS
+                    }
+                }
+            } else if ((arg == ARG_LINT_RULE_JARS)) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing lint rule jar")
+                    return ERRNO_INVALID_ARGS
+                }
+                val lintRuleJarsOverride: MutableList<File> = ArrayList()
+                val currentOverrides = flags.lintRuleJarsOverride
+                if (currentOverrides != null) {
+                    lintRuleJarsOverride.addAll(currentOverrides)
+                }
+                for (path: String in splitPath(args[++index])) {
+                    lintRuleJarsOverride.add(getInArgumentPath(path))
+                }
+                flags.lintRuleJarsOverride = lintRuleJarsOverride
+            } else if ((arg == ARG_CACHE_DIR)) {
+                if (index == args.size - 1) {
+                    System.err.println("Missing cache directory")
+                    return ERRNO_INVALID_ARGS
+                }
+                val path = args[++index]
+                val input: File = getInArgumentPath(path)
+                flags.setCacheDir(input)
+            } else {
+                return ERRNO_ERRORS
+            }
+            index++
+        }
+        return 0
+    }
+
+    /**
+     * Converts a relative or absolute command-line argument into an input file.
+     *
+     * @param filename The filename given as a command-line argument.
+     * @return A File matching filename, either absolute or relative to lint.workdir if defined.
+     */
+    private fun getInArgumentPath(filename: String): File {
+        var file = File(filename)
+        if (!file.isAbsolute) {
+            if (!file.isAbsolute) {
+                file = file.absoluteFile
+            }
+        }
+        return file
     }
 
     inner class ArgumentState {
@@ -84,7 +230,7 @@ class Main {
         var kotlinLanguageLevel: LanguageVersionSettings? = null
 
         @NonNull
-        var modules: List<LintModelModule> = ArrayList()
+        var modules: MutableList<LintModelModule> = mutableListOf()
 
         @Nullable
         var variantName: String? = null
@@ -94,16 +240,13 @@ class Main {
         var urlMap: String? = null
 
         @NonNull
-        var files: List<File> = ArrayList()
+        var files: List<File> = mutableListOf()
 
         @Nullable
         var pathVariables: PathVariables? = null
 
         @Nullable
         var desugaredMethodsPaths: List<String>? = null
-
-        @NonNull
-        var mode: LintDriver.DriverMode = LintDriver.DriverMode.GLOBAL
     }
 
     inner class MainLintClient(flags: LintCliFlags, private val argumentState: ArgumentState) :
