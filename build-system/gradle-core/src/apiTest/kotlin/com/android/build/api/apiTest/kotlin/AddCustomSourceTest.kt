@@ -48,6 +48,25 @@ class AddCustomSourceTest: VariantApiBaseTest(TestType.Script) {
                         minSdkVersion(21)
                         targetSdkVersion(29)
                     }
+
+                    flavorDimensions += listOf("dim1", "dim2")
+                    productFlavors {
+                        create("a1") {
+                            dimension = "dim1"
+                        }
+                        create("b1") {
+                            dimension = "dim1"
+                        }
+                        create("a2") {
+                            dimension = "dim2"
+                        }
+                        create("b2") {
+                            dimension = "dim2"
+                        }
+                        create("c2") {
+                            dimension = "dim2"
+                        }
+                    }
                 }
 
                 androidComponents {
@@ -64,7 +83,7 @@ class AddCustomSourceTest: VariantApiBaseTest(TestType.Script) {
                 """
 # Add custom source folders in Kotlin
 This sample shows how to add a new custom source folders to all source sets. The source folder will
-not be used by any AGP tasks (since we do no know about it), however, it can be used by plugins and
+not be used by any AGP tasks (since we do not know about it), however, it can be used by plugins and
 tasks participating into the Variant API callbacks.
 
 To register the custom sources, you just need to use
@@ -82,6 +101,32 @@ To register the custom sources, you just need to use
             Truth.assertThat(output).contains("Custom sources: [app/src/debug/toml]")
             Truth.assertThat(output).contains("Custom sources: [app/src/main/toml]")
             Truth.assertThat(output).contains("Custom sources: [app/src/release/toml]")
+            // Check all single flavors:
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/c2/toml]")
+            // Check all combined flavors:
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1A2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1B2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1C2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1A2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1B2/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1C2/toml]")
+            // Check all variants:
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1A2Debug/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1B2Debug/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1C2Debug/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1A2Debug/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1B2Debug/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1C2Debug/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1A2Release/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1B2Release/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/a1C2Release/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1A2Release/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1B2Release/toml]")
+            Truth.assertThat(output).contains("Custom sources: [app/src/b1C2Release/toml]")
         }
     }
 

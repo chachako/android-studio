@@ -408,6 +408,7 @@ class VariantManager<
                     .setUpSourceSet(
                             computeSourceSetName(dslInfoBuilder.name, componentType),
                             componentType.isTestComponent) as DefaultAndroidSourceSet
+            addExtraSourceSets(variantSourceSet)
             dslInfoBuilder.variantSourceProvider = variantSourceSet
         }
         if (productFlavorList.size > 1) {
@@ -417,7 +418,14 @@ class VariantManager<
                             computeSourceSetName(dslInfoBuilder.flavorName,
                                                     componentType),
                             componentType.isTestComponent) as DefaultAndroidSourceSet
+            addExtraSourceSets(multiFlavorSourceSet)
             dslInfoBuilder.multiFlavorSourceProvider = multiFlavorSourceSet
+        }
+    }
+
+    private fun addExtraSourceSets(sourceSet: DefaultAndroidSourceSet) {
+        variantApiOperationsRegistrar.onEachSourceSetExtensions { name: String ->
+            sourceSet.extras.create(name)
         }
     }
 
