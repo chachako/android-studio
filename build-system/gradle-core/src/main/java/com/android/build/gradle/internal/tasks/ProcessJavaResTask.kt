@@ -21,9 +21,11 @@ import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
+import org.gradle.api.file.ArchiveOperations
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Sync
@@ -31,10 +33,15 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
 import java.util.concurrent.Callable
+import javax.inject.Inject
 
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.JAVA_RESOURCES)
-abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
+abstract class ProcessJavaResTask @Inject constructor(
+    private val archiveOperations: ArchiveOperations
+): Sync(), VariantAwareTask {
+
+    fun zipTree(jarFile: File): FileTree = archiveOperations.zipTree(jarFile)
 
     @get:OutputDirectory
     abstract val outDirectory: DirectoryProperty
@@ -68,9 +75,9 @@ abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
             creationConfig.taskContainer.processJavaResourcesTask = taskProvider
 
             creationConfig.artifacts.setInitialProvider(
-                    taskProvider,
-                    ProcessJavaResTask::outDirectory
-                ).withName("out").on(InternalArtifactType.JAVA_RES)
+                taskProvider,
+                ProcessJavaResTask::outDirectory
+            ).withName("out").on(InternalArtifactType.JAVA_RES)
         }
 
         override fun configure(
@@ -134,7 +141,7 @@ abstract class ProcessJavaResTask : Sync(), VariantAwareTask {
                         file.isFile && file.name.endsWith(DOT_JAR)
                     }.elements.map { jars ->
                         jars.map { jar ->
-                            project.zipTree(jar.asFile).matching(
+                            zipTree(jar.asFile).matching(
                                 MergeJavaResourceTask.patternSet
                             )
                         }
