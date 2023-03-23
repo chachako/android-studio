@@ -39,9 +39,11 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD_SET
 import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
+import com.android.adblib.tools.debugging.packets.ddms.chunks.AppStage
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsApnmChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsHeloChunk
+import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsStagChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsWaitChunk
 import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
@@ -178,7 +180,17 @@ internal class JdwpProcessPropertiesCollector(
             collectWithSession(jdwpSession, collectState)
 
             if (collectState.hasCollectedEverything) {
-                if (collectState.waitReceived) {
+                // If app boot stage information IS NOT available then the WAIT packet was received
+                // and process is waiting for debugger (see `hasCollectedEverything` implementation).
+                // If app boot stage information IS available then use it to determine whether
+                // the process is waiting for debugger.
+                assert(collectState.propertiesFlow.value.stage != null || collectState.waitReceived)
+                var isWaitingForDebugger = true
+                if (collectState.propertiesFlow.value.stage != null) {
+                    isWaitingForDebugger = collectState.propertiesFlow.value.stage == AppStage.DEBG
+                }
+
+                if (isWaitingForDebugger) {
                     // See b/271466829: We need to keep the JDWP session open until an external
                     // debugger attaches to the Android process, because a JDWP session in a
                     // `WAIT` state needs to remain open until at least one "real" JDWP command
@@ -248,6 +260,8 @@ internal class JdwpProcessPropertiesCollector(
         //   "Android VM" is "receiving any valid JDWP command packet". Unfortunately, there
         //   is no "negative" version of the "WAIT" packet, meaning if the process is not
         //   in the "waiting for a debugger" state, there is no packet sent.
+        // * Starting API 34 we know the stage of the app boot progress. It provides info such as
+        //   whether the process is waiting for debugger, or if the process is up and running.
 
         // `HELO` packet is a reply to the `HELO` command we sent to the VM
         if (jdwpPacket.isReply && jdwpPacket.id == commands.heloCommand.id) {
@@ -261,7 +275,7 @@ internal class JdwpProcessPropertiesCollector(
             processFeatReply(collectState, jdwpPacket, workBuffer)
         }
 
-        // `WAIT` and `APNM` are DDMS chunks embedded in a JDWP command packet sent from
+        // `WAIT`, `APNM`, and `STAG` are DDMS chunks embedded in a JDWP command packet sent from
         // the VM to us
         if (jdwpPacket.isCommand(DDMS_CMD_SET, DDMS_CMD)) {
             // For completeness, we process all chunks embedded in a JDWP packet, even
@@ -276,6 +290,10 @@ internal class JdwpProcessPropertiesCollector(
 
                     DdmsChunkTypes.APNM -> {
                         processApnmCommand(collectState, chunk.clone(), workBuffer)
+                    }
+
+                    DdmsChunkTypes.STAG -> {
+                        processStagCommand(collectState, chunk.clone(), workBuffer)
                     }
 
                     else -> {
@@ -304,7 +322,8 @@ internal class JdwpProcessPropertiesCollector(
                 vmIdentifier = heloChunk.vmIdentifier,
                 abi = heloChunk.abi,
                 jvmFlags = heloChunk.jvmFlags,
-                isNativeDebuggable = heloChunk.isNativeDebuggable
+                isNativeDebuggable = heloChunk.isNativeDebuggable,
+                stage = heloChunk.stage
             )
         }
     }
@@ -348,6 +367,22 @@ internal class JdwpProcessPropertiesCollector(
                 processName = filterFakeName(apnmChunk.processName),
                 userId = apnmChunk.userId,
                 packageName = filterFakeName(apnmChunk.packageName)
+            )
+        }
+    }
+
+    private suspend fun processStagCommand(
+        collectState: CollectState,
+        chunkCopy: DdmsChunkView,
+        workBuffer: ResizableBuffer
+    ) {
+        val stagChunk = processDdmsChunk(chunkCopy, "STAG") {
+            DdmsStagChunk.parse(chunkCopy, workBuffer)
+        }
+        logger.debug { "`STAG` command: $stagChunk" }
+        collectState.propertiesFlow.update {
+            it.copy(
+                stage = stagChunk.stage
             )
         }
     }
@@ -496,10 +531,20 @@ internal class JdwpProcessPropertiesCollector(
          */
         val hasCollectedEverything: Boolean
             get() {
-                // We can only say we collected everything we need
+                if (!isDone) {
+                    return false
+                }
+
+                // For Api 34+ use boot stage data
+                if (propertiesFlow.value.stage != null) {
+                    return propertiesFlow.value.stage == AppStage.DEBG
+                            || propertiesFlow.value.stage == AppStage.A_GO
+                }
+
+                // For Api <= 33 we can only say we collected everything we need
                 // if we received the `WAIT` packet (because there is
                 // no such thing as a `NO_WAIT` packet).
-                return isDone && waitReceived
+                return waitReceived
             }
 
         /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,12 +51,15 @@ class HeloHandler : DDMPacketHandler {
         val writePackageName = deviceApiLevel >= 30
         val packageName = client.packageName
 
+        // Api boot stage starts at API 34
+        val writeStage = deviceApiLevel >= 34
         val payloadLength = (HELO_CHUNK_HEADER_LENGTH + (VM_IDENTIFIER.length + appName.length) * 2
                 + (if (writeUserId) 4 else 0)
                 + (if (writeAbi) 4 + abi.length * 2 else 0)
                 + (if (writeJvmFlags) 4 + jvmFlags.length * 2 else 0)
                 + (if (writeNativeDebuggable) 1 else 0)
-                + if (writePackageName) 4 + packageName.length * 2 else 0)
+                + (if (writePackageName) 4 + packageName.length * 2 else 0)
+                + if (writeStage) 4 else 0)
         val payload = ByteArray(payloadLength)
         val payloadBuffer = ByteBuffer.wrap(payload)
         payloadBuffer.putInt(VERSION)
@@ -93,7 +96,11 @@ class HeloHandler : DDMPacketHandler {
                 payloadBuffer.putChar(c)
             }
         }
-
+        if (writeStage) {
+            val stage =
+                client.stage ?: throw IllegalStateException("'stage' must be set before its used")
+            payloadBuffer.putInt(stage.value)
+        }
         val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, payload)
         try {
             responsePacket.write(oStream)
@@ -127,7 +134,6 @@ class HeloHandler : DDMPacketHandler {
                     apmnPayload.putChar(c)
                 }
             }
-
             val apnmPacket = DdmPacket.createCommand(
                 client.nextDdmsCommandId(),
                 DdmPacket.encodeChunkType("APNM"),

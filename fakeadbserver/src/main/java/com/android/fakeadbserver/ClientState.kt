@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,16 @@ import java.net.Socket
 import java.util.Arrays
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * JDWP processes state.
+ *
+ * @param isWaiting whether this client is waiting for a debugger connection or not.
+ */
 class ClientState internal constructor(
     pid: Int,
     val uid: Int,
     val processName: String,
-    val packageName: String, // Whether this client is waiting for a debugger connection or not
+    val packageName: String,
     val isWaiting: Boolean
 ) : ProcessState(pid) {
 
@@ -39,6 +44,10 @@ class ClientState internal constructor(
     private var jdwpSocket: Socket? = null
     var isAllocationTrackerEnabled = false
     var allocationTrackerDetails = ""
+
+    // App boot stage
+    var stage: AppStage? = null
+        private set
     private val hgpcRequestsCount = AtomicInteger()
     private val nextDdmsCommandId = AtomicInteger(0x70000000)
 
@@ -104,6 +113,10 @@ class ClientState internal constructor(
 
     fun getHgpcRequestsCount(): Int {
         return hgpcRequestsCount.get()
+    }
+
+    fun setStage(stage: AppStage) {
+        this.stage = stage
     }
 
     companion object {

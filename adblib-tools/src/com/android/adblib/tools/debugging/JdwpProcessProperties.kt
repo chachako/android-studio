@@ -16,6 +16,7 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.tools.debugging.impl.JdwpSessionProxy
+import com.android.adblib.tools.debugging.packets.ddms.chunks.AppStage
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
 import java.net.InetSocketAddress
 
@@ -80,6 +81,11 @@ data class JdwpProcessProperties(
      * `false` if we don't know or if a debugger is already attached.
      */
     var isWaitingForDebugger: Boolean = false,
+
+    /**
+     * The process boot stage if available
+     */
+    var stage: AppStage? = null,
 
     /**
      * The status of JDWP session proxy between an external debugger and the Android Process.

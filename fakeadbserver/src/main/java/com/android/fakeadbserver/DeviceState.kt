@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,6 @@ class DeviceState internal constructor(
         } catch (e: NumberFormatException) {
             1
         }
-
     var deviceStatus: DeviceStatus
         get() = mDeviceStatus
         set(status) {
@@ -166,6 +165,9 @@ class DeviceState internal constructor(
     ): ClientState {
         synchronized(mProcessStates) {
             val clientState = ClientState(pid, uid, processName, packageName, isWaiting)
+            if (apiLevel >= 34) {
+                clientState.setStage(AppStage.BOOT)
+            }
             mProcessStates[pid] = clientState
             clientChangeHub.clientListChanged()
             clientChangeHub.appProcessListChanged()
@@ -406,6 +408,9 @@ class DeviceState internal constructor(
                 if (api >= 30) {
                     features.add("abb")
                     features.add("abb_exec")
+                }
+                if (api >= 34) {
+                    features.add("support_boot_stages")
                 }
             } catch (e: NumberFormatException) {
                 // Cannot add more features based on API level since it is not the expected integer

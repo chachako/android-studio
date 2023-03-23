@@ -69,7 +69,12 @@ internal data class DdmsHeloChunk(
     /**
      * Application package name, or `null` if not available
      */
-    val packageName: String? = null
+    val packageName: String? = null,
+
+    /**
+     * App boot state
+     */
+    val stage: AppStage? = null
 ) {
 
     companion object {
@@ -110,6 +115,10 @@ internal data class DdmsHeloChunk(
             // https://cs.android.com/android/_/android/platform/frameworks/base/+/ab720ee1611da9fd4579d1adeb0acd6358b4f424
             val packageName = readOptionalLengthPrefixedString(buffer)
 
+            // Process boot stage was introduced in 2023
+            // TODO: add a link to I4699c62756f50106962ec8481bf67f103fa41b8f change
+            val stage = readOptionalInt(buffer)?.let { AppStage(it) }
+
             // All done, return chunk
             return DdmsHeloChunk(
                 version,
@@ -120,7 +129,8 @@ internal data class DdmsHeloChunk(
                 abi,
                 jvmFlags,
                 nativeDebuggable,
-                packageName
+                packageName,
+                stage
             )
         }
 
@@ -134,7 +144,8 @@ internal data class DdmsHeloChunk(
             abi: String? = null,
             jvmFlags: String? = null,
             isNativeDebuggable: Boolean? = null,
-            packageName: String? = null
+            packageName: String? = null,
+            stage: AppStage? = null
         ) {
             writeInt(buffer, protocolVersion)
             writeInt(buffer, pid)
@@ -148,6 +159,7 @@ internal data class DdmsHeloChunk(
             writeOptionalLengthPrefixedString(buffer, jvmFlags)
             writeOptionalByte(buffer, isNativeDebuggable?.let { if (it) 1 else 0 })
             writeOptionalLengthPrefixedString(buffer, packageName)
+            writeOptionalInt(buffer, stage?.value)
         }
     }
 }

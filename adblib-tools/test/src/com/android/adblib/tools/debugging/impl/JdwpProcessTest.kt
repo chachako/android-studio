@@ -31,6 +31,7 @@ import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
+import com.android.fakeadbserver.AppStage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -349,6 +350,80 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         assertTrue(job.isCancelled)
         assertEquals(1_000, process.cache.getOrPut(key1) { 1_000 })
         assertEquals(2_000, process.cache.getOrPut(key2) { 2_000 })
+    }
+
+    @Test
+    fun startMonitoringDoesNotReleaseJdwpSessionIfAppBootStageIsWaitForDebugger() = runBlockingWithTimeout {
+        // Prepare
+        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+        clientState.setStage(AppStage.DEBG)
+
+        // Act: When the AndroidVM app boot stage is "DEBG", "completed" is set early,
+        // but the SharedJDWPSession should be retained
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(60) // long timeout
+        )
+        process.startMonitoring()
+        yieldUntil { process.properties.completed }
+        delay(500) // give JDWP session holder time to launch
+
+        // Assert: The JDWP session should still be in-use, since app boot stage is `DEBG`
+        assertTrue(process.isJdwpSessionRetained)
+        assertEquals(AppStage.DEBG.value, process.properties.stage?.value)
+    }
+
+    @Test
+    fun startMonitoringReleasesJdwpSessionIfAppBootStageIsA_go() = runBlockingWithTimeout {
+        // Prepare
+        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = true)
+        val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+        clientState.setStage(AppStage.A_GO)
+
+        // Act: When the AndroidVM app boot stage is "A_GO", "completed" is set early.
+        // SharedJDWPSession should be released.
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(60) // long timeout
+        )
+        process.startMonitoring()
+        yieldUntil { process.properties.completed }
+        delay(500) // give JDWP session holder time to launch
+
+        // Assert: We don't keep JDWP session since app boot stage was set to `A_GO`
+        // WAIT packet is ignored when app boot stage info is available
+        assertFalse(process.isJdwpSessionRetained)
+        assertEquals(AppStage.A_GO.value, process.properties.stage?.value)
+    }
+
+    @Test
+    fun startMonitoringNeverEndsIfLongTimeoutAndAppBootStageIsNamd() = runBlockingWithTimeout {
+        // Prepare
+        val (fakeAdb, _, process) = createJdwpProcess(deviceApi = 34, waitForDebugger = false)
+        val clientState = fakeAdb.device(process.device.serialNumber).getClient(process.pid)!!
+        clientState.setStage(AppStage.NAMD)
+
+        // Act
+        setHostPropertyValue(
+            process.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofSeconds(50) // long timeout
+        )
+        process.startMonitoring()
+        yieldUntil {
+            process.properties.processName != null &&
+                    process.properties.features.isNotEmpty()
+        }
+
+        // Assert
+        val properties = process.properties
+        assertNull(properties.exception)
+        assertFalse(properties.completed)
+
+        assertEquals(AppStage.NAMD.value, process.properties.stage?.value)
     }
 
     private suspend fun createJdwpProcess(
