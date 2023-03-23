@@ -1195,6 +1195,11 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                         getIntent().getParcelableExtra(Intent.EXTRA_INTENT).run { // OK
                             startActivity(sanitize2(this))
                         }
+                        intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)?.takeIf { _ ->
+                            System.currentTimeMillis() > 0
+                        }?.also {
+                            startActivity(it) // ERROR 5
+                        }
                     }
 
                     // fake sanitize
@@ -1252,7 +1257,13 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 src/test/pkg/TestActivity.kt:39: The unsafe intent is launched here.
                         startActivity(sanitize(this))
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            0 errors, 4 warnings
+            src/test/pkg/TestActivity.kt:45: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component test.pkg.TestActivity. You could either make the component test.pkg.TestActivity protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+                    intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)?.takeIf { _ ->
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/TestActivity.kt:48: The unsafe intent is launched here.
+                        startActivity(it) // ERROR 5
+                        ~~~~~~~~~~~~~~~~~
+            0 errors, 5 warnings
             """
       )
   }

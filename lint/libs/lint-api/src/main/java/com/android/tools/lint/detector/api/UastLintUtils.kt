@@ -496,7 +496,7 @@ fun isScopingThis(node: UCallExpression): Boolean {
  */
 fun isScopingIt(node: UCallExpression): Boolean {
   val name = getMethodName(node)
-  if (name == "let" || name == "also") {
+  if (name == "let" || name == "also" || name == "takeIf" || name == "takeUnless") {
     return isScopingFunction(node)
   }
   return false
@@ -508,7 +508,7 @@ fun isScopingIt(node: UCallExpression): Boolean {
  */
 fun isReturningContext(node: UCallExpression): Boolean {
   val name = getMethodName(node)
-  if (name == "apply" || name == "also") {
+  if (name == "apply" || name == "also" || name == "takeIf" || name == "takeUnless") {
     return isScopingFunction(node)
   }
   return false
