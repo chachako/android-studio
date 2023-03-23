@@ -76,6 +76,8 @@ import org.xml.sax.SAXException;
  */
 public class DeviceManager {
 
+    public static final String FLAG_CANONICAL_DEVICES = "canonical.device.definitions.enabled";
+
     private static final String  DEVICE_PROFILES_PROP = "DeviceProfiles";
     private static final Pattern PATH_PROPERTY_PATTERN =
         Pattern.compile('^' + PkgProps.EXTRA_PATH + '=' + DEVICE_PROFILES_PROP + '$');
@@ -265,7 +267,7 @@ public class DeviceManager {
             devices.putAll(mSysImgDevices);
         }
 
-        boolean enabled = getBoolean.apply("canonical.device.definitions.enabled");
+        boolean enabled = getBoolean.apply(FLAG_CANONICAL_DEVICES);
 
         Collection<Device> deviceCollection =
                 devices.values().stream()
