@@ -35,6 +35,7 @@ import com.android.sdklib.repository.meta.DetailsTypes;
 import com.google.common.collect.Lists;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -214,8 +215,12 @@ public enum SdkMavenRepository {
         Predicate<Revision> revisionFilter = filter == null ? null
                 : (revision) -> filter.test(revisionToVersion(revision));
         return sdkHandler.getLatestLocalPackageForPrefix(
-                prefix, revisionFilter,  coordinate.isPreview(), GradleCoordinate::parseVersionOnly,
-                GradleCoordinate.COMPARE_PLUS_LOWER, progress);
+                prefix,
+                revisionFilter,
+                coordinate.isPreview(),
+                Version.Companion::parse,
+                Comparator.naturalOrder(),
+                progress);
     }
 
     @NonNull
@@ -236,8 +241,12 @@ public enum SdkMavenRepository {
         Predicate<Revision> revisionFilter = filter == null ? null
                 : (revision) -> filter.test(revisionToVersion(revision));
         return sdkHandler.getLatestRemotePackageForPrefix(
-                prefix, revisionFilter, coordinate.isPreview(),
-          GradleCoordinate::parseVersionOnly, GradleCoordinate.COMPARE_PLUS_LOWER, progress);
+                prefix,
+                revisionFilter,
+                coordinate.isPreview(),
+                Version.Companion::parse,
+                Comparator.naturalOrder(),
+                progress);
     }
 
     /**
