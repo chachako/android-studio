@@ -31,7 +31,7 @@ import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.TestProjectVariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
-import com.android.build.gradle.internal.dsl.ModuleBooleanPropertyKeys
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
@@ -89,7 +89,7 @@ open class TestVariantImpl @Inject constructor(
     //         tested application id from the APK metadata file for uninstalling.
     override val testedApplicationId: Provider<String> by lazy {
         experimentalProperties.flatMap {
-            if (ModuleBooleanPropertyKeys.SELF_INSTRUMENTING.getValueAsBoolean(it)) {
+            if (ModulePropertyKey.BooleanWithDefault.SELF_INSTRUMENTING.getValue(it)) {
                 applicationId
             } else {
                 calculateTestedApplicationId(variantDependencies)

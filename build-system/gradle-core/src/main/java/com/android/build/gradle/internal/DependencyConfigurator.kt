@@ -61,7 +61,7 @@ import com.android.build.gradle.internal.dependency.registerDexingOutputSplitTra
 import com.android.build.gradle.internal.dsl.BaseFlavor
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.DefaultConfig
-import com.android.build.gradle.internal.dsl.ModuleStringPropertyKeys
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreSigningConfig
@@ -504,8 +504,9 @@ class DependencyConfigurator(
                         val experimentalProperties = variant.experimentalProperties
                         experimentalProperties.finalizeValue()
 
-                        val experimentalPropertiesApiGenerator =
-                                experimentalProperties.get()[ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR.keyValue] as Dependency?
+                        val experimentalPropertiesApiGenerator: Dependency? =
+                                ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR
+                                        .getValue(experimentalProperties.get())?.single()
                         val apigeneratorArtifact: Dependency =
                                 experimentalPropertiesApiGenerator
                                         ?: project.dependencies.create(
@@ -514,7 +515,7 @@ class DependencyConfigurator(
                                         ) as Dependency
 
                         val experimentalPropertiesRuntimeApigeneratorDependencies =
-                                experimentalProperties.get()[ModuleStringPropertyKeys.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.keyValue] as ArrayList<Dependency>?
+                                ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.getValue(experimentalProperties.get())
                         val runtimeDependenciesForShimSdk: List<Dependency> =
                                 experimentalPropertiesRuntimeApigeneratorDependencies
                                         ?: (projectServices.projectOptions
