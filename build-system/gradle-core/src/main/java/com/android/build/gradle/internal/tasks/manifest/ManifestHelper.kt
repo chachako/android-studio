@@ -38,6 +38,10 @@ import java.io.IOException
  * @param packageOverride the value used for the merged manifest's package attribute, which is
  *                        the applicationId for apps and the namespace for libraries.
  * @param namespace the namespace, used to create or shorten fully qualified class names
+ * @param extractNativeLibs the value to assign to the injected android:extractNativeLibs attribute.
+ *                          The attribute will not be injected if null. Even if not null, the
+ *                          attribute will not be modified if it's already present in the main
+ *                          manifest or an overlay manifest.
  */
 fun mergeManifests(
     mainManifest: File,
@@ -54,6 +58,7 @@ fun mergeManifests(
     targetSdkVersion: String?,
     maxSdkVersion: Int?,
     testOnly: Boolean,
+    extractNativeLibs: Boolean?,
     outMergedManifestLocation: String?,
     outAaptSafeManifestLocation: String?,
     mergeType: ManifestMerger2.MergeType,
@@ -101,9 +106,16 @@ fun mergeManifests(
 
         setInjectableValues(
             manifestMergerInvoker,
-            packageOverride, versionCode, versionName,
-            minSdkVersion, targetSdkVersion, maxSdkVersion,
-            injectProfileable, testOnly, compileSdk
+            packageOverride,
+            versionCode,
+            versionName,
+            minSdkVersion,
+            targetSdkVersion,
+            maxSdkVersion,
+            injectProfileable,
+            testOnly,
+            compileSdk,
+            extractNativeLibs
         )
 
         val mergingReport = manifestMergerInvoker.merge()
@@ -203,7 +215,8 @@ private fun setInjectableValues(
     maxSdkVersion: Int?,
     profileable: Boolean,
     testOnly: Boolean,
-    compileSdk: Int?
+    compileSdk: Int?,
+    extractNativeLibs: Boolean?
 ) {
 
     if (packageOverride != null && packageOverride.isNotEmpty()) {
@@ -237,6 +250,15 @@ private fun setInjectableValues(
     }
     if (testOnly) {
         invoker.setOverride(ManifestSystemProperty.Application.TEST_ONLY, "true")
+    }
+    if (extractNativeLibs != null) {
+        // android:extractNativeLibs unrecognized if using compile SDK < 23.
+        if (compileSdk == null || compileSdk >= 23) {
+            invoker.setOverride(
+                ManifestSystemProperty.Application.EXTRACT_NATIVE_LIBS,
+                extractNativeLibs.toString()
+            )
+        }
     }
 }
 

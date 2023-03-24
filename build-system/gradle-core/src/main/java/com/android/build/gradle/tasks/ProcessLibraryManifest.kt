@@ -166,6 +166,7 @@ abstract class ProcessLibraryManifest : ManifestProcessorTask() {
                 parameters.targetSdkVersion.orNull,
                 parameters.maxSdkVersion.orNull,
                 testOnly = false,
+                extractNativeLibs = null,
                 parameters.manifestOutputFile.asFile.get().absolutePath,
                 parameters.aaptFriendlyManifestOutputFile.asFile.orNull?.absolutePath /* outInstantRunManifestLocation */,
                 ManifestMerger2.MergeType.LIBRARY /* outInstantAppManifestLocation */,

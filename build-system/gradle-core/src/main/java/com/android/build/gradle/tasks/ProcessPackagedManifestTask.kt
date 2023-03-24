@@ -145,6 +145,7 @@ abstract class ProcessPackagedManifestTask @Inject constructor(
                     targetSdkVersion = null,
                     maxSdkVersion = null,
                     testOnly = false,
+                    extractNativeLibs = null,
                     outMergedManifestLocation = outputFile.path,
                     outAaptSafeManifestLocation = null,
                     mergeType = ManifestMerger2.MergeType.APPLICATION,

@@ -1829,33 +1829,7 @@ public class ManifestMerger2SmallTest {
     }
 
     @Test
-    public void testExtractNativeLibs_notInjected_forLIbs() throws Exception {
-        MockLog mockLog = new MockLog();
-        String input =
-                "<manifest\n"
-                        + "        xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
-                        + "        package=\"example\">\n"
-                        + "    <application/>\n"
-                        + "</manifest>";
-
-        File tmpFile = TestUtils.inputAsFile("ManifestMerger2Test_noExtractNativeLibs", input);
-        assertTrue(tmpFile.exists());
-
-        try {
-            MergingReport mergingReport =
-                    ManifestMerger2.newMerger(tmpFile, mockLog, ManifestMerger2.MergeType.LIBRARY)
-                            .withFeatures(Feature.DO_NOT_EXTRACT_NATIVE_LIBS)
-                            .merge();
-            assertEquals(MergingReport.Result.SUCCESS, mergingReport.getResult());
-            String mergedDocument = mergingReport.getMergedDocument(MergedManifestKind.MERGED);
-            assertThat(mergedDocument).doesNotContain("extractNativeLibs");
-        } finally {
-            assertTrue(tmpFile.delete());
-        }
-    }
-
-    @Test
-    public void testExtractNativeLibs_injected() throws Exception {
+    public void testExtractNativeLibs_injected_true() throws Exception {
         MockLog mockLog = new MockLog();
         String input =
                 "<manifest\n"
@@ -1871,7 +1845,36 @@ public class ManifestMerger2SmallTest {
             MergingReport mergingReport =
                     ManifestMerger2.newMerger(
                                     tmpFile, mockLog, ManifestMerger2.MergeType.APPLICATION)
-                            .withFeatures(Feature.DO_NOT_EXTRACT_NATIVE_LIBS)
+                            .setOverride(
+                                    ManifestSystemProperty.Application.EXTRACT_NATIVE_LIBS, "true")
+                            .merge();
+            assertEquals(MergingReport.Result.SUCCESS, mergingReport.getResult());
+            String mergedDocument = mergingReport.getMergedDocument(MergedManifestKind.MERGED);
+            assertThat(mergedDocument).contains("android:extractNativeLibs=\"true\"");
+        } finally {
+            assertTrue(tmpFile.delete());
+        }
+    }
+
+    @Test
+    public void testExtractNativeLibs_injected_false() throws Exception {
+        MockLog mockLog = new MockLog();
+        String input =
+                "<manifest\n"
+                        + "        xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "        package=\"foo.bar\">\n"
+                        + "    <application/>\n"
+                        + "</manifest>";
+
+        File tmpFile = TestUtils.inputAsFile("ManifestMerger2Test_extractNativeLibsFalse", input);
+        assertTrue(tmpFile.exists());
+
+        try {
+            MergingReport mergingReport =
+                    ManifestMerger2.newMerger(
+                                    tmpFile, mockLog, ManifestMerger2.MergeType.APPLICATION)
+                            .setOverride(
+                                    ManifestSystemProperty.Application.EXTRACT_NATIVE_LIBS, "false")
                             .merge();
             assertEquals(MergingReport.Result.SUCCESS, mergingReport.getResult());
             String mergedDocument = mergingReport.getMergedDocument(MergedManifestKind.MERGED);
@@ -1898,9 +1901,12 @@ public class ManifestMerger2SmallTest {
             MergingReport mergingReport =
                     ManifestMerger2.newMerger(
                                     tmpFile, mockLog, ManifestMerger2.MergeType.APPLICATION)
-                            .withFeatures(Feature.DO_NOT_EXTRACT_NATIVE_LIBS)
+                            .setOverride(
+                                    ManifestSystemProperty.Application.EXTRACT_NATIVE_LIBS, "false")
                             .merge();
-            assertEquals(MergingReport.Result.SUCCESS, mergingReport.getResult());
+            assertEquals(MergingReport.Result.WARNING, mergingReport.getResult());
+            assertStringPresenceInLogRecords(
+                    mergingReport, "android:extractNativeLibs should not be specified");
             String mergedDocument = mergingReport.getMergedDocument(MergedManifestKind.MERGED);
             assertThat(mergedDocument).contains("android:extractNativeLibs=\"true\"");
             assertThat(mergedDocument).doesNotContain("android:extractNativeLibs=\"false\"");

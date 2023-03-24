@@ -154,9 +154,11 @@ class NativeSoPackagingOptionsTest {
             assertThat(nativeLibEntry.method).isEqualTo(ZipEntry.DEFLATED)
         }
         assertThat(
-                ApkSubject.getManifestContent(debugApkFile.toPath()).none {
-                    it.contains("android:extractNativeLibs")
-                }
+            ApkSubject.getManifestContent(debugApkFile.toPath()).any {
+                // check strings separately because there are extra characters between them
+                // in this manifest.
+                it.contains("android:extractNativeLibs") && it.contains("=true")
+            }
         ).isTrue()
 
         val releaseApkFile = appSubProject.getApk(RELEASE).file.toFile()

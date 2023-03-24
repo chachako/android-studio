@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.packaging
 
+import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -27,7 +28,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.zip.ZipEntry
+import java.util.zip.ZipEntry.DEFLATED
+import java.util.zip.ZipEntry.STORED
 import java.util.zip.ZipFile
 
 /**
@@ -42,33 +44,36 @@ import java.util.zip.ZipFile
 class ExtractNativeLibsPackagingTest(
     private val sourceManifestValue: Boolean?,
     private val minSdk: Int,
+    compileSdk: Int,
     private val useLegacyPackaging: Boolean?,
     private val expectedMergedManifestValue: Boolean?,
-    private val expectedCompression: Int
+    private val expectedCompression: Int,
 ) {
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters(name = "extractNativeLibs_{0}_minSdk_{1}_useLegacyPackaging_{2}")
+        @Parameterized.Parameters(name = "extractNativeLibs_{0}_minSdk_{1}_compileSdk_{2}_useLegacyPackaging_{3}")
         fun parameters() = listOf(
-            arrayOf(true, 22, true, true, ZipEntry.DEFLATED),
-            arrayOf(true, 22, false, true, ZipEntry.DEFLATED),
-            arrayOf(true, 22, null, true, ZipEntry.DEFLATED),
-            arrayOf(true, 23, true, true, ZipEntry.DEFLATED),
-            arrayOf(true, 23, false, true, ZipEntry.DEFLATED),
-            arrayOf(true, 23, null, true, ZipEntry.DEFLATED),
-            arrayOf(false, 22, true, false, ZipEntry.STORED),
-            arrayOf(false, 22, false, false, ZipEntry.STORED),
-            arrayOf(false, 22, null, false, ZipEntry.STORED),
-            arrayOf(false, 23, true, false, ZipEntry.STORED),
-            arrayOf(false, 23, false, false, ZipEntry.STORED),
-            arrayOf(false, 23, null, false, ZipEntry.STORED),
-            arrayOf(null, 22, true, null, ZipEntry.DEFLATED),
-            arrayOf(null, 22, false, false, ZipEntry.STORED),
-            arrayOf(null, 22, null, null, ZipEntry.DEFLATED),
-            arrayOf(null, 23, true, null, ZipEntry.DEFLATED),
-            arrayOf(null, 23, false, false, ZipEntry.STORED),
-            arrayOf(null, 23, null, false, ZipEntry.STORED)
+            arrayOf(true, 22, DEFAULT_COMPILE_SDK_VERSION, true, true, DEFLATED),
+            arrayOf(true, 22, DEFAULT_COMPILE_SDK_VERSION, false, true, DEFLATED),
+            arrayOf(true, 22, DEFAULT_COMPILE_SDK_VERSION, null, true, DEFLATED),
+            arrayOf(true, 23, DEFAULT_COMPILE_SDK_VERSION, true, true, DEFLATED),
+            arrayOf(true, 23, DEFAULT_COMPILE_SDK_VERSION, false, true, DEFLATED),
+            arrayOf(true, 23, DEFAULT_COMPILE_SDK_VERSION, null, true, DEFLATED),
+            arrayOf(false, 22, DEFAULT_COMPILE_SDK_VERSION, true, false, STORED),
+            arrayOf(false, 22, DEFAULT_COMPILE_SDK_VERSION, false, false, STORED),
+            arrayOf(false, 22, DEFAULT_COMPILE_SDK_VERSION, null, false, STORED),
+            arrayOf(false, 23, DEFAULT_COMPILE_SDK_VERSION, true, false, STORED),
+            arrayOf(false, 23, DEFAULT_COMPILE_SDK_VERSION, false, false, STORED),
+            arrayOf(false, 23, DEFAULT_COMPILE_SDK_VERSION, null, false, STORED),
+            arrayOf(null, 22, DEFAULT_COMPILE_SDK_VERSION, true, true, DEFLATED),
+            arrayOf(null, 22, DEFAULT_COMPILE_SDK_VERSION, false, false, STORED),
+            arrayOf(null, 22, DEFAULT_COMPILE_SDK_VERSION, null, true, DEFLATED),
+            arrayOf(null, 23, DEFAULT_COMPILE_SDK_VERSION, true, true, DEFLATED),
+            arrayOf(null, 23, DEFAULT_COMPILE_SDK_VERSION, false, false, STORED),
+            arrayOf(null, 23, DEFAULT_COMPILE_SDK_VERSION, null, false, STORED),
+            // test case with older compile SDK that doesn't recognize android:extractNativeLibs.
+            arrayOf(null, 22, 21, null, null, DEFLATED)
         )
     }
 
@@ -94,7 +99,7 @@ class ExtractNativeLibsPackagingTest(
                         apply plugin: 'com.android.application'
                         android {
                             namespace "com.example"
-                            compileSdk = ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
+                            compileSdk = $compileSdk
                             defaultConfig {
                                 minSdk = $minSdk
                             }
@@ -133,7 +138,7 @@ class ExtractNativeLibsPackagingTest(
                         apply plugin: 'com.android.test'
                         android {
                             namespace "com.example"
-                            compileSdk = ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
+                            compileSdk = $compileSdk
                             defaultConfig {
                                 minSdk = $minSdk
                             }
@@ -177,12 +182,12 @@ class ExtractNativeLibsPackagingTest(
         result.stdout.use {
             val resolvedUseLegacyPackaging: Boolean = useLegacyPackaging ?: (minSdk < 23)
             when {
-                resolvedUseLegacyPackaging && expectedCompression == ZipEntry.STORED -> {
+                resolvedUseLegacyPackaging && expectedCompression == STORED -> {
                     assertThat(it).contains(
                         "PackagingOptions.jniLibs.useLegacyPackaging should be set to false"
                     )
                 }
-                !resolvedUseLegacyPackaging && expectedCompression == ZipEntry.DEFLATED -> {
+                !resolvedUseLegacyPackaging && expectedCompression == DEFLATED -> {
                     assertThat(it).contains(
                         "PackagingOptions.jniLibs.useLegacyPackaging should be set to true"
                     )

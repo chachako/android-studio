@@ -24,7 +24,6 @@ import com.android.manifmerger.ManifestMerger2.AutoAddingProperty
 import com.android.manifmerger.ManifestModel.NodeTypes
 import com.android.utils.SdkUtils
 import com.android.utils.XmlUtils
-import org.w3c.dom.Element
 
 /**
  * List of manifest files properties that can be directly overridden without using a
@@ -56,19 +55,22 @@ interface ManifestSystemProperty : AutoAddingProperty {
     /**
      * @see [
      * https://developer.android.com/guide/topics/manifest/application-element](https://developer.android.com/guide/topics/manifest/application-element)
+     *
+     * [override] specifies whether an existing attribute value should be overridden.
      */
-    enum class Application : ManifestSystemProperty {
+    enum class Application(private val override: Boolean) : ManifestSystemProperty {
 
-        TEST_ONLY;
+        TEST_ONLY(override = true),
+        EXTRACT_NATIVE_LIBS(override = false);
 
         override fun addTo(actionRecorder: ActionRecorder, document: XmlDocument, value: String) {
-            val msp = createOrGetElementInManifest(
+            val xmlElement = createOrGetElementInManifest(
                 actionRecorder,
                 document,
                 NodeTypes.APPLICATION,
                 "application injection requested"
             )
-            addToElementInAndroidNS(this, actionRecorder, value, msp)
+            addToElementInAndroidNS(this, actionRecorder, value, xmlElement, override)
         }
     }
 
@@ -183,21 +185,35 @@ private fun addToElement(
     recordElementInjectionAction(actionRecorder, to, xmlAttribute)
 }
 
-// utility method to add an attribute in android namespace which local name is derived from
-// the enum name().
+/**
+ * utility method to add an attribute in android namespace which local name is derived from
+ * the enum name().
+ *
+ * @param override whether to override an existing attribute value
+ */
 private fun addToElementInAndroidNS(
     elementAttribute: ManifestSystemProperty,
     actionRecorder: ActionRecorder,
     value: String,
-    to: XmlElement
+    to: XmlElement,
+    override: Boolean = true
 ) {
     val toolsPrefix = to.lookupNamespacePrefix(
         SdkConstants.ANDROID_URI, SdkConstants.ANDROID_NS_NAME, true)
-    to.setAttributeNS(
-        SdkConstants.ANDROID_URI,
-        toolsPrefix + XmlUtils.NS_SEPARATOR + elementAttribute.toCamelCase(),
-        value
-    )
+    if (override) {
+        to.setAttributeNS(
+            SdkConstants.ANDROID_URI,
+            toolsPrefix + XmlUtils.NS_SEPARATOR + elementAttribute.toCamelCase(),
+            value
+        )
+    } else {
+        val isModified =
+            ManifestMerger2.setAndroidAttributeIfMissing(to, elementAttribute.toCamelCase(), value)
+        if (!isModified) {
+            // no reason to record the action if not modified.
+            return
+        }
+    }
     val attr = to.getAttributeNodeNS(
         SdkConstants.ANDROID_URI,
         elementAttribute.toCamelCase()
@@ -242,8 +258,7 @@ private fun createOrGetElement(
 ): XmlElement {
     return parentElement.createOrGetElementOfType(
         document,
-        nodeType,
-        SdkConstants.ANDROID_URI) { xmlElement ->
+        nodeType) { xmlElement ->
         val nodeRecord = NodeRecord(
             Actions.ActionType.INJECTED,
             SourceFilePosition(

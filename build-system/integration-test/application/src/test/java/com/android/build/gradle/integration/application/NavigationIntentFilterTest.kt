@@ -207,7 +207,8 @@ class NavigationIntentFilterTest {
 
                 <application
                     android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-                    android:debuggable="true" >
+                    android:debuggable="true"
+                    android:extractNativeLibs="true" >
                     <activity android:name="com.example.app.MyActivity" >
                         <intent-filter>
                             <action android:name="android.intent.action.APP_ACTION" />

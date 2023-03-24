@@ -190,17 +190,12 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             targetSdkVersion.orNull,
             maxSdkVersion.orNull,
             testOnly.get(),
-            mergedManifest.get().asFile.absolutePath /* aaptFriendlyManifestOutputFile */,
+            extractNativeLibs = jniLibsUseLegacyPackaging.get(),
+            mergedManifest.get().asFile.absolutePath,
             null /* outAaptSafeManifestLocation */,
             ManifestMerger2.MergeType.APPLICATION,
             manifestPlaceholders.get(),
-            optionalFeatures.get().plus(
-                mutableListOf<Invoker.Feature>().also {
-                    if (!jniLibsUseLegacyPackaging.get()) {
-                        it.add(Invoker.Feature.DO_NOT_EXTRACT_NATIVE_LIBS)
-                    }
-                }
-            ),
+            optionalFeatures.get(),
             dependencyFeatureNames,
             generatedLocaleConfigAttribute = if (addLocaleConfigAttribute.get()) {
                 generateLocaleConfigManifestAttribute(LOCALE_CONFIG_FILE_NAME)
@@ -433,16 +428,11 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
 
             task.applicationId.set(creationConfig.applicationId)
             task.applicationId.disallowChanges()
-            val compileSdkHashString =
-                    (creationConfig as? ApplicationCreationConfig)?.global?.compileSdkHashString
 
-            task.compileSdk.setDisallowChanges(
-                    if (compileSdkHashString != null) {
-                        parseTargetHash(compileSdkHashString).apiLevel
-                    } else {
-                        null
-                    }
-            )
+            task.compileSdk
+                .setDisallowChanges(
+                    parseTargetHash(creationConfig.global.compileSdkHashString).apiLevel
+                )
             task.minSdkVersion.setDisallowChanges(creationConfig.minSdk.getApiString())
             task.targetSdkVersion
                 .setDisallowChanges(
@@ -581,22 +571,24 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
                     features.add(Invoker.Feature.ADVANCED_PROFILING)
                 }
             }
+            val projectOptions = creationConfig.services.projectOptions
             if (creationConfig.dexingCreationConfig.dexingType === DexingType.LEGACY_MULTIDEX) {
                 features.add(
-                    if (creationConfig.services.projectOptions[BooleanOption.USE_ANDROID_X]) {
+                    if (projectOptions[BooleanOption.USE_ANDROID_X]) {
                         Invoker.Feature.ADD_ANDROIDX_MULTIDEX_APPLICATION_IF_NO_NAME
                     } else {
                         Invoker.Feature.ADD_SUPPORT_MULTIDEX_APPLICATION_IF_NO_NAME
                     })
             }
-            if (creationConfig.services.projectOptions[BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES]
-            ) {
+            if (projectOptions[BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES]) {
                 features.add(Invoker.Feature.ENFORCE_UNIQUE_PACKAGE_NAME)
             }
-            if (creationConfig.services.projectOptions[BooleanOption.DISABLE_MINSDKLIBRARY_CHECK]) {
+            if (projectOptions[BooleanOption.DISABLE_MINSDKLIBRARY_CHECK]) {
                 features.add(Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK)
             }
-            features.add(Invoker.Feature.VALIDATE_EXTRACT_NATIVE_LIBS_ATTRIBUTE)
+            if (!projectOptions[BooleanOption.SUPPRESS_EXTRACT_NATIVE_LIBS_WARNINGS]) {
+                features.add(Invoker.Feature.VALIDATE_EXTRACT_NATIVE_LIBS_FROM_DEPENDENCIES)
+            }
             return if (features.isEmpty())
                 EnumSet.noneOf(Invoker.Feature::class.java)
             else EnumSet.copyOf(features)

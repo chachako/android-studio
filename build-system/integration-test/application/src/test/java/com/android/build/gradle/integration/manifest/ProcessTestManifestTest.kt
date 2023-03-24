@@ -232,9 +232,8 @@ class ProcessTestManifestTest {
         }
     }
 
-    // This should eventually be a warning, but not until there's AUA support (b/272815813)
     @Test
-    fun testNoWarningsForApplicationAttributes() {
+    fun testWarningForExtractNativeLibsAttribute() {
         FileUtils.createFile(
             project.file("src/androidTest/AndroidManifest.xml"),
             """
@@ -244,7 +243,7 @@ class ProcessTestManifestTest {
             """.trimIndent())
         val result = project.executor().run("assembleDebugAndroidTest")
         result.stdout.use {
-            assertThat(it).doesNotContain("android:extractNativeLibs should not be specified")
+            assertThat(it).contains("android:extractNativeLibs should not be specified")
         }
     }
 

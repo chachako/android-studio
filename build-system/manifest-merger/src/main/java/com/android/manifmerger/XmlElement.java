@@ -381,22 +381,18 @@ public class XmlElement extends OrphanXmlElement {
     public XmlElement createOrGetElementOfType(
             XmlDocument document,
             ManifestModel.NodeTypes nodeType,
-            String namespaceUri,
             Consumer<XmlElement> postCreationAction) {
+        Optional<XmlElement> optionalXmlElement = getFirstChildElementOfType(nodeType);
+        if (optionalXmlElement.isPresent()) {
+            return optionalXmlElement.get();
+        }
         var elementName = document.getModel().toXmlName(nodeType);
-        var nodes = getXml().getElementsByTagName(elementName);
-        if (nodes.getLength() == 0) {
-            nodes = getXml().getElementsByTagNameNS(namespaceUri, elementName);
-        }
-        if (nodes.getLength() == 0) {
-            var node = getXml().getOwnerDocument().createElement(elementName);
-            appendChild(node);
-            var xmlElement = new XmlElement(node, document);
-            postCreationAction.accept(xmlElement);
-            return xmlElement;
-        } else {
-            return new XmlElement((Element) nodes.item(0), document);
-        }
+        var node = getXml().getOwnerDocument().createElement(elementName);
+        appendChild(node);
+        initMergeableChildren();
+        var createdXmlElement = getFirstChildElementOfType(nodeType).get();
+        postCreationAction.accept(createdXmlElement);
+        return createdXmlElement;
     }
 
     public void setAttribute(String name, String value) {

@@ -265,9 +265,6 @@ public class ManifestMerger2 {
                     mergingReportBuilder,
                     enforceUniquePackageName);
         }
-        // perform system property injection
-        performSystemPropertiesInjection(mergingReportBuilder,
-                loadedMainManifestInfo.getXmlDocument());
 
         // invariant : xmlDocumentOptional holds the higher priority document and we try to
         // merge in lower priority documents.
@@ -360,6 +357,9 @@ public class ManifestMerger2 {
         }
         xmlDocumentOptional = newMergedDocument.get();
 
+        // perform system property injection
+        performSystemPropertiesInjection(mergingReportBuilder, xmlDocumentOptional);
+
         // force main manifest package into resulting merged file when creating a library manifest.
         if (mMergeType == MergeType.LIBRARY) {
             // extract the package name...
@@ -426,9 +426,6 @@ public class ManifestMerger2 {
         }
 
         mProcessCancellationChecker.check();
-
-        // perform system property injection again.
-        performSystemPropertiesInjection(mergingReportBuilder, xmlDocumentOptional);
 
         // if it's a library of any kind - need to remove targetSdk
         if (!mOptionalFeatures.contains(Invoker.Feature.DISABLE_STRIP_LIBRARY_TARGET_SDK)
@@ -644,11 +641,6 @@ public class ManifestMerger2 {
             optionalAddApplicationTagIfMissing(xmlDocument);
         }
 
-        if (mMergeType == MergeType.APPLICATION
-                && mOptionalFeatures.contains(Invoker.Feature.DO_NOT_EXTRACT_NATIVE_LIBS)) {
-            maybeAddExtractNativeLibAttribute(xmlDocument);
-        }
-
         if (mOptionalFeatures.contains(
                 Invoker.Feature.ADD_ANDROIDX_MULTIDEX_APPLICATION_IF_NO_NAME)) {
             addMultiDexApplicationIfNoName(
@@ -748,23 +740,6 @@ public class ManifestMerger2 {
                 application ->
                         setAndroidAttributeIfMissing(
                                 application, ATTR_NAME, multiDexApplicationName));
-    }
-
-    /**
-     * Set android:extractNativeLibs="false" unless it's already explicitly set.
-     *
-     * @param document the document for which the extractNativeLibs attribute should be set to
-     *     false.
-     */
-    private static void maybeAddExtractNativeLibAttribute(@NonNull XmlDocument document) {
-        XmlElement manifest = document.getRootNode();
-        manifest.applyToFirstChildElementOfType(
-                ManifestModel.NodeTypes.APPLICATION,
-                application ->
-                        setAndroidAttributeIfMissing(
-                                application,
-                                SdkConstants.ATTR_EXTRACT_NATIVE_LIBS,
-                                SdkConstants.VALUE_FALSE));
     }
 
     /**
@@ -947,12 +922,14 @@ public class ManifestMerger2 {
      * @param node Node in which to set the attribute; must be part of a document
      * @param localName Non-prefixed attribute name
      * @param value value of the attribute
+     * @return whether the attribute was set (i.e., whether it was missing previously)
      */
-    private static void setAndroidAttributeIfMissing(
-            XmlElement node, String localName, String value) {
+    static boolean setAndroidAttributeIfMissing(XmlElement node, String localName, String value) {
         if (!node.getXml().hasAttributeNS(SdkConstants.ANDROID_URI, localName)) {
             setAndroidAttribute(node, localName, value);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -1167,13 +1144,24 @@ public class ManifestMerger2 {
             @NonNull LoadedManifestInfo lowerPriorityDocument,
             @NonNull MergingReport.Builder mergingReportBuilder) {
 
+        boolean validateExtractNativeLibsFromSources =
+                mSystemPropertyResolver.getValue(
+                                ManifestSystemProperty.Application.EXTRACT_NATIVE_LIBS)
+                        != null;
+
+        Boolean higherPriorityExtractNativeLibsValue =
+                PreValidator.getExtractNativeLibsValue(xmlDocument);
+        boolean validateExtractNativeLibsFromDependencies =
+                mOptionalFeatures.contains(
+                                Invoker.Feature.VALIDATE_EXTRACT_NATIVE_LIBS_FROM_DEPENDENCIES)
+                        && !Boolean.TRUE.equals(higherPriorityExtractNativeLibsValue);
+
         MergingReport.Result validationResult =
                 PreValidator.validate(
                         mergingReportBuilder,
                         lowerPriorityDocument.getXmlDocument(),
-                        mMergeType,
-                        mOptionalFeatures.contains(
-                                Invoker.Feature.VALIDATE_EXTRACT_NATIVE_LIBS_ATTRIBUTE));
+                        validateExtractNativeLibsFromSources,
+                        validateExtractNativeLibsFromDependencies);
 
         if (validationResult == MergingReport.Result.ERROR
                 && !mOptionalFeatures.contains(Invoker.Feature.KEEP_GOING_AFTER_ERRORS)) {
@@ -1799,12 +1787,6 @@ public class ManifestMerger2 {
             /** Enforce that dependencies manifests don't have duplicated package names. */
             ENFORCE_UNIQUE_PACKAGE_NAME,
 
-            /**
-             * Sets the application's android:extractNativeLibs attribute to false, unless it's
-             * already explicitly set to true.
-             */
-            DO_NOT_EXTRACT_NATIVE_LIBS,
-
             /** Unsafely disables minSdkVersion check in libraries. */
             DISABLE_MINSDKLIBRARY_CHECK,
 
@@ -1826,12 +1808,10 @@ public class ManifestMerger2 {
             KEEP_GOING_AFTER_ERRORS,
 
             /**
-             * Warn if the {@link SdkConstants#ATTR_EXTRACT_NATIVE_LIBS} attribute is present in a
-             * source manifest.
-             *
-             * <p>This is used in AGP because users must migrate to the new useLegacyPackaging APIs.
+             * Warn if the {@link SdkConstants#ATTR_EXTRACT_NATIVE_LIBS} attribute is set to true in
+             * a dependency manifest but not set to true in the merged manifest.
              */
-            VALIDATE_EXTRACT_NATIVE_LIBS_ATTRIBUTE
+            VALIDATE_EXTRACT_NATIVE_LIBS_FROM_DEPENDENCIES
         }
 
         /**

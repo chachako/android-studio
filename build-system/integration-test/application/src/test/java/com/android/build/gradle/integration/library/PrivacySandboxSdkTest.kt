@@ -419,7 +419,7 @@ class PrivacySandboxSdkTest {
             assertThat(manifestContent).containsAtLeastElementsIn(
                 listOf(
                 "      E: application (line=14)",
-                "          E: uses-sdk-library (line=17)",
+                "          E: uses-sdk-library (line=18)",
                 "            A: http://schemas.android.com/apk/res/android:name(0x01010003)=\"com.example.privacysandboxsdk\" (Raw: \"com.example.privacysandboxsdk\")",
                 "            A: http://schemas.android.com/apk/res/android:certDigest(0x01010548)=\"$certDigest\" (Raw: \"$certDigest\")",
                 "            A: http://schemas.android.com/apk/res/android:versionMajor(0x01010577)=10002"

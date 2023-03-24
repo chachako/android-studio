@@ -338,6 +338,8 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
                 AttributeModel.newModel(SdkConstants.ATTR_LOCALE_CONFIG)
                         .setMergingPolicy(STRICT_MAIN_OR_OVERLAY_MERGING_POLICY),
                 AttributeModel.newModel(SdkConstants.ATTR_USE_EMBEDDED_DEX)
+                        .setMergingPolicy(STRICT_MAIN_OR_OVERLAY_MERGING_POLICY),
+                AttributeModel.newModel(SdkConstants.ATTR_EXTRACT_NATIVE_LIBS)
                         .setMergingPolicy(STRICT_MAIN_OR_OVERLAY_MERGING_POLICY)),
 
         /**

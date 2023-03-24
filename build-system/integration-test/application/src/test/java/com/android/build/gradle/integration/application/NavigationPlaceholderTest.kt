@@ -238,7 +238,9 @@ class NavigationPlaceholderTest {
                     android:minSdkVersion="14"
                     android:targetSdkVersion="14" />
 
-                <application android:debuggable="true" >
+                <application
+                    android:debuggable="true"
+                    android:extractNativeLibs="true" >
                     <activity android:name="com.example.app.MyActivity" >
                         <intent-filter>
                             <action android:name="android.intent.action.VIEW" />

@@ -132,6 +132,7 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
                         targetSdkVersion = null,
                         maxSdkVersion = null,
                         testOnly = false,
+                        extractNativeLibs = null,
                         outMergedManifestLocation = outMergedManifestLocation.get().asFile.absolutePath,
                         outAaptSafeManifestLocation = null,
                         mergeType = ManifestMerger2.MergeType.FUSED_LIBRARY,

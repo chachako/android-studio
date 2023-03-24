@@ -152,6 +152,7 @@ abstract class ProcessMultiApkApplicationManifest: ManifestProcessorTask() {
             null,
             null,
             testOnly = false,
+            extractNativeLibs = null,
             mergedManifestOutputFile.absolutePath /* aaptFriendlyManifestOutputFile */,
             null,
             ManifestMerger2.MergeType.APPLICATION,

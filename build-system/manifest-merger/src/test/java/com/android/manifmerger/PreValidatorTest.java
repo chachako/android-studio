@@ -16,8 +16,6 @@
 
 package com.android.manifmerger;
 
-import static com.android.manifmerger.ManifestMerger2.MergeType.APPLICATION;
-
 import com.android.testutils.MockLog;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -56,7 +54,7 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.SUCCESS, validated);
         assertTrue(mockLog.toString().isEmpty());
     }
@@ -84,7 +82,7 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.ERROR, validated);
         // assert the error message complains about the bad instruction usage.
         assertStringPresenceInLogRecords(mergingReport, "tools:replace");
@@ -114,7 +112,7 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.ERROR, validated);
         // assert the error message complains about the bad instruction usage.
         assertStringPresenceInLogRecords(mergingReport, "tools:remove");
@@ -144,7 +142,7 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.ERROR, validated);
         // assert the error message complains about the bad instruction usage.
         assertStringPresenceInLogRecords(mergingReport, "tools:node=\"removeAll\"");
@@ -175,7 +173,7 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.ERROR, validated);
         // assert the error message complains about the bad instruction usage.
         assertStringPresenceInLogRecords(mergingReport, "tools:selector=\"foo\"");
@@ -210,7 +208,7 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.SUCCESS, validated);
     }
 
@@ -254,11 +252,11 @@ public class PreValidatorTest extends TestCase {
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.SUCCESS, validated);
     }
 
-    public void testValidateExtractNativeLibsAttribute()
+    public void testValidateExtractNativeLibsFromSources()
             throws ParserConfigurationException, SAXException, IOException {
         MockLog mockLog = new MockLog();
         String input =
@@ -273,19 +271,48 @@ public class PreValidatorTest extends TestCase {
         XmlDocument xmlDocument =
                 TestUtils.xmlDocumentFromString(
                         TestUtils.sourceFile(
-                                getClass(), "testValidateApplicationElementAttributes"),
+                                getClass(), "testValidateExtractNativeLibsFromSources"),
                         input,
                         mModel);
 
         MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
         MergingReport.Result validated =
-                PreValidator.validate(mergingReport, xmlDocument, APPLICATION, true);
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
         assertEquals(MergingReport.Result.SUCCESS, validated);
         assertStringPresenceInLogRecords(
                 mergingReport,
-                "android:extractNativeLibs should not be specified in source AndroidManifest.xml files.");
+                "android:extractNativeLibs should not be specified in this source AndroidManifest.xml file.");
         assertStringPresenceInLogRecords(
-                mergingReport, " The AGP Upgrade Assistant can remove the attribute");
+                mergingReport, "The AGP Upgrade Assistant can remove the attribute");
+    }
+
+    public void testValidateExtractNativeLibsFromDependencies()
+            throws ParserConfigurationException, SAXException, IOException {
+        MockLog mockLog = new MockLog();
+        String input =
+                ""
+                        + "<manifest\n"
+                        + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"com.example.lib\">\n"
+                        + "\n"
+                        + "     <application android:extractNativeLibs=\"true\"/>\n"
+                        + "\n"
+                        + "</manifest>";
+
+        XmlDocument xmlDocument =
+                TestUtils.xmlLibraryFromString(
+                        TestUtils.sourceFile(
+                                getClass(), "testValidateExtractNativeLibsFromDependencies"),
+                        input,
+                        mModel);
+
+        MergingReport.Builder mergingReport = new MergingReport.Builder(mockLog);
+        MergingReport.Result validated =
+                PreValidator.validate(mergingReport, xmlDocument, true, true);
+        assertEquals(MergingReport.Result.SUCCESS, validated);
+        assertStringPresenceInLogRecords(
+                mergingReport,
+                "android:extractNativeLibs is set to true in a dependency's AndroidManifest.xml");
     }
 
     private static void assertStringPresenceInLogRecords(MergingReport.Builder mergingReport, String s) {

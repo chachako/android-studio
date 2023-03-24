@@ -370,7 +370,7 @@ gradle_integration_test(
         ],
         exclude = CONNECTED_TESTS,
     ),
-    data = TEST_DATA,
+    data = TEST_DATA + OLD_SDKS,
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
     ],
