@@ -46,7 +46,8 @@ enum class MetadataVersion(internal val versionBytes: ByteArray) {
 
 enum class ArtProfileSerializer(
     internal val versionBytes: ByteArray,
-    internal val magicBytes: ByteArray = MAGIC
+    internal val magicBytes: ByteArray = MAGIC,
+    internal val metadataVersion: MetadataVersion? = null
 ) {
 
     /**
@@ -516,7 +517,8 @@ enum class ArtProfileSerializer(
      */
     METADATA_FOR_N(
             MetadataVersion.V_001.versionBytes,
-            byteArrayOf('p', 'r', 'm', '\u0000')
+            byteArrayOf('p', 'r', 'm', '\u0000'),
+            MetadataVersion.V_001
     ) {
         override fun write(
                 os: OutputStream,
@@ -665,7 +667,8 @@ enum class ArtProfileSerializer(
      */
     METADATA_0_0_2(
         MetadataVersion.V_002.versionBytes,
-        byteArrayOf('p', 'r', 'm', '\u0000')
+        byteArrayOf('p', 'r', 'm', '\u0000'),
+        MetadataVersion.V_002
     ) {
 
         override fun write(
@@ -1372,6 +1375,7 @@ enum class ArtProfileSerializer(
     internal abstract fun write(os: OutputStream, profileData: Map<DexFile, DexFileData>, apkName: String)
     internal abstract fun read(src: InputStream): Map<DexFile, DexFileData>
     internal abstract fun skipInlineCaches(src: InputStream)
+
     internal fun InputStream.skipInlineCacheV015S() {
         /* val dexPc = */readUInt16()
         var dexPcMapSize = readUInt8()

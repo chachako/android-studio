@@ -26,7 +26,8 @@ fun main(args: Array<String>) {
         BinCommand(),
         ValidateCommand(),
         ProfileDumpCommand(),
-        ExpandWildcardsCommand()
+        ExpandWildcardsCommand(),
+        ExtractProfileCommand(),
     )
     parser.parse(args)
 }

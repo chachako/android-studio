@@ -7,10 +7,18 @@ import java.io.File
 import java.io.InputStream
 import java.util.zip.CRC32
 import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
+import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.createTempFile
+import kotlin.io.path.outputStream
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.test.expect
 import kotlin.test.fail
 
 class ArtProfileTests {
@@ -174,6 +182,59 @@ class ArtProfileTests {
         assertTrue {
             golden.contentEquals(baselineContents)
         }
+    }
+
+    /**
+     * Validates that two zip files are *content* equivalent, ignoring metadata like timestamps
+     */
+    private fun validateZipContentEquals(expected: ZipFile, observed: ZipFile) {
+        fun ZipFile.getContents(): Map<String, ByteArray> = entries().asSequence().associate {
+            it.name to getInputStream(it).readBytes()
+        }
+        val exp = expected.getContents()
+        val obs = observed.getContents()
+        assertEquals(exp.keys.toSet(), obs.keys.toSet())
+        exp.entries.sortedBy { it.key }.zip(obs.entries.sortedBy { it.key }).forEach {
+            assertEquals(it.first.key, it.second.key)
+            assertContentEquals(it.first.value, it.second.value)
+        }
+    }
+
+    @Test
+    fun testExtractProfileAsDm() {
+        val golden = testData("now-in-android/b-227394536/app-release.dm")
+        val apkFile = testData("now-in-android/b-227394536/app-release.apk")
+        val output = createTempFile(suffix = ".dm")
+
+        output.outputStream().use {
+            extractProfileAsDm(
+                    apkFile = apkFile,
+                    profileSerializer = ArtProfileSerializer.V0_1_5_S,
+                    metadataSerializer = ArtProfileSerializer.METADATA_0_0_2,
+                    outputStream = it
+            )
+        }
+        validateZipContentEquals(
+                expected = ZipFile(golden),
+                observed = ZipFile(output.toFile())
+        )
+    }
+
+    @Test
+    fun testExtractProfileAsDm_missing() {
+        // APK doesn't contain a profile, so will fail
+        val apkFile = testData("jetnews/app-release.apk")
+        val outS = ByteArrayOutputStream()
+
+        val exception = assertFailsWith<IllegalStateException> {
+            extractProfileAsDm(
+                apkFile = apkFile,
+                profileSerializer = ArtProfileSerializer.V0_1_5_S,
+                metadataSerializer = ArtProfileSerializer.METADATA_0_0_2,
+                outputStream = outS
+            )
+        }
+        assertTrue(exception.message!!.contains("Apk must contain profile"))
     }
 
     @Test
