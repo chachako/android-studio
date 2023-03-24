@@ -69,8 +69,8 @@ internal class AbstractSourceDirectoriesImplTest {
        )
    }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun testAddIllegalSrcDir() {
+    @Test
+    fun testAddNonExistentSrcDir() {
         val testTarget = createTestTarget()
         val addedSource = File(temporaryFolder.root, "somewhere/not/existing")
         testTarget.addStaticSourceDirectory(
