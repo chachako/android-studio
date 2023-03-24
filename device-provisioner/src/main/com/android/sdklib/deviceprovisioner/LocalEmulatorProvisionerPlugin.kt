@@ -212,6 +212,7 @@ class LocalEmulatorProvisionerPlugin(
           avdName = handle.avdInfo.name
           displayName = handle.avdInfo.displayName
           disambiguator = port.toString()
+          wearPairingId = path.toString()
         }
       handle.stateFlow.value = Connected(properties, device)
       handle
@@ -227,6 +228,7 @@ class LocalEmulatorProvisionerPlugin(
       avdName = avdInfo.name
       displayName = avdInfo.displayName
       deviceType = avdInfo.tag.toDeviceType()
+      wearPairingId = avdInfo.id
     }
 
   private fun IdDisplay.toDeviceType(): DeviceType =

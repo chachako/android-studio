@@ -206,6 +206,7 @@ class LocalEmulatorProvisionerPluginTest {
     assertThat(properties.abi).isEqualTo(ABI)
     assertThat(properties.avdName).startsWith("fake_avd_")
     assertThat(properties.displayName).startsWith("Fake Device")
+    assertThat(Path.of(properties.wearPairingId!!).parent).isEqualTo(Path.of("/tmp/fake_avds"))
   }
 
   companion object {

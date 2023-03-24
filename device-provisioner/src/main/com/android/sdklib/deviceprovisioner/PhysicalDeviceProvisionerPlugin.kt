@@ -41,10 +41,16 @@ class PhysicalDeviceProvisionerPlugin(val scope: CoroutineScope) : DeviceProvisi
       PhysicalDeviceProperties.build {
         readCommonProperties(properties)
         isVirtual = false
+        val matcher = WIFI_SERIAL_NUMBER.matchEntire(device.serialNumber)
         connectionType =
-          when (WIFI_SERIAL_NUMBER.matchEntire(device.serialNumber)) {
+          when (matcher) {
             null -> ConnectionType.USB
             else -> ConnectionType.WIFI
+          }
+        wearPairingId =
+          when (matcher) {
+            null -> device.serialNumber
+            else -> matcher.groupValues[1]
           }
       }
 

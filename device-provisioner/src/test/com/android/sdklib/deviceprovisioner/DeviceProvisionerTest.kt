@@ -106,10 +106,15 @@ class DeviceProvisionerTest {
           handles.associateBy { (it.state.properties as PhysicalDeviceProperties).connectionType }
 
         assertThat(handlesByType).hasSize(2)
-        assertThat(handlesByType[ConnectionType.USB]?.state?.connectedDevice?.serialNumber)
+        val usbHandle = checkNotNull(handlesByType[ConnectionType.USB])
+        assertThat(usbHandle.state.connectedDevice?.serialNumber)
           .isEqualTo(SerialNumbers.physicalUsb)
-        assertThat(handlesByType[ConnectionType.WIFI]?.state?.connectedDevice?.serialNumber)
+        assertThat(usbHandle.state.properties.wearPairingId).isEqualTo(SerialNumbers.physicalUsb)
+
+        val wifiHandle = checkNotNull(handlesByType[ConnectionType.WIFI])
+        assertThat(wifiHandle.state.connectedDevice?.serialNumber)
           .isEqualTo(SerialNumbers.physicalWifi)
+        assertThat(wifiHandle.state.properties.wearPairingId).isEqualTo("X1BQ704RX2B")
       }
     }
   }

@@ -60,6 +60,14 @@ interface DeviceProperties {
    */
   val disambiguator: String?
 
+  /**
+   * The ID used by the WearPairingManager for this device (in the PairingDevice.deviceId field).
+   * This must be kept in sync with WearPairingManager's IDevice.getDeviceID extension function.
+   * This is a stopgap until WearPairingManager is ported to adblib / DeviceProvisioner, and should
+   * not be used except for interfacing with WearPairingManager.
+   */
+  val wearPairingId: String?
+
   /** Default implementation of device title; may be overridden. */
   val title: String
     get() {
@@ -85,6 +93,7 @@ interface DeviceProperties {
     var disambiguator: String? = null
     var deviceType: DeviceType? = null
     var isVirtual: Boolean? = null
+    var wearPairingId: String? = null
 
     fun readCommonProperties(properties: Map<String, String>) {
       manufacturer = properties[RO_PRODUCT_MANUFACTURER] ?: properties[RO_MANUFACTURER]
@@ -113,6 +122,7 @@ interface DeviceProperties {
         disambiguator = disambiguator,
         deviceType = deviceType,
         isVirtual = isVirtual,
+        wearPairingId = wearPairingId,
       )
   }
 
@@ -125,6 +135,7 @@ interface DeviceProperties {
     override val disambiguator: String?,
     override val deviceType: DeviceType?,
     override val isVirtual: Boolean?,
+    override val wearPairingId: String?
   ) : DeviceProperties
 }
 
