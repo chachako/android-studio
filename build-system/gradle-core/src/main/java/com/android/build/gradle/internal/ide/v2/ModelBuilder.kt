@@ -176,15 +176,30 @@ class ModelBuilder<
 
     private fun buildModelVersions(): Versions {
         val v2Version = VersionImpl(0,1)
+        /**
+         * The minimum required model consumer version, to allow AGP to control support for older
+         * versions of Android Studio.
+         *
+         * Android Studio's model consumer version will be incremented after each release branching.
+         *
+         * The below Android Gradle plugin's minimumModelConsumerVersion will usually be increased
+         * after the next version of Studio becomes stable, dropping support for previous
+         * Android Studio versions.
+         */
+        val minimumModelConsumerVersion = VersionImpl(major = 64, minor = 0, humanReadable = "Android Studio Giraffe")
         return VersionsImpl(
             agp = Version.ANDROID_GRADLE_PLUGIN_VERSION,
-            versions = mapOf<String, Versions.Version>(
+            versions = mutableMapOf<String, Versions.Version>(
                 Versions.BASIC_ANDROID_PROJECT to v2Version,
                 Versions.ANDROID_PROJECT to v2Version,
                 Versions.ANDROID_DSL to v2Version,
                 Versions.VARIANT_DEPENDENCIES to v2Version,
                 Versions.NATIVE_MODULE to v2Version,
-            )
+            ).also {
+                if (variantModel.projectOptions[BooleanOption.SUPPORT_PAST_STUDIO_VERSIONS]) {
+                    it.put(Versions.MINIMUM_MODEL_CONSUMER, minimumModelConsumerVersion)
+                }
+            }
         )
     }
 
