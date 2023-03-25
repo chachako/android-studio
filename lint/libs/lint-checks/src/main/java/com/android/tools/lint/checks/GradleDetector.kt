@@ -280,8 +280,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                     "November $MINIMUM_TARGET_SDK_VERSION_YEAR."
 
               val highest = context.client.highestKnownApiLevel
-              val label = "Update $property to $highest"
-              val fix = fix().name(label).replace().text(value).with(highest.toString()).build()
 
               // Don't report if already suppressed with EXPIRING
               val alreadySuppressed =
@@ -290,7 +288,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
                   context.isSuppressedWithComment(statementCookie, issue)
 
               if (!alreadySuppressed) {
-                report(context, statementCookie, issue, message, fix, true)
+                report(context, statementCookie, issue, message, null, true)
               }
               warned = true
             }

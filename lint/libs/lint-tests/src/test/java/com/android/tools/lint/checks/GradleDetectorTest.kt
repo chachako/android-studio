@@ -22,7 +22,6 @@ import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_G
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.IAndroidTarget
-import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_STABLE_API
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
 import com.android.testutils.MockitoKt.whenever
 import com.android.testutils.TestUtils
@@ -4780,18 +4779,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                     2 errors, 0 warnings
                     """
         )
-        .expectFixDiffs(
-          """
-                    Fix for build.gradle line 5: Update targetSdkVersion to $HIGHEST_KNOWN_STABLE_API:
-                    @@ -5 +5
-                    -         targetSdkVersion 17
-                    +         targetSdkVersion $HIGHEST_KNOWN_STABLE_API
-                    Fix for build.gradle line 6: Update targetSdk to $HIGHEST_KNOWN_STABLE_API:
-                    @@ -6 +6
-                    -         targetSdk 17
-                    +         targetSdk $HIGHEST_KNOWN_STABLE_API
-                    """
-        )
     } finally {
       GradleDetector.calendar = null
     }
@@ -4832,14 +4819,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                     1 errors, 0 warnings
                     """
         )
-        .expectFixDiffs(
-          """
-                    Fix for build.gradle line 6: Update targetSdkVersion to $HIGHEST_KNOWN_STABLE_API:
-                    @@ -6 +6
-                    -         targetSdkVersion 30
-                    +         targetSdkVersion $HIGHEST_KNOWN_STABLE_API
-                    """
-        )
     } finally {
       GradleDetector.calendar = null
     }
@@ -4877,14 +4856,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                     1 errors, 0 warnings
                     """
         )
-        .expectFixDiffs(
-          """
-                    Fix for build.gradle line 5: Update targetSdkVersion to $HIGHEST_KNOWN_STABLE_API:
-                    @@ -5 +5
-                    -         targetSdkVersion 17
-                    +         targetSdkVersion $HIGHEST_KNOWN_STABLE_API
-                    """
-        )
     } finally {
       GradleDetector.calendar = null
     }
@@ -4920,14 +4891,6 @@ class GradleDetectorTest : AbstractCheckTest() {
                             targetSdkVersion 'O'
                             ~~~~~~~~~~~~~~~~~~~~
                     1 errors, 0 warnings
-                    """
-        )
-        .expectFixDiffs(
-          """
-                    Fix for build.gradle line 5: Update targetSdkVersion to $HIGHEST_KNOWN_STABLE_API:
-                    @@ -5 +5
-                    -         targetSdkVersion 'O'
-                    +         targetSdkVersion $HIGHEST_KNOWN_STABLE_API
                     """
         )
     } finally {
