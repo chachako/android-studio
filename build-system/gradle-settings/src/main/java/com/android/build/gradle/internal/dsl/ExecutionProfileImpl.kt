@@ -33,10 +33,9 @@ open class ExecutionProfileImpl @Inject constructor(private val name: String, ob
 
     override val r8: ToolOptions = objectFactory.newInstance(ToolOptionsImpl::class.java)
 
-    override fun r8(action: Action<ToolOptions>) {
+    fun r8(action: Action<ToolOptions>) {
         action.execute(r8)
     }
-
     override fun r8(action: ToolOptions.() -> Unit) {
         action.invoke(r8)
     }

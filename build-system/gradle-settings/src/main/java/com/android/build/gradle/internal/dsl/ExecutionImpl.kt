@@ -24,9 +24,13 @@ import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
 internal open class ExecutionImpl @Inject constructor(objectFactory: ObjectFactory): Execution {
-    override val profiles: NamedDomainObjectContainer<ExecutionProfile> = objectFactory.domainObjectContainer(ExecutionProfile::class.java, ExecutionProfileFactory(objectFactory))
+    override val profiles: NamedDomainObjectContainer<ExecutionProfile> =
+        objectFactory.domainObjectContainer(
+            ExecutionProfile::class.java,
+            ExecutionProfileFactory(objectFactory)
+        )
 
-    override fun profiles(action: Action<NamedDomainObjectContainer<ExecutionProfile>>) {
+    fun profiles(action: Action<NamedDomainObjectContainer<ExecutionProfile>>) {
         action.execute(profiles)
     }
 

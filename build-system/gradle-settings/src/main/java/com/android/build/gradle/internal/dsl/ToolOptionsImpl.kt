@@ -23,7 +23,7 @@ open class ToolOptionsImpl: ToolOptions {
 
     override val jvmOptions: MutableList<String> = mutableListOf()
 
-    override fun setJvmOptions(from: List<String>) {
+    fun setJvmOptions(from: List<String>) {
         jvmOptions.clear()
         jvmOptions.addAll(from)
     }

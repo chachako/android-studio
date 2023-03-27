@@ -95,16 +95,19 @@ internal open class SettingsExtensionImpl @Inject constructor(objectFactory: Obj
             _minSdk = null
         }
 
-    override val execution: Execution = objectFactory.newInstance(ExecutionImpl::class.java, objectFactory)
+    override val execution: Execution = objectFactory.newInstance(
+        ExecutionImpl::class.java, objectFactory
+    )
 
-    override fun execution(action: Action<Execution>) {
+    fun execution(action: Action<Execution>) {
         action.execute(execution)
     }
+
     override fun execution(action: Execution.() -> Unit) {
         action.invoke(execution)
     }
 
-    override var ndkVersion: String? = null
+    override var ndkVersion: String = SdkConstants.NDK_VERSION
     override var ndkPath: String? = null
-    override var buildToolsVersion: String? = null
+    override var buildToolsVersion: String = SdkConstants.BUILD_TOOLS_VERSION
 }

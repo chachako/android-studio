@@ -882,7 +882,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             this.defaultConfig.minSdkPreview = minSdkPreview
         }
 
-        settings.ndkVersion?.let { ndkVersion ->
+        settings.ndkVersion.let { ndkVersion ->
             this.ndkVersion = ndkVersion
         }
 
@@ -890,7 +890,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             this.ndkPath = ndkPath
         }
 
-        settings.buildToolsVersion?.let { buildToolsVersion ->
+        settings.buildToolsVersion.let { buildToolsVersion ->
             this.buildToolsVersion = buildToolsVersion
         }
     }

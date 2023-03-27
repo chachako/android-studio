@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.build.api.dsl
+package com.android.build.gradle.internal.dsl
 
-interface ToolOptions {
-    /** If true, run tool workers out of process. */
-    var runInSeparateProcess: Boolean
-
-    /**
-     * Extra JVM options to give to the out of process worker JVM. Useful for
-     * setting things like max memory usage
-     */
-    val jvmOptions: MutableList<String>
+object SdkConstants {
+    const val NDK_VERSION = "25.1.8937393"
+    const val BUILD_TOOLS_VERSION = "33.0.1"
 }

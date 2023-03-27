@@ -18,8 +18,6 @@ package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.DEFAULT_MIN_SDK_VERSION
-import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.ANDROID_GRADLE_PLUGIN_VERSION
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
@@ -37,7 +35,6 @@ class SettingsPluginTest {
         rootProject {
             plugins.add(PluginType.ANDROID_APP)
             android {
-
                 setUpHelloWorld(setupDefaultCompileSdk = false)
             }
         }
