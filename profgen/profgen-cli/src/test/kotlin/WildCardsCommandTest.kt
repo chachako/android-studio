@@ -34,7 +34,7 @@ class WildCardsCommandTest {
                 arrayOf(
                         "--profile", profile.toString(),
                         "--output", output.toString(),
-                        testData(ClassFilePath).toString(),
+                        getClassFileArgument(),
                         testData(JarArchivePath).toString()))
         command.execute()
         assertThat(output.readText()).isEqualTo(
@@ -43,6 +43,10 @@ class WildCardsCommandTest {
                 LWorld;
             """.trimIndent().plus('\n')
         )
+    }
+    internal fun getClassFileArgument(): String {
+        val sourceDir = testDataPath()
+        return "$sourceDir:$ClassFilePath"
     }
 
     companion object {

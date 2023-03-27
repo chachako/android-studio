@@ -19,7 +19,9 @@ package com.android.tools.profgen.cli
 import com.android.tools.profgen.ArchiveClassFileResourceProvider
 import com.android.tools.profgen.CLASS_EXTENSION
 import com.android.tools.profgen.ClassFileResource
+import com.android.tools.profgen.getClassDescriptorFromBinaryName
 import com.android.tools.profgen.JAR_EXTENSION
+import kotlin.io.path.Path
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
@@ -30,14 +32,19 @@ import kotlin.io.path.Path
 @ExperimentalCli
 class ExpandWildcardsCommand: Subcommand("expandWildcards", "Dump a binary profile to a HRF") {
     val hrpPath by option(ArgType.String, "profile", "p", "File path to the human readable profile")
-            .required()
+        .required()
     val outPath by option(
-                ArgType.String, "output", "o",
-                "File path for the resulting human readable profile without wildcards"
-            )
-            .required()
-    val programPaths by argument(ArgType.String, "program", "File paths to program sources")
-            .vararg()
+        ArgType.String, "output", "o",
+        "File path for the resulting human readable profile without wildcards"
+    )
+        .required()
+    val programPaths by argument(
+        ArgType.String,
+        "program",
+        "File paths to program sources (.class or .jar). "
+                + "Class files must be on the form <src dir>:<path to file>.class, e.g., "
+                + "src:pkg/Main.class.")
+        .vararg()
     override fun execute() {
         val hrpFile = Path(hrpPath).toFile()
         require(hrpFile.exists()) { "File not found: $hrpPath" }
@@ -46,24 +53,33 @@ class ExpandWildcardsCommand: Subcommand("expandWildcards", "Dump a binary profi
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
         require(programPaths.isNotEmpty()) { "Must pass at least one program source" }
-        val programFiles = programPaths.map { Path(it).toFile() }
-        for (programFile in programFiles) {
-            require(programFile.exists()) { "File not found: $programFile" }
-        }
 
         val hrp = readHumanReadableProfileOrExit(hrpFile)
         val archiveClassFileResourceProviders = mutableListOf<ArchiveClassFileResourceProvider>()
         val classFileResources = mutableListOf<ClassFileResource>()
-        for (programFile in programFiles) {
-            if (programFile.toString().endsWith(CLASS_EXTENSION)) {
-                classFileResources += ClassFileResource(programFile.toPath())
-            } else if (programFile.toString().endsWith(JAR_EXTENSION)) {
+        for (programPath in programPaths) {
+            if (programPath.endsWith(CLASS_EXTENSION)) {
+                val separatorIndex = programPath.lastIndexOf(':')
+                require(separatorIndex >= 0) {
+                    "Missing ':' separator for class file: $programPath"
+                }
+                val classBinaryName =
+                    programPath.substring(separatorIndex + 1).dropLast(CLASS_EXTENSION.length)
+                val classDescriptor = getClassDescriptorFromBinaryName(classBinaryName)
+                val programFile =
+                    Path(programPath.substring(0, separatorIndex), "$classBinaryName.class")
+                        .toFile()
+                require(programFile.exists()) { "File not found: $programFile" }
+                classFileResources += ClassFileResource(classDescriptor, programFile.toPath())
+            } else if (programPath.endsWith(JAR_EXTENSION)) {
+                val programFile = Path(programPath).toFile()
+                require(programFile.exists()) { "File not found: $programPath" }
                 val archiveClassFileResourceProvider =
-                        ArchiveClassFileResourceProvider(programFile.toPath())
+                    ArchiveClassFileResourceProvider(programFile.toPath())
                 archiveClassFileResourceProviders += archiveClassFileResourceProvider
                 classFileResources += archiveClassFileResourceProvider.getClassFileResources()
             } else {
-                throw IllegalArgumentException("Unexpected program file: $programFile")
+                throw IllegalArgumentException("Unexpected program file: $programPath")
             }
         }
         val result = hrp.expandWildcards(classFileResources)

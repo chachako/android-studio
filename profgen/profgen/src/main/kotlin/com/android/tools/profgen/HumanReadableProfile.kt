@@ -72,6 +72,10 @@ class HumanReadableProfile internal constructor(
         return flags
     }
 
+    private fun hasFuzzyMethods(classDescriptor: String): Boolean {
+        return fuzzyMethods.prefixIterator(classDescriptor).hasNext()
+    }
+
     internal fun match(type: String): Int {
         if (type in exactTypes) {
             return MethodFlags.STARTUP
@@ -93,48 +97,9 @@ class HumanReadableProfile internal constructor(
         val newExactTypes =  mutableSetOf<String>()
         newExactTypes += exactTypes
 
-        val classVisitor = object : ClassVisitor(Opcodes.ASM9) {
-            private lateinit var classDescriptor: String
-
-            override fun visit(
-                    version: Int,
-                    access: Int,
-                    name: String,
-                    signature: String?,
-                    superName: String?,
-                    interfaces: Array<String>?): Unit {
-                classDescriptor = "L$name;"
-                if (classDescriptor !in newExactTypes
-                        && fuzzyMatch(classDescriptor) == MethodFlags.STARTUP) {
-                    newExactTypes += classDescriptor
-                }
-            }
-
-            override fun visitMethod(
-                    access: Int,
-                    name: String,
-                    desc: String,
-                    signature: String?,
-                    exceptions: Array<String>?): MethodVisitor? {
-                val closeParenIndex = desc.indexOf(CLOSE_PAREN)
-                val parameters = desc.substring(1, closeParenIndex)
-                val returnTypeDescriptor = desc.substring(closeParenIndex + 1)
-                val method = DexMethod(
-                    classDescriptor,
-                    name,
-                    DexPrototype(returnTypeDescriptor, splitParameters(parameters))
-                )
-                val flags = match(method)
-                if (flags != 0) {
-                    newExactMethods[method] = flags
-                }
-                return null
-            }
-        }
-        val parsingOptions: Int =
-            ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES
         for (classFileResource in classFileResources) {
-            ClassReader(classFileResource.getBytes()).accept(classVisitor, parsingOptions)
+            expandWildcards(
+                    classFileResource, classFileResource.getBytes(), newExactMethods, newExactTypes)
         }
 
         return HumanReadableProfile(
@@ -143,6 +108,47 @@ class HumanReadableProfile internal constructor(
             MutablePrefixTree(),
             MutablePrefixTree(),
         )
+    }
+
+    private fun expandWildcards(
+            classFileResource: ClassFileResource,
+            classFileResourceData: ByteArray,
+            methods: MutableMap<DexMethod, Int>,
+            classes: MutableSet<String>
+    ) {
+        val classDescriptor = classFileResource.getClassDescriptor()
+        if (match(classDescriptor) == MethodFlags.STARTUP) {
+            classes.add(classDescriptor)
+        }
+
+        if (hasFuzzyMethods(classDescriptor)) {
+            val classVisitor = object : ClassVisitor(Opcodes.ASM9) {
+                override fun visitMethod(
+                    access: Int,
+                    name: String,
+                    desc: String,
+                    signature: String?,
+                    exceptions: Array<String>?,
+                ): MethodVisitor? {
+                    val closeParenIndex = desc.indexOf(CLOSE_PAREN)
+                    val parameters = desc.substring(1, closeParenIndex)
+                    val returnTypeDescriptor = desc.substring(closeParenIndex + 1)
+                    val method = DexMethod(
+                        classDescriptor,
+                        name,
+                        DexPrototype(returnTypeDescriptor, splitParameters(parameters))
+                    )
+                    val flags = match(method)
+                    if (flags != 0) {
+                        methods[method] = flags
+                    }
+                    return null
+                }
+            }
+            val parsingOptions: Int =
+                ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES
+            ClassReader(classFileResourceData).accept(classVisitor, parsingOptions)
+        }
     }
 
     fun printExact(os: Appendable): Unit {

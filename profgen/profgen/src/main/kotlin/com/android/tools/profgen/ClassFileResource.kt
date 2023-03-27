@@ -36,12 +36,18 @@ interface ClassFileResource {
             return it.readBytes()
         }
     }
+
+    fun getClassDescriptor(): String
 }
 
-fun ClassFileResource(classFile: Path): ClassFileResource {
+fun ClassFileResource(classDescriptor: String, classFile: Path): ClassFileResource {
     return object : ClassFileResource {
         override fun getByteStream(): InputStream {
             return classFile.toFile().inputStream()
+        }
+
+        override fun getClassDescriptor(): String {
+            return classDescriptor
         }
     }
 }
@@ -60,9 +66,15 @@ class ArchiveClassFileResourceProvider (
         while (zipEntries.hasMoreElements()) {
             val zipEntry = zipEntries.nextElement()
             if (isClassFile(zipEntry)) {
+                val classBinaryName = zipEntry.name.dropLast(CLASS_EXTENSION.length)
+                val classDescriptor = getClassDescriptorFromBinaryName(classBinaryName)
                 val classFileResource = object : ClassFileResource {
                     override fun getByteStream(): InputStream {
                         return zipFile.getInputStream(zipEntry)
+                    }
+
+                    override fun getClassDescriptor(): String {
+                        return classDescriptor
                     }
                 }
                 classFileResources.add(classFileResource)
@@ -76,8 +88,12 @@ class ArchiveClassFileResourceProvider (
     }
 }
 
+public fun getClassDescriptorFromBinaryName(classBinaryName: String): String {
+    return "L$classBinaryName;"
+}
+
 private fun isClassFile(zipEntry: ZipEntry): Boolean {
-    val name = zipEntry.getName().toLowerCase(Locale.getDefault())
+    val name = zipEntry.name.toLowerCase(Locale.getDefault())
     return name.endsWith(CLASS_EXTENSION)
             && !name.endsWith(MODULE_INFO_CLASS)
             && !name.startsWith("meta-inf")

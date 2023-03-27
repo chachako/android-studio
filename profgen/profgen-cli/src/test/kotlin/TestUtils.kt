@@ -23,8 +23,12 @@ import java.nio.file.Path
 fun testData(relativePath: String): File {
     return testDataPath(relativePath).toFile()
 }
+fun testDataPath(): Path {
+    return workspacePath("tools/base/profgen/profgen-cli/testData")
+}
+
 fun testDataPath(relativePath: String): Path {
-    return workspacePath("tools/base/profgen/profgen-cli/testData").resolve(relativePath)
+    return testDataPath().resolve(relativePath)
 }
 fun workspacePath(relativePath: String): Path {
     return TestUtils.resolveWorkspacePath(relativePath)

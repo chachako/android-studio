@@ -29,6 +29,7 @@ class WildcardExpansionTest {
     fun testClassFile() {
         val classFileResource = object : ClassFileResource {
             override fun getByteStream(): InputStream = testData(ClassFilePath).inputStream()
+            override fun getClassDescriptor(): String = "LHello;"
         }
         runTests(listOf(classFileResource))
     }
