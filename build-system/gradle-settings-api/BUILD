@@ -37,8 +37,17 @@ filegroup(
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
     ],
+    visibility = ["//tools/base/build-system:__pkg__"],
+)
+
+filegroup(
+    name = "agp_gradle_metalava_test_files",
+    srcs = glob([
+        "src/metalavaTest/**/*.kt",
+        "api/**/*.txt",
+    ]),
     visibility = ["//tools/base/build-system:__pkg__"],
 )
