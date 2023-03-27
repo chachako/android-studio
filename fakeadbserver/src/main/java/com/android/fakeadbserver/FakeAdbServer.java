@@ -590,6 +590,7 @@ public final class FakeAdbServer implements AutoCloseable {
             addDeviceHandler(new AbbCommandHandler());
             addDeviceHandler(new AbbExecCommandHandler());
             addDeviceHandler(new ActivityManagerCommandHandler(ShellProtocolType.SHELL));
+            addDeviceHandler(new ActivityManagerCommandHandler(ShellProtocolType.SHELL_V2));
             addDeviceHandler(new JdwpCommandHandler());
             addDeviceHandler(new StatCommandHandler(ShellProtocolType.SHELL));
 
