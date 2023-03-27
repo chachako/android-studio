@@ -19,6 +19,7 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
+import com.google.common.truth.Truth.assertThat
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
 import java.io.File
 import org.gradle.api.Action
@@ -40,6 +41,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import java.util.logging.Level
+import java.util.logging.Logger
 
 /**
  * Unit tests for [TestLabBuildService].
@@ -112,5 +115,19 @@ class TestLabBuildServiceTest {
         verify(mockParams.quotaProjectName).set(argThat<Provider<String>> {
             it.get() == "test_quota_project_id"
         })
+    }
+
+    @Test
+    fun logLevelShouldBeWarning() {
+        val credentialFile = temporaryFolderRule.newFile("testCredentialFile")
+        object: TestLabBuildService() {
+            override fun getParameters(): Parameters {
+                val params = mock<Parameters>(
+                        withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+                `when`(params.credentialFile.get().asFile).thenReturn(credentialFile)
+                return params
+            }
+        }
+        assertThat(Logger.getLogger("com.google.api.client").level).isEqualTo(Level.WARNING)
     }
 }

@@ -77,6 +77,8 @@ import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.UUID
+import java.util.logging.Level
+import java.util.logging.Logger
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -86,6 +88,10 @@ import javax.xml.transform.stream.StreamResult
  * A Gradle Build service that provides APIs to talk to the Firebase Test Lab backend server.
  */
 abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters> {
+
+    init {
+        Logger.getLogger("com.google.api.client").level = Level.WARNING
+    }
 
     companion object {
         const val TEST_RESULT_PB_FILE_NAME = "test-result.pb"
@@ -145,8 +151,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val credentialFile: RegularFileProperty
     }
 
-    private val credential = parameters.credentialFile.get().asFile.inputStream().use {
-        GoogleCredential.fromStream(it).createScoped(oauthScope)
+    private val credential: GoogleCredential by lazy {
+        parameters.credentialFile.get().asFile.inputStream().use {
+            GoogleCredential.fromStream(it).createScoped(oauthScope)
+        }
     }
 
     private val httpRequestInitializer: HttpRequestInitializer = HttpRequestInitializer { request ->
