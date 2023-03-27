@@ -16,6 +16,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.checks.infrastructure.TestFile
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
@@ -832,7 +833,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
           .indented(),
         *stubs
       )
-      .issues(UnsafeIntentLaunchDetector.ISSUE) /*.testModes(TestMode.DEFAULT)*/
+      .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
       .expect(
         """
@@ -908,6 +909,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
         *stubs
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
+      .testModes(TestMode.PARTIAL)
       .run()
       .expect(
         """
@@ -1024,6 +1026,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
         *stubs
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
+      .testModes(TestMode.PARTIAL)
       .run()
       .expect(
         """
@@ -1050,9 +1053,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 import android.content.Intent;
                 import android.app.Activity;
 
-                public class AnonymousBroadcastReceiverTest {
-                    private Activity activity;
-
+                public class AnonymousBroadcastReceiverTest extends Activity {
                     public void onCreate(@NonNull LifecycleOwner lifecycleOwner) {
                         BroadcastReceiver receiver = new BroadcastReceiver() {
                             @Override
@@ -1066,7 +1067,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                             }
                         };
 
-                        activity.registerReceiver(receiver, new IntentFilter("INTENT_ACTION_INSTALL_COMMIT"));
+                        registerReceiver(receiver, new IntentFilter("INTENT_ACTION_INSTALL_COMMIT"));
                     }
 
                     public static <T> T checkNotNull(T reference) {
@@ -1085,10 +1086,10 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/AnonymousBroadcastReceiverTest.java:17: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component. You could either make the component protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
+            src/test/pkg/AnonymousBroadcastReceiverTest.java:15: Warning: This intent could be coming from an untrusted source. It is later launched by an unprotected component. You could either make the component protected; or sanitize this intent using androidx.core.content.IntentSanitizer. [UnsafeIntentLaunch]
                                 context.startActivity(checkNotNull(intent.getParcelableExtra(Intent.EXTRA_INTENT)));
                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/AnonymousBroadcastReceiverTest.java:17: The unsafe intent is launched here.
+                src/test/pkg/AnonymousBroadcastReceiverTest.java:15: The unsafe intent is launched here.
                                 context.startActivity(checkNotNull(intent.getParcelableExtra(Intent.EXTRA_INTENT)));
                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings

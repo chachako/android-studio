@@ -20,6 +20,9 @@ import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_EXPORTED
 import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.ATTR_PERMISSION
+import com.android.SdkConstants.TAG_ACTIVITY
+import com.android.SdkConstants.TAG_RECEIVER
+import com.android.SdkConstants.TAG_SERVICE
 import com.android.tools.lint.checks.BroadcastReceiverUtils.BROADCAST_RECEIVER_METHOD_NAMES
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.TYPE_INT
@@ -44,6 +47,8 @@ import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.findSelector
 import com.android.tools.lint.detector.api.isReturningLambdaResult
 import com.android.tools.lint.detector.api.isScopingThis
+import com.android.utils.iterator
+import com.android.utils.subtag
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import java.util.EnumSet
@@ -88,24 +93,49 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
   override fun getApplicableElements() =
     listOf(
-      SdkConstants.TAG_ACTIVITY,
-      SdkConstants.TAG_SERVICE,
-      SdkConstants.TAG_RECEIVER,
+      TAG_ACTIVITY,
+      TAG_SERVICE,
+      TAG_RECEIVER,
     )
 
   override fun visitElement(context: XmlContext, element: Element) {
-    val exportedAttr = element.getAttributeNS(ANDROID_URI, ATTR_EXPORTED)
-    if (
-      "true" == exportedAttr ||
-        exportedAttr.isEmpty() && element.getElementsByTagName("intent-filter").length > 0
-    ) {
-      val permission = element.getAttributeNS(ANDROID_URI, ATTR_PERMISSION)
-      if (!isProbablyProtectedBySignaturePermission(permission)) {
-        var componentName = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
-        if (componentName.startsWith(".")) componentName = context.project.`package` + componentName
-        storeUnprotectedComponents(context, componentName)
+    storeUnprotectedComponents(context, getProtectedComponent(context, element) ?: return)
+  }
+
+  private fun isComponentExported(
+    context: Context,
+    root: Element,
+    incidentComponent: String?
+  ): Boolean {
+    val application = root.subtag(SdkConstants.TAG_APPLICATION) ?: return false
+    for (component in application) {
+      when (component.tagName) {
+        TAG_ACTIVITY,
+        TAG_RECEIVER,
+        TAG_SERVICE -> {
+          if (incidentComponent == getProtectedComponent(context, component)) return true
+        }
       }
     }
+    return false
+  }
+
+  // Returns the fully qualified component name if the component is protected; otherwise, null
+  // The element passed in is guaranteed to be one of the activity, receiver or service tag.
+  private fun getProtectedComponent(context: Context, component: Element): String? {
+    val exportedAttr = component.getAttributeNS(ANDROID_URI, ATTR_EXPORTED)
+    if (
+      "true" == exportedAttr ||
+        exportedAttr.isEmpty() && component.getElementsByTagName("intent-filter").length > 0
+    ) {
+      val permission = component.getAttributeNS(ANDROID_URI, ATTR_PERMISSION)
+      if (!isProbablyProtectedBySignaturePermission(permission)) {
+        var componentName = component.getAttributeNS(ANDROID_URI, ATTR_NAME)
+        if (componentName.startsWith(".")) componentName = context.project.`package` + componentName
+        return componentName
+      }
+    }
+    return null
   }
 
   // Any permission that is not declared by the system as normal permission is considered as a
@@ -147,7 +177,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
           )
         method.accept(visitor)
         if (visitor.launched) {
-          storeIncidentsToPartialResults(context, visitor)
+          reportIncident(context, visitor)
         }
       }
     }
@@ -175,18 +205,11 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
       containingMethod?.accept(visitor)
       if (visitor.launched) {
         if (visitor.unprotectedReceiver) {
-          // The registered-at-runtime receiver case, report the issue immediately.
-          val message =
-            """
-                        This intent could be coming from an untrusted source. It is later launched by \
-                        an unprotected component. You could either make the component \
-                        protected; or sanitize this intent using \
-                        androidx.core.content.IntentSanitizer.
-                    """
-              .trimIndent()
-          context.report(Incident(ISSUE, visitor.location, message))
+          // The anonymous component registered-at-runtime receiver case, report the issue
+          // immediately.
+          reportIssue(context, null, visitor.location)
         } else {
-          storeIncidentsToPartialResults(context, visitor)
+          reportIncident(context, visitor)
         }
       }
     }
@@ -281,18 +304,31 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     unprotectedComponents.put(unprotectedComponentName, true)
   }
 
-  private fun storeIncidentsToPartialResults(context: Context, visitor: IntentLaunchChecker) {
-    val lintMap = context.getPartialResults(ISSUE).map()
-    val incidents = lintMap.getMap(KEY_INCIDENTS) ?: map().also { lintMap.put(KEY_INCIDENTS, it) }
-    // key is not important. so the size of the map is used to make it unique.
-    incidents.put(
-      incidents.size.toString(),
-      map().apply {
-        put(KEY_LOCATION, visitor.location)
-        put(KEY_SECONDARY_LOCATION, visitor.location.secondary ?: return)
-        put(KEY_INCIDENT_CLASS, visitor.incidentClass ?: return)
+  private fun reportIncident(context: Context, visitor: IntentLaunchChecker) {
+    if (context.isGlobalAnalysis()) {
+      val incidentComponent = visitor.incidentClass
+      if (
+        isComponentExported(
+          context,
+          context.mainProject.mergedManifest?.documentElement ?: return,
+          incidentComponent
+        )
+      ) {
+        reportIssue(context, incidentComponent, visitor.location)
       }
-    )
+    } else {
+      val lintMap = context.getPartialResults(ISSUE).map()
+      val incidents = lintMap.getMap(KEY_INCIDENTS) ?: map().also { lintMap.put(KEY_INCIDENTS, it) }
+      // key is not important. so the size of the map is used to make it unique.
+      incidents.put(
+        incidents.size.toString(),
+        map().apply {
+          put(KEY_LOCATION, visitor.location)
+          put(KEY_SECONDARY_LOCATION, visitor.location.secondary ?: return)
+          put(KEY_INCIDENT_CLASS, visitor.incidentClass ?: return)
+        }
+      )
+    }
   }
 
   override fun afterCheckRootProject(context: Context) {
@@ -310,17 +346,21 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
       if (unprotectedComponents.containsKey(incidentComponent)) {
         val location = incidentMap.getLocation(KEY_LOCATION) ?: continue
         location.secondary = incidentMap.getLocation(KEY_SECONDARY_LOCATION)
-        val message =
-          """
-                    This intent could be coming from an untrusted source. It is later launched by \
-                    an unprotected component $incidentComponent. You could either make the component \
-                    $incidentComponent protected; or sanitize this intent using \
-                    androidx.core.content.IntentSanitizer.
-                """
-            .trimIndent()
-        context.report(Incident(ISSUE, location, message))
+        reportIssue(context, incidentComponent, location)
       }
     }
+  }
+
+  private fun reportIssue(context: Context, incidentComponent: String?, location: Location) {
+    val component = if (incidentComponent.isNullOrBlank()) "" else " $incidentComponent"
+    val message =
+      """
+          This intent could be coming from an untrusted source. It is later launched by \
+          an unprotected component$component. You could either make the component$component \
+          protected; or sanitize this intent using androidx.core.content.IntentSanitizer.
+      """
+        .trimIndent()
+    context.report(Incident(ISSUE, location, message))
   }
 
   private inner class IntentLaunchChecker(
@@ -393,7 +433,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
           )
         containingMethod.accept(visitor)
         if (visitor.launched) {
-          storeIncidentsToPartialResults(context, visitor)
+          reportIncident(context, visitor)
         } else if (visitor.returned) {
           // if the visited method returns the passed-in unsafe Intent, add this call to track it.
           instances.add(call)
@@ -420,7 +460,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
             )
           lambda.body.accept(visitor)
           if (visitor.launched) {
-            storeIncidentsToPartialResults(context, visitor)
+            reportIncident(context, visitor)
           }
         }
       }
@@ -548,7 +588,8 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     private val IMPLEMENTATION =
       Implementation(
         UnsafeIntentLaunchDetector::class.java,
-        EnumSet.of(Scope.JAVA_FILE, Scope.MANIFEST)
+        EnumSet.of(Scope.JAVA_FILE, Scope.MANIFEST),
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Issue describing the problem and pointing to the detector implementation. */
