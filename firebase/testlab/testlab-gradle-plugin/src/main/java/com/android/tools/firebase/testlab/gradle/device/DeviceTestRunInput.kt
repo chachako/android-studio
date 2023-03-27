@@ -39,4 +39,7 @@ abstract class DeviceTestRunInput:
 
     @get: Internal
     abstract val buildService: Property<TestLabBuildService>
+
+    @get: Input
+    abstract val numUniformShards: Property<Int>
 }

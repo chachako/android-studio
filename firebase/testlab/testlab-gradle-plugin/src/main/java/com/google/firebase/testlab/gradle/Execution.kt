@@ -61,4 +61,24 @@ interface Execution {
     @get:Incubating
     @set:Incubating
     var failFast: Boolean
+
+    /**
+     * Specifies the number of shards across which to distribute test cases The shards are run
+     * in parallel on separate devices through FTL.
+     *
+     * This is based on the sharding mechanism AndroidJUnitRunner uses, and as such there is no
+     * guarantee that test cases will be distributed with perfect uniformity.
+     *
+     * The number of shards specified must always be a positive number that is no greater than the
+     * total number of test cases.
+     *
+     * For FTL physical devices the number of shards should be <= 50.
+     *
+     * For FTL virtual devices the number of shards should be <= 100.
+     *
+     * The Default value is 0, in which case, no uniform sharding will be used.
+     */
+    @get:Incubating
+    @set:Incubating
+    var numUniformShards: Int
 }

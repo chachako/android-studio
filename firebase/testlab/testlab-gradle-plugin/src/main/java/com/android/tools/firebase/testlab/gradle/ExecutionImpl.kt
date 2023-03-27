@@ -21,5 +21,7 @@ import com.google.firebase.testlab.gradle.Execution
 abstract class ExecutionImpl : Execution {
     init {
         timeoutMinutes = 15
+
+        numUniformShards = 0
     }
 }

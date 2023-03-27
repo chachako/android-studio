@@ -21,10 +21,12 @@ import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.ManagedDevice
 import javax.inject.Inject
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.services.BuildServiceRegistry
 
 open class TestRunConfigureAction @Inject constructor(
     private val objectFactory: ObjectFactory,
+    private val providerFactory: ProviderFactory,
     private val buildServiceRegistry: BuildServiceRegistry,
 ): DeviceTestRunConfigureAction<ManagedDevice, DeviceTestRunInput> {
 
@@ -45,5 +47,9 @@ open class TestRunConfigureAction @Inject constructor(
             buildService.set(
                 TestLabBuildService.RegistrationAction.getBuildService(buildServiceRegistry))
             buildService.disallowChanges()
+
+            numUniformShards.set(
+                providerFactory.provider { buildService.get().numUniformShards })
+            numUniformShards.disallowChanges()
         }
 }

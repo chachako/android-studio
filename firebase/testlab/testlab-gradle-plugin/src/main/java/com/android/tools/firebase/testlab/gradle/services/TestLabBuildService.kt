@@ -100,6 +100,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         const val xGoogUserProjectHeaderKey: String = "X-Goog-User-Project"
         val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
 
+        const val INSTRUMENTATION_TEST_SHARD_FIELD = "shardingOption"
+
         const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
 
         val oauthScope = listOf(
@@ -140,6 +142,14 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         class FileReference: GenericJson() {
             @Key var fileUri: String? = null
         }
+
+        class UniformSharding: GenericJson() {
+            @Key var numShards: Int? = null
+        }
+
+        class ShardingOption: GenericJson() {
+            @Key var uniformSharding: UniformSharding? = null
+        }
     }
 
     private val logger = Logging.getLogger(this.javaClass)
@@ -151,6 +161,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val quotaProjectName: Property<String>
         val credentialFile: RegularFileProperty
         val cloudStorageBucket: Property<String>
+        val numUniformShards: Property<Int>
     }
 
     internal open val credential: GoogleCredential by lazy {
@@ -169,6 +180,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     internal open val httpTransport: HttpTransport
         get() = GoogleNetHttpTransport.newTrustedTransport()
+    val numUniformShards: Int
+        get() = parameters.numUniformShards.getOrNull() ?: 0
 
     fun runTestsOnDevice(
         deviceName: String,
@@ -252,6 +265,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     appPackageId = testData.testedApplicationId
                     testPackageId = testData.applicationId
                     testRunnerClass = testData.instrumentationRunner
+
+                    createShardingOption()?.also { sharding ->
+                        this.set(INSTRUMENTATION_TEST_SHARD_FIELD, sharding)
+                    }
                 }
                 environmentMatrix = EnvironmentMatrix().apply {
                     androidDeviceList = AndroidDeviceList().apply {
@@ -363,6 +380,17 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }.execute()
 
         return catalog.androidDeviceCatalog
+    }
+
+    private fun createShardingOption(): ShardingOption? {
+        if (numUniformShards == 0) {
+            return null
+        }
+        return ShardingOption().apply {
+            uniformSharding = UniformSharding().apply {
+                numShards = numUniformShards
+            }
+        }
     }
 
     private fun getTestSuiteResult(
@@ -916,6 +944,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.cloudStorageBucket.set(providerFactory.provider {
                 testLabExtension.testOptions.results.cloudStorageBucket
+            })
+            params.numUniformShards.set( providerFactory.provider {
+                testLabExtension.testOptions.execution.numUniformShards
             })
         }
     }
