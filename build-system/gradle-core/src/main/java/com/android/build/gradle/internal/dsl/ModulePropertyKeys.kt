@@ -36,13 +36,18 @@ sealed interface ModulePropertyKey<OutputT> {
         ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES(
                 StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.propertyName),
 
+        /**
+         * A [Dependency] providing apipackager artifact.
+         */
+        ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER(
+                StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName)
         ;
 
-        override fun getValue(properties: Map<String, Any>): List<org.gradle.api.artifacts.Dependency>? {
+        override fun getValue(properties: Map<String, Any>): List<Dependency>? {
             return when(val value = properties[key]) {
                 null -> null
                 is Dependency -> listOf(value)
-                is List<*> -> value as List<org.gradle.api.artifacts.Dependency>
+                is List<*> -> value as List<Dependency>
                 else -> throw IllegalArgumentException("Unexpected type ${value::class.qualifiedName} for property $key")
             }
         }

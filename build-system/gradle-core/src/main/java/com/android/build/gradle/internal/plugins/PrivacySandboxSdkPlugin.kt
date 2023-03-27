@@ -99,20 +99,20 @@ class PrivacySandboxSdkPlugin @Inject constructor(
         withProject("variantScope") { project ->
             PrivacySandboxSdkVariantScopeImpl(
                     project,
-                    TaskCreationServicesImpl(projectServices),
                     dslServices,
-                    { extension },
-            ) {
-                BootClasspathConfigImpl(
-                    project,
                     projectServices,
-                    versionedSdkLoaderService,
-                    libraryRequests = listOf(),
-                    isJava8Compatible = { true },
-                    returnDefaultValuesForMockableJar = { false },
-                    forUnitTest = false
-                )
-            }
+                    { extension },
+                    {
+                        BootClasspathConfigImpl(
+                                project,
+                                projectServices,
+                                versionedSdkLoaderService,
+                                libraryRequests = listOf(),
+                                isJava8Compatible = { true },
+                                returnDefaultValuesForMockableJar = { false },
+                                forUnitTest = false
+                        )
+                    })
         }
     }
 

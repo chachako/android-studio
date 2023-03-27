@@ -27,6 +27,7 @@ import com.android.builder.model.ApiVersion
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 
@@ -44,4 +45,5 @@ interface PrivacySandboxSdkVariantScope {
     val bundle: PrivacySandboxSdkBundleImpl
     val services: TaskCreationServices
     val signingConfig: SigningConfig
+    val experimentalProperties: MapProperty<String, Any>
 }

@@ -23,7 +23,10 @@ import com.android.build.gradle.internal.dsl.PrivacySandboxSdkBundleImpl
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryConfigurations
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryDependencies
 import com.android.build.gradle.internal.services.DslServices
+import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.TaskCreationServices
+import com.android.build.gradle.internal.services.TaskCreationServicesImpl
+import com.android.build.gradle.internal.services.VariantServicesImpl
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.utils.validatePreviewTargetValue
 import com.android.builder.core.DefaultApiVersion
@@ -32,16 +35,21 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 
 class PrivacySandboxSdkVariantScopeImpl(
         project: Project,
-        override val services: TaskCreationServices,
         val dslServices: DslServices,
+        private val projectServices: ProjectServices,
         private val extensionProvider: () -> PrivacySandboxSdkExtension,
         private val bootClasspathConfigProvider: () -> BootClasspathConfig
 ): PrivacySandboxSdkVariantScope{
+
+    override val services: TaskCreationServices
+        get() = TaskCreationServicesImpl(projectServices)
+    private val internalServices = VariantServicesImpl(projectServices)
 
     override val layout: ProjectLayout = project.layout
     override val artifacts: ArtifactsImpl = ArtifactsImpl(project, "single")
@@ -75,4 +83,10 @@ class PrivacySandboxSdkVariantScopeImpl(
         get() = extension.bundle as PrivacySandboxSdkBundleImpl
     override val signingConfig: SigningConfig
         get() = extension.signingConfig
+    override val experimentalProperties: MapProperty<String, Any>
+        get() = internalServices.mapPropertyOf(
+                String::class.java,
+                Any::class.java,
+                extension.experimentalProperties
+        )
 }
