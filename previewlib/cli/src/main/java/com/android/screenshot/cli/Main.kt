@@ -46,6 +46,7 @@ import com.android.tools.lint.detector.api.splitPath
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.lint.model.LintModelSerialization
 import com.android.tools.lint.model.LintModelSourceProvider
+import com.android.tools.lint.model.LintModelVariant
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.XmlUtils
 import com.google.common.io.ByteStreams
@@ -88,6 +89,26 @@ class Main {
         parseArguments(args, client, argumentState)
         initializePathVariables(argumentState, client)
         initializeConfigurations(client, argumentState)
+        val projects: List<Project> = configureProject(client, argumentState)
+    }
+
+    private fun configureProject(client: LintCliClient, argumentState: ArgumentState): List<Project> {
+        val modules: List<LintModelModule> = argumentState.modules
+        val projects: MutableList<Project> = ArrayList()
+        if (modules.isNotEmpty()) {
+            for (module: LintModelModule in modules) {
+                val dir = module.dir
+                val variant: LintModelVariant? = module.defaultVariant()
+                assert(variant != null)
+                val project = LintModelModuleProject(
+                    client, dir, dir,
+                    (variant)!!, null
+                )
+                client.registerProject(project.dir, project)
+                projects.add(project)
+            }
+        }
+        return projects
     }
 
     private fun initializeConfigurations(
