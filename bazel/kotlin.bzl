@@ -55,8 +55,8 @@ def kotlin_compile(ctx, name, srcs, deps, friend_jars, out, out_ijar, java_runti
     args.add("-Xsam-conversions=class")  # Needed for Gradle configuration caching (see b/202512551).
 
     tools = []
+    tools.append(ctx.file._jvm_abi_gen)
     if out_ijar:
-        tools.append(ctx.file._jvm_abi_gen)
         args.add(ctx.file._jvm_abi_gen, format = "-Xplugin=%s")
         args.add("-P", out_ijar, format = "plugin:org.jetbrains.kotlin.jvm.abi:outputDir=%s")
 
@@ -64,8 +64,8 @@ def kotlin_compile(ctx, name, srcs, deps, friend_jars, out, out_ijar, java_runti
     args.add("-Xallow-unstable-dependencies")
 
     # Use the Compiler Compose plugin
+    tools.append(ctx.file._compose_plugin)
     if ctx.attr.kotlin_use_compose:
-        tools.append(ctx.file._compose_plugin)
         args.add(ctx.file._compose_plugin, format = "-Xplugin=%s")
         args.add("-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true")
 
@@ -407,6 +407,11 @@ _kotlin_library = rule(
         ),
         "_jvm_abi_gen": attr.label(
             default = Label("//prebuilts/tools/common/m2:jvm-abi-gen-plugin"),
+            cfg = "host",
+            allow_single_file = [".jar"],
+        ),
+        "_compose_plugin": attr.label(
+            default = Label("//prebuilts/tools/common/m2:compose-compiler-hosted"),
             cfg = "host",
             allow_single_file = [".jar"],
         ),
