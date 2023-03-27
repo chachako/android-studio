@@ -90,8 +90,8 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val dependenciesInfo: DependenciesInfo by lazy {
         DependenciesInfoImpl(
-                dependenciesInfoBuilder.includedInApk,
-                dependenciesInfoBuilder.includedInBundle
+                dependenciesInfoBuilder.includeInApk,
+                dependenciesInfoBuilder.includeInBundle
         )
     }
 

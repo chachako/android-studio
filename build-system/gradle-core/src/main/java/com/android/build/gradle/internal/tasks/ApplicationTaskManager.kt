@@ -287,8 +287,8 @@ class ApplicationTaskManager(
         taskFactory.register(PerModuleBundleTask.CreationAction(variant))
 
         val debuggable = variantInfo.variantBuilder.debuggable
-        val includeSdkInfoInApk = variantInfo.variantBuilder.dependenciesInfo.includedInApk
-        val includeSdkInfoInBundle = variantInfo.variantBuilder.dependenciesInfo.includedInBundle
+        val includeSdkInfoInApk = variantInfo.variantBuilder.dependenciesInfo.includeInApk
+        val includeSdkInfoInBundle = variantInfo.variantBuilder.dependenciesInfo.includeInBundle
         if (!debuggable) {
             taskFactory.register(PerModuleReportDependenciesTask.CreationAction(variant))
         }

@@ -2280,12 +2280,18 @@ package com.android.build.api.variant {
   }
 
   public interface DependenciesInfoBuilder {
-    method public boolean getIncludedInApk();
-    method public boolean getIncludedInBundle();
-    method public void setIncludedInApk(boolean includedInApk);
-    method public void setIncludedInBundle(boolean includedInBundle);
-    property public abstract boolean includedInApk;
-    property public abstract boolean includedInBundle;
+    method public boolean getIncludeInApk();
+    method public boolean getIncludeInBundle();
+    method @Deprecated public boolean getIncludedInApk();
+    method @Deprecated public boolean getIncludedInBundle();
+    method public void setIncludeInApk(boolean includeInApk);
+    method public void setIncludeInBundle(boolean includeInBundle);
+    method @Deprecated public void setIncludedInApk(boolean includedInApk);
+    method @Deprecated public void setIncludedInBundle(boolean includedInBundle);
+    property public abstract boolean includeInApk;
+    property public abstract boolean includeInBundle;
+    property @Deprecated public abstract boolean includedInApk;
+    property @Deprecated public abstract boolean includedInBundle;
   }
 
   public interface DexPackagingOptions {
