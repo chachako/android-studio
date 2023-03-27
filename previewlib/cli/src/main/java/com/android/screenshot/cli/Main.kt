@@ -26,14 +26,17 @@ import com.android.tools.lint.ProjectMetadata
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.ConfigurationHierarchy
 import com.android.tools.lint.client.api.IssueRegistry
+import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintRequest
+import com.android.tools.lint.client.api.LintXmlConfiguration.Companion.create
 import com.android.tools.lint.computeMetadata
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.LintModelModuleProject
 import com.android.tools.lint.detector.api.Location
+import com.android.tools.lint.detector.api.Location.Companion.create
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
@@ -42,6 +45,7 @@ import com.android.tools.lint.detector.api.isJreFolder
 import com.android.tools.lint.detector.api.splitPath
 import com.android.tools.lint.model.LintModelModule
 import com.android.tools.lint.model.LintModelSerialization
+import com.android.tools.lint.model.LintModelSourceProvider
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.XmlUtils
 import com.google.common.io.ByteStreams
@@ -82,6 +86,152 @@ class Main {
         val argumentState = ArgumentState()
         val client: LintCliClient = MainLintClient(flags, argumentState)
         parseArguments(args, client, argumentState)
+        initializePathVariables(argumentState, client)
+        initializeConfigurations(client, argumentState)
+    }
+
+    private fun initializeConfigurations(
+        client: LintCliClient,
+        argumentState: ArgumentState
+    ) {
+        val configurations = client.configurations
+        val overrideConfig = flags.overrideLintConfig
+        if (overrideConfig != null) {
+            val config: Configuration = create(configurations, overrideConfig)
+            configurations.addGlobalConfigurations(null, config)
+        }
+        val override = CliConfiguration(configurations, flags, flags.isFatalOnly)
+        val defaultConfiguration = flags.lintConfig
+        configurations.addGlobalConfigurationFromFile(defaultConfiguration, override)
+        client.syncConfigOptions()
+        if (argumentState.modules.isNotEmpty()) {
+            val dir = argumentState.modules[0].dir
+            override.associatedLocation = create(dir)
+        }
+    }
+
+    private fun initializePathVariables(
+        argumentState: ArgumentState, client: LintCliClient
+    ) {
+        val pathVariables = client.pathVariables
+        for (module in argumentState.modules) {
+            // Add project directory path variable
+            pathVariables.add(
+                "{" + module.modulePath + "*projectDir}", module.dir, false
+            )
+            // Add build directory path variable
+            pathVariables.add(
+                "{" + module.modulePath + "*buildDir}", module.buildFolder, false
+            )
+            for (variant in module.variants) {
+                for ((sourceProviderIndex, sourceProvider) in variant.sourceProviders.withIndex()) {
+                    addSourceProviderPathVariables(
+                        pathVariables,
+                        sourceProvider,
+                        "sourceProvider",
+                        sourceProviderIndex,
+                        module.modulePath,
+                        variant.name
+                    )
+                }
+                for ((testSourceProviderIndex, testSourceProvider) in variant.testSourceProviders.withIndex()) {
+                    addSourceProviderPathVariables(
+                        pathVariables,
+                        testSourceProvider,
+                        "testSourceProvider",
+                        testSourceProviderIndex,
+                        module.modulePath,
+                        variant.name
+                    )
+                }
+                for ((testFixturesSourceProviderIndex, testFixturesSourceProvider) in variant.testFixturesSourceProviders.withIndex()) {
+                    addSourceProviderPathVariables(
+                        pathVariables,
+                        testFixturesSourceProvider,
+                        "testFixturesSourceProvider",
+                        testFixturesSourceProviderIndex,
+                        module.modulePath,
+                        variant.name
+                    )
+                }
+            }
+        }
+        pathVariables.sort()
+    }
+
+    /** Adds necessary path variables to pathVariables.  */
+    private fun addSourceProviderPathVariables(
+        pathVariables: PathVariables,
+        sourceProvider: LintModelSourceProvider,
+        sourceProviderType: String,
+        sourceProviderIndex: Int,
+        modulePath: String,
+        variantName: String
+    ) {
+        addSourceProviderPathVariables(
+            pathVariables,
+            sourceProvider.manifestFiles,
+            modulePath,
+            variantName,
+            sourceProviderType,
+            sourceProviderIndex,
+            "manifest"
+        )
+        addSourceProviderPathVariables(
+            pathVariables,
+            sourceProvider.javaDirectories,
+            modulePath,
+            variantName,
+            sourceProviderType,
+            sourceProviderIndex,
+            "javaDir"
+        )
+        addSourceProviderPathVariables(
+            pathVariables,
+            sourceProvider.resDirectories,
+            modulePath,
+            variantName,
+            sourceProviderType,
+            sourceProviderIndex,
+            "resDir"
+        )
+        addSourceProviderPathVariables(
+            pathVariables,
+            sourceProvider.assetsDirectories,
+            modulePath,
+            variantName,
+            sourceProviderType,
+            sourceProviderIndex,
+            "assetsDir"
+        )
+    }
+
+    /** Adds necessary path variables to pathVariables.  */
+    private fun addSourceProviderPathVariables(
+        pathVariables: PathVariables,
+        files: Collection<File>,
+        modulePath: String,
+        variantName: String,
+        sourceProviderType: String,
+        sourceProviderIndex: Int,
+        sourceType: String
+    ) {
+        for ((index, file) in files.withIndex()) {
+            val name = ("{"
+                    + modulePath
+                    + "*"
+                    + variantName
+                    + "*"
+                    + sourceProviderType
+                    + "*"
+                    + sourceProviderIndex
+                    + "*"
+                    + sourceType
+                    + "*"
+                    + index
+                    + "}")
+            pathVariables.add(name, file, false)
+        }
     }
 
     private fun parseArguments(
@@ -97,7 +247,7 @@ class Main {
                     System.err.println("Missing client id")
                     return ERRNO_INVALID_ARGS
                 }
-
+                clientName = args[++index]
             } else if (arg == ARG_CLIENT_NAME) {
                 if (index == args.size - 1) {
                     System.err.println("Missing client name")
@@ -232,21 +382,8 @@ class Main {
         @NonNull
         var modules: MutableList<LintModelModule> = mutableListOf()
 
-        @Nullable
-        var variantName: String? = null
-
-        // Mapping from file path prefix to URL. Applies only to HTML reports
-        @Nullable
-        var urlMap: String? = null
-
         @NonNull
         var files: List<File> = mutableListOf()
-
-        @Nullable
-        var pathVariables: PathVariables? = null
-
-        @Nullable
-        var desugaredMethodsPaths: List<String>? = null
     }
 
     inner class MainLintClient(flags: LintCliFlags, private val argumentState: ArgumentState) :
