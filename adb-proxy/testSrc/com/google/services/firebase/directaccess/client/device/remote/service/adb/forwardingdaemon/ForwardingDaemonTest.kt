@@ -78,8 +78,8 @@ class ForwardingDaemonTest {
 
   @After
   fun tearDown() {
-    fakeAdbSession.close()
     forwardingDaemon.close()
+    fakeAdbSession.close()
   }
 
   @Test
