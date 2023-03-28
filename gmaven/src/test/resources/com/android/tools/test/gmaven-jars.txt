@@ -704,6 +704,7 @@ com/android/tools/dvlib
   com/android/dvlib/devices-4.xsd
   com/android/dvlib/devices-5.xsd
   com/android/dvlib/devices-6.xsd
+  com/android/dvlib/devices-7.xsd
 
 com/android/tools/emulator/proto
   META-INF/

@@ -16,6 +16,16 @@
 
 package com.android.sdklib.devices;
 
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_FOLD_AT_POSTURE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_ANGLES_POSTURE_DEFINITIONS;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_AREAS;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_COUNT;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_DEFAULTS;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_RANGES;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_SUB_TYPE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_TYPE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_POSTURE_LISTS;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_RAM_SIZE;
 
 import com.android.SdkConstants;
@@ -628,6 +638,24 @@ public class DeviceManager {
                         HardwareProperties.HW_LCD_FOLDED_HEIGHT_3,
                         Integer.toString(hw.getScreen().getFoldedHeight3()));
             }
+        }
+
+        Hinge hinge = hw.getHinge();
+
+        if (hinge != null) {
+            props.put(AVD_INI_HINGE, hinge.getCount() > 0 ? "yes" : "no");
+            props.put(AVD_INI_HINGE_COUNT, Integer.toString(hinge.getCount()));
+            props.put(AVD_INI_HINGE_TYPE, Integer.toString(hinge.getType()));
+            props.put(AVD_INI_HINGE_SUB_TYPE, Integer.toString(hinge.getSubtype()));
+            props.put(AVD_INI_HINGE_RANGES, hinge.getRanges());
+            props.put(AVD_INI_HINGE_DEFAULTS, Integer.toString(hinge.getDefaults()));
+            props.put(AVD_INI_HINGE_AREAS, hinge.getAreas());
+            hinge.getFoldAtPosture()
+                    .ifPresent(fold -> props.put(AVD_INI_FOLD_AT_POSTURE, Integer.toString(fold)));
+            props.put(AVD_INI_POSTURE_LISTS, hinge.getPostureList());
+            props.put(
+                    AVD_INI_HINGE_ANGLES_POSTURE_DEFINITIONS,
+                    hinge.getHingeAnglePostureDefinitions());
         }
         return props;
     }
