@@ -24,11 +24,11 @@ import com.android.tools.lint.LintCliFlags
 import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
 import com.android.tools.lint.LintCliFlags.ERRNO_INVALID_ARGS
 import com.android.tools.lint.ProjectMetadata
-import com.android.tools.lint.UastEnvironment.Companion.create
-import com.android.tools.lint.UastEnvironment.Configuration.Companion.create
+import com.android.tools.lint.UastEnvironment
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.ConfigurationHierarchy
 import com.android.tools.lint.client.api.IssueRegistry
+import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintRequest
@@ -57,6 +57,7 @@ import com.android.utils.XmlUtils
 import com.google.common.collect.Sets
 import com.google.common.io.ByteStreams
 import com.intellij.pom.java.LanguageLevel
+import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.w3c.dom.Document
@@ -64,7 +65,6 @@ import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.util.EnumSet
-import java.util.stream.Stream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -99,6 +99,91 @@ class Main {
         initializeConfigurations(client, argumentState)
         val projects: List<Project> = configureProject(client, argumentState)
         val driver: LintDriver = createDriver(projects, client as MainLintClient)
+        initializeUast(projects)
+    }
+
+    /**
+     * Configure project with idea project and configure CoreAppEnv
+     */
+    private fun initializeUast(projects: Collection<Project>) {
+        // Initialize the associated idea project to use
+        val includeTests = !flags.isIgnoreTestSources
+        // `projects` only lists root projects, not dependencies
+        val allProjects = Sets.newIdentityHashSet<Project>()
+        for (project in projects) {
+            allProjects.add(project)
+            allProjects.addAll(project.allLibraries)
+        }
+        val sourceRoots: MutableSet<File> = LinkedHashSet(10)
+        val classpathRoots: MutableSet<File> = LinkedHashSet(50)
+        for (project in allProjects) {
+            // Note that there could be duplicates here since we're including multiple library
+            // dependencies that could have the same dependencies (e.g. lib1 and lib2 both
+            // referencing guava.jar)
+            sourceRoots.addAll(project.javaSourceFolders)
+            if (includeTests) {
+                sourceRoots.addAll(project.testSourceFolders)
+            }
+            sourceRoots.addAll(project.generatedSourceFolders)
+            classpathRoots.addAll(project.getJavaLibraries(true))
+            if (includeTests) {
+                classpathRoots.addAll(project.testLibraries)
+            }
+            if (!flags.isIgnoreTestFixturesSources) {
+                sourceRoots.addAll(project.testFixturesSourceFolders)
+                classpathRoots.addAll(project.testFixturesLibraries)
+            }
+
+            // Don't include all class folders:
+            //  files.addAll(project.getJavaClassFolders());
+            // These are the outputs from the sources and generated sources, which we will
+            // parse directly with PSI/UAST anyway. Including them here leads lint to do
+            // a lot more work (e.g. when resolving symbols it looks at both .java and .class
+            // matches).
+            // However, we *do* need them for libraries; otherwise, type resolution into
+            // compiled libraries will not work; see
+            // https://issuetracker.google.com/72032121
+            // (We also enable this for unit tests where there is no actual compilation;
+            // here, the presence of class files is simulating binary-only access
+            if (project.isLibrary) {
+                classpathRoots.addAll(project.javaClassFolders)
+            } else if (project.isGradleProject) {
+                // As of 3.4, R.java is in a special jar file
+                for (f in project.javaClassFolders) {
+                    if (f.name == SdkConstants.FN_R_CLASS_JAR) {
+                        classpathRoots.add(f)
+                    }
+                }
+            }
+        }
+        var maxLevel = LanguageLevel.JDK_1_7
+        for (project in projects) {
+            val level = project.javaLanguageLevel
+            if (maxLevel.isLessThan(level)) {
+                maxLevel = level
+            }
+        }
+
+        for (file in sourceRoots + classpathRoots) {
+            // IntelliJ expects absolute file paths, otherwise resolution can fail in subtle ways.
+            require(file.isAbsolute) { "Relative Path found: $file. All paths should be absolute." }
+        }
+
+        val config = UastEnvironment.Configuration.create()
+        config.javaLanguageLevel = maxLevel
+        config.addSourceRoots(sourceRoots.toList())
+        config.addClasspathRoots(classpathRoots.toList())
+        jdkHomePath?.let {
+            config.kotlinCompilerConfig.put(JVMConfigurationKeys.JDK_HOME, it)
+            config.kotlinCompilerConfig.put(JVMConfigurationKeys.NO_JDK, false)
+        }
+
+        val env = UastEnvironment.create(config)
+
+        for (project in allProjects) {
+            project.ideaProject = env.ideaProject
+            project.env = env.coreAppEnv
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

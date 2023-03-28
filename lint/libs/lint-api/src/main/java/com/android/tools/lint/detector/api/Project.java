@@ -76,6 +76,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
+import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.PsiClass;
 import java.io.BufferedInputStream;
@@ -161,6 +162,8 @@ public class Project {
     private Document mergedManifest;
     private com.intellij.openapi.project.Project ideaProject;
     private Map<Object, Object> clientProperties;
+
+    private CoreApplicationEnvironment env;
 
     /**
      * Creates a new {@link Project} for the given directory.
@@ -1570,5 +1573,13 @@ public class Project {
     @NonNull
     public LintClient getClient() {
         return client;
+    }
+
+    public void setEnv(CoreApplicationEnvironment env) {
+      this.env = env;
+    }
+
+    public CoreApplicationEnvironment getEnv() {
+      return env;
     }
 }
