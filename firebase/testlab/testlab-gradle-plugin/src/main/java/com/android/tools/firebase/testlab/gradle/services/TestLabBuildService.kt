@@ -295,12 +295,22 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         lateinit var resultTestMatrix: TestMatrix
         var previousTestMatrixState = ""
+        var printResultsUrl = true
         while (true) {
             val latestTestMatrix = testMatricesClient.get(
                 projectName, updatedTestMatrix.testMatrixId).execute()
             if (previousTestMatrixState != latestTestMatrix.state) {
                 previousTestMatrixState = latestTestMatrix.state
                 logger.lifecycle("Firebase TestLab Test execution state: $previousTestMatrixState")
+            }
+            if (printResultsUrl) {
+                val resultsUrl = latestTestMatrix.resultStorage?.get("resultsUrl") as String?
+                if (!resultsUrl.isNullOrBlank()) {
+                    logger.lifecycle(
+                            "Test request for device $deviceName has been submitted to " +
+                                    "Firebase TestLab: $resultsUrl")
+                    printResultsUrl = false
+                }
             }
             val testFinished = when (latestTestMatrix.state) {
                 "VALIDATING", "PENDING", "RUNNING" -> false
