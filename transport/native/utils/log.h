@@ -46,10 +46,11 @@ class Log {
       __attribute__((format(printf, 2, 3)));
 
   struct Tag {
-    static constexpr const char *const TRANSPORT = "StudioTransport";
-    static constexpr const char *const PROFILER = "StudioProfiler";
-    static constexpr const char *const APPINSPECT = "AppInspection";
-    static constexpr const char *const COROUTINE_DEBUGGER = "CoroutineDebugger";
+    static constexpr const char *const TRANSPORT = "studio.transport";
+    static constexpr const char *const PROFILER = "studio.profiler";
+    static constexpr const char *const APPINSPECT = "studio.appInspection";
+    static constexpr const char *const COROUTINE_DEBUGGER =
+        "studio.coroutineDebugger";
   };
 };
 
