@@ -15,6 +15,7 @@
  */
 package com.android.screenshot.cli
 
+import com.android.SdkConstants
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.tools.lint.CliConfiguration
@@ -23,6 +24,8 @@ import com.android.tools.lint.LintCliFlags
 import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
 import com.android.tools.lint.LintCliFlags.ERRNO_INVALID_ARGS
 import com.android.tools.lint.ProjectMetadata
+import com.android.tools.lint.UastEnvironment.Companion.create
+import com.android.tools.lint.UastEnvironment.Configuration.Companion.create
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.ConfigurationHierarchy
 import com.android.tools.lint.client.api.IssueRegistry
@@ -30,11 +33,13 @@ import com.android.tools.lint.client.api.LintClient.Companion.clientName
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintRequest
 import com.android.tools.lint.client.api.LintXmlConfiguration.Companion.create
+import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.computeMetadata
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.LintModelModuleProject
+import com.android.tools.lint.detector.api.LintModelModuleProject.Companion.resolveDependencies
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Location.Companion.create
 import com.android.tools.lint.detector.api.Project
@@ -49,14 +54,17 @@ import com.android.tools.lint.model.LintModelSourceProvider
 import com.android.tools.lint.model.LintModelVariant
 import com.android.tools.lint.model.PathVariables
 import com.android.utils.XmlUtils
+import com.google.common.collect.Sets
 import com.google.common.io.ByteStreams
 import com.intellij.pom.java.LanguageLevel
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.util.EnumSet
+import java.util.stream.Stream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -90,6 +98,23 @@ class Main {
         initializePathVariables(argumentState, client)
         initializeConfigurations(client, argumentState)
         val projects: List<Project> = configureProject(client, argumentState)
+        val driver: LintDriver = createDriver(projects, client as MainLintClient)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createDriver(projects: List<Project>, client: MainLintClient): LintDriver {
+        val emptyIssueRegistry =
+            object : IssueRegistry() {
+                override val vendor: Vendor = AOSP_VENDOR
+                override val issues: List<Issue>
+                    get() = listOf()
+            }
+        val roots = resolveDependencies(projects as List<LintModelModuleProject>, false)
+
+        val lintRequest = LintRequest(client, emptyList())
+        lintRequest.setProjects(roots)
+
+        return client.createDriver(emptyIssueRegistry, lintRequest)
     }
 
     private fun configureProject(client: LintCliClient, argumentState: ArgumentState): List<Project> {
@@ -412,7 +437,7 @@ class Main {
 
         private var unexpectedGradleProject: Project? = null
 
-        override fun createDriver(
+        public override fun createDriver(
             registry: IssueRegistry, request: LintRequest
         ): LintDriver {
             val driver: LintDriver = super.createDriver(registry, request)
