@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging.utils
 
 import com.android.adblib.AutoShutdown
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,8 +32,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsNotCreatedRightAway() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         /*val ref = */ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -50,8 +47,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsCreatedLazily() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -70,8 +65,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsShutDownOnRelease() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -91,8 +84,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsClosedOnClose() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -112,8 +103,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsCreatedOnlyOnce() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -133,8 +122,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsCreatedOnlyOnceFromConcurrentThreads() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -165,8 +152,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsClosedFromConcurrentThreads() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             res.creationCount.incrementAndGet()
@@ -194,8 +179,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceIsCreatedOnlyOnceEvenIfDelayed() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             delay(100)
@@ -215,8 +198,6 @@ class ReferenceCountedResourceTest : AdbLibToolsTestBase() {
     @Test
     fun testUnderlyingResourceCreationIsCancelledIfRefIsClosedEarly() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
-        val session = createSession(fakeAdb)
         val res = MyTestResource()
         val ref = ReferenceCountedResource(session) {
             delay(10_000)

@@ -18,7 +18,6 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpCommands
@@ -32,6 +31,7 @@ import com.android.adblib.tools.debugging.packets.ddms.MutableDdmsChunk
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.async
@@ -49,7 +49,6 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
     @Test
     fun socketAddressIsAssignedAutomatically() = runBlockingWithTimeout {
         val deviceID = "1234"
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -60,7 +59,6 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val session = createHostServices(fakeAdb).session
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
@@ -131,7 +129,6 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
 
     private suspend fun createJdwpProxySession(): JdwpSession {
         val deviceID = "1234"
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -142,7 +139,6 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val session = createHostServices(fakeAdb).session
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
 

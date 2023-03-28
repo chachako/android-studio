@@ -21,9 +21,7 @@ import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.device
 import com.android.adblib.serialNumber
 import com.android.adblib.testing.FakeAdbLoggerFactory
-import com.android.adblib.testingutils.CloseablesRule
-import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.testingutils.TestingAdbSessionHost
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.fakeadbserver.DeviceState.DeviceStatus.ONLINE
 import com.android.fakeadbserver.DeviceState.HostConnectionType.USB
 import com.android.processmonitor.common.ProcessEvent.ProcessAdded
@@ -47,17 +45,9 @@ import org.junit.Test
 class JdwpProcessTrackerTest {
 
     @get:Rule
-    val closeables = CloseablesRule()
+    val fakeAdbRule = FakeAdbServerProviderRule()
 
-    private val fakeAdb = closeables.register(
-        FakeAdbServerProvider()
-            .buildDefault()
-            .start()
-    )
-    private val adbHost = closeables.register(TestingAdbSessionHost())
-    private val adbSession = closeables.register(
-        AdbSession.create(adbHost, fakeAdb.createChannelProvider(adbHost))
-    )
+    private val adbSession get() = fakeAdbRule.adbSession
     private val logger = FakeAdbLoggerFactory().logger
 
     @Test
@@ -147,7 +137,7 @@ class JdwpProcessTrackerTest {
     }
 
     private fun setupDevice(serialNumber: String, sdk: Int) =
-        fakeAdb.connectDevice(serialNumber, "", "", "13", sdk.toString(), USB).apply {
+        fakeAdbRule.fakeAdb.connectDevice(serialNumber, "", "", "13", sdk.toString(), USB).apply {
             deviceStatus = ONLINE
         }
 

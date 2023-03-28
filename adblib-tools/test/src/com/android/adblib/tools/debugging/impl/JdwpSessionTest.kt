@@ -19,7 +19,6 @@ import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.skipRemaining
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.waitNonNull
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.debugging.JdwpSession
 import com.android.adblib.tools.debugging.packets.AdbBufferedInputChannel
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
@@ -33,6 +32,7 @@ import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
 import com.android.adblib.tools.debugging.packets.ddms.isDdmsCommand
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -47,9 +47,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun nextPacketIdIsThreadSafe() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
 
@@ -75,9 +73,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun nextPacketIdThrowsIfNotSupported() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, null))
@@ -92,9 +88,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun sendAndReceivePacketWorks() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
 
@@ -114,9 +108,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun receivePacketRewindsTheCorrectPayload() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
 
@@ -142,9 +134,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun receivePacketThrowsEofOnClientTerminate() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
 
@@ -168,9 +158,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun receivePacketThrowsEofConsistentlyOnClientTerminate() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
 
@@ -191,9 +179,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun sendPacketThrowExceptionAfterShutdown() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, 100))
@@ -211,9 +197,7 @@ class JdwpSessionTest : AdbLibToolsTestBase() {
 
     @Test
     fun receivePacketThrowExceptionAfterShutdown() = runBlockingWithTimeout {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val session = createSession(fakeAdb)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         val jdwpSession = registerCloseable(JdwpSession.openJdwpSession(connectedDevice, 10, 100))

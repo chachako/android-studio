@@ -17,7 +17,6 @@
 package com.android.adblib.tools.tests
 
 import com.android.adblib.DeviceSelector
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.UninstallResult
 import com.android.adblib.tools.uninstall
 import com.android.fakeadbserver.shellcommandhandlers.ShellConstants
@@ -29,9 +28,7 @@ class TestUninstall : TestInstallBase() {
 
     @Test
     fun testUninstallSuccess() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         var r : UninstallResult
@@ -44,9 +41,7 @@ class TestUninstall : TestInstallBase() {
 
     @Test
     fun testUninstallFailure() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         var r : UninstallResult
@@ -59,9 +54,7 @@ class TestUninstall : TestInstallBase() {
 
     @Test
     fun testUninstallOptions() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
         val options = listOf("-myOptions", "-r", "-t")
         val applicationID = "foo.bar"

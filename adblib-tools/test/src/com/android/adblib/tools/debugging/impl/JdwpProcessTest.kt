@@ -30,6 +30,7 @@ import com.android.adblib.tools.debugging.packets.payloadLength
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -354,9 +355,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         deviceApi: Int = 30,
         waitForDebugger: Boolean = true
     ): Triple<FakeAdbServerProvider, ConnectedDevice, JdwpProcessImpl> {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, deviceApi)
-        val session = createSession(fakeAdb)
         val device = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeAdb.device(fakeDevice.deviceId).startClient(10, 2, "p1", "pkg", waitForDebugger)
         val process = registerCloseable(JdwpProcessImpl(session, device, 10))

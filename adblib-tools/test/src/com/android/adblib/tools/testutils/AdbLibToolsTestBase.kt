@@ -17,8 +17,6 @@ package com.android.adblib.tools.testutils
 
 import com.android.adblib.AdbChannel
 import com.android.adblib.AdbChannelProvider
-import com.android.adblib.AdbDeviceServices
-import com.android.adblib.AdbHostServices
 import com.android.adblib.AdbSession
 import com.android.adblib.AdbSessionHost
 import com.android.adblib.ConnectedDevice
@@ -28,8 +26,10 @@ import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.adblib.testingutils.TestingAdbSessionHost
 import com.android.fakeadbserver.DeviceState
+import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import org.hamcrest.CoreMatchers
@@ -43,6 +43,18 @@ open class AdbLibToolsTestBase {
 
     @JvmField
     @Rule
+    val fakeAdbRule = FakeAdbServerProviderRule {
+        installDefaultCommandHandlers()
+        installDeviceHandler(SyncCommandHandler())
+    }
+
+    protected val fakeAdb get() = fakeAdbRule.fakeAdb
+    protected val session get() = fakeAdbRule.adbSession
+    protected val hostServices get() = session.hostServices
+    protected val deviceServices get() = session.deviceServices
+
+    @JvmField
+    @Rule
     val closeables = CloseablesRule()
 
     @JvmField
@@ -51,16 +63,6 @@ open class AdbLibToolsTestBase {
 
     protected fun <T : AutoCloseable> registerCloseable(item: T): T {
         return closeables.register(item)
-    }
-
-    protected fun createSession(fakeAdb: FakeAdbServerProvider): AdbSession {
-        val host = registerCloseable(TestingAdbSessionHost())
-        val channelProvider = fakeAdb.createChannelProvider(host)
-        return registerCloseable(AdbSession.create(
-            host,
-            channelProvider,
-            Duration.ofMillis(SOCKET_CONNECT_TIMEOUT_MS)
-        ))
     }
 
     protected fun createDisconnectedSession(): AdbSession {
@@ -75,14 +77,6 @@ open class AdbLibToolsTestBase {
             channelProvider,
             Duration.ofMillis(SOCKET_CONNECT_TIMEOUT_MS)
         ))
-    }
-
-    protected fun createDeviceServices(fakeAdb: FakeAdbServerProvider): AdbDeviceServices {
-        return createSession(fakeAdb).deviceServices
-    }
-
-    protected fun createHostServices(fakeAdb: FakeAdbServerProvider): AdbHostServices {
-        return createSession(fakeAdb).hostServices
     }
 
     protected fun addFakeDevice(fakeAdb: FakeAdbServerProvider, api: Int): DeviceState {
@@ -103,18 +97,6 @@ open class AdbLibToolsTestBase {
         (host as TestingAdbSessionHost).setPropertyValue(property, value)
     }
 
-    protected suspend fun waitForOnlineConnectedDevice(
-        session: AdbSession,
-        serialNumber: String
-    ): ConnectedDevice {
-        return session.connectedDevicesTracker.connectedDevices
-            .mapNotNull { connectedDevices ->
-                connectedDevices.firstOrNull { device ->
-                    device.isOnline && device.serialNumber == serialNumber
-                }
-            }.first()
-    }
-
     protected inline fun <reified T> assertThrows(block: () -> Unit) {
         try {
             block()
@@ -124,4 +106,16 @@ open class AdbLibToolsTestBase {
         }
         Assert.fail("Expected: An exception instance of ${T::class}, but got no exception instead")
     }
+}
+
+internal suspend fun waitForOnlineConnectedDevice(
+    session: AdbSession,
+    serialNumber: String
+): ConnectedDevice {
+    return session.connectedDevicesTracker.connectedDevices
+        .mapNotNull { connectedDevices ->
+            connectedDevices.firstOrNull { device ->
+                device.isOnline && device.serialNumber == serialNumber
+            }
+        }.first()
 }

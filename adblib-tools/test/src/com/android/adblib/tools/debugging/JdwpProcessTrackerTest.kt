@@ -17,8 +17,8 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
-import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -28,18 +28,27 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
 
-class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
+class JdwpProcessTrackerTest {
+
+    @JvmField
+    @Rule
+    val fakeAdbRule = FakeAdbServerProviderRule {
+        installDefaultCommandHandlers()
+        setFeatures("push_sync")
+    }
+
+    private val fakeAdb get() = fakeAdbRule.fakeAdb
+    private val hostServices get() = fakeAdbRule.adbSession.hostServices
 
     @Test
     fun testJdwpProcessTrackerWorks(): Unit = runBlockingWithTimeout {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -50,8 +59,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
-        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
+        val connectedDevice =
+            waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
         val pid11 = 11
 
@@ -123,6 +132,7 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                         true
                     }
                 }
+
                 else -> {
                     Assert.fail("Should not reach")
                     false
@@ -157,9 +167,6 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun testJdwpProcessTrackerCollectsProcessProperties() = runBlockingWithTimeout {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -170,8 +177,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
-        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
+        val connectedDevice =
+            waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
         val pid11 = 11
         fakeDevice.startClient(pid10, 100, "a.b.c", false)
@@ -208,9 +215,6 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun testJdwpProcessTrackerFlowStopsWhenDeviceDisconnects(): Unit = runBlockingWithTimeout {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -221,8 +225,8 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
-        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
+        val connectedDevice =
+            waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
         val pid11 = 11
 
@@ -251,9 +255,6 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun testJdwpProcessTrackerFlowIsExceptionTransparent(): Unit = runBlockingWithTimeout {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -264,30 +265,28 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
-        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
+        val connectedDevice =
+            waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
 
         // Act
-        exceptionRule.expect(Exception::class.java)
-        exceptionRule.expectMessage("My Test Exception")
-        fakeDevice.startClient(pid10, 0, "a.b.c", false)
-
-        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
-        jdwpTracker.processesFlow.collect {
-            throw Exception("My Test Exception")
+        val exception = Assert.assertThrows(Exception::class.java) {
+            fakeDevice.startClient(pid10, 0, "a.b.c", false)
+            val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
+            runBlocking {
+                jdwpTracker.processesFlow.collect {
+                    throw Exception("My Test Exception")
+                }
+            }
         }
 
-        // Assert (should not reach)
-        Assert.fail()
+        // Assert
+        Assert.assertEquals(exception.message, "My Test Exception")
     }
 
     @Test
     fun testJdwpProcessTrackerFlowICanBeCancelled(): Unit = runBlockingWithTimeout {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -298,21 +297,22 @@ class JdwpProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
-        val connectedDevice = waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
+        val connectedDevice =
+            waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
 
         // Act
-        exceptionRule.expect(CancellationException()::class.java)
-        exceptionRule.expectMessage("My Test Exception")
-        fakeDevice.startClient(pid10, 0, "a.b.c", false)
-
-        val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
-        jdwpTracker.processesFlow.collect {
-            cancel("My Test Exception")
+        val exception = Assert.assertThrows(CancellationException::class.java) {
+            fakeDevice.startClient(pid10, 0, "a.b.c", false)
+            val jdwpTracker = JdwpProcessTracker.create(connectedDevice)
+            runBlocking {
+                jdwpTracker.processesFlow.collect {
+                    cancel("My Test Exception")
+                }
+            }
         }
 
-        // Assert (should not reach)
-        Assert.fail()
+        // Assert
+        Assert.assertEquals(exception.message, "My Test Exception")
     }
 }

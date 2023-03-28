@@ -18,7 +18,6 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AdbSession
 import com.android.adblib.property
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.AdbLibToolsProperties.DDMS_REPLY_WAIT_TIMEOUT
 import com.android.adblib.tools.debugging.DdmsProtocolKind
 import com.android.adblib.tools.debugging.JdwpSession
@@ -29,6 +28,7 @@ import com.android.adblib.tools.debugging.handleDdmsCommandAndReplyProtocol
 import com.android.adblib.tools.debugging.withTimeoutAfterSignal
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
@@ -137,10 +137,8 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
     @Test
     fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesAllowed_doesNotTimeOut() =
         runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             // Api 27 maps to DdmsProtocolKind.EmptyRepliesAllowed
             val fakeDevice = addFakeDevice(fakeAdb, 27)
-            val session = createSession(fakeAdb)
             fakeDevice.startClient(10, 0, "a.b.c", false)
 
             // Act
@@ -148,7 +146,10 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
             val jdwpCommandProgress = FakeJdwpCommandProgress()
             val result =
                 jdwpSession.handleDdmsCommandAndReplyProtocol(jdwpCommandProgress) { signal: Signal<Long> ->
-                    signalAndWait(session.property(DDMS_REPLY_WAIT_TIMEOUT).toMillis() + 100, signal) { 101L }
+                    signalAndWait(
+                        session.property(DDMS_REPLY_WAIT_TIMEOUT).toMillis() + 100,
+                        signal
+                    ) { 101L }
                 }
 
             assertEquals(
@@ -164,10 +165,8 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
     @Test
     fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesAllowed_canHandleExceptionAfterSignal() =
         runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             // Api 27 maps to DdmsProtocolKind.EmptyRepliesAllowed
             val fakeDevice = addFakeDevice(fakeAdb, 27)
-            val session = createSession(fakeAdb)
             fakeDevice.startClient(10, 0, "a.b.c", false)
 
             // Act
@@ -191,9 +190,7 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
     @Test
     fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_returnsResultBeforeTimeout() =
         runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             val fakeDevice = addFakeDevice(fakeAdb, 30)
-            val session = createSession(fakeAdb)
             fakeDevice.startClient(10, 0, "a.b.c", false)
 
             // Act
@@ -217,9 +214,7 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
     @Test
     fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_returnsResultOnTimeout() =
         runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             val fakeDevice = addFakeDevice(fakeAdb, 30)
-            val session = createSession(fakeAdb)
             fakeDevice.startClient(10, 0, "a.b.c", false)
 
             // Act
@@ -241,9 +236,7 @@ class SharedJdwpSessionUtilsTest : AdbLibToolsTestBase() {
     @Test
     fun handleDdmsCommandWithEmptyReplyWithEmptyRepliesDiscarded_canHandleExceptionAfterSignal() =
         runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             val fakeDevice = addFakeDevice(fakeAdb, 30)
-            val session = createSession(fakeAdb)
             fakeDevice.startClient(10, 0, "a.b.c", false)
 
             // Act

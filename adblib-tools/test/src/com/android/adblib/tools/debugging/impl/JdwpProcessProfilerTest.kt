@@ -22,6 +22,7 @@ import com.android.adblib.tools.debugging.ProfilerStatus
 import com.android.adblib.tools.debugging.toByteArray
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.fakeadbserver.ClientState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.ProfilerState
@@ -37,7 +38,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun queryStatusWorksForOff() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         fakeAdb.device("1234").client(10).profilerState.status = ProfilerState.Status.Off
         val progress = FakeJdwpCommandProgress()
@@ -56,7 +56,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun queryStatusWorksForInstrumentation() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         fakeAdb.device("1234").client(10).profilerState.status =
             ProfilerState.Status.Instrumentation
@@ -71,7 +70,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun queryStatusWorksForSampling() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         fakeAdb.device("1234").client(10).profilerState.status = ProfilerState.Status.Sampling
 
@@ -85,7 +83,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun startSampleProfilingWorks() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         val profilerState = fakeAdb.device("1234").client(10).profilerState
         val progress = FakeJdwpCommandProgress()
@@ -113,7 +110,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun stopSampleProfilingWorks() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         val samplingData = "This is a test".toByteArray(Charsets.UTF_8)
         val profilerState = fakeAdb.device("1234").client(10).profilerState
@@ -139,7 +135,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun startInstrumentationProfilingWorks() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         val profilerState = fakeAdb.device("1234").client(10).profilerState
         val progress = FakeJdwpCommandProgress()
@@ -160,7 +155,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     @Test
     fun stopInstrumentationProfilingWorks() = runBlockingWithTimeout {
         // Prepare
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val profiler = createJdwpProcessProfiler(fakeAdb)
         val instrumentationData = "This is a test".toByteArray(Charsets.UTF_8)
         val profilerState = fakeAdb.device("1234").client(10).profilerState
@@ -195,7 +189,6 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val session = createHostServices(fakeAdb).session
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val process = registerCloseable(JdwpProcessImpl(session, connectedDevice, 10))

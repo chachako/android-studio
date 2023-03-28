@@ -16,7 +16,6 @@
 package com.android.adblib.tools.tests
 
 import com.android.adblib.DeviceSelector
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.INSTALL_APK_STAGING
 import com.android.adblib.tools.InstallException
 import com.android.adblib.tools.PMAbb
@@ -36,9 +35,7 @@ class TestInstall : TestInstallBase() {
 
     @Test
     fun testInstallSuccess() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {
@@ -48,9 +45,7 @@ class TestInstall : TestInstallBase() {
 
     @Test
     fun testInstallCommFailure() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 29)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {
@@ -68,9 +63,7 @@ class TestInstall : TestInstallBase() {
 
     @Test
     fun testInstallBadParameterFailureCommit() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {
@@ -105,9 +98,7 @@ class TestInstall : TestInstallBase() {
     // Use API = 20, when streaming and multi-apk was not supported.
     @Test
     fun testLegacyStrategyMultipleApksFail() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 20)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         val apk1 = Files.createTempFile("adblib-tools_test.apk", null)
@@ -126,9 +117,7 @@ class TestInstall : TestInstallBase() {
     // Use API = 20, when streaming and multi-apk was not supported. this should be a remote install.
     @Test
     fun testLegacyStrategy() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 20)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         val apk = Files.createTempFile("adblib-tools_test.apk", null)
@@ -143,9 +132,7 @@ class TestInstall : TestInstallBase() {
     // Use API = 23, just before CMD was introduced. This should use PM binary.
     @Test
     fun testPmStrategy() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 23)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {
@@ -160,9 +147,7 @@ class TestInstall : TestInstallBase() {
     // Use API = 24, just when CMD was introduced.
     @Test
     fun testCmdStrategy() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 24)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {
@@ -177,9 +162,7 @@ class TestInstall : TestInstallBase() {
     // Use API = 29, just before ABB was introduced. This should be using CMD.
     @Test
     fun testCmdBeforeAbbStrategy() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 29)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {
@@ -194,9 +177,7 @@ class TestInstall : TestInstallBase() {
     // Use API = 30 which should have ABB and ABB_EXEC
     @Test
     fun testAbbStrategy() {
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice = addFakeDevice(fakeAdb, 30)
-        val deviceServices = createDeviceServices(fakeAdb)
         val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
 
         runBlocking {

@@ -22,6 +22,7 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.toByteBuffer
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.FakeJdwpCommandProgress
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.fakeadbserver.DeviceState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -32,7 +33,6 @@ class JdwpProcessAllocationTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun getEnabledStatus_returnsResult() =
         CoroutineTestUtils.runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             val processAllocationTracker = createJdwpProcessAllocationTracker(fakeAdb)
             fakeAdb.device("1234").getClient(10)?.isAllocationTrackerEnabled = true
 
@@ -50,7 +50,6 @@ class JdwpProcessAllocationTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun setEnabledWorks() =
         CoroutineTestUtils.runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             val processAllocationTracker = createJdwpProcessAllocationTracker(fakeAdb)
 
             // Act
@@ -67,7 +66,6 @@ class JdwpProcessAllocationTrackerTest : AdbLibToolsTestBase() {
     @Test
     fun fetchAllocationDetailsReturnsResult() =
         CoroutineTestUtils.runBlockingWithTimeout {
-            val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
             val processAllocationTracker = createJdwpProcessAllocationTracker(fakeAdb)
             val allocationDetails = "some data"
             fakeAdb.device("1234").getClient(10)?.allocationTrackerDetails = allocationDetails
@@ -105,7 +103,6 @@ class JdwpProcessAllocationTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val session = createHostServices(fakeAdb).session
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
         val process = registerCloseable(JdwpProcessImpl(session, connectedDevice, 10))

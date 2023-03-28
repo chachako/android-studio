@@ -18,7 +18,6 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils
-import com.android.adblib.testingutils.FakeAdbServerProvider
 import com.android.adblib.tools.debugging.AppProcessTracker
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.fakeadbserver.DeviceState
@@ -34,7 +33,6 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
     fun retrieveProcessNameFromJdwpProcess(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
         // Prepare
         val deviceId = "1234"
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceId,
@@ -45,7 +43,6 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
         val connectedDevice =
             hostServices.session.connectedDevicesTracker.connectedDevices
                 .mapNotNull { connectedDevices ->
@@ -71,7 +68,6 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
     fun retrieveProcessNameFromProc(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
         // Prepare
         val deviceId = "1234"
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildDefault().start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceId,
@@ -82,7 +78,6 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
         val connectedDevice =
             hostServices.session.connectedDevicesTracker.connectedDevices
                 .mapNotNull { connectedDevices ->

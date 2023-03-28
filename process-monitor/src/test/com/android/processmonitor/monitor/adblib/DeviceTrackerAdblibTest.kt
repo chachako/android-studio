@@ -15,13 +15,10 @@
  */
 package com.android.processmonitor.monitor.adblib
 
-import com.android.adblib.AdbSession
 import com.android.adblib.DeviceSelector
 import com.android.adblib.testing.FakeAdbLoggerFactory
-import com.android.adblib.testingutils.CloseablesRule
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.testingutils.TestingAdbSessionHost
 import com.android.ddmlib.TimeoutException
 import com.android.fakeadbserver.DeviceState.DeviceStatus
 import com.android.fakeadbserver.DeviceState.DeviceStatus.ONLINE
@@ -31,7 +28,7 @@ import com.android.processmonitor.common.DeviceEvent.DeviceOnline
 import com.android.processmonitor.testutils.toChannel
 import com.android.sdklib.deviceprovisioner.DeviceProvisioner
 import com.android.sdklib.deviceprovisioner.DeviceState
-import com.android.sdklib.deviceprovisioner.testing.FakeAdbDeviceProvisionerPlugin
+import com.android.sdklib.deviceprovisioner.testing.DeviceProvisionerRule
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
@@ -47,23 +44,10 @@ import java.time.Duration
 class DeviceTrackerAdblibTest {
 
     @get:Rule
-    val closeables = CloseablesRule()
+    val deviceProvisionerRule = DeviceProvisionerRule()
 
-    private val fakeAdb = closeables.register(
-        FakeAdbServerProvider()
-            .buildDefault()
-            .start()
-    )
-    private val adbHost = closeables.register(TestingAdbSessionHost())
-
-    private val adbSession = closeables.register(
-        AdbSession.create(adbHost, fakeAdb.createChannelProvider(adbHost))
-    )
-
-    private val deviceProvisioner = DeviceProvisioner.create(
-        adbSession,
-        listOf(FakeAdbDeviceProvisionerPlugin(adbSession.scope, fakeAdb)),
-    )
+    private val fakeAdb get() = deviceProvisionerRule.fakeAdb
+    private val deviceProvisioner get() = deviceProvisionerRule.deviceProvisioner
 
     private val logger = FakeAdbLoggerFactory().logger
 

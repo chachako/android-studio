@@ -15,12 +15,9 @@
  */
 package com.android.processmonitor.agenttracker
 
-import com.android.adblib.AdbSession
 import com.android.adblib.RemoteFileMode
 import com.android.adblib.testing.FakeAdbLoggerFactory
-import com.android.adblib.testingutils.CloseablesRule
-import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.testingutils.TestingAdbSessionHost
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.fakeadbserver.DeviceFileState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.DeviceState.HostConnectionType.USB
@@ -44,27 +41,17 @@ import java.nio.file.Path
 @OptIn(ExperimentalCoroutinesApi::class) // runTest is experimental (replaced runTestTest)
 internal class AgentProcessTrackerTest {
 
-    @get:Rule
-    val closeables = CloseablesRule()
-
     private val makeAgentDirHandler = MakeAgentDirCommandHandler()
     private val agentHandler = ProcessTrackerAgentCommandHandler()
 
-    private val fakeAdb = closeables.register(
-        FakeAdbServerProvider()
-            .buildDefault()
-            .start()
-            .installDeviceHandler(agentHandler)
-            .installDeviceHandler(makeAgentDirHandler)
-            .installDeviceHandler(SyncCommandHandler())
-    )
-    private val adbHost = closeables.register(TestingAdbSessionHost())
-    private val adbSession = closeables.register(
-        AdbSession.create(adbHost, fakeAdb.createChannelProvider(adbHost))
-    )
-
+    @get:Rule
+    val fakeAdbRule = FakeAdbServerProviderRule {
+        installDefaultCommandHandlers()
+        installDeviceHandler(agentHandler)
+        installDeviceHandler(makeAgentDirHandler)
+        installDeviceHandler(SyncCommandHandler())
+    }
     private val logger = FakeAdbLoggerFactory().logger
-
     private val agentSourcePath = TestResources.getDirectory("/agent").toPath()
 
     @Test
@@ -133,7 +120,7 @@ internal class AgentProcessTrackerTest {
     }
 
     private fun setupDevice(serialNumber: String): DeviceState =
-        fakeAdb.connectDevice(serialNumber, "", "", "13", "33", USB)
+        fakeAdbRule.fakeAdb.connectDevice(serialNumber, "", "", "13", "33", USB)
 
     private fun agentProcessTracker(
         serialNumber: String,
@@ -142,7 +129,7 @@ internal class AgentProcessTrackerTest {
         intervalMillis: Int = 1000,
     ): AgentProcessTracker =
         AgentProcessTracker(
-            adbSession,
+            fakeAdbRule.adbSession,
             serialNumber,
             deviceAbi,
             agentSourcePath,

@@ -18,8 +18,8 @@ package com.android.adblib.tools.debugging
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils
-import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
+import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -29,20 +29,29 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import java.time.Duration
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CopyOnWriteArrayList
 
-class AppProcessTrackerTest : AdbLibToolsTestBase() {
+class AppProcessTrackerTest {
+
+    @JvmField
+    @Rule
+    val fakeAdbRule = FakeAdbServerProviderRule {
+        installDefaultCommandHandlers()
+        setFeatures("push_sync")
+    }
+
+    private val fakeAdb get() = fakeAdbRule.fakeAdb
+    private val hostServices get() = fakeAdbRule.adbSession.hostServices
 
     @Test
     fun testAppProcessTrackerWorks(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
             fakeAdb.connectDevice(
                 deviceID,
@@ -53,7 +62,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
         val connectedDevice =
             waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
         val pid10 = 10
@@ -166,10 +174,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
         CoroutineTestUtils.runBlockingWithTimeout {
             // Prepare
             val deviceID = "1234"
-            val theOneFeatureSupported = "push_sync"
-            val features = setOf(theOneFeatureSupported)
-            val fakeAdb =
-                registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
             val fakeDevice =
                 fakeAdb.connectDevice(
                     deviceID,
@@ -180,7 +184,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
                     DeviceState.HostConnectionType.USB
                 )
             fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-            val hostServices = createHostServices(fakeAdb)
             val connectedDevice =
                 waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
             val pid10 = 10
@@ -213,10 +216,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
         CoroutineTestUtils.runBlockingWithTimeout {
             // Prepare
             val deviceID = "1234"
-            val theOneFeatureSupported = "push_sync"
-            val features = setOf(theOneFeatureSupported)
-            val fakeAdb =
-                registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
             val fakeDevice =
                 fakeAdb.connectDevice(
                     deviceID,
@@ -227,23 +226,23 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
                     DeviceState.HostConnectionType.USB
                 )
             fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-            val hostServices = createHostServices(fakeAdb)
             val connectedDevice =
                 waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
             val pid10 = 10
 
             // Act
-            exceptionRule.expect(Exception::class.java)
-            exceptionRule.expectMessage("My Test Exception")
-            fakeDevice.startClient(pid10, 0, "a.b.c", false)
-
-            val appTracker = AppProcessTracker.create(connectedDevice)
-            appTracker.appProcessFlow.collect {
-                throw Exception("My Test Exception")
+            val exception = Assert.assertThrows(Exception::class.java) {
+                fakeDevice.startClient(pid10, 0, "a.b.c", false)
+                val appTracker = AppProcessTracker.create(connectedDevice)
+                runBlocking {
+                    appTracker.appProcessFlow.collect {
+                        throw Exception("My Test Exception")
+                    }
+                }
             }
 
-            // Assert (should not reach)
-            Assert.fail()
+            // Assert
+            Assert.assertEquals(exception.message, "My Test Exception")
         }
 
     @Test
@@ -251,10 +250,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
         CoroutineTestUtils.runBlockingWithTimeout {
             // Prepare
             val deviceID = "1234"
-            val theOneFeatureSupported = "push_sync"
-            val features = setOf(theOneFeatureSupported)
-            val fakeAdb =
-                registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
             val fakeDevice =
                 fakeAdb.connectDevice(
                     deviceID,
@@ -265,23 +260,23 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
                     DeviceState.HostConnectionType.USB
                 )
             fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-            val hostServices = createHostServices(fakeAdb)
             val connectedDevice =
                 waitForOnlineConnectedDevice(hostServices.session, fakeDevice.deviceId)
             val pid10 = 10
 
-            // Act
-            exceptionRule.expect(CancellationException()::class.java)
-            exceptionRule.expectMessage("My Test Exception")
-            fakeDevice.startClient(pid10, 0, "a.b.c", false)
-
-            val appTracker = AppProcessTracker.create(connectedDevice)
-            appTracker.appProcessFlow.collect {
-                cancel("My Test Exception")
+            // Act/Assert
+            val exception = Assert.assertThrows(CancellationException::class.java) {
+                fakeDevice.startClient(pid10, 0, "a.b.c", false)
+                val appTracker = AppProcessTracker.create(connectedDevice)
+                runBlocking {
+                    appTracker.appProcessFlow.collect {
+                        cancel("My Test Exception")
+                    }
+                }
             }
 
-            // Assert (should not reach)
-            Assert.fail()
+            // Assert
+            Assert.assertEquals(exception.message, "My Test Exception")
         }
 
     @Test
@@ -289,10 +284,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
         CoroutineTestUtils.runBlockingWithTimeout {
             // Prepare
             val deviceID = "1234"
-            val theOneFeatureSupported = "push_sync"
-            val features = setOf(theOneFeatureSupported)
-            val fakeAdb =
-                registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
             val fakeDevice =
                 fakeAdb.connectDevice(
                     deviceID,
@@ -302,7 +293,6 @@ class AppProcessTrackerTest : AdbLibToolsTestBase() {
                     "30", // SDK >= 30 is required for abb_exec feature.
                     DeviceState.HostConnectionType.USB
                 )
-            val hostServices = createHostServices(fakeAdb)
             val connectedDevice =
                 hostServices.session.connectedDevicesTracker.connectedDevices
                     .mapNotNull { connectedDevices ->

@@ -16,25 +16,30 @@
 package com.android.adblib.tools.tests
 
 import com.android.adblib.DeviceSelector
-import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.testingutils.FakeAdbServerProviderRule
 import com.android.adblib.tools.availableFeatures
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 
-class TestAdbHostServicesExt: TestInstallBase() {
+class TestAdbHostServicesExt {
+
+    @JvmField
+    @Rule
+    val fakeAdbRule = FakeAdbServerProviderRule {
+        installDefaultCommandHandlers()
+        setFeatures("push_sync")
+    }
 
     // Test that an older host, supporting a subset of the device features, actually only exposes
     // the common set of features.
     @Test
     fun testFeaturesWithLimitedHost() {
         val deviceID = "1234"
-        val theOneFeatureSupported = "push_sync"
-        val features = setOf(theOneFeatureSupported)
-        val fakeAdb = registerCloseable(FakeAdbServerProvider().buildWithFeatures(features).start())
         val fakeDevice =
-            fakeAdb.connectDevice(
+            fakeAdbRule.fakeAdb.connectDevice(
                 deviceID,
                 "test1",
                 "test2",
@@ -43,20 +48,19 @@ class TestAdbHostServicesExt: TestInstallBase() {
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
-        val hostServices = createHostServices(fakeAdb)
 
         // Act
         val availableFeaturesList = runBlocking {
-            hostServices.availableFeatures(DeviceSelector.fromSerialNumber(deviceID))
+            fakeAdbRule.adbSession.hostServices.availableFeatures(DeviceSelector.fromSerialNumber(deviceID))
         }
 
         val hostFeaturesList = runBlocking {
-            hostServices.hostFeatures()
+            fakeAdbRule.adbSession.hostServices.hostFeatures()
         }
 
         // Assert
         Assert.assertTrue(hostFeaturesList.size == 1)
         Assert.assertTrue(availableFeaturesList.size == 1)
-        Assert.assertTrue(availableFeaturesList.contains(theOneFeatureSupported))
+        Assert.assertTrue(availableFeaturesList.contains("push_sync"))
     }
 }
