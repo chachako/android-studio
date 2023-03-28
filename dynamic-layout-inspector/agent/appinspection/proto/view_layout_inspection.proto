@@ -136,6 +136,7 @@ message Configuration {
     int32 orientation = 16;
     int32 screen_width_dp = 17; // excludes window decor
     int32 screen_height_dp = 18; // excludes window decor
+    int32 grammatical_gender = 19;
 }
 
 // Event set when the angle, orientation, or posture of a foldable device changes.

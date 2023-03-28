@@ -38,6 +38,7 @@ public final class Configuration {
     public int orientation = 0;
     public int screenWidthDp = 0;
     public int screenHeightDp = 0;
+    public int grammaticalGender = 0;
 
     public final LocaleList getLocales() {
         return mLocales;

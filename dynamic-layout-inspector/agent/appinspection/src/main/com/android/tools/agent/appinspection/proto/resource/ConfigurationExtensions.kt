@@ -20,6 +20,7 @@ import com.android.tools.agent.appinspection.proto.StringTable
 import com.android.tools.agent.appinspection.proto.convert
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Configuration
 import android.content.res.Configuration as AndroidResConfiguration
+import android.os.Build
 
 fun AndroidResConfiguration.convert(stringTable: StringTable): Configuration =
     Configuration.newBuilder().apply(this, stringTable).build()
@@ -48,6 +49,9 @@ private fun Configuration.Builder.apply(
 
     if (!config.locales.isEmpty) {
         locale = config.locales[0].convert(stringTable)
+    }
+    if (Build.VERSION.SDK_INT >= 34) {
+        grammaticalGender = config.grammaticalGender
     }
     return this
 }
