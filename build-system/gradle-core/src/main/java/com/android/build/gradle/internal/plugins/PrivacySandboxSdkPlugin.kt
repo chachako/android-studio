@@ -37,10 +37,10 @@ import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.tasks.AppMetadataTask
 import com.android.build.gradle.internal.tasks.GeneratePrivacySandboxProguardRulesTask
-import com.android.build.gradle.internal.tasks.SignAsbTask
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.internal.tasks.PerModuleBundleTask
 import com.android.build.gradle.internal.tasks.R8Task
+import com.android.build.gradle.internal.tasks.SignAsbTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.options.BooleanOption
@@ -49,6 +49,7 @@ import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
 import com.android.build.gradle.tasks.FusedLibraryMergeClasses
 import com.android.build.gradle.tasks.GeneratePrivacySandboxAsar
 import com.android.build.gradle.tasks.PackagePrivacySandboxSdkBundle
+import com.android.build.gradle.tasks.PrivacySandboxValidateConfigurationTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateRClassTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkManifestGeneratorTask
@@ -169,6 +170,23 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                     buildType,
             )
         }
+
+        // Required and optional configurations must be used for declaring SDK dependencies of all SDKs
+        // on the classpath (inc. transitive SDKs dependencies). Required and optional SDK dependency
+        // states will become encoded in the ASB's SdkBundleConfig.pb.
+
+        val requiredSdkConfiguration = project.configurations.create("requiredSdk").also {
+            it.isCanBeConsumed = false
+            it.isTransitive = false
+            it.attributes.attribute(BuildTypeAttr.ATTRIBUTE, buildType)
+        }
+
+        val optionalSdkConfiguration = project.configurations.create("optionalSdk").also {
+            it.isCanBeConsumed = false
+            it.isTransitive = false
+            it.attributes.attribute(BuildTypeAttr.ATTRIBUTE, buildType)
+        }
+
         // This is the internal configuration that will be used to feed tasks that require access
         // to the resolved 'include' dependency. It is for JAVA_API usage which mean all transitive
         // dependencies that are implementation() scoped will not be included.
@@ -202,6 +220,8 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                     )
 
                     it.extendsFrom(includeConfigurations)
+                    it.extendsFrom(requiredSdkConfiguration)
+                    it.extendsFrom(optionalSdkConfiguration)
                 }
 
         fun configurePrivacySandboxElements(configuration: Configuration, usage: String) {
@@ -226,8 +246,8 @@ class PrivacySandboxSdkPlugin @Inject constructor(
         project.configurations.create("runtimeElements") { runtimeElements ->
             configurePrivacySandboxElements(runtimeElements, Usage.JAVA_RUNTIME)
         }
-        val configurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
-        configurationsToAdd.forEach { configuration ->
+        val incomingConfigurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
+        incomingConfigurationsToAdd.forEach { configuration ->
             variantScope.incomingConfigurations.addConfiguration(configuration)
         }
     }
@@ -263,6 +283,7 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                         FusedLibraryMergeClasses.PrivacySandboxSdkCreationAction(variantScope),
                         GeneratePrivacySandboxAsar.CreationAction(variantScope),
                         MergeJavaResourceTask.PrivacySandboxSdkCreationAction(variantScope),
+                        PrivacySandboxValidateConfigurationTask.CreationAction(variantScope),
                         PrivacySandboxSdkGenerateJarStubsTask.CreationAction(variantScope),
                         PrivacySandboxSdkMergeResourcesTask.CreationAction(variantScope),
                         PrivacySandboxSdkManifestGeneratorTask.CreationAction(variantScope),

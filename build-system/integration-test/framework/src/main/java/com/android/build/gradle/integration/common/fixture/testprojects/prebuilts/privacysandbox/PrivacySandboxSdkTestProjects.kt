@@ -123,6 +123,8 @@ fun privacySandboxSampleProject(): GradleTestProject {
                 include(project(":android-lib"))
                 include("com.externaldep:externaljar:1")
                 include("com.externaldep:externalaar:1")
+
+                requiredSdk(project(":privacy-sandbox-sdk-b"))
             }
             addFile(
                 "proguard-rules.pro",

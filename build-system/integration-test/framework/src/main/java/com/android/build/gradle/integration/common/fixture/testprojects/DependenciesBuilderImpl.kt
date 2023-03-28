@@ -65,6 +65,14 @@ class DependenciesBuilderImpl() : DependenciesBuilder {
         dependencies.add("include" to dependency)
     }
 
+    override fun requiredSdk(dependency: Any) {
+        dependencies.add("requiredSdk" to dependency)
+    }
+
+    override fun optionalSdk(dependency: Any) {
+        dependencies.add("optionalSdk" to dependency)
+    }
+
     override fun lintPublish(dependency: Any) {
         dependencies.add("lintPublish" to dependency)
     }

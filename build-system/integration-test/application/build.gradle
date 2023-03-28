@@ -12,7 +12,6 @@ dependencies {
     testImplementation libs.com.android.tools.analyticsLibrary.protos
     testImplementation libs.com.android.tools.apkparser.apkanalyzer
     testImplementation libs.com.android.tools.build.apksig
-    testImplementation project(':base:builder')
     testImplementation project(':base:builder-model')
     testImplementation project(':base:build-analyzer:common')
     testImplementation project(':base:build-system:gradle-core')

@@ -33,12 +33,15 @@ import com.android.tools.build.bundletool.commands.BuildSdkBundleCommand
 import com.android.tools.build.bundletool.model.version.BundleToolVersion
 import com.google.common.collect.ImmutableList
 import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -73,6 +76,11 @@ abstract class PackagePrivacySandboxSdkBundle: NonIncrementalTask() {
 
     @get:Input
     abstract val bundleToolVersion: Property<String>
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    abstract val validatedSdkConfigurations: DirectoryProperty
 
     @get:Nested
     abstract val sdkBundleProperties: SdkBundleProperties
@@ -195,6 +203,10 @@ abstract class PackagePrivacySandboxSdkBundle: NonIncrementalTask() {
 
             task.interfaceDescriptors.setDisallowChanges(
                     creationConfig.artifacts.get(PrivacySandboxSdkInternalArtifactType.STUB_JAR))
+
+            task.validatedSdkConfigurations.setDisallowChanges(
+                    creationConfig.artifacts.get(PrivacySandboxSdkInternalArtifactType.VALIDATE_PRIVACY_SANDBOX_SDK_CONFIGURATIONS)
+            )
         }
     }
 
