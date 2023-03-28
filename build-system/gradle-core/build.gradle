@@ -342,6 +342,10 @@ tasks.jar {
     })
 }
 
+tasks.named("kotlinSourcesJar").configure {
+    it.dependsOn(tasks.named("generateProto"))
+}
+
 tasks.sourcesJar {
     dependsOn configurations.includeInJarSources
     from {

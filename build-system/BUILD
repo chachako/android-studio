@@ -420,13 +420,13 @@ maven_repository(
     visibility = ["//visibility:public"],
 )
 
-#  org.jetbrains.kotlin:kotlin-test-junit:1.5.3
+#  org.jetbrains.kotlin:kotlin-test-junit:1.8.20-RC
 maven_repository(
     name = "android_gradle_plugin_gradle_api_test_repository",
     # keep sorted
     artifacts = [
         "//tools/base/testutils:tools.testutils",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.7.10",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.8.20-RC2",
     ],
 )
 

@@ -59,6 +59,7 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.jetbrains.kotlin.kotlin-test",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core_1.4.1",
         "@maven//:org.jetbrains.markdown",
         "@maven//:org.mockito.mockito-core",

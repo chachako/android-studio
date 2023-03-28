@@ -127,7 +127,10 @@ java_library(
 java_library(
     name = "jetbrains.kotlin-gradle-plugin_neverlink",
     #neverlink = 1,
-    exports = ["@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin"],
+    exports = [
+        "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin",
+        "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api",
+    ],
 )
 
 fileset(
