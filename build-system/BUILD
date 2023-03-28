@@ -317,24 +317,6 @@ gradle_build(
     visibility = ["//visibility:public"],
 )
 
-gradle_build(
-    name = "kmp_prototype",
-    build_file = "//tools:agp_gradle_build_root_build_file",
-    data = [
-        "//prebuilts/studio/jdk:jdk11",
-        "//tools/base/build-system/kmp-android-prototype:agp_gradle_build_files",
-    ] + ANDROID_GRADLE_PLUGIN_SOURCE_FILES,
-    gradle_properties = GRADLE_PROPERTIES,
-    output_file = "kmp_prototype.zip",
-    output_file_source = "dist/kmp_prototype.zip",
-    repos = [
-        "//tools/base:agp_dependencies",
-        "//tools/base:agp_artifacts",
-    ],
-    tasks = [":base:build-system:kmp-android-prototype:zipKmpJar"],
-    visibility = ["//visibility:public"],
-)
-
 maven_repository(
     name = "android_gradle_plugin_runtime_dependencies",
     # keep sorted

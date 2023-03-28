@@ -42,7 +42,7 @@ class KotlinMultiplatformAndroidDexingTest {
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
                 kotlin {
-                    androidPrototype {
+                    (this as ExtensionAware).extensions.configure(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
                         onMainCompilation {
                             compilerOptions.configure {
                                 jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
@@ -96,18 +96,17 @@ class KotlinMultiplatformAndroidDexingTest {
             """.trimIndent()
         )
 
-        TestFileUtils.appendToFile(
+        TestFileUtils.searchAndReplace(
             project.getSubproject("kmpSecondLib").ktsBuildFile,
-            """
-                android.minSdk = 20
-            """.trimIndent()
+            "minSdk = 22",
+            "minSdk = 20"
         )
-
-        TestFileUtils.appendToFile(
+        TestFileUtils.searchAndReplace(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
+            "minSdk = 22",
             """
-                android.testMultiDexKeepProguard = File(project.projectDir, "dex-rules.pro")
-                android.minSdk = 20
+                minSdk = 20
+                testMultiDexKeepProguard = File(project.projectDir, "dex-rules.pro")
             """.trimIndent()
         )
 

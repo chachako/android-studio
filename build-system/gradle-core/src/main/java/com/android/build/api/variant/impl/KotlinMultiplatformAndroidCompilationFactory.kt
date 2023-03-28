@@ -18,10 +18,12 @@ package com.android.build.api.variant.impl
 
 import com.android.utils.appendCapitalized
 import org.gradle.api.NamedDomainObjectFactory
+import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalKotlinCompilationDescriptor
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.createCompilation
 
+@OptIn(ExternalKotlinTargetApi::class)
 class KotlinMultiplatformAndroidCompilationFactory(
     private val target: KotlinMultiplatformAndroidTargetImpl,
     private val kotlinExtension: KotlinMultiplatformExtension

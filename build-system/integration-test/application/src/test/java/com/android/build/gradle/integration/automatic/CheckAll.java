@@ -152,6 +152,6 @@ public class CheckAll {
                     "simpleCompositeBuild", // broken composite build project.
                     "multiCompositeBuild", // too complex composite build project to setup
                     "sourceDependency", // not set up fully, just used for sync tests
-                    "kotlinMultiplatform" // TODO(b/243387425): enable when the prototype is moved to gradle-core
+                    "kotlinMultiplatform" // kotlin multiplatform project has its own assemble tests.
                     );
 }

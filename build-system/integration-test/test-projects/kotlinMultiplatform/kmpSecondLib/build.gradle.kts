@@ -1,13 +1,14 @@
 plugins {
   id("dumpAndroidTarget")
   id("org.jetbrains.kotlin.multiplatform")
-  id("com.android.experimental.kotlin.multiplatform.library")
 }
+
+project.plugins.apply(com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin::class.java)
 
 kotlin {
   jvm()
 
-  androidPrototype {
+  targets.withType(com.android.build.api.variant.impl.KotlinMultiplatformAndroidTarget::class.java) {
     options {
       namespace = "com.example.kmpsecondlib"
       compileSdk = property("latestCompileSdk") as Int

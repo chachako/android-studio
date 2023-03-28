@@ -16,10 +16,12 @@
 
 package com.android.build.api.variant.impl
 
+import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.ExternalDecoratedKotlinCompilation
 
+@OptIn(ExternalKotlinTargetApi::class)
 class KotlinMultiplatformAndroidCompilationImpl(
     delegate: Delegate
 ) : ExternalDecoratedKotlinCompilation(delegate), KotlinMultiplatformAndroidCompilation {

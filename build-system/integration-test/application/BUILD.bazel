@@ -573,7 +573,7 @@ gradle_integration_test(
 
 # Test for kotlin multiplatform android prototype
 gradle_integration_test(
-    name = "kotlin-multiplatform-prototype-tests",
+    name = "kotlin-multiplatform-android-tests",
     timeout = "long",
     srcs = glob(
         [
@@ -584,7 +584,6 @@ gradle_integration_test(
     #keep sorted
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
-        "//tools/base/build-system:kmp_prototype",
     ],
     maven_repos = [
         "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",

@@ -19,9 +19,11 @@ package com.android.build.api.variant.impl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
+import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.external.DecoratedExternalKotlinTarget
 
+@OptIn(ExternalKotlinTargetApi::class)
 class KotlinMultiplatformAndroidTargetImpl(
     delegate: Delegate,
     kotlinExtension: KotlinMultiplatformExtension,

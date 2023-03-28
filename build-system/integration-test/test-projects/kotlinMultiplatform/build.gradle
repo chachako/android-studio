@@ -8,6 +8,5 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlinVersion.get()}"
-        classpath "com.android.tools.build:kmp-android-prototype:${libs.versions.buildVersion.get()}"
     }
 }
