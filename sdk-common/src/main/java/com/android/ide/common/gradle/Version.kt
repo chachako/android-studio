@@ -65,7 +65,7 @@ class Version: Comparable<Version> {
 
     // This is a reasonably well-defined concept.
     val isPreview
-        get() = parts.any { it !is Numeric } || isPrefixInfimum
+        get() = parts.any { it !is Numeric }
     // This is not very well-defined:
     // - why is SNAPSHOT special, compared with all the other Special components?
     // - we check only check the last part because this is what the GradleVersion class did

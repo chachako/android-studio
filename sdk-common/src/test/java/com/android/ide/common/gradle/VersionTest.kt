@@ -452,6 +452,33 @@ class VersionTest {
     }
 
     @Test
+    fun testPrefixInfimumIsNotNecessarilyPreview() {
+        assertThat(Version.prefixInfimum("2").isPreview).isFalse()
+        assertThat(Version.prefixInfimum("2-alpha1").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("2-alpha1-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("2-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("2-snapshot").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("2-dev").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2").isPreview).isFalse()
+        assertThat(Version.prefixInfimum("1.2-alpha3").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2-alpha3-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3").isPreview).isFalse()
+        assertThat(Version.prefixInfimum("1.2.3-alpha4").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3-alpha-4").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3-alpha4-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3-alpha-4-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3.4").isPreview).isFalse()
+        assertThat(Version.prefixInfimum("1.2.3.4.5-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1.2.3.4.5.6-alpha9-SNAPSHOT").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("7.0.0-dev03").isPreview).isTrue()
+
+        assertThat(Version.prefixInfimum("1-SNAPSHOT.3").isPreview).isTrue()
+        assertThat(Version.prefixInfimum("1-dev.3").isPreview).isTrue()
+    }
+
+    @Test
     fun testIsPrefixInfimum() {
         assertThat(Version.parse("1").isPrefixInfimum).isFalse()
         assertThat(Version.parse("1-dev").isPrefixInfimum).isFalse()
