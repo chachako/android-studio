@@ -888,7 +888,7 @@ public final class SdkConstants {
     public static final String CLASS_COMPOSE_VIEW = "androidx.compose.ui.platform.ComposeView";
 
     public static final String CLASS_COMPOSE_VIEW_ADAPTER =
-            "androidx.compose.ui.tooling.preview.ComposeViewAdapter";
+            "androidx.compose.ui.tooling.ComposeViewAdapter";
 
     public static final String ATTR_COMPOSABLE_NAME = "composableName";
 
