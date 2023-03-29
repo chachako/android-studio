@@ -48,7 +48,7 @@ class LintParallelBuildServiceTest {
                 maxRuntimeMemory = 20 * GB,
                 totalPhysicalMemory = 40 * GB
             )
-        ).isEqualTo(30)
+        ).isEqualTo(15)
 
         // Check case when there's not enough memory, but should still return 1
         Truth.assertThat(
