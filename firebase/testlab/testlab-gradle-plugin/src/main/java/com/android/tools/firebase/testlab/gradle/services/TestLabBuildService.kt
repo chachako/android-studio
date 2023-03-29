@@ -26,6 +26,7 @@ import com.google.api.client.googleapis.util.Utils
 import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequestFactory
 import com.google.api.client.http.HttpRequestInitializer
+import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.json.GenericJson
 import com.google.api.client.json.JsonObjectParser
@@ -152,7 +153,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val cloudStorageBucket: Property<String>
     }
 
-    private val credential: GoogleCredential by lazy {
+    internal open val credential: GoogleCredential by lazy {
         parameters.credentialFile.get().asFile.inputStream().use {
             GoogleCredential.fromStream(it).createScoped(oauthScope)
         }
@@ -165,6 +166,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     private val jacksonFactory: JacksonFactory
         get() = JacksonFactory.getDefaultInstance()
+
+    internal open val httpTransport: HttpTransport
+        get() = GoogleNetHttpTransport.newTrustedTransport()
 
     fun runTestsOnDevice(
         deviceName: String,
@@ -188,7 +192,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val requestId = UUID.randomUUID().toString()
 
         val toolResultsClient = ToolResults.Builder(
-            GoogleNetHttpTransport.newTrustedTransport(),
+            httpTransport,
             jacksonFactory,
             httpRequestInitializer
         ).apply {
@@ -201,7 +205,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 ?: initSettingsResult.defaultBucket
 
         val storageClient = Storage.Builder(
-            GoogleNetHttpTransport.newTrustedTransport(),
+            httpTransport,
             jacksonFactory,
             httpRequestInitializer
         ).apply {
@@ -223,7 +227,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         )
 
         val testingClient = Testing.Builder(
-            GoogleNetHttpTransport.newTrustedTransport(),
+            httpTransport,
             jacksonFactory,
             httpRequestInitializer
         ).apply {
@@ -347,7 +351,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
     fun catalog(): AndroidDeviceCatalog {
         val testingClient = Testing.Builder(
-            GoogleNetHttpTransport.newTrustedTransport(),
+            httpTransport,
             jacksonFactory,
             httpRequestInitializer,
         ).apply {
@@ -497,7 +501,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             // Need latest version of google-api-client to use
             // toolResultsClient.projects().histories().executions().steps().testCases().list().
             // Manually calling this API until this is available.
-            val httpRequestFactory: HttpRequestFactory = GoogleNetHttpTransport.newTrustedTransport().createRequestFactory(httpRequestInitializer)
+            val httpRequestFactory: HttpRequestFactory = httpTransport.createRequestFactory(httpRequestInitializer)
             val url = "https://toolresults.googleapis.com/toolresults/v1beta3/projects/$projectId/histories/$historyId/executions/$executionId/steps/$stepId/testCases"
             val request = httpRequestFactory.buildGetRequest(GenericUrl(url))
             val parser = JsonObjectParser(Utils.getDefaultJsonFactory())
