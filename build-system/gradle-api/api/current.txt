@@ -2429,8 +2429,8 @@ package com.android.build.api.variant {
   }
 
   public interface HasUnitTest {
-    method public com.android.build.api.component.UnitTest? getUnitTest();
-    property public abstract com.android.build.api.component.UnitTest? unitTest;
+    method public com.android.build.api.variant.UnitTest? getUnitTest();
+    property public abstract com.android.build.api.variant.UnitTest? unitTest;
   }
 
   public interface HasUnitTestBuilder {
