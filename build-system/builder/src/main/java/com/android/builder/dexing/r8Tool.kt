@@ -65,6 +65,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.io.path.exists
 
 fun isProguardRule(name: String): Boolean {
     val lowerCaseName = name.toLowerCase(Locale.US)
@@ -310,8 +311,10 @@ fun runR8(
         }
     }
     // handle art-profile rewriting if enabled
-    if (outputArtProfile != null) {
-        wireArtProfileRewriting(r8CommandBuilder, inputArtProfile, outputArtProfile)
+    inputArtProfile?.let {input ->
+        if (input.exists() && outputArtProfile != null) {
+            wireArtProfileRewriting(r8CommandBuilder, input, outputArtProfile)
+        }
     }
     if (enableMinimalStartupOptimization) {
         check(inputProfileForDexStartupOptimization != null) {

@@ -31,7 +31,7 @@ enum class ModuleBooleanPropertyKeys(val keyValue: String, private val defaultVa
      * If false -  R8 will not be provided with the merged art-profile
      * If true - R8 will rewrite the art-profile
      */
-    ART_PROFILE_R8_REWRITING("android.experimental.art-profile-r8-rewriting", false),
+    ART_PROFILE_R8_REWRITING("android.experimental.art-profile-r8-rewriting", true),
 
     VERIFY_AAR_CLASSES(BooleanOption.VERIFY_AAR_CLASSES.propertyName, false),
 
