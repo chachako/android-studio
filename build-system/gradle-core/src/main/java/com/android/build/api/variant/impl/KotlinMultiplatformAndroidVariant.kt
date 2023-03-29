@@ -19,9 +19,9 @@ package com.android.build.api.variant.impl
 import com.android.build.api.artifact.Artifacts
 import com.android.build.api.variant.GeneratesAar
 import com.android.build.api.variant.HasAndroidTest
+import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.Sources
-import com.android.build.api.variant.UnitTest
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
@@ -31,7 +31,10 @@ import org.gradle.api.provider.Provider
  *
  * TODO(b/267309622): Move to gradle-api
  */
-interface KotlinMultiplatformAndroidVariant: GeneratesAar, HasAndroidTest {
+interface KotlinMultiplatformAndroidVariant: GeneratesAar,
+    HasAndroidTest,
+    HasUnitTest {
+
     val namespace: Provider<String>
 
     val name: String
@@ -73,9 +76,4 @@ interface KotlinMultiplatformAndroidVariant: GeneratesAar, HasAndroidTest {
      * The returned [Configuration] should not be resolved until execution time.
      */
     val runtimeConfiguration: Configuration
-
-    /**
-     * Variant's [UnitTest], or null if the unit tests for this variant are disabled.
-     */
-    val unitTest: UnitTest?
 }

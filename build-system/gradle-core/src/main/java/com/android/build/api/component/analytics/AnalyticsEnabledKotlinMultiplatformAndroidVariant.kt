@@ -95,6 +95,7 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
                 VariantPropertiesMethodType.RUNTIME_CONFIGURATION_VALUE
             return delegate.runtimeConfiguration
         }
+
     private val userVisibleUnitTest: AnalyticsEnabledUnitTest? by lazy {
         delegate.unitTest?.let {
             objectFactory.newInstance(
@@ -107,6 +108,7 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
 
     override val unitTest: com.android.build.api.component.UnitTest?
         get() = userVisibleUnitTest
+
     private val userVisibleAarMetadata: AarMetadata by lazy {
         objectFactory.newInstance(
             AnalyticsEnabledAarMetadata::class.java,
