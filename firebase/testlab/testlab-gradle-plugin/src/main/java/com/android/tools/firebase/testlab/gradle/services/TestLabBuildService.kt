@@ -149,6 +149,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
     interface Parameters : BuildServiceParameters {
         val quotaProjectName: Property<String>
         val credentialFile: RegularFileProperty
+        val cloudStorageBucket: Property<String>
     }
 
     private val credential: GoogleCredential by lazy {
@@ -194,8 +195,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             applicationName = clientApplicationName
         }.build()
 
-        val defaultBucketName = toolResultsClient.projects().initializeSettings(projectName)
-            .execute().defaultBucket
+        val initSettingsResult =
+                toolResultsClient.projects().initializeSettings(projectName).execute()
+        val bucketName = parameters.cloudStorageBucket.orNull?.ifBlank { null }
+                ?: initSettingsResult.defaultBucket
 
         val storageClient = Storage.Builder(
             GoogleNetHttpTransport.newTrustedTransport(),
@@ -206,7 +209,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }.build()
 
         val testApkStorageObject = uploadToCloudStorage(
-            testData.testApk, requestId, storageClient, defaultBucketName
+            testData.testApk, requestId, storageClient, bucketName
         )
 
         val configProvider = createConfigProvider(
@@ -216,7 +219,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             testData.testedApkFinder(configProvider).first(),
             requestId,
             storageClient,
-            defaultBucketName
+            bucketName
         )
 
         val testingClient = Testing.Builder(
@@ -237,10 +240,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             testSpecification = TestSpecification().apply {
                 androidInstrumentationTest = AndroidInstrumentationTest().apply {
                     testApk = com.google.api.services.testing.model.FileReference().apply {
-                        gcsPath = "gs://$defaultBucketName/${testApkStorageObject.name}"
+                        gcsPath = "gs://$bucketName/${testApkStorageObject.name}"
                     }
                     appApk = com.google.api.services.testing.model.FileReference().apply {
-                        gcsPath = "gs://$defaultBucketName/${appApkStorageObject.name}"
+                        gcsPath = "gs://$bucketName/${appApkStorageObject.name}"
                     }
                     appPackageId = testData.testedApplicationId
                     testPackageId = testData.applicationId
@@ -260,7 +263,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
                 resultStorage = ResultStorage().apply {
                     googleCloudStorage = GoogleCloudStorage().apply {
-                        gcsPath = "gs://$defaultBucketName/$requestId/results"
+                        gcsPath = "gs://$bucketName/$requestId/results"
                     }
                 }
             }
@@ -906,6 +909,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.quotaProjectName.set(params.credentialFile.map {
                 getQuotaProjectName(it.asFile)
+            })
+            params.cloudStorageBucket.set(providerFactory.provider {
+                testLabExtension.testOptions.results.cloudStorageBucket
             })
         }
     }

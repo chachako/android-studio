@@ -82,19 +82,26 @@ class FirebaseTestLabDeviceTest {
     }
 
     @Test
-    fun serviceAccountCredentials() {
+    fun dsl() {
         project.getSubproject("app").buildFile.appendText("""
             firebaseTestLab {
                 serviceAccountCredentials = file("test.json")
+                testOptions {
+                    results {
+                        cloudStorageBucket = "my_example_custom_bucket"
+                    }
+                }
             }
-            task("printServiceAccountCredentials") {
-                println("serviceAccountCredentials = " + project.firebaseTestLab.serviceAccountCredentials.asFile.get().name)
+            task("printDslProperties") {
+                println("serviceAccountCredentials = " + firebaseTestLab.serviceAccountCredentials.asFile.get().name)
+                println("cloudStorageBucket = " + firebaseTestLab.testOptions.results.cloudStorageBucket)
                 doLast { /* no-op */ }
             }
         """)
-        val result = executor.run(":app:printServiceAccountCredentials")
+        val result = executor.run(":app:printDslProperties")
         result.stdout.use {
             assertThat(it).contains("serviceAccountCredentials = test.json")
+            assertThat(it).contains("cloudStorageBucket = my_example_custom_bucket")
         }
     }
 }
