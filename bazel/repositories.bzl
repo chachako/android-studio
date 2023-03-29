@@ -30,6 +30,10 @@ _git = [
         },
     },
     {
+        "name": "skia_user_config",
+        "path": "tools/base/dynamic-layout-inspector/external/skia-user-config",
+    },
+    {
         "name": "libpng_repo",
         "build_file": "tools/base/dynamic-layout-inspector/external/libpng.BUILD",
         "path": "external/libpng",
