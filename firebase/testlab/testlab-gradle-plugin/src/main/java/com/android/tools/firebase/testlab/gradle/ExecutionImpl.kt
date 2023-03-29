@@ -22,6 +22,10 @@ abstract class ExecutionImpl : Execution {
     init {
         timeoutMinutes = 15
 
+        maxTestReruns = 0
+
+        failFast = false
+
         numUniformShards = 0
     }
 }

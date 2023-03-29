@@ -104,6 +104,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val cloudStorageUrlRegex = Regex("""gs://(.*?)/(.*)""")
 
         const val INSTRUMENTATION_TEST_SHARD_FIELD = "shardingOption"
+        const val TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD = "flakyTestAttempts"
+        const val TEST_MATRIX_FAIL_FAST_FIELD = "failFast"
 
         const val CHECK_TEST_STATE_WAIT_MS = 10 * 1000L;
 
@@ -164,6 +166,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val quotaProjectName: Property<String>
         val credentialFile: RegularFileProperty
         val cloudStorageBucket: Property<String>
+        val timeoutMinutes: Property<Int>
+        val maxTestReruns: Property<Int>
+        val failFast: Property<Boolean>
         val numUniformShards: Property<Int>
         val grantedPermissions: Property<String>
         val networkProfile: Property<String>
@@ -299,7 +304,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                         gcsPath = "gs://$bucketName/$requestId/results"
                     }
                 }
+                testTimeout = "${parameters.timeoutMinutes}m"
             }
+            set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, parameters.maxTestReruns)
+            set(TEST_MATRIX_FAIL_FAST_FIELD, parameters.failFast)
         }
         val updatedTestMatrix = testMatricesClient.create(projectName, testMatrix).apply {
             this.requestId = requestId
@@ -971,6 +979,16 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.cloudStorageBucket.set(providerFactory.provider {
                 testLabExtension.testOptions.results.cloudStorageBucket
+            })
+
+            params.timeoutMinutes.set(providerFactory.provider {
+                testLabExtension.testOptions.execution.timeoutMinutes
+            })
+            params.maxTestReruns.set(providerFactory.provider {
+                testLabExtension.testOptions.execution.maxTestReruns
+            })
+            params.failFast.set(providerFactory.provider {
+                testLabExtension.testOptions.execution.failFast
             })
             params.numUniformShards.set( providerFactory.provider {
                 testLabExtension.testOptions.execution.numUniformShards
