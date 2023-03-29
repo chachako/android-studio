@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.withTimeoutOrNull
+import org.jetbrains.annotations.TestOnly
 
 /**
  * Central access point for devices and device templates. [DeviceProvisionerPlugin] instances
@@ -51,12 +52,22 @@ import kotlinx.coroutines.time.withTimeoutOrNull
  */
 class DeviceProvisioner
 private constructor(
+  val scope: CoroutineScope,
   private val adbSession: AdbSession,
   private val provisioners: List<DeviceProvisionerPlugin>
 ) {
   companion object {
+    @TestOnly
     fun create(adbSession: AdbSession, provisioners: List<DeviceProvisionerPlugin>) =
+      create(adbSession.scope, adbSession, provisioners)
+
+    fun create(
+      coroutineScope: CoroutineScope,
+      adbSession: AdbSession,
+      provisioners: List<DeviceProvisionerPlugin>
+    ) =
       DeviceProvisioner(
+        coroutineScope,
         adbSession,
         (provisioners + OfflineDeviceProvisionerPlugin() + DefaultProvisionerPlugin())
           .sortedByDescending { it.priority }
@@ -69,9 +80,6 @@ private constructor(
 
   private val combinedDevices = combine(provisioners.map { it.devices }) { it.flatMap { it } }
   private val combinedTemplates = combine(provisioners.map { it.templates }) { it.flatMap { it } }
-
-  val scope: CoroutineScope
-    get() = adbSession.scope
 
   /** The [device handles][DeviceHandle] known to this class, provided by its plugins. */
   val devices: StateFlow<List<DeviceHandle>> =

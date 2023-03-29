@@ -47,7 +47,7 @@ class DeviceProvisionerTest {
   val fakeSession = FakeAdbSession()
 
   val plugin = PhysicalDeviceProvisionerPlugin(fakeSession.scope)
-  val provisioner = DeviceProvisioner.create(fakeSession, listOf(plugin))
+  val provisioner = DeviceProvisioner.create(fakeSession.scope, fakeSession, listOf(plugin))
 
   object SerialNumbers {
     val physicalUsb = "X1058A"
