@@ -454,8 +454,9 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val jdwpSession = openSharedJdwpSession(session, fakeDevice.deviceId, 10)
-        jdwpSession.sendDdmsExit(1)
+        openSharedJdwpSession(session, fakeDevice.deviceId, 10).use { jdwpSession ->
+            jdwpSession.sendDdmsExit(1)
+        }
 
         // Assert: Wait until client process is gone
         yieldUntil { fakeDevice.getClient(10) == null }

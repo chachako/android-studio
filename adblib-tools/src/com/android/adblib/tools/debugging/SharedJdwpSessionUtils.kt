@@ -135,7 +135,12 @@ suspend fun SharedJdwpSession.sendDdmsExit(status: Int) {
     buffer.putInt(status) // [pos = 4, limit =4]
     buffer.flip()  // [pos = 0, limit =4]
     val packet = createDdmsPacket(DdmsChunkTypes.EXIT, buffer)
-    sendPacket(packet)
+
+    // Send packet and wait for EOF (i.e. wait for JDWP session to end when process terminates)
+    newPacketReceiver()
+        .withName("sendDdmsExit")
+        .onActivation { sendPacket(packet) }
+        .collect { }
 }
 
 /**
