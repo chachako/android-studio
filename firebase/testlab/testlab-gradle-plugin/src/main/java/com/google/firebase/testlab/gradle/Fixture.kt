@@ -20,10 +20,10 @@ import org.gradle.api.Incubating
 import org.gradle.api.provider.MapProperty
 
 /**
- * A DSL for configuring test setup.
+ * A DSL for configuring test fixture.
  */
 @Incubating
-interface Setup {
+interface Fixture {
     /**
      * Whether to grant permissions on the device before tests begin.
      *

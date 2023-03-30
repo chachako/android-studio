@@ -18,6 +18,7 @@ package com.android.tools.firebase.testlab.gradle.services
 
 import com.android.build.api.instrumentation.StaticTestData
 import com.android.builder.testing.api.DeviceConfigProvider
+import com.android.tools.firebase.testlab.gradle.FixtureImpl
 import com.android.tools.firebase.testlab.gradle.UtpTestSuiteResultMerger
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
@@ -46,6 +47,7 @@ import com.google.api.services.testing.model.GoogleCloudStorage
 import com.google.api.services.testing.model.ResultStorage
 import com.google.api.services.testing.model.TestExecution
 import com.google.api.services.testing.model.TestMatrix
+import com.google.api.services.testing.model.TestSetup
 import com.google.api.services.testing.model.TestSpecification
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.StackTrace
@@ -162,6 +164,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val credentialFile: RegularFileProperty
         val cloudStorageBucket: Property<String>
         val numUniformShards: Property<Int>
+        val grantedPermissions: Property<String>
     }
 
     internal open val credential: GoogleCredential by lazy {
@@ -255,6 +258,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 name = clientApplicationName
             }
             testSpecification = TestSpecification().apply {
+                testSetup = TestSetup().apply {
+                    set("dontAutograntPermissions", parameters.grantedPermissions.orNull ==
+                            FixtureImpl.GrantedPermissions.NONE.name)
+                }
                 androidInstrumentationTest = AndroidInstrumentationTest().apply {
                     testApk = com.google.api.services.testing.model.FileReference().apply {
                         gcsPath = "gs://$bucketName/${testApkStorageObject.name}"
@@ -957,6 +964,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.numUniformShards.set( providerFactory.provider {
                 testLabExtension.testOptions.execution.numUniformShards
+            })
+            params.grantedPermissions.set(providerFactory.provider {
+                testLabExtension.testOptions.fixture.grantedPermissions
             })
         }
     }

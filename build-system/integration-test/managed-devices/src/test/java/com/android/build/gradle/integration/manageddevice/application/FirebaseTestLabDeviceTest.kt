@@ -87,6 +87,9 @@ class FirebaseTestLabDeviceTest {
             firebaseTestLab {
                 serviceAccountCredentials = file("test.json")
                 testOptions {
+                    fixture {
+                        grantedPermissions = "none"
+                    }
                     results {
                         cloudStorageBucket = "my_example_custom_bucket"
                     }
@@ -94,6 +97,7 @@ class FirebaseTestLabDeviceTest {
             }
             task("printDslProperties") {
                 println("serviceAccountCredentials = " + firebaseTestLab.serviceAccountCredentials.asFile.get().name)
+                println("grantedPermissions = " + firebaseTestLab.testOptions.fixture.grantedPermissions)
                 println("cloudStorageBucket = " + firebaseTestLab.testOptions.results.cloudStorageBucket)
                 doLast { /* no-op */ }
             }
@@ -101,6 +105,7 @@ class FirebaseTestLabDeviceTest {
         val result = executor.run(":app:printDslProperties")
         result.stdout.use {
             assertThat(it).contains("serviceAccountCredentials = test.json")
+            assertThat(it).contains("grantedPermissions = NONE")
             assertThat(it).contains("cloudStorageBucket = my_example_custom_bucket")
         }
     }

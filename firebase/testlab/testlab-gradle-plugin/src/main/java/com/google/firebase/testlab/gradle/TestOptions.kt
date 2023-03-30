@@ -27,10 +27,10 @@ interface TestOptions {
      * A configuration block for test setup options.
      */
     @get:Incubating
-    val setup: Setup
+    val fixture: Fixture
 
     @Incubating
-    fun setup(action: Setup.() -> Unit)
+    fun fixture(action: Fixture.() -> Unit)
 
     /**
      * A configuration block for test execution options.
