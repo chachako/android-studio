@@ -1210,6 +1210,60 @@ abstract class TaskManager(
     private fun createDexTasks(
             creationConfig: ApkCreationConfig,
             dexingType: DexingType) {
+        val classpathUtils = getClassPathUtils(creationConfig)
+
+        taskFactory.register(
+                DexArchiveBuilderTask.CreationAction(
+                    creationConfig,
+                    classpathUtils,
+                )
+        )
+
+        // When desugaring, The file dependencies are dexed in a task with the whole
+        // remote classpath present, as they lack dependency information to desugar
+        // them correctly in an artifact transform.
+        // This should only be passed to Legacy Multidex MERGE_ALL or MERGE_EXTERNAL_LIBS of
+        // other dexing modes, otherwise it will cause the output of DexFileDependenciesTask
+        // to be included multiple times and will cause the build to fail because of same types
+        // being defined multiple times in the final dex.
+        val separateFileDependenciesDexingTask =
+            (creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8
+                    && classpathUtils.enableDexingArtifactTransform)
+
+        maybeCreateDesugarLibTask(creationConfig)
+
+        createDexMergingTasks(
+            creationConfig,
+            dexingType,
+            classpathUtils.enableDexingArtifactTransform,
+            classpathUtils.classesAlteredTroughVariantAPI,
+            separateFileDependenciesDexingTask
+        )
+
+        if (creationConfig.enableGlobalSynthetics) {
+            if (dexingType == DexingType.NATIVE_MULTIDEX) {
+                taskFactory.register(
+                    GlobalSyntheticsMergeTask.CreationAction(
+                        creationConfig,
+                        classpathUtils.enableDexingArtifactTransform,
+                        separateFileDependenciesDexingTask
+                    )
+                )
+            }
+
+            if (creationConfig.componentType.isDynamicFeature) {
+                taskFactory.register(
+                    FeatureGlobalSyntheticsMergeTask.CreationAction(
+                        creationConfig,
+                        classpathUtils.enableDexingArtifactTransform,
+                        separateFileDependenciesDexingTask
+                    )
+                )
+            }
+        }
+    }
+
+    protected fun getClassPathUtils(creationConfig: ApkCreationConfig): ClassesClasspathUtils {
         val java8LangSupport = creationConfig.dexingCreationConfig.java8LangSupportType
         val supportsDesugaringViaArtifactTransform =
                 (java8LangSupport == Java8LangSupport.UNUSED
@@ -1230,60 +1284,11 @@ abstract class TaskManager(
                 .projectOptions[BooleanOption.ENABLE_DEXING_ARTIFACT_TRANSFORM]
                 && supportsDesugaringViaArtifactTransform)
                 && !classesAlteredTroughVariantAPI
-        val classpathUtils = ClassesClasspathUtils(
-            creationConfig,
-            enableDexingArtifactTransform,
-            classesAlteredTroughVariantAPI
-        )
-        taskFactory.register(
-                DexArchiveBuilderTask.CreationAction(
-                    creationConfig,
-                    classpathUtils,
-                )
-        )
 
-        // When desugaring, The file dependencies are dexed in a task with the whole
-        // remote classpath present, as they lack dependency information to desugar
-        // them correctly in an artifact transform.
-        // This should only be passed to Legacy Multidex MERGE_ALL or MERGE_EXTERNAL_LIBS of
-        // other dexing modes, otherwise it will cause the output of DexFileDependenciesTask
-        // to be included multiple times and will cause the build to fail because of same types
-        // being defined multiple times in the final dex.
-        val separateFileDependenciesDexingTask =
-            (creationConfig.dexingCreationConfig.java8LangSupportType == Java8LangSupport.D8
-                    && enableDexingArtifactTransform)
-
-        maybeCreateDesugarLibTask(creationConfig)
-
-        createDexMergingTasks(
-            creationConfig,
-            dexingType,
-            enableDexingArtifactTransform,
-            classesAlteredTroughVariantAPI,
-            separateFileDependenciesDexingTask
-        )
-
-        if (creationConfig.enableGlobalSynthetics) {
-            if (dexingType == DexingType.NATIVE_MULTIDEX) {
-                taskFactory.register(
-                    GlobalSyntheticsMergeTask.CreationAction(
-                        creationConfig,
-                        enableDexingArtifactTransform,
-                        separateFileDependenciesDexingTask
-                    )
-                )
-            }
-
-            if (creationConfig.componentType.isDynamicFeature) {
-                taskFactory.register(
-                    FeatureGlobalSyntheticsMergeTask.CreationAction(
-                        creationConfig,
-                        enableDexingArtifactTransform,
-                        separateFileDependenciesDexingTask
-                    )
-                )
-            }
-        }
+        return ClassesClasspathUtils(
+                creationConfig,
+                enableDexingArtifactTransform,
+                classesAlteredTroughVariantAPI)
     }
 
     /**

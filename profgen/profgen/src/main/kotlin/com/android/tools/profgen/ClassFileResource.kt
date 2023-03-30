@@ -88,7 +88,7 @@ class ArchiveClassFileResourceProvider (
     }
 }
 
-public fun getClassDescriptorFromBinaryName(classBinaryName: String): String {
+fun getClassDescriptorFromBinaryName(classBinaryName: String): String {
     return "L$classBinaryName;"
 }
 

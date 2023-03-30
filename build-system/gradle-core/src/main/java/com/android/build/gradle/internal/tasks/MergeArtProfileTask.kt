@@ -97,7 +97,6 @@ abstract class MergeArtProfileTask: MergeFileTask() {
                 MergeFileTask::outputFile
             ).withName(BaselineProfiles.BaselineProfileFileName)
                 .on(InternalArtifactType.MERGED_ART_PROFILE)
-
         }
 
         override fun configure(task: MergeArtProfileTask) {

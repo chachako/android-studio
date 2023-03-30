@@ -144,6 +144,7 @@ class ArtProfileMultipleLibrariesTest(
 
         val libraryBaselineProfContents = mutableListOf<String>()
         var expectedMergedFileContent = ""
+        var expectedMergedFileContentBeforeWildcardTask = ""
         var expectedMergedRewrittenFileContent = ""
         for (i in 1..3) {
             val library = project.getSubproject(":lib$i").also {
@@ -161,18 +162,34 @@ class ArtProfileMultipleLibrariesTest(
             androidAssets.mkdir()
 
             val baselineProfContent =
-                    """
-                        Lcom/example/lib$i/Foo;
-                        HSPLcom/example/lib$i/Foo;->m(II)I
-                        Lcom/example/lib$i/Bar;
-                        HSPLcom/example/lib$i/Bar;->m()V
-                        Lcom/example/lib$i/Baz;
-                        HSPLcom/example/lib$i/Baz;->m()V
-                    """.trimIndent()
+                """
+                    Lcom/example/lib$i/Foo;
+                    HSPLcom/example/lib$i/Foo;->m(II)I
+                    Lcom/example/lib$i/Bar;
+                    HSPLcom/example/lib$i/Bar;->m()V
+                    Lcom/example/lib$i/Baz;
+                    HSPLcom/example/lib$i/Baz;->m()V
+                """.trimIndent()
+
+            val minifyEnabledBaselineProfContent =
+                """
+                    Lcom/example/lib$i/Bar;
+                    HSPLcom/example/lib$i/Bar;->m()V
+                    Lcom/example/lib$i/Baz;
+                    HSPLcom/example/lib$i/Baz;->m()V
+                    Lcom/example/lib$i/Foo;
+                    HSPLcom/example/lib$i/Foo;->m(II)I
+                """.trimIndent()
+
             libraryBaselineProfContents.add(baselineProfContent)
             File(androidAssets, SdkConstants.FN_ART_PROFILE).writeText(baselineProfContent)
-            expectedMergedFileContent =
-                    expectedMergedFileContent.plus(baselineProfContent.plus("\n"))
+            expectedMergedFileContent = if (minifyEnabled) {
+                expectedMergedFileContent.plus(minifyEnabledBaselineProfContent.plus("\n"))
+            } else {
+                expectedMergedFileContent.plus(baselineProfContent.plus("\n"))
+            }
+            expectedMergedFileContentBeforeWildcardTask =
+                expectedMergedFileContentBeforeWildcardTask.plus(baselineProfContent.plus("\n"))
             expectedMergedRewrittenFileContent =
                     expectedMergedRewrittenFileContent.plus(
                             """
@@ -209,14 +226,24 @@ class ArtProfileMultipleLibrariesTest(
             )
         }
         if (addApplicationProfile) {
-            expectedMergedFileContent =
+            if (minifyEnabled) {
+                expectedMergedFileContent =
+                    applicationBaselineProfContent.plus("\n$expectedMergedFileContent")
+                expectedMergedRewrittenFileContent =
+                    applicationBaselineProfContent.plus("\n$expectedMergedRewrittenFileContent")
+            } else {
+                expectedMergedFileContent =
                     expectedMergedFileContent.plus(applicationBaselineProfContent.plus("\n"))
-            expectedMergedRewrittenFileContent =
+                expectedMergedRewrittenFileContent =
                     expectedMergedRewrittenFileContent.plus(
-                            applicationBaselineProfContent.plus("\n"))
+                        applicationBaselineProfContent.plus("\n"))
+            }
+            expectedMergedFileContentBeforeWildcardTask =
+                expectedMergedFileContentBeforeWildcardTask.plus(applicationBaselineProfContent.plus("\n"))
         }
         expectedMergedFileContent = expectedMergedFileContent.trimEnd()
         expectedMergedRewrittenFileContent = expectedMergedRewrittenFileContent.trimEnd()
+        expectedMergedFileContentBeforeWildcardTask = expectedMergedFileContentBeforeWildcardTask.trimEnd()
 
         val result = project.executor()
                 .run(
@@ -261,7 +288,7 @@ class ArtProfileMultipleLibrariesTest(
         )
         Truth.assertThat(mergedFilePreR8.exists()).isEqualTo(minifyEnabled)
         if (minifyEnabled) {
-            Truth.assertThat(mergedFilePreR8.readText()).isEqualTo(expectedMergedFileContent)
+            Truth.assertThat(mergedFilePreR8.readText()).isEqualTo(expectedMergedFileContentBeforeWildcardTask)
         }
 
         val mergedFile = FileUtils.join(

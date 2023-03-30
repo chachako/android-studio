@@ -48,7 +48,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
-import java.lang.RuntimeException
 
 /**
  * Task that transforms a human readable art profile into a binary form version that can be shipped

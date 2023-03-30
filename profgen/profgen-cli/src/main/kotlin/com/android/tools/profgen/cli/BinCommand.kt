@@ -24,14 +24,13 @@ import com.android.tools.profgen.HumanReadableProfile
 import com.android.tools.profgen.ObfuscationMap
 import com.android.tools.profgen.dumpProfile
 import com.android.tools.profgen.extractProfileAsDm
+import com.android.tools.profgen.readHumanReadableProfileOrExit
 import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import kotlinx.cli.default
 import kotlinx.cli.required
-import java.io.File
 import kotlin.io.path.Path
-import kotlin.system.exitProcess
 
 @Suppress("unused") // Values are referenced by name as shell args
 @ExperimentalCli
@@ -72,7 +71,7 @@ class BinCommand : Subcommand("bin", "Generate Binary Profile") {
         val outFile = Path(outPath).toFile()
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
-        val hrp = readHumanReadableProfileOrExit(hrpFile)
+        val hrp = readHumanReadableProfileOrExit(hrpFile, StdErrorDiagnostics)
         val apk = Apk(apkFile)
         val obf = if (obfFile != null) ObfuscationMap(obfFile) else ObfuscationMap.Empty
         val profile = ArtProfile(hrp, obf, apk)
@@ -134,7 +133,7 @@ class PrintCommand : Subcommand("print", "Print methods matching profile") {
         val outFile = Path(outPath).toFile()
         require(outFile.parentFile.exists()) { "Directory does not exist: ${outFile.parent}" }
 
-        val hrp = readHumanReadableProfileOrExit(hrpFile)
+        val hrp = readHumanReadableProfileOrExit(hrpFile, StdErrorDiagnostics)
         val apk = Apk(apkFile)
         val obf = if (obfFile != null) ObfuscationMap(obfFile) else ObfuscationMap.Empty
         val profile = ArtProfile(hrp, obf, apk)
@@ -168,13 +167,4 @@ class ProfileDumpCommand: Subcommand("dumpProfile", "Dump a binary profile to a 
     }
 }
 
-internal fun readHumanReadableProfileOrExit(hrpFile: File): HumanReadableProfile {
-    val hrp = HumanReadableProfile(hrpFile, StdErrorDiagnostics)
-    if (hrp == null) {
-        System.err.println("Failed to parse $hrpFile.")
-        exitProcess(-1)
-    }
-    return hrp
-}
-
-private val StdErrorDiagnostics = Diagnostics { System.err.println(it) }
+val StdErrorDiagnostics = Diagnostics { System.err.println(it) }

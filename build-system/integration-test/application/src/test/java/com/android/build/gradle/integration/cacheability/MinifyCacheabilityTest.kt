@@ -68,7 +68,7 @@ class MinifyCacheabilityTest {
             ":processMinifiedMainManifest",
             ":processMinifiedManifest",
             ":processMinifiedManifestForPackage",
-
+            ":expandMinifiedArtProfileWildcards"
         ).plus(
             if (BooleanOption.GENERATE_MANIFEST_CLASS.defaultValue) {
                 setOf(":generateMinifiedManifestClass")

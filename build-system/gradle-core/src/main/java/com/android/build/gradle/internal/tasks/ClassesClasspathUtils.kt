@@ -28,8 +28,8 @@ import org.gradle.api.file.FileCollection
 
 class ClassesClasspathUtils(
     val creationConfig: ApkCreationConfig,
-    enableDexingArtifactTransform: Boolean,
-    classesAlteredTroughVariantAPI: Boolean,
+    val enableDexingArtifactTransform: Boolean,
+    val classesAlteredTroughVariantAPI: Boolean,
 ) {
 
     val projectClasses: FileCollection
