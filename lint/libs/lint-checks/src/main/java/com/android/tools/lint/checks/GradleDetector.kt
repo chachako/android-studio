@@ -27,12 +27,14 @@ import com.android.SdkConstants.SUPPORT_LIB_GROUP_ID
 import com.android.SdkConstants.TAG_USES_FEATURE
 import com.android.SdkConstants.currentPlatform
 import com.android.ide.common.gradle.Component
+import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.repository.GradleCoordinate.COMPARE_PLUS_HIGHER
 import com.android.ide.common.repository.MavenRepositories
+import com.android.ide.common.repository.explicitlyIncludesPreview
 import com.android.io.CancellableFileIo
 import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.SdkVersionInfo
@@ -2477,11 +2479,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner {
 
   private fun getGoogleMavenRepoVersion(
     context: Context,
-    dependency: GradleCoordinate,
+    coordinate: GradleCoordinate,
     filter: Predicate<Version>?
   ): Version? {
     val repository = getGoogleMavenRepository(context.client)
-    return repository.findVersion(dependency, filter, dependency.isPreview)
+    val dependency = Dependency.parse(coordinate.toString())
+    return repository.findVersion(dependency, filter, dependency.explicitlyIncludesPreview)
   }
 
   fun getGoogleMavenRepository(client: LintClient): GoogleMavenRepository {

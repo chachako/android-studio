@@ -16,6 +16,7 @@
 
 package com.android.ide.common.repository
 
+import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.resources.BaseTestCase
 import com.google.common.truth.Truth.assertThat
@@ -223,20 +224,21 @@ class GoogleMavenRepositoryTest : BaseTestCase() {
         val version = repo.findVersion("com.android.support", "leanback-v17")
         val dependencies = repo.findCompileDependencies("com.android.support", "leanback-v17", version!!)
         assertThat(dependencies).containsExactly(
-            GradleCoordinate.parseCoordinateString("com.android.support:support-compat:25.3.1"),
-            GradleCoordinate.parseCoordinateString("com.android.support:support-core-ui:25.3.1"),
-            GradleCoordinate.parseCoordinateString("com.android.support:support-media-compat:25.3.1"),
-            GradleCoordinate.parseCoordinateString("com.android.support:support-fragment:25.3.1"),
-            GradleCoordinate.parseCoordinateString("com.android.support:recyclerview-v7:[25.3.1.4.5,25.4.0)"),
-            GradleCoordinate.parseCoordinateString("androidx.recyclerview:recyclerview:2.0.0"))
-        assertThat(dependencies[3].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("25.3.1"))
-        assertThat(dependencies[3].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("25.3.2"))
-        // TODO(b/242691473): reliance on GradleCoordinate parsing maven-style version ranges,
-        //  which it doesn't really.
-        // assertThat(dependencies[4].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("25.3.1.4.5"))
-        // assertThat(dependencies[4].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("25.4.0"))
-        assertThat(dependencies[5].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("2.0.0"))
-        assertThat(dependencies[5].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("3"))
+            Dependency.parse("com.android.support:support-compat:25.3.1"),
+            Dependency.parse("com.android.support:support-core-ui:25.3.1"),
+            Dependency.parse("com.android.support:support-media-compat:25.3.1"),
+            Dependency.parse("com.android.support:support-fragment:25.3.1"),
+            Dependency.parse("com.android.support:recyclerview-v7:[25.3.1.4.5,25.4.0)"),
+            Dependency.parse("androidx.recyclerview:recyclerview:2.0.0"))
+        // TODO(xof): actually these tests are not well-founded; the special version ranges for
+        //  particular artifacts are only relevant for the DependencyAnalyzer, and the logic has
+        //  been moved there.
+        // assertThat(dependencies[3].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("25.3.1"))
+        // assertThat(dependencies[3].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("25.3.2"))
+        // assertThat(dependencies[5].versionRange?.lowerEndpoint()).isEqualTo(Version.parse("2.0.0"))
+        // assertThat(dependencies[5].versionRange?.upperEndpoint()).isEqualTo(Version.prefixInfimum("3"))
+        assertThat(dependencies[4].version?.require?.lowerEndpoint()).isEqualTo(Version.parse("25.3.1.4.5"))
+        assertThat(dependencies[4].version?.require?.upperEndpoint()).isEqualTo(Version.prefixInfimum("25.4.0"))
     }
 
     @Test
@@ -262,12 +264,12 @@ class GoogleMavenRepositoryTest : BaseTestCase() {
         assertNotNull(version)
         assertEquals("1.0.1-alpha1", version.toString())
 
-        val gc1 = GradleCoordinate.parseCoordinateString("foo.bar:another-artifact:2.5.+")
-        assertEquals("2.5.0", repo.findVersion(gc1!!).toString())
-        val gc2 = GradleCoordinate.parseCoordinateString("foo.bar:another-artifact:2.6.0-alpha1")
-        assertEquals("2.6.0-rc1", repo.findVersion(gc2!!).toString())
-        val gc3 = GradleCoordinate.parseCoordinateString("foo.bar:another-artifact:2.6.+")
-        assertEquals("2.6.0-rc1", repo.findVersion(gc3!!, null, allowPreview = true).toString())
+        val d1 = Dependency.parse("foo.bar:another-artifact:2.5.+")
+        assertEquals("2.5.0", repo.findVersion(d1).toString())
+        val d2 = Dependency.parse("foo.bar:another-artifact:2.6.0-alpha1")
+        assertEquals("2.6.0-rc1", repo.findVersion(d2).toString())
+        val d3 = Dependency.parse("foo.bar:another-artifact:2.6.+")
+        assertEquals("2.6.0-rc1", repo.findVersion(d3, null, allowPreview = true).toString())
 
         assertEquals(setOf("foo.bar", "foo.bar.baz"), repo.getGroups())
         assertEquals(setOf("my-artifact", "another-artifact"), repo.getArtifacts("foo.bar"))

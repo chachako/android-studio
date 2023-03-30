@@ -16,8 +16,8 @@
 
 package com.android.tools.lint.checks
 
+import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
-import com.android.ide.common.repository.GradleCoordinate
 import com.android.tools.lint.checks.GradleDetector.Companion.DEPENDENCY
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.Category
@@ -119,12 +119,15 @@ class PropertyFileDetector : Detector() {
     val version = Version.parse(versionString) ?: return
     val repository = GradleDetector().getGoogleMavenRepository(context.client)
     // Lint uses the same version as AGP
-    val gc = GradleCoordinate("com.android.tools.build", "gradle", versionString)
+    // Alternatives:
+    // - Dependency.parse("com.android.tools.build:gradle:[$versionString,)")
+    // -
+    val dependency = Dependency.parse("com.android.tools.build:gradle:$versionString")
     // We're assuming that users who use this facility want to use the very latest version,
     // even if they're currently on stable. Alternatively we could use
     // val allowPreview = version.isPreview || version.isSnapshot
     val allowPreview = true
-    val newerVersion = repository.findVersion(gc, null, allowPreview) ?: return
+    val newerVersion = repository.findVersion(dependency, null, allowPreview) ?: return
     if (newerVersion > version) {
       val startOffset = contents.indexOf(versionString)
       val endOffset = startOffset + versionString.length
