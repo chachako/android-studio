@@ -641,7 +641,7 @@ class AdbLibDeviceClientManagerTest {
             DdmsProtocolKind.EmptyRepliesDiscarded,
             client.jdwpProcess.device.ddmsProtocolKind()
         )
-        Assert.assertEquals(1, clientState.hgpcRequestsCount)
+        Assert.assertEquals(1, clientState.getHgpcRequestsCount())
     }
 
     @Test
@@ -679,7 +679,7 @@ class AdbLibDeviceClientManagerTest {
             DdmsProtocolKind.EmptyRepliesAllowed,
             client.jdwpProcess.device.ddmsProtocolKind()
         )
-        Assert.assertEquals(1, clientState.hgpcRequestsCount)
+        Assert.assertEquals(1, clientState.getHgpcRequestsCount())
     }
 
     @Test

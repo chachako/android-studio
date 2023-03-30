@@ -13,164 +13,155 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers;
+package com.android.fakeadbserver.devicecommandhandlers.ddmsHandlers
 
-import com.android.annotations.NonNull;
-import com.android.fakeadbserver.ClientState;
-import com.android.fakeadbserver.DeviceState;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import com.android.fakeadbserver.ClientState
+import com.android.fakeadbserver.DeviceState
+import java.io.IOException
+import java.io.OutputStream
+import java.nio.ByteBuffer
 
-public class HeloHandler implements DDMPacketHandler {
+class HeloHandler : DDMPacketHandler {
+  override fun handlePacket(
+    device: DeviceState,
+    client: ClientState,
+    packet: DdmPacket,
+    oStream: OutputStream
+  ): Boolean {
+    // ADB has an issue of reporting the process name instead of the real not reporting the real package name.
+    val appName = client.processName
+    val deviceApiLevel = device.apiLevel
 
-    public static final int CHUNK_TYPE = DdmPacket.encodeChunkType("HELO");
+    // UserID starts at API 18
+    val writeUserId = deviceApiLevel >= 18
 
-    private static final String VM_IDENTIFIER = "FakeVM";
+    // ABI starts at API 21
+    val writeAbi = deviceApiLevel >= 21
+    val abi = device.cpuAbi
 
-    private static final String JVM_FLAGS = "-jvmflag=true";
+    // JvmFlags starts at API 21
+    val writeJvmFlags = deviceApiLevel >= 21
+    val jvmFlags = JVM_FLAGS
 
-    private static final int HELO_CHUNK_HEADER_LENGTH = 16;
+    // native debuggable starts at API 24
+    val writeNativeDebuggable = deviceApiLevel >= 24
 
-    private static final int VERSION = 9999;
+    // package name starts at API 30
+    val writePackageName = deviceApiLevel >= 30
+    val packageName = client.packageName
 
-    @Override
-    public boolean handlePacket(
-            @NonNull DeviceState device,
-            @NonNull ClientState client,
-            @NonNull DdmPacket packet,
-            @NonNull OutputStream oStream) {
-        // ADB has an issue of reporting the process name instead of the real not reporting the real package name.
-        String appName = client.getProcessName();
-
-        int deviceApiLevel = device.getApiLevel();
-
-        // UserID starts at API 18
-        boolean writeUserId = deviceApiLevel >= 18;
-
-        // ABI starts at API 21
-        boolean writeAbi = deviceApiLevel >= 21;
-        String abi = device.getCpuAbi();
-
-        // JvmFlags starts at API 21
-        boolean writeJvmFlags = deviceApiLevel >= 21;
-        String jvmFlags = JVM_FLAGS;
-
-        // native debuggable starts at API 24
-        boolean writeNativeDebuggable = deviceApiLevel >= 24;
-
-        // package name starts at API 30
-        boolean writePackageName = deviceApiLevel >= 30;
-        String packageName = client.getPackageName();
-
-        int payloadLength =
-                HELO_CHUNK_HEADER_LENGTH
-                        + ((VM_IDENTIFIER.length() + appName.length()) * 2)
-                        + (writeUserId ? 4 : 0)
-                        + (writeAbi ? 4 + abi.length() * 2 : 0)
-                        + (writeJvmFlags ? 4 + jvmFlags.length() * 2 : 0)
-                        + (writeNativeDebuggable ? 1 : 0)
-                        + (writePackageName ? 4 + packageName.length() * 2 : 0);
-        byte[] payload = new byte[payloadLength];
-        ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
-        payloadBuffer.putInt(VERSION);
-        payloadBuffer.putInt(client.getPid());
-        payloadBuffer.putInt(VM_IDENTIFIER.length());
-        payloadBuffer.putInt(appName.length());
-        for (char c : VM_IDENTIFIER.toCharArray()) {
-            payloadBuffer.putChar(c);
-        }
-        for (char c : appName.toCharArray()) {
-            payloadBuffer.putChar(c);
-        }
-        if (writeUserId) {
-            payloadBuffer.putInt(client.getUid());
-        }
-        if (writeAbi) {
-            payloadBuffer.putInt(abi.length());
-            for (char c : abi.toCharArray()) {
-                payloadBuffer.putChar(c);
-            }
-        }
-        if (writeJvmFlags) {
-            payloadBuffer.putInt(jvmFlags.length());
-            for (char c : jvmFlags.toCharArray()) {
-                payloadBuffer.putChar(c);
-            }
-        }
-        if (writeNativeDebuggable) {
-            payloadBuffer.put((byte) 0);
-        }
-        if (writePackageName) {
-            payloadBuffer.putInt(packageName.length());
-            for (char c : packageName.toCharArray()) {
-                payloadBuffer.putChar(c);
-            }
-        }
-
-        DdmPacket responsePacket = DdmPacket.createResponse(packet.getId(), CHUNK_TYPE, payload);
-
-        try {
-            responsePacket.write(oStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        // Send "APMN" command packet as to simulate Android behavior
-        try {
-            int apnmPayloadLength =
-                    (4 + appName.length() * 2)
-                            + (writeUserId ? 4 : 0)
-                            + (writePackageName ? 4 + packageName.length() * 2 : 0);
-            ByteBuffer apmnPayload = ByteBuffer.allocate(apnmPayloadLength);
-
-            // Process Name
-            apmnPayload.putInt(appName.length());
-            for (char c : appName.toCharArray()) {
-                apmnPayload.putChar(c);
-            }
-
-            // User ID
-            if (writeUserId) {
-                apmnPayload.putInt(client.getUid());
-            }
-
-            // Package Name
-            if (writePackageName) {
-                apmnPayload.putInt(packageName.length());
-                for (char c : packageName.toCharArray()) {
-                    apmnPayload.putChar(c);
-                }
-            }
-
-            DdmPacket apnmPacket =
-                    DdmPacket.createCommand(
-                            client.nextDdmsCommandId(),
-                            DdmPacket.encodeChunkType("APNM"),
-                            apmnPayload.array());
-            apnmPacket.write(oStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        // Send "WAIT" packet if needed
-        if (client.getIsWaiting()) {
-
-            byte[] waitPayload = new byte[1];
-            DdmPacket waitPacket =
-                    DdmPacket.createCommand(
-                            client.nextDdmsCommandId(),
-                            DdmPacket.encodeChunkType("WAIT"),
-                            waitPayload);
-            try {
-                waitPacket.write(oStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return true;
+    val payloadLength = (HELO_CHUNK_HEADER_LENGTH + (VM_IDENTIFIER.length + appName.length) * 2
+      + (if (writeUserId) 4 else 0)
+      + (if (writeAbi) 4 + abi.length * 2 else 0)
+      + (if (writeJvmFlags) 4 + jvmFlags.length * 2 else 0)
+      + (if (writeNativeDebuggable) 1 else 0)
+      + if (writePackageName) 4 + packageName.length * 2 else 0)
+    val payload = ByteArray(payloadLength)
+    val payloadBuffer = ByteBuffer.wrap(payload)
+    payloadBuffer.putInt(VERSION)
+    payloadBuffer.putInt(client.pid)
+    payloadBuffer.putInt(VM_IDENTIFIER.length)
+    payloadBuffer.putInt(appName.length)
+    for (c in VM_IDENTIFIER.toCharArray()) {
+      payloadBuffer.putChar(c)
     }
+    for (c in appName.toCharArray()) {
+      payloadBuffer.putChar(c)
+    }
+    if (writeUserId) {
+      payloadBuffer.putInt(client.uid)
+    }
+    if (writeAbi) {
+      payloadBuffer.putInt(abi.length)
+      for (c in abi.toCharArray()) {
+        payloadBuffer.putChar(c)
+      }
+    }
+    if (writeJvmFlags) {
+      payloadBuffer.putInt(jvmFlags.length)
+      for (c in jvmFlags.toCharArray()) {
+        payloadBuffer.putChar(c)
+      }
+    }
+    if (writeNativeDebuggable) {
+      payloadBuffer.put(0.toByte())
+    }
+    if (writePackageName) {
+      payloadBuffer.putInt(packageName.length)
+      for (c in packageName.toCharArray()) {
+        payloadBuffer.putChar(c)
+      }
+    }
+
+    val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, payload)
+    try {
+      responsePacket.write(oStream)
+    } catch (e: IOException) {
+      e.printStackTrace()
+      return false
+    }
+
+    // Send "APMN" command packet as to simulate Android behavior
+    try {
+      val apnmPayloadLength = (4 + appName.length * 2
+        + (if (writeUserId) 4 else 0)
+        + if (writePackageName) 4 + packageName.length * 2 else 0)
+      val apmnPayload = ByteBuffer.allocate(apnmPayloadLength)
+
+      // Process Name
+      apmnPayload.putInt(appName.length)
+      for (c in appName.toCharArray()) {
+        apmnPayload.putChar(c)
+      }
+
+      // User ID
+      if (writeUserId) {
+        apmnPayload.putInt(client.uid)
+      }
+
+      // Package Name
+      if (writePackageName) {
+        apmnPayload.putInt(packageName.length)
+        for (c in packageName.toCharArray()) {
+          apmnPayload.putChar(c)
+        }
+      }
+
+      val apnmPacket = DdmPacket.createCommand(
+        client.nextDdmsCommandId(),
+        DdmPacket.encodeChunkType("APNM"),
+        apmnPayload.array()
+      )
+      apnmPacket.write(oStream)
+    } catch (e: IOException) {
+      e.printStackTrace()
+      return false
+    }
+
+    // Send "WAIT" packet if needed
+    if (client.isWaiting) {
+      val waitPayload = ByteArray(1)
+      val waitPacket = DdmPacket.createCommand(
+        client.nextDdmsCommandId(),
+        DdmPacket.encodeChunkType("WAIT"),
+        waitPayload
+      )
+      try {
+        waitPacket.write(oStream)
+      } catch (e: IOException) {
+        e.printStackTrace()
+        return false
+      }
+    }
+    return true
+  }
+
+  companion object {
+    @JvmField
+    val CHUNK_TYPE = DdmPacket.encodeChunkType("HELO")
+    private const val VM_IDENTIFIER = "FakeVM"
+    private const val JVM_FLAGS = "-jvmflag=true"
+    private const val HELO_CHUNK_HEADER_LENGTH = 16
+    private const val VERSION = 9999
+  }
 }

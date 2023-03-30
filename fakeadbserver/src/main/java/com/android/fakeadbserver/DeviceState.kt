@@ -13,561 +13,406 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.fakeadbserver;
+package com.android.fakeadbserver
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.fakeadbserver.services.Service;
-import com.android.fakeadbserver.services.ServiceManager;
-import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory;
-import com.android.fakeadbserver.statechangehubs.ClientStateChangeHub;
-import com.android.fakeadbserver.statechangehubs.StateChangeQueue;
-import com.google.common.collect.ImmutableMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
+import com.android.fakeadbserver.services.Service
+import com.android.fakeadbserver.services.ServiceManager
+import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory
+import com.android.fakeadbserver.statechangehubs.ClientStateChangeHub
+import com.android.fakeadbserver.statechangehubs.StateChangeQueue
+import com.google.common.collect.ImmutableMap
+import java.util.Collections
+import java.util.TreeMap
+import java.util.Vector
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
-public class DeviceState {
+class DeviceState internal constructor(
+  private val mServer: FakeAdbServer,
+  val deviceId: String,
+  val manufacturer: String,
+  val model: String,
+  val buildVersionRelease: String,
+  val buildVersionSdk: String,
+  val cpuAbi: String,
+  properties: Map<String, String>,
+  val hostConnectionType: HostConnectionType,
+  val transportId: Int
+) {
+  val clientChangeHub = ClientStateChangeHub()
+  private val mFiles: MutableMap<String, DeviceFileState> = HashMap()
+  private val mLogcatMessages: MutableList<String> = ArrayList()
 
-    private final ClientStateChangeHub mClientStateChangeHub = new ClientStateChangeHub();
+  /** PID -> [ProcessState]  */
+  private val mProcessStates: MutableMap<Int, ProcessState> = HashMap()
+  private val mPortForwarders: MutableMap<Int, PortForwarder?> = HashMap()
+  private val mReversePortForwarders: MutableMap<Int, PortForwarder?> = HashMap()
+  val features: Set<String>
+  val properties: Map<String, String>
+  private var mDeviceStatus: DeviceStatus
+  val serviceManager: ServiceManager
 
-    private final Map<String, DeviceFileState> mFiles = new HashMap<>();
+  // Keep track of all PM commands invocation
+  private val mPmLogs = Vector<String>()
 
-    private final List<String> mLogcatMessages = new ArrayList<>();
+  // Keep track of all cmd commands invocation
+  private val mCmdLogs = Vector<String>()
 
-    /** PID -> {@link ProcessState} */
-    private final Map<Integer, ProcessState> mProcessStates = new HashMap<>();
+  // Keep track of all ABB/ABB_EXEC commands invocation
+  private val mAbbLogs = Vector<String>()
 
-    private final Map<Integer, PortForwarder> mPortForwarders = new HashMap<>();
+  init {
+    features = initFeatures(buildVersionSdk)
+    this.properties = combinedProperties(deviceId, manufacturer, model, buildVersionRelease, buildVersionSdk, cpuAbi, properties)
+    mDeviceStatus = DeviceStatus.OFFLINE
+    serviceManager = ServiceManager()
+  }
 
-    private final Map<Integer, PortForwarder> mReversePortForwarders = new HashMap<>();
+  internal constructor(server: FakeAdbServer, transportId: Int, config: DeviceStateConfig) : this(
+    server,
+    config.serialNumber,
+    config.manufacturer,
+    config.model,
+    config.buildVersionRelease,
+    config.buildVersionSdk,
+    config.cpuAbi,
+    config.properties,
+    config.hostConnectionType,
+    transportId
+  ) {
+    config.files.forEach(Consumer { fileState: DeviceFileState -> mFiles[fileState.path] = fileState })
+    mLogcatMessages.addAll(config.logcatMessages)
+    mDeviceStatus = config.deviceStatus
+    config.processes
+      .forEach(Consumer { clientState: ProcessState -> mProcessStates[clientState.pid] = clientState })
+  }
 
-    private final FakeAdbServer mServer;
+  fun stop() {
+    clientChangeHub.stop()
+  }
 
-    private final HostConnectionType mHostConnectionType;
-
-    private final Set<String> mFeatures;
-
-    private final int myTransportId;
-
-    private final String mDeviceId;
-
-    private final String mManufacturer;
-
-    private final String mModel;
-
-    private final String mBuildVersionRelease;
-
-    private final String mBuildVersionSdk;
-
-    private final String mCpuAbi;
-
-    private final Map<String, String> mProperties;
-
-    private DeviceStatus mDeviceStatus;
-
-    private final ServiceManager mServiceManager;
-
-    // Keep track of all PM commands invocation
-    private final Vector<String> mPmLogs = new Vector<>();
-
-    // Keep track of all cmd commands invocation
-    private final Vector<String> mCmdLogs = new Vector<>();
-
-    // Keep track of all ABB/ABB_EXEC commands invocation
-    private final Vector<String> mAbbLogs = new Vector<>();
-
-    DeviceState(
-            @NonNull FakeAdbServer server,
-            @NonNull String deviceId,
-            @NonNull String manufacturer,
-            @NonNull String model,
-            @NonNull String release,
-            @NonNull String sdk,
-            @NonNull String cpuAbi,
-            @NonNull Map<String, String> properties,
-            @NonNull HostConnectionType hostConnectionType,
-            int transportId) {
-        mServer = server;
-        mDeviceId = deviceId;
-        mManufacturer = manufacturer;
-        mModel = model;
-        mBuildVersionRelease = release;
-        mBuildVersionSdk = sdk;
-        mCpuAbi = cpuAbi;
-        mFeatures = initFeatures(sdk);
-        mProperties =
-                combinedProperties(deviceId, manufacturer, model, release, sdk, cpuAbi, properties);
-        mHostConnectionType = hostConnectionType;
-        myTransportId = transportId;
-        mDeviceStatus = DeviceStatus.OFFLINE;
-        mServiceManager = new ServiceManager();
+  val apiLevel: Int
+    get() = try {
+      buildVersionSdk.toInt()
+    } catch (e: NumberFormatException) {
+      1
     }
 
-    DeviceState(@NonNull FakeAdbServer server, int transportId, @NonNull DeviceStateConfig config) {
-        this(
-                server,
-                config.getSerialNumber(),
-                config.getManufacturer(),
-                config.getModel(),
-                config.getBuildVersionRelease(),
-                config.getBuildVersionSdk(),
-                config.getCpuAbi(),
-                config.getProperties(),
-                config.getHostConnectionType(),
-                transportId);
-        config.getFiles().forEach(fileState -> mFiles.put(fileState.getPath(), fileState));
-        mLogcatMessages.addAll(config.getLogcatMessages());
-        mDeviceStatus = config.getDeviceStatus();
-        config.getProcesses()
-                .forEach(clientState -> mProcessStates.put(clientState.getPid(), clientState));
+  var deviceStatus: DeviceStatus
+    get() = mDeviceStatus
+    set(status) {
+      mDeviceStatus = status
+      mServer.deviceChangeHub.deviceStatusChanged(this, status)
     }
 
-    public void stop() {
-        mClientStateChangeHub.stop();
+  fun addLogcatMessage(message: String) {
+    synchronized(mLogcatMessages) {
+      mLogcatMessages.add(message)
+      clientChangeHub.logcatMessageAdded(message)
+    }
+  }
+
+  fun subscribeLogcatChangeHandler(
+    handlerFactory: ClientStateChangeHandlerFactory
+  ): LogcatChangeHandlerSubscriptionResult? {
+    synchronized(mLogcatMessages) {
+      val queue = clientChangeHub.subscribe(handlerFactory) ?: return null
+      return LogcatChangeHandlerSubscriptionResult(
+        queue, ArrayList(mLogcatMessages)
+      )
+    }
+  }
+
+  fun createFile(file: DeviceFileState) {
+    synchronized(mFiles) { mFiles.put(file.path, file) }
+  }
+
+  fun getFile(filepath: String): DeviceFileState? {
+    synchronized(mFiles) { return mFiles[filepath] }
+  }
+
+  fun deleteFile(filepath: String) {
+    synchronized(mFiles) { mFiles.remove(filepath) }
+  }
+
+  fun startClient(
+    pid: Int, uid: Int, packageName: String, isWaiting: Boolean
+  ): ClientState {
+    return startClient(pid, uid, packageName, packageName, isWaiting)
+  }
+
+  fun startClient(
+    pid: Int,
+    uid: Int,
+    processName: String,
+    packageName: String,
+    isWaiting: Boolean
+  ): ClientState {
+    synchronized(mProcessStates) {
+      val clientState = ClientState(pid, uid, processName, packageName, isWaiting)
+      mProcessStates[pid] = clientState
+      clientChangeHub.clientListChanged()
+      clientChangeHub.appProcessListChanged()
+      return clientState
+    }
+  }
+
+  fun stopClient(pid: Int) {
+    synchronized(mProcessStates) {
+      val processState = mProcessStates.remove(pid)
+      if (processState is ClientState) {
+        clientChangeHub.clientListChanged()
+        clientChangeHub.appProcessListChanged()
+        processState.stopJdwpSession()
+      }
+    }
+  }
+
+  fun getClient(pid: Int): ClientState? {
+    synchronized(mProcessStates) {
+      val processState = mProcessStates[pid]
+      return if (processState is ClientState) {
+        processState
+      } else {
+        null
+      }
+    }
+  }
+
+  fun startProfileableProcess(
+    pid: Int, architecture: String, commandLine: String
+  ): ProfileableProcessState {
+    synchronized(mProcessStates) {
+      val process = ProfileableProcessState(pid, architecture, commandLine)
+      mProcessStates[pid] = process
+      clientChangeHub.appProcessListChanged()
+      return process
+    }
+  }
+
+  fun stopProfileableProcess(pid: Int) {
+    synchronized(mProcessStates) {
+      val process = mProcessStates.remove(pid)
+      if (process is ProfileableProcessState) {
+        clientChangeHub.appProcessListChanged()
+      }
+    }
+  }
+
+  fun getProfileableProcess(pid: Int): ProfileableProcessState? {
+    synchronized(mProcessStates) {
+      val process = mProcessStates[pid]
+      return if (process is ProfileableProcessState) {
+        process
+      } else {
+        null
+      }
+    }
+  }
+
+  val allPortForwarders: ImmutableMap<Int, PortForwarder?>
+    get() {
+      synchronized(mPortForwarders) { return ImmutableMap.copyOf(mPortForwarders) }
     }
 
-    @NonNull
-    public String getDeviceId() {
-        return mDeviceId;
+  val allReversePortForwarders: ImmutableMap<Int, PortForwarder?>
+    get() {
+      synchronized(mReversePortForwarders) { return ImmutableMap.copyOf(mReversePortForwarders) }
     }
 
-    @NonNull
-    public String getCpuAbi() {
-        return mCpuAbi;
+  fun addPortForwarder(forwarder: PortForwarder, noRebind: Boolean): Boolean {
+    synchronized(mPortForwarders) {
+      return if (noRebind) {
+        (mPortForwarders.computeIfAbsent(
+          forwarder.source.mPort
+        ) { port: Int? -> forwarder }
+          == forwarder)
+      } else {
+        // Just overwrite the previous forwarder.
+        mPortForwarders[forwarder.source.mPort] = forwarder
+        true
+      }
+    }
+  }
+
+  fun addReversePortForwarder(forwarder: PortForwarder, noRebind: Boolean): Boolean {
+    synchronized(mReversePortForwarders) {
+      return if (noRebind) {
+        (mReversePortForwarders.computeIfAbsent(
+          forwarder.source.mPort
+        ) { port: Int? -> forwarder }
+          == forwarder)
+      } else {
+        // Just overwrite the previous forwarder.
+        mReversePortForwarders[forwarder.source.mPort] = forwarder
+        true
+      }
+    }
+  }
+
+  fun removePortForwarder(hostPort: Int): Boolean {
+    synchronized(mPortForwarders) { return mPortForwarders.remove(hostPort) != null }
+  }
+
+  fun removeReversePortForwarder(hostPort: Int): Boolean {
+    synchronized(mReversePortForwarders) { return mReversePortForwarders.remove(hostPort) != null }
+  }
+
+  fun removeAllPortForwarders() {
+    synchronized(mPortForwarders) { mPortForwarders.clear() }
+  }
+
+  fun removeAllReversePortForwarders() {
+    synchronized(mReversePortForwarders) { mReversePortForwarders.clear() }
+  }
+
+  val clientListString: String
+    get() {
+      synchronized(mProcessStates) {
+        return mProcessStates.values.stream()
+          .filter { process: ProcessState? -> process is ClientState }
+          .map { clientState: ProcessState -> Integer.toString(clientState.pid) }
+          .collect(Collectors.joining("\n"))
+      }
     }
 
-    @NonNull
-    public String getManufacturer() {
-        return mManufacturer;
-    }
+  fun copyOfProcessStates(): List<ProcessState> {
+    synchronized(mProcessStates) { return ArrayList(mProcessStates.values) }
+  }
 
-    @NonNull
-    public String getModel() {
-        return mModel;
-    }
+  val config: DeviceStateConfig
+    get() = DeviceStateConfig(
+      deviceId,
+      ArrayList(mFiles.values),
+      ArrayList(mLogcatMessages),
+      ArrayList(mProcessStates.values),
+      hostConnectionType,
+      manufacturer,
+      model,
+      buildVersionRelease,
+      buildVersionSdk,
+      cpuAbi,
+      properties,
+      mDeviceStatus
+    )
 
-    @NonNull
-    public String getBuildVersionRelease() {
-        return mBuildVersionRelease;
-    }
+  fun setActivityManager(newActivityManager: Service?) {
+    serviceManager.setActivityManager(newActivityManager!!)
+  }
 
-    @NonNull
-    public String getBuildVersionSdk() {
-        return mBuildVersionSdk;
-    }
+  fun addPmLog(cmd: String) {
+    mPmLogs.add(cmd)
+  }
 
-    public int getApiLevel() {
-        try {
-            return Integer.parseInt(mBuildVersionSdk);
-        } catch (NumberFormatException e) {
-            return 1;
-        }
-    }
+  val pmLogs: List<String>
+    get() = mPmLogs.clone() as List<String>
 
-    public Map<String, String> getProperties() {
-        return mProperties;
-    }
+  fun addCmdLog(cmd: String) {
+    mCmdLogs.add(cmd)
+  }
 
-    @NonNull
-    public DeviceStatus getDeviceStatus() {
-        return mDeviceStatus;
-    }
+  val cmdLogs: List<String>
+    get() = mCmdLogs.clone() as List<String>
 
-    public int getTransportId() {
-        return myTransportId;
-    }
+  fun addAbbLog(cmd: String) {
+    mAbbLogs.add(cmd)
+  }
 
-    public void setDeviceStatus(@NonNull DeviceStatus status) {
-        mDeviceStatus = status;
-        mServer.getDeviceChangeHub().deviceStatusChanged(this, status);
-    }
+  val abbLogs: List<String>
+    get() = mAbbLogs.clone() as List<String>
 
-    @NonNull
-    public ClientStateChangeHub getClientChangeHub() {
-        return mClientStateChangeHub;
-    }
+  /**
+   * The state of a device.
+   */
+  enum class DeviceStatus( //$NON-NLS-1$
+    val state: String
+  ) {
+    BOOTLOADER("bootloader"),  //$NON-NLS-1$
 
-    public void addLogcatMessage(@NonNull String message) {
-        synchronized (mLogcatMessages) {
-            mLogcatMessages.add(message);
-            mClientStateChangeHub.logcatMessageAdded(message);
-        }
-    }
-
-    @Nullable
-    public LogcatChangeHandlerSubscriptionResult subscribeLogcatChangeHandler(
-            @NonNull ClientStateChangeHandlerFactory handlerFactory) {
-        synchronized (mLogcatMessages) {
-            StateChangeQueue queue = getClientChangeHub().subscribe(handlerFactory);
-            if (queue == null) {
-                return null;
-            }
-
-            return new LogcatChangeHandlerSubscriptionResult(
-                    queue, new ArrayList<>(mLogcatMessages));
-        }
-    }
-
-    public void createFile(@NonNull DeviceFileState file) {
-        synchronized (mFiles) {
-            mFiles.put(file.getPath(), file);
-        }
-    }
-
-    @Nullable
-    public DeviceFileState getFile(@NonNull String filepath) {
-        synchronized (mFiles) {
-            return mFiles.get(filepath);
-        }
-    }
-
-    public void deleteFile(@NonNull String filepath) {
-        synchronized (mFiles) {
-            mFiles.remove(filepath);
-        }
-    }
-
-    @NonNull
-    public ClientState startClient(
-            int pid, int uid, @NonNull String packageName, boolean isWaiting) {
-        return startClient(pid, uid, packageName, packageName, isWaiting);
-    }
-
-    @NonNull
-    public ClientState startClient(
-            int pid,
-            int uid,
-            @NonNull String processName,
-            @NonNull String packageName,
-            boolean isWaiting) {
-        synchronized (mProcessStates) {
-            ClientState clientState =
-                    new ClientState(pid, uid, processName, packageName, isWaiting);
-            mProcessStates.put(pid, clientState);
-            mClientStateChangeHub.clientListChanged();
-            mClientStateChangeHub.appProcessListChanged();
-            return clientState;
-        }
-    }
-
-    public void stopClient(int pid) {
-        synchronized (mProcessStates) {
-            ProcessState processState = mProcessStates.remove(pid);
-            if (processState instanceof ClientState) {
-                mClientStateChangeHub.clientListChanged();
-                mClientStateChangeHub.appProcessListChanged();
-                ((ClientState) processState).stopJdwpSession();
-            }
-        }
-    }
-
-    @Nullable
-    public ClientState getClient(int pid) {
-        synchronized (mProcessStates) {
-            ProcessState processState = mProcessStates.get(pid);
-            if (processState instanceof ClientState) {
-                return (ClientState) processState;
-            } else {
-                return null;
-            }
-        }
-    }
-
-    @NonNull
-    public ProfileableProcessState startProfileableProcess(
-            int pid, @NonNull String architecture, @NonNull String commandLine) {
-        synchronized (mProcessStates) {
-            ProfileableProcessState process =
-                    new ProfileableProcessState(pid, architecture, commandLine);
-            mProcessStates.put(pid, process);
-            mClientStateChangeHub.appProcessListChanged();
-            return process;
-        }
-    }
-
-    public void stopProfileableProcess(int pid) {
-        synchronized (mProcessStates) {
-            ProcessState process = mProcessStates.remove(pid);
-            if (process instanceof ProfileableProcessState) {
-                mClientStateChangeHub.appProcessListChanged();
-            }
-        }
-    }
-
-    @Nullable
-    public ProfileableProcessState getProfileableProcess(int pid) {
-        synchronized (mProcessStates) {
-            ProcessState process = mProcessStates.get(pid);
-            if (process instanceof ProfileableProcessState) {
-                return (ProfileableProcessState) process;
-            } else {
-                return null;
-            }
-        }
-    }
-
-    @NonNull
-    public ImmutableMap<Integer, PortForwarder> getAllPortForwarders() {
-        synchronized (mPortForwarders) {
-            return ImmutableMap.copyOf(mPortForwarders);
-        }
-    }
-
-    @NonNull
-    public ImmutableMap<Integer, PortForwarder> getAllReversePortForwarders() {
-        synchronized (mReversePortForwarders) {
-            return ImmutableMap.copyOf(mReversePortForwarders);
-        }
-    }
-
-    public boolean addPortForwarder(@NonNull PortForwarder forwarder, boolean noRebind) {
-        synchronized (mPortForwarders) {
-            if (noRebind) {
-                return mPortForwarders.computeIfAbsent(
-                                forwarder.getSource().mPort, port -> forwarder)
-                        == forwarder;
-            } else {
-                // Just overwrite the previous forwarder.
-                mPortForwarders.put(forwarder.getSource().mPort, forwarder);
-                return true;
-            }
-        }
-    }
-
-    public boolean addReversePortForwarder(@NonNull PortForwarder forwarder, boolean noRebind) {
-        synchronized (mReversePortForwarders) {
-            if (noRebind) {
-                return mReversePortForwarders.computeIfAbsent(
-                                forwarder.getSource().mPort, port -> forwarder)
-                        == forwarder;
-            } else {
-                // Just overwrite the previous forwarder.
-                mReversePortForwarders.put(forwarder.getSource().mPort, forwarder);
-                return true;
-            }
-        }
-    }
-
-    public boolean removePortForwarder(int hostPort) {
-        synchronized (mPortForwarders) {
-            return mPortForwarders.remove(hostPort) != null;
-        }
-    }
-
-    public boolean removeReversePortForwarder(int hostPort) {
-        synchronized (mReversePortForwarders) {
-            return mReversePortForwarders.remove(hostPort) != null;
-        }
-    }
-
-    public void removeAllPortForwarders() {
-        synchronized (mPortForwarders) {
-            mPortForwarders.clear();
-        }
-    }
-
-    public void removeAllReversePortForwarders() {
-        synchronized (mReversePortForwarders) {
-            mReversePortForwarders.clear();
-        }
-    }
-
-    @NonNull
-    public HostConnectionType getHostConnectionType() {
-        return mHostConnectionType;
-    }
-
-    @NonNull
-    public String getClientListString() {
-        synchronized (mProcessStates) {
-            return mProcessStates.values().stream()
-                    .filter(process -> process instanceof ClientState)
-                    .map(clientState -> Integer.toString(clientState.getPid()))
-                    .collect(Collectors.joining("\n"));
-        }
-    }
-
-    public List<ProcessState> copyOfProcessStates() {
-        synchronized (mProcessStates) {
-            return new ArrayList<>(mProcessStates.values());
-        }
-    }
-
-    @NonNull
-    public DeviceStateConfig getConfig() {
-        return new DeviceStateConfig(
-                mDeviceId,
-                new ArrayList<>(mFiles.values()),
-                new ArrayList<>(mLogcatMessages),
-                new ArrayList<>(mProcessStates.values()),
-                mHostConnectionType,
-                mManufacturer,
-                mModel,
-                mBuildVersionRelease,
-                mBuildVersionSdk,
-                mCpuAbi,
-                mProperties,
-                mDeviceStatus);
-    }
-
-    private static Set<String> initFeatures(String sdk) {
-        Set<String> features =
-                new HashSet<>(Arrays.asList("push_sync", "fixed_push_mkdir", "apex"));
-        try {
-            int api = Integer.parseInt(sdk);
-            if (api >= 24) {
-                features.add("cmd");
-                features.add("shell_v2");
-                features.add("stat_v2");
-            }
-            if (api >= 30) {
-                features.add("abb");
-                features.add("abb_exec");
-            }
-        } catch (NumberFormatException e) {
-            // Cannot add more features based on API level since it is not the expected integer
-            // This is expected in many of our test that don't pass a correct value but instead
-            // pass "sdk". In such case, we return the default set of features.
-            // TODO: Fix adblist test to not send "sdk" and delete this catch.
-        }
-        return Collections.unmodifiableSet(features);
-    }
-
-    public Set<String> getFeatures() {
-        return mFeatures;
-    }
-
-    public ServiceManager getServiceManager() {
-        return mServiceManager;
-    }
-
-    public void setActivityManager(Service newActivityManager) {
-        mServiceManager.setActivityManager(newActivityManager);
-    }
-
-    public void addPmLog(String cmd) {
-        mPmLogs.add(cmd);
-    }
-
-    public List<String> getPmLogs() {
-        //noinspection unchecked
-        return (List<String>) mPmLogs.clone();
-    }
-
-    public void addCmdLog(String cmd) {
-        mCmdLogs.add(cmd);
-    }
-
-    public List<String> getCmdLogs() {
-        //noinspection unchecked
-        return (List<String>) mCmdLogs.clone();
-    }
-
-    public void addAbbLog(String cmd) {
-        mAbbLogs.add(cmd);
-    }
-
-    public List<String> getAbbLogs() {
-        //noinspection unchecked
-        return (List<String>) mAbbLogs.clone();
-    }
-
-    private static Map<String, String> combinedProperties(
-            @NotNull String serialNumber,
-            @NonNull String manufacturer,
-            @NonNull String model,
-            @NonNull String release,
-            @NonNull String sdk,
-            @NonNull String cpuAbi,
-            @NonNull Map<String, String> properties) {
-        Map<String, String> combined = new TreeMap<>(properties);
-        combined.put("ro.serialno", serialNumber);
-        combined.put("ro.product.manufacturer", manufacturer);
-        combined.put("ro.product.model", model);
-        combined.put("ro.build.version.release", release);
-        combined.put("ro.build.version.sdk", sdk);
-        combined.put("ro.product.cpu.abi", cpuAbi);
-        return combined;
-    }
+    /** bootloader mode with is-userspace = true though `adb reboot fastboot`  */
+    FASTBOOTD("fastbootd"),  //$NON-NLS-1$
+    OFFLINE("offline"),  //$NON-NLS-1$
+    ONLINE("device"),  //$NON-NLS-1$
+    RECOVERY("recovery"),  //$NON-NLS-1$
 
     /**
-     * The state of a device.
+     * Device is in "sideload" state either through `adb sideload` or recovery menu
      */
-    public enum DeviceStatus {
-        BOOTLOADER("bootloader"), //$NON-NLS-1$
-        /** bootloader mode with is-userspace = true though `adb reboot fastboot` */
-        FASTBOOTD("fastbootd"), //$NON-NLS-1$
-        OFFLINE("offline"), //$NON-NLS-1$
-        ONLINE("device"), //$NON-NLS-1$
-        RECOVERY("recovery"), //$NON-NLS-1$
-        /**
-         * Device is in "sideload" state either through `adb sideload` or recovery menu
-         */
-        SIDELOAD("sideload"), //$NON-NLS-1$
-        UNAUTHORIZED("unauthorized"), //$NON-NLS-1$
-        DISCONNECTED("disconnected"), //$NON-NLS-1$
-        ;
+    SIDELOAD("sideload"),  //$NON-NLS-1$
+    UNAUTHORIZED("unauthorized"),  //$NON-NLS-1$
+    DISCONNECTED("disconnected");
 
-        private final String mState;
-
-        DeviceStatus(String state) {
-            mState = state;
+    companion object {
+      /**
+       * Returns a {DeviceStatus} from the string returned by `adb devices`.
+       *
+       * @param state the device state.
+       * @return a {DeviceStatus} object or `null` if the state is unknown.
+       */
+      fun getState(state: String): DeviceStatus? {
+        for (deviceStatus in values()) {
+          if (deviceStatus.state == state) {
+            return deviceStatus
+          }
         }
+        return null
+      }
+    }
+  }
 
-        /**
-         * Returns a {DeviceStatus} from the string returned by <code>adb devices</code>.
-         *
-         * @param state the device state.
-         * @return a {DeviceStatus} object or <code>null</code> if the state is unknown.
-         */
-        @Nullable
-        public static DeviceStatus getState(String state) {
-            for (DeviceStatus deviceStatus : values()) {
-                if (deviceStatus.mState.equals(state)) {
-                    return deviceStatus;
-                }
-            }
-            return null;
-        }
+  enum class HostConnectionType {
+    USB, LOCAL, NETWORK
+  }
 
-        public String getState() {
-            return mState;
+  /**
+   * This class represents the result of calling [ ][.subscribeLogcatChangeHandler]. This is needed to
+   * synchronize between adding the listener and getting the correct lines from the logcat buffer.
+   */
+  class LogcatChangeHandlerSubscriptionResult(
+      @JvmField val mQueue: StateChangeQueue,
+      @JvmField val mLogcatContents: List<String>
+  )
+
+  companion object {
+    private fun initFeatures(sdk: String): Set<String> {
+      val features: MutableSet<String> = HashSet(mutableListOf("push_sync", "fixed_push_mkdir", "apex"))
+      try {
+        val api = sdk.toInt()
+        if (api >= 24) {
+          features.add("cmd")
+          features.add("shell_v2")
+          features.add("stat_v2")
         }
+        if (api >= 30) {
+          features.add("abb")
+          features.add("abb_exec")
+        }
+      } catch (e: NumberFormatException) {
+        // Cannot add more features based on API level since it is not the expected integer
+        // This is expected in many of our test that don't pass a correct value but instead
+        // pass "sdk". In such case, we return the default set of features.
+        // TODO: Fix adblist test to not send "sdk" and delete this catch.
+      }
+      return Collections.unmodifiableSet(features)
     }
 
-    public enum HostConnectionType {
-        USB,
-        LOCAL,
-        NETWORK
+    private fun combinedProperties(
+      serialNumber: String,
+      manufacturer: String,
+      model: String,
+      release: String,
+      sdk: String,
+      cpuAbi: String,
+      properties: Map<String, String>
+    ): Map<String, String> {
+      val combined: MutableMap<String, String> = TreeMap(properties)
+      combined["ro.serialno"] = serialNumber
+      combined["ro.product.manufacturer"] = manufacturer
+      combined["ro.product.model"] = model
+      combined["ro.build.version.release"] = release
+      combined["ro.build.version.sdk"] = sdk
+      combined["ro.product.cpu.abi"] = cpuAbi
+      return combined
     }
-
-    /**
-     * This class represents the result of calling {@link
-     * #subscribeLogcatChangeHandler(ClientStateChangeHandlerFactory)}. This is needed to
-     * synchronize between adding the listener and getting the correct lines from the logcat buffer.
-     */
-    public static final class LogcatChangeHandlerSubscriptionResult {
-
-        @NonNull
-        public final StateChangeQueue mQueue;
-
-        @NonNull
-        public final List<String> mLogcatContents;
-
-        public LogcatChangeHandlerSubscriptionResult(@NonNull StateChangeQueue queue,
-                @NonNull List<String> logcatContents) {
-            mQueue = queue;
-            mLogcatContents = logcatContents;
-        }
-    }
+  }
 }

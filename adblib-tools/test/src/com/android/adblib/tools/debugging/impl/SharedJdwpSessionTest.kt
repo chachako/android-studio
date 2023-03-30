@@ -473,7 +473,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         jdwpSession.handleDdmsHPGC(jdwpCommandProgress)
 
         assertEquals(DdmsProtocolKind.EmptyRepliesDiscarded, jdwpSession.device.ddmsProtocolKind())
-        assertEquals(1, client.hgpcRequestsCount)
+        assertEquals(1, client.getHgpcRequestsCount())
         assertTrue(jdwpCommandProgress.beforeSendIsCalled)
         assertTrue(jdwpCommandProgress.afterSendIsCalled)
         assertTrue(jdwpCommandProgress.onReplyTimeoutIsCalled)
@@ -491,7 +491,7 @@ class SharedJdwpSessionTest : AdbLibToolsTestBase() {
         jdwpSession.handleDdmsHPGC(jdwpCommandProgress)
 
         assertEquals(DdmsProtocolKind.EmptyRepliesAllowed, jdwpSession.device.ddmsProtocolKind())
-        assertEquals(1, client.hgpcRequestsCount)
+        assertEquals(1, client.getHgpcRequestsCount())
         assertTrue(jdwpCommandProgress.beforeSendIsCalled)
         assertTrue(jdwpCommandProgress.afterSendIsCalled)
         assertFalse(jdwpCommandProgress.onReplyTimeoutIsCalled)

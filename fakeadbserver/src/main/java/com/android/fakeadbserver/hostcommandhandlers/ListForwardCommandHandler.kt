@@ -45,9 +45,9 @@ internal class ListForwardCommandHandler : HostCommandHandler() {
             for (portForwarder in deviceState.allPortForwarders.values) {
                 builder.append(deviceState.deviceId)
                 builder.append(" ")
-                builder.append("tcp:${portForwarder.source.port}")
+                builder.append("tcp:${portForwarder?.source?.port}")
                 builder.append(" ")
-                builder.append("tcp:${portForwarder.destination.port}")
+                builder.append("tcp:${portForwarder?.destination?.port}")
                 builder.append("\n")
             }
         }

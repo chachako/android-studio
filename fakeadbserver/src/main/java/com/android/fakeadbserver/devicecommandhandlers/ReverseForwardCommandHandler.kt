@@ -197,9 +197,9 @@ internal class ReverseForwardCommandHandler : DeviceCommandHandler("reverse") {
             // https://cs.android.com/android/platform/superproject/+/3a52886262ae22477a7d8ffb12adba64daf6aafa:packages/modules/adb/daemon/usb.cpp;l=759
             builder.append("UsbFfs")
             builder.append(" ")
-            builder.append("tcp:${portForwarder.source.port}")
+            builder.append("tcp:${portForwarder?.source?.port}")
             builder.append(" ")
-            builder.append("tcp:${portForwarder.destination.port}")
+            builder.append("tcp:${portForwarder?.destination?.port}")
             builder.append("\n")
         }
 
