@@ -63,8 +63,8 @@ enum class BytecodeLevel(val description: String, val versionString: String) {
 }
 
 enum class BuildConfigurationLanguage(val description: String) {
-    KTS("Kotlin script (Recommended)"),
-    Groovy("Groovy");
+    KTS("Kotlin DSL"),
+    Groovy("Groovy DSL");
 
     override fun toString() = description
 }
