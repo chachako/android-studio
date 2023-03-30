@@ -24,7 +24,7 @@ def main():
     sys.exit('Platform %s is not yet supported.' % sys.platform)
 
   env = {}
-  env['USE_BAZEL_VERSION'] = os.environ.get('USE_BAZEL_VERSION', '6.0.0')
+  env['USE_BAZEL_VERSION'] = os.environ.get('USE_BAZEL_VERSION', '')
   bazel = os.path.join(workspace, 'prebuilts', 'tools', platform, 'bazel',
                        'bazelisk')
   args = sys.argv[1:]
