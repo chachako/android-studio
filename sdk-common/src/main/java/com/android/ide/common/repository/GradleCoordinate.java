@@ -15,10 +15,11 @@
  */
 package com.android.ide.common.repository;
 
-import static com.android.ide.common.repository.KnownVersionStabilityKt.stabilityOf;
+import static com.android.ide.common.repository.KnownVersionStabilityKt.getStability;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.ide.common.gradle.Component;
 import com.android.ide.common.gradle.Version;
 import com.android.ide.common.gradle.VersionRange;
 import com.google.common.base.Joiner;
@@ -581,14 +582,15 @@ public final class GradleCoordinate {
     }
 
     /** Returns the dependency version range of this coordinate */
-    @Nullable
+    @NonNull
     public VersionRange getVersionRange() {
         String revision = getRevision();
         if (acceptsGreaterRevisions()) {
             return VersionRange.Companion.parse(revision);
         } else {
-            KnownVersionStability stability = stabilityOf(mGroupId, mArtifactId, revision);
             Version version = Version.Companion.parse(getRevision());
+            Component component = new Component(mGroupId, mArtifactId, version);
+            KnownVersionStability stability = getStability(component);
             // this is [version,expiration), where stability.expiration(...) has computed the
             // appropriate prefixInfimum for the maven-style upper bound.
             return new VersionRange(Range.closedOpen(version, stability.expiration(version)));

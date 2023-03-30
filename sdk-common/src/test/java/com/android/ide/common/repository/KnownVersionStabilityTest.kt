@@ -15,6 +15,7 @@
  */
 package com.android.ide.common.repository
 
+import com.android.ide.common.gradle.Component
 import com.android.ide.common.gradle.Version
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -22,40 +23,42 @@ import org.junit.Test
 class KnownVersionStabilityTest {
 
     @Test
-    fun testStabilityOf() {
-        assertThat(stabilityOf("com.android.support", "appcompat-v7"))
+    fun testComponentStability() {
+        fun component(group: String, name: String, version: String = "1.0.0") =
+            Component(group, name, Version.parse(version))
+        assertThat(component("com.android.support", "appcompat-v7").stability)
             .isEqualTo(KnownVersionStability.INCOMPATIBLE)
-        assertThat(stabilityOf("androidx.appcompat", "appcompat"))
+        assertThat(component("androidx.appcompat", "appcompat").stability)
             .isEqualTo(KnownVersionStability.SEMANTIC)
 
-        assertThat(stabilityOf("com.android.support", "support-annotations"))
+        assertThat(component("com.android.support", "support-annotations").stability)
           .isEqualTo(KnownVersionStability.STABLE)
-        assertThat(stabilityOf("androidx.annotation", "annotation"))
+        assertThat(component("androidx.annotation", "annotation").stability)
           .isEqualTo(KnownVersionStability.SEMANTIC)
 
-        assertThat(stabilityOf("com.android.support", "design"))
+        assertThat(component("com.android.support", "design").stability)
             .isEqualTo(KnownVersionStability.INCOMPATIBLE)
-        assertThat(stabilityOf("com.google.android.material", "material"))
+        assertThat(component("com.google.android.material", "material").stability)
             .isEqualTo(KnownVersionStability.SEMANTIC)
 
-        assertThat(stabilityOf("com.android.support.constraint", "constraint-layout"))
+        assertThat(component("com.android.support.constraint", "constraint-layout").stability)
             .isEqualTo(KnownVersionStability.INCOMPATIBLE)
-        assertThat(stabilityOf("androidx.constraintlayout", "constraintlayout"))
+        assertThat(component("androidx.constraintlayout", "constraintlayout").stability)
             .isEqualTo(KnownVersionStability.SEMANTIC)
 
-        assertThat(stabilityOf("com.google.firebase", "firebase-core", "14.3.1"))
+        assertThat(component("com.google.firebase", "firebase-core", "14.3.1").stability)
             .isEqualTo(KnownVersionStability.INCOMPATIBLE)
-        assertThat(stabilityOf("com.google.firebase", "firebase-core", "15.0.1"))
+        assertThat(component("com.google.firebase", "firebase-core", "15.0.1").stability)
             .isEqualTo(KnownVersionStability.SEMANTIC)
 
-        assertThat(stabilityOf("com.google.android.gms", "play-services-ads", "14.3.1"))
+        assertThat(component("com.google.android.gms", "play-services-ads", "14.3.1").stability)
             .isEqualTo(KnownVersionStability.INCOMPATIBLE)
-        assertThat(stabilityOf("com.google.android.gms", "play-services-ads", "15.0.1"))
+        assertThat(component("com.google.android.gms", "play-services-ads", "15.0.1").stability)
             .isEqualTo(KnownVersionStability.SEMANTIC)
 
-        assertThat(stabilityOf("org.jetbrains.kotlin", "kotlin-stdlib"))
+        assertThat(component("org.jetbrains.kotlin", "kotlin-stdlib").stability)
             .isEqualTo(KnownVersionStability.STABLE)
-        assertThat(stabilityOf("org.jetbrains.kotlin", "kotlin-reflect"))
+        assertThat(component("org.jetbrains.kotlin", "kotlin-reflect").stability)
             .isEqualTo(KnownVersionStability.INCREMENTAL)
     }
 
