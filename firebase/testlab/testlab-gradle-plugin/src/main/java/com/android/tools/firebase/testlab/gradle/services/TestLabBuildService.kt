@@ -53,6 +53,7 @@ import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.StackTrace
 import com.google.firebase.testlab.gradle.Orientation
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
+import com.google.firebase.testlab.gradle.TestOptions
 import com.google.testing.platform.proto.api.core.ErrorProto.Error
 import com.google.testing.platform.proto.api.core.IssueProto.Issue
 import com.google.testing.platform.proto.api.core.LabelProto.Label
@@ -165,6 +166,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val cloudStorageBucket: Property<String>
         val numUniformShards: Property<Int>
         val grantedPermissions: Property<String>
+        val networkProfile: Property<String>
     }
 
     internal open val credential: GoogleCredential by lazy {
@@ -261,6 +263,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 testSetup = TestSetup().apply {
                     set("dontAutograntPermissions", parameters.grantedPermissions.orNull ==
                             FixtureImpl.GrantedPermissions.NONE.name)
+                    if(parameters.networkProfile.getOrElse("").isNotBlank()) {
+                        networkProfile = parameters.networkProfile.get()
+                    }
                 }
                 androidInstrumentationTest = AndroidInstrumentationTest().apply {
                     testApk = com.google.api.services.testing.model.FileReference().apply {
@@ -437,7 +442,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 testSuiteMetaData = TestSuiteMetaData.newBuilder().apply {
                     testSuiteName = step.name
                     var scheduledTestCount = 0
-                    for (testSuiteOverview in step.testExecutionStep.testSuiteOverviews) {
+                    step.testExecutionStep.testSuiteOverviews?.forEach { testSuiteOverview ->
                         scheduledTestCount += testSuiteOverview.totalCount
                     }
                     scheduledTestCaseCount = scheduledTestCount
@@ -449,21 +454,25 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     "skipped" -> TestStatus.SKIPPED
                     else -> TestStatus.TEST_STATUS_UNSPECIFIED
                 }
-                addOutputArtifact(
-                    Artifact.newBuilder().apply {
-                        label = Label.newBuilder().apply {
-                            label = "firebase.xmlSource"
-                            namespace = "android"
-                        }.build()
-                        sourcePath = Path.newBuilder().apply {
-                            path = step.testExecutionStep.testSuiteOverviews[0].xmlSource.fileUri
-                        }.build()
-                        type = ArtifactType.TEST_DATA
-                    }.build()
-                )
+                val testResultXmlFilePath =
+                    step.testExecutionStep.testSuiteOverviews?.get(0)?.xmlSource?.fileUri.orEmpty()
+                if (testResultXmlFilePath.isNotBlank()) {
+                    addOutputArtifact(
+                            Artifact.newBuilder().apply {
+                                label = Label.newBuilder().apply {
+                                    label = "firebase.xmlSource"
+                                    namespace = "android"
+                                }.build()
+                                sourcePath = Path.newBuilder().apply {
+                                    path = testResultXmlFilePath
+                                }.build()
+                                type = ArtifactType.TEST_DATA
+                            }.build()
+                    )
+                }
             }
 
-            for (log in step.testExecutionStep.toolExecution.toolLogs) {
+            step.testExecutionStep.toolExecution?.toolLogs?.forEach { log ->
                 testSuiteResult.apply {
                     addOutputArtifact(Artifact.newBuilder().apply {
                         label = Label.newBuilder().apply {
@@ -478,7 +487,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     }.build())
                 }
             }
-            for (toolOutput in step.testExecutionStep.toolExecution.toolOutputs) {
+
+            step.testExecutionStep.toolExecution?.toolOutputs?.forEach { toolOutput ->
                 val outputArtifact = Artifact.newBuilder().apply {
                     label = Label.newBuilder().apply {
                         label = "firebase.toolOutput"
@@ -522,7 +532,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
             }
 
-            for (testIssue in step.testExecutionStep.testIssues) {
+            step.testExecutionStep?.testIssues?.forEach { testIssue ->
                 testSuiteResult.apply {
                     addIssue(Issue.newBuilder().apply {
                         message = testIssue.errorMessage
@@ -557,7 +567,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     it, StandardCharsets.UTF_8,
                     TestCases::class.java
                 )
-                for (case in testCaseContents["testCases"] as List<TestCase>) {
+                (testCaseContents["testCases"] as? List<TestCase>)?.forEach { case ->
                     testSuiteResult.apply {
                         addTestResult(TestResult.newBuilder().apply {
                             testCase = TestCaseProto.TestCase.newBuilder().apply {
@@ -967,6 +977,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.grantedPermissions.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.grantedPermissions
+            })
+            params.networkProfile.set(providerFactory.provider {
+                testLabExtension.testOptions.fixture.networkProfile
             })
         }
     }
