@@ -39,7 +39,6 @@ import static com.android.SdkConstants.VIEW_INCLUDE;
 import static com.android.SdkConstants.VIEW_MERGE;
 import static com.android.resources.ResourceFolderType.LAYOUT;
 import static com.android.resources.ResourceFolderType.VALUES;
-import static com.android.tools.lint.detector.api.Lint.getLayoutName;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -59,6 +58,7 @@ import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.SourceCodeScanner;
 import com.android.tools.lint.detector.api.XmlContext;
+import com.android.utils.SdkUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -457,7 +457,7 @@ public class RequiredAttributeDetector extends LayoutDetector implements SourceC
                 boolean isRoot = isRootElement(element);
                 if (isRoot
                         || isRootElement(element.getParentNode()) && VIEW_MERGE.equals(parentTag)) {
-                    String name = LAYOUT_RESOURCE_PREFIX + getLayoutName(context.file);
+                    String name = LAYOUT_RESOURCE_PREFIX + SdkUtils.getLayoutName(context.file);
                     if (!hasWidth && mIncludedWidths != null) {
                         hasWidth = mIncludedWidths.contains(name);
                         // If the layout is *also* included in a context where the width

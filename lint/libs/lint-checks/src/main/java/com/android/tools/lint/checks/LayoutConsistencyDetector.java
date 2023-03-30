@@ -39,6 +39,7 @@ import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.SourceCodeScanner;
 import com.android.tools.lint.detector.api.XmlContext;
 import com.android.utils.Pair;
+import com.android.utils.SdkUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -131,7 +132,7 @@ public class LayoutConsistencyDetector extends LayoutDetector implements SourceC
 
                 getFileMapList(context).add(Pair.of(context.file, fileMap));
             } else {
-                String name = Lint.getLayoutName(context.file);
+                String name = SdkUtils.getLayoutName(context.file);
                 Map<String, List<Location>> map = mLocations.get(name);
                 if (map != null) {
                     lookupLocations(context, root, map);
@@ -142,7 +143,7 @@ public class LayoutConsistencyDetector extends LayoutDetector implements SourceC
 
     @NonNull
     private List<Pair<File, Map<String, String>>> getFileMapList(@NonNull XmlContext context) {
-        String name = Lint.getLayoutName(context.file);
+        String name = SdkUtils.getLayoutName(context.file);
         List<Pair<File, Map<String, String>>> list = mMap.get(name);
         if (list == null) {
             list = Lists.newArrayListWithCapacity(4);

@@ -50,7 +50,6 @@ import com.android.tools.lint.detector.api.Implementation;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.JavaContext;
 import com.android.tools.lint.detector.api.LayoutDetector;
-import com.android.tools.lint.detector.api.Lint;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Project;
 import com.android.tools.lint.detector.api.Scope;
@@ -58,6 +57,7 @@ import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.SourceCodeScanner;
 import com.android.tools.lint.detector.api.XmlContext;
 import com.android.utils.Pair;
+import com.android.utils.SdkUtils;
 import com.intellij.psi.PsiClass;
 import java.io.File;
 import java.util.ArrayList;
@@ -297,7 +297,7 @@ public class OverdrawDetector extends LayoutDetector implements SourceCodeScanne
                 if (activity.startsWith(".")) {
                     activity = context.getProject().getPackage() + activity;
                 }
-                registerLayoutActivity(Lint.getLayoutName(context.file), activity);
+                registerLayoutActivity(SdkUtils.getLayoutName(context.file), activity);
             }
         }
     }

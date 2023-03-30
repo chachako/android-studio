@@ -48,10 +48,10 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.toAndroidReferenceViaResolve
 import com.android.tools.lint.detector.api.XmlContext
-import com.android.tools.lint.detector.api.getLayoutName
 import com.android.tools.lint.detector.api.getStyleAttributes
 import com.android.tools.lint.detector.api.isRootElement
 import com.android.utils.Pair
+import com.android.utils.SdkUtils
 import com.intellij.psi.PsiMethod
 import java.util.ArrayList
 import java.util.EnumSet
@@ -142,7 +142,7 @@ class MergeRootFrameLayoutDetector : LayoutDetector(), SourceCodeScanner {
           }
         }
 
-        val layout = getLayoutName(context.file)
+        val layout = SdkUtils.getLayoutName(context.file)
         val handle = context.createLocationHandle(element)
         handle.clientData = element
         val pending = pending ?: ArrayList<Pair<String, Location.Handle>>().also { pending = it }

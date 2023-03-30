@@ -593,21 +593,6 @@ fun UArrayAccessExpression.resolveOperator(skipOverloadedSetter: Boolean = true)
 }
 
 /**
- * Returns the layout resource name for the given layout file
- *
- * @param layoutFile the file pointing to the layout
- * @return the layout resource name, not including the `@layout` prefix
- */
-fun getLayoutName(layoutFile: File): String {
-  var name = layoutFile.name
-  val dotIndex = name.indexOf('.')
-  if (dotIndex != -1) {
-    name = name.substring(0, dotIndex)
-  }
-  return name
-}
-
-/**
  * Splits the given path into its individual parts, attempting to be tolerant about path separators
  * (: or ;). It can handle possibly ambiguous paths, such as `c:\foo\bar:\other`, though of course
  * these are to be avoided if possible.
@@ -2430,7 +2415,7 @@ object LintUtils {
     replaceWith = ReplaceWith("com.android.tools.lint.detector.api.getLayoutName(layoutFile)")
   )
   fun getLayoutName(layoutFile: File): String {
-    return com.android.tools.lint.detector.api.getLayoutName(layoutFile)
+    return SdkUtils.getLayoutName(layoutFile)
   }
 
   @JvmStatic
