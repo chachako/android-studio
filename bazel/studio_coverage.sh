@@ -103,18 +103,15 @@ fi
   --jobs=HOST_CPUS*.5 \
   ${auth_options} \
   -- \
-  @cov//:comps.lcov_all \
-  @cov//:comps.list_all \
+  @cov//:all.lcov \
   || exit $?
 
-readonly lcov_path="./bazel-bin/external/cov/comps/lcov"
-readonly comp_list_path="./bazel-bin/external/cov/comps/list"
+readonly lcov_path="./bazel-bin/external/cov/all/lcov"
 
 if [[ -d "${dist_dir}" ]]; then
   # Copy the report to ab/ outputs
   mkdir "${dist_dir}/coverage" || exit $?
   cp -pv ${lcov_path} "${dist_dir}/coverage" || exit $?
-  cp -pv ${comp_list_path} "${dist_dir}/coverage" || exit $?
 fi
 
 collect_and_exit 0
