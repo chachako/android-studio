@@ -73,7 +73,11 @@ interface EditAction : DeviceAction {
 }
 
 interface EditTemplateAction : DeviceAction {
-  suspend fun edit()
+  /**
+   * Invokes a UI to make edits to the template. If the edits are accepted, returns the new template
+   * that was created.
+   */
+  suspend fun edit(): DeviceTemplate?
 }
 
 /** Deletes the given device from any persistent storage. */

@@ -40,6 +40,10 @@ interface DeviceHandle {
 
   val stateFlow: StateFlow<DeviceState>
 
+  /** The DeviceTemplate that this handle originated from, if applicable. */
+  val sourceTemplate: DeviceTemplate?
+    get() = null
+
   /** An action that allows activating the device, or null if activation is not supported. */
   val activationAction: ActivationAction?
     get() = null
