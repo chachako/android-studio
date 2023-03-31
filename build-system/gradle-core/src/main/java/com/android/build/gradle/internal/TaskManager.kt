@@ -302,6 +302,14 @@ abstract class TaskManager(
                 )
             )
 
+        creationConfig
+            .artifacts
+            .forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+            .setInitialContent(
+                ScopedArtifact.CLASSES,
+                creationConfig.computeLocalPackagedJars()
+            )
+
         // Add stream of external java resources if EXTERNAL_LIBRARIES isn't in the set of java res
         // merging scopes.
         if (!javaResMergingScopes.contains(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)) {

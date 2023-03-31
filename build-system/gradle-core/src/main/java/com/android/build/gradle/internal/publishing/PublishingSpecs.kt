@@ -321,6 +321,7 @@ class PublishingSpecs {
 
                 runtime(JAVA_RES, ArtifactType.JAVA_RES)
                 runtime(AAR_METADATA, ArtifactType.AAR_METADATA)
+                runtime(CONSUMER_PROGUARD_DIR, ArtifactType.UNFILTERED_PROGUARD_RULES)
                 // Publish LOCAL_AAR_FOR_LINT to API_AND_RUNTIME_ELEMENTS to support compileOnly
                 // module dependencies.
                 output(LOCAL_AAR_FOR_LINT, ArtifactType.LOCAL_AAR_FOR_LINT)

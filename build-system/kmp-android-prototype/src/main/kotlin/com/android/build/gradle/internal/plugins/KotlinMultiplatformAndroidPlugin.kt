@@ -234,7 +234,7 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             this.minSdkPreview = minSdkPreview
         }
 
-        settings.buildToolsVersion?.let { buildToolsVersion ->
+        settings.buildToolsVersion.let { buildToolsVersion ->
             this.buildToolsVersion = buildToolsVersion
         }
     }
@@ -274,7 +274,9 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
         val variantServices = VariantServicesImpl(projectServices)
         val taskServices = TaskCreationServicesImpl(projectServices)
 
-        val taskManager = KmpTaskManager()
+        val taskManager = KmpTaskManager(
+            project, global
+        )
 
         val mainVariant = createVariant(
             project,

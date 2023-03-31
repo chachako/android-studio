@@ -367,20 +367,6 @@ class LibraryTaskManager(
         }
     }
 
-    override fun createDependencyStreams(creationConfig: ComponentCreationConfig) {
-        super.createDependencyStreams(creationConfig)
-
-        // add the same jars twice in the same stream as the EXTERNAL_LIB in the task manager
-        // so that filtering of duplicates in proguard can work.
-        creationConfig
-            .artifacts
-            .forScope(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
-            .setInitialContent(
-                ScopedArtifact.CLASSES,
-                creationConfig.computeLocalPackagedJars()
-            )
-    }
-
     private class MergeResourceCallback(private val variant: LibraryCreationConfig) :
         TaskProviderCallback<MergeResources> {
         override fun handleProvider(taskProvider: TaskProvider<MergeResources>) {

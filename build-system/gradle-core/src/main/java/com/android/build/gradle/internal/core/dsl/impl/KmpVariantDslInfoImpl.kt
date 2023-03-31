@@ -146,13 +146,7 @@ class KmpVariantDslInfoImpl(
                         )
                     )
 
-                override fun getPostprocessingFeatures(): PostprocessingFeatures {
-                    return PostprocessingFeatures(
-                        isRemoveUnusedCode = extension.isMinifyEnabled,
-                        isObfuscate = extension.isMinifyEnabled,
-                        isOptimize = extension.isMinifyEnabled
-                    )
-                }
+                override fun getPostprocessingFeatures(): PostprocessingFeatures? = null
 
                 override fun codeShrinkerEnabled(): Boolean = extension.isMinifyEnabled
 

@@ -23,6 +23,8 @@ import com.android.build.api.component.impl.KmpComponentImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.variant.AarMetadata
+import com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
+import com.android.build.api.variant.CanMinifyCodeBuilder
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.Packaging
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -94,8 +96,14 @@ open class KmpVariantImpl @Inject constructor(
         OptimizationCreationConfigImpl(
             this,
             dslInfo.optimizationDslInfo,
-            null,
-            null,
+            object : CanMinifyCodeBuilder {
+                override var isMinifyEnabled =
+                    dslInfo.optimizationDslInfo.postProcessingOptions.codeShrinkerEnabled()
+            },
+            object : CanMinifyAndroidResourcesBuilder {
+                override var shrinkResources =
+                    dslInfo.optimizationDslInfo.postProcessingOptions.codeShrinkerEnabled()
+            },
             internalServices
         )
     }
@@ -136,7 +144,6 @@ open class KmpVariantImpl @Inject constructor(
     // TODO(b/243387425): Figure out coverage
     override val isAndroidTestCoverageEnabled: Boolean
         get() = false
-
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = false
 }

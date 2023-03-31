@@ -30,9 +30,9 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.res.GenerateEmptyResourceFilesTask
 import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
 import com.android.build.gradle.internal.services.R8ParallelBuildService
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskConfigAction
 import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.tasks.factory.registerTask
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.BundleAar
@@ -45,7 +45,17 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 
-class KmpTaskManager {
+class KmpTaskManager(
+    project: Project,
+    global: GlobalTaskCreationConfig
+): TaskManager(
+    project,
+    global
+) {
+
+    override val javaResMergingScopes = setOf(
+        InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
+    )
 
     var hasCreatedTasks = false
 
@@ -104,32 +114,32 @@ class KmpTaskManager {
         project.tasks.registerTask(ProcessJavaResTask.CreationAction(variant))
         project.tasks.registerTask(
             MergeJavaResourceTask.CreationAction(
-                setOf(InternalScopedArtifacts.InternalScope.LOCAL_DEPS),
+                javaResMergingScopes,
                 variant.packaging,
                 variant
             )
         )
 
         if (variant.optimizationCreationConfig.minifiedEnabled) {
-
+            project.tasks.registerTask(
+                GenerateLibraryProguardRulesTask.CreationAction(variant)
+            )
             R8ParallelBuildService.RegistrationAction(
                 project,
                 variant.services.projectOptions.get(IntegerOption.R8_MAX_WORKERS)
             ).execute()
-            val r8Task = project.tasks.registerTask(
+            project.tasks.registerTask(
                 R8Task.CreationAction(
                     variant,
                     isTestApplication = false,
                     addCompileRClass = false
                 )
             )
-
-            val checkFilesTask =
-                project.tasks.registerTask(
-                    CheckProguardFiles.CreationAction(variant)
-                )
-            r8Task.dependsOn(checkFilesTask)
         }
+
+        project.tasks.registerTask(MergeGeneratedProguardFilesCreationAction(variant))
+        project.tasks.registerTask(MergeConsumerProguardFilesTask.CreationAction(variant))
+        project.tasks.registerTask(ExportConsumerProguardFilesTask.CreationAction(variant))
 
         // Add a task to create the AAR metadata file
         project.tasks.registerTask(AarMetadataTask.CreationAction(variant))
@@ -237,7 +247,8 @@ class KmpTaskManager {
         )
 
         if (createPreBuildTask) {
-            project.tasks.registerTask(TaskManager.PreBuildCreationAction(component))
+            project.tasks.registerTask(PreBuildCreationAction(component))
+            createDependencyStreams(component)
         }
     }
 }

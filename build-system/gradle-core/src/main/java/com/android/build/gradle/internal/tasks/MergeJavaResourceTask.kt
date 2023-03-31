@@ -408,8 +408,7 @@ private fun getExternalLibJavaRes(
                 AndroidArtifacts.ArtifactType.JAVA_RES
             )
         )
-    }
-    if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)) {
+    } else if (mergeScopes.contains(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)) {
         externalLibJavaRes.from(creationConfig.computeLocalPackagedJars())
     }
     return externalLibJavaRes

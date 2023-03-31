@@ -415,8 +415,7 @@ class AndroidTestTaskManager(
 
     override val javaResMergingScopes = setOf(
         InternalScopedArtifacts.InternalScope.SUB_PROJECTS,
-        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS,
-        InternalScopedArtifacts.InternalScope.LOCAL_DEPS,
+        InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS
     )
 
     override fun createVariantPreBuildTask(creationConfig: ComponentCreationConfig) {
