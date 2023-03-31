@@ -1,0 +1,9 @@
+0: args
+1: this_$iv
+2: i$iv
+3: s$iv
+4: $i$f$foo
+5: this_$iv$iv
+6: i$iv$iv
+7: s$iv$iv
+8: $i$f$bar
