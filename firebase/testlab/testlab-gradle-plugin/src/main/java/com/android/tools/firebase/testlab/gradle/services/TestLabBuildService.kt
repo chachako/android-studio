@@ -53,6 +53,7 @@ import com.google.api.services.testing.model.TestSetup
 import com.google.api.services.testing.model.TestSpecification
 import com.google.api.services.testing.model.ToolResultsHistory
 import com.google.api.services.toolresults.ToolResults
+import com.google.api.services.toolresults.model.History
 import com.google.api.services.toolresults.model.StackTrace
 import com.google.firebase.testlab.gradle.Orientation
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
@@ -266,6 +267,11 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
 
         val testMatricesClient = testingClient.projects().testMatrices()
 
+        val testHistoryName = parameters.resultsHistoryName.getOrElse("").ifBlank {
+            testData.testedApplicationId ?: testData.applicationId
+        }
+        val historyId = getOrCreateHistory(toolResultsClient, projectName, testHistoryName)
+
         val testMatrix = TestMatrix().apply {
             projectId = projectName
             clientInfo = ClientInfo().apply {
@@ -330,6 +336,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 resultStorage = ResultStorage().apply {
                     googleCloudStorage = GoogleCloudStorage().apply {
                         gcsPath = "gs://$bucketName/$requestId/results"
+                    }
+                    toolResultsHistory = ToolResultsHistory().apply {
+                        projectId = projectName
+                        this.historyId = historyId
                     }
                 }
                 testTimeout = "${parameters.timeoutMinutes}m"
@@ -424,6 +434,24 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }
 
         return ftlTestRunResults
+    }
+
+    fun getOrCreateHistory(
+            toolResultsClient: ToolResults,
+            projectId: String, historyName: String): String {
+        val historyList = toolResultsClient.projects().histories().list(projectId).apply {
+            filterByName = historyName
+        }.execute()
+        historyList?.histories?.firstOrNull()?.historyId?.let { return it }
+
+        return toolResultsClient.projects().histories().create(
+                projectId,
+                History().apply {
+                    name = historyName
+                    displayName = historyName
+                }).apply {
+            requestId = UUID.randomUUID().toString()
+        }.execute().historyId
     }
 
     fun catalog(): AndroidDeviceCatalog {
