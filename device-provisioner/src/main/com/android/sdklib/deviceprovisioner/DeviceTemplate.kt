@@ -21,7 +21,7 @@ package com.android.sdklib.deviceprovisioner
  * activation produces a different device.
  */
 interface DeviceTemplate {
-  val displayName: String
+  val properties: DeviceProperties
 
   /**
    * An action that instantiates the template as a specific device. This may involve obtaining a
