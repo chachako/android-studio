@@ -18,6 +18,7 @@ package com.android.tools.firebase.testlab.gradle.device
 
 import com.android.tools.firebase.testlab.gradle.services.TestLabBuildService
 import com.google.firebase.testlab.gradle.Orientation
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -42,4 +43,7 @@ abstract class DeviceTestRunInput:
 
     @get: Input
     abstract val numUniformShards: Property<Int>
+
+    @get:Input
+    abstract val extraDeviceFiles: MapProperty<String, String>
 }

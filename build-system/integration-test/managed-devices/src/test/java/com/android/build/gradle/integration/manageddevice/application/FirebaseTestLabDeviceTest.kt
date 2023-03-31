@@ -89,6 +89,7 @@ class FirebaseTestLabDeviceTest {
                 testOptions {
                     fixture {
                         grantedPermissions = "none"
+                        extraDeviceFiles["/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt"] = "app/myAdditionalText.txt"
                         networkProfile = "LTE"
                     }
                     results {
@@ -99,6 +100,7 @@ class FirebaseTestLabDeviceTest {
             task("printDslProperties") {
                 println("serviceAccountCredentials = " + firebaseTestLab.serviceAccountCredentials.asFile.get().name)
                 println("grantedPermissions = " + firebaseTestLab.testOptions.fixture.grantedPermissions)
+                println("extraDeviceFiles = " + firebaseTestLab.testOptions.fixture.extraDeviceFiles.get())
                 println("networkProfile = " + firebaseTestLab.testOptions.fixture.networkProfile)
                 println("cloudStorageBucket = " + firebaseTestLab.testOptions.results.cloudStorageBucket)
                 doLast { /* no-op */ }
@@ -108,6 +110,7 @@ class FirebaseTestLabDeviceTest {
         result.stdout.use {
             assertThat(it).contains("serviceAccountCredentials = test.json")
             assertThat(it).contains("grantedPermissions = NONE")
+            assertThat(it).contains("extraDeviceFiles = [/sdcard/Android/data/com.example.myapplication/myAdditionalText.txt:app/myAdditionalText.txt]")
             assertThat(it).contains("networkProfile = LTE")
             assertThat(it).contains("cloudStorageBucket = my_example_custom_bucket")
         }

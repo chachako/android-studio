@@ -51,5 +51,9 @@ open class TestRunConfigureAction @Inject constructor(
             numUniformShards.set(
                 providerFactory.provider { buildService.get().numUniformShards })
             numUniformShards.disallowChanges()
+
+            extraDeviceFiles.set(providerFactory.provider {
+                buildService.get().parameters.extraDeviceFiles.get() })
+            extraDeviceFiles.disallowChanges()
         }
 }

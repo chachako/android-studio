@@ -59,7 +59,7 @@ class TestLabBuildServiceTest {
     @get:Rule
     val temporaryFolderRule = TemporaryFolder()
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     lateinit var mockExtension: TestLabGradlePluginExtension
 
     @Mock(answer = Answers.RETURNS_MOCKS)

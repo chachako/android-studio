@@ -42,8 +42,10 @@ import com.google.api.services.testing.model.AndroidDeviceList
 import com.google.api.services.testing.model.AndroidInstrumentationTest
 import com.google.api.services.testing.model.AndroidModel
 import com.google.api.services.testing.model.ClientInfo
+import com.google.api.services.testing.model.DeviceFile
 import com.google.api.services.testing.model.EnvironmentMatrix
 import com.google.api.services.testing.model.GoogleCloudStorage
+import com.google.api.services.testing.model.RegularFile
 import com.google.api.services.testing.model.ResultStorage
 import com.google.api.services.testing.model.TestExecution
 import com.google.api.services.testing.model.TestMatrix
@@ -54,7 +56,6 @@ import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.StackTrace
 import com.google.firebase.testlab.gradle.Orientation
 import com.google.firebase.testlab.gradle.TestLabGradlePluginExtension
-import com.google.firebase.testlab.gradle.TestOptions
 import com.google.testing.platform.proto.api.core.ErrorProto.Error
 import com.google.testing.platform.proto.api.core.IssueProto.Issue
 import com.google.testing.platform.proto.api.core.LabelProto.Label
@@ -68,6 +69,7 @@ import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuite
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
@@ -172,6 +174,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val failFast: Property<Boolean>
         val numUniformShards: Property<Int>
         val grantedPermissions: Property<String>
+        val extraDeviceFiles: MapProperty<String, String>
         val networkProfile: Property<String>
         val resultsHistoryName: Property<String>
         val recordVideo: Property<Boolean>
@@ -274,6 +277,27 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                             FixtureImpl.GrantedPermissions.NONE.name)
                     if(parameters.networkProfile.getOrElse("").isNotBlank()) {
                         networkProfile = parameters.networkProfile.get()
+                    }
+                    filesToPush = mutableListOf()
+                    parameters.extraDeviceFiles.get().forEach { (onDevicePath, filePath) ->
+                        val gcsFilePath = if (filePath.startsWith("gs://")) {
+                            filePath
+                        } else {
+                            val file = File(filePath)
+                            check(file.exists()) { "$filePath doesn't exist." }
+                            check(file.isFile) { "$filePath must be file." }
+                            val storageObject = uploadToCloudStorage(
+                                    file, requestId, storageClient, bucketName)
+                            "gs://$bucketName/${storageObject.name}"
+                        }
+                        filesToPush.add(DeviceFile().apply {
+                            regularFile = RegularFile().apply {
+                                content = com.google.api.services.testing.model.FileReference().apply {
+                                    gcsPath = gcsFilePath
+                                }
+                                devicePath = onDevicePath
+                            }
+                        })
                     }
                 }
                 androidInstrumentationTest = AndroidInstrumentationTest().apply {
@@ -1002,6 +1026,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             params.grantedPermissions.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.grantedPermissions
             })
+            params.extraDeviceFiles.set(testLabExtension.testOptions.fixture.extraDeviceFiles)
             params.networkProfile.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.networkProfile
             })
