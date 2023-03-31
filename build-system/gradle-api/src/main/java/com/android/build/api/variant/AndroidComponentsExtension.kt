@@ -55,7 +55,6 @@ interface AndroidComponentsExtension<
      *
      * @return [SdkComponents] to access Android SDK used by Gradle.
      */
-    @get:Incubating
     val sdkComponents: SdkComponents
 
     /**

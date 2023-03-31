@@ -2085,14 +2085,14 @@ package com.android.build.api.variant {
     method public void beforeVariants(optional com.android.build.api.variant.VariantSelector selector, org.gradle.api.Action<VariantBuilderT> callback);
     method @Deprecated public void finalizeDSl(org.gradle.api.Action<DslExtensionT> callback);
     method public com.android.build.api.AndroidPluginVersion getPluginVersion();
-    method @org.gradle.api.Incubating public com.android.build.api.dsl.SdkComponents getSdkComponents();
+    method public com.android.build.api.dsl.SdkComponents getSdkComponents();
     method public void onVariants(optional com.android.build.api.variant.VariantSelector selector, kotlin.jvm.functions.Function1<? super VariantT,kotlin.Unit> callback);
     method public void onVariants(optional com.android.build.api.variant.VariantSelector selector, org.gradle.api.Action<VariantT> callback);
     method @org.gradle.api.Incubating public void registerExtension(com.android.build.api.variant.DslExtension dslExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.variant.VariantExtensionConfig<VariantT>,? extends com.android.build.api.variant.VariantExtension> configurator);
     method @org.gradle.api.Incubating public void registerSourceType(String name);
     method public com.android.build.api.variant.VariantSelector selector();
     property public abstract com.android.build.api.AndroidPluginVersion pluginVersion;
-    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.SdkComponents sdkComponents;
+    property public abstract com.android.build.api.dsl.SdkComponents sdkComponents;
   }
 
   public interface AndroidResources {
