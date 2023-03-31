@@ -19,4 +19,10 @@ package com.android.tools.firebase.testlab.gradle
 import com.google.firebase.testlab.gradle.Results
 
 abstract class ResultsImpl : Results {
+
+    init {
+        recordVideo = false
+
+        performanceMetrics = false
+    }
 }

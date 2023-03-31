@@ -49,6 +49,7 @@ import com.google.api.services.testing.model.TestExecution
 import com.google.api.services.testing.model.TestMatrix
 import com.google.api.services.testing.model.TestSetup
 import com.google.api.services.testing.model.TestSpecification
+import com.google.api.services.testing.model.ToolResultsHistory
 import com.google.api.services.toolresults.ToolResults
 import com.google.api.services.toolresults.model.StackTrace
 import com.google.firebase.testlab.gradle.Orientation
@@ -172,6 +173,9 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val numUniformShards: Property<Int>
         val grantedPermissions: Property<String>
         val networkProfile: Property<String>
+        val resultsHistoryName: Property<String>
+        val recordVideo: Property<Boolean>
+        val performanceMetrics: Property<Boolean>
     }
 
     internal open val credential: GoogleCredential by lazy {
@@ -305,6 +309,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                     }
                 }
                 testTimeout = "${parameters.timeoutMinutes}m"
+                disablePerformanceMetrics = !parameters.performanceMetrics.get()
+                disableVideoRecording = !parameters.recordVideo.get()
             }
             set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, parameters.maxTestReruns)
             set(TEST_MATRIX_FAIL_FAST_FIELD, parameters.failFast)
@@ -998,6 +1004,15 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             })
             params.networkProfile.set(providerFactory.provider {
                 testLabExtension.testOptions.fixture.networkProfile
+            })
+            params.resultsHistoryName.set(providerFactory.provider {
+                testLabExtension.testOptions.results.resultsHistoryName
+            })
+            params.recordVideo.set(providerFactory.provider {
+                testLabExtension.testOptions.results.recordVideo
+            })
+            params.performanceMetrics.set(providerFactory.provider {
+                testLabExtension.testOptions.results.performanceMetrics
             })
         }
     }
