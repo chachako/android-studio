@@ -23,6 +23,7 @@ import com.android.testutils.MockitoKt.whenever
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.nio.file.Paths
 import java.util.Arrays
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -80,7 +81,19 @@ class DeviceMonitorTest {
 
     @Test
     fun testEmulatorUpdate() {
-        adbRule.attachDevice("emulator-123", "Google", "Pixel", "29", "29", avdName = "MyAvd", avdPath = "/path")
+        val path = Paths.get(System.getProperty("user.home"), ".android", "avd", "MyAvd.avd")
+        val pathAsString = path.toString()
+
+        adbRule.attachDevice(
+            "emulator-123",
+            "Google",
+            "Pixel",
+            "29",
+            "29",
+            avdName = "MyAvd",
+            avdPath = pathAsString
+        )
+
         val device: IDevice = adbRule.bridge.devices.single()
 
         assertThat(device.avdName).isNull()
@@ -88,17 +101,16 @@ class DeviceMonitorTest {
         try {
             device.avdData.get(1, TimeUnit.MILLISECONDS)
             error("Timeout Expected")
-        }
-        catch (ex: TimeoutException) {
-            assertThat(ex.message).startsWith("Waited 1 milliseconds ")
+        } catch (exception: TimeoutException) {
+            assertThat(exception.message).startsWith("Waited 1 milliseconds ")
         }
 
         val console = EmulatorConsole.getConsole(device) as FakeEmulatorConsoleWithLatency
         console.latch.countDown()
 
-        assertThat(device.avdData.get()).isEqualTo(AvdData("MyAvd", "/path"))
+        assertThat(device.avdData.get()).isEqualTo(AvdData("MyAvd", path))
         assertThat(device.avdName).isEqualTo("MyAvd")
-        assertThat(device.avdPath).isEqualTo("/path")
+        assertThat(device.avdPath).isEqualTo(pathAsString)
     }
 
     private fun mockDevice(serial: String, state: IDevice.DeviceState): IDevice {
@@ -112,6 +124,7 @@ class DeviceMonitorTest {
         private val actualAvdName: String? = null,
         private val actualAvdPath: String? = null
     ) : EmulatorConsole() {
+
         val latch = CountDownLatch(1)
 
         override fun getAvdName(): String? {
@@ -119,12 +132,12 @@ class DeviceMonitorTest {
             return actualAvdName
         }
 
+        @Deprecated("Use getAvdNioPath")
         override fun getAvdPath(): String {
             latch.await()
             if (actualAvdPath != null) {
                 return actualAvdPath
-            }
-            else {
+            } else {
                 throw CommandFailedException()
             }
         }
