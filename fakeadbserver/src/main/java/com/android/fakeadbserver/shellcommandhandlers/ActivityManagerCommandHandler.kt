@@ -19,18 +19,18 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.ServiceManager
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 class ActivityManagerCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,"am") {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         if (shellCommandArgs == null) {
             statusWriter.writeFail()
@@ -42,6 +42,6 @@ class ActivityManagerCommandHandler(shellProtocolType: ShellProtocolType) : Simp
         // Create a service request
         val params = mutableListOf(ServiceManager.ACTIVITY_MANAGER_SERVICE_NAME)
         params.addAll(shellCommandArgs.split(" "))
-        device.serviceManager.processCommand(params, serviceOutput)
+        device.serviceManager.processCommand(params, shellCommandOutput)
     }
 }

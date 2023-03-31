@@ -22,7 +22,7 @@ import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.DeviceState.LogcatChangeHandlerSubscriptionResult;
 import com.android.fakeadbserver.FakeAdbServer;
 import com.android.fakeadbserver.ShellProtocolType;
-import com.android.fakeadbserver.services.ServiceOutput;
+import com.android.fakeadbserver.services.ShellCommandOutput;
 import com.android.fakeadbserver.statechangehubs.ClientStateChangeHandlerFactory;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -44,7 +44,7 @@ public class LogcatCommandHandler extends SimpleShellHandler {
     public void execute(
             @NonNull FakeAdbServer fakeAdbServer,
             @NonNull StatusWriter statusWriter,
-            @NonNull ServiceOutput serviceOutput,
+            @NonNull ShellCommandOutput shellCommandOutput,
             @NonNull DeviceState device,
             @NonNull String shellCommand,
             @Nullable String shellCommandArgs) {
@@ -82,7 +82,7 @@ public class LogcatCommandHandler extends SimpleShellHandler {
                             public Callable<HandlerResult> createLogcatMessageAdditionHandler(
                                     @NonNull String message) {
                                 return () -> {
-                                    serviceOutput.writeStdout(
+                                    shellCommandOutput.writeStdout(
                                             message.getBytes(Charset.defaultCharset()));
                                     return new HandlerResult(true);
                                 };
@@ -95,7 +95,7 @@ public class LogcatCommandHandler extends SimpleShellHandler {
 
         try {
             for (String message : subscriptionResult.mLogcatContents) {
-                serviceOutput.writeStdout(message);
+                shellCommandOutput.writeStdout(message);
             }
             while (true) {
                 try {

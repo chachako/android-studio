@@ -18,7 +18,7 @@ package com.android.processmonitor.agenttracker
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import com.android.fakeadbserver.shellcommandhandlers.ShellHandler
 import com.android.fakeadbserver.shellcommandhandlers.StatusWriter
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_DIR
@@ -40,14 +40,14 @@ internal class MakeAgentDirCommandHandler : ShellHandler(ShellProtocolType.SHELL
     override fun execute(
         fakeAdbServer: FakeAdbServer,
         statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
+        shellCommandOutput: ShellCommandOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
         invocations.add(device.deviceId)
-        serviceOutput.writeStdout("")
-        serviceOutput.writeExitCode(0)
+        shellCommandOutput.writeStdout("")
+        shellCommandOutput.writeExitCode(0)
     }
 }

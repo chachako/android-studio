@@ -38,110 +38,110 @@ class PackageManager : Service {
         const val SERVICE_NAME = "package"
     }
 
-    override fun process(args: List<String>, serviceOutput: ServiceOutput) {
+    override fun process(args: List<String>, shellCommandOutput: ShellCommandOutput) {
         val cmd = args[0]
 
         return when {
             cmd == "list users" -> {
-                serviceOutput.writeStdout("Users:\n\tUserInfo{0:Owner:13} running\n")
-                serviceOutput.writeExitCode(0)
+                shellCommandOutput.writeStdout("Users:\n\tUserInfo{0:Owner:13} running\n")
+                shellCommandOutput.writeExitCode(0)
             }
             cmd.startsWith("uninstall") -> {
                 if (args.size == 1) {
-                    serviceOutput.writeStdout("Error: package name not specified")
-                    serviceOutput.writeExitCode(1)
+                    shellCommandOutput.writeStdout("Error: package name not specified")
+                    shellCommandOutput.writeExitCode(1)
                     return
                 }
                 val applicationId = args.last()
                 if (applicationId == ShellConstants.NON_INSTALLED_APP_ID) {
-                    serviceOutput.writeStdout("Failure [DELETE_FAILED_INTERNAL_ERROR]")
+                    shellCommandOutput.writeStdout("Failure [DELETE_FAILED_INTERNAL_ERROR]")
                 } else {
-                    serviceOutput.writeStdout("Success")
+                    shellCommandOutput.writeStdout("Success")
                 }
             }
             cmd == "path" -> {
                 val appId = args[1]
-                serviceOutput.writeStdout("/data/app/$appId/base.apk")
-                serviceOutput.writeExitCode(0)
+                shellCommandOutput.writeStdout("/data/app/$appId/base.apk")
+                shellCommandOutput.writeExitCode(0)
             }
 
             cmd.startsWith("install-create") -> {
                 if (args.contains(BAD_FLAG)) {
-                    serviceOutput.writeStderr("Error: (requested to fail via flag))")
-                    serviceOutput.writeExitCode(1)
-                    return;
+                    shellCommandOutput.writeStderr("Error: (requested to fail via flag))")
+                    shellCommandOutput.writeExitCode(1)
+                    return
                 } else {
-                    serviceOutput.writeStdout("Success: created install session [1234]")
-                    serviceOutput.writeExitCode(0)
+                    shellCommandOutput.writeStdout("Success: created install session [1234]")
+                    shellCommandOutput.writeExitCode(0)
                 }
             }
 
             cmd.startsWith("install-write") -> {
-                installWrite(args.joinToString(" "), serviceOutput)
+                installWrite(args.joinToString(" "), shellCommandOutput)
             }
 
             cmd.startsWith("install-commit") -> {
                 val sessionID = args[1]
                 if (BAD_SESSIONS.containsKey(sessionID)) {
-                    BAD_SESSIONS.get(sessionID)?.let { serviceOutput.writeStderr(it) }
-                    serviceOutput.writeExitCode(1)
+                    BAD_SESSIONS.get(sessionID)?.let { shellCommandOutput.writeStderr(it) }
+                    shellCommandOutput.writeExitCode(1)
                 } else {
-                    commit(args.drop(1), serviceOutput)
+                    commit(args.drop(1), shellCommandOutput)
                 }
             }
             cmd.startsWith("install-abandon") -> {
-                serviceOutput.writeStdout("Success\n")
-                serviceOutput.writeExitCode(0)
+                shellCommandOutput.writeStdout("Success\n")
+                shellCommandOutput.writeExitCode(0)
             }
             cmd.startsWith("install") -> {
-                commit(args.drop(1), serviceOutput)
+                commit(args.drop(1), shellCommandOutput)
             }
 
             else -> {
-                serviceOutput.writeStderr("Error: Package command '$cmd' is not supported")
-                serviceOutput.writeExitCode(1)
+                shellCommandOutput.writeStderr("Error: Package command '$cmd' is not supported")
+                shellCommandOutput.writeExitCode(1)
             }
         }
     }
 
-    private fun commit(slice: List<String>, serviceOutput: ServiceOutput) {
+    private fun commit(slice: List<String>, shellCommandOutput: ShellCommandOutput) {
         val sessionID = slice[0]
         if (sessionID == "FAIL_ME") {
-            serviceOutput.writeStderr("Error (requested a FAIL_ME session)\n")
-            serviceOutput.writeExitCode(1)
+            shellCommandOutput.writeStderr("Error (requested a FAIL_ME session)\n")
+            shellCommandOutput.writeExitCode(1)
         } else {
-            serviceOutput.writeStdout("Success\n")
-            serviceOutput.writeExitCode(0)
+            shellCommandOutput.writeStdout("Success\n")
+            shellCommandOutput.writeExitCode(0)
         }
     }
 
-    private fun installWrite(args: String, serviceOutput: ServiceOutput) {
+    private fun installWrite(args: String, shellCommandOutput: ShellCommandOutput) {
         val parameters = args.split(" ")
         if (parameters.isEmpty()) {
-            serviceOutput.writeStderr("Malformed install-write request")
-            serviceOutput.writeExitCode(1)
+            shellCommandOutput.writeStderr("Malformed install-write request")
+            shellCommandOutput.writeExitCode(1)
             return
         }
 
         if (parameters.last() != "-") {
             val sessionID = parameters[1]
             if (BAD_SESSIONS.containsKey(sessionID)) {
-                BAD_SESSIONS.get(sessionID)?.let { serviceOutput.writeStderr(it) }
-                serviceOutput.writeExitCode(1)
+                BAD_SESSIONS.get(sessionID)?.let { shellCommandOutput.writeStderr(it) }
+                shellCommandOutput.writeExitCode(1)
                 return
             }
             // This is a remote apk write (the apk is somewhere on the device, likely /data/local"..)
             // Use a random value
-            serviceOutput.writeStdout("Success: streamed 123456789 bytes\n")
-            serviceOutput.writeExitCode(0)
+            shellCommandOutput.writeStdout("Success: streamed 123456789 bytes\n")
+            shellCommandOutput.writeExitCode(0)
             return
         }
 
         // This is a streamed install
         val sizeIndex = parameters.indexOf("-S") + 1
         if (sizeIndex == 0) {
-            serviceOutput.writeStderr("Malformed install-write request")
-            serviceOutput.writeExitCode(1)
+            shellCommandOutput.writeStderr("Malformed install-write request")
+            shellCommandOutput.writeExitCode(1)
             return
         }
 
@@ -150,14 +150,14 @@ class PackageManager : Service {
         var totalBytesRead = 0
         while (totalBytesRead < expectedBytesLength) {
             val length = Integer.min(buffer.size, expectedBytesLength - totalBytesRead)
-            val numRead = serviceOutput.readStdin(buffer, 0, length)
+            val numRead = shellCommandOutput.readStdin(buffer, 0, length)
             if (numRead < 0) {
                 break
             }
             totalBytesRead += numRead
         }
 
-        serviceOutput.writeStdout("Success: streamed $totalBytesRead bytes\n")
-        serviceOutput.writeExitCode(0)
+        shellCommandOutput.writeStdout("Success: streamed $totalBytesRead bytes\n")
+        shellCommandOutput.writeExitCode(0)
     }
 }

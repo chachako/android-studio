@@ -18,24 +18,24 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 class RmCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType, "rm"
 ) {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
 
         if (shellCommandArgs == null) {
-            serviceOutput.writeStderr("rm: Needs 1 argument (see \"rm --help\")")
+            shellCommandOutput.writeStderr("rm: Needs 1 argument (see \"rm --help\")")
             return
         }
         val parameters = shellCommandArgs.split(" ")

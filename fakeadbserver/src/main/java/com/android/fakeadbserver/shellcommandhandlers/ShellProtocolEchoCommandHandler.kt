@@ -19,7 +19,7 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.ShellV2Protocol
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import java.nio.ByteBuffer
 
 /**
@@ -32,12 +32,12 @@ class ShellProtocolEchoCommandHandler() : SimpleShellHandler(
 ) {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         // Forward `stdin`, `stderr` and `exit` lines as `stdout` packets
         statusWriter.writeOk()
@@ -48,14 +48,14 @@ class ShellProtocolEchoCommandHandler() : SimpleShellHandler(
         val stdinProcessor = StdinProcessor { line ->
             when {
                 line.startsWith(stdoutPrefix) -> {
-                    serviceOutput.writeStdout(
+                    shellCommandOutput.writeStdout(
                         line.takeLast(line.length - stdoutPrefix.length)
                             .trimStart()
                     )
                 }
 
                 line.startsWith(stderrPrefix) -> {
-                    serviceOutput.writeStderr(
+                    shellCommandOutput.writeStderr(
                         line.takeLast(line.length - stderrPrefix.length)
                             .trimStart()
                     )
@@ -70,10 +70,10 @@ class ShellProtocolEchoCommandHandler() : SimpleShellHandler(
         }
         while (true) {
             val buffer = ByteArray(100)
-            val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
+            val numRead = shellCommandOutput.readStdin(buffer, 0, buffer.size)
             if (numRead < 0) {
                 stdinProcessor.flush()
-                serviceOutput.writeExitCode(exitCode)
+                shellCommandOutput.writeExitCode(exitCode)
                 break
             }
             stdinProcessor.process(if (numRead == buffer.size) buffer else buffer.copyOfRange(

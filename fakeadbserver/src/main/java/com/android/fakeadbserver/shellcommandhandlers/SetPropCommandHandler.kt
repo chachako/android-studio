@@ -18,19 +18,19 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 class SetPropCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType, "setprop"
 ) {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
     }

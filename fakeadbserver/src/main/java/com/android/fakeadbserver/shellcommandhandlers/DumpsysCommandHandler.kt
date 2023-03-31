@@ -18,19 +18,19 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import java.io.IOException
 
 class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,"dumpsys") {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         try {
             if (shellCommandArgs == null) {
@@ -45,7 +45,7 @@ class DumpsysCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellH
                 else -> ""
             }
 
-            serviceOutput.writeStdout(response)
+            shellCommandOutput.writeStdout(response)
         } catch (ignored: IOException) {
         }
     }

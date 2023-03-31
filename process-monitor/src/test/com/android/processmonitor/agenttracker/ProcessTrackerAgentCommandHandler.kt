@@ -19,7 +19,7 @@ import ai.grazie.utils.dropPrefix
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import com.android.fakeadbserver.shellcommandhandlers.SimpleShellHandler
 import com.android.fakeadbserver.shellcommandhandlers.StatusWriter
 import com.android.processmonitor.agenttracker.AgentProcessTracker.Companion.AGENT_PATH
@@ -55,7 +55,7 @@ internal class ProcessTrackerAgentCommandHandler : SimpleShellHandler(
     override fun execute(
         fakeAdbServer: FakeAdbServer,
         statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
+        shellCommandOutput: ShellCommandOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
@@ -67,12 +67,12 @@ internal class ProcessTrackerAgentCommandHandler : SimpleShellHandler(
                 it != EOF
             }.collect {
                 when {
-                    it.startsWith(STDOUT) -> serviceOutput.writeStdout(it.dropPrefix(STDOUT))
-                    it.startsWith(STDERR) -> serviceOutput.writeStderr(it.dropPrefix(STDERR))
+                    it.startsWith(STDOUT) -> shellCommandOutput.writeStdout(it.dropPrefix(STDOUT))
+                    it.startsWith(STDERR) -> shellCommandOutput.writeStderr(it.dropPrefix(STDERR))
                     else -> throw IllegalStateException("Unexpected data: $it")
                 }
             }
         }
-        serviceOutput.writeExitCode(0)
+        shellCommandOutput.writeExitCode(0)
     }
 }

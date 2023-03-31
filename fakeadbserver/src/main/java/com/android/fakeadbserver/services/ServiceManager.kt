@@ -26,7 +26,7 @@ class ServiceManager {
 
     private val packageManager = PackageManager()
     private var activityManager: Service? = null
-    private val log = java.util.Collections.synchronizedList(mutableListOf<List<String>>())
+    private val log = Collections.synchronizedList(mutableListOf<List<String>>())
 
     // Returns a list of all service request received.
     // Each entry is a list of all parameters for that request.
@@ -34,7 +34,7 @@ class ServiceManager {
         return Collections.unmodifiableList(log)
     }
 
-    fun processCommand(args: List<String>, output: ServiceOutput) {
+    fun processCommand(args: List<String>, output: ShellCommandOutput) {
         // We log received commands to allow tests to inspect call history
         log.add(Collections.unmodifiableList(args))
 
@@ -44,7 +44,7 @@ class ServiceManager {
         if (service == null) {
             output.writeStderr("Error: Service '$serviceName' is not supported")
             output.writeExitCode(5)
-            return;
+            return
         }
 
         service.process(args.slice(1 until args.size), output)

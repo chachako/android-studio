@@ -18,7 +18,7 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 /**
  * A shell command handler that writes its argument(s) to `stdout`, followed by a newline
@@ -28,15 +28,15 @@ class EchoCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHand
 ) {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
-        shellCommandArgs?.also { serviceOutput.writeStdout(shellCommandArgs) }
-        serviceOutput.writeStdout("\n")
+        shellCommandArgs?.also { shellCommandOutput.writeStdout(shellCommandArgs) }
+        shellCommandOutput.writeStdout("\n")
     }
 }

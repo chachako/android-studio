@@ -19,7 +19,7 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.services.PackageManager
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import java.io.IOException
 import java.util.regex.Pattern
 
@@ -28,12 +28,12 @@ class CmdCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
 ) {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         try {
             if (shellCommandArgs == null) {
@@ -55,14 +55,14 @@ class CmdCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
                 shellCommandArgs.startsWith("package install-create") -> installMultiple()
                 shellCommandArgs.startsWith("package install-commit") -> installCommit()
                 shellCommandArgs.startsWith("package install-write") -> installWrite(
-                    shellCommandArgs,
-                    serviceOutput
+                  shellCommandArgs,
+                  shellCommandOutput
                 )
 
                 else -> ""
             }
 
-            serviceOutput.writeStdout(response)
+            shellCommandOutput.writeStdout(response)
         } catch (ignored: IOException) {
         }
 
@@ -95,7 +95,7 @@ class CmdCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
      * `args` would be "package install-write -S 1289508 548838628 0_base-debug -" in
      * the above example.
      */
-    private fun installWrite(args: String, serviceOutput: ServiceOutput): String {
+    private fun installWrite(args: String, shellCommandOutput: ShellCommandOutput): String {
         val streamLengthExtractor = Pattern.compile("package install-write\\s+-S\\s+(\\d+).*")
         val streamLengthMatcher = streamLengthExtractor.matcher(args)
         streamLengthMatcher.find()
@@ -114,7 +114,7 @@ class CmdCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
         var totalBytesRead = 0
         while (totalBytesRead < expectedBytesLength) {
             val numRead: Int =
-                serviceOutput.readStdin(buffer, 0, Math.min(buffer.size, expectedBytesLength - totalBytesRead))
+                shellCommandOutput.readStdin(buffer, 0, Math.min(buffer.size, expectedBytesLength - totalBytesRead))
             if (numRead < 0) {
                 break
             }

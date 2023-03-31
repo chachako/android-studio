@@ -18,19 +18,19 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 class PackageManagerCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType, "pm"
 ) {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
 
@@ -44,6 +44,6 @@ class PackageManagerCommandHandler(shellProtocolType: ShellProtocolType) : Simpl
         shellCommandArgs?.let {
             params.addAll(it.split(" "))
         }
-        device.serviceManager.processCommand(params, serviceOutput)
+        device.serviceManager.processCommand(params, shellCommandOutput)
     }
 }

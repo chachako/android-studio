@@ -18,7 +18,7 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 /**
  * A [SimpleShellHandler] that outputs a hard-coded list of lines that follows the format
@@ -27,12 +27,12 @@ import com.android.fakeadbserver.services.ServiceOutput
 class GetPropCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(shellProtocolType, "getprop") {
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
         val buf = StringBuilder()
@@ -42,7 +42,7 @@ class GetPropCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellH
         for (entry in device.properties) {
             buf.append("[${entry.key}]: [${entry.value}]\n")
         }
-        serviceOutput.writeStdout(buf.toString())
-        serviceOutput.writeExitCode(0)
+        shellCommandOutput.writeStdout(buf.toString())
+        shellCommandOutput.writeExitCode(0)
     }
 }

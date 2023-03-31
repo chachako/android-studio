@@ -18,7 +18,7 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import java.io.ByteArrayOutputStream
 
 /**
@@ -39,49 +39,49 @@ class CatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
     override fun execute(
         fakeAdbServer: FakeAdbServer,
         statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
+        shellCommandOutput: ShellCommandOutput,
         device: DeviceState,
         shellCommand: String,
         shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
         if (shellCommandArgs.isNullOrEmpty()) {
-            forwardStdinAsStdout(serviceOutput)
+            forwardStdinAsStdout(shellCommandOutput)
             return
         }
 
-        if (tryHandleCatProcPidCmdline(serviceOutput, device, shellCommandArgs)) {
+        if (tryHandleCatProcPidCmdline(shellCommandOutput, device, shellCommandArgs)) {
             return
         }
 
-        catRegularFiles(serviceOutput, device, shellCommandArgs)
+        catRegularFiles(shellCommandOutput, device, shellCommandArgs)
     }
 
     /** Outputs all characters received from `stdin` back to `stdout`, one
      * line at a time, i.e. characters are written back to `stdout` only when a newline ("\n")
      * character is received from `stdin`.
      **/
-    private fun forwardStdinAsStdout(serviceOutput: ServiceOutput) {
+    private fun forwardStdinAsStdout(shellCommandOutput: ShellCommandOutput) {
         val stdoutStream = ByteArrayOutputStream()
         val buffer = ByteArray(1)
         while (true) {
-            val numRead = serviceOutput.readStdin(buffer, 0, buffer.size)
+            val numRead = shellCommandOutput.readStdin(buffer, 0, buffer.size)
             if (numRead < 0) {
-                serviceOutput.writeStdout(stdoutStream.toByteArray())
-                serviceOutput.writeExitCode(0)
+                shellCommandOutput.writeStdout(stdoutStream.toByteArray())
+                shellCommandOutput.writeExitCode(0)
                 break
             }
             val ch = buffer[0].toInt()
             stdoutStream.write(ch)
             if (ch == '\n'.code) {
-                serviceOutput.writeStdout(stdoutStream.toByteArray())
+                shellCommandOutput.writeStdout(stdoutStream.toByteArray())
                 stdoutStream.reset()
             }
         }
     }
 
     private fun tryHandleCatProcPidCmdline(
-        serviceOutput: ServiceOutput,
+        shellCommandOutput: ShellCommandOutput,
         device: DeviceState,
         args: String
     ): Boolean {
@@ -94,16 +94,16 @@ class CatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
 
         val profileableClient = device.getProfileableProcess(pid)
         if (profileableClient == null) {
-            serviceOutput.writeStderr("profileableClient with a pid $pid not found")
+            shellCommandOutput.writeStderr("profileableClient with a pid $pid not found")
             return true
         }
 
-        serviceOutput.writeStdout(profileableClient.commandLine)
-        serviceOutput.writeExitCode(0)
+        shellCommandOutput.writeStdout(profileableClient.commandLine)
+        shellCommandOutput.writeExitCode(0)
         return true
     }
 
-    private fun catRegularFiles(serviceOutput: ServiceOutput, device: DeviceState, args: String) {
+    private fun catRegularFiles(shellCommandOutput: ShellCommandOutput, device: DeviceState, args: String) {
         val fileName = args.trim()
         if (fileName.contains("\\s+")) {
             throw NotImplementedError("Multiple files or file names with spaces are not implemented")
@@ -111,9 +111,9 @@ class CatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandl
 
         val file = device.getFile(fileName)
         if (file == null) {
-            serviceOutput.writeStderr("No such file or directory")
+            shellCommandOutput.writeStderr("No such file or directory")
         } else {
-            serviceOutput.writeStdout(file.bytes)
+            shellCommandOutput.writeStdout(file.bytes)
         }
     }
 }

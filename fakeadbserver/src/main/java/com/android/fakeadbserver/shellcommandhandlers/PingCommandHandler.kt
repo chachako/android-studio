@@ -18,7 +18,7 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 class PingCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType, "ping"
@@ -28,14 +28,14 @@ class PingCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHand
     }
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         statusWriter.writeOk()
-        serviceOutput.writeStdout(PING_COMMAND_FAKE_OUTPUT)
+        shellCommandOutput.writeStdout(PING_COMMAND_FAKE_OUTPUT)
     }
 }

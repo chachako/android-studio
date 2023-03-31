@@ -20,7 +20,7 @@ import com.android.annotations.Nullable;
 import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.FakeAdbServer;
 import com.android.fakeadbserver.ShellProtocolType;
-import com.android.fakeadbserver.services.ServiceOutput;
+import com.android.fakeadbserver.services.ShellCommandOutput;
 
 /** shell:write-no-stop continuously write to the output stream without stopping. */
 public class WriteNoStopCommandHandler extends SimpleShellHandler {
@@ -33,14 +33,14 @@ public class WriteNoStopCommandHandler extends SimpleShellHandler {
     public void execute(
             @NonNull FakeAdbServer fakeAdbServer,
             @NonNull StatusWriter statusWriter,
-            @NonNull ServiceOutput serviceOutput,
+            @NonNull ShellCommandOutput shellCommandOutput,
             @NonNull DeviceState device,
             @NonNull String shellCommand,
             @Nullable String shellCommandArgs) {
         try {
             statusWriter.writeOk(); // Send ok first.
             while (true) {
-                serviceOutput.writeStdout("write-no-stop test in progress\n");
+                shellCommandOutput.writeStdout("write-no-stop test in progress\n");
                 Thread.sleep(200);
             }
         } catch (InterruptedException ignored) {

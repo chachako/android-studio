@@ -18,7 +18,7 @@ package com.android.fakeadbserver.shellcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 
 class StatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHandler(
     shellProtocolType,
@@ -28,12 +28,12 @@ class StatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHand
     val PROC_ID_REG = Regex("/proc/(\\d+)")
 
     override fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     ) {
         val appId = getAppId(device, shellCommandArgs)
         if (appId == null) {
@@ -42,7 +42,7 @@ class StatCommandHandler(shellProtocolType: ShellProtocolType) : SimpleShellHand
         }
 
         statusWriter.writeOk()
-        serviceOutput.writeStdout("package:$appId ")
+        shellCommandOutput.writeStdout("package:$appId ")
     }
 
     private fun getAppId(device: DeviceState, args: String?): String? {

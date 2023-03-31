@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets.UTF_8
  * This allows shell command implementor in [FakeAdbServer] to have a single implementation
  * that can deal with the simplified stdin/stdout protocol, or the full [ShellV2Protocol].
  */
-interface ServiceOutput {
+interface ShellCommandOutput {
 
     fun writeStdout(bytes: ByteArray)
     fun writeStderr(bytes: ByteArray)
@@ -46,11 +46,11 @@ interface ServiceOutput {
 }
 
 /**
- * Implementation of [ServiceOutput] that writes stdout/stderr directly to
+ * Implementation of [ShellCommandOutput] that writes stdout/stderr directly to
  * [Socket.getOutputStream], and ignores exit code. This corresponds to how
  * the legacy "shell:" ADB service works.
  */
-class LegacyShellOutput(socket: Socket, val device: DeviceState) : ServiceOutput {
+class LegacyShellOutput(socket: Socket, val device: DeviceState) : ShellCommandOutput {
 
     private val input = socket.getInputStream()
     private val output = socket.getOutputStream()
@@ -73,11 +73,11 @@ class LegacyShellOutput(socket: Socket, val device: DeviceState) : ServiceOutput
 }
 
 /**
- * Implementation of [ServiceOutput] that writes stdout/stderr directly to
+ * Implementation of [ShellCommandOutput] that writes stdout/stderr directly to
  * [Socket.getOutputStream], and ignores exit code. This corresponds to how
  * the legacy "exec:" ADB service works
  */
-class ExecOutput(socket: Socket) : ServiceOutput {
+class ExecOutput(socket: Socket) : ShellCommandOutput {
 
     private val input = socket.getInputStream()
     private val output = socket.getOutputStream()
@@ -119,10 +119,10 @@ fun ByteArray.replaceNewLineForOlderDevices(device: DeviceState): ByteArray {
 }
 
 /**
- * Implementation of [ServiceOutput] that read and writes from/to the underlying socket
+ * Implementation of [ShellCommandOutput] that read and writes from/to the underlying socket
  * using the [ShellV2Protocol]. This corresponds to how the "shell,v2:" ADB service works.
  */
-class ShellV2Output(socket: Socket) : ServiceOutput {
+class ShellV2Output(socket: Socket) : ShellCommandOutput {
 
     private val protocol = ShellV2Protocol(socket)
 

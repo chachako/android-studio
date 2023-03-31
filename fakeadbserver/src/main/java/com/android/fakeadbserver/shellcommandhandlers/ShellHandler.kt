@@ -19,7 +19,7 @@ import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.ShellProtocolType
 import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
-import com.android.fakeadbserver.services.ServiceOutput
+import com.android.fakeadbserver.services.ShellCommandOutput
 import com.google.common.base.Charsets
 import java.net.Socket
 
@@ -76,18 +76,18 @@ abstract class ShellHandler protected constructor(
      * This is the main execution method of the command.
      *
      * @param fakeAdbServer Fake ADB Server itself.
-     * @param serviceOutput Shell protocol for standard in/out
+     * @param shellCommandOutput Shell protocol for standard in/out
      * @param device Target device for the command, if any.
      * @param shellCommand Shell command, e.g. for "adb shell ls -l" [shellCommand] would be "ls"
      * @param shellCommandArgs Arguments for the command, e.g. for "adb shell ls -l" [shellCommandArgs] would be "-l"
      */
     abstract fun execute(
-        fakeAdbServer: FakeAdbServer,
-        statusWriter: StatusWriter,
-        serviceOutput: ServiceOutput,
-        device: DeviceState,
-        shellCommand: String,
-        shellCommandArgs: String?
+      fakeAdbServer: FakeAdbServer,
+      statusWriter: StatusWriter,
+      shellCommandOutput: ShellCommandOutput,
+      device: DeviceState,
+      shellCommand: String,
+      shellCommandArgs: String?
     )
 }
 
