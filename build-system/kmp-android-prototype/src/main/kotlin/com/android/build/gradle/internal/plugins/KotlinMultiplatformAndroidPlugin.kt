@@ -23,6 +23,7 @@ import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.dsl.SettingsExtension
 import com.android.build.api.variant.impl.KmpPredefinedAndroidCompilation
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformAndroidCompilation
@@ -153,7 +154,8 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             ::getCompileSdkVersion,
             ::getBuildToolsVersion,
             BasePlugin.createAndroidJarConfig(project),
-            dslServices
+            dslServices,
+            createSettingsOptions(dslServices)
         )
 
         TaskManager.createTasksBeforeEvaluate(
@@ -182,6 +184,10 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             dslServices
         ) as KotlinMultiplatformAndroidExtensionImpl
 
+        settingsExtension?.let {
+            androidExtension.initExtensionFromSettings(it)
+        }
+
         project.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
             kotlinExtension = project.extensions.getByName("kotlin") as KotlinMultiplatformExtension
 
@@ -202,6 +208,34 @@ abstract class KotlinMultiplatformAndroidPlugin @Inject constructor(
             )
 
             createSourceSetsEagerly()
+        }
+    }
+
+    protected open fun KotlinMultiplatformAndroidExtension.initExtensionFromSettings(
+        settings: SettingsExtension
+    ) {
+        settings.compileSdk?.let { compileSdk ->
+            this.compileSdk = compileSdk
+
+            settings.compileSdkExtension?.let { compileSdkExtension ->
+                this.compileSdkExtension = compileSdkExtension
+            }
+        }
+
+        settings.compileSdkPreview?.let { compileSdkPreview ->
+            this.compileSdkPreview = compileSdkPreview
+        }
+
+        settings.minSdk?.let { minSdk ->
+            this.minSdk = minSdk
+        }
+
+        settings.minSdkPreview?.let { minSdkPreview ->
+            this.minSdkPreview = minSdkPreview
+        }
+
+        settings.buildToolsVersion?.let { buildToolsVersion ->
+            this.buildToolsVersion = buildToolsVersion
         }
     }
 

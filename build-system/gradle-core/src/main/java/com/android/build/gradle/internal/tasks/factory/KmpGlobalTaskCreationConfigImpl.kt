@@ -69,7 +69,8 @@ class KmpGlobalTaskCreationConfigImpl(
     compileSdkVersionProvider: () -> String,
     buildToolsVersionProvider: () -> Revision,
     private val androidJar: Configuration,
-    override val services: BaseServices
+    override val services: BaseServices,
+    override val settingsOptions: SettingsOptions
 ): GlobalTaskCreationConfig, BootClasspathConfig by bootClasspathConfig {
 
     init {
@@ -230,8 +231,6 @@ class KmpGlobalTaskCreationConfigImpl(
     override val versionedNdkHandler: SdkComponentsBuildService.VersionedNdkHandler
         get() = throw IllegalAccessException("Not supported for kmp")
     override val lintPublish: Configuration
-        get() = throw IllegalAccessException("Not supported for kmp")
-    override val settingsOptions: SettingsOptions
         get() = throw IllegalAccessException("Not supported for kmp")
     override val externalNativeBuild: ExternalNativeBuild
         get() = throw IllegalAccessException("Not supported for kmp")
