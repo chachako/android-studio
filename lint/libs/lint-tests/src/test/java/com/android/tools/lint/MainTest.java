@@ -124,7 +124,14 @@ public class MainTest extends AbstractCheckTest {
                 }
             }
             if (expectedError != null && !expectedError.trim().equals(stderr.trim())) {
-                assertEquals(expectedError, stderr); // instead of fail: get difference in output
+                // TODO: https://youtrack.jetbrains.com/issue/KT-57715
+                //  Until then, we can't assert explicit "equals" yet.
+                if (Arrays.stream(args).anyMatch((arg) -> arg == "--XuseK2Uast")) {
+                    assertThat(stderr).contains(expectedError);
+                } else {
+                    // instead of fail: get difference in output
+                    assertEquals(expectedError, stderr);
+                }
             }
             assertEquals("Unexpected exit code", expectedExitCode, exitCode);
         } finally {

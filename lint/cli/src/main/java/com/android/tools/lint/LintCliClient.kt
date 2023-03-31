@@ -1488,7 +1488,8 @@ open class LintCliClient : LintClient {
 
     val config =
       UastEnvironment.Configuration.create(
-        enableKotlinScripting = mayNeedKotlinScripting(allProjects)
+        enableKotlinScripting = mayNeedKotlinScripting(allProjects),
+        useFirUast = flags.useK2Uast() || useFirUast()
       )
     config.javaLanguageLevel = maxLevel
     config.addSourceRoots(sourceRoots.toList())

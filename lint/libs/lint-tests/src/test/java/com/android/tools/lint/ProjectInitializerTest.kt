@@ -58,8 +58,16 @@ import org.junit.rules.TemporaryFolder
 
 class ProjectInitializerTest {
   @Test
-  fun testManualProject() {
+  fun testManualProjectK1() {
+    testManualProject(isK2 = false)
+  }
 
+  @Test
+  fun testManualProjectK2() {
+    testManualProject(isK2 = true)
+  }
+
+  private fun testManualProject(isK2: Boolean) {
     val library =
       project(
           manifest(
@@ -210,8 +218,10 @@ class ProjectInitializerTest {
     val appProjectDir = projects[1]
     val appProjectPath = appProjectDir.path
 
-    val sdk = temp.newFolder("fake-sdk")
-    val cacheDir = temp.newFolder("cache")
+    // TO avoid already existing temp folders
+    val suffix = if (isK2) "-k2" else "-k1"
+    val sdk = temp.newFolder("fake-sdk$suffix")
+    val cacheDir = temp.newFolder("cache$suffix")
     @Language("XML")
     val mergedManifestXml =
       """
@@ -241,7 +251,7 @@ class ProjectInitializerTest {
             """
         .trimIndent()
 
-    val mergedManifest = temp.newFile("merged-manifest")
+    val mergedManifest = temp.newFile("merged-manifest$suffix")
     Files.asCharSink(mergedManifest, Charsets.UTF_8).write(mergedManifestXml)
 
     @Language("XML")
@@ -343,6 +353,12 @@ class ProjectInitializerTest {
 
     val canonicalRoot = root.canonicalPath
 
+    // TODO: https://youtrack.jetbrains.com/issue/KT-57715
+    val expectedError =
+      if (isK2)
+        "WARN: ROOT/test.jar: ROOT/test.jar\n" + "java.nio.file.NoSuchFileException: ROOT/test.jar"
+      else "w: Classpath entry points to a non-existent location: ROOT/test.jar"
+
     MainTest.checkDriver(
       """
             baseline.xml: Information: 1 error was filtered out because it is listed in the baseline file, baseline.xml
@@ -363,13 +379,14 @@ class ProjectInitializerTest {
                 AndroidManifest.xml:8: Previous permission here
             2 errors, 2 warnings (1 error filtered by baseline baseline.xml)
             """,
-      "w: Classpath entry points to a non-existent location: ROOT/test.jar",
+      expectedError,
 
       // Expected exit code
       ERRNO_SUCCESS,
 
       // Args
       arrayOf(
+        if (isK2) "--XuseK2Uast" else "",
         "--check",
         "UniquePermission,DuplicateDefinition,SdCardPath",
         "--config",

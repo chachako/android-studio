@@ -82,6 +82,7 @@ public class LintCliFlags {
     private boolean printInternalErrorStackTrace;
     private boolean allowBaselineSuppress;
     private boolean offline;
+    private boolean useK2Uast;
     private File cacheDir;
 
     public static final int ERRNO_SUCCESS = 0;
@@ -845,5 +846,24 @@ public class LintCliFlags {
      */
     public void setOffline(boolean offline) {
         this.offline = offline;
+    }
+
+    /**
+     * Returns true if lint is using K2 UAST, formerly known as FIR UAST. K1 UAST, retroactively
+     * named as FE1.0 UAST, by default.
+     *
+     * @return whether to use K2 UAST
+     */
+    public boolean useK2Uast() {
+        return useK2Uast;
+    }
+
+    /**
+     * Sets whether lint needs to use K2 UAST.
+     *
+     * @param useK2Uast whether to use K2 UAST
+     */
+    public void setUseK2Uast(boolean useK2Uast) {
+        this.useK2Uast = useK2Uast;
     }
 }
