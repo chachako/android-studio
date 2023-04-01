@@ -70,6 +70,7 @@ import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuite
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -178,6 +179,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         val extraDeviceFiles: MapProperty<String, String>
         val networkProfile: Property<String>
         val resultsHistoryName: Property<String>
+        val directoriesToPull: ListProperty<String>
         val recordVideo: Property<Boolean>
         val performanceMetrics: Property<Boolean>
     }
@@ -220,7 +222,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }
 
         val projectName = parameters.quotaProjectName.get()
-        val requestId = UUID.randomUUID().toString()
+        val runRequestId = UUID.randomUUID().toString()
 
         val toolResultsClient = ToolResults.Builder(
             httpTransport,
@@ -244,7 +246,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         }.build()
 
         val testApkStorageObject = uploadToCloudStorage(
-            testData.testApk, requestId, storageClient, bucketName
+            testData.testApk, runRequestId, storageClient, bucketName
         )
 
         val configProvider = createConfigProvider(
@@ -252,7 +254,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         )
         val appApkStorageObject = uploadToCloudStorage(
             testData.testedApkFinder(configProvider).first(),
-            requestId,
+            runRequestId,
             storageClient,
             bucketName
         )
@@ -293,7 +295,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                             check(file.exists()) { "$filePath doesn't exist." }
                             check(file.isFile) { "$filePath must be file." }
                             val storageObject = uploadToCloudStorage(
-                                    file, requestId, storageClient, bucketName)
+                                    file, runRequestId, storageClient, bucketName)
                             "gs://$bucketName/${storageObject.name}"
                         }
                         filesToPush.add(DeviceFile().apply {
@@ -305,6 +307,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                             }
                         })
                     }
+
+                    directoriesToPull = parameters.directoriesToPull.get()
                 }
                 androidInstrumentationTest = AndroidInstrumentationTest().apply {
                     testApk = com.google.api.services.testing.model.FileReference().apply {
@@ -335,22 +339,22 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
                 resultStorage = ResultStorage().apply {
                     googleCloudStorage = GoogleCloudStorage().apply {
-                        gcsPath = "gs://$bucketName/$requestId/results"
+                        gcsPath = "gs://$bucketName/$runRequestId/results"
                     }
                     toolResultsHistory = ToolResultsHistory().apply {
                         projectId = projectName
                         this.historyId = historyId
                     }
                 }
-                testTimeout = "${parameters.timeoutMinutes}m"
+                testTimeout = "${parameters.timeoutMinutes.get() * 60}s"
                 disablePerformanceMetrics = !parameters.performanceMetrics.get()
                 disableVideoRecording = !parameters.recordVideo.get()
             }
-            set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, parameters.maxTestReruns)
-            set(TEST_MATRIX_FAIL_FAST_FIELD, parameters.failFast)
+            set(TEST_MATRIX_FLAKY_TEST_ATTEMPTS_FIELD, parameters.maxTestReruns.get())
+            set(TEST_MATRIX_FAIL_FAST_FIELD, parameters.failFast.get())
         }
         val updatedTestMatrix = testMatricesClient.create(projectName, testMatrix).apply {
-            this.requestId = requestId
+            this.requestId = runRequestId
         }.execute()
 
         lateinit var resultTestMatrix: TestMatrix
@@ -398,7 +402,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                         testExecution.toolResultsStep.stepId
                     ).execute()
                 executionStep.testExecutionStep.testSuiteOverviews?.forEach { suiteOverview ->
-                    downloadFromCloudStorage(storageClient, suiteOverview.xmlSource.fileUri) {
+                    downloadFromCloudStorage(storageClient, suiteOverview.xmlSource.fileUri, runRequestId) {
                         File(resultsOutDir, "TEST-${it.replace("/", "_")}")
                     }?.also {
                         updateTestResultXmlFile(it, deviceName, projectPath, variantName)
@@ -412,6 +416,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 deviceInfoFile,
                 storageClient,
                 resultsOutDir,
+                runRequestId,
             )
 
             val testSuitePassed = testSuiteResult.testStatus.isPassedOrSkipped()
@@ -488,6 +493,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
         deviceInfoFile: File,
         storageClient: Storage,
         resultsOutDir: File,
+        runRequestId: String,
     ): TestSuiteResult {
         val testSuiteResult = TestSuiteResult.newBuilder()
 
@@ -619,7 +625,32 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
             }
 
-            // Need latest version of google-api-client to use
+            step.testExecutionStep?.toolExecution?.toolOutputs?.forEach { toolOutput ->
+                if (toolOutput?.output?.fileUri != null) {
+                    val fileUri = requireNotNull(toolOutput.output.fileUri)
+                    val download = parameters.directoriesToPull.get().any { directoriesToPull ->
+                        fileUri.contains(directoriesToPull)
+                    }
+                    if (download) {
+                        val downloadedFile = downloadFromCloudStorage(
+                                storageClient, fileUri, runRequestId) {
+                            File(resultsOutDir, it)
+                        } ?: return@forEach
+                        testSuiteResult.addOutputArtifactBuilder().apply {
+                            labelBuilder.apply {
+                                label = "firebase.toolOutput"
+                                namespace = "android"
+                            }
+                            sourcePathBuilder.apply {
+                                path = downloadedFile.path
+                            }.build()
+                            type = ArtifactType.TEST_DATA
+                        }
+                    }
+                }
+            }
+
+            // Need the latest version of google-api-client to use
             // toolResultsClient.projects().histories().executions().steps().testCases().list().
             // Manually calling this API until this is available.
             val httpRequestFactory: HttpRequestFactory = httpTransport.createRequestFactory(httpRequestInitializer)
@@ -672,7 +703,8 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                                 for (toolOutput in (case.toolOutputs as List<ToolOutputReference>)) {
                                     if (toolOutput.output!!.fileUri!!.endsWith("logcat")) {
                                         val logcatFile = downloadFromCloudStorage(
-                                            storageClient, toolOutput.output!!.fileUri!!) {
+                                            storageClient, toolOutput.output!!.fileUri!!,
+                                            runRequestId) {
                                             File(resultsOutDir, it)
                                         }
                                         if (logcatFile != null) {
@@ -686,17 +718,6 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                                                 }.build()
                                                 type = ArtifactType.TEST_DATA
                                             }
-                                        }
-                                    } else {
-                                        addOutputArtifactBuilder().apply {
-                                            labelBuilder.apply {
-                                                label = "firebase.toolOutput"
-                                                namespace = "android"
-                                            }
-                                            sourcePathBuilder.apply {
-                                                path = toolOutput.output!!.fileUri
-                                            }.build()
-                                            type = ArtifactType.TEST_DATA
                                         }
                                     }
                                 }
@@ -827,10 +848,10 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
      */
     private fun downloadFromCloudStorage(
         storageClient: Storage, fileUri: String,
-        destination: (objectName: String) -> File): File? {
+        runId: String, destination: (objectName: String) -> File): File? {
         val matchResult = cloudStorageUrlRegex.find(fileUri) ?: return null
         val (bucketName, objectName) = matchResult.destructured
-        return destination(objectName).apply {
+        return destination(objectName.removePrefix("$runId/")).apply {
             parentFile.mkdirs()
             outputStream().use {
                 storageClient.objects()
@@ -1061,6 +1082,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
             params.resultsHistoryName.set(providerFactory.provider {
                 testLabExtension.testOptions.results.resultsHistoryName
             })
+            params.directoriesToPull.set(testLabExtension.testOptions.results.directoriesToPull)
             params.recordVideo.set(providerFactory.provider {
                 testLabExtension.testOptions.results.recordVideo
             })

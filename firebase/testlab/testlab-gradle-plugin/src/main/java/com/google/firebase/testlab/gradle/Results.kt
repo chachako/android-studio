@@ -17,7 +17,7 @@
 package com.google.firebase.testlab.gradle
 
 import org.gradle.api.Incubating
-import org.gradle.api.provider.MapProperty
+import org.gradle.api.provider.ListProperty
 
 /**
  * A DSL for configuring test results.
@@ -52,7 +52,7 @@ interface Results {
      * These must be absolute paths under /sdcard or /data/local/tmp.
      */
     @get:Incubating
-    val directoriesToPull: MapProperty<String, String>
+    val directoriesToPull: ListProperty<String>
 
     /**
      * Enable Video recording during the test.

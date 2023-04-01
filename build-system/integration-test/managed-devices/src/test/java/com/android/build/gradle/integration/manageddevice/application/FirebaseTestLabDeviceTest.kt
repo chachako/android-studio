@@ -95,6 +95,7 @@ class FirebaseTestLabDeviceTest {
                     results {
                         cloudStorageBucket = "my_example_custom_bucket"
                         resultsHistoryName = "MyCustomHistoryName"
+                        directoriesToPull.addAll("/sdcard/Android/data/com.example.myapplication")
                     }
                 }
             }
@@ -105,6 +106,7 @@ class FirebaseTestLabDeviceTest {
                 println("networkProfile = " + firebaseTestLab.testOptions.fixture.networkProfile)
                 println("cloudStorageBucket = " + firebaseTestLab.testOptions.results.cloudStorageBucket)
                 println("resultsHistoryName = " + firebaseTestLab.testOptions.results.resultsHistoryName)
+                println("directoriesToPull = " + firebaseTestLab.testOptions.results.directoriesToPull.get())
                 doLast { /* no-op */ }
             }
         """)
@@ -116,6 +118,7 @@ class FirebaseTestLabDeviceTest {
             assertThat(it).contains("networkProfile = LTE")
             assertThat(it).contains("cloudStorageBucket = my_example_custom_bucket")
             assertThat(it).contains("resultsHistoryName = MyCustomHistoryName")
+            assertThat(it).contains("directoriesToPull = [/sdcard/Android/data/com.example.myapplication]")
         }
     }
 }
