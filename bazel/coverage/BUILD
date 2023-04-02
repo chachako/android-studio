@@ -92,26 +92,62 @@ coverage_report(
     ],
 )
 
+# Coverage report for "Pair Devices over Wi-Fi" (aka Wireless ADB)
 coverage_report(
-    name = "directaccess",
+    name = "adb-wireless",
     srcpath_include = [
-        "tools/studio/google/cloud/testing/directaccess",
-        "tools/vendor/google/directaccess-client",
+        "tools/adt/idea/android-adb/src/com/android/tools/idea/adb/wireless",
     ],
     tests = [
-        "//tools/studio/google/cloud/testing/directaccess:directacess_tests",
-        "//tools/vendor/google/directaccess-client:directaccess-client_tests",
+        "//tools/adt/idea/android-adb:intellij.android.adb.tests_tests",
     ],
 )
 
 coverage_report(
-    name = "modularize",
+    name = "app-inspection",
+    srcpath_include = ["tools/adt/idea/app-inspection"],
+    tests = [
+        "//tools/adt/idea/app-inspection/api:app-inspection.api_tests",
+        "//tools/adt/idea/app-inspection/ide:app-inspection.ide.tests_tests",
+    ],
+)
+
+# Coverage report for AQI
+coverage_report(
+    name = "aqi",
     srcpath_include = [
-        "tools/adt/idea/android/src/com/android/tools/idea/refactoring/modularize",
+        "tools/vendor/google/firebase/src/com/google/services/firebase/insights",
     ],
     tests = [
-        "//tools/adt/idea/android:intellij.android.core.agp-integration-tests_tests__modularize",
-        "//tools/adt/idea/android:intellij.android.core.tests_tests__modularize",
+        "//tools/vendor/google/firebase:firebase_tests__FirebaseAppManagerTest",
+        "//tools/vendor/google/firebase:firebase_tests__other",
+    ],
+)
+
+coverage_report(
+    name = "background-task-inspector",
+    srcpath_include = [
+        "tools/adt/idea/app-inspection/inspectors/backgroundtask/ide/src",
+        "tools/adt/idea/app-inspection/inspectors/backgroundtask/model/src",
+        "tools/adt/idea/app-inspection/inspectors/backgroundtask/view/src",
+        "tools/base/app-inspection/inspectors/backgroundtask/src",
+    ],
+    tests = [
+        "//tools/adt/idea/app-inspection/inspectors/backgroundtask/model:app-inspection.inspectors.backgroundtask.model_tests",
+        "//tools/adt/idea/app-inspection/inspectors/backgroundtask/view:app-inspection.inspectors.backgroundtask.view.tests_tests",
+        "//tools/base/app-inspection/inspectors/backgroundtask:agent_tests.test",
+    ],
+)
+
+coverage_report(
+    name = "build-analyzer",
+    srcpath_include = [
+        "tools/adt/idea/build-attribution/src",
+        "tools/base/build-analyzer/common/src",
+    ],
+    tests = [
+        "//tools/adt/idea/build-attribution:intellij.android.build-attribution.tests_tests",
+        "//tools/base/build-analyzer/common:tests.test",
     ],
 )
 
@@ -158,15 +194,14 @@ coverage_report(
     ],
 )
 
+# Coverage report for compose-ide-plugin editor support.
 coverage_report(
-    name = "build-analyzer",
+    name = "compose-ide-plugin",
     srcpath_include = [
-        "tools/adt/idea/build-attribution/src",
-        "tools/base/build-analyzer/common/src",
+        "tools/adt/idea/compose-ide-plugin/src/com/android/tools/compose",
     ],
     tests = [
-        "//tools/adt/idea/build-attribution:intellij.android.build-attribution.tests_tests",
-        "//tools/base/build-analyzer/common:tests.test",
+        "//tools/adt/idea/compose-ide-plugin:intellij.android.compose-ide-plugin.tests_tests",
     ],
 )
 
@@ -180,43 +215,14 @@ coverage_report(
     ],
 )
 
+# Coverage report for Dagger editor support.
 coverage_report(
-    name = "app-inspection",
-    srcpath_include = ["tools/adt/idea/app-inspection"],
-    tests = [
-        "//tools/adt/idea/app-inspection/api:app-inspection.api_tests",
-        "//tools/adt/idea/app-inspection/ide:app-inspection.ide.tests_tests",
-    ],
-)
-
-coverage_report(
-    name = "network-inspector",
+    name = "dagger-editing",
     srcpath_include = [
-        "tools/adt/idea/app-inspection/inspectors/network/ide/src",
-        "tools/adt/idea/app-inspection/inspectors/network/model/src",
-        "tools/adt/idea/app-inspection/inspectors/network/view/src",
-        "tools/base/app-inspection/inspectors/network/src",
+        "tools/adt/idea/dagger/src/com/android/tools/idea/dagger",
     ],
     tests = [
-        "//tools/adt/idea/app-inspection/inspectors/network/ide:app-inspection.inspectors.network.ide.tests_tests",
-        "//tools/adt/idea/app-inspection/inspectors/network/model:app-inspection.inspectors.network.model_tests",
-        "//tools/adt/idea/app-inspection/inspectors/network/view:app-inspection.inspectors.network.view.tests_tests",
-        "//tools/base/app-inspection/inspectors/network:agent_tests.test",
-    ],
-)
-
-coverage_report(
-    name = "background-task-inspector",
-    srcpath_include = [
-        "tools/adt/idea/app-inspection/inspectors/backgroundtask/ide/src",
-        "tools/adt/idea/app-inspection/inspectors/backgroundtask/model/src",
-        "tools/adt/idea/app-inspection/inspectors/backgroundtask/view/src",
-        "tools/base/app-inspection/inspectors/backgroundtask/src",
-    ],
-    tests = [
-        "//tools/adt/idea/app-inspection/inspectors/backgroundtask/model:app-inspection.inspectors.backgroundtask.model_tests",
-        "//tools/adt/idea/app-inspection/inspectors/backgroundtask/view:app-inspection.inspectors.backgroundtask.view.tests_tests",
-        "//tools/base/app-inspection/inspectors/backgroundtask:agent_tests.test",
+        "//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
     ],
 )
 
@@ -267,6 +273,38 @@ coverage_report(
     ],
 )
 
+# Coverage report for "Device Manager" tool window
+coverage_report(
+    name = "device-manager",
+    srcpath_exclude = [
+        # "Groups" tab is currently disabled via a feature flag
+        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/groupstab",
+        # "CycleAction" is not used
+        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/CycleAction.kt",
+        # "Preconfigured virtual devices" tab is not enabled yet
+        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/PreconfiguredDisplayList.kt",
+        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/PreconfiguredDisplayListModel.kt",
+    ],
+    srcpath_include = [
+        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager",
+    ],
+    tests = [
+        "//tools/adt/idea/android:intellij.android.core.tests_tests",
+    ],
+)
+
+coverage_report(
+    name = "directaccess",
+    srcpath_include = [
+        "tools/studio/google/cloud/testing/directaccess",
+        "tools/vendor/google/directaccess-client",
+    ],
+    tests = [
+        "//tools/studio/google/cloud/testing/directaccess:directacess_tests",
+        "//tools/vendor/google/directaccess-client:directaccess-client_tests",
+    ],
+)
+
 coverage_report(
     name = "dsl",
     srcpath_include = [
@@ -286,6 +324,52 @@ coverage_report(
     tests = [
         "//tools/adt/idea/layout-inspector:intellij.android.layout-inspector.tests_tests",
         "//tools/base/dynamic-layout-inspector/agent/appinspection:agent_tests.test",
+    ],
+)
+
+coverage_report(
+    name = "fullscreen-heapdump-ui",
+    srcpath_include = [
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory",
+    ],
+    tests = [
+        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
+        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
+    ],
+)
+
+# Coverage report for GMD code completion
+coverage_report(
+    name = "gmd-code-completion",
+    srcpath_include = [
+        "tools/adt/idea/gmd-code-completion/src/com/android/gmdcodecompletion",
+    ],
+    tests = [
+        "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
+    ],
+)
+
+# Coverage report for Gradle Managed Virtual Device.
+coverage_report(
+    name = "gradle-managed-virtual-device",
+    srcpath_include = [
+        "tools/base/utp/android-device-provider-gradle/src/main/java",
+        # Generated by "find tools/base/build-system/gradle-core/src/main/java | grep Managed.*Device".
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceInstrumentationTestResultAggregationTask.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceCleanTask.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceInstrumentationTestTask.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceSetupTask.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dsl/ManagedDevices.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dsl/ManagedVirtualDevice.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/ManagedDeviceTestRunner.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/UtpManagedDevice.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/ManagedDeviceConfigProvider.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/ManagedDeviceUtils.kt",
+    ],
+    tests = [
+        "//tools/base/build-system/gradle-core:tests.test",
+        "//tools/base/utp/android-device-provider-gradle:tests.test",
     ],
 )
 
@@ -314,6 +398,31 @@ coverage_report(
     ],
 )
 
+# Coverage report for "Logcat V2" tool window
+coverage_report(
+    name = "logcat",
+    srcpath_include = [
+        "tools/adt/idea/logcat/src/com/android/tools/idea/logcat",
+    ],
+    tests = [
+        "//tools/adt/idea/logcat:intellij.android.logcat.tests_tests",
+    ],
+)
+
+coverage_report(
+    name = "memory-recording-ui",
+    srcpath_include = [
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory/AllocationStage.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory/MainMemoryProfilerStage.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/AllocationStageView.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/MainMemoryProfilerStageView.kt",
+    ],
+    tests = [
+        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
+        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
+    ],
+)
+
 coverage_report(
     name = "ml-model-binding",
     srcpath_exclude = [
@@ -327,6 +436,17 @@ coverage_report(
     tests = [
         "//tools/adt/idea/mlkit:intellij.android.mlkit.tests_tests",
         "//tools/base/mlkit-common:studio.android.sdktools.mlkit-common_tests",
+    ],
+)
+
+coverage_report(
+    name = "modularize",
+    srcpath_include = [
+        "tools/adt/idea/android/src/com/android/tools/idea/refactoring/modularize",
+    ],
+    tests = [
+        "//tools/adt/idea/android:intellij.android.core.agp-integration-tests_tests__modularize",
+        "//tools/adt/idea/android:intellij.android.core.tests_tests__modularize",
     ],
 )
 
@@ -367,6 +487,70 @@ coverage_report(
     ],
     tests = [
         "//tools/adt/idea/nav/safeargs:intellij.android.nav.safeargs.tests_tests",
+    ],
+)
+
+coverage_report(
+    name = "network-inspector",
+    srcpath_include = [
+        "tools/adt/idea/app-inspection/inspectors/network/ide/src",
+        "tools/adt/idea/app-inspection/inspectors/network/model/src",
+        "tools/adt/idea/app-inspection/inspectors/network/view/src",
+        "tools/base/app-inspection/inspectors/network/src",
+    ],
+    tests = [
+        "//tools/adt/idea/app-inspection/inspectors/network/ide:app-inspection.inspectors.network.ide.tests_tests",
+        "//tools/adt/idea/app-inspection/inspectors/network/model:app-inspection.inspectors.network.model_tests",
+        "//tools/adt/idea/app-inspection/inspectors/network/view:app-inspection.inspectors.network.view.tests_tests",
+        "//tools/base/app-inspection/inspectors/network:agent_tests.test",
+    ],
+)
+
+# Coverage report for parallel device test report
+coverage_report(
+    name = "parallel-device-test-report",
+    srcpath_include = [
+        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/testsuite",
+    ],
+    tests = [
+        "//tools/adt/idea/android:intellij.android.core.tests_tests",
+    ],
+)
+
+# Coverage report for Google Play SDK Index lint checks
+coverage_report(
+    name = "play-sdk-index",
+    srcpath_include = [
+        "tools/adt/idea/project-system-gradle/src/com/android/tools/idea/projectsystem/gradle/IdeGooglePlaySdkIndex.kt",
+        "tools/adt/idea/project-system-gradle-psd/src/com/android/tools/idea/gradle/structure/quickfix/SdkIndexLinkQuickFix.kt",
+        "tools/base/lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks/GooglePlaySdkIndex.kt",
+    ],
+    tests = [
+        # Currently diisabled due to flakiness
+        # "//tools/adt/idea/project-system-gradle:intellij.android.projectSystem.gradle.tests_tests",
+        "//tools/adt/idea/project-system-gradle-psd:intellij.android.projectSystem.gradle.psd.tests_tests",
+        "//tools/base/lint/libs/lint-tests:tests.test",
+    ],
+)
+
+coverage_report(
+    name = "profileable-ui",
+    srcpath_include = [
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/SupportLevel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/StudioProfilers.java",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/SessionsManager.java",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory/MainMemoryProfilerStage.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/StudioProfilersView.java",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/DismissibleMessage.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/sessions/SessionsView.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/sessions/SessionItemView.java",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/cpu/CpuProfilersView.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/BaseMemoryTimelineComponent.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/MainMemoryProfilerStageView.kt",
+    ],
+    tests = [
+        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
+        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
     ],
 )
 
@@ -429,6 +613,51 @@ coverage_report(
     ],
 )
 
+# Coverage report for Android Test Retention
+coverage_report(
+    name = "retention",
+    srcpath_include = [
+        "tools/adt/idea/android-test-retention",
+        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/retention",
+        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/testsuite/view/RetentionView.kt",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/icebox",
+        "tools/base/utp/android-test-plugin-host-retention/src",
+    ],
+    tests = [
+        "//tools/adt/idea/android:intellij.android.core.tests_tests",
+        "//tools/adt/idea/android-test-retention:intellij.android.testRetention.tests_tests",
+        "//tools/base/build-system/gradle-core:tests.test",
+        "//tools/base/build-system/integration-test/connected:FailureRetentionConnectedTest",
+        "//tools/base/utp/android-test-plugin-host-retention:tests.test",
+    ],
+)
+
+coverage_report(
+    name = "simpleperf-collapse-ui",
+    srcpath_include = [
+        "tools/adt/idea/adt-ui/src/main/java/com/android/tools/adtui/ComboCheckBox.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/cpu/CpuCaptureStageView.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/BaseCpuCapture.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/CaptureNode.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/CaptureNodeModel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/CppFunctionModel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/NoSymbolModel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/SyscallModel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/JavaMethodModel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/NativeNodeModel.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/simpleperf/SimpleperfTraceParser.kt",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/simpleperf/NodeNameParser.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/DropDownButton.kt",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/PathUtils.kt",
+    ],
+    tests = [
+        "//tools/adt/idea/adt-ui:intellij.android.adt.ui_tests",
+        "//tools/adt/idea/adt-ui-model:intellij.android.adt.ui.model_tests",
+        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
+        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
+    ],
+)
+
 # Coverage report for the split editor feature in design tools.
 # The editor covers most CUJs in both layout and navigation editors,
 # so we run both targets and exclude unrelated directories.
@@ -460,6 +689,18 @@ coverage_report(
     ],
 )
 
+# Coverage report for Embedded Emulator and device mirroring.
+coverage_report(
+    name = "streaming",
+    srcpath_include = [
+        "tools/adt/idea/streaming/src/com/android/tools/idea/device",
+        "tools/adt/idea/streaming/src/com/android/tools/idea/emulator",
+    ],
+    tests = [
+        "//tools/adt/idea/streaming:intellij.android.streaming.tests_tests",
+    ],
+)
+
 # Coverage report for suggested import.
 coverage_report(
     name = "suggested-import",
@@ -469,81 +710,6 @@ coverage_report(
     ],
     tests = [
         "//tools/adt/idea/android:intellij.android.core.tests_tests__imports",
-    ],
-)
-
-coverage_report(
-    name = "systracev2",
-    srcpath_include = [
-        "tools/adt/idea/adt-ui-model/src/main/java/com/android/tools/adtui/model/trackgroup",
-        "tools/adt/idea/adt-ui/src/main/java/com/android/tools/adtui/trackgroup",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/cpu",
-    ],
-    tests = [
-        "//tools/adt/idea/adt-ui:intellij.android.adt.ui_tests",
-        "//tools/adt/idea/adt-ui-model:intellij.android.adt.ui.model_tests",
-        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
-        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
-    ],
-)
-
-coverage_report(
-    name = "fullscreen-heapdump-ui",
-    srcpath_include = [
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory",
-    ],
-    tests = [
-        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
-        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
-    ],
-)
-
-coverage_report(
-    name = "profileable-ui",
-    srcpath_include = [
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/SupportLevel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/StudioProfilers.java",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/SessionsManager.java",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory/MainMemoryProfilerStage.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/StudioProfilersView.java",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/DismissibleMessage.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/sessions/SessionsView.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/sessions/SessionItemView.java",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/cpu/CpuProfilersView.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/BaseMemoryTimelineComponent.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/MainMemoryProfilerStageView.kt",
-    ],
-    tests = [
-        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
-        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
-    ],
-)
-
-coverage_report(
-    name = "simpleperf-collapse-ui",
-    srcpath_include = [
-        "tools/adt/idea/adt-ui/src/main/java/com/android/tools/adtui/ComboCheckBox.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/cpu/CpuCaptureStageView.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/BaseCpuCapture.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/CaptureNode.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/CaptureNodeModel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/CppFunctionModel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/NoSymbolModel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/SyscallModel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/JavaMethodModel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/nodemodel/NativeNodeModel.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/simpleperf/SimpleperfTraceParser.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu/simpleperf/NodeNameParser.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/DropDownButton.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/PathUtils.kt",
-    ],
-    tests = [
-        "//tools/adt/idea/adt-ui:intellij.android.adt.ui_tests",
-        "//tools/adt/idea/adt-ui-model:intellij.android.adt.ui.model_tests",
-        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
-        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
     ],
 )
 
@@ -583,6 +749,22 @@ coverage_report(
 )
 
 coverage_report(
+    name = "systracev2",
+    srcpath_include = [
+        "tools/adt/idea/adt-ui-model/src/main/java/com/android/tools/adtui/model/trackgroup",
+        "tools/adt/idea/adt-ui/src/main/java/com/android/tools/adtui/trackgroup",
+        "tools/adt/idea/profilers/src/com/android/tools/profilers/cpu",
+        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/cpu",
+    ],
+    tests = [
+        "//tools/adt/idea/adt-ui:intellij.android.adt.ui_tests",
+        "//tools/adt/idea/adt-ui-model:intellij.android.adt.ui.model_tests",
+        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
+        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
+    ],
+)
+
+coverage_report(
     name = "templates",
     srcpath_include = [
         "tools/adt/idea/android/src/com/android-npw/tools/idea/npw/module/recipes",
@@ -605,6 +787,28 @@ coverage_report(
     ],
 )
 
+# Coverage report for Espresso Test Recorder
+coverage_report(
+    name = "test-recorder",
+    srcpath_include = [
+        "tools/studio/google/cloud/testing/test-recorder/src/com/google/gct/testrecorder",
+    ],
+    tests = [
+        "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
+    ],
+)
+
+# TargetSDKVersion Upgrade Assistant
+coverage_report(
+    name = "tsdkv",
+    srcpath_include = [
+        "tools/vendor/google/targetsdkversion-upgrade-assistant",
+    ],
+    tests = [
+        "//tools/vendor/google/targetsdkversion-upgrade-assistant:targetsdkversion-upgrade-assistant_tests",
+    ],
+)
+
 coverage_report(
     name = "upgrade-assistant",
     srcpath_include = [
@@ -616,6 +820,30 @@ coverage_report(
         "//tools/adt/idea/project-system-gradle-upgrade:ProjectUpgradeTests_From_gradle_6.1.1_agp_4.0.0",
         "//tools/adt/idea/project-system-gradle-upgrade:ProjectUpgradeTests_From_gradle_6.7.1_agp_4.2.0",
         "//tools/adt/idea/project-system-gradle-upgrade:intellij.android.projectSystem.gradle.upgrade.tests_tests",
+    ],
+)
+
+# Coverage report for UTP test execution.
+coverage_report(
+    name = "utp",
+    srcpath_include = [
+        "tools/adt/idea/utp/src",
+        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp",
+        "tools/base/utp",
+    ],
+    tests = [
+        "//tools/adt/idea/utp:utp_tests",
+        "//tools/base/build-system/gradle-core:tests.test",
+        "//tools/base/build-system/integration-test/connected:UtpConnectedTest",
+        "//tools/base/utp/android-device-provider-ddmlib:tests.test",
+        "//tools/base/utp/android-device-provider-gradle:tests.test",
+        "//tools/base/utp/android-test-plugin-host-additional-test-output:tests.test",
+        "//tools/base/utp/android-test-plugin-host-apk-installer:tests.test",
+        "//tools/base/utp/android-test-plugin-host-coverage:tests.test",
+        "//tools/base/utp/android-test-plugin-host-device-info:tests.test",
+        "//tools/base/utp/android-test-plugin-host-logcat:tests.test",
+        "//tools/base/utp/android-test-plugin-host-retention:tests.test",
+        "//tools/base/utp/android-test-plugin-result-listener-gradle:tests.test",
     ],
 )
 
@@ -658,142 +886,6 @@ coverage_report(
     ],
 )
 
-# Coverage report for Dagger editor support.
-coverage_report(
-    name = "dagger-editing",
-    srcpath_include = [
-        "tools/adt/idea/dagger/src/com/android/tools/idea/dagger",
-    ],
-    tests = [
-        "//tools/adt/idea/dagger:intellij.android.dagger.tests_tests",
-    ],
-)
-
-# Coverage report for compose-ide-plugin editor support.
-coverage_report(
-    name = "compose-ide-plugin",
-    srcpath_include = [
-        "tools/adt/idea/compose-ide-plugin/src/com/android/tools/compose",
-    ],
-    tests = [
-        "//tools/adt/idea/compose-ide-plugin:intellij.android.compose-ide-plugin.tests_tests",
-    ],
-)
-
-# Coverage report for parallel device test report
-coverage_report(
-    name = "parallel-device-test-report",
-    srcpath_include = [
-        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/testsuite",
-    ],
-    tests = [
-        "//tools/adt/idea/android:intellij.android.core.tests_tests",
-    ],
-)
-
-# Coverage report for UTP test execution.
-coverage_report(
-    name = "utp",
-    srcpath_include = [
-        "tools/adt/idea/utp/src",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp",
-        "tools/base/utp",
-    ],
-    tests = [
-        "//tools/adt/idea/utp:utp_tests",
-        "//tools/base/build-system/gradle-core:tests.test",
-        "//tools/base/build-system/integration-test/connected:UtpConnectedTest",
-        "//tools/base/utp/android-device-provider-ddmlib:tests.test",
-        "//tools/base/utp/android-device-provider-gradle:tests.test",
-        "//tools/base/utp/android-test-plugin-host-additional-test-output:tests.test",
-        "//tools/base/utp/android-test-plugin-host-apk-installer:tests.test",
-        "//tools/base/utp/android-test-plugin-host-coverage:tests.test",
-        "//tools/base/utp/android-test-plugin-host-device-info:tests.test",
-        "//tools/base/utp/android-test-plugin-host-logcat:tests.test",
-        "//tools/base/utp/android-test-plugin-host-retention:tests.test",
-        "//tools/base/utp/android-test-plugin-result-listener-gradle:tests.test",
-    ],
-)
-
-# Coverage report for Android Test Retention
-coverage_report(
-    name = "retention",
-    srcpath_include = [
-        "tools/adt/idea/android-test-retention",
-        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/retention",
-        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/testsuite/view/RetentionView.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/icebox",
-        "tools/base/utp/android-test-plugin-host-retention/src",
-    ],
-    tests = [
-        "//tools/adt/idea/android:intellij.android.core.tests_tests",
-        "//tools/adt/idea/android-test-retention:intellij.android.testRetention.tests_tests",
-        "//tools/base/build-system/gradle-core:tests.test",
-        "//tools/base/build-system/integration-test/connected:FailureRetentionConnectedTest",
-        "//tools/base/utp/android-test-plugin-host-retention:tests.test",
-    ],
-)
-
-# Coverage report for Gradle Managed Virtual Device.
-coverage_report(
-    name = "gradle-managed-virtual-device",
-    srcpath_include = [
-        "tools/base/utp/android-device-provider-gradle/src/main/java",
-        # Generated by "find tools/base/build-system/gradle-core/src/main/java | grep Managed.*Device".
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceInstrumentationTestResultAggregationTask.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceCleanTask.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceInstrumentationTestTask.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/tasks/ManagedDeviceSetupTask.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dsl/ManagedDevices.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/dsl/ManagedVirtualDevice.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/ManagedDeviceTestRunner.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/UtpManagedDevice.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/ManagedDeviceConfigProvider.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/ManagedDeviceUtils.kt",
-    ],
-    tests = [
-        "//tools/base/build-system/gradle-core:tests.test",
-        "//tools/base/utp/android-device-provider-gradle:tests.test",
-    ],
-)
-
-# Coverage report for Embedded Emulator and device mirroring.
-coverage_report(
-    name = "streaming",
-    srcpath_include = [
-        "tools/adt/idea/streaming/src/com/android/tools/idea/device",
-        "tools/adt/idea/streaming/src/com/android/tools/idea/emulator",
-    ],
-    tests = [
-        "//tools/adt/idea/streaming:intellij.android.streaming.tests_tests",
-    ],
-)
-
-# Coverage report for "Pair Devices over Wi-Fi" (aka Wireless ADB)
-coverage_report(
-    name = "adb-wireless",
-    srcpath_include = [
-        "tools/adt/idea/android-adb/src/com/android/tools/idea/adb/wireless",
-    ],
-    tests = [
-        "//tools/adt/idea/android-adb:intellij.android.adb.tests_tests",
-    ],
-)
-
-coverage_report(
-    name = "memory-recording-ui",
-    srcpath_include = [
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory/AllocationStage.kt",
-        "tools/adt/idea/profilers/src/com/android/tools/profilers/memory/MainMemoryProfilerStage.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/AllocationStageView.kt",
-        "tools/adt/idea/profilers-ui/src/com/android/tools/profilers/memory/MainMemoryProfilerStageView.kt",
-    ],
-    tests = [
-        "//tools/adt/idea/profilers:intellij.android.profilers_tests",
-        "//tools/adt/idea/profilers-ui:intellij.android.profilers.ui_tests",
-    ],
-)
-
 # Coverage report for "Wear OS emulator pairing assistant
 coverage_report(
     name = "wear-pairing-assistant",
@@ -802,98 +894,6 @@ coverage_report(
     ],
     tests = [
         "//tools/adt/idea/android:intellij.android.core.tests_tests",
-    ],
-)
-
-# Coverage report for "Device Manager" tool window
-coverage_report(
-    name = "device-manager",
-    srcpath_exclude = [
-        # "Groups" tab is currently disabled via a feature flag
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/groupstab",
-        # "CycleAction" is not used
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/CycleAction.kt",
-        # "Preconfigured virtual devices" tab is not enabled yet
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/PreconfiguredDisplayList.kt",
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager/virtualtab/PreconfiguredDisplayListModel.kt",
-    ],
-    srcpath_include = [
-        "tools/adt/idea/android/src/com/android/tools/idea/devicemanager",
-    ],
-    tests = [
-        "//tools/adt/idea/android:intellij.android.core.tests_tests",
-    ],
-)
-
-# Coverage report for Espresso Test Recorder
-coverage_report(
-    name = "test-recorder",
-    srcpath_include = [
-        "tools/studio/google/cloud/testing/test-recorder/src/com/google/gct/testrecorder",
-    ],
-    tests = [
-        "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
-    ],
-)
-
-# Coverage report for GMD code completion
-coverage_report(
-    name = "gmd-code-completion",
-    srcpath_include = [
-        "tools/adt/idea/gmd-code-completion/src/com/android/gmdcodecompletion",
-    ],
-    tests = [
-        "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
-    ],
-)
-
-# Coverage report for "Logcat V2" tool window
-coverage_report(
-    name = "logcat",
-    srcpath_include = [
-        "tools/adt/idea/logcat/src/com/android/tools/idea/logcat",
-    ],
-    tests = [
-        "//tools/adt/idea/logcat:intellij.android.logcat.tests_tests",
-    ],
-)
-
-# Coverage report for Google Play SDK Index lint checks
-coverage_report(
-    name = "play-sdk-index",
-    srcpath_include = [
-        "tools/adt/idea/project-system-gradle/src/com/android/tools/idea/projectsystem/gradle/IdeGooglePlaySdkIndex.kt",
-        "tools/adt/idea/project-system-gradle-psd/src/com/android/tools/idea/gradle/structure/quickfix/SdkIndexLinkQuickFix.kt",
-        "tools/base/lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks/GooglePlaySdkIndex.kt",
-    ],
-    tests = [
-        # Currently diisabled due to flakiness
-        # "//tools/adt/idea/project-system-gradle:intellij.android.projectSystem.gradle.tests_tests",
-        "//tools/adt/idea/project-system-gradle-psd:intellij.android.projectSystem.gradle.psd.tests_tests",
-        "//tools/base/lint/libs/lint-tests:tests.test",
-    ],
-)
-
-# Coverage report for AQI
-coverage_report(
-    name = "aqi",
-    srcpath_include = [
-        "tools/vendor/google/firebase/src/com/google/services/firebase/insights",
-    ],
-    tests = [
-        "//tools/vendor/google/firebase:firebase_tests__FirebaseAppManagerTest",
-        "//tools/vendor/google/firebase:firebase_tests__other",
-    ],
-)
-
-# TargetSDKVersion Upgrade Assistant
-coverage_report(
-    name = "tsdkv",
-    srcpath_include = [
-        "tools/vendor/google/targetsdkversion-upgrade-assistant",
-    ],
-    tests = [
-        "//tools/vendor/google/targetsdkversion-upgrade-assistant:targetsdkversion-upgrade-assistant_tests",
     ],
 )
 
