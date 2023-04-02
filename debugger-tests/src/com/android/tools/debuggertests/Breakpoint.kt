@@ -13,13 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package infra
+package com.android.tools.debuggertests
 
-/**
- * A method that tested code calls when it wants to check a breakpoint. The caller provides a golden
- * filename that contains the expected state of the frame.
- */
-@Suppress("UNUSED_PARAMETER")
-internal fun breakpoint(name: String) {
+/** A method that tested code calls when it wants to check a breakpoint. */
+internal fun breakpoint() {
   // nothing to do
 }

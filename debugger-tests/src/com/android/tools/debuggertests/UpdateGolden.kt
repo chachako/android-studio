@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.tools.debuggertests.engine
+package com.android.tools.debuggertests
 
-/** Describes a stack frame. */
-internal class FrameInfo(private val variables: List<VariableInfo>) {
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 
-  override fun toString() = variables.joinToString("\n") { it.toString() }
-}
-
-/** Describes a variable. */
-internal class VariableInfo(private val name: String, private val slot: Int) {
-
-  override fun toString() = "$slot: $name"
+/**
+ * Updates golden files.
+ *
+ * Run with `bazel run //tools/base/debugger-tests:update-golden`
+ *
+ * When running from Intellij, add to VM options:
+ * ```
+ * --add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED
+ * ```
+ */
+fun main() {
+  Resources.findTestClasses().forEach {
+    println("Test $it")
+    val actual = runBlocking { withTimeout(30.seconds) { Engine.runTest(it) } }
+    Resources.writeGolden(it, actual)
+  }
 }

@@ -1,5 +1,0 @@
-0: args
-1: this_$iv
-2: i$iv
-3: s$iv
-4: $i$f$foo

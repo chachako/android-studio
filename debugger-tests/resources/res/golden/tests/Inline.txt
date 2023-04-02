@@ -1,0 +1,24 @@
+Breakpoint: Inline.kt:25
+========================================================
+0  [0-48]    : args                : java.lang.String[]
+
+Breakpoint: Inline.kt:30
+========================================================
+0  [0-48]    : args                : java.lang.String[]
+1  [18-47]   : this_$iv            : tests.Inline
+2  [18-47]   : i$iv                : int
+3  [18-47]   : s$iv                : java.lang.String
+4  [21-47]   : $i$f$foo            : int
+
+Breakpoint: Inline.kt:35
+========================================================
+0  [0-48]    : args                : java.lang.String[]
+1  [18-47]   : this_$iv            : tests.Inline
+2  [18-47]   : i$iv                : int
+3  [18-47]   : s$iv                : java.lang.String
+4  [21-47]   : $i$f$foo            : int
+5  [40-46]   : this_$iv$iv         : tests.Inline
+6  [40-46]   : i$iv$iv             : int
+7  [40-46]   : s$iv$iv             : java.lang.String
+8  [43-46]   : $i$f$bar            : int
+

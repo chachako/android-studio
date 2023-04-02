@@ -15,23 +15,23 @@
  */
 package tests
 
-import infra.breakpoint
+import com.android.tools.debuggertests.breakpoint
 
 @Suppress("NOTHING_TO_INLINE", "SameParameterValue", "UNUSED_PARAMETER")
 object Inline {
 
   @JvmStatic
   fun main(args: Array<String>) {
-    breakpoint("Inline1.txt")
+    breakpoint()
     foo(1, "Hello")
   }
 
   private inline fun foo(i: Int, s: String) {
-    breakpoint("Inline2.txt")
+    breakpoint()
     bar(i + 1, s + "1")
   }
 
   private inline fun bar(i: Int, s: String) {
-    breakpoint("Inline3.txt")
+    breakpoint()
   }
 }
