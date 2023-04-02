@@ -83,6 +83,28 @@ coverage_report(
 )
 
 coverage_report(
+    name = "adb-proxy",
+    srcpath_include = [
+        "tools/basel/adb-proxy",
+    ],
+    tests = [
+        "//tools/base/adb-proxy:studio.adb-proxy_tests",
+    ],
+)
+
+coverage_report(
+    name = "directaccess",
+    srcpath_include = [
+        "tools/studio/google/cloud/testing/directaccess",
+        "tools/vendor/google/directaccess-client",
+    ],
+    tests = [
+        "//tools/studio/google/cloud/testing/directaccess:directacess_tests",
+        "//tools/vendor/google/directaccess-client:directaccess-client_tests",
+    ],
+)
+
+coverage_report(
     name = "modularize",
     srcpath_include = [
         "tools/adt/idea/android/src/com/android/tools/idea/refactoring/modularize",
@@ -879,6 +901,7 @@ combine_report_definitions(
     prefix = "comps",
     # keep sorted
     reports = [
+        "adb-proxy",
         "adb-wireless",
         "all",
         "app-inspection",
@@ -892,6 +915,7 @@ combine_report_definitions(
         "databinding",
         "designtools",
         "device-manager",
+        "directaccess",
         "dsl",
         "dynamic-layout-inspector",
         "fullscreen-heapdump-ui",
@@ -1025,6 +1049,7 @@ coverage_report(
         "//tools/apkzlib:apkzlib_tests",
         "//tools/base/adblib:adblib.tests.test",
         "//tools/base/adblib-tools:adblib.tools.tests.test",
+        "//tools/base/adb-proxy:studio.adb-proxy_tests",
         "//tools/base/apkparser:studio.android.sdktools.binary-resources_tests",
         "//tools/base/apkparser:tools.tests",
         "//tools/base/apkparser/analyzer:studio.android.sdktools.analyzer_tests",
@@ -1133,8 +1158,10 @@ coverage_report(
         "//tools/data-binding:studio.compiler_tests",
         "//tools/data-binding:tools.compilerCommon_tests.test",
         "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
+        "//tools/studio/google/cloud/testing/directaccess:directaccess_tests",
         "//tools/vendor/google/android-apk:android-apk.tests_tests",
         "//tools/vendor/google/android-ndk:android-ndk.tests_tests",
+        "//tools/vendor/google/directaccess-client:directaccess-client_tests",
         "//tools/vendor/google/firebase:firebase_tests",
         "//tools/vendor/google/targetsdkversion-upgrade-assistant:targetsdkversion-upgrade-assistant_tests",
     ],
