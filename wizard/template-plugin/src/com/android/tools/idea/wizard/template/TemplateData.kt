@@ -62,9 +62,27 @@ enum class BytecodeLevel(val description: String, val versionString: String) {
   }
 }
 
-enum class BuildConfigurationLanguage(val description: String) {
-    KTS("Kotlin DSL"),
-    Groovy("Groovy DSL");
+enum class BuildConfigurationLanguageForNewProject(
+    val description: String,
+    val useKts: Boolean,
+    val useVersionCatalog: Boolean
+) {
+    KTS("Kotlin DSL (build.gradle.kts) [Recommended]", true, false),
+    KTS_VERSION_CATALOG(
+        "Kotlin DSL (build.gradle.kts) + Gradle Version Catalogs [Experimental] ",
+        true,
+        true
+    ),
+    Groovy("Groovy DSL (build.gradle)", false, false);
+
+    override fun toString() = description
+}
+
+enum class BuildConfigurationLanguageForNewModule(
+    val description: String
+) {
+    KTS("Kotlin DSL (build.gradle.kts) [Recommended]"),
+    Groovy("Groovy DSL (build.gradle)");
 
     override fun toString() = description
 }
