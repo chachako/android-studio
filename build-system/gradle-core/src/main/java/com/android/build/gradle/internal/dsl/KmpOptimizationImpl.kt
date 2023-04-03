@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,9 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.api.dsl.KeepRules
-import com.android.build.api.dsl.Optimization
 import com.android.build.gradle.internal.services.DslServices
 import javax.inject.Inject
 
-abstract class OptimizationImpl@Inject constructor(
+abstract class KmpOptimizationImpl @Inject constructor(
     dslService: DslServices
-) : Optimization {
-
-    abstract val keepRules: KeepRules
-
-    override fun keepRules(action: KeepRules.() -> Unit) {
-        action.invoke(keepRules)
-    }
-
-    fun initWith(that: OptimizationImpl) {
-        (keepRules as KeepRulesImpl).ignoreAllDependencies =
-                (that.keepRules as KeepRulesImpl).ignoreAllDependencies
-
-        (keepRules as KeepRulesImpl).dependencies.clear()
-        (keepRules as KeepRulesImpl).dependencies.addAll(
-                (that.keepRules as KeepRulesImpl).dependencies)
-
-    }
-}
+) : KmpOptimization, OptimizationImpl(dslService)

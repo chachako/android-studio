@@ -42,11 +42,11 @@ class KotlinMultiplatformAndroidMinificationTest {
         TestFileUtils.appendToFile(
             project.getSubproject("kmpFirstLib").ktsBuildFile,
             """
-                android.isMinifyEnabled = true
-                android.consumerProguardFiles.add(
+                android.optimization.isMinifyEnabled = true
+                android.optimization.consumerProguard.files.add(
                     File(project.projectDir, "consumer-proguard-rules.pro")
                 )
-                android.proguardFiles.add(
+                android.optimization.proguard.files.add(
                     File(project.projectDir, "proguard-rules.pro")
                 )
             """.trimIndent()

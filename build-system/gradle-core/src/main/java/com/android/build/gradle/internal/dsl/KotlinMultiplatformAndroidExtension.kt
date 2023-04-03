@@ -19,7 +19,6 @@ package com.android.build.gradle.internal.dsl
 import com.android.build.api.dsl.AarMetadata
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.Installation
-import com.android.build.api.dsl.Optimization
 import com.android.build.api.dsl.Packaging
 import com.android.build.api.dsl.TestCoverage
 import com.android.build.api.dsl.TestOptions
@@ -55,15 +54,8 @@ interface KotlinMultiplatformAndroidExtension {
 
     val packagingOptions: Packaging
 
-    // optimization stuff
-
-    var isMinifyEnabled: Boolean
-
-    val proguardFiles: MutableList<File>
-    val consumerProguardFiles: MutableList<File>
-    val testProguardFiles: MutableList<File>
-
-    val optimization: Optimization
+    val optimization: KmpOptimization
+    fun optimization(action: KmpOptimization.() -> Unit)
 
     // test stuff. todo, combine to a test block
 

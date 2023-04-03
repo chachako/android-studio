@@ -35,7 +35,7 @@ import com.android.build.gradle.internal.core.dsl.features.RenderscriptDslInfo
 import com.android.build.gradle.internal.core.dsl.features.ShadersDslInfo
 import com.android.build.gradle.internal.dsl.KeepRulesImpl
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtension
-import com.android.build.gradle.internal.dsl.OptimizationImpl
+import com.android.build.gradle.internal.dsl.KmpOptimizationImpl
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.file.DirectoryProperty
@@ -117,7 +117,7 @@ class KmpVariantDslInfoImpl(
     ): OptimizationDslInfo {
 
         private val keepRules =
-            (extension.optimization as OptimizationImpl).keepRules as KeepRulesImpl
+            (extension.optimization as KmpOptimizationImpl).keepRules as KeepRulesImpl
 
         override val ignoredLibraryKeepRules: Set<String>
             get() = keepRules.dependencies
@@ -148,7 +148,7 @@ class KmpVariantDslInfoImpl(
 
                 override fun getPostprocessingFeatures(): PostprocessingFeatures? = null
 
-                override fun codeShrinkerEnabled(): Boolean = extension.isMinifyEnabled
+                override fun codeShrinkerEnabled(): Boolean = extension.optimization.isMinifyEnabled
 
                 // No android resources
                 override fun resourcesShrinkingEnabled(): Boolean = false
@@ -156,9 +156,9 @@ class KmpVariantDslInfoImpl(
 
                 override fun getProguardFiles(type: ProguardFileType): Collection<File> {
                     return when (type) {
-                        ProguardFileType.EXPLICIT -> extension.proguardFiles
-                        ProguardFileType.TEST -> extension.testProguardFiles
-                        ProguardFileType.CONSUMER -> extension.consumerProguardFiles
+                        ProguardFileType.EXPLICIT -> extension.optimization.proguard.files
+                        ProguardFileType.TEST -> extension.optimization.testProguard.files
+                        ProguardFileType.CONSUMER -> extension.optimization.consumerProguard.files
                     }
                 }
 
