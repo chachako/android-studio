@@ -45,6 +45,11 @@
             <d:sensors>
             </d:sensors>
             <d:mic>true</d:mic>
+            <d:camera>
+                <d:location>front</d:location>
+                <d:autofocus>true</d:autofocus>
+                <d:flash>false</d:flash>
+            </d:camera>
             <d:keyboard>qwerty</d:keyboard>
             <d:nav>dpad</d:nav>
             <d:ram unit="GiB">2</d:ram>
@@ -116,6 +121,11 @@
                 GPS
             </d:sensors>
             <d:mic>true</d:mic>
+            <d:camera>
+                <d:location>front</d:location>
+                <d:autofocus>true</d:autofocus>
+                <d:flash>false</d:flash>
+            </d:camera>
             <d:keyboard>qwerty</d:keyboard>
             <d:nav>dpad</d:nav>
             <d:ram unit="GiB">2</d:ram>
@@ -187,6 +197,11 @@
                 GPS
             </d:sensors>
             <d:mic>true</d:mic>
+            <d:camera>
+                <d:location>front</d:location>
+                <d:autofocus>true</d:autofocus>
+                <d:flash>false</d:flash>
+            </d:camera>
             <d:keyboard>qwerty</d:keyboard>
             <d:nav>dpad</d:nav>
             <d:ram unit="GiB">2</d:ram>
