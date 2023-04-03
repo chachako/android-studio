@@ -89,7 +89,6 @@ public final class GradleTaskExecutor extends BaseGradleExecutor<GradleTaskExecu
 
     public GradleBuildResult run(@NonNull List<String> tasksList)
             throws IOException, InterruptedException {
-        assertThat(tasksList).named("tasks list").isNotEmpty();
 
         TestUtils.waitForFileSystemTick();
 

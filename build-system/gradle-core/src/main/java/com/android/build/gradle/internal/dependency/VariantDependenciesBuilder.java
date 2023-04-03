@@ -58,6 +58,7 @@ import com.android.build.gradle.internal.testFixtures.TestFixturesUtil;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.options.ProjectOptions;
 import com.android.builder.core.ComponentType;
+import com.android.builder.core.ComponentTypeImpl;
 import com.android.builder.errors.IssueReporter;
 import com.android.utils.StringHelper;
 import com.google.common.base.Preconditions;
@@ -318,30 +319,8 @@ public class VariantDependenciesBuilder {
         runtimeAttributes.attribute(AgpVersionAttr.ATTRIBUTE, agpVersion);
 
         if (projectOptions.get(BooleanOption.USE_DEPENDENCY_CONSTRAINTS)) {
-            Provider<StringCachingBuildService> stringCachingService =
-                    new StringCachingBuildService.RegistrationAction(project).execute();
-            // make compileClasspath match runtimeClasspath
-            ConstraintHandler.alignWith(
-                    compileClasspath, runtimeClasspath, dependencies, false, stringCachingService);
-
-            // if this is a test App, then also synchronize the 2 runtime classpaths
-            if (componentType.isApk() && testedVariant != null) {
-                Configuration testedRuntimeClasspath =
-                        testedVariant.getVariantDependencies().getRuntimeClasspath();
-                ConstraintHandler.alignWith(
-                        runtimeClasspath,
-                        testedRuntimeClasspath,
-                        dependencies,
-                        true,
-                        stringCachingService);
-                if (testedVariant.getComponentType().isApk()) {
-                    ConstraintHandler.checkConfigurationAlignments(
-                            runtimeClasspath,
-                            testedRuntimeClasspath,
-                            issueReporter,
-                            project.getBuildFile());
-                }
-            }
+            maybeAddDependencyConstraints(
+                    componentType, dependencies, compileClasspath, runtimeClasspath);
         }
 
         Configuration globalTestedApks =
@@ -706,6 +685,51 @@ public class VariantDependenciesBuilder {
                 project,
                 projectOptions,
                 isSelfInstrumenting);
+    }
+
+    private void maybeAddDependencyConstraints(
+            ComponentType componentType,
+            DependencyHandler dependencies,
+            Configuration compileClasspath,
+            Configuration runtimeClasspath) {
+        // Contrary to what the name might suggest, this will actually filter all aar components,
+        // not just libraries.
+        boolean excludeLibraryComponents =
+                projectOptions.get(BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS);
+        boolean isAarTest =
+                (componentType == ComponentTypeImpl.ANDROID_TEST
+                                || componentType == ComponentTypeImpl.UNIT_TEST)
+                        && testedVariant.getComponentType().isAar();
+
+        if (excludeLibraryComponents && (componentType.isAar() || isAarTest)) {
+            return;
+        }
+
+        Provider<StringCachingBuildService> stringCachingService =
+                new StringCachingBuildService.RegistrationAction(project).execute();
+        // make compileClasspath match runtimeClasspath
+        ConstraintHandler.alignWith(
+                compileClasspath, runtimeClasspath, dependencies, false, stringCachingService);
+
+        if (componentType.isApk() && testedVariant != null) {
+            // if this is a test App, then also synchronize the 2 runtime classpaths
+            Configuration testedRuntimeClasspath =
+                    testedVariant.getVariantDependencies().getRuntimeClasspath();
+            ConstraintHandler.alignWith(
+                    runtimeClasspath,
+                    testedRuntimeClasspath,
+                    dependencies,
+                    true,
+                    stringCachingService);
+
+            if (testedVariant.getComponentType().isApk()) {
+                ConstraintHandler.checkConfigurationAlignments(
+                        runtimeClasspath,
+                        testedRuntimeClasspath,
+                        issueReporter,
+                        project.getBuildFile());
+            }
+        }
     }
 
     @NonNull
